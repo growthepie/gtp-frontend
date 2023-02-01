@@ -1,0 +1,24 @@
+{
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.tsserver.log": "verbose",
+  // formatter
+  "editor.formatOnSave": true,
+  // eslint
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  // prettier
+  "prettier.singleQuote": true,
+  "prettier.trailingComma": "all",
+  "prettier.useTabs": true,
+  "prettier.tabWidth": 2,
+  
+  // eslint + prettier
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+}
