@@ -53,7 +53,7 @@ const WidthHeightContainerClasses = {
 export const Switch = ({
 	children,
 	childrenLeft,
-	color = 'blue',
+	color = 'gray',
 	shade = '500',
 	variant = 'solid',
 	size = 'sm',
