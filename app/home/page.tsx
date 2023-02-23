@@ -142,7 +142,7 @@ export default function HomePage() {
 										</div>
 									)
 								) : (
-									<div className="text-gray-500">{value as string}</div>
+									<div className="text-gray-500">{JSON.stringify(value)}</div>
 								)}
 							</div>
 						</div>
