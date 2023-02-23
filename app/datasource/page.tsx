@@ -119,10 +119,11 @@ export default function Page() {
 	return (
 		<div className="flex">
 			<Popover
-				triggerText="test"
+				// triggerText="test"
 				open={false}
 				onToggle={() => {}}
 				onOpen={() => {}}
+				trigger="click"
 			>
 				<div>test</div>
 				<ColorPicker />
