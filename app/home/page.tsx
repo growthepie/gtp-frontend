@@ -142,7 +142,7 @@ export default function HomePage() {
 										</div>
 									)
 								) : (
-									<div className="text-gray-500">{value}</div>
+									<div className="text-gray-500">{value as string}</div>
 								)}
 							</div>
 						</div>
