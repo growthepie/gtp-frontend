@@ -147,7 +147,7 @@ export default function MainChart({ data }: { data: any }) {
 
 	// );
 
-	const [darkMode, setDarkMode] = useLocalStorage('darkMode', false);
+	const [darkMode, setDarkMode] = useLocalStorage('darkMode', true);
 
 	const colors: { [key: string]: string[] } = useMemo(() => {
 		if (darkMode) {
@@ -315,7 +315,7 @@ export default function MainChart({ data }: { data: any }) {
 										pointFormat:
 											'<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
 									},
-									series: data.map((series) => ({
+									series: data.map((series: any) => ({
 										...series,
 										type: 'spline',
 									})),
@@ -346,7 +346,7 @@ export default function MainChart({ data }: { data: any }) {
 										pointFormat:
 											'<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
 									},
-									series: data.map((series) => ({
+									series: data.map((series: any) => ({
 										...series,
 										type: 'spline',
 									})),
@@ -381,7 +381,7 @@ export default function MainChart({ data }: { data: any }) {
 										pointFormat:
 											'<span style="color:{series.color}">{series.name}</span>: <b>{point.percentage:.1f}%</b><br/>',
 									},
-									series: data.map((series) => ({
+									series: data.map((series: any) => ({
 										...series,
 										type: 'area',
 									})),
