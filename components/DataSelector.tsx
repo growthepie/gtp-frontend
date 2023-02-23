@@ -64,8 +64,8 @@ export default function DataSelector({ data }: DataSelectorProps) {
 			/>
 			{currentPathIndex > 1 &&
 				paths
-					.filter((path) => path.length === currentPathIndex + 1)
-					.map((path) => <div key={path}>{path.join('.')}</div>)}
+					.filter((path: any) => path.length === currentPathIndex + 1)
+					.map((path: any) => <div key={path}>{path.join('.')}</div>)}
 		</div>
 	);
 }
