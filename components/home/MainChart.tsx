@@ -1,3 +1,5 @@
+'use client';
+
 import HighchartsReact from 'highcharts-react-official';
 import Highcharts, { chart } from 'highcharts';
 import highchartsAnnotations from 'highcharts/modules/annotations';
@@ -21,13 +23,6 @@ const COLORS = {
 	// chart.js
 	SERIES: ['#36a2eb', '#ff6384', '#8142ff', '#ff9f40', '#ffcd56', '#4bc0c0'],
 };
-
-Highcharts.setOptions({
-	lang: {
-		numericSymbols: ['K', ' M', 'B', 'T', 'P', 'E'],
-	},
-});
-highchartsAnnotations(Highcharts);
 
 const baseOptions: Highcharts.Options = {
 	accessibility: { enabled: false },
@@ -146,6 +141,16 @@ export default function MainChart({ data }: { data: any }) {
 	// const [options, setOptions] = useState<HighchartsReact.Props['options']>(
 
 	// );
+
+	useEffect(() => {
+		Highcharts.setOptions({
+			lang: {
+				numericSymbols: ['K', ' M', 'B', 'T', 'P', 'E'],
+			},
+		});
+		highchartsAnnotations(Highcharts);
+		fullScreen(Highcharts);
+	}, []);
 
 	const [darkMode, setDarkMode] = useLocalStorage('darkMode', true);
 
