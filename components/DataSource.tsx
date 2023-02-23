@@ -87,7 +87,7 @@ export default function DataSource({
 
 	useEffect(() => {
 		fetchData(url, useCorsProxy);
-	}, [url]);
+	}, [url, useCorsProxy]);
 
 	useEffect(() => {
 		if (!data) {

@@ -86,12 +86,34 @@ export const TextColorClasses = {
 	white: 'text-white',
 };
 
-export const SizeClasses = {
+export const TextSizeClasses = {
 	'2xs': 'text-[0.625rem] leading-[0.75rem] font-medium',
 	xs: 'text-xs',
 	sm: 'text-sm',
 	md: 'text-md',
 	lg: 'text-lg',
+};
+
+export const WidthSizeClasses = {
+	'2xs': 'w-2',
+	xs: 'w-3',
+	sm: 'w-4',
+	md: 'w-5',
+	lg: 'w-6',
+	xl: 'w-7',
+	'2xl': 'w-8',
+	'3xl': 'w-9',
+};
+
+export const HeightSizeClasses = {
+	'2xs': 'h-2',
+	xs: 'h-3',
+	sm: 'h-4',
+	md: 'h-5',
+	lg: 'h-6',
+	xl: 'h-7',
+	'2xl': 'h-8',
+	'3xl': 'h-9',
 };
 
 export const SizePaddingClasses = {

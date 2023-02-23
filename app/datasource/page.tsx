@@ -7,6 +7,7 @@ import _ from 'lodash';
 import Popover from '@/components/Popover';
 import { Card } from '@/components/Card';
 import ColorPicker from '@/components/ColorPicker';
+import LineChart from '@/components/charts/LineChart';
 // import install from '@twind/with-next/app';
 // import config from '../../twind.config';
 
@@ -18,7 +19,32 @@ export default function Page() {
 			data: any;
 			useCorsProxy?: boolean;
 		};
-	}>({});
+	}>({
+		0: {
+			rootKey: 'arbitrum',
+			url: 'https://d2cfnw27176mbd.cloudfront.net/v1/chains/arbitrum.json',
+			data: {},
+			useCorsProxy: true,
+		},
+		1: {
+			rootKey: 'optimism',
+			url: 'https://d2cfnw27176mbd.cloudfront.net/v1/chains/optimism.json',
+			data: {},
+			useCorsProxy: true,
+		},
+		2: {
+			rootKey: 'tvl',
+			url: 'https://d2cfnw27176mbd.cloudfront.net/v1/metrics/tvl.json',
+			data: {},
+			useCorsProxy: true,
+		},
+		3: {
+			rootKey: 'txcount',
+			url: 'https://d2cfnw27176mbd.cloudfront.net/v1/metrics/txcount.json',
+			data: {},
+			useCorsProxy: true,
+		},
+	});
 
 	const data = useMemo(() => {
 		return Object.values(dataSources).reduce((acc, dataSource) => {
@@ -55,6 +81,41 @@ export default function Page() {
 	};
 	const [cn, setCN] = useState('bg-red-500');
 
+	const [chartData, setChartData] = useState<
+		{
+			name: string;
+			data: [number, number][];
+		}[]
+	>([]);
+
+	// const setChartDataFromData = () => {
+	// 	const chartData = Object.values(dataSources)
+	// 		.filter((dataSource) =>
+	// 			['arbitrum', 'optimism'].includes(dataSource.rootKey),
+	// 		)
+	// 		.map((dataSource) => {
+	// 			console.log(dataSource.data);
+	// 			if (dataSource['data']['metrics']['tvl']['daily']) {
+	// 				return {
+	// 					name: dataSource.rootKey,
+	// 					data: Object.entries(dataSource.data.metrics.tvl.daily).map(
+	// 						([key, value]) => [parseInt(key), value],
+	// 					),
+	// 				};
+	// 			}
+	// 		});
+	// 	// setChartData(chartData);
+	// 	// console.log(chartData);
+	// };
+
+	// useEffect(() => {
+	// 	setChartDataFromData(data);
+	// }, []);
+
+	// useEffect(() => {
+	// 	setChartDataFromData();
+	// }, [dataSources]);
+
 	return (
 		<div className="flex">
 			<Popover
@@ -86,8 +147,9 @@ export default function Page() {
 						className="flex flex-col space-y-3 items-stretch"
 					>
 						<DataSource
-							initUrl="http://ip.jsontest.com/"
+							initUrl={dataSource.url || 'http://ip.jsontest.com/'}
 							rootKey={dataSource.rootKey || ''}
+							useCorsProxy={dataSource.useCorsProxy}
 							onData={(url: string, data: any, useCorsProxy: boolean) => {
 								setDataSources({
 									...dataSources,
@@ -125,8 +187,12 @@ export default function Page() {
 			</div>
 			{/* </div> */}
 			<div className="w-2/3">
-				<pre>{JSON.stringify(rootKeys, null, 2)}</pre>
-				<pre>{JSON.stringify(data, null, 2)}</pre>
+				{data && Object.keys(data).map((key) => <div key={key}>{key}</div>)}
+
+				{/* <pre>{JSON.stringify(rootKeys, null, 2)}</pre>
+				<pre>{JSON.stringify(data, null, 2)}</pre> */}
+
+				{/* <LineChart data={chartData} /> */}
 			</div>
 		</div>
 	);

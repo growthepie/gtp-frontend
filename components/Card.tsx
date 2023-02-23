@@ -1,5 +1,5 @@
 import {
-	SizeClasses,
+	TextSizeClasses,
 	PaddingClasses,
 	Background,
 	BackgroundClasses,
@@ -27,11 +27,9 @@ type CardProps = {
 
 export const Card = ({
 	children,
-	color,
+	color = 'blue',
 	shade = '500',
-
-	variant,
-
+	variant = 'solid',
 	size = 'xs',
 	padding = 'md',
 	className = '',
@@ -44,7 +42,7 @@ export const Card = ({
 				<div
 					className={`inline-flex items-center ${
 						PaddingClasses[padding]
-					} rounded-md ${SizeClasses[size]} font-medium ${Background(
+					} rounded-md ${TextSizeClasses[size]} font-medium ${Background(
 						color,
 						shade,
 					)} text-white ${className} ${RoundedClasses[rounded]}`}
@@ -55,7 +53,7 @@ export const Card = ({
 		case 'outline':
 			return (
 				<div
-					className={`inline-flex items-center ${PaddingClasses[padding]} rounded-md ${SizeClasses[size]} font-medium ${BorderClasses[color]} ${TextColorClasses[color]} ${className} ${RoundedClasses[rounded]}`}
+					className={`inline-flex items-center ${PaddingClasses[padding]} rounded-md ${TextSizeClasses[size]} font-medium ${BorderClasses[color]} ${TextColorClasses[color]} ${className} ${RoundedClasses[rounded]}`}
 				>
 					{children}
 				</div>
@@ -63,7 +61,7 @@ export const Card = ({
 		case 'ghost':
 			return (
 				<div
-					className={`inline-flex items-center ${PaddingClasses[padding]} rounded-md ${SizeClasses[size]} font-medium ${TextColorClasses[color]} ${className} ${RoundedClasses[rounded]}`}
+					className={`inline-flex items-center ${PaddingClasses[padding]} rounded-md ${TextSizeClasses[size]} font-medium ${TextColorClasses[color]} ${className} ${RoundedClasses[rounded]}`}
 				>
 					{children}
 				</div>
@@ -71,7 +69,7 @@ export const Card = ({
 		case 'link':
 			return (
 				<div
-					className={`inline-flex items-center ${PaddingClasses[padding]} rounded-md ${SizeClasses[size]} font-medium ${TextColorClasses[color]} ${className} ${RoundedClasses[rounded]} hover:underline cursor-pointer select-none`}
+					className={`inline-flex items-center ${PaddingClasses[padding]} rounded-md ${TextSizeClasses[size]} font-medium ${TextColorClasses[color]} ${className} ${RoundedClasses[rounded]} hover:underline cursor-pointer select-none`}
 					onClick={onClick}
 				>
 					{children}

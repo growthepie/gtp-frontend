@@ -1,6 +1,6 @@
 import {
 	Size,
-	SizeClasses,
+	TextSizeClasses,
 	SizePaddingClasses,
 	Color,
 	BackgroundClasses,
@@ -35,7 +35,7 @@ export const TextArea = ({
 		case 'solid':
 			return (
 				<textarea
-					className={`rounded-md p-2 ${SizeClasses[size]} ${
+					className={`rounded-md p-2 ${TextSizeClasses[size]} ${
 						SizePaddingClasses[size]
 					} ${BackgroundClasses[bgColor ?? colorVariant]}
 					${TextColorClasses[textColor ?? 'white']}
@@ -48,7 +48,7 @@ export const TextArea = ({
 		case 'outline':
 			return (
 				<textarea
-					className={`rounded-md p-2 ${SizeClasses[size]} ${
+					className={`rounded-md p-2 ${TextSizeClasses[size]} ${
 						SizePaddingClasses[size]
 					} ${BorderClasses[bgColor ?? colorVariant]} ${
 						TextColorClasses[textColor ?? colorVariant]

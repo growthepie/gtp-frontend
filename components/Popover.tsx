@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo, ReactNode } from 'react';
 
 type PopoverProps = {
-	triggerText: string;
+	trigger: ReactNode;
 	children: ReactNode;
 	className?: string;
 	open?: boolean;
@@ -11,7 +11,7 @@ type PopoverProps = {
 };
 
 export default function Popover({
-	triggerText,
+	trigger,
 	children,
 	className = '',
 	open = false,
@@ -44,7 +44,8 @@ export default function Popover({
 	return (
 		<>
 			<div className={`relative ${className}`}>
-				<div onClick={handleToggle}>{triggerText}</div>
+				{/* trigger that opens the popover when clicked */}
+				<div onClick={handleToggle}>{trigger}</div>
 				{isOpen && (
 					<div className="absolute z-10">
 						<div className="bg-white shadow-lg rounded-md p-4">{children}</div>

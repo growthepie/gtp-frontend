@@ -1,6 +1,6 @@
 import {
 	Size,
-	SizeClasses,
+	TextSizeClasses,
 	SizePaddingClasses,
 	Color,
 	BackgroundClasses,
@@ -31,7 +31,7 @@ export const Input = ({
 		case 'solid':
 			return (
 				<input
-					className={`rounded-md p-2 ${SizeClasses[size]} ${
+					className={`rounded-md p-2 ${TextSizeClasses[size]} ${
 						SizePaddingClasses[size]
 					} ${BackgroundClasses[bgColor ?? colorVariant]}
 					${TextColorClasses[textColor ?? 'white']}
@@ -44,7 +44,7 @@ export const Input = ({
 		case 'outline':
 			return (
 				<input
-					className={`rounded-md p-2 ${SizeClasses[size]} ${
+					className={`rounded-md p-2 ${TextSizeClasses[size]} ${
 						SizePaddingClasses[size]
 					} ${BorderClasses[bgColor ?? colorVariant]} ${
 						TextColorClasses[textColor ?? colorVariant]

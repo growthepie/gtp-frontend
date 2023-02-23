@@ -7,7 +7,7 @@ export default function handler(
 ) {
 	// Endpoint to get around CORS
 	const url = req.query.url as string;
-	fetch(url)
+	return fetch(url)
 		.then((response) => {
 			// replace NaN with null before parsing
 			const fixed = response

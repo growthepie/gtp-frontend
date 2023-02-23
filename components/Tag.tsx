@@ -1,5 +1,5 @@
 import {
-	SizeClasses,
+	TextSizeClasses,
 	SizePaddingClasses,
 	BackgroundClasses,
 	BorderClasses,
@@ -32,7 +32,8 @@ export const Tag = ({
 		case 'solid':
 			return (
 				<div
-					className={`inline-flex items-center ${SizePaddingClasses[size]} rounded-md ${SizeClasses[size]} font-medium ${BackgroundClasses[color]} text-white ${className} ${RoundedClasses[rounded]}`}
+					className={`inline-flex items-center ${SizePaddingClasses[size]} ${RoundedClasses[rounded]} ${TextSizeClasses[size]} font-medium ${BackgroundClasses[color]} text-white ${className} ${RoundedClasses[rounded]}`}
+					onClick={onClick}
 				>
 					{children}
 				</div>
@@ -40,7 +41,8 @@ export const Tag = ({
 		case 'outline':
 			return (
 				<div
-					className={`inline-flex items-center ${SizePaddingClasses[size]} rounded-md ${SizeClasses[size]} font-medium ${BorderClasses[color]} ${TextColorClasses[color]} ${className} ${RoundedClasses[rounded]}`}
+					className={`inline-flex items-center ${SizePaddingClasses[size]} ${RoundedClasses[rounded]} ${TextSizeClasses[size]} font-medium ${BorderClasses[color]} ${TextColorClasses[color]} ${className} ${RoundedClasses[rounded]}`}
+					onClick={onClick}
 				>
 					{children}
 				</div>
@@ -48,7 +50,8 @@ export const Tag = ({
 		case 'ghost':
 			return (
 				<div
-					className={`inline-flex items-center ${SizePaddingClasses[size]} rounded-md ${SizeClasses[size]} font-medium ${TextColorClasses[color]} ${className} ${RoundedClasses[rounded]}`}
+					className={`inline-flex items-center ${SizePaddingClasses[size]} ${RoundedClasses[rounded]} ${TextSizeClasses[size]} font-medium ${TextColorClasses[color]} ${className} ${RoundedClasses[rounded]}`}
+					onClick={onClick}
 				>
 					{children}
 				</div>
@@ -56,7 +59,7 @@ export const Tag = ({
 		case 'link':
 			return (
 				<div
-					className={`inline-flex items-center ${SizePaddingClasses[size]} rounded-md ${SizeClasses[size]} font-medium ${TextColorClasses[color]} ${className} ${RoundedClasses[rounded]} hover:underline cursor-pointer select-none`}
+					className={`inline-flex items-center ${SizePaddingClasses[size]} ${RoundedClasses[rounded]} ${TextSizeClasses[size]} font-medium ${TextColorClasses[color]} ${className} ${RoundedClasses[rounded]} hover:underline cursor-pointer select-none`}
 					onClick={onClick}
 				>
 					{children}
