@@ -237,6 +237,7 @@ export default function MainChart({ data }: { data: any }) {
 	const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
 
 	const toggleFullScreen = () => {
+		// @ts-ignore
 		chartComponent.current?.chart?.fullScreen.toggle();
 	};
 
