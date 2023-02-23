@@ -10,7 +10,7 @@ type LineChartProps = {
 	}[];
 };
 
-export default function LineChart({ data }: LineChartProps) {
+export default function LineChart({ series }: LineChartProps) {
 	const [options, setOptions] = useState<HighchartsReact.Props['options']>({
 		chart: {
 			type: 'line',
@@ -21,58 +21,19 @@ export default function LineChart({ data }: LineChartProps) {
 		xAxis: {
 			type: 'datetime',
 		},
-		series: [
-			{
-				name: 'Arbitrum',
-				data: [
-					[1, 2],
-					[2, 3],
-					[3, 4],
-				],
-			},
-			{
-				name: 'Optimism',
-				data: [
-					[1, 2],
-					[2, 3],
-					[3, 4],
-				],
-			},
-			{
-				name: 'TVL',
-				data: [
-					[1, 2],
-					[2, 3],
-					[3, 4],
-				],
-			},
-		],
+		series: [],
 		credits: {
 			enabled: false,
 		},
 	});
 
 	useEffect(() => {
-		if (data) {
+		if (series) {
 			setOptions({
 				...options,
-				series: [
-					{
-						name: 'Arbitrum',
-						data: data.arbitrum,
-					},
-					{
-						name: 'Optimism',
-						data: data.optimism,
-					},
-					{
-						name: 'TVL',
-						data: data.tvl,
-					},
-				],
 			});
 		}
-	}, [data]);
+	}, [series]);
 
 	return (
 		<Card variant="solid" color="blue" shade="500">
