@@ -257,7 +257,7 @@ export default function Home() {
 	}
 
 	return (
-		<div>
+		<div className="overflow-y-none">
 			<div className="flex py-8">
 				<div>
 					<Sidebar
@@ -343,11 +343,11 @@ export default function Home() {
 					))}
 				</div> */}
 				<div
-					className={`flex flex-col ${
+					className={`flex flex-col px-8  ${
 						isSidebarOpen
-							? 'ease-in-out duration-300 transform translate-x-[10.75rem]'
-							: 'ease-in-out duration-300 transform translate-x-0'
-					} w-3/4`}
+							? 'ease-in-out duration-300 transform translate-x-[10.75rem] w-[calc(100%-15.5rem)]'
+							: 'ease-in-out duration-300 transform translate-x-0 w-full'
+					}`}
 				>
 					<div className="flex space-x-2 justify-end">
 						{chains.map((chain) => (
