@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@chakra-ui/icons": "^2.0.17",
     "@heroicons/react": "^2.0.16",
     "@next/font": "13.1.6",
     "@react-hook/media-query": "^1.1.1",
@@ -37,6 +38,8 @@
     "usehooks-ts": "^2.9.1"
   },
   "devDependencies": {
+    "@iconify/react": "^4.1.0",
+    "@iconify/types": "^2.0.0",
     "@types/lodash": "^4.14.191",
     "autoprefixer": "^10.4.13",
     "postcss": "^8.4.21",
