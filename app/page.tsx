@@ -19,7 +19,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMetricsData } from '@/context/MetricsProvider';
 import { ReactJson } from '@/components/ReactJson';
 import Image from 'next/image';
-import Sidebar from '@/components/layout/Sidebar';
+import Sidebar, { SidebarItems } from '@/components/layout/Sidebar';
 import { useMediaQuery } from '@react-hook/media-query';
 
 export default function Home() {
@@ -69,7 +69,7 @@ export default function Home() {
 		},
 	});
 
-	const filters = [
+	const filters: SidebarItems = [
 		{
 			name: 'Fundamentals',
 			label: 'Fundamentals',
@@ -138,26 +138,32 @@ export default function Home() {
 			options: [
 				{
 					label: 'Ethereum',
+					icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
 					rootKey: 'chainsEthereum',
 				},
 				{
 					label: 'Arbitrum',
+					icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
 					rootKey: 'chainsArbitrum',
 				},
 				{
 					label: 'Aztec V2',
+					icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
 					rootKey: 'chainsAztecV2',
 				},
 				{
 					label: 'Immutable X',
+					icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
 					rootKey: 'chainsImmutableX',
 				},
 				{
 					label: 'Loopring',
+					icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
 					rootKey: 'chainsLoopring',
 				},
 				{
 					label: 'Optimism',
+					icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
 					rootKey: 'chainsOptimism',
 				},
 			],
@@ -282,9 +288,8 @@ export default function Home() {
 					</Sidebar>
 				</div>
 				{/* Chart Filter Menu */}
-				{/* <div className="flex flex-col w-1/4 space-y-3">
-
-					{filters.map((filter) => (
+				<div className="flex flex-col w-1/4 space-y-3">
+					{/* {filters.map((filter) => (
 						<div key={filter.name} className="flex flex-col space-y-1">
 							<div className="flex space-x-2 text-sm font-semibold items-center text-gray-600 dark:text-gray-400">
 								{filter.icon}
@@ -340,8 +345,8 @@ export default function Home() {
 									})}
 							</div>
 						</div>
-					))}
-				</div> */}
+					))} */}
+				</div>
 				<div
 					className={`flex flex-col px-8  ${
 						isSidebarOpen

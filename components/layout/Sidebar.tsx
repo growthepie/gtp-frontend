@@ -4,13 +4,13 @@ import { useEffect, useState, ReactNode } from 'react';
 import { Icon } from '@iconify/react';
 import { useMediaQuery } from '@react-hook/media-query';
 
-type SidebarItems = {
+export type SidebarItems = {
 	name: string;
 	label: string;
 	icon: ReactNode;
 	sidebarIcon: ReactNode;
 	options: {
-		name: string;
+		name?: string;
 		label: string;
 		icon: ReactNode;
 		rootKey?: string;
@@ -111,6 +111,13 @@ export default function Sidebar({
 													? 'ease-in-out duration-300 transform translate-x-[10.75rem]'
 													: 'ease-in-out duration-300 transform translate-x-0'
 											} w-[10.75rem] bg-white dark:bg-black z-10 `}
+
+											// onClick={() => {
+											// 	setSelectedFilter({
+											// 		name: filter.name,
+											// 	});
+											// 	setSelectedFilterOption(option);
+											// }}
 										>
 											<div className="text-sm font-medium py-3 px-2  w-[10.75rem] z-10 bg-white dark:bg-black">
 												{option.label}
