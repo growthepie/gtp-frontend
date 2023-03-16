@@ -78,7 +78,7 @@ export default function Sidebar({
             </div>
             {items.map((item) => (
               <div key={item.name + "_item"}>
-                <div className="flex items-center">
+                {/* <div className="flex items-center">
                   <div className="w-[2.25rem] pl-[0.5rem] p-3 bg-white dark:bg-black z-20">
                     <div className="text-white bg-slate-400 dark:text-black dark:bg-slate-400 rounded-md w-6 mx-auto">
                       {item.sidebarIcon}
@@ -87,8 +87,8 @@ export default function Sidebar({
                   <div
                     className={`-left-[6.5rem] absolute ${
                       isOpen
-                        ? "ease-in-out duration-300 transform translate-x-[10.75rem]"
-                        : "ease-in-out duration-300 transform translate-x-0"
+                        ? "transition-transform ease-in-out duration-300 transform translate-x-[10.75rem]"
+                        : "transition-transform ease-in-out duration-300 transform translate-x-0"
                     } w-[10.75rem] bg-white dark:bg-black z-10 `}
                   >
                     <div className="text-sm font-medium py-3 px-2 w-[10.75rem] z-10 bg-white dark:bg-black">
@@ -112,8 +112,63 @@ export default function Sidebar({
                     <div
                       className={`-left-[6.5rem] absolute ${
                         isOpen
-                          ? "ease-in-out duration-300 transform translate-x-[10.75rem]"
-                          : "ease-in-out duration-300 transform translate-x-0"
+                          ? "transition-transform ease-in-out duration-300 transform translate-x-[10.75rem]"
+                          : "transition-transform ease-in-out duration-300 transform translate-x-0"
+                      } w-[10.75rem] bg-white dark:bg-black z-10 `}
+
+                      // onClick={() => {
+                      // 	setSelectedFilter({
+                      // 		name: filter.name,
+                      // 	});
+                      // 	setSelectedFilterOption(option);
+                      // }}
+                    >
+                      <div className="text-sm font-normal py-3 px-2  w-[10.75rem] z-10 bg-white dark:bg-black">
+                        {option.label}
+                      </div>
+                    </div>
+                  </div>
+                ))} */}
+              </div>
+            ))}
+            {/* {items.map((item) => (
+              <div key={item.name + "_item"}>
+                <div className="flex items-center">
+                  <div className="w-[2.25rem] pl-[0.5rem] p-3 bg-white dark:bg-black z-20">
+                    <div className="text-white bg-slate-400 dark:text-black dark:bg-slate-400 rounded-md w-6 mx-auto">
+                      {item.sidebarIcon}
+                    </div>
+                  </div>
+                  <div
+                    className={`-left-[6.5rem] absolute ${
+                      isOpen
+                        ? "transition-transform ease-in-out duration-300 transform translate-x-[10.75rem]"
+                        : "transition-transform ease-in-out duration-300 transform translate-x-0"
+                    } w-[10.75rem] bg-white dark:bg-black z-10 `}
+                  >
+                    <div className="text-sm font-medium py-3 px-2 w-[10.75rem] z-10 bg-white dark:bg-black">
+                      {item.label}
+                    </div>
+                  </div>
+                </div>
+                {item.options.map((option) => (
+                  <div
+                    key={option.label + "_opt"}
+                    className="flex items-center"
+                  >
+                    <div className="w-[2.25rem] p-3 bg-white text-slate-400 dark:bg-black dark:text-slate-400 z-20 rounded-l-full">
+                      {option.icon != null ? (
+                        option.icon
+                      ) : (
+                        <Icon icon="bxl:react" className="h-4 w-4 mx-auto" />
+                      )}
+                    </div>
+
+                    <div
+                      className={`-left-[6.5rem] absolute ${
+                        isOpen
+                          ? "transition-transform ease-in-out duration-300 transform translate-x-[10.75rem]"
+                          : "transition-transform ease-in-out duration-300 transform translate-x-0"
                       } w-[10.75rem] bg-white dark:bg-black z-10 `}
 
                       // onClick={() => {
@@ -130,15 +185,15 @@ export default function Sidebar({
                   </div>
                 ))}
               </div>
-            ))}
+            ))} */}
           </div>
         </div>
         <div className="w-1 flex ml-3">
           <div
             className={`flex-1 bg-gray-100 dark:bg-gray-100 ${
               isOpen
-                ? "ease-in-out duration-300 transform translate-x-[10rem]"
-                : "ease-in-out duration-300 transform translate-x-0"
+                ? "transition-transform ease-in-out duration-300 transform translate-x-[10rem]"
+                : "transition-transform ease-in-out duration-300 transform translate-x-0"
             }`}
           ></div>
         </div>

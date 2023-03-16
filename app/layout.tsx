@@ -39,7 +39,7 @@ export default function RootLayout({
       */}
       <head />
       <MetricsProvider>
-        <body className="bg-white text-black dark:bg-black dark:text-white">
+        <body className="bg-white text-black dark:bg-black dark:text-white transition-colors">
           {/* large centered loading animation */}
           {/* <div
             id="main-loader"
@@ -53,8 +53,14 @@ export default function RootLayout({
             id="main-loader"
             className="fixed inset-0 flex items-center justify-center bg-black z-50 w-full h-full"
             initial={{ opacity: 1 }}
-            animate={{ opacity: 0 }}
+            animate={{
+              opacity: 0,
+              transitionEnd: {
+                display: "none",
+              },
+            }}
             transition={{ duration: 0.33, delay: 0.89 }}
+            exit={{ opacity: 0 }}
           >
             <motion.div
               className="animate-bounce rounded-full h-32 w-32 border-8 border-gray-900 dark:border-white"
