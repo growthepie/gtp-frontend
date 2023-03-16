@@ -78,7 +78,7 @@ export default function Sidebar({
             </div>
             {items.map((item) => (
               <div key={item.name + "_item"}>
-                {/* <div className="flex items-center">
+                <div className="flex items-center">
                   <div className="w-[2.25rem] pl-[0.5rem] p-3 bg-white dark:bg-black z-20">
                     <div className="text-white bg-slate-400 dark:text-black dark:bg-slate-400 rounded-md w-6 mx-auto">
                       {item.sidebarIcon}
@@ -128,7 +128,7 @@ export default function Sidebar({
                       </div>
                     </div>
                   </div>
-                ))} */}
+                ))}
               </div>
             ))}
             {/* {items.map((item) => (
