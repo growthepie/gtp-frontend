@@ -7,9 +7,9 @@ import { SunIcon } from "@heroicons/react/24/outline";
 import { MoonIcon } from "@heroicons/react/24/solid";
 import { useTheme } from "next-themes";
 
-export default function DarkModeSwitch() {
+export default function EthUsdSwitch() {
   const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   // useEffect only runs on the client, so now we can safely show the UI
   useEffect(() => {
@@ -17,7 +17,7 @@ export default function DarkModeSwitch() {
   }, []);
 
   const handleToggle = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+    setShowUsd(!showUsd);
   };
 
   if (!mounted) {
@@ -29,19 +29,25 @@ export default function DarkModeSwitch() {
       <div className="flex items-center">
         <input id="toggle" type="checkbox" className="hidden" />
         <label htmlFor="toggle" className="flex items-center cursor-pointer">
-          <div className="mr-2 font-medium" onClick={handleToggle}>
-            {theme === "dark" ? (
-              <MoonIcon className="h-5 w-5" />
-            ) : (
-              <SunIcon className="h-5 w-5" />
-            )}
+          <div
+            className="mr-2 font-medium"
+            onClick={() => {
+              setShowUsd(showUsd ? false : true);
+            }}
+          >
+            {showUsd === true ? <>USD</> : <>ETH</>}
           </div>
-          <div className="relative" onClick={handleToggle}>
+          <div
+            className="relative"
+            onClick={() => {
+              setShowUsd(showUsd ? false : true);
+            }}
+          >
             <div
               className={`block 
                         w-10 h-6
                         rounded-full transition duration-200 ease-in-out ${
-                          theme === "dark" ? "bg-gray-500" : "bg-gray-500/50"
+                          showUsd ? "bg-gray-500" : "bg-gray-500/50"
                         }`}
             ></div>
             <div
@@ -50,7 +56,7 @@ export default function DarkModeSwitch() {
                         h-4
                         rounded-full transition duration-200 ease-in-out
                         bg-white
-                        ${theme === "dark" ? "transform translate-x-full" : ""}
+                        ${showUsd ? "transform translate-x-full" : ""}
                         rounded-full`}
             ></div>
           </div>

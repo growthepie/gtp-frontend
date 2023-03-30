@@ -30,6 +30,7 @@
     "jsonpath-plus": "^7.2.0",
     "lodash": "^4.17.21",
     "next": "13.1.6",
+    "next-themes": "^0.2.1",
     "quicktype-core": "^21.0.9",
     "react": "18.2.0",
     "react-d3-library": "^1.1.8",

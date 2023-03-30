@@ -1,30 +1,74 @@
-﻿export interface TVLMetricsResponse {
-	data: Data;
-}
-export interface Data {
-	metric_id: string;
-	metric_name: string;
-	description: string;
-	unit: string;
-	source: string;
-	chains: Chains;
-}
-export interface Chains {
-	ethereum: ChainData;
-	optimism: ChainData;
-	arbitrum: ChainData;
-	loopring: ChainData;
-}
-export interface ChainData {
-	chain_name: string;
-	changes: Changes;
-	daily?: (number[] | null)[] | null;
-}
-export interface Changes {
-	'1d': number;
-	'7d': number;
-	'30d': number;
-	'90d': number;
-	'180d': number;
-	'365d': number;
-}
+﻿export type TVLMetricsResponse = {
+  data: {
+    metric_id: string;
+    metric_name: string;
+    description: string;
+    source: string;
+    chains: {
+      ethereum: {
+        chain_name: string;
+        changes: {
+          types: Array<string>;
+          "1d": Array<number>;
+          "7d": Array<number>;
+          "30d": Array<number>;
+          "90d": Array<number>;
+          "180d": Array<number>;
+          "365d": Array<number>;
+        };
+        daily: {
+          types: Array<string>;
+          data: Array<Array<number>>;
+        };
+      };
+      arbitrum: {
+        chain_name: string;
+        changes: {
+          types: Array<string>;
+          "1d": Array<number>;
+          "7d": Array<number>;
+          "30d": Array<number>;
+          "90d": Array<number>;
+          "180d": Array<number>;
+          "365d": Array<number>;
+        };
+        daily: {
+          types: Array<string>;
+          data: Array<Array<number>>;
+        };
+      };
+      optimism: {
+        chain_name: string;
+        changes: {
+          types: Array<string>;
+          "1d": Array<number>;
+          "7d": Array<number>;
+          "30d": Array<number>;
+          "90d": Array<number>;
+          "180d": Array<number>;
+          "365d": Array<number>;
+        };
+        daily: {
+          types: Array<string>;
+          data: Array<Array<number>>;
+        };
+      };
+      polygon: {
+        chain_name: string;
+        changes: {
+          types: Array<string>;
+          "1d": Array<number>;
+          "7d": Array<number>;
+          "30d": Array<number>;
+          "90d": Array<number>;
+          "180d": Array<number>;
+          "365d": Array<number>;
+        };
+        daily: {
+          types: Array<string>;
+          data: Array<Array<number>>;
+        };
+      };
+    };
+  };
+};

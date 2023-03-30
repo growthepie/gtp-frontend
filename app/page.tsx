@@ -21,6 +21,9 @@ import { ReactJson } from "@/components/ReactJson";
 import Image from "next/image";
 import Sidebar, { SidebarItems } from "@/components/layout/Sidebar";
 import { useMediaQuery } from "@react-hook/media-query";
+import Heading from "@/components/layout/Heading";
+import Subheading from "@/components/layout/Subheading";
+import ComparisonChart from "@/components/home/ComparisonChart";
 
 export default function Home() {
   const isLargeScreen = useMediaQuery("(min-width: 768px)");
@@ -33,7 +36,7 @@ export default function Home() {
 
   const metricsData = useMetricsData();
 
-  const [darkMode, setDarkMode] = useLocalStorage("darkMode", true);
+  // const [darkMode, setDarkMode] = useLocalStorage("darkMode", true);
 
   const [dataSources, setDataSources] = useLocalStorage<{
     [index: number]: {
@@ -68,128 +71,6 @@ export default function Home() {
       useCorsProxy: true,
     },
   });
-
-  const filters: SidebarItems = [
-    {
-      name: "Fundamentals",
-      label: "Fundamentals",
-      icon: <ArrowsRightLeftIcon className="h-5 w-5" />,
-      sidebarIcon: (
-        <Icon icon="ic:round-compare-arrows" className="h-6 w-6 mx-auto " />
-      ),
-      options: [
-        {
-          label: "Total Value Locked",
-          icon: <Icon icon="ep:money" className="h-4 w-4  mx-auto" />,
-          rootKey: "metricsTvl",
-        },
-        {
-          label: "Transaction Count",
-          icon: <Icon icon="mdi:text" className="h-4 w-4 mx-auto" />,
-          rootKey: "metricsTxCount",
-        },
-        {
-          label: "Market Cap",
-          icon: <Icon icon="carbon:mountain" className="h-4 w-4 mx-auto" />,
-          rootKey: "metricsMarketCap",
-        },
-        {
-          label: "24h Contract Usage",
-          icon: <Icon icon="ion:time-outline" className="h-4 w-4 mx-auto" />,
-          rootKey: "metrics24hContractUsage",
-        },
-        {
-          label: "Fees Paid to Ethereum",
-          icon: <Icon icon="ion:ticket-outline" className="h-4 w-4 mx-auto" />,
-          rootKey: "metricsFeesPaidToEthereum",
-        },
-        {
-          label: "Transactions per Second",
-          icon: (
-            <Icon
-              icon="ant-design:transaction-outlined"
-              className="h-4 w-4 mx-auto"
-            />
-          ),
-          rootKey: "metricsTransactionsPerSecond",
-        },
-        {
-          label: "Daily Active Addresses",
-          icon: <Icon icon="bx:bx-user" className="h-4 w-4 mx-auto" />,
-          rootKey: "metricsDailyActiveAddresses",
-        },
-        {
-          label: "New Addresses",
-          icon: <Icon icon="bx:bx-user-plus" className="h-4 w-4 mx-auto" />,
-          rootKey: "metricsNewAddresses",
-        },
-        {
-          label: "Total Addresses",
-          icon: <Icon icon="ph:address-book" className="h-5 w-5 mx-auto" />,
-          rootKey: "metricsTotalAddresses",
-        },
-      ],
-    },
-    {
-      name: "Single Chain",
-      label: "Single Chain",
-      icon: <LinkIcon className="h-5 w-5" />,
-      sidebarIcon: <LinkIcon className="h-5 w-5 mx-auto" />,
-      options: [
-        {
-          label: "Ethereum",
-          icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
-          rootKey: "chainsEthereum",
-        },
-        {
-          label: "Arbitrum",
-          icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
-          rootKey: "chainsArbitrum",
-        },
-        {
-          label: "Aztec V2",
-          icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
-          rootKey: "chainsAztecV2",
-        },
-        {
-          label: "Immutable X",
-          icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
-          rootKey: "chainsImmutableX",
-        },
-        {
-          label: "Loopring",
-          icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
-          rootKey: "chainsLoopring",
-        },
-        {
-          label: "Optimism",
-          icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
-          rootKey: "chainsOptimism",
-        },
-      ],
-    },
-    {
-      name: "Blockspace",
-      label: "Blockspace",
-      icon: <LinkIcon className="h-5 w-5" />,
-      sidebarIcon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
-      options: [],
-    },
-    {
-      name: "Wiki",
-      label: "Wiki",
-      icon: <LinkIcon className="h-5 w-5" />,
-      sidebarIcon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
-      options: [],
-    },
-    {
-      name: "API Documentation",
-      label: "API Documentation",
-      icon: <LinkIcon className="h-5 w-5" />,
-      sidebarIcon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
-      options: [],
-    },
-  ];
 
   const allChains = [
     {
@@ -254,6 +135,52 @@ export default function Home() {
     allChains.map((chain) => chain.key)
   );
 
+  const [errorCode, setErrorCode] = useState(0);
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    console.log(metricsData);
+    if (metricsData.status === "error") {
+      setErrorCode(500);
+    }
+
+    if (metricsData.status === "success") {
+      console.log(
+        Object.keys(metricsData.data),
+        Object.keys(metricsData.data).includes("masterData")
+      );
+      if (!Object.keys(metricsData.data).includes("masterData"))
+        setErrorCode(500);
+
+      if (!Object.keys(metricsData.data.masterData?.metrics).includes("daa"))
+        setErrorCode(404);
+      // }
+
+      // //   console.log(params.metric);
+
+      let metric = "daa";
+
+      // if (metricsData.status === "success") {
+
+      console.log(metricsData.data);
+      switch (metric) {
+        case "tvl":
+          setData(metricsData.data.metricsTvl);
+          break;
+        case "txcount":
+          setData(metricsData.data.metricsTxCount);
+          break;
+        case "daa":
+          setData(metricsData.data.metricsDaa);
+          break;
+        default:
+          break;
+      }
+    }
+
+    // console.log(metricsData);
+  }, [metricsData]);
+
   if (!metricsData || metricsData.status === "loading") {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -263,33 +190,33 @@ export default function Home() {
   }
 
   return (
-    <div className="overflow-y-none">
-      <div className="flex py-8">
-        <div>
-          <Sidebar
-            trigger={
-              <button className="flex items-center space-x-2">
-                <Bars3Icon className="h-6 w-6" />
-              </button>
-            }
-            items={filters}
-            open={isLargeScreen ? true : false}
-            onOpen={() => setIsSidebarOpen(true)}
-            onClose={() => setIsSidebarOpen(false)}
-          >
-            {/* <div className="flex flex-col space-y-4">
-							<div className="flex flex-col space-y-2">
-								<div className="flex space-x-2 text-sm font-semibold items-center text-gray-600 dark:text-gray-400">
-									<ArrowsRightLeftIcon className="h-4 w-4" />
-									<div>Fundamentals</div>
-								</div>
-							</div>
-						</div> */}
-          </Sidebar>
-        </div>
-        {/* Chart Filter Menu */}
-        <div className="flex flex-col space-y-3">
-          {/* {filters.map((filter) => (
+    // <div className="w-full my-8 overflow-y-none">
+    <div className="flex w-full mt-8">
+      {/* <div className="">
+        <Sidebar
+          trigger={
+            <button className="flex items-center space-x-2">
+              <Bars3Icon className="h-6 w-6" />
+            </button>
+          }
+          // items={filters}
+          open={isLargeScreen ? true : false}
+          onOpen={() => setIsSidebarOpen(true)}
+          onClose={() => setIsSidebarOpen(false)}
+        >
+          <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-2">
+              <div className="flex space-x-2 text-sm font-semibold items-center text-gray-600 dark:text-gray-400">
+                <ArrowsRightLeftIcon className="h-4 w-4" />
+                <div>Fundamentals</div>
+              </div>
+            </div>
+          </div>
+        </Sidebar>
+      </div> */}
+      {/* Chart Filter Menu */}
+      {/* <div className="flex flex-col space-y-3"> */}
+      {/* {filters.map((filter) => (
 						<div key={filter.name} className="flex flex-col space-y-1">
 							<div className="flex space-x-2 text-sm font-semibold items-center text-gray-600 dark:text-gray-400">
 								{filter.icon}
@@ -346,15 +273,39 @@ export default function Home() {
 							</div>
 						</div>
 					))} */}
-        </div>
-        <div
-          className={`flex flex-col px-8  ${
+      {/* </div> */}
+      {/* <div
+          className={`flex flex-col ${
             isSidebarOpen
               ? "ease-in-out duration-300 transform translate-x-[10.75rem] w-[calc(100%-15.5rem)]"
               : "ease-in-out duration-300 transform translate-x-0 w-full"
           }`}
-        >
-          <div className="flex space-x-2 justify-end">
+        > */}
+      <div className={`flex flex-col flex-1 pl-8`}>
+        {data && (
+          <>
+            <Heading>Growing the Ethereum ecosystem together.</Heading>
+            <Subheading className="text-lg font-medium mt-10">
+              Compare Ethereum&apos;s Layer-2 solutions and better understand
+              the metrics to grow the ecosystem.
+            </Subheading>
+            <div className="flex-1">
+              <ComparisonChart
+                data={Object.keys(data.data.chains)
+                  .filter((chain) => selectedChains.includes(chain))
+                  .map((chain) => {
+                    return {
+                      name: chain,
+                      // type: 'spline',
+                      types: data.data.chains[chain].daily.types,
+                      data: data.data.chains[chain].daily.data,
+                    };
+                  })}
+              />
+            </div>
+          </>
+        )}
+        {/* <div className="flex space-x-2 justify-end">
             {chains.map((chain) => (
               <div
                 key={chain.key}
@@ -421,7 +372,7 @@ export default function Home() {
             src={metricsData}
             theme={darkMode ? "monokai" : "rjv-default"}
           ></ReactJson>
-        </div>
+        </div> */}
         {/* <Popover
 				trigger={
 					<Button variant="solid" color="blue">

@@ -8,7 +8,7 @@ import { Card } from "@/components/Card";
 import { useLocalStorage } from "usehooks-ts";
 import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
-import { zinc, red, blue, amber } from "@twind/preset-tailwind/colors";
+import { zinc, red, blue, amber, purple } from "@twind/preset-tailwind/colors";
 import { ArrowTrendingUpIcon } from "@heroicons/react/24/outline";
 import { useTheme } from "next-themes";
 
@@ -134,10 +134,14 @@ const baseOptions: Highcharts.Options = {
 };
 
 type MainChartProps = {
-  data: any;
+  data: {
+    name: string;
+    data: any;
+    types: any[];
+  };
 };
 
-export default function MainChart({ data }: { data: any }) {
+export default function ComparisonChart({ data }: { data: any }) {
   // const [data, setData] = useLocalStorage('data', null);
   // const [options, setOptions] = useState<HighchartsReact.Props['options']>(
 
@@ -156,12 +160,50 @@ export default function MainChart({ data }: { data: any }) {
   // const [darkMode, setDarkMode] = useLocalStorage("darkMode", true);
   const { theme } = useTheme();
 
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+
+  const timespans = {
+    "30d": {
+      label: "30d",
+      value: 30,
+      xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
+      xMax: Date.now(),
+    },
+    "90d": {
+      label: "90d",
+      value: 90,
+      xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
+      xMax: Date.now(),
+    },
+    "180d": {
+      label: "180d",
+      value: 180,
+      xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
+      xMax: Date.now(),
+    },
+    "365d": {
+      label: "1y",
+      value: 365,
+      xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
+      xMax: Date.now(),
+    },
+    max: {
+      label: "Max",
+      value: 0,
+      xMin: Date.now() - 5 * 365 * 24 * 60 * 60 * 1000,
+      xMax: Date.now(),
+    },
+  };
+
+  const [timespan, setTimespan] = useLocalStorage("timespan", timespans.max);
+
   const colors: { [key: string]: string[] } = useMemo(() => {
     if (theme === "dark") {
       return {
         ethereum: [zinc[400], zinc[600], zinc[700]],
         arbitrum: [red[400], red[600], red[700]],
         optimism: [blue[400], blue[600], blue[700]],
+        polygon: [purple[400], purple[600], purple[700]],
         loopring: [amber[300], amber[500], amber[600]],
       };
     }
@@ -169,6 +211,7 @@ export default function MainChart({ data }: { data: any }) {
       ethereum: [zinc[400], zinc[700], zinc[700]],
       arbitrum: [red[600], red[700], red[700]],
       optimism: [blue[500], blue[700], blue[700]],
+      polygon: [purple[500], purple[700], purple[700]],
       loopring: [amber[400], amber[600], amber[600]],
     };
   }, [theme]);
@@ -186,6 +229,7 @@ export default function MainChart({ data }: { data: any }) {
         ethereum: ["bg-zinc-400", "bg-zinc-500"],
         arbitrum: ["bg-red-300", "bg-red-500"],
         optimism: ["bg-blue-300", "bg-blue-500"],
+        polygon: ["bg-purple-300", "bg-purple-500"],
         loopring: ["bg-yellow-300", "bg-yellow-500"],
       };
     }
@@ -193,6 +237,7 @@ export default function MainChart({ data }: { data: any }) {
       ethereum: [zinc[400], zinc[700]],
       arbitrum: [red[600], red[700]],
       optimism: [blue[500], blue[700]],
+      polygon: [purple[500], purple[700]],
       loopring: [amber[400], amber[600]],
     };
   }, [theme]);
@@ -202,9 +247,21 @@ export default function MainChart({ data }: { data: any }) {
       legend: {
         enabled: false,
       },
+      xAxis: {
+        min: timespan.xMin,
+        max: timespan.xMax,
+      },
       series: data.map((series: any) => ({
         name: series.name,
-        data: series.data.sort((a: any, b: any) => a[0] - b[0]),
+        data:
+          !showUsd && series.types.includes("usd")
+            ? series.data
+                .sort((a: any, b: any) => a[0] - b[0])
+                .map((d: any) => [d[0], d[2]])
+            : series.data
+                .sort((a: any, b: any) => a[0] - b[0])
+                .map((d: any) => [d[0], d[1]]),
+
         type: "spline",
         shadow: {
           color: colors[series.name][1] + "33",
@@ -239,7 +296,7 @@ export default function MainChart({ data }: { data: any }) {
     };
 
     return _merge({}, baseOptions, dynamicOptions);
-  }, [data, colors, bgColors]);
+  }, [data, colors, bgColors, showUsd]);
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
 
@@ -274,9 +331,10 @@ export default function MainChart({ data }: { data: any }) {
             <button
               className="bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400 rounded-xl px-2 py-1 mr-2 text-xs font-bold"
               onClick={() => {
+                setTimespan(timespans["30d"]);
                 chartComponent.current?.xAxis[0].setExtremes(
-                  Date.now() - 1000 * 60 * 60 * 24 * 30,
-                  Date.now()
+                  timespans["30d"].xMin,
+                  timespans["30d"].xMax
                 );
               }}
             >
@@ -285,9 +343,10 @@ export default function MainChart({ data }: { data: any }) {
             <button
               className="bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400 rounded-xl px-2 py-1 mr-2 text-xs font-bold"
               onClick={() => {
+                setTimespan(timespans["180d"]);
                 chartComponent.current?.xAxis[0].setExtremes(
-                  Date.now() - 1000 * 60 * 60 * 24 * 30 * 6,
-                  Date.now()
+                  timespans["180d"].xMin,
+                  timespans["180d"].xMax
                 );
               }}
             >
@@ -296,9 +355,10 @@ export default function MainChart({ data }: { data: any }) {
             <button
               className="bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400 rounded-xl px-2 py-1 mr-2 text-xs font-bold"
               onClick={() => {
+                setTimespan(timespans["365d"]);
                 chartComponent.current?.xAxis[0].setExtremes(
-                  Date.now() - 1000 * 60 * 60 * 24 * 30 * 12,
-                  Date.now()
+                  timespans["365d"].xMin,
+                  timespans["365d"].xMax
                 );
               }}
             >
@@ -306,7 +366,13 @@ export default function MainChart({ data }: { data: any }) {
             </button>
             <button
               className="bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400 rounded-xl px-2 py-1 mr-2 text-xs font-bold"
-              onClick={() => chartComponent.current?.xAxis[0].setExtremes()}
+              onClick={() => {
+                setTimespan(timespans["max"]);
+                chartComponent.current?.xAxis[0].setExtremes(
+                  timespans["max"].xMin,
+                  timespans["max"].xMax
+                );
+              }}
             >
               Max
             </button>
