@@ -2,14 +2,14 @@
 
 import { Switch } from "@/components/Switch";
 import { useEffect, useState } from "react";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { SunIcon } from "@heroicons/react/24/outline";
 import { MoonIcon } from "@heroicons/react/24/solid";
 import { useTheme } from "next-themes";
 
 export default function EthUsdSwitch() {
   const [mounted, setMounted] = useState(false);
-  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
 
   // useEffect only runs on the client, so now we can safely show the UI
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function EthUsdSwitch() {
               className={`block 
                         w-10 h-6
                         rounded-full transition duration-200 ease-in-out ${
-                          showUsd ? "bg-gray-500" : "bg-gray-500/50"
+                          showUsd ? "bg-forest-500" : "bg-forest-500/50"
                         }`}
             ></div>
             <div
@@ -55,7 +55,7 @@ export default function EthUsdSwitch() {
                         w-4
                         h-4
                         rounded-full transition duration-200 ease-in-out
-                        bg-white
+                        bg-white dark:bg-forest-950
                         ${showUsd ? "transform translate-x-full" : ""}
                         rounded-full`}
             ></div>

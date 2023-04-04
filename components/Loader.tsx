@@ -36,7 +36,7 @@ const Loader = () => {
   return (
     <motion.div
       id="main-loader"
-      className="fixed inset-0 flex items-center justify-center dark:bg-forest-900 z-50 w-full h-full"
+      className="fixed inset-0 flex items-center justify-center  z-50 w-full h-full"
       initial={{ opacity: 1 }}
       animate={{
         opacity: 0,
@@ -49,7 +49,7 @@ const Loader = () => {
     >
       <div>
         <motion.div
-          className="animate-bounce rounded-full h-32 w-32 border-8 border-gray-900 dark:border-white"
+          className="animate-bounce rounded-full h-32 w-32 border-8 border-gray-900 "
           initial={{ y: 0 }}
           animate={{ y: 10 }}
           transition={{

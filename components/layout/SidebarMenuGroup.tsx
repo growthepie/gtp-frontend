@@ -4,7 +4,11 @@ import { useEffect, useState, ReactNode } from "react";
 import { Icon } from "@iconify/react";
 import { useMediaQuery } from "@react-hook/media-query";
 import Link from "next/link";
-import { useMetricsData } from "@/context/MetricsProvider";
+import { MasterResponse } from "@/types/api/MasterResponse";
+// import { useMetricsData } from "@/context/MetricsProvider";
+import useSWR from "swr";
+import { usePathname } from "next/navigation";
+import { Tooltip, TooltipTrigger, TooltipContent } from "./Tooltip";
 
 export type SidebarItem = {
   name: string;
@@ -25,27 +29,58 @@ type SidebarProps = {
   item: SidebarItem;
   trigger: ReactNode;
   className?: string;
-  open?: boolean;
+  // open?: boolean;
   onToggle?: () => void;
   onOpen?: () => void;
   onClose?: () => void;
   children?: ReactNode;
+  sidebarOpen?: boolean;
 };
 
 export default function SidebarMenuGroup({
   item,
   trigger,
   className = "",
-  open = false,
+  // open = false,
   onToggle = () => {},
   onOpen = () => {},
   onClose = () => {},
+  sidebarOpen,
 }: SidebarProps) {
-  const [isOpen, setIsOpen] = useState(open);
+  const { data: master } = useSWR<any>(
+    "https://d2cfnw27176mbd.cloudfront.net/v0_2/master.json"
+  );
+
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+
+  const pathname = usePathname();
+
+  // const [first, second] = pathname.slice(1).split("/");
+
+  const [urlParts, setUrlParts] = useState<string[]>(["", ""]);
 
   useEffect(() => {
-    setIsOpen(isOpen);
-  }, [open]);
+    const parts = pathname.slice(1).split("/");
+    switch (parts.length) {
+      case 0:
+        setUrlParts(["", ""]);
+        break;
+      case 1:
+        setUrlParts([parts[0], ""]);
+        break;
+      case 2:
+        setUrlParts([parts[0], parts[1]]);
+        break;
+      default:
+        setUrlParts(parts);
+    }
+  }, [item.name, pathname]);
+
+  useEffect(() => {
+    setIsOpen((isOpen) =>
+      urlParts[0].toLowerCase() == item.name.toLowerCase() ? true : isOpen
+    );
+  }, [urlParts]);
 
   const handleToggle = () => {
     if (isOpen) {
@@ -65,32 +100,19 @@ export default function SidebarMenuGroup({
     onClose();
   };
 
-  const metricsData = useMetricsData();
-
-  const [masterData, setMasterData] = useState<any>(null);
-
-  useEffect(() => {
-    if (
-      metricsData.status === "success" &&
-      Object.keys(metricsData.data).includes("masterData")
-    ) {
-      setMasterData(metricsData.data.masterData);
-    }
-  }, [metricsData]);
-
   if (item.name === "Blockspace")
     return (
       <div className="flex flex-col">
         <div className="flex items-center justify-items-center mb-8 opacity-50">
           <div className="w-6 mx-0">
-            <div className="text-white bg-slate-500 dark:text-black dark:bg-slate-300 rounded-md w-6 mx-auto">
+            <div className="text-white bg-forest-800 rounded-md w-6 mx-auto">
               {item.sidebarIcon}
             </div>
           </div>
           <div className="">
-            <div className="text-sm font-medium mx-8 w-60 flex">
+            <div className="text-sm font-medium mx-4 w-60 flex">
               {item.label}
-              <div className="text-[0.6rem] leading-[1.75] px-1 py-[0.1rem] font-bold ml-2 rounded-[4px] bg-slate-500 dark:bg-slate-300 dark:text-black text-slate-100">
+              <div className="text-[0.6rem] leading-[1.75] px-1 py-[0.1rem] font-bold ml-2 rounded-[4px] bg-forest-800 text-forest-50">
                 SOON
               </div>
             </div>{" "}
@@ -101,17 +123,18 @@ export default function SidebarMenuGroup({
 
   return (
     <div className="flex flex-col">
+      <div className="text-xs"></div>
       <div
         className="flex items-center justify-items-center mb-2 cursor-pointer"
         onClick={handleToggle}
       >
         <div className="w-6 mx-0">
-          <div className="text-white bg-slate-500 dark:text-black dark:bg-slate-300 rounded-md w-6 mx-auto">
+          <div className="text-white bg-forest-800 rounded-md w-6 mx-auto">
             {item.sidebarIcon}
           </div>
         </div>
         <div className={``}>
-          <div className="text-sm font-medium mx-8 w-60">{item.label}</div>
+          <div className="text-sm font-medium mx-4 w-60">{item.label}</div>
         </div>
       </div>
       <div
@@ -119,32 +142,64 @@ export default function SidebarMenuGroup({
           isOpen ? "h-auto" : "h-0"
         }`}
       >
-        {masterData &&
+        {master &&
           item.options
-            .filter(
-              (option) =>
-                item.key &&
-                option.key &&
-                Object.keys(masterData[item.key]).includes(option.key)
+            .filter((option) =>
+              Object.keys(master.metrics).includes(option.key)
             )
-            .map((option) => (
-              <Link
-                key={option.label}
-                className="flex items-center justify-items-center rounded-l-full hover:bg-slate-100/10"
-                href={`${item.label.toLowerCase()}/${option.key?.toLowerCase()}`}
-              >
-                {/* <div className="w-6"> */}
-                <div className="w-6 mx-1 text-slate-500 dark:text-slate-300">
-                  {option.icon}
-                </div>
-                {/* </div> */}
-                <div className="text-sm py-[0.75rem] mx-8 w-60 font-normal break-inside-auto">
-                  {option.label}
-                </div>
-              </Link>
-            ))}
+            .map((option) => {
+              if (!sidebarOpen) {
+                return (
+                  <Tooltip key={option.label} placement="right">
+                    <TooltipTrigger>
+                      <Link
+                        className={`flex items-center justify-items-center rounded-l-full my-[0.25rem] hover:bg-forest-600 relative ${
+                          urlParts[1].trim().localeCompare(option.key) === 0
+                            ? "bg-forest-800 text-forest-100"
+                            : ""
+                        }`}
+                        href={`${item.label.toLowerCase()}/${option.key?.toLowerCase()}`}
+                      >
+                        {/* <div className="w-6"> */}
+                        <div className="w-6 absolute top-1.5 left-0">
+                          {option.icon}
+                        </div>
+                        {/* </div> */}
+                        <div className="text-sm py-1 ml-10 w-36 font-normal break-inside-auto">
+                          {option.label}
+                        </div>
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-forest-900 text-forest-50 rounded-md p-2 text-xs font-medium break-inside-auto -ml-48 shadow-md">
+                      {option.label}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              } else {
+                return (
+                  <Link
+                    key={option.label}
+                    className={`flex items-center justify-items-center rounded-l-full my-[0.25rem] hover:bg-forest-600 relative ${
+                      urlParts[1].trim().localeCompare(option.key) === 0
+                        ? "bg-forest-800 text-forest-100"
+                        : ""
+                    }`}
+                    href={`${item.label.toLowerCase()}/${option.key?.toLowerCase()}`}
+                  >
+                    {/* <div className="w-6"> */}
+                    <div className="w-6 absolute top-1.5 left-0">
+                      {option.icon}
+                    </div>
+                    {/* </div> */}
+                    <div className="text-sm py-1 ml-10 w-36 font-normal break-inside-auto">
+                      {option.label}
+                    </div>
+                  </Link>
+                );
+              }
+            })}
 
-        {/* <div className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-400 dark:bg-slate-400"></div> */}
+        {/* <div className="flex items-center justify-center w-6 h-6 rounded-full bg-forest-400 "></div> */}
       </div>
     </div>
   );

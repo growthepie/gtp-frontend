@@ -41,7 +41,9 @@ export default function DarkModeSwitch() {
               className={`block 
                         w-10 h-6
                         rounded-full transition duration-200 ease-in-out ${
-                          theme === "dark" ? "bg-gray-500" : "bg-gray-500/50"
+                          theme === "dark"
+                            ? "bg-forest-500"
+                            : "bg-forest-500/50"
                         }`}
             ></div>
             <div
@@ -49,7 +51,7 @@ export default function DarkModeSwitch() {
                         w-4
                         h-4
                         rounded-full transition duration-200 ease-in-out
-                        bg-white
+                        bg-white dark:bg-forest-950
                         ${theme === "dark" ? "transform translate-x-full" : ""}
                         rounded-full`}
             ></div>

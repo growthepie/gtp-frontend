@@ -9,6 +9,9 @@ import { useEffect, useState, ReactNode } from "react";
 import { Icon } from "@iconify/react";
 import { useMediaQuery } from "@react-hook/media-query";
 import SidebarMenuGroup from "./SidebarMenuGroup";
+import { MasterResponse } from "@/types/api/MasterResponse";
+import useSWR from "swr";
+import { Router } from "next/router";
 
 export type SidebarItems = {
   name: string;
@@ -40,12 +43,20 @@ export default function Sidebar({
   // items,
   trigger,
   className = "",
-  open = false,
+  open = true,
   onToggle = () => {},
   onOpen = () => {},
   onClose = () => {},
 }: SidebarProps) {
+  const { data: master } = useSWR<MasterResponse>(
+    "https://d2cfnw27176mbd.cloudfront.net/v0_2/master.json"
+  );
+
   const [isOpen, setIsOpen] = useState(open);
+
+  useEffect(() => {
+    setIsOpen(open);
+  }, [open]);
 
   const items: SidebarItems = [
     {
@@ -193,7 +204,7 @@ export default function Sidebar({
   ];
 
   useEffect(() => {
-    setIsOpen(isOpen);
+    setIsOpen((isOpen) => (open ? true : isOpen));
   }, [open]);
 
   const handleToggle = () => {
@@ -216,160 +227,26 @@ export default function Sidebar({
 
   return (
     <div
-      className={`flex flex-col justify-items-start select-none  dark:text-slate-300 ${
-        isOpen ? "w-[13rem]" : "w-[3.5rem]"
+      className={`flex flex-col justify-items-start select-none ${
+        isOpen ? "w-[13rem]" : "w-[2.5rem]"
       } overflow-hidden`}
     >
       {/* trigger that opens the sidebar when clicked */}
-      <div className="text-slate-600 dark:text-slate-100 z-20 mb-6">
+      <div className="text-forest-800 z-20 mb-6">
         <div onClick={handleToggle} className="w-6 h-6">
           {trigger}
         </div>
       </div>
-      <div>
+      <div className="">
         {items.map((item) => (
           <SidebarMenuGroup
             key={item.name + "_item"}
             item={item}
             trigger={trigger}
+            sidebarOpen={isOpen}
           />
         ))}
       </div>
-
-      {/* <div className="flex h-full">
-        <div className="w-8 bg-white dark:bg-black z-20" />
-        <div className="overflow-y-auto">
-          <div className="flex flex-col">
-            <div className="text-slate-400 dark:bg-black dark:text-slate-400 z-20">
-              <div onClick={handleToggle} className="w-6 mx-auto">
-                {trigger}
-              </div>
-            </div>
-            <div className={`transition-width ${isOpen ? "w-40" : "w-8"}`}>
-              test
-            </div>
-            {items.map((item) => (
-              <div key={item.name + "_item"}> */}
-      {/* <div className="flex items-center">
-                  <div className="w-[2.25rem] pl-[0.5rem] p-3 bg-white dark:bg-black z-20">
-                    <div className="text-white bg-slate-400 dark:text-black dark:bg-slate-400 rounded-md w-6 mx-auto">
-                      {item.sidebarIcon}
-                    </div>
-                  </div>
-                  <div
-                    className={`-left-[6.5rem] absolute ${
-                      isOpen
-                        ? "transition-transform ease-in-out duration-300 transform translate-x-[10.75rem]"
-                        : "transition-transform ease-in-out duration-300 transform translate-x-0"
-                    } w-[10.75rem] bg-white dark:bg-black z-10 `}
-                  >
-                    <div className="text-sm font-medium py-3 px-2 w-[10.75rem] z-10 bg-white dark:bg-black">
-                      {item.label}
-                    </div>
-                  </div>
-                </div>
-                {item.options.map((option) => (
-                  <div
-                    key={option.label + "_opt"}
-                    className="flex items-center"
-                  >
-                    <div className="w-[2.25rem] p-3 bg-white text-slate-400 dark:bg-black dark:text-slate-400 z-20 rounded-l-full">
-                      {option.icon != null ? (
-                        option.icon
-                      ) : (
-                        <Icon icon="bxl:react" className="h-4 w-4 mx-auto" />
-                      )}
-                    </div>
-
-                    <div
-                      className={`-left-[6.5rem] absolute ${
-                        isOpen
-                          ? "transition-transform ease-in-out duration-300 transform translate-x-[10.75rem]"
-                          : "transition-transform ease-in-out duration-300 transform translate-x-0"
-                      } w-[10.75rem] bg-white dark:bg-black z-10 `}
-
-                      // onClick={() => {
-                      // 	setSelectedFilter({
-                      // 		name: filter.name,
-                      // 	});
-                      // 	setSelectedFilterOption(option);
-                      // }}
-                    >
-                      <div className="text-sm font-normal py-3 px-2  w-[10.75rem] z-10 bg-white dark:bg-black">
-                        {option.label}
-                      </div>
-                    </div>
-                  </div>
-                ))} */}
-      {/* </div>
-            ))} */}
-      {/* {items.map((item) => (
-              <div key={item.name + "_item"}>
-                <div className="flex items-center">
-                  <div className="w-[2.25rem] pl-[0.5rem] p-3 bg-white dark:bg-black z-20">
-                    <div className="text-white bg-slate-400 dark:text-black dark:bg-slate-400 rounded-md w-6 mx-auto">
-                      {item.sidebarIcon}
-                    </div>
-                  </div>
-                  <div
-                    className={`-left-[6.5rem] absolute ${
-                      isOpen
-                        ? "transition-transform ease-in-out duration-300 transform translate-x-[10.75rem]"
-                        : "transition-transform ease-in-out duration-300 transform translate-x-0"
-                    } w-[10.75rem] bg-white dark:bg-black z-10 `}
-                  >
-                    <div className="text-sm font-medium py-3 px-2 w-[10.75rem] z-10 bg-white dark:bg-black">
-                      {item.label}
-                    </div>
-                  </div>
-                </div>
-                {item.options.map((option) => (
-                  <div
-                    key={option.label + "_opt"}
-                    className="flex items-center"
-                  >
-                    <div className="w-[2.25rem] p-3 bg-white text-slate-400 dark:bg-black dark:text-slate-400 z-20 rounded-l-full">
-                      {option.icon != null ? (
-                        option.icon
-                      ) : (
-                        <Icon icon="bxl:react" className="h-4 w-4 mx-auto" />
-                      )}
-                    </div>
-
-                    <div
-                      className={`-left-[6.5rem] absolute ${
-                        isOpen
-                          ? "transition-transform ease-in-out duration-300 transform translate-x-[10.75rem]"
-                          : "transition-transform ease-in-out duration-300 transform translate-x-0"
-                      } w-[10.75rem] bg-white dark:bg-black z-10 `}
-
-                      // onClick={() => {
-                      // 	setSelectedFilter({
-                      // 		name: filter.name,
-                      // 	});
-                      // 	setSelectedFilterOption(option);
-                      // }}
-                    >
-                      <div className="text-sm font-normal py-3 px-2  w-[10.75rem] z-10 bg-white dark:bg-black">
-                        {option.label}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))} */}
-      {/* </div>
-        </div>
-        <div className="w-1 flex ml-3">
-          <div
-            className={`flex-1 bg-gray-100 dark:bg-gray-100 ${
-              isOpen
-                ? "transition-transform ease-in-out duration-300 transform translate-x-[10rem]"
-                : "transition-transform ease-in-out duration-300 transform translate-x-0"
-            }`}
-          ></div>
-        </div>
-      </div> */}
     </div>
   );
 }

@@ -5,7 +5,7 @@ import Highcharts, { chart } from "highcharts";
 import highchartsAnnotations from "highcharts/modules/annotations";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Card } from "@/components/Card";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
 import { zinc, red, blue, amber, purple } from "@twind/preset-tailwind/colors";
@@ -120,6 +120,7 @@ const baseOptions: Highcharts.Options = {
         radius: 0,
         symbol: "circle",
       },
+      animation: false,
     },
   },
 
@@ -133,15 +134,57 @@ const baseOptions: Highcharts.Options = {
   },
 };
 
+const timespans = {
+  "30d": {
+    label: "30d",
+    value: 30,
+    xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
+    xMax: Date.now(),
+  },
+  "90d": {
+    label: "90d",
+    value: 90,
+    xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
+    xMax: Date.now(),
+  },
+  "180d": {
+    label: "180d",
+    value: 180,
+    xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
+    xMax: Date.now(),
+  },
+  "365d": {
+    label: "1y",
+    value: 365,
+    xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
+    xMax: Date.now(),
+  },
+  max: {
+    label: "Max",
+    value: 0,
+    xMin: Date.parse("2020-09-28"),
+    xMax: Date.now(),
+  },
+};
+
 type MainChartProps = {
   data: {
     name: string;
     data: any;
     types: any[];
   };
+  dataKeys: string[];
 };
 
-export default function ComparisonChart({ data }: { data: any }) {
+export default function ComparisonChart({
+  data,
+  timeIntervals,
+  onTimeIntervalChange,
+}: {
+  data: any;
+  timeIntervals: string[];
+  onTimeIntervalChange: (interval: string) => void;
+}) {
   // const [data, setData] = useLocalStorage('data', null);
   // const [options, setOptions] = useState<HighchartsReact.Props['options']>(
 
@@ -160,42 +203,26 @@ export default function ComparisonChart({ data }: { data: any }) {
   // const [darkMode, setDarkMode] = useLocalStorage("darkMode", true);
   const { theme } = useTheme();
 
-  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
 
-  const timespans = {
-    "30d": {
-      label: "30d",
-      value: 30,
-      xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
-      xMax: Date.now(),
-    },
-    "90d": {
-      label: "90d",
-      value: 90,
-      xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
-      xMax: Date.now(),
-    },
-    "180d": {
-      label: "180d",
-      value: 180,
-      xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
-      xMax: Date.now(),
-    },
-    "365d": {
-      label: "1y",
-      value: 365,
-      xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
-      xMax: Date.now(),
-    },
-    max: {
-      label: "Max",
-      value: 0,
-      xMin: Date.now() - 5 * 365 * 24 * 60 * 60 * 1000,
-      xMax: Date.now(),
-    },
-  };
+  const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
+    "selectedTimespan",
+    "30d"
+  );
 
-  const [timespan, setTimespan] = useLocalStorage("timespan", timespans.max);
+  const [selectedScale, setSelectedScale] = useSessionStorage(
+    "selectedScale",
+    "linear"
+  );
+
+  const [selectedTimeInterval, setSelectedTimeInterval] = useSessionStorage(
+    "selectedTimeInterval",
+    "daily"
+  );
+
+  // const [timeIntervals, setTimeIntervals] = useState<any>([]);
+
+  // const [timespan, setTimespan] = useLocalStorage("timespan", timespans.max);
 
   const colors: { [key: string]: string[] } = useMemo(() => {
     if (theme === "dark") {
@@ -248,8 +275,8 @@ export default function ComparisonChart({ data }: { data: any }) {
         enabled: false,
       },
       xAxis: {
-        min: timespan.xMin,
-        max: timespan.xMax,
+        min: timespans[selectedTimespan].xMin,
+        max: timespans[selectedTimespan].xMax,
       },
       series: data.map((series: any) => ({
         name: series.name,
@@ -300,178 +327,213 @@ export default function ComparisonChart({ data }: { data: any }) {
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
 
+  useEffect(() => {
+    if (chartComponent.current) {
+      chartComponent.current.xAxis[0].setExtremes(
+        timespans[selectedTimespan].xMin,
+        timespans[selectedTimespan].xMax
+      );
+    }
+  }, [selectedTimespan, chartComponent]);
+
+  useEffect(() => {
+    if (chartComponent.current) {
+      switch (selectedScale) {
+        case "absolute":
+          chartComponent.current?.update({
+            plotOptions: {
+              series: {
+                stacking: "normal",
+              },
+            },
+            yAxis: {
+              type: "linear",
+            },
+            tooltip: {
+              pointFormat:
+                '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
+            },
+            series: data.map((series: any) => ({
+              ...series,
+              type: "spline",
+            })),
+          });
+          break;
+        case "log":
+          chartComponent.current?.update({
+            chart: {
+              type: "spline",
+            },
+            plotOptions: {
+              series: {
+                stacking: "normal",
+              },
+            },
+            yAxis: {
+              type: "logarithmic",
+            },
+            tooltip: {
+              pointFormat:
+                '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
+            },
+            series: data.map((series: any) => ({
+              ...series,
+              type: "spline",
+            })),
+          });
+          break;
+        case "percentage":
+          chartComponent.current?.update({
+            chart: {
+              type: "area",
+            },
+            plotOptions: {
+              area: {
+                stacking: "percent",
+                marker: {
+                  enabled: false,
+                },
+              },
+            },
+            yAxis: {
+              type: "linear",
+            },
+            tooltip: {
+              pointFormat:
+                '<span style="color:{series.color}">{series.name}</span>: <b>{point.percentage:.1f}%</b><br/>',
+            },
+            series: data.map((series: any) => ({
+              ...series,
+              type: "area",
+            })),
+          });
+          break;
+        default:
+          break;
+      }
+    }
+  }, [selectedScale, chartComponent]);
+
+  useEffect(() => {
+    if (chartComponent.current) {
+      chartComponent.current.reflow();
+    }
+  }, [chartComponent, data]);
+
   const toggleFullScreen = () => {
     // @ts-ignore
     chartComponent.current?.chart?.fullScreen.toggle();
   };
 
   return (
-    <div className="w-full">
-      <div className="w-full h-[26rem] relative">
-        <div className="absolute w-full h-96">
-          <HighchartsReact
-            highcharts={Highcharts}
-            options={options}
-            ref={(chart) => {
-              chartComponent.current = chart?.chart;
-            }}
-
-            // immutable={true}
-            // oneToOne={true}
-            // callBack={(chart) => {
-            // 	setChart(chart);
-            // }}
-          />
+    <div className="w-full my-16 relative">
+      <div className="flex w-full justify-between items-center absolute -top-10 left-0">
+        <div className="flex justify-center items-center">
+          {timeIntervals.map((timeInterval) => (
+            <button
+              key={timeInterval}
+              className={`rounded-full px-3 py-1.5 mr-2 text-sm font-medium capitalize ${
+                selectedTimeInterval === timeInterval
+                  ? "bg-forest-800 text-forest-50"
+                  : ""
+              }`}
+              onClick={() => {
+                onTimeIntervalChange(timeInterval);
+                // chartComponent.current?.xAxis[0].setExtremes(
+                //   timespans[timespan].xMin,
+                //   timespans[timespan].xMax
+                // );
+              }}
+            >
+              {timeInterval}
+            </button>
+          ))}
+        </div>
+        <div className="flex justify-center items-center">
+          {Object.keys(timespans).map((timespan) => (
+            <button
+              key={timespan}
+              className={`rounded-full px-3 py-1.5 mr-2 text-sm font-medium ${
+                selectedTimespan === timespan
+                  ? "bg-forest-800 text-forest-50"
+                  : ""
+              }`}
+              onClick={() => {
+                setSelectedTimespan(timespan);
+                // chartComponent.current?.xAxis[0].setExtremes(
+                //   timespans[timespan].xMin,
+                //   timespans[timespan].xMax
+                // );
+              }}
+            >
+              {timespans[timespan].label}
+            </button>
+          ))}
         </div>
       </div>
-      {chartComponent.current && (
-        <div className="flex justify-between items-center">
-          {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
-          <div className="flex justify-center items-center">
-            <button
-              className="bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400 rounded-xl px-2 py-1 mr-2 text-xs font-bold"
-              onClick={() => {
-                setTimespan(timespans["30d"]);
-                chartComponent.current?.xAxis[0].setExtremes(
-                  timespans["30d"].xMin,
-                  timespans["30d"].xMax
-                );
+      <div className="w-full p-4 rounded-xl bg-forest-500/5">
+        <div className="w-full h-[26rem] relative rounded-xl">
+          <div className="absolute w-full h-[24rem] top-4">
+            <HighchartsReact
+              highcharts={Highcharts}
+              options={options}
+              ref={(chart) => {
+                chartComponent.current = chart?.chart;
               }}
-            >
-              30d
-            </button>
-            <button
-              className="bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400 rounded-xl px-2 py-1 mr-2 text-xs font-bold"
-              onClick={() => {
-                setTimespan(timespans["180d"]);
-                chartComponent.current?.xAxis[0].setExtremes(
-                  timespans["180d"].xMin,
-                  timespans["180d"].xMax
-                );
-              }}
-            >
-              6m
-            </button>
-            <button
-              className="bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400 rounded-xl px-2 py-1 mr-2 text-xs font-bold"
-              onClick={() => {
-                setTimespan(timespans["365d"]);
-                chartComponent.current?.xAxis[0].setExtremes(
-                  timespans["365d"].xMin,
-                  timespans["365d"].xMax
-                );
-              }}
-            >
-              1y
-            </button>
-            <button
-              className="bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400 rounded-xl px-2 py-1 mr-2 text-xs font-bold"
-              onClick={() => {
-                setTimespan(timespans["max"]);
-                chartComponent.current?.xAxis[0].setExtremes(
-                  timespans["max"].xMin,
-                  timespans["max"].xMax
-                );
-              }}
-            >
-              Max
-            </button>
-          </div>
-          <div className="flex justify-center items-center">
-            <button
-              className="bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400 rounded-xl px-2 py-1 mr-2 text-xs font-bold"
-              onClick={() => {
-                chartComponent.current?.update({
-                  plotOptions: {
-                    series: {
-                      stacking: "normal",
-                    },
-                  },
-                  yAxis: {
-                    type: "linear",
-                  },
-                  tooltip: {
-                    pointFormat:
-                      '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
-                  },
-                  series: data.map((series: any) => ({
-                    ...series,
-                    type: "spline",
-                  })),
-                });
-              }}
-            >
-              <span className=" font-bold text-[0.6rem] font-mono mr-0.5">
-                {"<>"}
-              </span>
-              Absolute
-            </button>
-            <button
-              className="bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400 rounded-xl px-2 py-1 mr-2 text-xs font-bold"
-              onClick={() => {
-                chartComponent.current?.update({
-                  chart: {
-                    type: "spline",
-                  },
-                  plotOptions: {
-                    series: {
-                      stacking: "normal",
-                    },
-                  },
-                  yAxis: {
-                    type: "logarithmic",
-                  },
-                  tooltip: {
-                    pointFormat:
-                      '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
-                  },
-                  series: data.map((series: any) => ({
-                    ...series,
-                    type: "spline",
-                  })),
-                });
-              }}
-            >
-              <ArrowTrendingUpIcon className="w-3 h-3 font-bold inline-block mr-0.5" />
-              Log
-            </button>
-            <button
-              className="bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400 rounded-xl px-2 py-1 mr-2 text-xs font-bold"
-              onClick={() =>
-                chartComponent.current?.update({
-                  chart: {
-                    type: "area",
-                  },
-                  plotOptions: {
-                    // series: {
-                    // 	stacking: 'percent',
-                    // },
-                    area: {
-                      stacking: "percent",
-                      marker: {
-                        enabled: false,
-                      },
-                    },
-                  },
-                  yAxis: {
-                    type: "linear",
-                  },
-                  tooltip: {
-                    pointFormat:
-                      '<span style="color:{series.color}">{series.name}</span>: <b>{point.percentage:.1f}%</b><br/>',
-                  },
-                  series: data.map((series: any) => ({
-                    ...series,
-                    type: "area",
-                  })),
-                })
-              }
-            >
-              <span className="font-bold text-[0.6rem]">%</span> Percentage
-            </button>
+
+              // immutable={true}
+              // oneToOne={true}
+              // callBack={(chart) => {
+              // 	setChart(chart);
+              // }}
+            />
           </div>
         </div>
-      )}
+      </div>
+      <div className="flex justify-end items-center absolute -bottom-10 -right-2">
+        {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
+
+        <div className="flex justify-center items-center">
+          <button
+            className={`rounded-full px-2 py-1 mr-2 text-xs font-bold ${
+              "absolute" === selectedScale ? "bg-forest-800 text-forest-50" : ""
+            }`}
+            onClick={() => {
+              setSelectedScale("log" === selectedScale ? "absolute" : "log");
+            }}
+          >
+            <span className=" font-bold text-[0.6rem] font-mono mr-0.5">
+              {"<>"}
+            </span>
+            Absolute
+          </button>
+          <button
+            className={`rounded-full px-2 py-1 mr-2 text-xs font-bold ${
+              "log" === selectedScale ? "bg-forest-800 text-forest-50" : ""
+            }`}
+            onClick={() => {
+              setSelectedScale("log" === selectedScale ? "absolute" : "log");
+            }}
+          >
+            <ArrowTrendingUpIcon className="w-3 h-3 font-bold inline-block mr-0.5" />
+            Log
+          </button>
+          <button
+            className={`rounded-full px-2 py-1 mr-2 text-xs font-bold ${
+              "percentage" === selectedScale
+                ? "bg-forest-800 text-forest-50"
+                : ""
+            }`}
+            onClick={() => {
+              setSelectedScale(
+                "percentage" === selectedScale ? "absolute" : "percentage"
+              );
+            }}
+          >
+            <span className="font-bold text-[0.6rem]">%</span> Percentage
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

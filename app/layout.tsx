@@ -2,7 +2,7 @@
 // import config from "../twind.config";
 // import { useEffect, useState } from "react";
 "use client";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import DarkModeSwitch from "@/components/layout/DarkModeSwitch";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -24,6 +24,14 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const isLargeScreen = useMediaQuery("(min-width: 768px)");
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    setIsSidebarOpen(isLargeScreen);
+  }, [isLargeScreen]);
+
   return (
     <html lang="en" suppressHydrationWarning>
       {/*
@@ -31,25 +39,26 @@ export default function RootLayout({
         head.tsx. Find out more at https://beta.nextjs.org/docs/api-reference/file-conventions/head
       */}
       <head />
-      <body className="bg-white text-black dark:bg-forest-850 dark:text-white">
+      <body className="bg-forest-50/30 dark:bg-forest-800 text-forest-900">
         {/* large centered loading animation */}
         {/* <div
             id="main-loader"
             className="fixed inset-0 flex items-center justify-center"
           >
-            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900 dark:border-white"></div>
+            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900 "></div>
           </div> */}
-
         {/* <div className="min-h-screen max-full mx-auto p-4 sm:p-6 lg:p-8"> */}
         <Providers>
+          {/* <button className="bg-blue-100 w-full">s</button> */}
           <div className="flex justify-between h-fit w-full">
-            <div className="pt-16 pl-8 bg-slate-100 dark:bg-forest-900 border-slate-400  mix-h-screen max-h-full">
+            <div className="pt-16 pl-4 bg-forest-100 dark:bg-forest-900 border-forest-400 mix-h-screen max-h-full hidden md:block">
               <Sidebar
                 trigger={
                   <button className="flex items-center space-x-2">
                     <Bars3Icon className="h-6 w-6" />
                   </button>
                 }
+                open={isSidebarOpen}
               />
             </div>
             <div id="main" className="min-h-screen flex flex-col flex-1 p-8">
@@ -78,7 +87,7 @@ export default function RootLayout({
               <main>{children}</main>
             </div>
           </div>
-          <Loader />
+          {/* <Loader /> */}
         </Providers>
       </body>
     </html>

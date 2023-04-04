@@ -272,7 +272,7 @@ export default function MainChart({ data }: { data: any }) {
           {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
           <div className="flex justify-center items-center">
             <button
-              className="bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400 rounded-xl px-2 py-1 mr-2 text-xs font-bold"
+              className="bg-zinc-100 text-zinc-600   rounded-xl px-2 py-1 mr-2 text-xs font-bold"
               onClick={() => {
                 chartComponent.current?.xAxis[0].setExtremes(
                   Date.now() - 1000 * 60 * 60 * 24 * 30,
@@ -283,7 +283,7 @@ export default function MainChart({ data }: { data: any }) {
               30d
             </button>
             <button
-              className="bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400 rounded-xl px-2 py-1 mr-2 text-xs font-bold"
+              className="bg-zinc-100 text-zinc-600   rounded-xl px-2 py-1 mr-2 text-xs font-bold"
               onClick={() => {
                 chartComponent.current?.xAxis[0].setExtremes(
                   Date.now() - 1000 * 60 * 60 * 24 * 30 * 6,
@@ -294,7 +294,7 @@ export default function MainChart({ data }: { data: any }) {
               6m
             </button>
             <button
-              className="bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400 rounded-xl px-2 py-1 mr-2 text-xs font-bold"
+              className="bg-zinc-100 text-zinc-600   rounded-xl px-2 py-1 mr-2 text-xs font-bold"
               onClick={() => {
                 chartComponent.current?.xAxis[0].setExtremes(
                   Date.now() - 1000 * 60 * 60 * 24 * 30 * 12,
@@ -305,7 +305,7 @@ export default function MainChart({ data }: { data: any }) {
               1y
             </button>
             <button
-              className="bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400 rounded-xl px-2 py-1 mr-2 text-xs font-bold"
+              className="bg-zinc-100 text-zinc-600   rounded-xl px-2 py-1 mr-2 text-xs font-bold"
               onClick={() => chartComponent.current?.xAxis[0].setExtremes()}
             >
               Max
@@ -313,7 +313,7 @@ export default function MainChart({ data }: { data: any }) {
           </div>
           <div className="flex justify-center items-center">
             <button
-              className="bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400 rounded-xl px-2 py-1 mr-2 text-xs font-bold"
+              className="bg-zinc-100 text-zinc-600   rounded-xl px-2 py-1 mr-2 text-xs font-bold"
               onClick={() => {
                 chartComponent.current?.update({
                   plotOptions: {
@@ -341,7 +341,7 @@ export default function MainChart({ data }: { data: any }) {
               Absolute
             </button>
             <button
-              className="bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400 rounded-xl px-2 py-1 mr-2 text-xs font-bold"
+              className="bg-zinc-100 text-zinc-600   rounded-xl px-2 py-1 mr-2 text-xs font-bold"
               onClick={() => {
                 chartComponent.current?.update({
                   chart: {
@@ -370,7 +370,7 @@ export default function MainChart({ data }: { data: any }) {
               Log
             </button>
             <button
-              className="bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400 rounded-xl px-2 py-1 mr-2 text-xs font-bold"
+              className="bg-zinc-100 text-zinc-600   rounded-xl px-2 py-1 mr-2 text-xs font-bold"
               onClick={() =>
                 chartComponent.current?.update({
                   chart: {
