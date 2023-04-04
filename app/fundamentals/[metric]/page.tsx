@@ -7,7 +7,7 @@ import { TxCountMetricsResponse } from "@/types/api/TxCountMetricsResponse";
 import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
 import MainChart from "@/components/home/MainChart";
-import ComparisonChart from "@/components/home/ComparisonChart";
+import ComparisonChart from "@/components/layout/ComparisonChart";
 import Image from "next/image";
 import {
   ArrowDownIcon,

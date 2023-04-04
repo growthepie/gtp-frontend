@@ -23,7 +23,7 @@ import Sidebar, { SidebarItems } from "@/components/layout/Sidebar";
 import { useMediaQuery } from "@react-hook/media-query";
 import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
-import ComparisonChart from "@/components/home/ComparisonChart";
+import ComparisonChart from "@/components/layout/ComparisonChart";
 import useSWR from "swr";
 import { DAAMetricsResponse } from "@/types/api/DAAMetricsResponse";
 import { MasterResponse } from "@/types/api/MasterResponse";
