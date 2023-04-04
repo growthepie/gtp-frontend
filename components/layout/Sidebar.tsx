@@ -119,8 +119,8 @@ export default function Sidebar({
       ],
     },
     {
-      name: "Single Chain",
-      label: "Single Chain",
+      name: "chains",
+      label: "chains",
       key: "chains",
       icon: <LinkIcon className="h-5 w-5" />,
       sidebarIcon: <LinkIcon className="h-6 w-6 mx-auto" />,
