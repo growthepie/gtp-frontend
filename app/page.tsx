@@ -132,7 +132,7 @@ export default function Home() {
               Compare Ethereum&apos;s Layer-2 solutions and better understand
               the metrics to grow the ecosystem.
             </Subheading>
-            <Heading className="text-lg md:text-xl lg:text-2xl xl:text-3xl mt-8">
+            <Heading className="text-lg md:text-xl lg:text-2xl xl:text-3xl mt-8 mb-4">
               Cross-Chain Users 🥧
             </Heading>
             <div className="flex-1">

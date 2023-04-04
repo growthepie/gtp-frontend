@@ -15,7 +15,7 @@ const MetricsTable = ({
   setSelectedChains: any;
   metric: string;
 }) => {
-  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
 
   const [maxVal, setMaxVal] = useState(0);
 
@@ -40,7 +40,7 @@ const MetricsTable = ({
 
   return (
     <>
-      <div className="flex flex-col space-y-3">
+      <div className="flex flex-col space-y-3 mt-12">
         <div className="flex items-center cursor-pointer py-1 pl-2 pr-4 rounded-full text-sm font-medium">
           <div className="ml-10 w-[80px]">Chain</div>
           <div className="w-[80px]">{metric}</div>
@@ -58,7 +58,7 @@ const MetricsTable = ({
             key={chain.key}
             className={`flex items-center space-x-2 cursor-pointer py-1 pl-2 pr-4 rounded-full text-sm font-[400] ${
               selectedChains.includes(chain.key)
-                ? " hover:bg-blue-100 "
+                ? " hover:bg-forest-50 "
                 : "hover:bg-gray-100  opacity-50 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-100"
             }`}
             onClick={() => {
@@ -88,9 +88,9 @@ const MetricsTable = ({
             <div className="flex flex-1 align-middle items-center">
               <div className="w-[80px] relative">
                 {chain.label}
-                <div className="absolute -bottom-[3px] left-0 w-[75px] h-0.5 bg-forest-50 rounded-sm"></div>
+                <div className="absolute -bottom-[4px] left-0 w-[75px] h-1 bg-forest-50 rounded-md"></div>
                 <div
-                  className={`absolute -bottom-[3px] left-0 h-0.5 bg-green-500 rounded-sm`}
+                  className={`absolute -bottom-[4px] left-0 h-1 bg-green-500 rounded-md`}
                   style={{
                     width: `${
                       (data[chain.key].daily.data[
@@ -103,19 +103,36 @@ const MetricsTable = ({
                 ></div>
               </div>
               {/* <div className="flex flex-1 align-middle items-center"> */}
-              <div className="w-[80px]">
-                {Intl.NumberFormat("en-US", {
-                  notation: "compact",
-                  maximumFractionDigits: 1,
-                }).format(
-                  data[chain.key].daily.data[
-                    data[chain.key].daily.data.length - 1
-                  ][
-                    !showUsd && data[chain.key].daily.types.includes("usd")
-                      ? 2
-                      : 1
-                  ]
+              <div className="w-[80px] flex">
+                {data[chain.key].daily.types.includes("usd") && showUsd ? (
+                  <div className="opacity-60">$</div>
+                ) : (
+                  <div className="opacity-60">Ξ</div>
                 )}
+                {data[chain.key].daily.types.includes("usd")
+                  ? Intl.NumberFormat("en-US", {
+                      notation: "compact",
+                      maximumFractionDigits: 1,
+                    }).format(
+                      data[chain.key].daily.data[
+                        data[chain.key].daily.data.length - 1
+                      ][
+                        !showUsd && data[chain.key].daily.types.includes("usd")
+                          ? 2
+                          : 1
+                      ]
+                    )
+                  : Intl.NumberFormat("en-US", {
+                      notation: "compact",
+                      maximumFractionDigits: 1,
+                    }).format(
+                      data[chain.key].daily.data[
+                        data[chain.key].daily.data.length - 1
+                      ][1]
+                    )}
+                {/* {data[chain.key].daily.types.includes("eth") && !showUsd && (
+                  <div className="ml-1">ETH</div>
+                )} */}
               </div>
               {["1d", "7d", "30d", "365d"].map((timespan) => (
                 <div

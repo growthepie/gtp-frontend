@@ -426,7 +426,7 @@ export default function ComparisonChart({
   };
 
   return (
-    <div className="w-full my-16 relative">
+    <div className="w-full my-12 relative">
       <div className="flex w-full justify-between items-center absolute -top-10 left-0">
         <div className="flex justify-center items-center">
           {timeIntervals.map((timeInterval) => (
@@ -471,7 +471,7 @@ export default function ComparisonChart({
           ))}
         </div>
       </div>
-      <div className="w-full p-4 rounded-xl bg-forest-500/5">
+      <div className="w-full p-4 rounded-xl bg-forest-50">
         <div className="w-full h-[26rem] relative rounded-xl">
           <div className="absolute w-full h-[24rem] top-4">
             <HighchartsReact
