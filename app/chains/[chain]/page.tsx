@@ -18,8 +18,8 @@ const Chain = ({ params }: { params: any }) => {
           <Heading className="">Chain Ex</Heading> 
         </div>
         <div className="flex gap-x-10 h-10">
-          <button className="font-semibold text-white dark:bg-gray-900 bg-blue-600 px-10 py-0 rounded-full w-168px">Block Explorer</button>
-          <button className="font-semibold text-white dark:bg-gray-900 bg-blue-600 px-10 rounded-full w-120px">Website</button>
+          <button className="font-semibold text-white dark:bg-pie-500 bg-blue-600 px-10 py-0 rounded-full w-168px">Block Explorer</button>
+          <button className="font-semibold text-white dark:bg-pie-500 bg-blue-600 px-10 rounded-full w-120px">Website</button>
         </div>
       </div>
 
@@ -41,20 +41,24 @@ const Chain = ({ params }: { params: any }) => {
 
 
       {/*Metric Title Grid*/}
-      <div className="w-3/4 grid grid-cols-2 gap-x-6 gap-y-8 pt-8 px-14 mx-auto justify-evenly justify-center content-evenly items-center">
-          <div className="dark:bg-gray-900 bg-blue-600 rounded-xl h-72">
-              <h1>{metricTitle}</h1>
-          </div>
-          <div className="dark:bg-gray-900 bg-blue-600 rounded-xl h-72">
+      <div className="flex-col gap-y-4 pt-8">
+        <div className="flex gap-x-6 justify-center items-center">
+          <div className="dark:bg-pie-500 bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
               <p>test</p>
           </div>
-          <div className="dark:bg-gray-900 bg-blue-600 rounded-xl h-72">
+          <div className="dark:bg-pie-500 bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
               <p>test</p>
           </div>
-          <div className="dark:bg-gray-900 bg-blue-600 rounded-xl h-72">
+        </div>
+        <div className="flex gap-x-6 justify-center items-center pt-8">
+          <div className="dark:bg-pie-500 bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
+              <p>test</p>
+          </div>
+          <div className="dark:bg-pie-500 bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
               <p>test</p>            
           </div>
           {/*Generate cards in here in future*/}
+        </div>
       </div>
 
     </div>
