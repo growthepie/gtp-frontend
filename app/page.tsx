@@ -61,16 +61,19 @@ export default function Home() {
     if (!daa) return [];
 
     if (selectedFilter.name === "Fundamentals")
-      return AllChains.filter((chain) =>
-        Object.keys(daa.data.chains).includes(chain.key)
+      return AllChains.filter(
+        (chain) =>
+          Object.keys(daa.data.chains).includes(chain.key) &&
+          chain.key != "ethereum"
       );
 
-    return AllChains.filter((chain) =>
-      Object.keys(daa.data[selectedFilterOption.rootKey].data).includes(
-        chain.key
-      )
+    return AllChains.filter(
+      (chain) =>
+        Object.keys(daa.data[selectedFilterOption.rootKey].data).includes(
+          chain.key
+        ) && chain.key != "ethereum"
     );
-  }, [AllChains, daa, selectedFilter, selectedFilterOption]);
+  }, [daa, selectedFilter, selectedFilterOption]);
 
   const [selectedChains, setSelectedChains] = useState(
     AllChains.map((chain) => chain.key)
@@ -122,6 +125,7 @@ export default function Home() {
                 onTimeIntervalChange={(timeInterval) =>
                   setSelectedTimeInterval(timeInterval)
                 }
+                showTimeIntervals={false}
               />
             </div>
             <MetricsTable
