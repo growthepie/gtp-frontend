@@ -9,6 +9,8 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import useSWR from "swr";
 import { usePathname } from "next/navigation";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./Tooltip";
+import { AllChains } from "@/lib/chains";
+import Image from "next/image";
 
 export type SidebarItem = {
   name: string;
@@ -105,14 +107,14 @@ export default function SidebarMenuGroup({
       <div className="flex flex-col">
         <div className="flex items-center justify-items-center mb-8 opacity-50">
           <div className="w-6 mx-0">
-            <div className="text-white bg-forest-800 rounded-md w-6 mx-auto">
+            <div className="text-white bg-forest-900 rounded-md w-6 mx-auto">
               {item.sidebarIcon}
             </div>
           </div>
           <div className="">
             <div className="text-sm font-medium mx-4 w-60 flex">
               {item.label}
-              <div className="text-[0.6rem] leading-[1.75] px-1 py-[0.1rem] font-bold ml-2 rounded-[4px] bg-forest-800 text-forest-50">
+              <div className="text-[0.6rem] leading-[1.75] px-1 py-[0.1rem] font-bold ml-2 rounded-[4px] bg-forest-900 text-forest-50">
                 SOON
               </div>
             </div>{" "}
@@ -132,7 +134,7 @@ export default function SidebarMenuGroup({
           href="https://growthepie.gitbook.io/introduction/"
         >
           <div className="w-6 mx-0">
-            <div className="text-white bg-forest-800 rounded-md w-6 mx-auto">
+            <div className="text-white bg-forest-900 rounded-md w-6 mx-auto">
               {item.sidebarIcon}
             </div>
           </div>
@@ -153,7 +155,7 @@ export default function SidebarMenuGroup({
         onClick={handleToggle}
       >
         <div className="w-6 mx-0">
-          <div className="text-white bg-forest-800 rounded-md w-6 mx-auto">
+          <div className="text-white bg-forest-900 rounded-md w-6 mx-auto">
             {item.sidebarIcon}
           </div>
         </div>
@@ -177,16 +179,27 @@ export default function SidebarMenuGroup({
                   <Tooltip key={option.label} placement="right">
                     <TooltipTrigger>
                       <Link
-                        className={`flex items-center justify-items-center rounded-l-full my-[0.25rem] hover:bg-forest-600 relative ${
+                        className={`flex items-center justify-items-center rounded-l-full my-[0.25rem]  relative ${
                           urlParts[1].trim().localeCompare(option.key) === 0
-                            ? "bg-forest-800 text-forest-100"
-                            : ""
+                            ? "bg-forest-900 text-forest-50 hover:bg-forest-700 hover:text-forest-50"
+                            : "hover:bg-forest-200 hover:text-forest-900"
                         }`}
                         href={`/${item.label.toLowerCase()}/${option.key?.toLowerCase()}`}
                       >
                         {/* <div className="w-6"> */}
                         <div className="w-6 absolute top-1.5 left-0">
-                          {option.icon}
+                          {item.name === "Fundamentals" && option.icon}
+                          {item.name === "Chains" && (
+                            <Image
+                              src={
+                                AllChains.find((c) => c.key == option.key)?.icon
+                              }
+                              width="16"
+                              height="16"
+                              alt={item.key}
+                              className="ml-0.5 saturate-0 contrast-200 invert"
+                            />
+                          )}
                         </div>
                         {/* </div> */}
                         <div className="text-sm py-1 ml-10 w-40 font-normal break-inside-auto">
@@ -203,16 +216,25 @@ export default function SidebarMenuGroup({
                 return (
                   <Link
                     key={option.label}
-                    className={`flex items-center justify-items-center rounded-l-full my-[0.25rem] hover:bg-forest-600 relative ${
+                    className={`flex items-center justify-items-center rounded-l-full my-[0.25rem] relative ${
                       urlParts[1].trim().localeCompare(option.key) === 0
-                        ? "bg-forest-800 text-forest-100"
-                        : ""
+                        ? "bg-forest-900 text-forest-50 hover:bg-forest-700 hover:text-forest-50"
+                        : "hover:bg-forest-200 hover:text-forest-900 "
                     }`}
                     href={`/${item.label.toLowerCase()}/${option.key?.toLowerCase()}`}
                   >
                     {/* <div className="w-6"> */}
                     <div className="w-6 absolute top-1.5 left-0">
-                      {option.icon}
+                      {item.name === "Fundamentals" && option.icon}
+                      {item.name === "Chains" && (
+                        <Image
+                          src={AllChains.find((c) => c.key == option.key)?.icon}
+                          width="16"
+                          height="16"
+                          alt={item.key}
+                          className="ml-0.5 saturate-0 contrast-200 invert"
+                        />
+                      )}
                     </div>
                     {/* </div> */}
                     <div className="text-sm py-1 ml-10 w-40 font-normal break-inside-auto">

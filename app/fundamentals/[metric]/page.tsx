@@ -65,7 +65,7 @@ const Chain = ({ params }: { params: any }) => {
           <Heading>{metricData.data.metric_name}</Heading>
           <Subheading>{metricData.data.description}</Subheading>
 
-          <div className="flex space-x-8">
+          <div className="flex flex-col-reverse xl:flex-row space-x-0 xl:space-x-8">
             <div className="flex flex-col">
               <MetricsTable
                 data={metricData.data.chains}

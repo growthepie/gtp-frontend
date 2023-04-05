@@ -449,7 +449,7 @@ export default function ComparisonChart({
                 key={timeInterval}
                 className={`rounded-full px-3 py-1.5 mr-2 text-sm font-medium capitalize ${
                   selectedTimeInterval === timeInterval
-                    ? "bg-forest-800 text-forest-50"
+                    ? "bg-forest-900 text-forest-50"
                     : ""
                 }`}
                 onClick={() => {
@@ -470,7 +470,7 @@ export default function ComparisonChart({
               key={timespan}
               className={`rounded-full px-3 py-1.5 mr-2 text-sm font-medium ${
                 selectedTimespan === timespan
-                  ? "bg-forest-800 text-forest-50"
+                  ? "bg-forest-900 text-forest-50"
                   : ""
               }`}
               onClick={() => {
@@ -513,7 +513,7 @@ export default function ComparisonChart({
             className={`rounded-full px-2 py-1 mr-2 text-xs font-bold
             ${
               showEthereumMainnet
-                ? "bg-forest-800 text-forest-50"
+                ? "bg-forest-900 text-forest-50"
                 : "bg-transparent text-forest-800"
             }`}
             onClick={() => setShowEthereumMainnet(!showEthereumMainnet)}
@@ -524,7 +524,7 @@ export default function ComparisonChart({
         <div className="flex justify-center items-center">
           <button
             className={`rounded-full px-2 py-1 mr-2 text-xs font-bold ${
-              "absolute" === selectedScale ? "bg-forest-800 text-forest-50" : ""
+              "absolute" === selectedScale ? "bg-forest-900 text-forest-50" : ""
             }`}
             onClick={() => {
               setSelectedScale("absolute");
@@ -537,7 +537,7 @@ export default function ComparisonChart({
           </button>
           <button
             className={`rounded-full px-2 py-1 mr-2 text-xs font-bold ${
-              "log" === selectedScale ? "bg-forest-800 text-forest-50" : ""
+              "log" === selectedScale ? "bg-forest-900 text-forest-50" : ""
             }`}
             onClick={() => {
               setSelectedScale("log");
@@ -549,7 +549,7 @@ export default function ComparisonChart({
           <button
             className={`rounded-full px-2 py-1 mr-2 text-xs font-bold ${
               "percentage" === selectedScale
-                ? "bg-forest-800 text-forest-50"
+                ? "bg-forest-900 text-forest-50"
                 : ""
             }`}
             onClick={() => {
