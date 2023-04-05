@@ -29,6 +29,7 @@ import { DAAMetricsResponse } from "@/types/api/DAAMetricsResponse";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { AllChains } from "@/lib/chains";
 import _ from "lodash";
+import MetricsTable from "@/components/layout/MetricsTable";
 
 export default function Home() {
   const isLargeScreen = useMediaQuery("(min-width: 768px)");
@@ -42,43 +43,10 @@ export default function Home() {
   const { data: daa, error: daaError } = useSWR<DAAMetricsResponse>(
     "https://d2cfnw27176mbd.cloudfront.net/v0_2/metrics/daa.json"
   );
+
   const { data: master, error: masterError } = useSWR<MasterResponse>(
     "https://d2cfnw27176mbd.cloudfront.net/v0_2/master.json"
   );
-
-  // const [dataSources, setDataSources] = useLocalStorage<{
-  //   [index: number]: {
-  //     rootKey: string;
-  //     url: string;
-  //     data: any;
-  //     useCorsProxy?: boolean;
-  //   };
-  // }>("dataSources", {
-  //   0: {
-  //     rootKey: "arbitrum",
-  //     url: "https://d2cfnw27176mbd.cloudfront.net/v1/chains/arbitrum.json",
-  //     data: {},
-  //     useCorsProxy: true,
-  //   },
-  //   1: {
-  //     rootKey: "optimism",
-  //     url: "https://d2cfnw27176mbd.cloudfront.net/v1/chains/optimism.json",
-  //     data: {},
-  //     useCorsProxy: true,
-  //   },
-  //   2: {
-  //     rootKey: "tvl",
-  //     url: "https://d2cfnw27176mbd.cloudfront.net/v1/metrics/tvl.json",
-  //     data: {},
-  //     useCorsProxy: true,
-  //   },
-  //   3: {
-  //     rootKey: "txcount",
-  //     url: "https://d2cfnw27176mbd.cloudfront.net/v1/metrics/txcount.json",
-  //     data: {},
-  //     useCorsProxy: true,
-  //   },
-  // });
 
   const [selectedFilter, setSelectedFilter] = useState({
     name: "Fundamentals",
@@ -122,7 +90,7 @@ export default function Home() {
 
   return (
     <div className="flex w-full mt-8">
-      <div className={`flex flex-col flex-1 pl-8`}>
+      <div className={`flex flex-col flex-1 pl-6`}>
         {daa && (
           <>
             <Heading className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl">
@@ -156,6 +124,14 @@ export default function Home() {
                 }
               />
             </div>
+            <MetricsTable
+              data={daa.data.chains}
+              selectedChains={selectedChains}
+              setSelectedChains={setSelectedChains}
+              chains={chains}
+              metric={daa.data.metric_id}
+              fixedWidth={false}
+            />
           </>
         )}
       </div>

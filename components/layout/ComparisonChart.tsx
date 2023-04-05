@@ -213,7 +213,7 @@ export default function ComparisonChart({
 
   const [selectedScale, setSelectedScale] = useSessionStorage(
     "selectedScale",
-    "linear"
+    "absolute"
   );
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useSessionStorage(

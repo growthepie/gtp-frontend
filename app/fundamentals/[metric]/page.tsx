@@ -57,7 +57,7 @@ const Chain = ({ params }: { params: any }) => {
     <>
       {/* <h1>Metric: {params.metric}</h1> */}
       {data && (
-        <div className="flex flex-col space-y-4 mt-8">
+        <div className="flex flex-col space-y-4 mt-8 pl-6">
           <Heading>{metricData.data.metric_name}</Heading>
           <Subheading>{metricData.data.description}</Subheading>
 
