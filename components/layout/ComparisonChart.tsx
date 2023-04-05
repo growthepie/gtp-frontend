@@ -344,7 +344,7 @@ export default function ComparisonChart({
           chartComponent.current?.update({
             plotOptions: {
               series: {
-                stacking: "normal",
+                stacking: undefined,
               },
             },
             yAxis: {
