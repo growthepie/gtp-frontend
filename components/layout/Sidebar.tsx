@@ -130,8 +130,15 @@ export default function Sidebar({
       ],
     },
     {
-      name: "chains",
-      label: "chains",
+      name: "Blockspace",
+      label: "Blockspace",
+      icon: <LinkIcon className="h-5 w-5" />,
+      sidebarIcon: <Icon icon="bxl:react" className="h-6 w-6 mx-auto" />,
+      options: [],
+    },
+    {
+      name: "Chains",
+      label: "Chains",
       key: "chains",
       icon: <LinkIcon className="h-5 w-5" />,
       sidebarIcon: <LinkIcon className="h-6 w-6 mx-auto" />,
@@ -180,13 +187,7 @@ export default function Sidebar({
         },
       ],
     },
-    {
-      name: "Blockspace",
-      label: "Blockspace",
-      icon: <LinkIcon className="h-5 w-5" />,
-      sidebarIcon: <Icon icon="bxl:react" className="h-6 w-6 mx-auto" />,
-      options: [],
-    },
+
     {
       name: "Wiki",
       label: "Wiki",

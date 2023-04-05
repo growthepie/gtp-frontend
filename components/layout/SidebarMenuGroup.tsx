@@ -169,7 +169,7 @@ export default function SidebarMenuGroup({
         {master &&
           item.options
             .filter((option) =>
-              Object.keys(master.metrics).includes(option.key)
+              Object.keys(master[item.key]).includes(option.key)
             )
             .map((option) => {
               if (!sidebarOpen) {
@@ -182,7 +182,7 @@ export default function SidebarMenuGroup({
                             ? "bg-forest-800 text-forest-100"
                             : ""
                         }`}
-                        href={`${item.label.toLowerCase()}/${option.key?.toLowerCase()}`}
+                        href={`/${item.label.toLowerCase()}/${option.key?.toLowerCase()}`}
                       >
                         {/* <div className="w-6"> */}
                         <div className="w-6 absolute top-1.5 left-0">
@@ -208,7 +208,7 @@ export default function SidebarMenuGroup({
                         ? "bg-forest-800 text-forest-100"
                         : ""
                     }`}
-                    href={`${item.label.toLowerCase()}/${option.key?.toLowerCase()}`}
+                    href={`/${item.label.toLowerCase()}/${option.key?.toLowerCase()}`}
                   >
                     {/* <div className="w-6"> */}
                     <div className="w-6 absolute top-1.5 left-0">
