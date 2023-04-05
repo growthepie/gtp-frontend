@@ -70,7 +70,8 @@ const MetricsTable = ({
             Chain
           </div>
           <div className={`${fixedWidth ? "w-[80px]" : "w-[15%]"}`}>
-            {metric}
+            {/* {metric} */}
+            Current
           </div>
           {["1d", "7d", "30d", "365d"].map((timespan) => (
             <div

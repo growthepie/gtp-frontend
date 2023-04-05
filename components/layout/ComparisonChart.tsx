@@ -75,7 +75,13 @@ const baseOptions: Highcharts.Options = {
     lineWidth: 0,
     labels: {
       style: { color: COLORS.LABEL },
-      enabled: false,
+      enabled: true,
+      formatter: (item) => {
+        return `<span style="">${new Date(item.value).toLocaleDateString(
+          undefined,
+          { year: "numeric", month: "numeric", day: "numeric" }
+        )}</span>`;
+      },
     },
     tickWidth: 4,
     tickLength: 4,
