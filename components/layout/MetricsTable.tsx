@@ -69,6 +69,8 @@ const MetricsTable = ({
           <div
             key={chain.key}
             className={`flex items-center space-x-2 cursor-pointer pt-1.5 pb-2 pl-2 pr-4 rounded-full text-sm font-[400] border-[1px] border-forest-500 ${
+              i > 0 ? "-mt-[1px]" : ""
+            }${
               selectedChains.includes(chain.key)
                 ? " hover:bg-forest-50 "
                 : "hover:bg-gray-100  opacity-50 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-100"

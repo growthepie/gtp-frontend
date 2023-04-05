@@ -121,6 +121,30 @@ export default function SidebarMenuGroup({
       </div>
     );
 
+  if (item.name === "API Documentation" || item.name === "Wiki")
+    return (
+      <div className="flex flex-col">
+        {/* open in new tab */}
+        <Link
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-items-center mb-8"
+          href="https://growthepie.gitbook.io/introduction/"
+        >
+          <div className="w-6 mx-0">
+            <div className="text-white bg-forest-800 rounded-md w-6 mx-auto">
+              {item.sidebarIcon}
+            </div>
+          </div>
+          <div className="">
+            <div className="text-sm font-medium mx-4 w-60 flex">
+              {item.label}
+            </div>{" "}
+          </div>
+        </Link>
+      </div>
+    );
+
   return (
     <div className="flex flex-col">
       <div className="text-xs"></div>

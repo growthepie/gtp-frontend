@@ -15,6 +15,7 @@ import Sidebar from "@/components/layout/Sidebar";
 import { Bars3Icon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 import Loader from "@/components/Loader";
+import Link from "next/link";
 
 // activate twind - must be called at least once
 // const twind = install(config);
@@ -82,14 +83,16 @@ export default function RootLayout({
             >
               <div className="flex justify-between items-center">
                 <div className="font-bold text-2xl">
-                  <Image
-                    src="/logo-layered.svg"
-                    alt="Forest"
-                    className="ml-4"
-                    width={320}
-                    height={90}
-                    quality={100}
-                  />
+                  <Link href="/">
+                    <Image
+                      src="/logo-layered.svg"
+                      alt="Forest"
+                      className="ml-4"
+                      width={320}
+                      height={90}
+                      quality={100}
+                    />
+                  </Link>
                 </div>
                 <div className="flex space-x-8">
                   <EthUsdSwitch />
