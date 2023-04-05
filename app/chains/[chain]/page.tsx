@@ -2,6 +2,9 @@
 import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
 import { useEffect, useMemo, useState } from "react";
+import {
+  BanknotesIcon
+} from "@heroicons/react/24/solid";
 
 const Chain = ({ params }: { params: any }) => {
   // const params = useSearchParams();
@@ -17,7 +20,9 @@ const Chain = ({ params }: { params: any }) => {
       {/*Header */}
       <div className="flex justify-between pt-20">
         <div className="flex gap-x-6 items-center">
-          <Heading className="">{chain}</Heading>
+          <Heading className="text-5xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282]">{String(chain).charAt(0).toUpperCase() + String(chain).slice(1)}</Heading>
+          
+          {/*Uppercase first letter */}
         </div>
         <div className="flex gap-x-10 h-10">
           <button className="font-semibold text-white dark:bg-pie-500 bg-blue-600 px-10 py-0 rounded-full w-168px">
@@ -31,7 +36,7 @@ const Chain = ({ params }: { params: any }) => {
 
       <Subheading className="text-lg font-medium mt-10 w-2/5">
         Lorem Ipsum is simply dummy text of the printing and typesetting
-        industry. Lorem Ipsum has been the industry's standard dummy text ever
+        industry. Lorem Ipsum has been the industrys standard dummy text ever
         since the 1500s, when an unknown printer took a galley of type and
         scrambled it to make a type specimen book.
       </Subheading>
@@ -50,18 +55,25 @@ const Chain = ({ params }: { params: any }) => {
       <div className="flex-col gap-y-4 pt-8">
         <div className="flex gap-x-6 justify-center items-center">
           <div className="dark:bg-pie-500 bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
-            <p>test</p>
+            <Heading className="pt-[1rem] pl-6 text-3xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282]">Metric Title</Heading>
+            <BanknotesIcon className="relative h-[75px] w-[94px] text-blue-500 bottom-[1.7rem] left-[32rem] mr-4"/>
           </div>
           <div className="dark:bg-pie-500 bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
-            <p>test</p>
+            <div className="dark:bg-pie-500 bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
+              <Heading className="pt-[1rem] pl-6 text-3xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282]">Metric Title</Heading>
+            </div>
           </div>
         </div>
         <div className="flex gap-x-6 justify-center items-center pt-8">
           <div className="dark:bg-pie-500 bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
-            <p>test</p>
+            <div className="dark:bg-pie-500 bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
+              <Heading className="pt-[1rem] pl-6 text-3xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282]">Metric Title</Heading>
+            </div>
           </div>
           <div className="dark:bg-pie-500 bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
-            <p>test</p>
+            <div className="dark:bg-pie-500 bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
+              <Heading className="pt-[1rem] pl-6 text-3xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282]">Metric Title</Heading>
+            </div>
           </div>
           {/*Generate cards in here in future*/}
         </div>
