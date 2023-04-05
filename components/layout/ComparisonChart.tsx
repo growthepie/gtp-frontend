@@ -144,31 +144,31 @@ const baseOptions: Highcharts.Options = {
 
 const timespans = {
   "30d": {
-    label: "30d",
+    label: "30 days",
     value: 30,
     xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
     xMax: Date.now(),
   },
   "90d": {
-    label: "90d",
+    label: "90 days",
     value: 90,
     xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
     xMax: Date.now(),
   },
   "180d": {
-    label: "180d",
+    label: "180 days",
     value: 180,
     xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
     xMax: Date.now(),
   },
   "365d": {
-    label: "1y",
+    label: "1 year",
     value: 365,
     xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
     xMax: Date.now(),
   },
   max: {
-    label: "Max",
+    label: "Maximum",
     value: 0,
     xMin: Date.parse("2020-09-28"),
     xMax: Date.now(),
@@ -441,16 +441,16 @@ export default function ComparisonChart({
 
   return (
     <div className="w-full my-12 relative">
-      <div className="flex w-full justify-between items-center absolute -top-10 left-0">
-        <div className="flex justify-center items-center">
+      <div className="flex w-full justify-between items-center absolute -top-10 left-0 right-0 text-xs">
+        <div className="flex justify-center items-center space-x-1 rounded-full bg-forest-50 p-0.5">
           {showTimeIntervals &&
-            timeIntervals.map((timeInterval) => (
+            timeIntervals.map((timeInterval, i) => (
               <button
                 key={timeInterval}
-                className={`rounded-full px-3 py-1.5 mr-2 text-sm font-medium capitalize ${
+                className={`rounded-full px-2 py-1 font-medium capitalize ${
                   selectedTimeInterval === timeInterval
-                    ? "bg-forest-900 text-forest-50"
-                    : ""
+                    ? "bg-forest-900 text-forest-50 hover:bg-forest-700"
+                    : "hover:bg-forest-100"
                 }`}
                 onClick={() => {
                   onTimeIntervalChange(timeInterval);
@@ -464,14 +464,14 @@ export default function ComparisonChart({
               </button>
             ))}
         </div>
-        <div className="flex justify-center items-center">
+        <div className="flex justify-center items-center space-x-1 rounded-full bg-forest-50 p-0.5">
           {Object.keys(timespans).map((timespan) => (
             <button
               key={timespan}
-              className={`rounded-full px-3 py-1.5 mr-2 text-sm font-medium ${
+              className={`rounded-full px-2 py-1 font-medium ${
                 selectedTimespan === timespan
-                  ? "bg-forest-900 text-forest-50"
-                  : ""
+                  ? "bg-forest-900 text-forest-50 hover:bg-forest-700"
+                  : "hover:bg-forest-100"
               }`}
               onClick={() => {
                 setSelectedTimespan(timespan);
@@ -486,7 +486,7 @@ export default function ComparisonChart({
           ))}
         </div>
       </div>
-      <div className="w-full p-4 rounded-xl bg-forest-50">
+      <div className="w-full p-4 rounded-xl bg-forest-50/10 dark:bg-forest-900/10">
         <div className="w-full h-[26rem] relative rounded-xl">
           <div className="absolute w-full h-[24rem] top-4">
             <HighchartsReact
@@ -505,26 +505,28 @@ export default function ComparisonChart({
           </div>
         </div>
       </div>
-      <div className="flex justify-between items-center absolute -bottom-10 left-0 right-0">
+      <div className="flex justify-between items-center absolute -bottom-10 left-0 right-0 ">
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
-        <div className="flex justify-center items-center">
+        <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5">
           {/* toggle ETH */}
           <button
-            className={`rounded-full px-2 py-1 mr-2 text-xs font-bold
+            className={`rounded-full px-2 py-1 text-xs font-bold
             ${
               showEthereumMainnet
-                ? "bg-forest-900 text-forest-50"
-                : "bg-transparent text-forest-800"
+                ? "bg-forest-900 text-forest-50 hover:bg-forest-700"
+                : "bg-transparent text-forest-800 hover:bg-forest-700"
             }`}
             onClick={() => setShowEthereumMainnet(!showEthereumMainnet)}
           >
             {showEthereumMainnet ? "Hide ETH Mainnet" : "Show ETH Mainnet"}
           </button>
         </div>
-        <div className="flex justify-center items-center">
+        <div className="flex justify-center items-center space-x-1 rounded-full bg-forest-50 p-0.5">
           <button
-            className={`rounded-full px-2 py-1 mr-2 text-xs font-bold ${
-              "absolute" === selectedScale ? "bg-forest-900 text-forest-50" : ""
+            className={`rounded-full px-2 py-1 text-xs font-bold ${
+              "absolute" === selectedScale
+                ? "bg-forest-900 text-forest-50"
+                : "hover:bg-forest-100"
             }`}
             onClick={() => {
               setSelectedScale("absolute");
@@ -536,8 +538,10 @@ export default function ComparisonChart({
             Absolute
           </button>
           <button
-            className={`rounded-full px-2 py-1 mr-2 text-xs font-bold ${
-              "log" === selectedScale ? "bg-forest-900 text-forest-50" : ""
+            className={`rounded-full px-2 py-1 text-xs font-bold ${
+              "log" === selectedScale
+                ? "bg-forest-900 text-forest-50"
+                : "hover:bg-forest-100"
             }`}
             onClick={() => {
               setSelectedScale("log");
@@ -547,10 +551,10 @@ export default function ComparisonChart({
             Log
           </button>
           <button
-            className={`rounded-full px-2 py-1 mr-2 text-xs font-bold ${
+            className={`rounded-full px-2 py-1 text-xs font-bold ${
               "percentage" === selectedScale
                 ? "bg-forest-900 text-forest-50"
-                : ""
+                : "hover:bg-forest-100"
             }`}
             onClick={() => {
               setSelectedScale("percentage");
