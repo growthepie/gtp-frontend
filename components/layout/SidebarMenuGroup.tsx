@@ -189,7 +189,7 @@ export default function SidebarMenuGroup({
                           {option.icon}
                         </div>
                         {/* </div> */}
-                        <div className="text-sm py-1 ml-10 w-36 font-normal break-inside-auto">
+                        <div className="text-sm py-1 ml-10 w-40 font-normal break-inside-auto">
                           {option.label}
                         </div>
                       </Link>
@@ -215,7 +215,7 @@ export default function SidebarMenuGroup({
                       {option.icon}
                     </div>
                     {/* </div> */}
-                    <div className="text-sm py-1 ml-10 w-36 font-normal break-inside-auto">
+                    <div className="text-sm py-1 ml-10 w-40 font-normal break-inside-auto">
                       {option.label}
                     </div>
                   </Link>
