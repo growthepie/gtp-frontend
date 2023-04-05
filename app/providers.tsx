@@ -9,8 +9,8 @@ export function Providers({ children }) {
     <ThemeProvider attribute="class">
       <SWRConfig
         value={{
-          fetcher: (url) =>
-            fetch(`/api/cors?url=${encodeURI(url)}`).then((r) => r.json()),
+          fetcher: (url) => fetch(url).then((r) => r.json()),
+          // fetch(`/api/cors?url=${encodeURI(url)}`).then((r) => r.json()),
           refreshInterval: 1000 * 60 * 60, // 1 hour
         }}
       >
