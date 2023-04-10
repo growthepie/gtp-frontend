@@ -1,6 +1,3 @@
-// import install from '@twind/with-next/app';
-// import config from "../twind.config";
-// import { useEffect, useState } from "react";
 "use client";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import DarkModeSwitch from "@/components/layout/DarkModeSwitch";
@@ -8,7 +5,6 @@ import { Providers } from "./providers";
 import "./globals.css";
 import Image from "next/image";
 
-// import { setup } from "@twind/core";
 import { motion } from "framer-motion";
 import EthUsdSwitch from "@/components/layout/EthUsdSwitch";
 import Sidebar from "@/components/layout/Sidebar";
@@ -16,9 +12,6 @@ import { Bars3Icon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 import Loader from "@/components/Loader";
 import Link from "next/link";
-
-// activate twind - must be called at least once
-// const twind = install(config);
 
 export default function RootLayout({
   children,

@@ -8,7 +8,7 @@ import { Card } from "@/components/Card";
 import { useLocalStorage } from "usehooks-ts";
 import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
-import { zinc, red, blue, amber } from "@twind/preset-tailwind/colors";
+import { zinc, red, blue, amber } from "tailwindcss/colors";
 import { ArrowTrendingUpIcon } from "@heroicons/react/24/outline";
 import { useTheme } from "next-themes";
 
