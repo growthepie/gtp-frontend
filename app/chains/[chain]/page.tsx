@@ -7,6 +7,8 @@ import {
   ArrowTopRightOnSquareIcon,
   LinkIcon
 } from '@heroicons/react/24/outline'
+import { dataTool } from "echarts";
+import { Time } from "highcharts";
 
 
 const Chain = ({ params }: { params: any }) => {
@@ -14,14 +16,15 @@ const Chain = ({ params }: { params: any }) => {
   // const chain = params.get("chain");
   const [metricTitle, setMetricTitle] = useState("");
   const [value, setValue] = useState("");
+  const [buttons, setButtons] = useState()
   /*Create some kind of map for metric cards*/
-
   const { chain } = params;
+
 
   return (
     <div className="mx-auto pt-10 w-[88rem]">
         {/*Header */}
-      <div className="ml-14 mr-16">
+      <div className="ml-12 mr-16">
         <div className="flex justify-between items-center">
             <div className="flex gap-x-6 items-center">
               <h1 className="h-14 text-5xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282] dark:text-forest-100">{String(chain).charAt(0).toUpperCase() + String(chain).slice(1)}</h1>
@@ -33,7 +36,7 @@ const Chain = ({ params }: { params: any }) => {
                 <LinkIcon className="h-4 w-4 self-center" />
                 <p className="self-center font-semibold">Block Explorer</p>
               </div>
-              <div className="flex justify-between text-white dark:bg-pie-500 bg-blue-600 w-28 py-0 rounded-full w-168px pl-3 pr-4">
+              <div className="flex justify-between text-white dark:bg-pie-500 bg-blue-600 w-32 py-0 rounded-full w-168px pl-4 pr-6">
                 <ArrowTopRightOnSquareIcon className="h-4 w-4 self-center" />
                 <p className="self-center font-semibold">Website</p>
               </div>
@@ -50,11 +53,17 @@ const Chain = ({ params }: { params: any }) => {
       {/*Time selection */}
 
       <div className="flex justify-center items-center gap-x-6 pt-8">
-        <button>30 days</button>
-        <button>90 days</button>
-        <button>180 days</button>
-        <button>1 year</button>
-        <button>Maximum</button>
+        
+
+        {/*{Timestamps.map((selection) => (
+          <button key={selection.key}   onClick={() => {
+            updateButton(selection.key);
+            console.log(selection.value)
+          }}
+            className={`${selection.value ? 'bg-blue-500 text-white py-1.5 px-4 font-[600]' : 'bg-none'} rounded-full self-center`} >
+              {selection.name}
+          </button>
+        ))}*/}
       </div>
 
       {/*Metric Title Grid*/}
