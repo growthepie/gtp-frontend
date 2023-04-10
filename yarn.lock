@@ -256,30 +256,6 @@
   dependencies:
     tslib "^2.4.0"
 
-"@twind/core@^1.1.3":
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/@twind/core/-/core-1.1.3.tgz#7ab2f6390d6feb5e1315db101b97434ab2761048"
-  integrity sha512-/B/aNFerMb2IeyjSJy3SJxqVxhrT77gBDknLMiZqXIRr4vNJqiuhx7KqUSRzDCwUmyGuogkamz+aOLzN6MeSLw==
-  dependencies:
-    csstype "^3.1.1"
-
-"@twind/preset-autoprefix@^1.0.7":
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/@twind/preset-autoprefix/-/preset-autoprefix-1.0.7.tgz#cf2147121cc2f77240e989f314fc485a630c31cf"
-  integrity sha512-3wmHO0pG/CVxYBNZUV0tWcL7CP0wD5KpyWAQE/KOalWmOVBj+nH6j3v6Y3I3pRuMFaG5DC78qbYbhA1O11uG3w==
-  dependencies:
-    style-vendorizer "^2.2.3"
-
-"@twind/preset-tailwind@^1.1.4":
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/@twind/preset-tailwind/-/preset-tailwind-1.1.4.tgz#354710e9700de27712bfcd226af32b3162fea172"
-  integrity sha512-zv85wrP/DW4AxgWrLfH7kyGn/KJF3K04FMLVl2AjoxZGYdCaoZDkL8ma3hzaKQ+WGgBFRubuB/Ku2Rtv/wjzVw==
-
-"@twind/with-next@^1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@twind/with-next/-/with-next-1.2.2.tgz#5f1af981dfe591a65625d3130ed5026714aa1b6f"
-  integrity sha512-DG41Ah+DUPth1HhwlgedLATQBrBFeTDH7KpS81tbq2dTV4SuY+WrdTFlXiaHT1UfTqD/FoqqiqbDN4YbbnxBAQ==
-
 "@types/json5@^0.0.29":
   version "0.0.29"
   resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"
@@ -1805,7 +1781,7 @@ cssesc@^3.0.0:
   resolved "https://registry.yarnpkg.com/cssesc/-/cssesc-3.0.0.tgz#37741919903b868565e1c09ea747445cd18983ee"
   integrity sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==
 
-csstype@^3.0.2, csstype@^3.1.1:
+csstype@^3.0.2:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/csstype/-/csstype-3.1.1.tgz#841b532c45c758ee546a11d5bd7b7b473c8c30b9"
   integrity sha512-DJR/VvkAvSZW9bTouZue2sSxDwdTN92uHjqeKVm+0dAqdfNykRzQ95tay8aXMBAAPpUiq4Qcug2L7neoRh2Egw==
@@ -4856,11 +4832,6 @@ strip-json-comments@^3.1.0, strip-json-comments@^3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-3.1.1.tgz#31f1281b3832630434831c310c01cccda8cbe006"
   integrity sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==
-
-style-vendorizer@^2.2.3:
-  version "2.2.3"
-  resolved "https://registry.yarnpkg.com/style-vendorizer/-/style-vendorizer-2.2.3.tgz#e18098fd981c5884c58ff939475fbba74aaf080c"
-  integrity sha512-/VDRsWvQAgspVy9eATN3z6itKTuyg+jW1q6UoTCQCFRqPDw8bi3E1hXIKnGw5LvXS2AQPuJ7Af4auTLYeBOLEg==
 
 styled-jsx@5.1.1:
   version "5.1.1"

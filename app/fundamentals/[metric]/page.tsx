@@ -30,16 +30,20 @@ const Chain = ({ params }: { params: any }) => {
     TVLMetricsResponse | TxCountMetricsResponse
   >(MetricsURLs[params.metric]);
 
-  const data = useMemo(() => {
-    if (!metricData) return null;
-    return _.omit(metricData.data.chains, "ethereum");
-  }, [metricData]);
+  // const data = useMemo(() => {
+  //   if (!metricData) return null;
+  //   return _.omit(metricData.data.chains, "ethereum");
+  // }, [metricData]);
 
   const chains = useMemo(() => {
-    if (!data) return AllChains;
+    if (!metricData) return AllChains;
 
-    return AllChains.filter((chain) => Object.keys(data).includes(chain.key));
-  }, [data]);
+    return AllChains.filter(
+      (chain) =>
+        Object.keys(metricData.data.chains).includes(chain.key) &&
+        chain.key != "ethereum"
+    );
+  }, [metricData]);
 
   const [selectedChains, setSelectedChains] = useState(
     AllChains.map((chain) => chain.key)
@@ -56,15 +60,15 @@ const Chain = ({ params }: { params: any }) => {
   return (
     <>
       {/* <h1>Metric: {params.metric}</h1> */}
-      {data && (
+      {metricData && (
         <div className="flex flex-col space-y-4 mt-8 pl-6">
           <Heading>{metricData.data.metric_name}</Heading>
           <Subheading>{metricData.data.description}</Subheading>
 
-          <div className="flex space-x-8">
+          <div className="flex flex-col-reverse xl:flex-row space-x-0 xl:space-x-8">
             <div className="flex flex-col">
               <MetricsTable
-                data={data}
+                data={metricData.data.chains}
                 selectedChains={selectedChains}
                 setSelectedChains={setSelectedChains}
                 chains={chains}
@@ -73,24 +77,27 @@ const Chain = ({ params }: { params: any }) => {
             </div>
             <div className="flex-1">
               <ComparisonChart
-                data={Object.keys(data)
+                data={Object.keys(metricData.data.chains)
                   .filter((chain) => selectedChains.includes(chain))
                   .map((chain) => {
                     return {
                       name: chain,
                       // type: 'spline',
-                      types: data[chain][selectedTimeInterval].types,
-                      data: data[chain][selectedTimeInterval].data,
+                      types:
+                        metricData.data.chains[chain][selectedTimeInterval]
+                          .types,
+                      data: metricData.data.chains[chain][selectedTimeInterval]
+                        .data,
                     };
                   })}
-                timeIntervals={_.intersection(Object.keys(data.arbitrum), [
-                  "daily",
-                  "weekly",
-                  "monthly",
-                ])}
+                timeIntervals={_.intersection(
+                  Object.keys(metricData.data.chains.arbitrum),
+                  ["daily", "weekly", "monthly"]
+                )}
                 onTimeIntervalChange={(timeInterval) =>
                   setSelectedTimeInterval(timeInterval)
                 }
+                showTimeIntervals={true}
               />
             </div>
           </div>
