@@ -9,21 +9,47 @@ import {
 } from '@heroicons/react/24/outline'
 import { dataTool } from "echarts";
 import { Time } from "highcharts";
-
-
+import useSWR from 'swr';
+import { MasterResponse } from "@/types/api/MasterResponse";
+import { DAAMetricsResponse } from "@/types/api/DAAMetricsResponse";
+import { AllChains } from "@/lib/chains";
 
 const Chain = ({ params }: { params: any }) => {
   // const params = useSearchParams();
   // const chain = params.get("chain");
-  const [metricTitle, setMetricTitle] = useState("");
-  const [value, setValue] = useState("");
-  const [buttons, setButtons] = useState()
-  /*Create some kind of map for metric cards*/
   const { chain } = params;
 
+  const [pageData, setPageData] = useState(String(chain).charAt(0).toUpperCase() + String(chain).slice(1));
+  const [metricTitle, setMetricTitle] = useState("");
+  const [value, setValue] = useState("");
+  const [buttons, setButtons] = useState();
+
+
+  const { data: master, error: masterError } = useSWR<MasterResponse>(
+    "https://d2cfnw27176mbd.cloudfront.net/v0_2/master.json"
+  );
+
+  const { data: daa, error: daaError } = useSWR<DAAMetricsResponse>(
+    "https://d2cfnw27176mbd.cloudfront.net/v0_2/metrics/daa.json"
+  );
+
+  /*Create some kind of map for metric cards*/
+  
+
+  if(master){
+    console.log(AllChains.filter(
+        (chain) => Object.keys(master)
+    )[0]);
+  }
+
+  const chainData = useMemo(() => {
+    if (!master) return [];
+    
+    
+  }, [master]) 
 
   return (
-    <div className="mx-auto pt-10 w-[88rem]">
+    <div className="mx-auto pt-10 w-44[rem] sm:w-[88rem]">
         {/*Header */}
       <div className="ml-12 mr-14">
         <div className="flex justify-between items-center">
@@ -45,10 +71,7 @@ const Chain = ({ params }: { params: any }) => {
         </div>
       
       <h1 className="text-lg text-gray-500 pt-4 font-[600] dark:text-[#CDD8D3] w-2/5">
-        Lorem Ipsum is simply dummy text of the printing and typesetting
-        industry. Lorem Ipsum has been the industrys standard dummy text ever
-        since the 1500s, when an unknown printer took a galley of type and
-        scrambled it to make a type specimen book.
+        Lorem Ipsum about {String(chain).charAt(0).toUpperCase() + String(chain).slice(1)}
       </h1>
       </div>
       {/*Time selection */}
@@ -68,7 +91,7 @@ const Chain = ({ params }: { params: any }) => {
       </div>
 
 
-      <div className="flex py-2 ml-12 mr-14 gap-x-8 justify-center items-center rounded-[999px] h-[60px] dark:bg-[#2A3433] dark:justify-end dark: pr-6">
+      <div className="flex py-2 ml-12 mr-14 gap-x-8 justify-start items-center rounded-[999px] h-[60px] dark:bg-[#2A3433] dark:justify-end dark: pr-6 md:justify-center">
           <button>90 Days</button>
           <button>180 Days</button>
           <button>1 Year</button>
@@ -77,7 +100,7 @@ const Chain = ({ params }: { params: any }) => {
 
       {/*Metric Title Grid*/}
       <div className="flex-col pt-8">
-        <div className="flex gap-x-6 justify-center items-center">
+        <div className="flex flex-col gap-x-6 justify-start ml-12 gap-y-8 md:flex-row md:justify-center md:ml-0 md:gap-y-0">
           <div className="dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
             <h1 className="pt-[1rem] pl-6 text-3xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282] dark:text-[#CDD8D3]">Metric Title</h1>
             <BanknotesIcon className="relative h-[75px] w-[94px] text-blue-500 bottom-[1.7rem] left-[32rem] mr-4 dark:text-[#CDD8D3]"/>
@@ -92,7 +115,7 @@ const Chain = ({ params }: { params: any }) => {
             </div>
           </div>
         </div>
-        <div className="flex gap-x-6 justify-center items-center pt-8">
+        <div className="flex flex-col pt-8 gap-x-6 justify-start ml-12 gap-y-8 md:flex-row md:justify-center md:ml-0 md:gap-y-0">
           <div className="dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
             <div className="dark:bg-[#2A3433]bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
               <h1 className="pt-[1rem] pl-6 text-3xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282] dark:text-[#CDD8D3]">Metric Title</h1>
