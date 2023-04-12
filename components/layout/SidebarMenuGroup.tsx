@@ -105,21 +105,30 @@ export default function SidebarMenuGroup({
   if (item.name === "Blockspace")
     return (
       <div className="flex flex-col">
-        <div className="flex items-center justify-items-center mb-8 opacity-50">
-          <div className="w-6 mx-0">
-            <div className="text-white bg-forest-900 rounded-md w-6 mx-auto">
-              {item.sidebarIcon}
-            </div>
-          </div>
-          <div className="">
-            <div className="text-sm font-medium mx-4 w-60 flex">
-              {item.label}
-              <div className="text-[0.6rem] leading-[1.75] px-1 py-[0.1rem] font-bold ml-2 rounded-[4px] bg-forest-900 text-forest-50">
-                SOON
+        <Tooltip key={item.label} placement="right">
+          <TooltipTrigger className="h-6 mb-6 cursor-default">
+            <div className="flex items-center justify-items-center opacity-50">
+              <div className="w-6 mx-0">
+                <div className="text-white bg-forest-900 rounded-md w-6 mx-auto">
+                  {item.sidebarIcon}
+                </div>
               </div>
-            </div>{" "}
-          </div>
-        </div>
+              <div className="">
+                <div className="text-sm font-medium mx-4 w-60 flex">
+                  {item.label}
+                  <div className="text-[0.6rem] leading-[1.75] px-1 py-[0.1rem] font-bold ml-2 rounded-[4px] bg-forest-900 text-forest-50">
+                    SOON
+                  </div>
+                </div>{" "}
+              </div>
+            </div>
+          </TooltipTrigger>
+          {!sidebarOpen && (
+            <TooltipContent className="bg-forest-900 text-forest-50 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md">
+              {item.label}
+            </TooltipContent>
+          )}
+        </Tooltip>
       </div>
     );
 
@@ -150,19 +159,31 @@ export default function SidebarMenuGroup({
   return (
     <div className="flex flex-col">
       <div className="text-xs"></div>
-      <div
-        className="flex items-center justify-items-center mb-2 cursor-pointer"
-        onClick={handleToggle}
-      >
-        <div className="w-6 mx-0">
-          <div className="text-white bg-forest-900 rounded-md w-6 mx-auto">
-            {item.sidebarIcon}
+      <Tooltip key={item.label} placement="right">
+        <TooltipTrigger className="h-6 mb-2">
+          <div
+            className="flex items-start justify-items-start mb-2 cursor-pointer"
+            onClick={handleToggle}
+          >
+            <div className="w-6 mx-0">
+              <div className="text-white bg-forest-900 rounded-md w-6 mx-auto">
+                {item.sidebarIcon}
+              </div>
+            </div>
+            <div className={`text-left`}>
+              <div className="text-sm font-medium  mx-[17px] w-60">
+                {item.label}
+              </div>
+            </div>
           </div>
-        </div>
-        <div className={``}>
-          <div className="text-sm font-medium mx-4 w-60">{item.label}</div>
-        </div>
-      </div>
+        </TooltipTrigger>
+        {!sidebarOpen && (
+          <TooltipContent className="bg-forest-900 text-forest-50 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md">
+            {item.label}
+          </TooltipContent>
+        )}
+      </Tooltip>
+
       <div
         className={`flex flex-col overflow-hidden mb-6 w-60 ${
           isOpen ? "h-auto" : "h-0"
@@ -174,75 +195,85 @@ export default function SidebarMenuGroup({
               Object.keys(master[item.key]).includes(option.key)
             )
             .map((option) => {
-              if (!sidebarOpen) {
-                return (
-                  <Tooltip key={option.label} placement="right">
-                    <TooltipTrigger>
-                      <Link
-                        className={`flex items-center justify-items-center rounded-l-full my-[0.25rem]  relative ${
+              // if (!sidebarOpen) {
+              return (
+                <Tooltip key={option.label} placement="right">
+                  <TooltipTrigger>
+                    <Link
+                      className={`group flex items-center justify-items-center rounded-l-full my-[0.25rem] relative ${
+                        urlParts[1].trim().localeCompare(option.key) === 0
+                          ? "bg-forest-900 text-forest-50 hover:bg-forest-700 hover:text-forest-50"
+                          : "hover:bg-forest-200 hover:text-forest-900"
+                      }`}
+                      href={`/${item.label.toLowerCase()}/${option.key?.toLowerCase()}`}
+                    >
+                      {/* <div className="w-6"> */}
+                      <div
+                        className={`w-6 absolute top-1.5 left-0 ${
                           urlParts[1].trim().localeCompare(option.key) === 0
-                            ? "bg-forest-900 text-forest-50 hover:bg-forest-700 hover:text-forest-50"
-                            : "hover:bg-forest-200 hover:text-forest-900"
+                            ? "opacity-100"
+                            : "opacity-30 group-hover:opacity-100"
                         }`}
-                        href={`/${item.label.toLowerCase()}/${option.key?.toLowerCase()}`}
                       >
-                        {/* <div className="w-6"> */}
-                        <div className="w-6 absolute top-1.5 left-0">
-                          {item.name === "Fundamentals" && option.icon}
-                          {item.name === "Chains" && (
-                            <Image
-                              src={
-                                AllChains.find((c) => c.key == option.key)?.icon
-                              }
-                              width="16"
-                              height="16"
-                              alt={item.key}
-                              className="ml-0.5 saturate-0 contrast-200 invert"
-                            />
-                          )}
-                        </div>
-                        {/* </div> */}
-                        <div className="text-sm py-1 ml-10 w-40 font-normal break-inside-auto">
-                          {option.label}
-                        </div>
-                      </Link>
-                    </TooltipTrigger>
+                        {item.name === "Fundamentals" && option.icon}
+                        {item.name === "Chains" && (
+                          <Image
+                            src={
+                              AllChains.find((c) => c.key == option.key)?.icon
+                            }
+                            width="16"
+                            height="16"
+                            alt={item.key}
+                            className="ml-0.5 saturate-0 contrast-200 invert"
+                          />
+                        )}
+                      </div>
+                      {/* </div> */}
+                      <div
+                        className={`text-sm py-1 w-40 font-normal break-inside-auto text-left mx-10`}
+                      >
+                        {option.label}
+                      </div>
+                    </Link>
+                  </TooltipTrigger>
+                  {!sidebarOpen && (
                     <TooltipContent className="bg-forest-900 text-forest-50 rounded-md p-2 text-xs font-medium break-inside-auto -ml-48 shadow-md">
                       {option.label}
                     </TooltipContent>
-                  </Tooltip>
-                );
-              } else {
-                return (
-                  <Link
-                    key={option.label}
-                    className={`flex items-center justify-items-center rounded-l-full my-[0.25rem] relative ${
-                      urlParts[1].trim().localeCompare(option.key) === 0
-                        ? "bg-forest-900 text-forest-50 hover:bg-forest-700 hover:text-forest-50"
-                        : "hover:bg-forest-200 hover:text-forest-900 "
-                    }`}
-                    href={`/${item.label.toLowerCase()}/${option.key?.toLowerCase()}`}
-                  >
-                    {/* <div className="w-6"> */}
-                    <div className="w-6 absolute top-1.5 left-0">
-                      {item.name === "Fundamentals" && option.icon}
-                      {item.name === "Chains" && (
-                        <Image
-                          src={AllChains.find((c) => c.key == option.key)?.icon}
-                          width="16"
-                          height="16"
-                          alt={item.key}
-                          className="ml-0.5 saturate-0 contrast-200 invert"
-                        />
-                      )}
-                    </div>
-                    {/* </div> */}
-                    <div className="text-sm py-1 ml-10 w-40 font-normal break-inside-auto">
-                      {option.label}
-                    </div>
-                  </Link>
-                );
-              }
+                  )}
+                </Tooltip>
+              );
+              // } else {
+              //   return (
+              //     <Link
+              //       key={option.label}
+              //       className={`flex items-center justify-items-center rounded-l-full my-[0.25rem] relative ${
+              //         urlParts[1].trim().localeCompare(option.key) === 0
+              //           ? "bg-forest-900 text-forest-50 hover:bg-forest-700 hover:text-forest-50"
+              //           : "hover:bg-forest-200 hover:text-forest-900 "
+              //       }`}
+              //       href={`/${item.label.toLowerCase()}/${option.key?.toLowerCase()}`}
+              //     >
+              //       {/* <div className="w-6"> */}
+              //       <div className="w-6 absolute top-1.5 left-0">
+              //         {item.name === "Fundamentals" && option.icon}
+              //         {item.name === "Chains" && (
+              //           <Image
+              //             src={AllChains.find((c) => c.key == option.key)?.icon}
+              //             width="16"
+              //             height="16"
+              //             alt={item.key}
+              //             className="ml-0.5 saturate-0 contrast-200 invert"
+              //           />
+              //         )}
+              //       </div>
+              //       {/* </div> */}
+              //       <div className="text-sm py-1 ml-10 w-40 font-normal break-inside-auto">
+              //         {option.label}
+              //       </div>
+              //     </Link>
+              //   );
+              // }
             })}
 
         {/* <div className="flex items-center justify-center w-6 h-6 rounded-full bg-forest-400 "></div> */}

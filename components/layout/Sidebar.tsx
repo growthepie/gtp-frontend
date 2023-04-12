@@ -12,6 +12,8 @@ import SidebarMenuGroup from "./SidebarMenuGroup";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import useSWR from "swr";
 import { Router } from "next/router";
+import Link from "next/link";
+import Image from "next/image";
 
 export type SidebarItems = {
   name: string;
@@ -37,6 +39,8 @@ type SidebarProps = {
   onOpen?: () => void;
   onClose?: () => void;
   children?: ReactNode;
+  isOpen?: boolean;
+  setIsOpen?: (isOpen: boolean) => void;
 };
 
 export default function Sidebar({
@@ -47,12 +51,14 @@ export default function Sidebar({
   onToggle = () => {},
   onOpen = () => {},
   onClose = () => {},
+  isOpen,
+  setIsOpen,
 }: SidebarProps) {
   const { data: master } = useSWR<MasterResponse>(
     "https://d2cfnw27176mbd.cloudfront.net/v0_2/master.json"
   );
 
-  const [isOpen, setIsOpen] = useState(open);
+  // const [isOpen, setIsOpen] = useState(open);
 
   useEffect(() => {
     setIsOpen(open);
@@ -65,24 +71,24 @@ export default function Sidebar({
       key: "metrics",
       icon: <ArrowsRightLeftIcon className="h-5 w-5" />,
       sidebarIcon: (
-        <Icon icon="ic:round-compare-arrows" className="h-6 w-6 mx-auto " />
+        <Icon icon="feather:crosshair" className="h-6 w-6 p-0.5 mx-auto " />
       ),
       options: [
         {
           label: "Total Value Locked",
-          icon: <Icon icon="ep:money" className="h-4 w-4  mx-auto" />,
+          icon: <Icon icon="feather:star" className="h-4 w-4  mx-auto" />,
           key: "tvl",
           rootKey: "metricsTvl",
         },
         {
           label: "Transaction Count",
-          icon: <Icon icon="mdi:text" className="h-4 w-4 mx-auto" />,
+          icon: <Icon icon="feather:clock" className="h-4 w-4 mx-auto" />,
           key: "txcount",
           rootKey: "metricsTxCount",
         },
         {
-          label: "Market Cap",
-          icon: <Icon icon="carbon:mountain" className="h-4 w-4 mx-auto" />,
+          label: "Stablecoin Market Cap",
+          icon: <Icon icon="feather:dollar" className="h-4 w-4 mx-auto" />,
           key: "marketcap",
           rootKey: "metricsMarketCap",
         },
@@ -93,8 +99,8 @@ export default function Sidebar({
           rootKey: "metrics24hContractUsage",
         },
         {
-          label: "Fees Paid to Ethereum",
-          icon: <Icon icon="ion:ticket-outline" className="h-4 w-4 mx-auto" />,
+          label: "Fees Paid by Users",
+          icon: <Icon icon="feather:credit-card" className="h-4 w-4 mx-auto" />,
           key: "fees",
           rootKey: "metricsFeesPaidToEthereum",
         },
@@ -111,7 +117,7 @@ export default function Sidebar({
         },
         {
           label: "Daily Active Addresses",
-          icon: <Icon icon="bx:bx-user" className="h-4 w-4 mx-auto" />,
+          icon: <Icon icon="feather:sunrise" className="h-4 w-4 mx-auto" />,
           key: "daa",
           rootKey: "metricsDailyActiveAddresses",
         },
@@ -133,7 +139,9 @@ export default function Sidebar({
       name: "Blockspace",
       label: "Blockspace",
       icon: <LinkIcon className="h-5 w-5" />,
-      sidebarIcon: <Icon icon="bxl:react" className="h-6 w-6 mx-auto" />,
+      sidebarIcon: (
+        <Icon icon="feather:layers" className="h-6 w-6 p-0.5 mx-auto" />
+      ),
       options: [],
     },
     {
@@ -141,7 +149,9 @@ export default function Sidebar({
       label: "Chains",
       key: "chains",
       icon: <LinkIcon className="h-5 w-5" />,
-      sidebarIcon: <LinkIcon className="h-6 w-6 mx-auto" />,
+      sidebarIcon: (
+        <Icon icon="feather:link" className="h-6 w-6 p-0.5 mx-auto" />
+      ),
       options: [
         {
           label: "Ethereum",
@@ -192,20 +202,24 @@ export default function Sidebar({
       name: "Wiki",
       label: "Wiki",
       icon: <LinkIcon className="h-5 w-5" />,
-      sidebarIcon: <Icon icon="bxl:react" className="h-6 w-6 mx-auto" />,
+      sidebarIcon: (
+        <Icon icon="feather:book-open" className="h-6 w-6 p-0.5 pb-0 mx-auto" />
+      ),
       options: [],
     },
     {
       name: "API Documentation",
       label: "API Documentation",
       icon: <LinkIcon className="h-5 w-5" />,
-      sidebarIcon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
+      sidebarIcon: (
+        <Icon icon="feather:file-text" className="h-6 w-6 p-0.5 mx-auto" />
+      ),
       options: [],
     },
   ];
 
   useEffect(() => {
-    setIsOpen((isOpen) => (open ? true : isOpen));
+    setIsOpen(open);
   }, [open]);
 
   const handleToggle = () => {

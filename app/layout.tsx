@@ -12,6 +12,7 @@ import { Bars3Icon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 import Loader from "@/components/Loader";
 import Link from "next/link";
+import { Icon } from "@iconify/react";
 
 export default function RootLayout({
   children,
@@ -20,10 +21,11 @@ export default function RootLayout({
 }) {
   const isLargeScreen = useMediaQuery("(min-width: 768px)");
 
+  const [startSidebarOpen, setStartSidebarOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
-    setIsSidebarOpen(isLargeScreen);
+    setStartSidebarOpen(isLargeScreen);
   }, [isLargeScreen]);
 
   return (
@@ -60,14 +62,27 @@ export default function RootLayout({
         <Providers>
           {/* <button className="bg-blue-100 w-full">s</button> */}
           <div className="flex justify-between h-fit w-full">
-            <div className="pt-16 pl-4 bg-forest-100 dark:bg-forest-900 border-forest-400 mix-h-screen max-h-full hidden md:block">
+            <div className="pt-6 pl-4 bg-forest-100 dark:bg-forest-900 border-forest-400 mix-h-screen max-h-full hidden md:block overflow-hidden">
+              <Link href="/" className="relative h-[45px] block mb-4">
+                <div className="h-[45px] w-[192px] absolute">
+                  <Image
+                    src="/logo-full.svg"
+                    alt="Forest"
+                    className="mb-6 -ml-[9px] z-10 antialiased hover:scale-105 hover:translate-x-1 transition-transform duration-150 ease-in-out"
+                    fill={true}
+                    quality={100}
+                  />
+                </div>
+              </Link>
               <Sidebar
                 trigger={
                   <button className="flex items-center space-x-2">
-                    <Bars3Icon className="h-6 w-6" />
+                    <Icon icon="feather:menu" className="h-6 w-6" />
                   </button>
                 }
-                open={isSidebarOpen}
+                open={startSidebarOpen}
+                isOpen={isSidebarOpen}
+                setIsOpen={setIsSidebarOpen}
               />
             </div>
             <div
@@ -76,7 +91,7 @@ export default function RootLayout({
             >
               <div className="flex justify-between items-center">
                 <div className="font-bold text-2xl">
-                  <Link href="/">
+                  {/* <Link href="/">
                     <Image
                       src="/logo-layered.svg"
                       alt="Forest"
@@ -85,7 +100,7 @@ export default function RootLayout({
                       height={90}
                       quality={100}
                     />
-                  </Link>
+                  </Link> */}
                 </div>
                 <div className="flex space-x-8">
                   <EthUsdSwitch />
