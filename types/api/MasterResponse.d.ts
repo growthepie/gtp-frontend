@@ -1,52 +1,106 @@
 ﻿export interface MasterResponse {
-  data: Data;
-}
-
-export interface Data {
-  metric_id: string;
-  metric_name: string;
-  description: string;
-  unit: string;
-  source: string;
-  chains: Chains;
+  current_version: string
+  chains: Chains
+  metrics: Metrics
 }
 
 export interface Chains {
-  ethereum: Ethereum;
-  loopring: Loopring;
-  arbitrum: Arbitrum;
-  optimism: Optimism;
+  ethereum: Ethereum
+  polygon_zkevm: PolygonZkevm
+  optimism: Optimism
+  arbitrum: Arbitrum
+  imx: Imx
 }
 
 export interface Ethereum {
-  chain_name: string;
-  changes: Changes;
-  daily: number[][];
+  name: string
+  symbol: string
+  rollup: string
+  launch_date: string
+  website: string
+  twitter: string
+  block_explorer: string
 }
 
-export interface Changes {
-  "1d": number;
-  "7d": number;
-  "30d": number;
-  "90d": number;
-  "180d": number;
-  "365d": number;
-}
-
-export interface Loopring {
-  chain_name: string;
-  changes: Changes2;
-  daily: number[][];
-}
-
-export interface Arbitrum {
-  chain_name: string;
-  changes: Changes3;
-  daily: number[][];
+export interface PolygonZkevm {
+  name: string
+  symbol: string
+  rollup: string
+  launch_date: string
+  website: string
+  twitter: string
+  block_explorer: string
 }
 
 export interface Optimism {
-  chain_name: string;
-  changes: Changes4;
-  daily: number[][];
+  name: string
+  symbol: string
+  rollup: string
+  launch_date: string
+  website: string
+  twitter: string
+  block_explorer: string
+}
+
+export interface Arbitrum {
+  name: string
+  symbol: string
+  rollup: string
+  launch_date: string
+  website: string
+  twitter: string
+  block_explorer: string
+}
+
+export interface Imx {
+  name: string
+  symbol: string
+  rollup: string
+  launch_date: string
+  website: string
+  twitter: string
+  block_explorer: string
+}
+
+export interface Metrics {
+  tvl: Tvl
+  txcount: Txcount
+  daa: Daa
+  stables_mcap: StablesMcap
+  fees: Fees
+}
+
+export interface Tvl {
+  name: string
+  metric_keys: string[]
+  units: string[]
+  source: string
+}
+
+export interface Txcount {
+  name: string
+  metric_keys: string[]
+  units: string[]
+  source: string
+}
+
+export interface Daa {
+  name: string
+  metric_keys: string[]
+  units: string[]
+  source: string
+}
+
+export interface StablesMcap {
+  name: string
+  metric_keys: string[]
+  units: string[]
+  source: string
+}
+
+export interface Fees {
+  name: string
+  metric_keys: string[]
+  units: string[]
+  source: string
 }

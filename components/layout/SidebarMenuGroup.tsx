@@ -163,7 +163,7 @@ export default function SidebarMenuGroup({
     <div className="flex flex-col">
       <div className="text-xs"></div>
       <Tooltip key={item.label} placement="right">
-        <TooltipTrigger className="h-6 mb-2">
+        <TooltipTrigger className="h-6">
           <div
             className="flex items-start justify-items-start mb-2 cursor-pointer"
             onClick={handleToggle}
