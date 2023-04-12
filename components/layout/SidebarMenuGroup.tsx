@@ -104,12 +104,12 @@ export default function SidebarMenuGroup({
 
   if (item.name === "Blockspace")
     return (
-      <div className="flex flex-col">
+      <div className="group flex flex-col">
         <Tooltip key={item.label} placement="right">
           <TooltipTrigger className="h-6 mb-6 cursor-default">
-            <div className="flex items-center justify-items-center opacity-100">
+            <div className="flex items-center justify-items-center opacity-70 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
               <div className="w-6 mx-0">
-                <div className="text-white bg-forest-900 rounded-md w-6 mx-auto">
+                <div className="text-forest-50 bg-forest-900 rounded-md w-6 mx-auto">
                   {item.sidebarIcon}
                 </div>
               </div>
@@ -137,25 +137,34 @@ export default function SidebarMenuGroup({
 
   if (item.name === "API Documentation" || item.name === "Wiki")
     return (
-      <div className="flex flex-col">
+      <div className="group flex flex-col">
         {/* open in new tab */}
-        <Link
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-items-center mb-8"
-          href="https://growthepie.gitbook.io/introduction/"
-        >
-          <div className="w-6 mx-0">
-            <div className="text-white bg-forest-900 rounded-md w-6 mx-auto">
-              {item.sidebarIcon}
-            </div>
-          </div>
-          <div className="">
-            <div className="text-sm font-medium mx-4 w-60 flex">
+        <Tooltip key={item.label} placement="right">
+          <TooltipTrigger className="h-6 mb-6 cursor-default">
+            <Link
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-items-center mb-8"
+              href="https://growthepie.gitbook.io/introduction/"
+            >
+              <div className="w-6 mx-0">
+                <div className="text-forest-50 bg-forest-900 rounded-md w-6 mx-auto opacity-70 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
+                  {item.sidebarIcon}
+                </div>
+              </div>
+              <div className="">
+                <div className="text-sm font-medium mx-4 w-60 flex">
+                  {item.label}
+                </div>{" "}
+              </div>
+            </Link>
+          </TooltipTrigger>
+          {!sidebarOpen && (
+            <TooltipContent className="bg-forest-900 text-forest-50 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md flex">
               {item.label}
-            </div>{" "}
-          </div>
-        </Link>
+            </TooltipContent>
+          )}
+        </Tooltip>
       </div>
     );
 
@@ -165,16 +174,16 @@ export default function SidebarMenuGroup({
       <Tooltip key={item.label} placement="right">
         <TooltipTrigger className="h-6">
           <div
-            className="flex items-start justify-items-start mb-2 cursor-pointer"
+            className="group flex items-start justify-items-start mb-2 cursor-pointer"
             onClick={handleToggle}
           >
             <div className="w-6 mx-0">
-              <div className="text-white bg-forest-900 rounded-md w-6 mx-auto">
+              <div className="text-forest-50 bg-forest-900 rounded-md w-6 mx-auto opacity-70 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
                 {item.sidebarIcon}
               </div>
             </div>
             <div className={`text-left`}>
-              <div className="text-sm font-medium  mx-[17px] w-60">
+              <div className="text-sm font-medium mx-[17px] py-0.5 w-60">
                 {item.label}
               </div>
             </div>
@@ -189,7 +198,7 @@ export default function SidebarMenuGroup({
 
       <div
         className={`flex flex-col overflow-hidden mb-6 w-60 ${
-          isOpen ? "h-auto" : "h-0"
+          isOpen ? "h-auto mt-1" : "h-0 mt-0"
         }`}
       >
         {master &&

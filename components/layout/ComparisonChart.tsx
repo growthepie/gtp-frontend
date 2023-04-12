@@ -12,6 +12,7 @@ import { zinc, red, blue, amber, purple } from "tailwindcss/colors";
 import { ArrowTrendingUpIcon } from "@heroicons/react/24/outline";
 import { useTheme } from "next-themes";
 import _ from "lodash";
+import { Switch } from "../Switch";
 
 const COLORS = {
   GRID: "#262e48",
@@ -507,9 +508,15 @@ export default function ComparisonChart({
       </div>
       <div className="flex justify-between items-center absolute -bottom-10 left-0 right-0 ">
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
-        <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5">
-          {/* toggle ETH */}
-          <button
+        {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
+        {/* toggle ETH */}
+        <Switch
+          checked={showEthereumMainnet}
+          onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
+          rightLabel="Show Ethereum"
+        />
+
+        {/* <button
             className={`rounded-full px-2 py-1 text-xs font-bold
             ${
               showEthereumMainnet
@@ -519,8 +526,8 @@ export default function ComparisonChart({
             onClick={() => setShowEthereumMainnet(!showEthereumMainnet)}
           >
             {showEthereumMainnet ? "Hide ETH Mainnet" : "Show ETH Mainnet"}
-          </button>
-        </div>
+          </button> */}
+        {/* </div> */}
         <div className="flex justify-center items-center space-x-1 rounded-full bg-forest-50 p-0.5">
           <button
             className={`rounded-full px-2 py-1 text-xs font-bold ${

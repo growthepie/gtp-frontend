@@ -6,6 +6,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { SunIcon } from "@heroicons/react/24/outline";
 import { MoonIcon } from "@heroicons/react/24/solid";
 import { useTheme } from "next-themes";
+import { Icon } from "@iconify/react";
 
 export default function DarkModeSwitch() {
   const [mounted, setMounted] = useState(false);
@@ -31,15 +32,15 @@ export default function DarkModeSwitch() {
         <label htmlFor="toggle" className="flex items-center cursor-pointer">
           <div className="mr-2 font-medium" onClick={handleToggle}>
             {theme === "dark" ? (
-              <MoonIcon className="h-5 w-5" />
+              <Icon icon="feather:moon" className="h-6 w-6" />
             ) : (
-              <SunIcon className="h-5 w-5" />
+              <Icon icon="feather:sun" className="h-6 w-6" />
             )}
           </div>
           <div className="relative" onClick={handleToggle}>
             <div
               className={`block 
-                        w-10 h-6
+                        w-[3.25rem] h-7
                         rounded-full transition duration-200 ease-in-out ${
                           theme === "dark"
                             ? "bg-forest-500"
@@ -47,11 +48,11 @@ export default function DarkModeSwitch() {
                         }`}
             ></div>
             <div
-              className={`dot absolute left-1 top-1
-                        w-4
-                        h-4
+              className={`dot absolute left-0.5 top-0.5
+                        w-6
+                        h-6
                         rounded-full transition duration-200 ease-in-out
-                        bg-white dark:bg-forest-950
+                        bg-white dark:bg-forest-50 dark:text-forest-900 
                         ${theme === "dark" ? "transform translate-x-full" : ""}
                         rounded-full`}
             ></div>

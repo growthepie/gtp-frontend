@@ -29,14 +29,14 @@ export default function EthUsdSwitch() {
       <div className="flex items-center">
         <input id="toggle" type="checkbox" className="hidden" />
         <label htmlFor="toggle" className="flex items-center cursor-pointer">
-          <div
+          {/* <div
             className="mr-2 font-medium"
             onClick={() => {
               setShowUsd(showUsd ? false : true);
             }}
           >
             {showUsd === true ? <>USD</> : <>ETH</>}
-          </div>
+          </div> */}
           <div
             className="relative"
             onClick={() => {
@@ -44,21 +44,25 @@ export default function EthUsdSwitch() {
             }}
           >
             <div
-              className={`block 
-                        w-10 h-6
-                        rounded-full transition duration-200 ease-in-out ${
+              className={` 
+                        w-[6.25rem] h-7 flex justify-between items-center px-3 text-sm font-medium
+                        rounded-full transition duration-200 ease-in-out text-black/50 ${
                           showUsd ? "bg-forest-500" : "bg-forest-500/50"
                         }`}
-            ></div>
+            >
+              <div>ETH</div>
+              <div>USD</div>
+            </div>
             <div
-              className={`dot absolute left-1 top-1
-                        w-4
-                        h-4
-                        rounded-full transition duration-200 ease-in-out
-                        bg-white dark:bg-forest-950
-                        ${showUsd ? "transform translate-x-full" : ""}
-                        rounded-full`}
-            ></div>
+              className={`dot absolute left-0.5 top-0.5 w-12 h-6 rounded-full transition duration-200 
+                          ease-in-out bg-white dark:bg-forest-50 dark:text-forest-900 text-sm font-medium
+                          py-0.5 px-1.5 text-center
+                          ${
+                            showUsd ? "transform translate-x-full" : ""
+                          } rounded-full`}
+            >
+              {showUsd === true ? <>USD</> : <>ETH</>}
+            </div>
           </div>
         </label>
       </div>

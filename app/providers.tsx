@@ -6,7 +6,7 @@ import { SWRConfig } from "swr";
 
 export function Providers({ children }) {
   return (
-    <ThemeProvider attribute="class">
+    <ThemeProvider attribute="class" defaultTheme="dark">
       <SWRConfig
         value={{
           fetcher: (url) => fetch(url).then((r) => r.json()),

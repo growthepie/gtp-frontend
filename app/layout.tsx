@@ -102,9 +102,25 @@ export default function RootLayout({
                     />
                   </Link> */}
                 </div>
-                <div className="flex space-x-8">
+                <div className="flex space-x-6 items-center">
                   <EthUsdSwitch />
                   <DarkModeSwitch />
+                  <Link href="#" passHref target="_blank" rel="noopener">
+                    <Icon
+                      icon="cib:twitter"
+                      className="h-6 w-6 opacity-70 hover:opacity-100"
+                    />
+                  </Link>
+                  <Link
+                    href="https://discord.gg/fxjJFe7QyN"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    <Icon
+                      icon="cib:discord"
+                      className="h-6 w-6 opacity-70 hover:opacity-100"
+                    />
+                  </Link>
                 </div>
               </div>
               <main>{children}</main>
