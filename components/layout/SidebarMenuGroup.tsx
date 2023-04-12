@@ -107,7 +107,7 @@ export default function SidebarMenuGroup({
       <div className="flex flex-col">
         <Tooltip key={item.label} placement="right">
           <TooltipTrigger className="h-6 mb-6 cursor-default">
-            <div className="flex items-center justify-items-center opacity-50">
+            <div className="flex items-center justify-items-center opacity-100">
               <div className="w-6 mx-0">
                 <div className="text-white bg-forest-900 rounded-md w-6 mx-auto">
                   {item.sidebarIcon}
@@ -124,8 +124,11 @@ export default function SidebarMenuGroup({
             </div>
           </TooltipTrigger>
           {!sidebarOpen && (
-            <TooltipContent className="bg-forest-900 text-forest-50 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md">
-              {item.label}
+            <TooltipContent className="bg-forest-900 text-forest-50 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md flex">
+              {item.label}{" "}
+              <div className="text-[0.5rem] leading-[1.75] px-1 py-[0.1rem] font-bold ml-1 rounded-[4px] bg-forest-50 text-forest-900">
+                SOON
+              </div>
             </TooltipContent>
           )}
         </Tooltip>
