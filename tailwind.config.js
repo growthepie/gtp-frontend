@@ -14,6 +14,7 @@ module.exports = {
     extend: {
       fontFamily: {
         inter: ["Inter", "sans-serif"],
+        raleway: ['var(--font-raleway)', "sans-serif"],
         sans: ["Inter var", ...defaultTheme.fontFamily.sans],
       },
       transitionProperty: {

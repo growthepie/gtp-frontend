@@ -9,7 +9,7 @@ import { useTheme } from "next-themes";
 
 export default function EthUsdSwitch() {
   const [mounted, setMounted] = useState(false);
-  const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   // useEffect only runs on the client, so now we can safely show the UI
   useEffect(() => {

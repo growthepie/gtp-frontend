@@ -1,6 +1,8 @@
+import { AllChainsByKeys } from "@/lib/chains";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocalStorage, useMediaQuery, useSessionStorage } from "usehooks-ts";
+import { useTheme } from "next-themes";
 
 const MetricsTable = ({
   data,
@@ -17,7 +19,7 @@ const MetricsTable = ({
   metric: string;
   fixedWidth?: boolean;
 }) => {
-  const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const [maxVal, setMaxVal] = useState(0);
 
@@ -26,6 +28,8 @@ const MetricsTable = ({
   const [chainsLastVal, setChainsLastVal] = useState<
     { chain: any; lastVal: number }[]
   >([]);
+
+  const { theme } = useTheme();
 
   // check if screen is large enough to show sidebar
   const isLargeScreen = useMediaQuery("(min-width: 768px)");
@@ -59,7 +63,7 @@ const MetricsTable = ({
     setChainsLastVal(clv.sort((a, b) => b.lastVal - a.lastVal));
 
     setMaxVal(max);
-  }, [chains, data]);
+  }, [chains, data, lastIndex]);
 
   return (
     <>
@@ -72,7 +76,7 @@ const MetricsTable = ({
           <div className={`ml-10 ${fixedWidth ? "w-[80px]" : "w-[25%]"}`}>
             Chain
           </div>
-          <div className={`${fixedWidth ? "w-[80px]" : "w-[15%]"}`}>
+          <div className={`${fixedWidth ? "w-[80px]" : "w-[15%]"} text-right`}>
             {/* {metric} */}
             Current
           </div>
@@ -116,7 +120,7 @@ const MetricsTable = ({
                 <div className="relative -mb-0.5">
                   <div
                     className={`w-8 h-8 rounded-full bg-white border-[5px] ${
-                      chain.border[1]
+                      chain.border[theme][1]
                     } ${selectedChains.includes(chain.key) ? "" : ""}`}
                   ></div>
                   <Image
@@ -137,7 +141,7 @@ const MetricsTable = ({
                       fixedWidth ? "w-[80px]" : "w-[15%]"
                     } relative`}
                   >
-                    <div className="flex">
+                    <div className="flex justify-end">
                       {data[chain.key].daily.types.includes("usd") && (
                         <>
                           {showUsd ? (
@@ -148,9 +152,9 @@ const MetricsTable = ({
                         </>
                       )}
                       {data[chain.key].daily.types.includes("usd")
-                        ? Intl.NumberFormat("en-US", {
+                        ? Intl.NumberFormat(undefined, {
                             notation: "compact",
-                            maximumFractionDigits: 1,
+                            maximumFractionDigits: 2,
                           }).format(
                             data[chain.key].daily.data[
                               data[chain.key].daily.data.length - 1
@@ -161,16 +165,16 @@ const MetricsTable = ({
                                 : 1
                             ]
                           )
-                        : Intl.NumberFormat("en-US", {
+                        : Intl.NumberFormat(undefined, {
                             notation: "compact",
-                            maximumFractionDigits: 1,
+                            maximumFractionDigits: 2,
                           }).format(
                             data[chain.key].daily.data[
                               data[chain.key].daily.data.length - 1
                             ][1]
                           )}
                     </div>
-                    <div className="absolute -bottom-[4px] left-0 w-[75px] h-1 bg-forest-50 rounded-md"></div>
+                    <div className="absolute -bottom-[4px] right-0 w-full h-1 bg-forest-50 rounded-md"></div>
                     <div
                       className={`absolute -bottom-[4px] left-0 h-1 bg-green-500 rounded-md`}
                       style={{
@@ -179,8 +183,8 @@ const MetricsTable = ({
                             data[chain.key].daily.data.length - 1
                           ][1] /
                             maxVal) *
-                          75
-                        }px`,
+                          100
+                        }%`,
                       }}
                     ></div>
                     {/* {data[chain.key].daily.types.includes("eth") && !showUsd && (

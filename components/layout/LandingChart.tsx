@@ -3,12 +3,13 @@
 import HighchartsReact from "highcharts-react-official";
 import Highcharts, { chart } from "highcharts";
 import highchartsAnnotations from "highcharts/modules/annotations";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Card } from "@/components/Card";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
 import { zinc, red, blue, amber, purple } from "tailwindcss/colors";
+import { theme as customTheme } from "tailwind.config";
 import { ArrowTrendingUpIcon } from "@heroicons/react/24/outline";
 import { useTheme } from "next-themes";
 import _ from "lodash";
@@ -79,6 +80,11 @@ const baseOptions: Highcharts.Options = {
   xAxis: {
     type: "datetime",
     lineWidth: 0,
+    crosshair: {
+      width: 0.5,
+      color: COLORS.PLOT_LINE,
+    },
+
     labels: {
       style: { color: COLORS.LABEL },
       enabled: true,
@@ -123,25 +129,9 @@ const baseOptions: Highcharts.Options = {
   },
   tooltip: {
     // backgroundColor: 'transparent',
-    xDateFormat: "%Y-%m-%d",
-    valueDecimals: 2,
     useHTML: true,
-    borderWidth: 0,
     shadow: false,
     shared: true,
-    formatter: function (tooltip) {
-      var items = this.points || splat(this),
-        series = items[0].series,
-        s;
-
-      // sort the values
-      items.sort(function (a, b) {
-        return a.y < b.y ? -1 : a.y > b.y ? 1 : 0;
-      });
-      items.reverse();
-
-      return tooltip.defaultFormatter.call(this, tooltip);
-    },
   },
   plotOptions: {
     // spline: {
@@ -157,7 +147,7 @@ const baseOptions: Highcharts.Options = {
       borderWidth: 0,
       // make columns touch each other
       pointWidth: undefined,
-      groupPadding: 0.0,
+      groupPadding: 0.25,
       pointPadding: 0,
       animation: false,
     },
@@ -249,7 +239,7 @@ export default function LandingChart({
 
   const [selectedTimespan, setSelectedTimespan] = useState("180d");
 
-  const [selectedScale, setSelectedScale] = useState("log");
+  const [selectedScale, setSelectedScale] = useState("absolute");
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
@@ -261,8 +251,20 @@ export default function LandingChart({
     const xMaxDate = new Date(xMax);
     const xMinMonth = xMinDate.getMonth();
     const xMaxMonth = xMaxDate.getMonth();
+
     const xMinYear = xMinDate.getFullYear();
     const xMaxYear = xMaxDate.getFullYear();
+
+    if (selectedTimespan === "max") {
+      for (let year = xMinYear; year <= xMaxYear; year++) {
+        for (let month = 0; month < 12; month = month + 4) {
+          if (year === xMinYear && month < xMinMonth) continue;
+          if (year === xMaxYear && month > xMaxMonth) continue;
+          tickPositions.push(new Date(year, month, 1).getTime());
+        }
+      }
+      return tickPositions;
+    }
 
     for (let year = xMinYear; year <= xMaxYear; year++) {
       for (let month = 0; month < 12; month++) {
@@ -274,6 +276,105 @@ export default function LandingChart({
 
     return tickPositions;
   }
+
+  const formatNumber = useCallback((value: number) => {
+    if (value < 1000) return value.toFixed(2);
+    if (value < 1000000) return (value / 1000).toFixed(2) + "K";
+    if (value < 1000000000) return (value / 1000000).toFixed(2) + "M";
+    if (value < 1000000000000) return (value / 1000000000).toFixed(2) + "B";
+    if (value < 1000000000000000)
+      return (value / 1000000000000).toFixed(2) + "T";
+    if (value < 1000000000000000000)
+      return (value / 1000000000000000).toFixed(2) + "P";
+    return (value / 1000000000000000000).toFixed(2) + "E";
+  }, []);
+
+  const tooltipFormatter = useCallback(
+    function (this: any) {
+      const { x, points } = this;
+      const date = new Date(x);
+      const dateString = date.toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-80 text-xs font-raleway"><div class="w-full font-bold text-[1rem] ml-6 mb-2 opacity-50">${dateString}</div>`;
+      const tooltipEnd = `</div>`;
+
+      let pointsSum = 0;
+      if (selectedScale !== "percentage")
+        pointsSum = points.reduce((acc: number, point: any) => {
+          acc += point.y;
+          return pointsSum;
+        }, 0);
+
+      const tooltipPoints = points
+        .sort((a: any, b: any) => b.y - a.y)
+        .map((point: any) => {
+          const { series, y, percentage } = point;
+          const { name } = series;
+          if (selectedScale === "percentage")
+            return `
+              <div class="flex w-full space-x-2 items-center font-medium mb-1">
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                  AllChainsByKeys[name].colors[theme][0]
+                }"></div>
+                <div class="tooltip-point-name">${
+                  AllChainsByKeys[name].label
+                }</div>
+                <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
+                  percentage,
+                  2
+                )}%</div>
+              </div>
+              <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
+                <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
+
+                <div class="h-[2px] rounded-full absolute left-0 top-0" style="width: ${Highcharts.numberFormat(
+                  percentage,
+                  2
+                )}%; background-color: ${
+              AllChainsByKeys[name].colors[theme][0]
+            };"> </div>
+              </div> -->`;
+
+          const value = formatNumber(y);
+          return `
+          <div class="flex w-full space-x-2 items-center font-medium mb-1">
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+              AllChainsByKeys[name].colors[theme][0]
+            }"></div>
+            <div class="tooltip-point-name text-md">${
+              AllChainsByKeys[name].label
+            }</div>
+            <div class="flex-1 text-right justify-end font-inter">
+              <div class="mr-1 inline-block">${parseFloat(y).toLocaleString(
+                undefined,
+                {
+                  minimumFractionDigits: 2,
+                }
+              )}</div>
+          <!-- <div class="inline-block">≈</div>
+              <div class="inline-block">${value}</div>
+              -->
+            </div>
+          </div>
+          <!-- <div class="flex ml-4 w-[calc(100% - 1rem)] relative mb-1">
+            <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
+
+            <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
+              (y / pointsSum) * 100
+            )}%; background-color: ${
+            AllChainsByKeys[name].colors[theme][0]
+          }33;"></div>
+          </div> -->`;
+        })
+        .join("");
+      return tooltip + tooltipPoints + tooltipEnd;
+    },
+    [formatNumber, selectedScale, theme]
+  );
 
   const filteredData = useMemo(() => {
     if (!data) return null;
@@ -320,14 +421,28 @@ export default function LandingChart({
           },
         },
       },
+      tooltip: {
+        formatter: tooltipFormatter,
+        backgroundColor:
+          theme === "light"
+            ? customTheme.extend.colors["forest"]["800"]
+            : customTheme.extend.colors["forest"]["50"],
+        borderRadius: 17,
+        borderWidth: 0,
+        padding: 0,
+
+        style: {
+          color: theme === "light" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
+        },
+      },
       series: filteredData.map((series: any) => ({
         name: series.name,
         data: series.data.map((d: any) => [d[0], d[1]]),
 
         type: selectedScale === "percentage" ? "area" : "column",
         shadow: {
-          color: AllChainsByKeys[series.name].colors[1] + "33",
-          width: 0,
+          color: AllChainsByKeys[series.name].colors[theme][1] + "33",
+          width: 10,
         },
         color: {
           linearGradient: {
@@ -337,9 +452,9 @@ export default function LandingChart({
             y2: 1,
           },
           stops: [
-            [0, AllChainsByKeys[series.name].colors[0]],
+            [0, AllChainsByKeys[series.name].colors[theme][0]],
             // [0.5, AllChainsByKeys[series.name].colors[1]],
-            [1, AllChainsByKeys[series.name].colors[0]],
+            [1, AllChainsByKeys[series.name].colors[theme][0]],
           ],
         },
       })),
@@ -373,9 +488,7 @@ export default function LandingChart({
               type: "linear",
             },
             tooltip: {
-              useHTML: true,
-              pointFormat:
-                '<span style="color:{series.color.stops[0][1]}">{series.name}</span>: <b>{point.y}</b><br/>',
+              formatter: tooltipFormatter,
             },
             series: filteredData.map((series: any) => ({
               ...series,
@@ -397,9 +510,7 @@ export default function LandingChart({
               type: "logarithmic",
             },
             tooltip: {
-              useHTML: true,
-              pointFormat:
-                '<span style="color:{series.color.stops[0][1]}">{series.name}</span>: <b>{point.y}</b><br/>',
+              formatter: tooltipFormatter,
             },
             series: filteredData.map((series: any) => ({
               ...series,
@@ -424,8 +535,7 @@ export default function LandingChart({
               type: "linear",
             },
             tooltip: {
-              useHTML: true,
-              pointFormat: `<span style="color:{series.color.stops[0][1]}">{series.name}</span>: <b>{point.percentage:.1f}%</b><br/>`,
+              formatter: tooltipFormatter,
             },
             series: filteredData.map((series: any) => ({
               ...series,
@@ -452,7 +562,7 @@ export default function LandingChart({
 
   return (
     <div className="w-full my-[8rem] relative">
-      <div className="flex w-full justify-between items-center absolute -top-32 left-0 right-0 text-xs rounded-full bg-forest-50 p-0.5 font-inter">
+      <div className="flex w-full justify-between items-center absolute -top-32 left-0 right-0 text-xs rounded-full bg-forest-50 p-0.5">
         <div className="flex justify-center items-center space-x-1">
           <button
             className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${

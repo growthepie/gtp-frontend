@@ -59,6 +59,7 @@ const Chain = ({ params }: { params: any }) => {
   return (
     <div className="mx-auto pt-10 w-44[rem] lg:w-[88rem]">
       {/*Header */}
+
       <div className="ml-12 mr-14">
         <div className="flex justify-between items-center">
           <div className="flex gap-x-6 items-center">

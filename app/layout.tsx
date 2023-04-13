@@ -17,7 +17,11 @@ import { Raleway } from "@next/font/google";
 import CookieConsent from "react-cookie-consent";
 
 // If loading a variable font, you don't need to specify the font weight
-const raleway = Raleway({ subsets: ["latin"] });
+const raleway = Raleway({
+  subsets: ["latin"],
+  variable: "--font-raleway",
+  display: "swap",
+});
 
 export default function RootLayout({
   children,
@@ -34,13 +38,15 @@ export default function RootLayout({
   }, [isLargeScreen]);
 
   return (
-    <html lang="en" suppressHydrationWarning className={raleway.className}>
+    <html lang="en" suppressHydrationWarning>
       {/*
         <head /> will contain the components returned by the nearest parent
         head.tsx. Find out more at https://beta.nextjs.org/docs/api-reference/file-conventions/head
       */}
       <head />
-      <body className="bg-forest-50/30 bg-gradient-to-r dark:from-forest-800 dark:via-forest-900 dark:to-forest-900 text-forest-900">
+      <body
+        className={`bg-forest-50/30 bg-gradient-to-r dark:from-forest-800 dark:via-forest-900 dark:to-forest-900 text-forest-900 ${raleway.variable} font-raleway`}
+      >
         <div className="absolute top-0 left-0 -z-10 flex w-full justify-center overflow-clip">
           <div className="h-[500px] xs:h-[650px] md:h-[700px] xl:h-[800px] 2xl:h-[900px] 3xl:h-[1200px]" />
           <div className=" absolute -top-[20px] h-full w-[150vw] select-none xs:-top-[20px] sm:-top-[60px] md:-top-[100px] lg:-top-[120px] xl:-top-[120px] 2xl:-top-[150px]">
