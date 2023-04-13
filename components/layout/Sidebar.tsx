@@ -41,6 +41,7 @@ type SidebarProps = {
   children?: ReactNode;
   isOpen?: boolean;
   setIsOpen?: (isOpen: boolean) => void;
+  isMobile?: boolean;
 };
 
 export default function Sidebar({
@@ -53,6 +54,7 @@ export default function Sidebar({
   onClose = () => {},
   isOpen,
   setIsOpen,
+  isMobile,
 }: SidebarProps) {
   const { data: master } = useSWR<MasterResponse>(
     "https://d2cfnw27176mbd.cloudfront.net/v0_2/master.json"
@@ -218,6 +220,16 @@ export default function Sidebar({
     },
   ];
 
+  const contributors = {
+    name: "Contributors",
+    label: "Contributors",
+    icon: <LinkIcon className="h-5 w-5" />,
+    sidebarIcon: (
+      <Icon icon="feather:users" className="h-6 w-6 p-0.5 mx-auto" />
+    ),
+    options: [],
+  };
+
   useEffect(() => {
     setIsOpen(open);
   }, [open]);
@@ -240,9 +252,52 @@ export default function Sidebar({
     onClose();
   };
 
+  if (isMobile)
+    return (
+      <>
+        {isOpen && (
+          <>
+            <div
+              className="fixed bottom-0 left-0 right-0 top-0 z-10 bg-black/50 transition-all"
+              onClick={() => {
+                handleToggle();
+              }}
+            ></div>
+            <div
+              className={`absolute top-10 left-0 bg-forest-50 rounded-r-lg z-50 flex flex-col justify-items-start select-none ${
+                isOpen ? "w-[13rem]" : "w-[2.5rem]"
+              } overflow-hidden`}
+            >
+              <div className="text-forest-800 z-20 m-2 mt-6">
+                <div className="">
+                  {items.map((item) => (
+                    <SidebarMenuGroup
+                      key={item.name + "_item"}
+                      item={item}
+                      trigger={trigger}
+                      sidebarOpen={isOpen}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+        <div
+          className={`text-forest-800 ${
+            isOpen ? "bg-forest-50 rounded-t-lg z-50" : ""
+          } p-2`}
+        >
+          <div onClick={handleToggle} className="w-6 h-6">
+            {trigger}
+          </div>
+        </div>
+      </>
+    );
+
   return (
     <div
-      className={`flex flex-col justify-items-start select-none ${
+      className={`flex-1 flex flex-col justify-items-start select-none ${
         isOpen ? "w-[13rem]" : "w-[2.5rem]"
       } overflow-hidden`}
     >
@@ -261,6 +316,26 @@ export default function Sidebar({
             sidebarOpen={isOpen}
           />
         ))}
+      </div>
+      <div className="flex-1 flex flex-col justify-end pb-6">
+        <SidebarMenuGroup
+          key={contributors.name + "_item"}
+          item={contributors}
+          trigger={trigger}
+          sidebarOpen={isOpen}
+        />
+        {isOpen && (
+          <>
+            <div className="text-[0.7rem] text-forest-600 leading-[1] my-2">
+              © 2023 Grow The Pie 🥧
+            </div>
+            <div className="text-[0.7rem] flex justify-between w-48 text-forest-600 leading-[1]">
+              <Link href="/privacy-policy">Privacy Policy</Link>
+              <Link href="/imprint">Imprint</Link>
+              <Link href="https://discord.gg/fxjJFe7QyN">Feedback</Link>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

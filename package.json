@@ -32,6 +32,7 @@
     "nightwind": "^1.1.13",
     "quicktype-core": "^21.0.9",
     "react": "18.2.0",
+    "react-cookie-consent": "^8.0.1",
     "react-d3-library": "^1.1.8",
     "react-dom": "18.2.0",
     "react-json-view": "^1.21.3",

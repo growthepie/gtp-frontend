@@ -114,7 +114,7 @@ export default function SidebarMenuGroup({
                 </div>
               </div>
               <div className="">
-                <div className="text-sm font-medium mx-4 w-60 flex">
+                <div className="text-sm font-bold mx-4 w-60 flex ">
                   {item.label}
                   <div className="text-[0.6rem] leading-[1.75] px-1 py-[0.1rem] font-bold ml-2 rounded-[4px] bg-forest-900 text-forest-50">
                     SOON
@@ -135,7 +135,7 @@ export default function SidebarMenuGroup({
       </div>
     );
 
-  if (item.name === "API Documentation" || item.name === "Wiki")
+  if (["API Documentation", "Wiki", "Contributors"].includes(item.name))
     return (
       <div className="group flex flex-col">
         {/* open in new tab */}
@@ -145,7 +145,11 @@ export default function SidebarMenuGroup({
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-items-center mb-8"
-              href="https://growthepie.gitbook.io/introduction/"
+              href={
+                ["API Documentation", "Wiki"].includes(item.name)
+                  ? "https://growthepie.gitbook.io/introduction/"
+                  : "/contributors"
+              }
             >
               <div className="w-6 mx-0">
                 <div className="text-forest-50 bg-forest-900 rounded-md w-6 mx-auto opacity-70 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
@@ -153,7 +157,7 @@ export default function SidebarMenuGroup({
                 </div>
               </div>
               <div className="">
-                <div className="text-sm font-medium mx-4 w-60 flex">
+                <div className="text-sm font-bold mx-4 w-60 flex">
                   {item.label}
                 </div>{" "}
               </div>
@@ -183,7 +187,7 @@ export default function SidebarMenuGroup({
               </div>
             </div>
             <div className={`text-left`}>
-              <div className="text-sm font-medium mx-[17px] py-0.5 w-60">
+              <div className="text-sm font-bold mx-[17px] py-0.5 w-60">
                 {item.label}
               </div>
             </div>

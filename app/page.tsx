@@ -93,13 +93,13 @@ export default function Home() {
 
   return (
     <div className="flex w-full mt-8">
-      <div className={`flex flex-col flex-1 pl-6`}>
+      <div className={`flex flex-col flex-1 pl-2 md:pl-6`}>
         {daa && (
           <>
             <Heading className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl">
-              Growing the Ethereum ecosystem together.
+              Growing the Ethereum Ecosystem Together
             </Heading>
-            <Subheading className="text-sm mt-3">
+            <Subheading className="text-sm">
               Compare Ethereum&apos;s Layer-2 solutions and better understand
               the metrics to grow the ecosystem.
             </Subheading>
