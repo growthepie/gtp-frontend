@@ -147,7 +147,7 @@ const baseOptions: Highcharts.Options = {
       borderWidth: 0,
       // make columns touch each other
       pointWidth: undefined,
-      groupPadding: 0.25,
+      groupPadding: 0,
       pointPadding: 0,
       animation: false,
     },
@@ -245,37 +245,51 @@ export default function LandingChart({
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
 
-  function getTickPositions(xMin: any, xMax: any): number[] {
-    const tickPositions: number[] = [];
-    const xMinDate = new Date(xMin);
-    const xMaxDate = new Date(xMax);
-    const xMinMonth = xMinDate.getMonth();
-    const xMaxMonth = xMaxDate.getMonth();
+  const getTickPositions = useCallback(
+    (xMin: any, xMax: any): number[] => {
+      const tickPositions: number[] = [];
+      const xMinDate = new Date(xMin);
+      const xMaxDate = new Date(xMax);
+      const xMinMonth = xMinDate.getMonth();
+      const xMaxMonth = xMaxDate.getMonth();
 
-    const xMinYear = xMinDate.getFullYear();
-    const xMaxYear = xMaxDate.getFullYear();
+      const xMinYear = xMinDate.getFullYear();
+      const xMaxYear = xMaxDate.getFullYear();
 
-    if (selectedTimespan === "max") {
+      if (selectedTimespan === "max") {
+        for (let year = xMinYear; year <= xMaxYear; year++) {
+          for (let month = 0; month < 12; month = month + 4) {
+            if (year === xMinYear && month < xMinMonth) continue;
+            if (year === xMaxYear && month > xMaxMonth) continue;
+            tickPositions.push(new Date(year, month, 1).getTime());
+          }
+        }
+        return tickPositions;
+      }
+
       for (let year = xMinYear; year <= xMaxYear; year++) {
-        for (let month = 0; month < 12; month = month + 4) {
+        for (let month = 0; month < 12; month++) {
           if (year === xMinYear && month < xMinMonth) continue;
           if (year === xMaxYear && month > xMaxMonth) continue;
           tickPositions.push(new Date(year, month, 1).getTime());
         }
       }
+
       return tickPositions;
-    }
+    },
+    [selectedTimespan]
+  );
 
-    for (let year = xMinYear; year <= xMaxYear; year++) {
-      for (let month = 0; month < 12; month++) {
-        if (year === xMinYear && month < xMinMonth) continue;
-        if (year === xMaxYear && month > xMaxMonth) continue;
-        tickPositions.push(new Date(year, month, 1).getTime());
-      }
-    }
+  const getSeriesType = useCallback(
+    (name: string) => {
+      if (selectedScale === "percentage") return "area";
 
-    return tickPositions;
-  }
+      if (name === "ethereum") return "areaspline";
+
+      return "column";
+    },
+    [selectedScale]
+  );
 
   const formatNumber = useCallback((value: number) => {
     if (value < 1000) return value.toFixed(2);
@@ -439,7 +453,22 @@ export default function LandingChart({
         name: series.name,
         data: series.data.map((d: any) => [d[0], d[1]]),
 
-        type: selectedScale === "percentage" ? "area" : "column",
+        // type: selectedScale === "percentage" ? "area" : "column",
+        type: getSeriesType(series.name),
+        // fill if series name is ethereum
+        fillOpacity: series.name === "ethereum" ? 1 : 0,
+        fillColor: {
+          linearGradient: {
+            x1: 0,
+            y1: 0,
+            x2: 0,
+            y2: 1,
+          },
+          stops: [
+            [0, AllChainsByKeys[series.name].colors[theme][0] + "33"],
+            [1, AllChainsByKeys[series.name].colors[theme][1] + "33"],
+          ],
+        },
         shadow: {
           color: AllChainsByKeys[series.name].colors[theme][1] + "33",
           width: 10,
@@ -461,7 +490,15 @@ export default function LandingChart({
     };
 
     return _merge({}, baseOptions, dynamicOptions);
-  }, [filteredData, selectedTimespan, showUsd, theme]);
+  }, [
+    filteredData,
+    getSeriesType,
+    getTickPositions,
+    selectedScale,
+    selectedTimespan,
+    theme,
+    tooltipFormatter,
+  ]);
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
 
@@ -492,7 +529,7 @@ export default function LandingChart({
             },
             series: filteredData.map((series: any) => ({
               ...series,
-              type: "column",
+              type: getSeriesType(series.name),
             })),
           });
           break;
@@ -514,7 +551,7 @@ export default function LandingChart({
             },
             series: filteredData.map((series: any) => ({
               ...series,
-              type: "column",
+              type: getSeriesType(series.name),
             })),
           });
           break;
@@ -539,7 +576,7 @@ export default function LandingChart({
             },
             series: filteredData.map((series: any) => ({
               ...series,
-              type: "area",
+              type: getSeriesType(series.name),
             })),
           });
           break;
@@ -547,7 +584,7 @@ export default function LandingChart({
           break;
       }
     }
-  }, [selectedScale, chartComponent, filteredData]);
+  }, [selectedScale, chartComponent, filteredData, tooltipFormatter]);
 
   useEffect(() => {
     if (chartComponent.current) {
