@@ -211,6 +211,7 @@ export default function SidebarMenuGroup({
               Object.keys(master[item.key]).includes(option.key)
             )
             .map((option) => {
+              console.log(option.label);
               // if (!sidebarOpen) {
               return (
                 <Tooltip key={option.label} placement="right">

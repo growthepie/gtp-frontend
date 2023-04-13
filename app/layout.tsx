@@ -51,6 +51,7 @@ export default function RootLayout({
                 className="opacity-30 box-border block overflow-hidden absolute top-0 left-0 xs:left-[10vw] md:left-[45vw] lg:left-[55vw] xl:left-[65vw] bottom-0 m-auto min-w-full max-w-[150vw] w-[150vw] min-h-full max-h-[150vh] object-cover sm:object-scale-down mix-blend-soft-light"
                 fill={true}
                 quality={100}
+                priority={true}
               />
             </span>
           </div>

@@ -91,8 +91,8 @@ export default function Sidebar({
         {
           label: "Stablecoin Market Cap",
           icon: <Icon icon="feather:dollar" className="h-4 w-4 mx-auto" />,
-          key: "marketcap",
-          rootKey: "metricsMarketCap",
+          key: "stablecoinMcap",
+          rootKey: "metricsStablecoinMcap",
         },
         {
           label: "24h Contract Usage",
@@ -176,7 +176,7 @@ export default function Sidebar({
         {
           label: "Immutable X",
           icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
-          key: "immutablex",
+          key: "imx",
           rootKey: "chainsImmutableX",
         },
         {
@@ -186,9 +186,9 @@ export default function Sidebar({
           rootKey: "chainsLoopring",
         },
         {
-          label: "Polygon",
+          label: "Polygon zkEVM",
           icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
-          key: "polygon",
+          key: "polygon_zkevm",
           rootKey: "chainsPolygon",
         },
         {

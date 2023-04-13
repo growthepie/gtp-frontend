@@ -11,7 +11,7 @@ import _merge from "lodash/merge";
 import { zinc, red, blue, amber, purple } from "tailwindcss/colors";
 import { ArrowTrendingUpIcon } from "@heroicons/react/24/outline";
 import { useTheme } from "next-themes";
-import _, { filter } from "lodash";
+import _ from "lodash";
 import { Switch } from "../Switch";
 import { AllChains, AllChainsByKeys } from "@/lib/chains";
 
@@ -35,7 +35,7 @@ const baseOptions: Highcharts.Options = {
   accessibility: { enabled: false },
   exporting: { enabled: false },
   chart: {
-    type: "line",
+    type: "column",
     animation: false,
     backgroundColor: "transparent",
     showAxes: false,
@@ -144,10 +144,25 @@ const baseOptions: Highcharts.Options = {
     },
   },
   plotOptions: {
-    spline: {
-      lineWidth: 2,
+    // spline: {
+    //   lineWidth: 2,
+    // },
+    column: {
+      stacking: "normal",
+      events: {
+        legendItemClick: function () {
+          return false;
+        },
+      },
+      borderWidth: 0,
+      // make columns touch each other
+      pointWidth: undefined,
+      groupPadding: 0.0,
+      pointPadding: 0,
+      animation: false,
     },
     series: {
+      stacking: "normal",
       events: {
         legendItemClick: function () {
           return false;
@@ -158,6 +173,7 @@ const baseOptions: Highcharts.Options = {
         radius: 0,
         symbol: "circle",
       },
+      shadow: false,
       animation: false,
     },
   },
@@ -205,25 +221,16 @@ const timespans = {
   },
 };
 
-type MainChartProps = {
-  data: {
-    name: string;
-    data: any;
-    types: any[];
-  };
-  dataKeys: string[];
-};
-
-export default function ComparisonChart({
+export default function LandingChart({
   data,
-  timeIntervals,
-  onTimeIntervalChange,
-  showTimeIntervals = true,
-}: {
+}: // timeIntervals,
+// onTimeIntervalChange,
+// showTimeIntervals = true,
+{
   data: any;
-  timeIntervals: string[];
-  onTimeIntervalChange: (interval: string) => void;
-  showTimeIntervals: boolean;
+  // timeIntervals: string[];
+  // onTimeIntervalChange: (interval: string) => void;
+  // showTimeIntervals: boolean;
 }) {
   useEffect(() => {
     Highcharts.setOptions({
@@ -240,9 +247,9 @@ export default function ComparisonChart({
 
   const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
 
-  const [selectedTimespan, setSelectedTimespan] = useState("90d");
+  const [selectedTimespan, setSelectedTimespan] = useState("180d");
 
-  const [selectedScale, setSelectedScale] = useState("absolute");
+  const [selectedScale, setSelectedScale] = useState("log");
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
@@ -278,13 +285,14 @@ export default function ComparisonChart({
   const options = useMemo((): Highcharts.Options => {
     const dynamicOptions: Highcharts.Options = {
       chart: {
-        type: selectedScale === "percentage" ? "area" : "spline",
+        type: selectedScale === "percentage" ? "area" : "column",
       },
       plotOptions: {
         area: {
-          stacking: selectedScale === "percentage" ? "percent" : undefined,
+          stacking: selectedScale === "percentage" ? "percent" : "normal",
         },
       },
+
       legend: {
         enabled: false,
       },
@@ -314,46 +322,31 @@ export default function ComparisonChart({
       },
       series: filteredData.map((series: any) => ({
         name: series.name,
-        data:
-          !showUsd && series.types.includes("usd")
-            ? series.data.map((d: any) => [d[0], d[2]])
-            : series.data.map((d: any) => [d[0], d[1]]),
+        data: series.data.map((d: any) => [d[0], d[1]]),
 
-        type: selectedScale === "percentage" ? "area" : "spline",
+        type: selectedScale === "percentage" ? "area" : "column",
         shadow: {
           color: AllChainsByKeys[series.name].colors[1] + "33",
-          width: 10,
+          width: 0,
         },
         color: {
           linearGradient: {
             x1: 0,
             y1: 0,
-            x2: 1,
-            y2: 0,
+            x2: 0,
+            y2: 1,
           },
           stops: [
             [0, AllChainsByKeys[series.name].colors[0]],
-            // [0.33, AllChainsByKeys[series.name].colors[1]],
-            [1, AllChainsByKeys[series.name].colors[1]],
+            // [0.5, AllChainsByKeys[series.name].colors[1]],
+            [1, AllChainsByKeys[series.name].colors[0]],
           ],
         },
-        // shadow: {
-        // 	color: bgColors[series.name][0],
-        // 	width: 15,
-        // },
       })),
-
-      // tooltip: {
-      // 	// backgroundColor: 'transparent',
-
-      // 	borderWidth: 0,
-      // 	shadow: false,
-      // 	headerFormat: '',
-      // },
     };
 
     return _merge({}, baseOptions, dynamicOptions);
-  }, [filteredData, showUsd, selectedTimespan, selectedScale]);
+  }, [filteredData, selectedTimespan, showUsd, theme]);
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
 
@@ -373,26 +366,27 @@ export default function ComparisonChart({
           chartComponent.current?.update({
             plotOptions: {
               series: {
-                stacking: undefined,
+                stacking: "normal",
               },
             },
             yAxis: {
               type: "linear",
             },
             tooltip: {
+              useHTML: true,
               pointFormat:
-                '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
+                '<span style="color:{series.color.stops[0][1]}">{series.name}</span>: <b>{point.y}</b><br/>',
             },
             series: filteredData.map((series: any) => ({
               ...series,
-              type: "spline",
+              type: "column",
             })),
           });
           break;
         case "log":
           chartComponent.current?.update({
             chart: {
-              type: "spline",
+              type: "column",
             },
             plotOptions: {
               series: {
@@ -403,12 +397,13 @@ export default function ComparisonChart({
               type: "logarithmic",
             },
             tooltip: {
+              useHTML: true,
               pointFormat:
-                '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
+                '<span style="color:{series.color.stops[0][1]}">{series.name}</span>: <b>{point.y}</b><br/>',
             },
             series: filteredData.map((series: any) => ({
               ...series,
-              type: "spline",
+              type: "column",
             })),
           });
           break;
@@ -430,8 +425,7 @@ export default function ComparisonChart({
             },
             tooltip: {
               useHTML: true,
-              pointFormat:
-                '<span style="color:{series.color}">{series.name}</span>: <b>{point.percentage:.1f}%</b><br/>',
+              pointFormat: `<span style="color:{series.color.stops[0][1]}">{series.name}</span>: <b>{point.percentage:.1f}%</b><br/>`,
             },
             series: filteredData.map((series: any) => ({
               ...series,
@@ -457,10 +451,46 @@ export default function ComparisonChart({
   };
 
   return (
-    <div className="w-full my-12 relative">
-      <div className="flex w-full justify-between items-center absolute -top-10 left-0 right-0 text-xs">
-        <div className="flex justify-center items-center space-x-1 rounded-full bg-forest-50 p-0.5">
-          {showTimeIntervals &&
+    <div className="w-full my-[8rem] relative">
+      <div className="flex w-full justify-between items-center absolute -top-32 left-0 right-0 text-xs rounded-full bg-forest-50 p-0.5 font-inter">
+        <div className="flex justify-center items-center space-x-1">
+          <button
+            className={`rounded-full px-4 py-3 text-lg font-medium ${
+              "absolute" === selectedScale
+                ? "bg-forest-900 text-forest-50"
+                : "hover:bg-forest-100"
+            }`}
+            onClick={() => {
+              setSelectedScale("absolute");
+            }}
+          >
+            Total Users
+          </button>
+          <button
+            className={`rounded-full px-4 py-3 text-lg font-medium ${
+              "log" === selectedScale
+                ? "bg-forest-900 text-forest-50"
+                : "hover:bg-forest-100"
+            }`}
+            onClick={() => {
+              setSelectedScale("log");
+            }}
+          >
+            Users per Chain
+          </button>
+          <button
+            className={`rounded-full px-4 py-3 text-lg font-medium ${
+              "percentage" === selectedScale
+                ? "bg-forest-900 text-forest-50"
+                : "hover:bg-forest-100"
+            }`}
+            onClick={() => {
+              setSelectedScale("percentage");
+            }}
+          >
+            Percentage
+          </button>
+          {/* {showTimeIntervals &&
             timeIntervals.map((timeInterval, i) => (
               <button
                 key={timeInterval}
@@ -479,13 +509,13 @@ export default function ComparisonChart({
               >
                 {timeInterval}
               </button>
-            ))}
+            ))} */}
         </div>
-        <div className="flex justify-center items-center space-x-1 rounded-full bg-forest-50 p-0.5">
+        <div className="flex justify-center items-center space-x-1">
           {Object.keys(timespans).map((timespan) => (
             <button
               key={timespan}
-              className={`rounded-full px-2 py-1 font-medium ${
+              className={`rounded-full px-4 py-3 text-lg font-medium ${
                 selectedTimespan === timespan
                   ? "bg-forest-900 text-forest-50 hover:bg-forest-700"
                   : "hover:bg-forest-100"
@@ -503,7 +533,7 @@ export default function ComparisonChart({
           ))}
         </div>
       </div>
-      <div className="w-full p-4 rounded-xl bg-forest-50/10 dark:bg-forest-900/10">
+      <div className="w-full py-4 rounded-xl">
         <div className="w-full h-[26rem] relative rounded-xl">
           <div className="absolute w-full h-[24rem] top-4">
             <HighchartsReact
@@ -522,19 +552,15 @@ export default function ComparisonChart({
           </div>
         </div>
       </div>
-      <div className="flex justify-between items-center absolute -bottom-10 left-0 right-0 ">
+      <div className="flex justify-between items-center absolute -bottom-10 left-0 right-0 rounded-full bg-forest-50 p-0.5">
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
         {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
         {/* toggle ETH */}
-        <div>
-          {data.filter((d) => d.name === "ethereum").length > 0 && (
-            <Switch
-              checked={showEthereumMainnet}
-              onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
-              rightLabel="Show Ethereum"
-            />
-          )}
-        </div>
+        <Switch
+          checked={showEthereumMainnet}
+          onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
+          rightLabel="Show Ethereum"
+        />
 
         {/* <button
             className={`rounded-full px-2 py-1 text-xs font-bold
@@ -548,48 +574,7 @@ export default function ComparisonChart({
             {showEthereumMainnet ? "Hide ETH Mainnet" : "Show ETH Mainnet"}
           </button> */}
         {/* </div> */}
-        <div className="flex justify-center items-center space-x-1 rounded-full bg-forest-50 p-0.5">
-          <button
-            className={`rounded-full px-2 py-1 text-xs font-bold ${
-              "absolute" === selectedScale
-                ? "bg-forest-900 text-forest-50"
-                : "hover:bg-forest-100"
-            }`}
-            onClick={() => {
-              setSelectedScale("absolute");
-            }}
-          >
-            <span className=" font-bold text-[0.6rem] font-mono mr-0.5">
-              {"<>"}
-            </span>
-            Absolute
-          </button>
-          <button
-            className={`rounded-full px-2 py-1 text-xs font-bold ${
-              "log" === selectedScale
-                ? "bg-forest-900 text-forest-50"
-                : "hover:bg-forest-100"
-            }`}
-            onClick={() => {
-              setSelectedScale("log");
-            }}
-          >
-            <ArrowTrendingUpIcon className="w-3 h-3 font-bold inline-block mr-0.5" />
-            Log
-          </button>
-          <button
-            className={`rounded-full px-2 py-1 text-xs font-bold ${
-              "percentage" === selectedScale
-                ? "bg-forest-900 text-forest-50"
-                : "hover:bg-forest-100"
-            }`}
-            onClick={() => {
-              setSelectedScale("percentage");
-            }}
-          >
-            <span className="font-bold text-[0.6rem]">%</span> Percentage
-          </button>
-        </div>
+        <div className="flex justify-center items-center space-x-1"></div>
       </div>
     </div>
   );
