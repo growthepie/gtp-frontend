@@ -455,7 +455,7 @@ export default function LandingChart({
       <div className="flex w-full justify-between items-center absolute -top-32 left-0 right-0 text-xs rounded-full bg-forest-50 p-0.5 font-inter">
         <div className="flex justify-center items-center space-x-1">
           <button
-            className={`rounded-full px-4 py-3 text-lg font-medium ${
+            className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
               "absolute" === selectedScale
                 ? "bg-forest-900 text-forest-50"
                 : "hover:bg-forest-100"
@@ -467,7 +467,7 @@ export default function LandingChart({
             Total Users
           </button>
           <button
-            className={`rounded-full px-4 py-3 text-lg font-medium ${
+            className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
               "log" === selectedScale
                 ? "bg-forest-900 text-forest-50"
                 : "hover:bg-forest-100"
@@ -479,7 +479,7 @@ export default function LandingChart({
             Users per Chain
           </button>
           <button
-            className={`rounded-full px-4 py-3 text-lg font-medium ${
+            className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
               "percentage" === selectedScale
                 ? "bg-forest-900 text-forest-50"
                 : "hover:bg-forest-100"
@@ -515,7 +515,7 @@ export default function LandingChart({
           {Object.keys(timespans).map((timespan) => (
             <button
               key={timespan}
-              className={`rounded-full px-4 py-3 text-lg font-medium ${
+              className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
                 selectedTimespan === timespan
                   ? "bg-forest-900 text-forest-50 hover:bg-forest-700"
                   : "hover:bg-forest-100"
