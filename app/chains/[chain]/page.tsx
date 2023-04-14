@@ -13,7 +13,7 @@ import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { DAAMetricsResponse } from "@/types/api/DAAMetricsResponse";
 import { AllChains } from "@/lib/chains";
-import LandingChart from "@/components/layout/LandingChart";
+import ChainChart from "@/components/layout/ChainChart";
 import MetricsTable from "@/components/layout/MetricsTable";
 
 const Chain = ({ params }: { params: any }) => {
@@ -91,6 +91,7 @@ const Chain = ({ params }: { params: any }) => {
 
             {/*Uppercase first letter */}
           </div>
+          
           <div className="flex gap-x-10 h-10">
             <Link
               href={chainData.block_explorer}
@@ -139,15 +140,16 @@ const Chain = ({ params }: { params: any }) => {
           </button>
         ))}*/}
       </div>
-
+      {/* 
       <div className="flex py-2 ml-12 mr-14 gap-x-8 justify-start items-center rounded-[999px] h-[60px] dark:bg-[#2A3433] dark:justify-end dark: pr-6 md:justify-center">
         <button>90 Days</button>
         <button>180 Days</button>
         <button>1 Year</button>
         <button>Maximum</button>
       </div>
-
-      {/*Metric Title Grid*/}
+      */}
+      
+      {/* 
       <div className="flex-col pt-8">
         <div className="flex flex-col gap-x-6 justify-start ml-12 gap-y-8 lg:flex-row lg:justify-center lg:ml-0 lg:gap-y-0">
           <div className="dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
@@ -190,9 +192,26 @@ const Chain = ({ params }: { params: any }) => {
               </h1>
             </div>
           </div>
-          {/*Generate cards in here in future*/}
         </div>
+       
       </div>
+       */}
+      {chartData && (
+      <div>
+          <ChainChart
+            data={Object.keys(chainData)
+              .filter((chain) => selectedChains.includes(chain))
+              .map((chain) => {
+                return {
+                  name: chain,
+                  // type: 'spline',
+                  types: landing.data.chains[chain].changes.types,
+                  data: landing.data.chains[chain].changes,
+                };
+              })}
+            />
+      </div>
+      )}
     </div>
     
   );
