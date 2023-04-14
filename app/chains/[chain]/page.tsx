@@ -24,11 +24,6 @@ const Chain = ({ params }: { params: any }) => {
   const [pageName, setPageName] = useState(
     String(chain).charAt(0).toUpperCase() + String(chain).slice(1)
   );
-  const [pageChain, setPageChain] = useState(null);
-  const [metricTitle, setMetricTitle] = useState("");
-  const [value, setValue] = useState("");
-  const [buttons, setButtons] = useState();
-  const [data, setData] = useState(null);
   
 
   const { data: master, error: masterError } = useSWR<MasterResponse>(
@@ -43,8 +38,6 @@ const Chain = ({ params }: { params: any }) => {
     AllChains.map((chain) => chain.key)
   );
   /*Create some kind of map for metric cards*/
-
-  console.log(landing)
 
 
   const chainData = useMemo(() => {
@@ -62,7 +55,6 @@ const Chain = ({ params }: { params: any }) => {
 
     for (let chainName in landing.data.chains) {
       if (chainName === chain) {
-        console.log('works');
         return landing.data.chains[chainName];
       }
     }
@@ -76,13 +68,12 @@ const Chain = ({ params }: { params: any }) => {
     );
   }
 
-  console.log(chartData);
 
 
   return (
     <div className="mx-auto pt-10 w-44[rem] lg:w-[88rem]">
       {/*Header */}
-      <div className="ml-12 mr-14">
+      <div className="pl-28 pr-14">
         <div className="flex justify-between items-center">
           <div className="flex gap-x-6 items-center">
             <h1 className="h-14 text-5xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282] dark:text-[#CDD8D3]">
@@ -92,7 +83,7 @@ const Chain = ({ params }: { params: any }) => {
             {/*Uppercase first letter */}
           </div>
           
-          <div className="flex gap-x-10 h-10">
+          <div className="flex gap-x-10 h-10 pl-10">
             <Link
               href={chainData.block_explorer}
               className="flex justify-between text-white dark:bg-[#2A3433] dark:text-[#CDD8D3] bg-blue-600 w-44 py-0 rounded-full w-168px pl-4 pr-6"

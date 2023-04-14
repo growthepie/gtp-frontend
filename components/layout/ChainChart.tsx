@@ -456,15 +456,15 @@ export default function ChainChart({
   };
 
   return (
-    <div className="w-[88rem] my-[1rem] ml-12 mr-14">
-      <div className="flex w-full justify-start md:dark:justify-end items-center text-xs rounded-full dark:bg-[#2A3433] p-0.5 md:justify-center">
-        <div className="flex py-2 ml-12 mr-14 gap-x-8 justify-start items-center rounded-[999px] h-[60px] pr-6">
+    <div className="w-44[rem] lg:w-[88rem] my-[1rem] ml-12 mr-14 ">
+      <div className="flex w-44[rem] lg:w-[82rem] ml-12 mr-14 justify-start md:dark:justify-end items-center text-xs rounded-full dark:bg-[#2A3433] p-0.5 md:justify-center">
+        <div className="flex py-2 gap-x-8 justify-start items-center rounded-[999px] h-[60px] pr-6 ">
         {Object.keys(timespans).map((timespan) => (
             <button
             key={timespan}
             className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
                 selectedTimespan === timespan
-                ? "bg-blue-600 text-white dark:text-forest-900 dark:bg-forest-50 hover:bg-forest-200"
+                ? "bg-blue-600 text-white dark:text-forest-900 dark:bg-forest-50"
                 : "hover:bg-forest-100"
             }`}
                 /*  ? "bg-blue-600 text-white dark:bg-forest-500 dark:text-forest-50 hover:bg-forest-200"
