@@ -136,7 +136,7 @@ export default function RootLayout({
           {/* <button className="bg-blue-100 w-full">s</button> */}
           <div className="flex justify-between h-fit w-full">
             <div className="pt-6 pl-4 bg-forest-100 dark:bg-forest-900 border-forest-400 mix-h-screen max-h-full hidden md:flex overflow-hidden flex-col">
-              <Link href="/" className="relative h-[45px] block mb-4">
+              <Link href="/" className="relative h-[45px] block mb-4" passHref>
                 <div className="h-[45px] w-[192px] absolute">
                   <Image
                     src="/logo-full.svg"
@@ -192,7 +192,11 @@ export default function RootLayout({
                 <div className="flex space-x-6 items-center">
                   <EthUsdSwitch />
                   <DarkModeSwitch />
-                  <Link href="#" passHref target="_blank" rel="noopener">
+                  <Link
+                    href="https://twitter.com/growthepie_eth"
+                    target="_blank"
+                    rel="noopener"
+                  >
                     <Icon
                       icon="cib:twitter"
                       className="h-6 w-6 opacity-70 hover:opacity-100"

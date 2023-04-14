@@ -59,7 +59,7 @@ export default function Home() {
     if (landing) {
       setData(landing.data.metrics.user_base[selectedTimeInterval]);
     }
-  }, [landing]);
+  }, [landing, selectedTimeInterval]);
 
   const [selectedFilter, setSelectedFilter] = useState({
     name: "Fundamentals",
