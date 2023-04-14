@@ -1,8 +1,10 @@
 "use client";
 
+import highchartsAnnotations from "highcharts/modules/annotations";
+import highchartsRoundedCorners from "highcharts-rounded-corners";
 import HighchartsReact from "highcharts-react-official";
 import Highcharts, { chart } from "highcharts";
-import highchartsAnnotations from "highcharts/modules/annotations";
+
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Card } from "@/components/Card";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
@@ -15,6 +17,7 @@ import { useTheme } from "next-themes";
 import _ from "lodash";
 import { Switch } from "../Switch";
 import { AllChains, AllChainsByKeys } from "@/lib/chains";
+// import borderRadius from "highcharts-border-radius";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -144,11 +147,11 @@ const baseOptions: Highcharts.Options = {
           return false;
         },
       },
-      borderWidth: 0,
+      // borderColor: "#ffffff",
+      // borderWidth: 1,
       // make columns touch each other
       pointWidth: undefined,
       groupPadding: 0,
-      pointPadding: 0,
       animation: false,
     },
     series: {
@@ -163,6 +166,11 @@ const baseOptions: Highcharts.Options = {
         radius: 0,
         symbol: "circle",
       },
+      // states: {
+      //   hover: {
+      //     enabled: false,
+      //   },
+      // },
       shadow: false,
       animation: false,
     },
@@ -222,14 +230,19 @@ export default function LandingChart({
   // onTimeIntervalChange: (interval: string) => void;
   // showTimeIntervals: boolean;
 }) {
+  const [highchartsLoaded, setHighchartsLoaded] = useState(false);
+
   useEffect(() => {
     Highcharts.setOptions({
       lang: {
         numericSymbols: ["K", " M", "B", "T", "P", "E"],
       },
     });
+    highchartsRoundedCorners(Highcharts);
     highchartsAnnotations(Highcharts);
-    fullScreen(Highcharts);
+    // fullScreen(Highcharts);
+
+    setHighchartsLoaded(true);
   }, []);
 
   // const [darkMode, setDarkMode] = useLocalStorage("darkMode", true);
@@ -284,7 +297,7 @@ export default function LandingChart({
     (name: string) => {
       if (selectedScale === "percentage") return "area";
 
-      if (name === "ethereum") return "areaspline";
+      if (name === "ethereum") return "area";
 
       return "column";
     },
@@ -390,6 +403,61 @@ export default function LandingChart({
     [formatNumber, selectedScale, theme]
   );
 
+  const tooltipPositioner = useCallback(function (
+    this: any,
+    labelWidth: any,
+    labelHeight: any,
+    point: any
+  ) {
+    const { chart } = this;
+    const { plotLeft, plotTop, plotWidth, plotHeight } = chart;
+    const { plotX } = point;
+
+    const pos = {
+      x: plotX - labelWidth / 2,
+      y: plotTop + plotHeight / 2 - labelHeight,
+    };
+
+    if (pos.x < plotLeft) pos.x = plotLeft;
+    if (pos.x + labelWidth > plotLeft + plotWidth)
+      pos.x = plotLeft + plotWidth - labelWidth;
+
+    // if (plotX < chart.plotLeft + labelWidth / 2)
+    //   return { x: plotLeft, y: plotTop + plotHeight / 2 - labelHeight };
+    // if (plotX > chart.plotLeft + plotWidth - labelWidth / 2)
+    //   return {
+    //     x: plotX - labelWidth,
+    //     y: plotTop + plotHeight / 2 - labelHeight,
+    //   };
+
+    return pos;
+  },
+  []);
+
+  const getNumColumnsVisible = useCallback(
+    (data: any) => {
+      if (showEthereumMainnet)
+        return data
+          .find((d: any) => d.name === "ethereum")
+          .data.filter((d) => d[0] >= timespans[selectedTimespan].xMin).length;
+      return data[1].data.filter(
+        (d) => d[0] >= timespans[selectedTimespan].xMin
+      ).length;
+    },
+    [showEthereumMainnet, selectedTimespan]
+  );
+
+  const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
+
+  useEffect(() => {
+    if (chartComponent.current) {
+      chartComponent.current.xAxis[0].setExtremes(
+        timespans[selectedTimespan].xMin,
+        timespans[selectedTimespan].xMax
+      );
+    }
+  }, [selectedTimespan, chartComponent]);
+
   const filteredData = useMemo(() => {
     if (!data) return null;
     return showEthereumMainnet
@@ -405,6 +473,15 @@ export default function LandingChart({
       plotOptions: {
         area: {
           stacking: selectedScale === "percentage" ? "percent" : "normal",
+        },
+        column: {
+          pointPadding: getNumColumnsVisible(filteredData) / 500,
+          // borderColor: "#ffffff",
+          // borderWidth: 1,
+          // shadow: {
+          //   color: "#ffffff" + "ff",
+          //   width: 1,
+          // },
         },
       },
 
@@ -437,6 +514,8 @@ export default function LandingChart({
       },
       tooltip: {
         formatter: tooltipFormatter,
+        // positioner: tooltipPositioner,
+        followPointer: true,
         backgroundColor:
           theme === "light"
             ? customTheme.extend.colors["forest"]["800"]
@@ -449,67 +528,117 @@ export default function LandingChart({
           color: theme === "light" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
         },
       },
-      series: filteredData.map((series: any) => ({
-        name: series.name,
-        data: series.data.map((d: any) => [d[0], d[1]]),
+      series: [
+        ...filteredData
+          .sort((a, b) => {
+            if (selectedScale === "percentage")
+              return (
+                a.data[a.data.length - 1][1] - b.data[b.data.length - 1][1]
+              );
+            else {
+              return (
+                b.data[b.data.length - 1][1] - a.data[a.data.length - 1][1]
+              );
+            }
+          })
+          .map((series: any, i: number) => {
+            const zIndex = showEthereumMainnet
+              ? series.name === "ethereum"
+                ? 0
+                : 10
+              : 10;
 
-        // type: selectedScale === "percentage" ? "area" : "column",
-        type: getSeriesType(series.name),
-        // fill if series name is ethereum
-        fillOpacity: series.name === "ethereum" ? 1 : 0,
-        fillColor: {
-          linearGradient: {
-            x1: 0,
-            y1: 0,
-            x2: 0,
-            y2: 1,
-          },
-          stops: [
-            [0, AllChainsByKeys[series.name].colors[theme][0] + "33"],
-            [1, AllChainsByKeys[series.name].colors[theme][1] + "33"],
-          ],
-        },
-        shadow: {
-          color: AllChainsByKeys[series.name].colors[theme][1] + "33",
-          width: 10,
-        },
-        color: {
-          linearGradient: {
-            x1: 0,
-            y1: 0,
-            x2: 0,
-            y2: 1,
-          },
-          stops: [
-            [0, AllChainsByKeys[series.name].colors[theme][0]],
-            // [0.5, AllChainsByKeys[series.name].colors[1]],
-            [1, AllChainsByKeys[series.name].colors[theme][0]],
-          ],
-        },
-      })),
+            let borderRadius = "0%";
+
+            if (showEthereumMainnet && i === 1) {
+              borderRadius = "5%";
+            } else if (i === 0) {
+              borderRadius = "5%";
+            }
+
+            return {
+              name: series.name,
+              // always show ethereum on the bottom
+              zIndex: zIndex,
+              data: series.data.map((d: any) => [d[0], d[1]]),
+              borderRadiusTopLeft: borderRadius,
+              borderRadiusTopRight: borderRadius,
+
+              // type: selectedScale === "percentage" ? "area" : "column",
+              type: getSeriesType(series.name),
+              // fill if series name is ethereum
+              fillOpacity: series.name === "ethereum" ? 1 : 0,
+              fillColor: {
+                linearGradient: {
+                  x1: 0,
+                  y1: 0,
+                  x2: 0,
+                  y2: 1,
+                },
+                stops: [
+                  [0, AllChainsByKeys[series.name].colors[theme][0] + "99"],
+                  [0.33, AllChainsByKeys[series.name].colors[theme][1] + "33"],
+                  [0.66, AllChainsByKeys[series.name].colors[theme][1] + "00"],
+                ],
+              },
+              borderColor: AllChainsByKeys[series.name].colors[theme][0] + "33",
+              borderWidth: 1,
+              shadow: {
+                color: AllChainsByKeys[series.name].colors[theme][1] + "33",
+                width: 8,
+              },
+
+              color: {
+                linearGradient: {
+                  x1: 0,
+                  y1: 0,
+                  x2: 0,
+                  y2: 1,
+                },
+                stops: [
+                  [0, AllChainsByKeys[series.name].colors[theme][0] + "FF"],
+                  [0.7, AllChainsByKeys[series.name].colors[theme][0] + "44"],
+                  [1, AllChainsByKeys[series.name].colors[theme][0] + "22"],
+                ],
+              },
+              states: {
+                hover: {
+                  enabled: true,
+                  halo: {
+                    size: 5,
+                    opacity: 1,
+                    attributes: {
+                      fill:
+                        AllChainsByKeys[series.name].colors[theme][0] + "99",
+                      stroke:
+                        AllChainsByKeys[series.name].colors[theme][0] + "66",
+                      "stroke-width": 0,
+                    },
+                  },
+                  brightness: 0.3,
+                },
+                inactive: {
+                  enabled: true,
+                  opacity: 0.6,
+                },
+              },
+            };
+          }),
+      ],
     };
 
     return _merge({}, baseOptions, dynamicOptions);
   }, [
     filteredData,
+    getNumColumnsVisible,
     getSeriesType,
     getTickPositions,
     selectedScale,
     selectedTimespan,
+    showEthereumMainnet,
     theme,
     tooltipFormatter,
   ]);
-
-  const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
-
-  useEffect(() => {
-    if (chartComponent.current) {
-      chartComponent.current.xAxis[0].setExtremes(
-        timespans[selectedTimespan].xMin,
-        timespans[selectedTimespan].xMax
-      );
-    }
-  }, [selectedTimespan, chartComponent]);
 
   useEffect(() => {
     if (chartComponent.current) {
@@ -584,7 +713,13 @@ export default function LandingChart({
           break;
       }
     }
-  }, [selectedScale, chartComponent, filteredData, tooltipFormatter]);
+  }, [
+    selectedScale,
+    chartComponent,
+    filteredData,
+    tooltipFormatter,
+    getSeriesType,
+  ]);
 
   useEffect(() => {
     if (chartComponent.current) {
@@ -683,19 +818,21 @@ export default function LandingChart({
       <div className="w-full py-4 rounded-xl">
         <div className="w-full h-[26rem] relative rounded-xl">
           <div className="absolute w-full h-[24rem] top-4">
-            <HighchartsReact
-              highcharts={Highcharts}
-              options={options}
-              ref={(chart) => {
-                chartComponent.current = chart?.chart;
-              }}
+            {highchartsLoaded && (
+              <HighchartsReact
+                highcharts={Highcharts}
+                options={options}
+                ref={(chart) => {
+                  chartComponent.current = chart?.chart;
+                }}
 
-              // immutable={true}
-              // oneToOne={true}
-              // callBack={(chart) => {
-              // 	setChart(chart);
-              // }}
-            />
+                // immutable={true}
+                // oneToOne={true}
+                // callBack={(chart) => {
+                // 	setChart(chart);
+                // }}
+              />
+            )}
           </div>
         </div>
       </div>

@@ -138,6 +138,9 @@ const baseOptions: Highcharts.Options = {
     shared: true,
   },
   plotOptions: {
+    line: {
+      lineWidth: 2,
+    },
     spline: {
       lineWidth: 2,
     },
@@ -281,7 +284,7 @@ export default function ComparisonChart({
 
       if (name === "ethereum") return "areaspline";
 
-      return "spline";
+      return "line";
     },
     [selectedScale]
   );
@@ -289,7 +292,7 @@ export default function ComparisonChart({
   const getChartType = useCallback(() => {
     if (selectedScale === "percentage") return "area";
 
-    return "spline";
+    return "line";
   }, [selectedScale]);
 
   const formatNumber = useCallback((value: number) => {

@@ -7,7 +7,6 @@ import {
 } from "@heroicons/react/24/solid";
 import { useEffect, useState, ReactNode } from "react";
 import { Icon } from "@iconify/react";
-import { useMediaQuery } from "@react-hook/media-query";
 import SidebarMenuGroup from "./SidebarMenuGroup";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import useSWR from "swr";
@@ -264,11 +263,9 @@ export default function Sidebar({
               }}
             ></div>
             <div
-              className={`absolute top-10 left-0 bg-forest-50 rounded-r-lg z-50 flex flex-col justify-items-start select-none ${
-                isOpen ? "w-[13rem]" : "w-[2.5rem]"
-              } overflow-hidden`}
+              className={`absolute top-20 left-0 bg-forest-50 rounded-r-lg z-50 flex flex-col justify-items-start select-none overflow-hidden`}
             >
-              <div className="text-forest-800 z-20 m-2 mt-6">
+              <div className="text-forest-800 z-20 m-2 mt-10">
                 <div className="">
                   {items.map((item) => (
                     <SidebarMenuGroup

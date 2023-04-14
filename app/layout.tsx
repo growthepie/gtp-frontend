@@ -178,8 +178,8 @@ export default function RootLayout({
               </Link> */}
                     <Sidebar
                       trigger={
-                        <button className="flex items-center space-x-2">
-                          <Icon icon="feather:menu" className="h-6 w-6" />
+                        <button className="flex items-center space-x-2 my-4">
+                          <Icon icon="feather:menu" className="h-8 w-8" />
                         </button>
                       }
                       isMobile={true}
@@ -188,6 +188,21 @@ export default function RootLayout({
                       setIsOpen={setIsSidebarOpen}
                     />
                   </div>
+                  <Link
+                    href="/"
+                    className="relative h-[45px] block my-4"
+                    passHref
+                  >
+                    <div className="h-[40px] w-[40px] absolute">
+                      <Image
+                        src="/logo-pie-only.svg"
+                        alt="Forest"
+                        className="mb-6 -ml-[9px] z-10 antialiased hover:scale-105 hover:translate-x-0 transition-transform duration-150 ease-in-out"
+                        fill={true}
+                        quality={100}
+                      />
+                    </div>
+                  </Link>
                 </div>
                 <div className="flex space-x-6 items-center">
                   <EthUsdSwitch />

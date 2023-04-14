@@ -14,3 +14,15 @@
   --background: black;
   --foreground: white;
 }
+
+.svg-t-rounded-lg rect {
+  clip-path: inset(0% -1% -100% -1% round 0.45rem);
+}
+
+.svg-t-rounded-md rect {
+  clip-path: inset(0% -1% -100% -1% round 0.25rem);
+}
+
+.svg-t-rounded-sm rect {
+  clip-path: inset(0% -1% -500% -1% round 0.075rem);
+}

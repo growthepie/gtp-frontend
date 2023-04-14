@@ -98,8 +98,10 @@ export const AllChains = [
       dark: ["border-[#F130DE]", "border-[#FB4FF2]"],
     },
     colors: {
-      light: ["#F130DE", "#FB4FF2"], // pink
-      dark: ["#F130DE", "#FB4FF2"] // pink
+      // light: ["#F130DE", "#FB4FF2"], // pink
+      // dark: ["#F130DE", "#FB4FF2"] // pink
+      light: ["#45AA6F", "#45AA6F"], // soft green
+      dark: ["#4CFF7E", "#4CFF7E"] // soft green
     },
   },
 ];
