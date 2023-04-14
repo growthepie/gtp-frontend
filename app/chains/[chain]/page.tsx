@@ -13,6 +13,8 @@ import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { DAAMetricsResponse } from "@/types/api/DAAMetricsResponse";
 import { AllChains } from "@/lib/chains";
+import LandingChart from "@/components/layout/LandingChart";
+import MetricsTable from "@/components/layout/MetricsTable";
 
 const Chain = ({ params }: { params: any }) => {
   // const params = useSearchParams();
@@ -27,16 +29,23 @@ const Chain = ({ params }: { params: any }) => {
   const [value, setValue] = useState("");
   const [buttons, setButtons] = useState();
   const [data, setData] = useState(null);
+  
 
   const { data: master, error: masterError } = useSWR<MasterResponse>(
     "https://d2cfnw27176mbd.cloudfront.net/v0_3/master.json"
   );
 
-  const { data: daa, error: daaError } = useSWR<DAAMetricsResponse>(
+  const { data: landing, error: landingError } = useSWR<DAAMetricsResponse>(
     "https://d2cfnw27176mbd.cloudfront.net/v0_3/metrics/daa.json"
   );
 
+  const [selectedChains, setSelectedChains] = useState(
+    AllChains.map((chain) => chain.key)
+  );
   /*Create some kind of map for metric cards*/
+
+  console.log(landing)
+
 
   const chainData = useMemo(() => {
     if (!master) return [];
@@ -47,14 +56,28 @@ const Chain = ({ params }: { params: any }) => {
       }
     }
   }, [master, chain]);
+  
+  const chartData = useMemo(() => {
+    if(!landing) return [];
 
-  if (!master) {
+    for (let chainName in landing.data.chains) {
+      if (chainName === chain) {
+        console.log('works');
+        return landing.data.chains[chainName];
+      }
+    }
+  }, [landing]);
+  
+  if (!master || !landing) {
     return (
       <div className="flex justify-center items-center h-screen">
         Loading...
       </div>
     );
   }
+
+  console.log(chartData);
+
 
   return (
     <div className="mx-auto pt-10 w-44[rem] lg:w-[88rem]">
@@ -78,6 +101,14 @@ const Chain = ({ params }: { params: any }) => {
             </Link>
 
             <Link
+              href={chainData.website}
+              className="flex justify-between text-white dark:bg-[#2A3433]  dark:text-[#CDD8D3] bg-blue-600 w-32 py-0 rounded-full w-168px pl-4 pr-6"
+            >
+              <ArrowTopRightOnSquareIcon className="h-4 w-4 self-center" />
+              <p className="self-center font-semibold">Website</p>
+            </Link>
+
+            <Link
               href={chainData.twitter}
               className="flex justify-between text-white dark:bg-[#2A3433]  dark:text-[#CDD8D3] bg-blue-600 w-40 py-0 rounded-full w-168px pl-4 pr-6"
             >
@@ -87,13 +118,7 @@ const Chain = ({ params }: { params: any }) => {
               </p>
             </Link>
 
-            <Link
-              href={chainData.website}
-              className="flex justify-between text-white dark:bg-[#2A3433]  dark:text-[#CDD8D3] bg-blue-600 w-32 py-0 rounded-full w-168px pl-4 pr-6"
-            >
-              <ArrowTopRightOnSquareIcon className="h-4 w-4 self-center" />
-              <p className="self-center font-semibold">Website</p>
-            </Link>
+
           </div>
         </div>
 
@@ -126,6 +151,7 @@ const Chain = ({ params }: { params: any }) => {
       <div className="flex-col pt-8">
         <div className="flex flex-col gap-x-6 justify-start ml-12 gap-y-8 lg:flex-row lg:justify-center lg:ml-0 lg:gap-y-0">
           <div className="dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
+
             <h1 className="pt-[1rem] pl-6 text-3xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282] dark:text-[#CDD8D3]">
               Metric Title
             </h1>
@@ -137,7 +163,9 @@ const Chain = ({ params }: { params: any }) => {
               <h1 className="text-white text-xl font-[700] self-center dark:text-[#CDD8D3]">
                 5 April 2023
               </h1>
+
             </div>
+          
           </div>
           <div className="dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
             <div className="dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
@@ -166,7 +194,9 @@ const Chain = ({ params }: { params: any }) => {
         </div>
       </div>
     </div>
+    
   );
 };
+
 
 export default Chain;
