@@ -210,7 +210,9 @@ export default function RootLayout({
                   </Link>
                 </div>
               </div>
-              <main>{children}</main>
+              <main className="flex-1 overflow-y-auto max-w-[1600px] w-full mx-auto">
+                {children}
+              </main>
             </div>
           </div>
           {/* <Loader /> */}
