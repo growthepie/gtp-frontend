@@ -50,7 +50,7 @@ export default function SidebarMenuGroup({
   sidebarOpen,
 }: SidebarProps) {
   const { data: master } = useSWR<any>(
-    "https://d2cfnw27176mbd.cloudfront.net/v0_2/master.json"
+    "https://d2cfnw27176mbd.cloudfront.net/v0_3/master.json"
   );
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -82,7 +82,7 @@ export default function SidebarMenuGroup({
     setIsOpen((isOpen) =>
       urlParts[0].toLowerCase() == item.name.toLowerCase() ? true : isOpen
     );
-  }, [urlParts]);
+  }, [item.name, urlParts]);
 
   const handleToggle = () => {
     if (isOpen) {

@@ -57,7 +57,7 @@ export default function Sidebar({
   isMobile,
 }: SidebarProps) {
   const { data: master } = useSWR<MasterResponse>(
-    "https://d2cfnw27176mbd.cloudfront.net/v0_2/master.json"
+    "https://d2cfnw27176mbd.cloudfront.net/v0_3/master.json"
   );
 
   // const [isOpen, setIsOpen] = useState(open);
@@ -99,9 +99,9 @@ export default function Sidebar({
         },
         {
           label: "Stablecoin Market Cap",
-          icon: <Icon icon="feather:dollar" className="h-4 w-4 mx-auto" />,
-          key: "stablecoinMcap",
-          rootKey: "metricsStablecoinMcap",
+          icon: <Icon icon="feather:dollar-sign" className="h-4 w-4 mx-auto" />,
+          key: "stables_mcap",
+          rootKey: "metricsStablesMcap",
         },
         {
           label: "24h Contract Usage",
