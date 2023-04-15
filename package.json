@@ -17,6 +17,7 @@
     "@types/node": "18.11.18",
     "@types/react": "18.0.27",
     "@types/react-dom": "18.0.10",
+    "cookies-next": "^2.1.1",
     "echarts": "^5.4.1",
     "echarts-for-react": "^3.0.2",
     "eslint": "8.33.0",
@@ -33,7 +34,6 @@
     "nightwind": "^1.1.13",
     "quicktype-core": "^21.0.9",
     "react": "18.2.0",
-    "react-cookie-consent": "^8.0.1",
     "react-d3-library": "^1.1.8",
     "react-dom": "18.2.0",
     "react-json-view": "^1.21.3",
@@ -44,6 +44,7 @@
   "devDependencies": {
     "@iconify/react": "^4.1.0",
     "@iconify/types": "^2.0.0",
+    "@types/gtag.js": "^0.0.12",
     "@types/lodash": "^4.14.191",
     "autoprefixer": "^10.4.13",
     "postcss": "^8.4.21",
