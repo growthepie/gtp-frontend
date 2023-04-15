@@ -995,8 +995,8 @@ export default function LandingChart({
                 : "hover:bg-forest-100"
             }`}
             onClick={() => {
-              setSelectedScale("absolute");
               setShowTotalUsers(true);
+              setSelectedScale("absolute");
             }}
           >
             Total Users
@@ -1022,6 +1022,7 @@ export default function LandingChart({
                 : "hover:bg-forest-100"
             }`}
             onClick={() => {
+              setShowTotalUsers(false);
               setSelectedScale("percentage");
             }}
           >
