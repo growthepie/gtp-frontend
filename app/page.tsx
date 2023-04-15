@@ -48,7 +48,7 @@ export default function Home() {
     );
 
   const { data: master, error: masterError } = useSWR<MasterResponse>(
-    "https://d2cfnw27176mbd.cloudfront.net/v0_2/master.json"
+    "https://d2cfnw27176mbd.cloudfront.net/v0_3/master.json"
   );
 
   const [data, setData] = useState(null);
@@ -152,7 +152,7 @@ export default function Home() {
                 l2_dominance={data.l2_dominance}
               />
             </div>
-            {data && <ReactJson src={landing} collapsed={true} />}
+            {/* {data && <ReactJson src={landing} collapsed={true} />} */}
             {/* <MetricsTable
               data={daa.data.chains}
               selectedChains={selectedChains}

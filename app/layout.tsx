@@ -84,15 +84,15 @@ export default function RootLayout({
             declineButtonText="Decline"
             buttonClasses="bg-white text-forest-900 p-2 lg:p-4 rounded-full text-center whitespace-nowrap w-full lg:w-auto"
             declineButtonClasses="bg-white text-forest-900 p-2 lg:p-4 rounded-full text-center whitespace-nowrap w-full lg:w-auto"
-            containerClasses="flex flex-col lg:flex-row items-center justify-between space-y-4 lg:space-x-4 bg-forest-50 text-forest-900 border-forest-200 border-[1px] bottom-0 mb-10 fixed z-50 w-5/6 mx-auto rounded-3xl lg:rounded-full px-10 py-8 left-[50%] transform -translate-x-1/2 shadow-2xl"
+            containerClasses="flex flex-col lg:flex-row items-center justify-between space-y-4 lg:space-y-0 lg:space-x-8 bg-forest-50 text-forest-900 border-forest-200 border-[1px] bottom-0 mb-10 fixed z-50 w-5/6 mx-auto rounded-3xl lg:rounded-full px-10 py-8 left-[50%] transform -translate-x-1/2 shadow-2xl"
             contentClasses="flex items-center justify-center space-x-4"
-            buttonWrapperClasses="flex items-center justify-center space-x-4 w-full lg:w-auto pl-20 lg:ml-0"
+            buttonWrapperClasses="flex items-center justify-center w-full lg:w-auto space-y-4 lg:space-y-0 lg:space-x-8 flex-col lg:flex-row"
             expires={450}
           >
             <div>
               <Icon
                 icon="feather:shield"
-                className="w-20 h-20 lg:w-16 lg:h-16"
+                className="w-24 h-24 lg:w-16 lg:h-16"
               />
             </div>
             <div className="flex items-center space-x-8">

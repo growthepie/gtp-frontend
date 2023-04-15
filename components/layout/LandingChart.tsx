@@ -27,42 +27,6 @@ import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 // import borderRadius from "highcharts-border-radius";
 
-Highcharts.SVGRenderer.prototype.symbols.doublearrow = function (x, y, w, h) {
-  return [
-    // right arrow (curved)
-    "M",
-    x + w / 2 + 1,
-    y,
-    "Q",
-    x + w + w + 1,
-    y + h / 2,
-    x + w / 2 + 1,
-    y + h,
-    "Q",
-    x + w / 2 + 1,
-    y + h / 2,
-    x + w / 2 + 1,
-    y,
-
-    "Z",
-    // left arrow (curved)
-    "M",
-    x + w / 2 - 1,
-    y,
-    "Q",
-    x - w - 1,
-    y + h / 2,
-    x + w / 2 - 1,
-    y + h,
-    "Q",
-    x + w / 2 - 1,
-    y + h / 2,
-    x + w / 2 - 1,
-    y,
-    "Z",
-  ];
-};
-
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
   PLOT_LINE: "rgb(215, 223, 222)",
@@ -248,6 +212,44 @@ export default function LandingChart({
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
   useEffect(() => {
+    Highcharts.SVGRenderer.prototype.symbols.doublearrow = function (
+      x,
+      y,
+      w,
+      h
+    ) {
+      return [
+        // right arrow (curved)
+        "M",
+        x + w / 2 + 1,
+        y,
+        "Q",
+        x + w + w + 1,
+        y + h / 2,
+        x + w / 2 + 1,
+        y + h,
+        "Q",
+        x + w / 2 + 1,
+        y + h / 2,
+        x + w / 2 + 1,
+        y,
+        "Z",
+        "M",
+        x + w / 2 - 1,
+        y,
+        "Q",
+        x - w - 1,
+        y + h / 2,
+        x + w / 2 - 1,
+        y + h,
+        "Q",
+        x + w / 2 - 1,
+        y + h / 2,
+        x + w / 2 - 1,
+        y,
+        "Z",
+      ];
+    };
     Highcharts.setOptions({
       lang: {
         numericSymbols: ["K", " M", "B", "T", "P", "E"],
