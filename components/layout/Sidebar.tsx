@@ -13,6 +13,7 @@ import useSWR from "swr";
 import { Router } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
+import { useMediaQuery } from "@react-hook/media-query";
 
 export type SidebarItems = {
   name: string;
@@ -61,9 +62,18 @@ export default function Sidebar({
 
   // const [isOpen, setIsOpen] = useState(open);
 
+  const isLargeScreen = useMediaQuery("(min-width: 768px)");
+  const isLargerScreen = useMediaQuery("(min-width: 1024px)");
+
   useEffect(() => {
-    setIsOpen(open);
-  }, [open]);
+    if (!isLargerScreen) {
+      setIsOpen(false);
+    }
+  }, [isLargerScreen, isLargeScreen, setIsOpen]);
+
+  // useEffect(() => {
+  //   setIsOpen(open);
+  // }, [open]);
 
   const items: SidebarItems = [
     {
@@ -282,10 +292,10 @@ export default function Sidebar({
         )}
         <div
           className={`text-forest-800 ${
-            isOpen ? "bg-forest-50 rounded-t-lg z-50" : ""
+            isOpen ? "bg-forest-50 rounded-lg z-50" : ""
           } p-2`}
         >
-          <div onClick={handleToggle} className="w-6 h-6">
+          <div onClick={handleToggle} className="w-8 h-8">
             {trigger}
           </div>
         </div>

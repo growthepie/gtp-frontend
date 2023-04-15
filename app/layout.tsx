@@ -145,20 +145,9 @@ export default function RootLayout({
               <div className="flex justify-between items-center">
                 <div className="flex space-x-6">
                   <div className="block md:hidden relative">
-                    {/* <Link href="/" className="relative h-[45px] block mb-4">
-                <div className="h-[45px] w-[192px] absolute">
-                  <Image
-                    src="/logo-full.svg"
-                    alt="Forest"
-                    className="mb-6 -ml-[9px] z-10 antialiased hover:scale-105 hover:translate-x-1 transition-transform duration-150 ease-in-out"
-                    fill={true}
-                    quality={100}
-                  />
-                </div>
-              </Link> */}
                     <Sidebar
                       trigger={
-                        <button className="flex items-center space-x-2 my-4">
+                        <button className="flex items-center space-x-2">
                           <Icon icon="feather:menu" className="h-8 w-8" />
                         </button>
                       }
@@ -167,22 +156,18 @@ export default function RootLayout({
                       isOpen={isSidebarOpen}
                       setIsOpen={setIsSidebarOpen}
                     />
+                    <Link href="/" className="absolute  top-2 left-20" passHref>
+                      <div className="h-[32px] w-[32px] absolute">
+                        <Image
+                          src="/logo-pie-only.svg"
+                          alt="Forest"
+                          className="mb-6 -ml-[9px] z-10 antialiased hover:scale-105 hover:translate-x-0 transition-transform duration-150 ease-in-out"
+                          fill={true}
+                          quality={100}
+                        />
+                      </div>
+                    </Link>
                   </div>
-                  <Link
-                    href="/"
-                    className="relative h-[45px] block my-4"
-                    passHref
-                  >
-                    <div className="h-[40px] w-[40px] absolute">
-                      <Image
-                        src="/logo-pie-only.svg"
-                        alt="Forest"
-                        className="mb-6 -ml-[9px] z-10 antialiased hover:scale-105 hover:translate-x-0 transition-transform duration-150 ease-in-out"
-                        fill={true}
-                        quality={100}
-                      />
-                    </div>
-                  </Link>
                 </div>
                 <div className="flex space-x-6 items-center">
                   <EthUsdSwitch />

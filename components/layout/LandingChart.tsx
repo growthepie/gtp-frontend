@@ -1121,7 +1121,14 @@ export default function LandingChart({
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
         {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
         {/* toggle ETH */}
-        <div className="z-10">
+        <div className="z-10 block lg:hidden">
+          <Switch
+            checked={showEthereumMainnet}
+            onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
+            rightLabel="ETH"
+          />
+        </div>
+        <div className="z-10 hidden lg:block">
           <Switch
             checked={showEthereumMainnet}
             onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
@@ -1138,13 +1145,13 @@ export default function LandingChart({
           <div className="flex bg-forest-100 rounded-xl p-3 items-center">
             <Icon
               icon="feather:users"
-              className="w-14 h-14 text-forest-900 mr-2"
+              className="w-8 h-8 lg:w-14 lg:h-14 text-forest-900 mr-2"
             />
             <div className="flex flex-col items-center justify-center space-y-1.5">
-              <div className="text-3xl font-[650] text-forest-900">
+              <div className="text-xl lg:text-3xl font-[650] text-forest-900">
                 {latest_total.toLocaleString()}
               </div>
-              <div className="text-xs font-medium text-forest-900">
+              <div className="text-[0.65rem] lg:text-xs font-medium text-forest-900">
                 Total Users
               </div>
             </div>
@@ -1152,20 +1159,20 @@ export default function LandingChart({
           <div className="flex bg-forest-100 rounded-xl p-3 items-center">
             <Icon
               icon="feather:layers"
-              className="w-14 h-14 text-forest-900 mr-2"
+              className="w-8 h-8 lg:w-14 lg:h-14 text-forest-900 mr-2"
             />
             <div className="flex flex-col items-center justify-center space-y-1.5">
-              <div className="text-3xl font-[650] text-forest-900">
+              <div className="text-xl lg:text-3xl font-[650] text-forest-900">
                 {l2_dominance.toFixed(2)}x
               </div>
-              <div className="text-xs font-medium text-forest-900">
+              <div className="text-[0.65rem] lg:text-xs font-medium text-forest-900">
                 Layer-2 Dominance
               </div>
             </div>
           </div>
           <Tooltip placement="left">
             <TooltipTrigger>
-              <div className="p-1.5 -ml-4">
+              <div className="p-1.5 z-10">
                 <Icon icon="feather:info" className="w-6 h-6 text-forest-900" />
               </div>
             </TooltipTrigger>
