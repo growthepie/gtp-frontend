@@ -73,64 +73,44 @@ export default function RootLayout({
         {/* <div className="min-h-screen max-full mx-auto p-4 sm:p-6 lg:p-8"> */}
         <Providers>
           <CookieConsent
+            disableStyles={true}
+            contentStyle={{}}
             enableDeclineButton
             flipButtons
             location="bottom"
-            buttonText="Allow All"
             cookieName="GrowThePieCookieConsent"
-            style={{ background: "black" }}
-            buttonStyle={{
-              color: "#000",
-              background: "#fff",
-              fontSize: "15px",
-              borderRadius: "5px",
-            }}
-            declineButtonStyle={{
-              margin: "10px 10px 10px 0",
-              color: "#000",
-              background: "#fff",
-              borderRadius: "5px",
-            }}
+            // style={{ background: "black" }}
+            buttonText="Allow All"
+            declineButtonText="Decline"
+            buttonClasses="bg-white text-forest-900 p-2 lg:p-4 rounded-full text-center whitespace-nowrap w-full lg:w-auto"
+            declineButtonClasses="bg-white text-forest-900 p-2 lg:p-4 rounded-full text-center whitespace-nowrap w-full lg:w-auto"
+            containerClasses="flex flex-col lg:flex-row items-center justify-between space-y-4 lg:space-x-4 bg-forest-50 text-forest-900 border-forest-200 border-[1px] bottom-0 mb-10 fixed z-50 w-5/6 mx-auto rounded-3xl lg:rounded-full px-10 py-8 left-[50%] transform -translate-x-1/2 shadow-2xl"
+            contentClasses="flex items-center justify-center space-x-4"
+            buttonWrapperClasses="flex items-center justify-center space-x-4 w-full lg:w-auto pl-20 lg:ml-0"
             expires={450}
           >
-            <div className="flex items-center w-5/6">
-              <div className="text-white dark:text-white font-medium">
+            <div>
+              <Icon
+                icon="feather:shield"
+                className="w-20 h-20 lg:w-16 lg:h-16"
+              />
+            </div>
+            <div className="flex items-center space-x-8">
+              <div className="">
                 Our website uses cookies to analyze how the site is used and to
-                ensure your experience is consistent between visits.{" "}
+                ensure your experience is consistent between visits.
+                <br />
+                Find our{" "}
                 <Link href="/privacy-policy" className="underline relative">
+                  Privacy Policy here.
+                </Link>
+                {/* <Link href="/privacy-policy" className="underline relative">
                   <div className="inline-flex underline absolute -bottom-0 left-4 w-40">
                     <Icon icon="fe:link-external" className="w-5 h-5" />
                     <div className="ml-1 text-sm">Privacy Policy</div>
                   </div>
-                </Link>
+                </Link> */}
               </div>
-              {/* <div className="flex flex-row space-x-2">
-                <button
-                  className="bg-white text-black px-4 py-2 rounded-md"
-                  onClick={() => {
-                    window.location.reload();
-                  }}
-                >
-                  Reload
-                </button>
-                <button
-                  className="bg-white text-black px-4 py-2 rounded-md"
-                  onClick={() => {
-                    window.location.href = "/privacy";
-                  }}
-                >
-                  Privacy Policy
-                </button>
-
-                <button
-                  className="bg-white text-black px-4 py-2 rounded-md"
-                  onClick={() => {
-                    window.location.href = "/terms";
-                  }}
-                >
-                  Terms of Service
-                </button>
-              </div> */}
             </div>
           </CookieConsent>
           {/* <button className="bg-blue-100 w-full">s</button> */}

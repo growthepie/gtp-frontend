@@ -125,13 +125,16 @@ export default function Home() {
                 value={selectedTimeInterval}
                 onChange={(e) => setSelectedTimeInterval(e.target.value)}
               >
-                {Object.keys(landing.data.metrics.user_base)
-                  .filter((key) => ["daily", "weekly", "monthly"].includes(key))
-                  .map((ti) => (
-                    <option key={ti} value={ti}>
-                      {ti.charAt(0).toUpperCase() + ti.slice(1)}
-                    </option>
-                  ))}
+                {landing &&
+                  Object.keys(landing.data.metrics.user_base)
+                    .filter((key) =>
+                      ["daily", "weekly", "monthly"].includes(key)
+                    )
+                    .map((ti) => (
+                      <option key={ti} value={ti}>
+                        {ti.charAt(0).toUpperCase() + ti.slice(1)}
+                      </option>
+                    ))}
               </select>{" "}
               Web3 User Base
             </Heading>
