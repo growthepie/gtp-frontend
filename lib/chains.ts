@@ -18,12 +18,12 @@ export const AllChains = [
     icon: "/icons/arbitrum.png",
     key: "arbitrum",
     border: {
-      light: ["border-[#2ECEE8]", "border-[#1DF7EF]"],
-      dark: ["border-[#2ECEE8]", "border-[#1DF7EF]"],
+      light: ["border-[#2ECEE8]", "border-[#2ECEE8]"],
+      dark: ["border-[#1DF7EF]", "border-[#1DF7EF]"],
     },
     colors: {
-      light: ["#2ECEE8", "#1DF7EF"], // tropical sea
-      dark: ["#2ECEE8", "#1DF7EF"], // tropical sea
+      light: ["#2ECEE8", "#2ECEE8"], // tropical sea
+      dark: ["#1DF7EF", "#1DF7EF"], // tropical sea
     },
   },
   {
@@ -41,12 +41,12 @@ export const AllChains = [
     icon: "/icons/immutablex.png",
     key: "imx",
     border: {
-      light: ["border-[#08373C]", "border-[#10808C]"],
-      dark: ["border-[#08373C]", "border-[#10808C]"],
+      light: ["border-[#08373C]", "border-[#08373C]"],
+      dark: ["border-[#10808C]", "border-[#10808C]"],
     },
     colors: {
-      light: ["#08373C", "#10808C"], // dark sea
-      dark: ["#08373C", "#10808C"], // dark sea
+      light: ["#08373C", "#08373C"], // dark sea
+      dark: ["#10808C", "#10808C"], // dark sea
     },
   },
   {
@@ -54,12 +54,12 @@ export const AllChains = [
     icon: "/icons/polygon-pos.png",
     key: "polygon_zkevm",
     border: {
-      light: ["border-[#800094]", "border-[#AD0DC5]"],
-      dark: ["border-[#800094]", "border-[#AD0DC5]"],
+      light: ["border-[#800094]", "border-[#800094]"],
+      dark: ["border-[#AD0DC5]", "border-[#AD0DC5]"],
     },
     colors: {
-      light: ["#800094", "#AD0DC5"], // purple
-      dark: ["#800094", "#AD0DC5"] // purple
+      light: ["#800094", "#800094"], // purple
+      dark: ["#AD0DC5", "#AD0DC5"] // purple
     },
 
   },
@@ -81,12 +81,12 @@ export const AllChains = [
     icon: "/icons/optimism.png",
     key: "optimism",
     border: {
-      light: ["border-[#DD3408]", "border-[#FE5468]"],
-      dark: ["border-[#DD3408]", "border-[#FE5468]"],
+      light: ["border-[#DD3408]", "border-[#DD3408]"],
+      dark: ["border-[#FE5468]", "border-[#FE5468]"],
     },
     colors: {
-      light: ["#DD3408", "#FE5468"], // red-orange
-      dark: ["#DD3408", "#FE5468"] // red-orange
+      light: ["#DD3408", "#DD3408"], // red-orange
+      dark: ["#FE5468", "#FE5468"] // red-orange
     },
   },
   {
@@ -94,8 +94,23 @@ export const AllChains = [
     icon: "/icons/optimism.png",
     key: "multiple",
     border: {
-      light: ["border-[#F130DE]", "border-[#FB4FF2]"],
-      dark: ["border-[#F130DE]", "border-[#FB4FF2]"],
+      light: ["border-[#45AA6F]", "border-[#45AA6F]"],
+      dark: ["border-[#4CFF7E]", "border-[#4CFF7E]"],
+    },
+    colors: {
+      // light: ["#F130DE", "#FB4FF2"], // pink
+      // dark: ["#F130DE", "#FB4FF2"] // pink
+      light: ["#45AA6F", "#45AA6F"], // soft green
+      dark: ["#4CFF7E", "#4CFF7E"] // soft green
+    },
+  },
+  {
+    label: "All L2s",
+    icon: "/icons/optimism.png",
+    key: "all_l2s",
+    border: {
+      light: ["border-[#45AA6F]", "border-[#45AA6F]"],
+      dark: ["border-[#4CFF7E]", "border-[#4CFF7E]"],
     },
     colors: {
       // light: ["#F130DE", "#FB4FF2"], // pink

@@ -3,7 +3,12 @@
 import highchartsAnnotations from "highcharts/modules/annotations";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
 import HighchartsReact from "highcharts-react-official";
-import Highcharts, { chart } from "highcharts";
+// import Highcharts, { chart } from "highcharts";
+import Highcharts, {
+  AxisLabelsFormatterCallbackFunction,
+  AxisLabelsFormatterContextObject,
+  chart,
+} from "highcharts/highstock";
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Card } from "@/components/Card";
@@ -17,7 +22,46 @@ import { useTheme } from "next-themes";
 import _ from "lodash";
 import { Switch } from "../Switch";
 import { AllChains, AllChainsByKeys } from "@/lib/chains";
+import d3 from "d3";
+import { Icon } from "@iconify/react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 // import borderRadius from "highcharts-border-radius";
+
+Highcharts.SVGRenderer.prototype.symbols.doublearrow = function (x, y, w, h) {
+  return [
+    // right arrow (curved)
+    "M",
+    x + w / 2 + 1,
+    y,
+    "Q",
+    x + w + w + 1,
+    y + h / 2,
+    x + w / 2 + 1,
+    y + h,
+    "Q",
+    x + w / 2 + 1,
+    y + h / 2,
+    x + w / 2 + 1,
+    y,
+
+    "Z",
+    // left arrow (curved)
+    "M",
+    x + w / 2 - 1,
+    y,
+    "Q",
+    x - w - 1,
+    y + h / 2,
+    x + w / 2 - 1,
+    y + h,
+    "Q",
+    x + w / 2 - 1,
+    y + h / 2,
+    x + w / 2 - 1,
+    y,
+    "Z",
+  ];
+};
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -151,7 +195,7 @@ const baseOptions: Highcharts.Options = {
       // borderWidth: 1,
       // make columns touch each other
       pointWidth: undefined,
-      groupPadding: 0,
+      // groupPadding: 0,
       animation: false,
     },
     series: {
@@ -186,46 +230,17 @@ const baseOptions: Highcharts.Options = {
   },
 };
 
-const timespans = {
-  // "30d": {
-  //   label: "30 days",
-  //   value: 30,
-  //   xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
-  //   xMax: Date.now(),
-  // },
-  "90d": {
-    label: "90 days",
-    value: 90,
-    xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
-    xMax: Date.now(),
-  },
-  "180d": {
-    label: "180 days",
-    value: 180,
-    xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
-    xMax: Date.now(),
-  },
-  "365d": {
-    label: "1 year",
-    value: 365,
-    xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
-    xMax: Date.now(),
-  },
-  max: {
-    label: "Maximum",
-    value: 0,
-    xMin: Date.parse("2020-09-28"),
-    xMax: Date.now(),
-  },
-};
-
 export default function LandingChart({
   data,
+  latest_total,
+  l2_dominance,
 }: // timeIntervals,
 // onTimeIntervalChange,
 // showTimeIntervals = true,
 {
   data: any;
+  latest_total: number;
+  l2_dominance: number;
   // timeIntervals: string[];
   // onTimeIntervalChange: (interval: string) => void;
   // showTimeIntervals: boolean;
@@ -255,6 +270,8 @@ export default function LandingChart({
   const [selectedScale, setSelectedScale] = useState("absolute");
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
+
+  const [zoomed, setZoomed] = useState(false);
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
 
@@ -304,16 +321,10 @@ export default function LandingChart({
     [selectedScale]
   );
 
-  const formatNumber = useCallback((value: number) => {
-    if (value < 1000) return value.toFixed(2);
-    if (value < 1000000) return (value / 1000).toFixed(2) + "K";
-    if (value < 1000000000) return (value / 1000000).toFixed(2) + "M";
-    if (value < 1000000000000) return (value / 1000000000).toFixed(2) + "B";
-    if (value < 1000000000000000)
-      return (value / 1000000000000).toFixed(2) + "T";
-    if (value < 1000000000000000000)
-      return (value / 1000000000000000).toFixed(2) + "P";
-    return (value / 1000000000000000000).toFixed(2) + "E";
+  const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
+
+  const formatNumber = useCallback((value: number | string, isAxis = false) => {
+    return isAxis ? d3.format(".2s")(value) : d3.format(",.2~s")(value);
   }, []);
 
   const tooltipFormatter = useCallback(
@@ -434,21 +445,6 @@ export default function LandingChart({
   },
   []);
 
-  const getNumColumnsVisible = useCallback(
-    (data: any) => {
-      if (showEthereumMainnet)
-        return data
-          .find((d: any) => d.name === "ethereum")
-          .data.filter((d) => d[0] >= timespans[selectedTimespan].xMin).length;
-      return data[1].data.filter(
-        (d) => d[0] >= timespans[selectedTimespan].xMin
-      ).length;
-    },
-    [showEthereumMainnet, selectedTimespan]
-  );
-
-  const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
-
   useEffect(() => {
     if (chartComponent.current) {
       chartComponent.current.xAxis[0].setExtremes(
@@ -458,24 +454,139 @@ export default function LandingChart({
     }
   }, [selectedTimespan, chartComponent]);
 
+  const [showTotalUsers, setShowTotalUsers] = useState(false);
+
   const filteredData = useMemo(() => {
     if (!data) return null;
+
+    if (showTotalUsers)
+      return showEthereumMainnet
+        ? data.filter((d) => ["all_l2s", "ethereum"].includes(d.name))
+        : data.filter((d) => ["all_l2s"].includes(d.name));
+
     return showEthereumMainnet
-      ? data
-      : data.filter((d) => d.name !== "ethereum");
-  }, [data, showEthereumMainnet]);
+      ? data.filter((d) => !["all_l2s"].includes(d.name))
+      : data.filter((d) => !["all_l2s", "ethereum"].includes(d.name));
+  }, [data, showEthereumMainnet, showTotalUsers]);
+
+  const getNumColumnsVisible = useCallback(
+    (data: any) => {
+      const extremes = chartComponent.current
+        ? chartComponent.current.xAxis[0].getExtremes()
+        : {
+            min: timespans[selectedTimespan].xMin,
+            max: timespans[selectedTimespan].xMax,
+          };
+      if (showEthereumMainnet)
+        return filteredData
+          .find((d: any) => d.name === "ethereum")
+          .data.filter((d) => d[0] >= extremes.min && d[0] <= extremes.max);
+      return filteredData[0].data.filter(
+        (d) => d[0] >= extremes.min && d[0] <= extremes.max
+      ).length;
+    },
+    [filteredData, selectedTimespan, showEthereumMainnet]
+  );
+
+  const onXAxisSetExtremes = useCallback(
+    function (e) {
+      if (
+        e.trigger === "zoom" ||
+        e.trigger === "pan" ||
+        e.trigger === "navigator" ||
+        e.trigger === "rangeSelectorButton"
+      ) {
+        const { min, max } = e;
+        const { xMin, xMax } = timespans[selectedTimespan];
+        if (min === xMin && max === xMax) {
+          setZoomed(false);
+        } else {
+          setZoomed(true);
+        }
+        if (chartComponent && chartComponent.current) {
+          chartComponent.current.xAxis[0].update({
+            min: timespans[selectedTimespan].xMin,
+            max: timespans[selectedTimespan].xMax,
+            // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
+            tickPositions: getTickPositions(
+              timespans[selectedTimespan].xMin,
+              timespans[selectedTimespan].xMax
+            ),
+          });
+
+          setXAxis();
+        }
+      }
+    },
+    [filteredData, getNumColumnsVisible, selectedTimespan]
+  );
+
+  const timespans = useMemo(
+    () => ({
+      // "30d": {
+      //   label: "30 days",
+      //   value: 30,
+      //   xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
+      //   xMax: Date.now(),
+      // },
+      "90d": {
+        label: "90 days",
+        value: 90,
+        xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
+        xMax: Date.now(),
+      },
+      "180d": {
+        label: "180 days",
+        value: 180,
+        xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
+        xMax: Date.now(),
+      },
+      "365d": {
+        label: "1 year",
+        value: 365,
+        xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
+        xMax: Date.now(),
+      },
+      max: {
+        label: "Maximum",
+        value: 0,
+        xMin: filteredData.reduce(
+          (min, d) => Math.min(min, d.data[0][0]),
+          Infinity
+        ),
+
+        xMax: Date.now(),
+      },
+    }),
+    [filteredData]
+  );
+
+  const setXAxis = useCallback(() => {
+    if (!chartComponent.current) return;
+    chartComponent.current.xAxis[0].update({
+      min: timespans[selectedTimespan].xMin,
+      max: timespans[selectedTimespan].xMax,
+      // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
+      tickPositions: getTickPositions(
+        timespans[selectedTimespan].xMin,
+        timespans[selectedTimespan].xMax
+      ),
+    });
+  }, [getTickPositions, selectedTimespan, timespans]);
 
   const options = useMemo((): Highcharts.Options => {
     const dynamicOptions: Highcharts.Options = {
       chart: {
         type: selectedScale === "percentage" ? "area" : "column",
+        plotBorderColor: "transparent",
       },
       plotOptions: {
         area: {
           stacking: selectedScale === "percentage" ? "percent" : "normal",
         },
         column: {
-          pointPadding: getNumColumnsVisible(filteredData) / 500,
+          groupPadding: 0.005,
+          // pointPadding: getNumColumnsVisible(filteredData) / 500,
           // borderColor: "#ffffff",
           // borderWidth: 1,
           // shadow: {
@@ -489,10 +600,17 @@ export default function LandingChart({
         enabled: false,
       },
       yAxis: {
+        opposite: false,
+        showFirstLabel: true,
+        showLastLabel: true,
         type: selectedScale === "log" ? "logarithmic" : "linear",
         labels: {
+          y: 5,
           style: {
             color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
+          },
+          formatter: function (t: AxisLabelsFormatterContextObject) {
+            return formatNumber(t.value, true);
           },
         },
         gridLineColor:
@@ -511,11 +629,16 @@ export default function LandingChart({
             color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
           },
         },
+        events: {
+          afterSetExtremes: onXAxisSetExtremes,
+        },
       },
       tooltip: {
         formatter: tooltipFormatter,
         // positioner: tooltipPositioner,
+        split: false,
         followPointer: true,
+        followTouchMove: true,
         backgroundColor:
           theme === "light"
             ? customTheme.extend.colors["forest"]["800"]
@@ -523,7 +646,12 @@ export default function LandingChart({
         borderRadius: 17,
         borderWidth: 0,
         padding: 0,
-
+        shadow: {
+          color: "black",
+          opacity: 0.015,
+          offsetX: 2,
+          offsetY: 2,
+        },
         style: {
           color: theme === "light" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
         },
@@ -548,12 +676,12 @@ export default function LandingChart({
                 : 10
               : 10;
 
-            let borderRadius = "0%";
+            let borderRadius = undefined;
 
             if (showEthereumMainnet && i === 1) {
-              borderRadius = "5%";
+              borderRadius = "8%";
             } else if (i === 0) {
-              borderRadius = "5%";
+              borderRadius = "8%";
             }
 
             return {
@@ -581,25 +709,54 @@ export default function LandingChart({
                   [0.66, AllChainsByKeys[series.name].colors[theme][1] + "00"],
                 ],
               },
-              borderColor: AllChainsByKeys[series.name].colors[theme][0] + "33",
-              borderWidth: 1,
+              // borderColor: AllChainsByKeys[series.name].colors[theme][0] + "ff",
+              borderWidth: 0,
               shadow: {
-                color: AllChainsByKeys[series.name].colors[theme][1] + "33",
-                width: 8,
+                // color: AllChainsByKeys[series.name].colors[theme][1] + "33",
+                color: theme == "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
+                opacity: 0.15,
+                offsetX: 0,
+                offsetY: 0,
+                width: 1.5,
               },
 
               color: {
                 linearGradient: {
                   x1: 0,
                   y1: 0,
-                  x2: 0,
-                  y2: 1,
+                  x2: 1,
+                  y2: 0,
                 },
-                stops: [
-                  [0, AllChainsByKeys[series.name].colors[theme][0] + "FF"],
-                  [0.7, AllChainsByKeys[series.name].colors[theme][0] + "44"],
-                  [1, AllChainsByKeys[series.name].colors[theme][0] + "22"],
-                ],
+                stops:
+                  theme === "dark"
+                    ? [
+                        [
+                          0,
+                          AllChainsByKeys[series.name].colors[theme][0] + "FF",
+                        ],
+                        // [
+                        //   0.7,
+                        //   AllChainsByKeys[series.name].colors[theme][0] + "44",
+                        // ],
+                        [
+                          1,
+                          AllChainsByKeys[series.name].colors[theme][0] + "22",
+                        ],
+                      ]
+                    : [
+                        [
+                          0,
+                          AllChainsByKeys[series.name].colors[theme][0] + "FF",
+                        ],
+                        [
+                          0.7,
+                          AllChainsByKeys[series.name].colors[theme][0] + "88",
+                        ],
+                        [
+                          1,
+                          AllChainsByKeys[series.name].colors[theme][0] + "55",
+                        ],
+                      ],
               },
               states: {
                 hover: {
@@ -621,22 +778,118 @@ export default function LandingChart({
                   enabled: true,
                   opacity: 0.6,
                 },
+                selection: {
+                  enabled: false,
+                },
               },
+              showInNavigator: true,
             };
           }),
       ],
+      // stockchart options
+      navigator: {
+        outlineWidth: 0,
+        outlineColor: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
+        maskFill:
+          theme === "dark"
+            ? "rgba(215, 223, 222, 0.08)"
+            : "rgba(41, 51, 50, 0.08)",
+        maskInside: true,
+
+        series: {
+          // type: "column",
+          // color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
+          opacity: 0.5,
+          fillOpacity: 0.3,
+          lineWidth: 1,
+          dataGrouping: {
+            enabled: false,
+          },
+          height: 30,
+        },
+        xAxis: {
+          labels: {
+            enabled: true,
+            style: {
+              color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
+              fontSize: "8px",
+              fontWeight: "400",
+              // textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              lineHeight: "1.5em",
+              textShadow: "none",
+              textOutline: "none",
+              cursor: "default",
+              pointerEvents: "none",
+              userSelect: "none",
+              opacity: 0.5,
+            },
+            formatter: function () {
+              return new Date(this.value).toLocaleDateString(undefined, {
+                month: "short",
+                //day: "numeric",
+                year: "numeric",
+              });
+            },
+          },
+          tickLength: 0,
+          lineWidth: 0,
+          gridLineWidth: 0,
+        },
+
+        enabled: true,
+        handles: {
+          backgroundColor:
+            theme === "dark"
+              ? "rgba(215, 223, 222, 0.3)"
+              : "rgba(41, 51, 50, 0.3)",
+          borderColor:
+            theme === "dark" ? "rgba(215, 223, 222, 0)" : "rgba(41, 51, 50, 0)",
+          width: 8,
+          height: 20,
+          symbols: ["doublearrow", "doublearrow"],
+        },
+      },
+      rangeSelector: {
+        enabled: false,
+      },
+      stockTools: {
+        gui: {
+          enabled: false,
+        },
+      },
+      scrollbar: {
+        enabled: false,
+        height: 0,
+        barBackgroundColor:
+          theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41, 51, 50)",
+        barBorderRadius: 7,
+        barBorderWidth: 0,
+        rifleColor: "transparent",
+        buttonBackgroundColor:
+          theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41, 51, 50)",
+        buttonBorderWidth: 0,
+        buttonBorderRadius: 7,
+        trackBackgroundColor: "none",
+        trackBorderWidth: 1,
+        trackBorderRadius: 8,
+        trackBorderColor:
+          theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41, 51, 50)",
+      },
     };
 
     return _merge({}, baseOptions, dynamicOptions);
   }, [
     filteredData,
-    getNumColumnsVisible,
+    formatNumber,
     getSeriesType,
     getTickPositions,
+    onXAxisSetExtremes,
     selectedScale,
     selectedTimespan,
     showEthereumMainnet,
     theme,
+    timespans,
     tooltipFormatter,
   ]);
 
@@ -657,7 +910,6 @@ export default function LandingChart({
               formatter: tooltipFormatter,
             },
             series: filteredData.map((series: any) => ({
-              ...series,
               type: getSeriesType(series.name),
             })),
           });
@@ -679,7 +931,6 @@ export default function LandingChart({
               formatter: tooltipFormatter,
             },
             series: filteredData.map((series: any) => ({
-              ...series,
               type: getSeriesType(series.name),
             })),
           });
@@ -704,7 +955,6 @@ export default function LandingChart({
               formatter: tooltipFormatter,
             },
             series: filteredData.map((series: any) => ({
-              ...series,
               type: getSeriesType(series.name),
             })),
           });
@@ -738,28 +988,31 @@ export default function LandingChart({
         <div className="flex justify-center items-center space-x-1">
           <button
             className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
-              "absolute" === selectedScale
+              showTotalUsers
                 ? "bg-forest-900 text-forest-50"
                 : "hover:bg-forest-100"
             }`}
             onClick={() => {
               setSelectedScale("absolute");
+              setShowTotalUsers(true);
             }}
           >
             Total Users
           </button>
           <button
             className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
-              "log" === selectedScale
+              "absolute" === selectedScale && !showTotalUsers
                 ? "bg-forest-900 text-forest-50"
                 : "hover:bg-forest-100"
             }`}
             onClick={() => {
-              setSelectedScale("log");
+              setShowTotalUsers(false);
+              setSelectedScale("absolute");
             }}
           >
             Users per Chain
           </button>
+
           <button
             className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
               "percentage" === selectedScale
@@ -804,6 +1057,8 @@ export default function LandingChart({
               }`}
               onClick={() => {
                 setSelectedTimespan(timespan);
+                setXAxis();
+                setZoomed(false);
                 // chartComponent.current?.xAxis[0].setExtremes(
                 //   timespans[timespan].xMin,
                 //   timespans[timespan].xMax
@@ -815,6 +1070,28 @@ export default function LandingChart({
           ))}
         </div>
       </div>
+      <div className="flex justify-end items-center absolute -top-10 left-0 right-0 rounded-full p-0.5">
+        {zoomed && (
+          <Tooltip placement="left">
+            <TooltipTrigger>
+              <button
+                className="rounded-full p-2 text-forest-900 bg-forest-50 hover:bg-forest-100"
+                onClick={() => {
+                  chartComponent.current?.zoomOut();
+                }}
+              >
+                <Icon icon="feather:minimize" className="w-8 h-8 leading-[1]" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="p-2 text-xs font-medium bg-forest-900 text-forest-50 rounded-md shadow-lg">
+                Reset Chart
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+
       <div className="w-full py-4 rounded-xl">
         <div className="w-full h-[26rem] relative rounded-xl">
           <div className="absolute w-full h-[24rem] top-4">
@@ -822,6 +1099,7 @@ export default function LandingChart({
               <HighchartsReact
                 highcharts={Highcharts}
                 options={options}
+                constructorType={"stockChart"}
                 ref={(chart) => {
                   chartComponent.current = chart?.chart;
                 }}
@@ -836,29 +1114,66 @@ export default function LandingChart({
           </div>
         </div>
       </div>
-      <div className="flex justify-between items-center absolute -bottom-10 left-0 right-0 rounded-full bg-forest-50 p-0.5">
+
+      <div className="flex justify-between items-center absolute -bottom-14 left-0 right-0 rounded-full bg-forest-50 p-0.5">
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
         {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
         {/* toggle ETH */}
-        <Switch
-          checked={showEthereumMainnet}
-          onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
-          rightLabel="Show Ethereum"
-        />
+        <div className="z-10">
+          <Switch
+            checked={showEthereumMainnet}
+            onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
+            rightLabel="Show Ethereum"
+          />
+        </div>
+      </div>
+      <div className="flex justify-end items-center absolute -bottom-20 left-0 right-0 rounded-full">
+        {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
+        {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
+        {/* toggle ETH */}
 
-        {/* <button
-            className={`rounded-full px-2 py-1 text-xs font-bold
-            ${
-              showEthereumMainnet
-                ? "bg-forest-900 text-forest-50 hover:bg-forest-700"
-                : "bg-transparent text-forest-800 hover:bg-forest-700"
-            }`}
-            onClick={() => setShowEthereumMainnet(!showEthereumMainnet)}
-          >
-            {showEthereumMainnet ? "Hide ETH Mainnet" : "Show ETH Mainnet"}
-          </button> */}
-        {/* </div> */}
-        <div className="flex justify-center items-center space-x-1"></div>
+        <div className="flex justify-center items-center space-x-5">
+          <div className="flex bg-forest-100 rounded-xl p-3 items-center">
+            <Icon
+              icon="feather:users"
+              className="w-14 h-14 text-forest-900 mr-2"
+            />
+            <div className="flex flex-col items-center justify-center space-y-1.5">
+              <div className="text-3xl font-[650] text-forest-900">
+                {latest_total.toLocaleString()}
+              </div>
+              <div className="text-xs font-medium text-forest-900">
+                Total Users
+              </div>
+            </div>
+          </div>
+          <div className="flex bg-forest-100 rounded-xl p-3 items-center">
+            <Icon
+              icon="feather:layers"
+              className="w-14 h-14 text-forest-900 mr-2"
+            />
+            <div className="flex flex-col items-center justify-center space-y-1.5">
+              <div className="text-3xl font-[650] text-forest-900">
+                {l2_dominance.toFixed(2)}x
+              </div>
+              <div className="text-xs font-medium text-forest-900">
+                Layer-2 Dominance
+              </div>
+            </div>
+          </div>
+          <Tooltip placement="left">
+            <TooltipTrigger>
+              <div className="p-1.5 -ml-4">
+                <Icon icon="feather:info" className="w-6 h-6 text-forest-900" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="p-2 text-xs font-medium bg-forest-900 text-forest-50 rounded-md shadow-lg">
+                Data is updated daily
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </div>
     </div>
   );

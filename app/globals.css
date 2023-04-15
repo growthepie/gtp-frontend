@@ -26,3 +26,7 @@
 .svg-t-rounded-sm rect {
   clip-path: inset(0% -1% -500% -1% round 0.075rem);
 }
+
+.highcharts-navigator-outline {
+  stroke: var(--foreground);
+}

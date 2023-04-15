@@ -120,22 +120,36 @@ export default function Home() {
                 height={32}
                 className="mr-2"
               />
+              <select
+                className="border-none bg-transparent text-center mr-1 dropdown outline-none underline cursor-pointer appearance-none"
+                value={selectedTimeInterval}
+                onChange={(e) => setSelectedTimeInterval(e.target.value)}
+              >
+                {Object.keys(landing.data.metrics.user_base)
+                  .filter((key) => ["daily", "weekly", "monthly"].includes(key))
+                  .map((ti) => (
+                    <option key={ti} value={ti}>
+                      {ti.charAt(0).toUpperCase() + ti.slice(1)}
+                    </option>
+                  ))}
+              </select>{" "}
               Web3 User Base
             </Heading>
             <div className="flex-1">
               <LandingChart
-                data={Object.keys(data.chains)
-                  .filter((chain) => selectedChains.includes(chain))
-                  .map((chain) => {
-                    return {
-                      name: chain,
-                      // type: 'spline',
-                      types: data.chains[chain].data.types,
-                      data: data.chains[chain].data.data,
-                    };
-                  })}
+                data={Object.keys(data.chains).map((chain) => {
+                  return {
+                    name: chain,
+                    // type: 'spline',
+                    types: data.chains[chain].data.types,
+                    data: data.chains[chain].data.data,
+                  };
+                })}
+                latest_total={data.latest_total}
+                l2_dominance={data.l2_dominance}
               />
             </div>
+            {data && <ReactJson src={landing} collapsed={true} />}
             {/* <MetricsTable
               data={daa.data.chains}
               selectedChains={selectedChains}

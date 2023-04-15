@@ -2,6 +2,8 @@
 
 import HighchartsReact from "highcharts-react-official";
 import Highcharts, {
+  AxisLabelsFormatterCallbackFunction,
+  AxisLabelsFormatterContextObject,
   chart,
   Series,
   TooltipFormatterCallbackFunction,
@@ -19,6 +21,7 @@ import { useTheme } from "next-themes";
 import _, { filter } from "lodash";
 import { Switch } from "../Switch";
 import { AllChains, AllChainsByKeys } from "@/lib/chains";
+import d3 from "d3";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -247,36 +250,40 @@ export default function ComparisonChart({
 
   const [valuePrefix, setValuePrefix] = useState("");
 
-  function getTickPositions(xMin: any, xMax: any): number[] {
-    const tickPositions: number[] = [];
-    const xMinDate = new Date(xMin);
-    const xMaxDate = new Date(xMax);
-    const xMinMonth = xMinDate.getMonth();
-    const xMaxMonth = xMaxDate.getMonth();
-    const xMinYear = xMinDate.getFullYear();
-    const xMaxYear = xMaxDate.getFullYear();
+  const getTickPositions = useCallback(
+    (xMin: any, xMax: any): number[] => {
+      const tickPositions: number[] = [];
+      const xMinDate = new Date(xMin);
+      const xMaxDate = new Date(xMax);
+      const xMinMonth = xMinDate.getMonth();
+      const xMaxMonth = xMaxDate.getMonth();
 
-    if (selectedTimespan === "max") {
+      const xMinYear = xMinDate.getFullYear();
+      const xMaxYear = xMaxDate.getFullYear();
+
+      if (selectedTimespan === "max") {
+        for (let year = xMinYear; year <= xMaxYear; year++) {
+          for (let month = 0; month < 12; month = month + 4) {
+            if (year === xMinYear && month < xMinMonth) continue;
+            if (year === xMaxYear && month > xMaxMonth) continue;
+            tickPositions.push(new Date(year, month, 1).getTime());
+          }
+        }
+        return tickPositions;
+      }
+
       for (let year = xMinYear; year <= xMaxYear; year++) {
-        for (let month = 0; month < 12; month = month + 4) {
+        for (let month = 0; month < 12; month++) {
           if (year === xMinYear && month < xMinMonth) continue;
           if (year === xMaxYear && month > xMaxMonth) continue;
           tickPositions.push(new Date(year, month, 1).getTime());
         }
       }
+
       return tickPositions;
-    }
-
-    for (let year = xMinYear; year <= xMaxYear; year++) {
-      for (let month = 0; month < 12; month++) {
-        if (year === xMinYear && month < xMinMonth) continue;
-        if (year === xMaxYear && month > xMaxMonth) continue;
-        tickPositions.push(new Date(year, month, 1).getTime());
-      }
-    }
-
-    return tickPositions;
-  }
+    },
+    [selectedTimespan]
+  );
 
   const getSeriesType = useCallback(
     (name: string) => {
@@ -295,17 +302,15 @@ export default function ComparisonChart({
     return "line";
   }, [selectedScale]);
 
-  const formatNumber = useCallback((value: number) => {
-    if (value < 1000) return value.toFixed(2);
-    if (value < 1000000) return (value / 1000).toFixed(2) + "K";
-    if (value < 1000000000) return (value / 1000000).toFixed(2) + "M";
-    if (value < 1000000000000) return (value / 1000000000).toFixed(2) + "B";
-    if (value < 1000000000000000)
-      return (value / 1000000000000).toFixed(2) + "T";
-    if (value < 1000000000000000000)
-      return (value / 1000000000000000).toFixed(2) + "P";
-    return (value / 1000000000000000000).toFixed(2) + "E";
-  }, []);
+  const formatNumber = useCallback(
+    (value: number | string, isAxis = false) => {
+      const prefix = valuePrefix;
+      return isAxis
+        ? prefix + d3.format(".2s")(value).replace(/G/, "B")
+        : d3.format(",.2~s")(value).replace(/G/, "B");
+    },
+    [valuePrefix]
+  );
 
   const tooltipFormatter = useCallback(
     function (this: any) {
@@ -428,6 +433,14 @@ export default function ComparisonChart({
           style: {
             color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
           },
+          formatter: (t: AxisLabelsFormatterContextObject) => {
+            return formatNumber(t.value, true);
+          },
+          // format: filteredData[0].types.includes("usd")
+          //   ? !showUsd
+          //     ? "Ξ{value}"
+          //     : "${value}"
+          //   : "{value}",
         },
         gridLineColor:
           theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
@@ -509,10 +522,12 @@ export default function ComparisonChart({
     getChartType,
     selectedScale,
     theme,
-    selectedTimespan,
     showUsd,
-    getSeriesType,
+    selectedTimespan,
+    getTickPositions,
     tooltipFormatter,
+    formatNumber,
+    getSeriesType,
   ]);
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
