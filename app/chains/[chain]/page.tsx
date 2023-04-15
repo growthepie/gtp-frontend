@@ -71,10 +71,10 @@ const Chain = ({ params }: { params: any }) => {
 
 
   return (
-    <div className="mx-auto pt-10 w-44[rem] lg:w-[88rem]">
+    <div className="mx-auto pt-10 w-[44rem] lg:w-[88rem]">
       {/*Header */}
-      <div className="pl-28 pr-14">
-        <div className="flex justify-between items-center">
+      <div className="mx-auto pl-4 pr-2 lg:pl-0 w-[40.5rem] lg:w-[81rem]">
+        <div className="flex flex-col justify-between items-start gap-y-8 lg:gap-y-0 lg:items-center lg:flex-row">
           <div className="flex gap-x-6 items-center">
             <h1 className="h-14 text-5xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282] dark:text-[#CDD8D3]">
               {String(chain).charAt(0).toUpperCase() + String(chain).slice(1)}
@@ -83,10 +83,10 @@ const Chain = ({ params }: { params: any }) => {
             {/*Uppercase first letter */}
           </div>
           
-          <div className="flex gap-x-10 h-10 pl-10">
+          <div className="flex gap-x-10 h-10">
             <Link
               href={chainData.block_explorer}
-              className="flex justify-between text-white dark:bg-[#2A3433] dark:text-[#CDD8D3] bg-blue-600 w-44 py-0 rounded-full w-168px pl-4 pr-6"
+              className="flex justify-between text-white hover:bg-forest-100 dark:bg-[#2A3433] dark:text-[#CDD8D3] bg-blue-600 w-44 py-0 rounded-full w-168px pl-4 pr-6"
             >
               <LinkIcon className="h-4 w-4 self-center" />
               <p className="self-center font-semibold">Block Explorer</p>
@@ -94,7 +94,7 @@ const Chain = ({ params }: { params: any }) => {
 
             <Link
               href={chainData.website}
-              className="flex justify-between text-white dark:bg-[#2A3433]  dark:text-[#CDD8D3] bg-blue-600 w-32 py-0 rounded-full w-168px pl-4 pr-6"
+              className="flex justify-between text-white hover:bg-forest-100 dark:bg-[#2A3433]  dark:text-[#CDD8D3] bg-blue-600 w-32 py-0 rounded-full w-168px pl-4 pr-6"
             >
               <ArrowTopRightOnSquareIcon className="h-4 w-4 self-center" />
               <p className="self-center font-semibold">Website</p>
@@ -102,7 +102,7 @@ const Chain = ({ params }: { params: any }) => {
 
             <Link
               href={chainData.twitter}
-              className="flex justify-between text-white dark:bg-[#2A3433]  dark:text-[#CDD8D3] bg-blue-600 w-40 py-0 rounded-full w-168px pl-4 pr-6"
+              className="flex justify-between text-white hover:bg-forest-100 dark:bg-[#2A3433]  dark:text-[#CDD8D3] bg-blue-600 w-40 py-0 rounded-full w-168px pl-4 pr-6"
             >
               <AtSymbolIcon className="h-4 w-4 self-center" />
               <p className="self-center font-semibold">
@@ -114,7 +114,7 @@ const Chain = ({ params }: { params: any }) => {
           </div>
         </div>
 
-        <h1 className="text-lg text-gray-500 pt-4 font-[600] pl-1 dark:text-[#CDD8D3] w-2/5">
+        <h1 className="text-lg text-gray-500 pt-8 lg:pt-4 font-[600] pl-1 dark:text-[#CDD8D3] w-2/5">
           Lorem Ipsum about {pageName}
         </h1>
       </div>

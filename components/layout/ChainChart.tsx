@@ -456,8 +456,8 @@ export default function ChainChart({
   };
 
   return (
-    <div className="w-44[rem] lg:w-[88rem] my-[1rem] ml-12 mr-14 ">
-      <div className="flex w-44[rem] lg:w-[82rem] ml-12 mr-14 justify-start md:dark:justify-end items-center text-xs rounded-full dark:bg-[#2A3433] p-0.5 md:justify-center">
+    <div className="w-44[rem] lg:w-[88rem] my-[1rem]">
+      <div className="flex w-[40rem] lg:w-[82rem] ml-12 mr-14 justify-center lg:dark:justify-end items-center text-xs rounded-full dark:bg-[#2A3433] p-0.5 lg:justify-center">
         <div className="flex py-2 gap-x-8 justify-start items-center rounded-[999px] h-[60px] pr-6 ">
         {Object.keys(timespans).map((timespan) => (
             <button
