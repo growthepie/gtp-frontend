@@ -1141,8 +1141,8 @@ export default function LandingChart({
         {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
         {/* toggle ETH */}
 
-        <div className="flex justify-center items-center space-x-5">
-          <div className="flex bg-forest-100 rounded-xl p-3 items-center">
+        <div className="flex justify-center items-center">
+          <div className="flex bg-forest-100 rounded-xl p-3 items-center mr-5">
             <Icon
               icon="feather:users"
               className="w-8 h-8 lg:w-14 lg:h-14 text-forest-900 mr-2"
@@ -1156,7 +1156,7 @@ export default function LandingChart({
               </div>
             </div>
           </div>
-          <div className="flex bg-forest-100 rounded-xl p-3 items-center">
+          <div className="flex bg-forest-100 rounded-xl p-3 items-center mr-2">
             <Icon
               icon="feather:layers"
               className="w-8 h-8 lg:w-14 lg:h-14 text-forest-900 mr-2"
@@ -1172,7 +1172,7 @@ export default function LandingChart({
           </div>
           <Tooltip placement="left">
             <TooltipTrigger>
-              <div className="p-1.5 z-10">
+              <div className="p-1.5 z-10 mr-1">
                 <Icon icon="feather:info" className="w-6 h-6 text-forest-900" />
               </div>
             </TooltipTrigger>
