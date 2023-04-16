@@ -103,9 +103,9 @@ export default function RootLayout({
           </div>
           {/* </background gradient> */}
           <div className="flex justify-between h-screen w-full">
-            <div className="pt-6 pl-4 bg-forest-100 dark:bg-forest-900 border-forest-400 mix-h-screen max-h-screen hidden md:flex flex-col overflow-hidden">
+            <div className="pt-6 pl-0 bg-forest-100 dark:bg-forest-900 border-forest-400 mix-h-screen max-h-screen hidden md:flex flex-col overflow-hidden">
               <Link href="" className="relative h-[45px] block mb-4">
-                <div className="h-[45px] w-[192px] absolute">
+                <div className="h-[45px] w-[192px] absolute left-3">
                   <Image
                     src="/logo-full.svg"
                     alt="Forest"

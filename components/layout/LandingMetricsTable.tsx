@@ -89,7 +89,7 @@ export default function LandingMetricsTable({
             return (
               <div
                 key={chain.key}
-                className={`flex gap-x-2 lg:gap-x-8 items-center cursor-pointer p-1.5 lg:p-3 rounded-full w-full font-[400] border-[1px] border-forest-500 whitespace-nowrap text-xs lg:text-sm ${
+                className={`flex gap-x-2 lg:gap-x-8 items-center cursor-pointer p-1.5 lg:p-3 rounded-full w-full font-[400] border-[1px] border-forest-500 whitespace-nowrap text-xs lg:text-[0.95rem] ${
                   i > 0 ? "-mt-[1px]" : ""
                 } ${
                   selectedChains.includes(chain.key)
@@ -161,9 +161,9 @@ export default function LandingMetricsTable({
                             ][1]
                           )}
                     </div>
-                    <div className="absolute -bottom-[4px] right-0 w-full h-1 bg-black/30 rounded-md"></div>
+                    <div className="absolute -bottom-[6px] right-0 w-full h-1 bg-black/30 rounded-md"></div>
                     <div
-                      className={`absolute -bottom-[4px] right-0 h-1 bg-green-500 rounded-md`}
+                      className={`absolute -bottom-[6px] right-0 h-1 bg-green-500 rounded-md`}
                       style={{
                         width: `${
                           (data.chains[chain.key].data.data[

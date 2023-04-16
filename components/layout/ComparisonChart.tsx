@@ -322,7 +322,7 @@ export default function ComparisonChart({
         year: "numeric",
       });
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-80 text-xs font-raleway"><div class="w-full font-bold text-[1rem] ml-6 mb-2 opacity-50">${dateString}</div>`;
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-80 text-xs font-raleway"><div class="w-full font-bold text-[1rem] ml-6 mb-2">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
       let pointsSum = 0;
@@ -376,6 +376,7 @@ export default function ComparisonChart({
             y
           ).toLocaleString(undefined, {
             minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
           })}</div>
           <!-- <div class="inline-block">≈</div>
               <div class="inline-block"><span class="opacity-70">${valuePrefix}</span>${value}</div>
@@ -462,15 +463,15 @@ export default function ComparisonChart({
       tooltip: {
         formatter: tooltipFormatter,
         backgroundColor:
-          theme === "light"
-            ? customTheme.extend.colors["forest"]["800"]
-            : customTheme.extend.colors["forest"]["50"],
+          theme === "dark"
+            ? customTheme.extend.colors["forest"]["900"] + "EE"
+            : customTheme.extend.colors["forest"]["50"] + "EE",
         borderRadius: 17,
         borderWidth: 0,
         padding: 0,
 
         style: {
-          color: theme === "light" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
+          color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
         },
       },
       series: filteredData.map((series: any) => ({

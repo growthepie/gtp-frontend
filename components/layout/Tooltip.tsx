@@ -14,6 +14,7 @@ import {
   FloatingPortal,
 } from "@floating-ui/react";
 import type { Placement } from "@floating-ui/react";
+import { motion } from "framer-motion";
 
 interface TooltipOptions {
   initialOpen?: boolean;
@@ -128,7 +129,9 @@ export const TooltipTrigger = React.forwardRef<
       data-state={context.open ? "open" : "closed"}
       {...context.getReferenceProps(props)}
     >
-      {children}
+      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 1.0 }}>
+        {children}
+      </motion.div>
     </button>
   );
 });

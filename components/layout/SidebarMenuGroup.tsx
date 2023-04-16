@@ -106,7 +106,7 @@ export default function SidebarMenuGroup({
     return (
       <div className="group flex flex-col">
         <Tooltip key={item.label} placement="right">
-          <TooltipTrigger className="h-6 mb-6 cursor-default">
+          <TooltipTrigger className="h-6 mb-6 cursor-default pl-3 overflow-visible">
             <div className="flex items-center justify-items-center opacity-70 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
               <div className="w-6 mx-0">
                 <div className="text-forest-50 bg-forest-900 rounded-md w-6 mx-auto">
@@ -140,7 +140,7 @@ export default function SidebarMenuGroup({
       <div className="group flex flex-col">
         {/* open in new tab */}
         <Tooltip key={item.label} placement="right">
-          <TooltipTrigger className="h-6 mb-6 cursor-default">
+          <TooltipTrigger className="h-6 mb-6 cursor-default pl-3 overflow-visible">
             <Link
               target="_blank"
               rel="noopener noreferrer"
@@ -176,7 +176,7 @@ export default function SidebarMenuGroup({
     <div className="flex flex-col">
       <div className="text-xs"></div>
       <Tooltip key={item.label} placement="right">
-        <TooltipTrigger className="h-6">
+        <TooltipTrigger className="h-6 pl-3 overflow-visible">
           <div
             className="group flex items-start justify-items-start mb-2 cursor-pointer"
             onClick={handleToggle}
@@ -215,7 +215,7 @@ export default function SidebarMenuGroup({
               // if (!sidebarOpen) {
               return (
                 <Tooltip key={option.label} placement="right">
-                  <TooltipTrigger>
+                  <TooltipTrigger className="px-3 overflow-visible">
                     <Link
                       className={`group flex items-center justify-items-center rounded-l-full my-[0.25rem] relative ${
                         urlParts[1].trim().localeCompare(option.key) === 0
@@ -247,7 +247,7 @@ export default function SidebarMenuGroup({
                       </div>
                       {/* </div> */}
                       <div
-                        className={`text-sm py-1 w-40 font-normal break-inside-auto text-left mx-10`}
+                        className={`text-sm py-1 w-44 font-normal break-inside-auto text-left ml-10`}
                       >
                         {option.label}
                       </div>

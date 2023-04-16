@@ -10,14 +10,12 @@ const MetricsTable = ({
   selectedChains,
   setSelectedChains,
   metric,
-  fixedWidth = true,
 }: {
   data: any;
   chains: any;
   selectedChains: any;
   setSelectedChains: any;
   metric: string;
-  fixedWidth?: boolean;
 }) => {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
@@ -69,27 +67,20 @@ const MetricsTable = ({
     <>
       <div className="flex flex-col mt-12">
         <div
-          className={`flex items-center cursor-pointer py-1 pl-2 pr-4 rounded-full font-medium ${
-            fixedWidth ? "w-auto" : "w-full"
-          } ${isLargeScreen ? "text-sm" : "text-xs"}`}
+          className={`flex items-center p-1.5 lg:py-1.5 lg:pl-3 pr-6 rounded-full gap-x-2 lg:gap-x-8 font-semibold whitespace-nowrap text-xs lg:text-sm`}
         >
-          <div className={`ml-10 ${fixedWidth ? "w-[80px]" : "w-[25%]"}`}>
-            Chain
-          </div>
-          <div className={`${fixedWidth ? "w-[80px]" : "w-[15%]"} text-right`}>
-            {/* {metric} */}
-            Current
-          </div>
-          {["1d", "7d", "30d", "365d"].map((timespan) => (
-            <div
-              key={timespan}
-              className={`${fixedWidth ? "w-[70px]" : "w-[15%]"} ${
-                isLargeScreen ? "text-xs" : "text-2xs"
-              } font-bold text-xs text-right`}
-            >
-              {timespan}
+          <div className={`basis-1/3 pl-14`}>Chain</div>
+          <div className="basis-2/3 flex w-full">
+            <div className={`basis-1/5 text-right capitalize`}>
+              {/* {metric} */}
+              Current
             </div>
-          ))}
+            {["1d", "7d", "30d", "365d"].map((timespan) => (
+              <div key={timespan} className="basis-1/5 text-right">
+                {timespan}
+              </div>
+            ))}
+          </div>
         </div>
         {chains &&
           chainsLastVal &&
@@ -98,15 +89,13 @@ const MetricsTable = ({
             return (
               <div
                 key={chain.key}
-                className={`flex items-center space-x-2 cursor-pointer pt-1.5 pb-2 pl-2 pr-4 rounded-full ${
-                  isLargeScreen ? "text-sm" : "text-xs"
-                } font-[400] border-[1px] border-forest-500 ${
+                className={`flex gap-x-2 lg:gap-x-8 items-center cursor-pointer p-1.5 lg:py-3 lg:pl-3 pr-6 rounded-full w-full font-[400] border-[1px] border-forest-500 whitespace-nowrap text-xs lg:text-sm ${
                   i > 0 ? "-mt-[1px]" : ""
-                }${
+                } ${
                   selectedChains.includes(chain.key)
-                    ? " hover:bg-forest-50 "
-                    : "hover:bg-gray-100  opacity-50 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-100"
-                }${fixedWidth ? "w-auto" : "w-full"}`}
+                    ? " hover:bg-forest-50"
+                    : "opacity-50 grayscale hover:opacity-70 hover:grayscale-20 transition-all duration-100"
+                }`}
                 onClick={() => {
                   if (selectedChains.includes(chain.key)) {
                     setSelectedChains(
@@ -117,102 +106,107 @@ const MetricsTable = ({
                   }
                 }}
               >
-                <div className="relative -mb-0.5">
-                  <div
-                    className={`w-8 h-8 rounded-full bg-white border-[5px] ${
-                      chain.border[theme][1]
-                    } ${selectedChains.includes(chain.key) ? "" : ""}`}
-                  ></div>
-                  <Image
-                    src={chain.icon}
-                    alt={chain.label}
-                    width={18}
-                    height={18}
-                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 "
-                  />
-                </div>
-                <div className="flex flex-1 align-middle items-center">
-                  <div className={`${fixedWidth ? "w-[80px]" : "w-[25%]"}`}>
+                <div className="flex basis-1/3 items-center space-x-4">
+                  <div className="relative">
+                    <div
+                      className={`w-8 h-8 rounded-full bg-white border-[5px] ${
+                        chain.border[theme][1]
+                      } ${selectedChains.includes(chain.key) ? "" : ""}`}
+                    ></div>
+                    <Image
+                      src={chain.icon}
+                      alt={chain.label}
+                      width={18}
+                      height={18}
+                      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                    />
+                  </div>
+                  <div className="break-inside-avoid text-xs md:text-sm lg:text-lg">
                     {chain.label}
                   </div>
-                  {/* <div className="flex flex-1 align-middle items-center"> */}
-                  <div
-                    className={`${
-                      fixedWidth ? "w-[80px]" : "w-[15%]"
-                    } relative`}
-                  >
-                    <div className="flex justify-end">
-                      {data[chain.key].daily.types.includes("usd") && (
-                        <>
-                          {showUsd ? (
-                            <div className="">$</div>
-                          ) : (
-                            <div className="">Ξ</div>
-                          )}
-                        </>
-                      )}
-                      {data[chain.key].daily.types.includes("usd")
-                        ? Intl.NumberFormat(undefined, {
-                            notation: "compact",
-                            maximumFractionDigits: 2,
-                          }).format(
-                            data[chain.key].daily.data[
+                </div>
+                <div className="basis-2/3 flex w-full">
+                  <div className="flex basis-1/5 justify-end items-center">
+                    {/* <div className="flex flex-1 align-middle items-center"> */}
+                    <div className={`relative w-full`}>
+                      <div className="flex w-full justify-end">
+                        {data[chain.key].daily.types.includes("usd") && (
+                          <>
+                            {showUsd ? (
+                              <div className="">$</div>
+                            ) : (
+                              <div className="">Ξ</div>
+                            )}
+                          </>
+                        )}
+                        {data[chain.key].daily.types.includes("usd")
+                          ? Intl.NumberFormat(undefined, {
+                              notation: "compact",
+                              maximumFractionDigits: 2,
+                              minimumFractionDigits: 2,
+                            }).format(
+                              data[chain.key].daily.data[
+                                data[chain.key].daily.data.length - 1
+                              ][
+                                !showUsd &&
+                                data[chain.key].daily.types.includes("usd")
+                                  ? 2
+                                  : 1
+                              ]
+                            )
+                          : Intl.NumberFormat(undefined, {
+                              notation: "compact",
+                              maximumFractionDigits: 2,
+                              minimumFractionDigits: 2,
+                            }).format(
+                              data[chain.key].daily.data[
+                                data[chain.key].daily.data.length - 1
+                              ][1]
+                            )}
+                      </div>
+                      <div className="absolute -bottom-[4px] right-0 w-full h-1 bg-black/30 rounded-md"></div>
+                      <div
+                        className={`absolute -bottom-[4px] right-0 h-1 bg-green-500 rounded-md`}
+                        style={{
+                          width: `${
+                            (data[chain.key].daily.data[
                               data[chain.key].daily.data.length - 1
-                            ][
-                              !showUsd &&
-                              data[chain.key].daily.types.includes("usd")
-                                ? 2
-                                : 1
-                            ]
-                          )
-                        : Intl.NumberFormat(undefined, {
-                            notation: "compact",
-                            maximumFractionDigits: 2,
-                          }).format(
-                            data[chain.key].daily.data[
-                              data[chain.key].daily.data.length - 1
-                            ][1]
-                          )}
+                            ][1] /
+                              maxVal) *
+                            100
+                          }%`,
+                        }}
+                      ></div>
                     </div>
-                    <div className="absolute -bottom-[4px] right-0 w-full h-1 bg-forest-50 rounded-md"></div>
-                    <div
-                      className={`absolute -bottom-[4px] left-0 h-1 bg-green-500 rounded-md`}
-                      style={{
-                        width: `${
-                          (data[chain.key].daily.data[
-                            data[chain.key].daily.data.length - 1
-                          ][1] /
-                            maxVal) *
-                          100
-                        }%`,
-                      }}
-                    ></div>
-                    {/* {data[chain.key].daily.types.includes("eth") && !showUsd && (
-                  <div className="ml-1">ETH</div>
-                )} */}
                   </div>
                   {["1d", "7d", "30d", "365d"].map((timespan) => (
-                    <div
-                      key={timespan}
-                      className={`${
-                        fixedWidth ? "w-[70px]" : "w-[15%]"
-                      } text-right flex justify-end align-middle items-center`}
-                    >
-                      {data[chain.key].changes[timespan][0] > 0 ? (
+                    <div key={timespan} className="basis-1/5 text-right">
+                      {/* {data[chain.key].changes[timespan][0] > 0 ? (
                         <div className="text-green-500 text-[0.5rem]">▲</div>
                       ) : (
                         <div className="text-red-500 text-[0.5rem]">▼</div>
+                      )} */}
+                      {data[chain.key].changes[timespan][0] >= 0 ? (
+                        <span className="w-12 text-green-500">
+                          +
+                          {Math.round(
+                            data[chain.key].changes[timespan][0] * 1000
+                          ) / 10}
+                          %
+                        </span>
+                      ) : (
+                        <span className="w-12 text-red-500">
+                          {Math.round(
+                            data[chain.key].changes[timespan][0] * 1000
+                          ) / 10}
+                          %
+                        </span>
                       )}
-                      <div className="w-12">
-                        {Math.round(
-                          data[chain.key].changes[timespan][0] * 1000
-                        ) / 10}
-                        %
-                      </div>
                     </div>
                   ))}
-                  {/* </div> */}
-                  {/* <div className="w-1/4 text-right">
+                </div>
+                {/* </div> */}
+                {/* <div className="w-1/4 text-right">
                       {Math.round(
                         data[chain.key].changes["7d"][0] * 1000
                       ) / 10}
@@ -230,7 +224,6 @@ const MetricsTable = ({
                       ) / 10}
                       %
                     </div> */}
-                </div>
               </div>
             );
           })}
