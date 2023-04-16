@@ -86,9 +86,9 @@ export default function RootLayout({
         <Providers>
           {/* <div className="flex flex-col min-h-screen max-h-screen h-screen"> */}
           {/* <background gradient> */}
-          <div className="absolute top-0 left-0 -z-10 flex w-full justify-center overflow-clip">
+          <div className="absolute top-0 left-0 -z-10 flex w-full justify-center">
             <div className="h-[500px] xs:h-[650px] md:h-[700px] xl:h-[800px] 2xl:h-[900px] 3xl:h-[1200px]" />
-            <div className=" absolute -top-[20px] h-full w-[150vw] select-none xs:-top-[20px] sm:-top-[60px] md:-top-[100px] lg:-top-[120px] xl:-top-[120px] 2xl:-top-[150px]">
+            <div className="absolute -top-[20px] h-full w-[150vw] select-none xs:-top-[20px] sm:-top-[60px] md:-top-[100px] lg:-top-[120px] xl:-top-[120px] 2xl:-top-[150px]">
               <span className=" box-border block overflow-hidden absolute top-0 left-0 right-0 bottom-0">
                 <Image
                   src="/bg-glow.png"
@@ -103,8 +103,8 @@ export default function RootLayout({
           </div>
           {/* </background gradient> */}
           <div className="flex justify-between h-screen w-full">
-            <div className="pt-6 pl-4 bg-forest-100 dark:bg-forest-900 border-forest-400 mix-h-screen max-h-screen hidden md:flex flex-col">
-              <Link href="/" className="relative h-[45px] block mb-4" passHref>
+            <div className="pt-6 pl-4 bg-forest-100 dark:bg-forest-900 border-forest-400 mix-h-screen max-h-screen hidden md:flex flex-col overflow-hidden">
+              <Link href="" className="relative h-[45px] block mb-4">
                 <div className="h-[45px] w-[192px] absolute">
                   <Image
                     src="/logo-full.svg"
@@ -143,11 +143,7 @@ export default function RootLayout({
                         isOpen={isSidebarOpen}
                         setIsOpen={setIsSidebarOpen}
                       />
-                      <Link
-                        href="/"
-                        className="absolute  top-2 left-20"
-                        passHref
-                      >
+                      <Link href="" className="absolute top-2 left-20">
                         <div className="h-[32px] w-[32px] absolute">
                           <Image
                             src="/logo-pie-only.svg"
