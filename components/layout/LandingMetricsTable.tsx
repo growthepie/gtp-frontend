@@ -183,21 +183,28 @@ export default function LandingMetricsTable({
                 </div>
                 <div className="basis-1/5 text-right">
                   {/* format as 1 year 2 months */}
-                  {moment
-                    .duration(
-                      moment().diff(
-                        moment(master.chains[chain.key].launch_date)
+                  {chain.chainType === "L2" &&
+                    moment
+                      .duration(
+                        moment().diff(
+                          moment(master.chains[chain.key].launch_date)
+                        )
                       )
-                    )
-                    .humanize()}
+                      .humanize()}
                 </div>
                 <div className="basis-1/5 capitalize">
-                  {master && master.chains[chain.key].rollup === "-" ? (
+                  {chain.chainType === "L2" &&
+                  master &&
+                  master.chains[chain.key].rollup === "-" ? (
                     " - "
                   ) : (
                     <>
-                      <span>{master.chains[chain.key].rollup}</span>{" "}
-                      <span className="hidden lg:inline-block">Rollup</span>
+                      {chain.chainType === "L2" && (
+                        <>
+                          <span>{master.chains[chain.key].rollup}</span>{" "}
+                          <span className="hidden lg:inline-block">Rollup</span>
+                        </>
+                      )}
                     </>
                   )}
                 </div>

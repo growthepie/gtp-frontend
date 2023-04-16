@@ -99,9 +99,9 @@ export const AllChains = [
   },
   {
     label: "Multiple",
-    icon: "/icons/optimism.png",
+    icon: "/icons/x.png",
     key: "multiple",
-    chainType: null,
+    chainType: "all-L2",
     border: {
       light: ["border-[#45AA6F]", "border-[#45AA6F]"],
       dark: ["border-[#4CFF7E]", "border-[#4CFF7E]"],
@@ -115,7 +115,7 @@ export const AllChains = [
   },
   {
     label: "All L2s",
-    icon: "/icons/optimism.png",
+    icon: "/icons/x.png",
     key: "all_l2s",
     chainType: null,
     border: {
