@@ -30,3 +30,7 @@
 .highcharts-navigator-outline {
   stroke: var(--foreground);
 }
+
+.highcharts-column-series rect {
+  shape-rendering: geometricPrecision;
+}

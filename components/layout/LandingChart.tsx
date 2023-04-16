@@ -198,6 +198,8 @@ export default function LandingChart({
   data,
   latest_total,
   l2_dominance,
+  selectedMetric,
+  setSelectedMetric,
 }: // timeIntervals,
 // onTimeIntervalChange,
 // showTimeIntervals = true,
@@ -205,6 +207,8 @@ export default function LandingChart({
   data: any;
   latest_total: number;
   l2_dominance: number;
+  selectedMetric: string;
+  setSelectedMetric: (metric: string) => void;
   // timeIntervals: string[];
   // onTimeIntervalChange: (interval: string) => void;
   // showTimeIntervals: boolean;
@@ -711,8 +715,8 @@ export default function LandingChart({
                   [0.66, AllChainsByKeys[series.name].colors[theme][1] + "00"],
                 ],
               },
-              // borderColor: AllChainsByKeys[series.name].colors[theme][0] + "ff",
-              borderWidth: 0,
+              borderColor: AllChainsByKeys[series.name].colors[theme][0] + "66",
+              borderWidth: 1,
               shadow: {
                 // color: AllChainsByKeys[series.name].colors[theme][1] + "33",
                 color: theme == "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
@@ -726,8 +730,8 @@ export default function LandingChart({
                 linearGradient: {
                   x1: 0,
                   y1: 0,
-                  x2: 1,
-                  y2: 0,
+                  x2: 0,
+                  y2: 1,
                 },
                 stops:
                   theme === "dark"
@@ -736,13 +740,15 @@ export default function LandingChart({
                           0,
                           AllChainsByKeys[series.name].colors[theme][0] + "FF",
                         ],
-                        // [
-                        //   0.7,
-                        //   AllChainsByKeys[series.name].colors[theme][0] + "44",
-                        // ],
+                        [
+                          0.44,
+                          //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
+                          AllChainsByKeys[series.name].colors[theme][0] + "99",
+                        ],
                         [
                           1,
-                          AllChainsByKeys[series.name].colors[theme][0] + "22",
+                          // AllChainsByKeys[series.name].colors[theme][0] + "99",
+                          "#2A3433FF",
                         ],
                       ]
                     : [
@@ -997,6 +1003,7 @@ export default function LandingChart({
             onClick={() => {
               setShowTotalUsers(true);
               setSelectedScale("absolute");
+              setSelectedMetric("Total Users");
             }}
           >
             Total Users
@@ -1010,6 +1017,7 @@ export default function LandingChart({
             onClick={() => {
               setShowTotalUsers(false);
               setSelectedScale("absolute");
+              setSelectedMetric("Users per Chain");
             }}
           >
             Users per Chain
@@ -1024,6 +1032,7 @@ export default function LandingChart({
             onClick={() => {
               setShowTotalUsers(false);
               setSelectedScale("percentage");
+              setSelectedMetric("Percentage");
             }}
           >
             Percentage
@@ -1179,7 +1188,7 @@ export default function LandingChart({
             </TooltipTrigger>
             <TooltipContent>
               <div className="p-2 text-xs font-medium bg-forest-900 text-forest-50 rounded-md shadow-lg">
-                Data is updated daily
+                {data.source}
               </div>
             </TooltipContent>
           </Tooltip>

@@ -314,7 +314,7 @@ export default function Sidebar({
           {trigger}
         </div>
       </div>
-      <div className="">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-forest-800 scrollbar-track-forest-800/30">
         {items.map((item) => (
           <SidebarMenuGroup
             key={item.name + "_item"}
@@ -324,7 +324,7 @@ export default function Sidebar({
           />
         ))}
       </div>
-      <div className="flex-1 flex flex-col justify-end pb-6">
+      <div className="flex flex-col justify-end py-6">
         <SidebarMenuGroup
           key={contributors.name + "_item"}
           item={contributors}

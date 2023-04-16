@@ -52,7 +52,7 @@ export default function DarkModeSwitch() {
                         w-6
                         h-6
                         rounded-full transition duration-200 ease-in-out
-                        bg-white dark:bg-forest-50 dark:text-forest-900 
+                        bg-forest-900 text-forest-50 
                         ${theme === "dark" ? "transform translate-x-full" : ""}
                         rounded-full`}
             ></div>

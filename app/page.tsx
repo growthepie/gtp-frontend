@@ -32,6 +32,7 @@ import _ from "lodash";
 import MetricsTable from "@/components/layout/MetricsTable";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import LandingChart from "@/components/layout/LandingChart";
+import LandingMetricsTable from "@/components/layout/LandingMetricsTable";
 
 export default function Home() {
   const isLargeScreen = useMediaQuery("(min-width: 768px)");
@@ -55,42 +56,32 @@ export default function Home() {
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("weekly");
 
+  const [selectedMetric, setSelectedMetric] = useState("Users per Chain");
+
   useEffect(() => {
     if (landing) {
       setData(landing.data.metrics.user_base[selectedTimeInterval]);
     }
   }, [landing, selectedTimeInterval]);
 
-  const [selectedFilter, setSelectedFilter] = useState({
-    name: "Fundamentals",
-  });
+  useEffect(() => {
+    if (!data) return;
 
-  const [selectedFilterOption, setSelectedFilterOption] = useState({
-    label: "Total Value Locked",
-    rootKey: "metricsTvl",
-  });
+    setSelectedChains(Object.keys(data.chains).map((chain) => chain));
+  }, [data, landing, selectedMetric, selectedTimeInterval]);
 
   const chains = useMemo(() => {
     if (!data) return [];
-
-    if (selectedFilter.name === "Fundamentals")
-      return AllChains.filter(
-        (chain) =>
-          Object.keys(data.chains).includes(chain.key) &&
-          chain.key != "ethereum"
-      );
 
     return AllChains.filter(
       (chain) =>
         Object.keys(data.chains).includes(chain.key) && chain.key != "ethereum"
     );
-  }, [data, selectedFilter.name]);
+  }, [data]);
 
   const [selectedChains, setSelectedChains] = useState(
     AllChains.map((chain) => chain.key)
   );
-
-  const [errorCode, setErrorCode] = useState(0);
 
   if (!master || !landing) {
     return (
@@ -140,27 +131,32 @@ export default function Home() {
             </Heading>
             <div className="flex-1">
               <LandingChart
-                data={Object.keys(data.chains).map((chain) => {
-                  return {
-                    name: chain,
-                    // type: 'spline',
-                    types: data.chains[chain].data.types,
-                    data: data.chains[chain].data.data,
-                  };
-                })}
+                data={Object.keys(data.chains)
+                  .filter((chain) => selectedChains.includes(chain))
+                  .map((chain) => {
+                    return {
+                      name: chain,
+                      // type: 'spline',
+                      types: data.chains[chain].data.types,
+                      data: data.chains[chain].data.data,
+                    };
+                  })}
                 latest_total={data.latest_total}
                 l2_dominance={data.l2_dominance}
+                selectedMetric={selectedMetric}
+                setSelectedMetric={setSelectedMetric}
               />
             </div>
-            {/* {data && <ReactJson src={landing} collapsed={true} />} */}
-            {/* <MetricsTable
-              data={daa.data.chains}
+            {/* {master && <ReactJson src={master} collapsed={true} />} */}
+            <LandingMetricsTable
+              data={data}
               selectedChains={selectedChains}
               setSelectedChains={setSelectedChains}
               chains={chains}
-              metric={daa.data.metric_id}
-              fixedWidth={false}
-            /> */}
+              metric={selectedTimeInterval}
+              master={master}
+              interactable={selectedMetric !== "Total Users"}
+            />
           </>
         )}
       </div>

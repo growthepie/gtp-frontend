@@ -3,6 +3,7 @@ export const AllChains = [
     label: "Ethereum",
     icon: "/icons/ethereum.png",
     key: "ethereum",
+    chainType: "L1",
     border: {
       light: ["border-[#293305]", "border-[#293305]"],
       dark: ["border-[#d7dfde]", "border-[#d7dfde]"],
@@ -10,13 +11,14 @@ export const AllChains = [
     colors: {
       light: ["#293305", "#293305"], // text color
       dark: ["#d7dfde", "#d7dfde"]  // text color
-    }// yellow-orange
+    },// yellow-orange
 
   },
   {
     label: "Arbitrum",
     icon: "/icons/arbitrum.png",
     key: "arbitrum",
+    chainType: "L2",
     border: {
       light: ["border-[#2ECEE8]", "border-[#2ECEE8]"],
       dark: ["border-[#1DF7EF]", "border-[#1DF7EF]"],
@@ -25,11 +27,13 @@ export const AllChains = [
       light: ["#2ECEE8", "#2ECEE8"], // tropical sea
       dark: ["#1DF7EF", "#1DF7EF"], // tropical sea
     },
+
   },
   {
     label: "Aztec V2",
     icon: "/icons/aztec.png",
     key: "aztecv2",
+    chainType: "L2",
     border: {
       light: ["border-[#000000]", "border-[#000000]"],
       dark: ["border-[#000000]", "border-[#000000]"],
@@ -40,6 +44,7 @@ export const AllChains = [
     label: "Immutable X",
     icon: "/icons/immutablex.png",
     key: "imx",
+    chainType: "L2",
     border: {
       light: ["border-[#08373C]", "border-[#08373C]"],
       dark: ["border-[#10808C]", "border-[#10808C]"],
@@ -53,6 +58,7 @@ export const AllChains = [
     label: "Polygon zkEVM",
     icon: "/icons/polygon-pos.png",
     key: "polygon_zkevm",
+    chainType: "L2",
     border: {
       light: ["border-[#800094]", "border-[#800094]"],
       dark: ["border-[#AD0DC5]", "border-[#AD0DC5]"],
@@ -67,6 +73,7 @@ export const AllChains = [
     label: "Loopring",
     icon: "/icons/loopring.png",
     key: "loopring",
+    chainType: "L2",
     border: {
       light: ["border-[#000000]", "border-[#000000]"],
       dark: ["border-[#000000]", "border-[#000000]"],
@@ -80,6 +87,7 @@ export const AllChains = [
     label: "Optimism",
     icon: "/icons/optimism.png",
     key: "optimism",
+    chainType: "L2",
     border: {
       light: ["border-[#DD3408]", "border-[#DD3408]"],
       dark: ["border-[#FE5468]", "border-[#FE5468]"],
@@ -93,6 +101,7 @@ export const AllChains = [
     label: "Multiple",
     icon: "/icons/optimism.png",
     key: "multiple",
+    chainType: null,
     border: {
       light: ["border-[#45AA6F]", "border-[#45AA6F]"],
       dark: ["border-[#4CFF7E]", "border-[#4CFF7E]"],
@@ -108,15 +117,15 @@ export const AllChains = [
     label: "All L2s",
     icon: "/icons/optimism.png",
     key: "all_l2s",
+    chainType: null,
     border: {
-      light: ["border-[#45AA6F]", "border-[#45AA6F]"],
-      dark: ["border-[#4CFF7E]", "border-[#4CFF7E]"],
+      light: ["border-[#DAEE75]", "border-[#DAEE75]"],
+      dark: ["border-[#EEFF97]", "border-[#EEFF97]"],
     },
     colors: {
-      // light: ["#F130DE", "#FB4FF2"], // pink
-      // dark: ["#F130DE", "#FB4FF2"] // pink
-      light: ["#45AA6F", "#45AA6F"], // soft green
-      dark: ["#4CFF7E", "#4CFF7E"] // soft green
+      light: ["#DAEE75", "#DAEE75"], // light green
+      dark: ["#EEFF97", "#EEFF97"] // light green
+
     },
   },
 ];

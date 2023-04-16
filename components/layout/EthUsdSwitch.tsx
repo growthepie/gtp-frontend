@@ -54,8 +54,8 @@ export default function EthUsdSwitch() {
               <div>USD</div>
             </div>
             <div
-              className={`dot absolute left-0.5 top-0.5 w-12 h-6 rounded-full transition duration-200 
-                          ease-in-out bg-white dark:bg-forest-50 dark:text-forest-900 text-sm font-medium
+              className={`dot absolute left-0.5 top-0.5 w-12 h-6 rounded-full transition-transform duration-200 
+                          ease-in-out bg-forest-900 text-forest-50 text-sm font-medium
                           py-0.5 px-1.5 text-center
                           ${
                             showUsd ? "transform translate-x-full" : ""

@@ -81,7 +81,7 @@ export default function RootLayout({
         />
       )}
       <body
-        className={`bg-forest-50/30 bg-gradient-to-r dark:from-forest-800 dark:via-forest-900 dark:to-forest-900 text-forest-900 ${raleway.variable} font-raleway`}
+        className={`bg-forest-50/30 bg-gradient-to-r dark:from-forest-800 dark:via-forest-900 dark:to-forest-900 text-forest-900 ${raleway.variable} font-raleway  overflow-hidden`}
       >
         <Providers>
           {/* <div className="flex flex-col min-h-screen max-h-screen h-screen"> */}
@@ -102,8 +102,8 @@ export default function RootLayout({
             </div>
           </div>
           {/* </background gradient> */}
-          <div className="flex justify-between h-fit w-full">
-            <div className="pt-6 pl-4 bg-forest-100 dark:bg-forest-900 border-forest-400 mix-h-screen max-h-full hidden md:flex overflow-hidden flex-col">
+          <div className="flex justify-between h-screen w-full">
+            <div className="pt-6 pl-4 bg-forest-100 dark:bg-forest-900 border-forest-400 mix-h-screen max-h-screen hidden md:flex flex-col">
               <Link href="/" className="relative h-[45px] block mb-4" passHref>
                 <div className="h-[45px] w-[192px] absolute">
                   <Image
@@ -115,6 +115,7 @@ export default function RootLayout({
                   />
                 </div>
               </Link>
+
               <Sidebar
                 trigger={
                   <button className="flex items-center space-x-2">
@@ -126,35 +127,38 @@ export default function RootLayout({
                 setIsOpen={setIsSidebarOpen}
               />
             </div>
-            <div
-              id="main"
-              className="min-h-screen flex flex-col flex-1 p-2 pr-2 md:p-6 md:pr-12"
-            >
-              <div className="flex justify-between items-center">
-                <div className="flex space-x-6">
-                  <div className="block md:hidden relative">
-                    <Sidebar
-                      trigger={
-                        <button className="flex items-center space-x-2">
-                          <Icon icon="feather:menu" className="h-8 w-8" />
-                        </button>
-                      }
-                      isMobile={true}
-                      open={startSidebarOpen}
-                      isOpen={isSidebarOpen}
-                      setIsOpen={setIsSidebarOpen}
-                    />
-                    <Link href="/" className="absolute  top-2 left-20" passHref>
-                      <div className="h-[32px] w-[32px] absolute">
-                        <Image
-                          src="/logo-pie-only.svg"
-                          alt="Forest"
-                          className="mb-6 -ml-[9px] z-10 antialiased hover:scale-105 hover:translate-x-0 transition-transform duration-150 ease-in-out"
-                          fill={true}
-                          quality={100}
-                        />
-                      </div>
-                    </Link>
+            <div className="flex flex-col flex-1 overflow-y-auto pb-40">
+              <header className="flex justify-between space-x-6 items-center max-w-[1600px] w-full mx-auto p-2 pr-2 md:p-6 md:pr-12">
+                <div className="flex justify-between items-center">
+                  <div className="flex space-x-6">
+                    <div className="block md:hidden relative">
+                      <Sidebar
+                        trigger={
+                          <button className="flex items-center space-x-2">
+                            <Icon icon="feather:menu" className="h-8 w-8" />
+                          </button>
+                        }
+                        isMobile={true}
+                        open={startSidebarOpen}
+                        isOpen={isSidebarOpen}
+                        setIsOpen={setIsSidebarOpen}
+                      />
+                      <Link
+                        href="/"
+                        className="absolute  top-2 left-20"
+                        passHref
+                      >
+                        <div className="h-[32px] w-[32px] absolute">
+                          <Image
+                            src="/logo-pie-only.svg"
+                            alt="Forest"
+                            className="mb-6 -ml-[9px] z-10 antialiased hover:scale-105 hover:translate-x-0 transition-transform duration-150 ease-in-out"
+                            fill={true}
+                            quality={100}
+                          />
+                        </div>
+                      </Link>
+                    </div>
                   </div>
                 </div>
                 <div className="flex space-x-6 items-center">
@@ -181,8 +185,9 @@ export default function RootLayout({
                     />
                   </Link>
                 </div>
-              </div>
-              <main className="flex-1 max-w-[1600px] w-full mx-auto overflow-auto">
+              </header>
+
+              <main className="flex-1 max-w-[1600px] w-full mx-auto p-2 pr-2 md:p-6 md:pr-12">
                 {children}
               </main>
             </div>
