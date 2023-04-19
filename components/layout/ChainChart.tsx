@@ -249,9 +249,9 @@ export default function ChainChart({
 
         {data && (
           <div className="pt-8">
-            <div className="flex-col gap-x-6 justify-start ml-12 gap-y-8 lg:flex-row lg:justify-center lg:ml-0 lg:gap-y-0">
+            <div className="flex flex-col gap-x-6 justify-start ml-12 gap-y-8 lg:flex-row lg:justify-center lg:ml-0 lg:gap-y-0 flex-wrap">
               {Object.keys(data.metrics).map((key) => (
-                <div key={key} className="relative dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem] ">
+                <div key={key} className="relative dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem] my-4">
                   <div className="absolute inset-0 top-[4.3rem]">
                     <HighchartsReact
                       highcharts={Highcharts}
