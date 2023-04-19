@@ -11,10 +11,11 @@ import { dataTool } from "echarts";
 import { Time } from "highcharts";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import { ArbitrumChainResponse } from "@/types/api/ArbitrumChainResponse";
 import { DAAMetricsResponse } from "@/types/api/DAAMetricsResponse";
 import { AllChains } from "@/lib/chains";
 import ChainChart from "@/components/layout/ChainChart";
-import MetricsTable from "@/components/layout/MetricsTable";
+
 
 const Chain = ({ params }: { params: any }) => {
   // const params = useSearchParams();
@@ -30,9 +31,20 @@ const Chain = ({ params }: { params: any }) => {
     "https://d2cfnw27176mbd.cloudfront.net/v0_3/master.json"
   );
 
-  const { data: landing, error: landingError } = useSWR<DAAMetricsResponse>(
-    "https://d2cfnw27176mbd.cloudfront.net/v0_3/metrics/daa.json"
+  const { data: Ethereum, error: ethError } = useSWR<ArbitrumChainResponse>(
+    "https://d2cfnw27176mbd.cloudfront.net/v0_3/chains/ethereum.json"
   );
+
+  const { data: Arbitrum, error: arbError } = useSWR<ArbitrumChainResponse>(
+    "https://d2cfnw27176mbd.cloudfront.net/v0_3/chains/arbitrum.json"
+  );
+
+  const { data: Optimism, error: optError } = useSWR<ArbitrumChainResponse>(
+    "https://d2cfnw27176mbd.cloudfront.net/v0_3/chains/optimism.json"
+  );
+
+
+  const chainArray = [Arbitrum, Ethereum, Optimism];
 
   const [selectedChains, setSelectedChains] = useState(
     AllChains.map((chain) => chain.key)
@@ -51,23 +63,22 @@ const Chain = ({ params }: { params: any }) => {
   }, [master, chain]);
   
   const chartData = useMemo(() => {
-    if(!landing) return [];
+    if(!Arbitrum || !Ethereum || !Optimism) return [];
 
-    for (let chainName in landing.data.chains) {
-      if (chainName === chain) {
-        return landing.data.chains[chainName];
+    for (let i = 0; i < 3; i++) {
+      if (chainArray[i].data.chain_id === chain) {
+        return chainArray[i].data;
       }
     }
-  }, [landing]);
+  }, [chain, chainArray, Arbitrum, Optimism, Ethereum]);
   
-  if (!master || !landing) {
+  if (!master || !Arbitrum || !Optimism || !Ethereum) {
     return (
       <div className="flex justify-center items-center h-screen">
         Loading...
       </div>
     );
   }
-
 
 
   return (
@@ -190,16 +201,7 @@ const Chain = ({ params }: { params: any }) => {
       {chartData && (
       <div>
           <ChainChart
-            data={Object.keys(chainData)
-              .filter((chain) => selectedChains.includes(chain))
-              .map((chain) => {
-                return {
-                  name: chain,
-                  // type: 'spline',
-                  types: landing.data.chains[chain].changes.types,
-                  data: landing.data.chains[chain].changes,
-                };
-              })}
+            data = {chartData}
             />
       </div>
       )}
