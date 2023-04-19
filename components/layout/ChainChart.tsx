@@ -22,11 +22,6 @@ import _ from "lodash";
 
 
 
-
-
-
-
-
 const timespans = {
   // "30d": {
   //   label: "30 days",
@@ -252,7 +247,50 @@ export default function ChainChart({
             */}
 
 
-
+        {data && (
+          <div className="pt-8">
+            <div className="flex-col gap-x-6 justify-start ml-12 gap-y-8 lg:flex-row lg:justify-center lg:ml-0 lg:gap-y-0">
+              {Object.keys(data.metrics).map((key) => (
+                <div key={key} className="relative dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem] ">
+                  <div className="absolute inset-0 top-[4.3rem]">
+                    <HighchartsReact
+                      highcharts={Highcharts}
+                      options={{
+                        ...options,
+                        series: [
+                          {
+                            data: data.metrics[key].daily.data,
+                            showInLegend: false
+                          },
+                        ],
+                      }}
+                      ref={(chart) => {
+                        chartComponent.current = chart?.chart;
+                      }}
+                    />
+                  </div>
+                  <div className="relative z-10">
+                    <div className="flex">
+                      <h1 className="pt-[1rem] pl-6 text-3xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282] dark:text-[#CDD8D3]">
+                        {data.metrics[key].metric_name}
+                      </h1>
+                      <BanknotesIcon className="absolute h-[75px] w-[94px] text-blue-500 bottom-[11rem] left-[32rem] mr-4 dark:text-[#CDD8D3]" />
+                    </div>
+                    <div className="flex pt-44 pl-6 pr-6 justify-between">
+                      <h1 className="text-white text-4xl font-[700] dark:text-[#CDD8D3]">
+                        10,000,000
+                      </h1>
+                      <h1 className="text-white text-xl font-[700] self-center dark:text-[#CDD8D3]">
+                        5 April 2023
+                      </h1>
+                    </div>
+                  </div>
+                </div>
+                ))}
+              </div>
+          </div>
+        )}
+        {/** 
         <div className="flex-col pt-8">
         <div className="flex flex-col gap-x-6 justify-start ml-12 gap-y-8 lg:flex-row lg:justify-center lg:ml-0 lg:gap-y-0">
         <div className="relative dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem] ">
@@ -270,9 +308,9 @@ export default function ChainChart({
                 <h1 className="pt-[1rem] pl-6 text-3xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282] dark:text-[#CDD8D3]">
                   Metric Title
                 </h1>
-                <BanknotesIcon className="absolute h-[75px] w-[94px] text-blue-500 bottom-[7.5rem] left-[32rem] mr-4 dark:text-[#CDD8D3]" />
+                <BanknotesIcon className="absolute h-[75px] w-[94px] text-blue-500 bottom-[10.5rem] left-[32rem] mr-4 dark:text-[#CDD8D3]" />
               </div>
-              <div className="flex pt-32 pl-6 pr-6 justify-between">
+              <div className="flex pt-44 pl-6 pr-6 justify-between">
                 <h1 className="text-white text-4xl font-[700] dark:text-[#CDD8D3]">
                   10,000,000
                 </h1>
@@ -308,6 +346,7 @@ export default function ChainChart({
         </div>
        
       </div>
+      */}
     </div>
 
   );
