@@ -55,7 +55,7 @@ const timespans = {
   max: {
     label: "Maximum",
     value: 0,
-    xMin: Date.parse("2020-09-28"),
+    xMin: Date.parse("2021-01-01"),
     xMax: Date.now(),
   },
 };
@@ -137,14 +137,19 @@ export default function ChainChart({
     
     chart: {
       type: 'areaspline',
-      width: 600,
-      backgroundColor: null
+      backgroundColor: null,
+      width: null,
+      height: 250,
+      margin: [0, 0, 0, 0],
+      style: {
+        borderRadius: '0 0 16px 12px',
+      },
     },
   
     plotOptions: {
       series: {
-          color: '#CDD8D3',
-          fillColor: '#CDD8D3',
+          color: '#5A6462',
+          fillColor: '#5A6462',
       }
     },
 
@@ -246,38 +251,36 @@ export default function ChainChart({
             /> 
             */}
 
-            <HighchartsReact
-              highcharts={Highcharts}
-              options={options}
-              ref={(chart) => {
-                chartComponent.current = chart?.chart;
-              }}
 
-              // immutable={true}
-              // oneToOne={true}
-              // callBack={(chart) => {
-              // 	setChart(chart);
-              // }}
-            />
 
         <div className="flex-col pt-8">
         <div className="flex flex-col gap-x-6 justify-start ml-12 gap-y-8 lg:flex-row lg:justify-center lg:ml-0 lg:gap-y-0">
-          <div className="dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
-
-            <h1 className="pt-[1rem] pl-6 text-3xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282] dark:text-[#CDD8D3]">
-              Metric Title
-            </h1>
-            <BanknotesIcon className="relative h-[75px] w-[94px] text-blue-500 bottom-[1.7rem] left-[32rem] mr-4 dark:text-[#CDD8D3]" />
-            <div className="flex pt-24 pl-6 pr-6 justify-between">
-              <h1 className="text-white text-4xl font-[700] dark:text-[#CDD8D3]">
-                10,000,000
-              </h1>
-              <h1 className="text-white text-xl font-[700] self-center dark:text-[#CDD8D3]">
-                5 April 2023
-              </h1>
-
+        <div className="relative dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem] ">
+            <div className="absolute inset-0 top-[4.3rem]">
+              <HighchartsReact
+                highcharts={Highcharts}
+                options={options}
+                ref={(chart) => {
+                  chartComponent.current = chart?.chart;
+                }}
+              />
             </div>
-          
+            <div className="relative z-10">
+              <div className="flex">
+                <h1 className="pt-[1rem] pl-6 text-3xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282] dark:text-[#CDD8D3]">
+                  Metric Title
+                </h1>
+                <BanknotesIcon className="absolute h-[75px] w-[94px] text-blue-500 bottom-[7.5rem] left-[32rem] mr-4 dark:text-[#CDD8D3]" />
+              </div>
+              <div className="flex pt-32 pl-6 pr-6 justify-between">
+                <h1 className="text-white text-4xl font-[700] dark:text-[#CDD8D3]">
+                  10,000,000
+                </h1>
+                <h1 className="text-white text-xl font-[700] self-center dark:text-[#CDD8D3]">
+                  5 April 2023
+                </h1>
+              </div>
+            </div>
           </div>
           <div className="dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
             <div className="dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
