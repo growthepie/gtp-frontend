@@ -89,6 +89,39 @@ export default function ChainChart({
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
 
+  const [hoverData, setHoverData] = useState({ x: null, y: null });
+
+  const [hoverKey, setHoverKey] = useState(null)
+
+  const [defaultKey, setDefaultKey] = useState({
+     "daa": data.metrics['daa'] && {
+        value: data.metrics['daa'].daily.data[Math.floor(data.metrics['daa'].daily.data.length) / 2][1], //data.metrics['daa']. 
+        date: data.metrics['daa'].daily.data[Math.floor((data.metrics['daa'].daily.data.length) / 2)][0]
+     },
+
+     "fees": data.metrics['fees'] && {
+        value: data.metrics['fees'].daily.data[Math.floor((data.metrics['fees'].daily.data.length) / 2)][1], //data.metrics['daa']. 
+        date: data.metrics['fees'].daily.data[Math.floor((data.metrics['fees'].daily.data.length) / 2)][0]
+     },
+
+     "stables_mcap": data.metrics['stables_mcap'] && {
+        value: data.metrics['stables_mcap'].daily.data[Math.floor((data.metrics['stables_mcap'].daily.data.length) / 2)][1], //data.metrics['daa']. 
+        date: data.metrics['stables_mcap'].daily.data[Math.floor((data.metrics['stables_mcap'].daily.data.length) / 2)][0]
+     },
+
+     "tvl": data.metrics['tvl'] && {
+      value: data.metrics['tvl'].daily.data[Math.floor((data.metrics['tvl'].daily.data.length / 2))][1], //data.metrics['daa']. 
+      date: data.metrics['tvl'].daily.data[Math.floor((data.metrics['tvl'].daily.data.length / 2))][0]
+    },
+
+   "txcount": data.metrics['txcount'] && {
+      value: data.metrics['txcount'].daily.data[Math.floor((data.metrics['txcount'].daily.data.length) / 2)][1], //data.metrics['daa']. 
+      date: data.metrics['txcount'].daily.data[Math.floor((data.metrics['txcount'].daily.data.length) / 2)][0]
+    },
+
+
+  });
+
   function getTickPositions(xMin: any, xMax: any): number[] {
     const tickPositions: number[] = [];
     const xMinDate = new Date(xMin);
@@ -109,6 +142,23 @@ export default function ChainChart({
     return tickPositions;
   }
 
+  const handleMouseOverWithKey = (key, event) => {
+    handleMouseOver(event);
+    manageHoverKey(key);
+    setDefaultKey
+    const newDefaultKey = {...defaultKey}; // make a copy of defaultKey
+    newDefaultKey[key].value = event.target.y; // update the value for the current key
+    const newDefaultKey1 = {...defaultKey}; // make a copy of defaultKey
+    newDefaultKey[key].date = event.target.x;  // update the date for the current key
+    setDefaultKey(newDefaultKey); // update the state of defaultKey
+  };
+
+
+  function manageHoverKey(key) {
+    setHoverKey(key);
+    
+  };
+
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
 
   useEffect(() => {
@@ -119,6 +169,14 @@ export default function ChainChart({
       );
     }
   }, [selectedTimespan, chartComponent]);
+
+  const handleMouseOver = (event) => {
+    const point = event.target.options;
+    setHoverData({ x: point.x, y: point.y });
+    
+  };
+
+
 
   const options = {
 
@@ -137,15 +195,27 @@ export default function ChainChart({
       height: 250,
       margin: [0, 0, 0, 0],
       style: {
-        borderRadius: '0 0 16px 12px',
+        borderRadius: '0 0 12px 12px',
+      },
+      events: {
+        // Handle the mouseOver event on the chart
+
+        // Handle the mouseOut event on the chart
       },
     },
   
     plotOptions: {
       series: {
-          color: '#5A6462',
-          fillColor: '#5A6462',
+          color: theme === "dark" ? "#5A6462" : "rgb(247, 250, 252, 0.3)",
+          fillColor: theme === "dark" ? "#5A6462" : "rgb(247, 250, 252, 0.3)",
       }
+    },
+
+    tooltip: {
+      enabled: true,
+      useHTML: true,
+      outside: true,
+      pointFormat: '<span style="color:{point.color}">\u25CF</span> {hoverKey}: <b>{point.y}</b><br/>'
     },
 
     xAxis: {
@@ -200,9 +270,19 @@ export default function ChainChart({
   
   }
 
-  console.log(data);
-  console.log(timespans[selectedTimespan].xMax)
-  console.log(getTickPositions(timespans[selectedTimespan].xMin, timespans[selectedTimespan].xMax))
+
+  function getDate(unix){
+
+    const date = new Date(unix);
+    const formattedDate = date.toLocaleString("en-us", { month: "short", day: "numeric", year: "numeric" });
+    const dateParts = formattedDate.split(",");
+    const [month, day, year] = dateParts[0].split(" ");
+    const formattedDateStr = `${day} ${month} ${date.getFullYear()}`;
+    console.log(formattedDateStr);
+    return formattedDateStr;
+
+  }
+
 
   return (
     <div className="w-44[rem] lg:w-[88rem] my-[1rem]">
@@ -246,13 +326,12 @@ export default function ChainChart({
             /> 
             */}
 
-
         {data && (
           <div className="pt-8">
             <div className="flex flex-col gap-x-6 justify-start ml-12 gap-y-8 lg:flex-row lg:justify-center lg:ml-0 lg:gap-y-0 flex-wrap">
               {Object.keys(data.metrics).map((key) => (
                 <div key={key} className="relative dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem] my-4">
-                  <div className="absolute inset-0 top-[4.3rem]">
+                  <div className="absolute inset-0 top-[4.36rem]">
                     <HighchartsReact
                       highcharts={Highcharts}
                       options={{
@@ -260,7 +339,13 @@ export default function ChainChart({
                         series: [
                           {
                             data: data.metrics[key].daily.data,
-                            showInLegend: false
+                            showInLegend: false,
+                            point: {
+                              events: {
+                                mouseOver: (event) => handleMouseOverWithKey(key, event)
+
+                              }
+                            }
                           },
                         ],
                       }}
@@ -271,17 +356,17 @@ export default function ChainChart({
                   </div>
                   <div className="relative z-10">
                     <div className="flex">
-                      <h1 className="pt-[1rem] pl-6 text-3xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282] dark:text-[#CDD8D3]">
+                      <h1 className="pt-[1rem] pl-6 text-3xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#5080ba] dark:text-[#CDD8D3]">
                         {data.metrics[key].metric_name}
                       </h1>
                       <BanknotesIcon className="absolute h-[75px] w-[94px] text-blue-500 bottom-[11rem] left-[32rem] mr-4 dark:text-[#CDD8D3]" />
                     </div>
-                    <div className="flex pt-44 pl-6 pr-6 justify-between">
+                    <div className="flex pt-44 pl-6 pr-6 justify-between pointer-events-none">
                       <h1 className="text-white text-4xl font-[700] dark:text-[#CDD8D3]">
-                        10,000,000
+                        {key === hoverKey ? hoverData.y : defaultKey[key].value}
                       </h1>
                       <h1 className="text-white text-xl font-[700] self-center dark:text-[#CDD8D3]">
-                        5 April 2023
+                        {key === hoverKey ? getDate(hoverData.x) : getDate(defaultKey[key].date)}
                       </h1>
                     </div>
                   </div>
@@ -290,63 +375,7 @@ export default function ChainChart({
               </div>
           </div>
         )}
-        {/** 
-        <div className="flex-col pt-8">
-        <div className="flex flex-col gap-x-6 justify-start ml-12 gap-y-8 lg:flex-row lg:justify-center lg:ml-0 lg:gap-y-0">
-        <div className="relative dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem] ">
-            <div className="absolute inset-0 top-[4.3rem]">
-              <HighchartsReact
-                highcharts={Highcharts}
-                options={options}
-                ref={(chart) => {
-                  chartComponent.current = chart?.chart;
-                }}
-              />
-            </div>
-            <div className="relative z-10">
-              <div className="flex">
-                <h1 className="pt-[1rem] pl-6 text-3xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282] dark:text-[#CDD8D3]">
-                  Metric Title
-                </h1>
-                <BanknotesIcon className="absolute h-[75px] w-[94px] text-blue-500 bottom-[10.5rem] left-[32rem] mr-4 dark:text-[#CDD8D3]" />
-              </div>
-              <div className="flex pt-44 pl-6 pr-6 justify-between">
-                <h1 className="text-white text-4xl font-[700] dark:text-[#CDD8D3]">
-                  10,000,000
-                </h1>
-                <h1 className="text-white text-xl font-[700] self-center dark:text-[#CDD8D3]">
-                  5 April 2023
-                </h1>
-              </div>
-            </div>
-          </div>
-          <div className="dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
-            <div className="dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
-              <h1 className="pt-[1rem] pl-6 text-3xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282] dark:text-[#CDD8D3]">
-                Metric Title
-              </h1>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-col pt-8 gap-x-6 justify-start ml-12 gap-y-8 lg:flex-row lg:justify-center lg:ml-0">
-          <div className="dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
-            <div className="dark:bg-[#2A3433]bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
-              <h1 className="pt-[1rem] pl-6 text-3xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282] dark:text-[#CDD8D3]">
-                Metric Title
-              </h1>
-            </div>
-          </div>
-          <div className="dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
-            <div className="dark:bg-[#2A3433] bg-blue-600 rounded-xl w-[40rem] h-[20rem]">
-              <h1 className="pt-[1rem] pl-6 text-3xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282] dark:text-[#CDD8D3]">
-                Metric Title
-              </h1>
-            </div>
-          </div>
-        </div>
-       
-      </div>
-      */}
+
     </div>
 
   );
