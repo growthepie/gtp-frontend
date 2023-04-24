@@ -14,6 +14,7 @@ module.exports = {
     extend: {
       fontFamily: {
         inter: ["Inter", "sans-serif"],
+        raleway: ['var(--font-raleway)', "sans-serif"],
         sans: ["Inter var", ...defaultTheme.fontFamily.sans],
       },
       transitionProperty: {
@@ -133,19 +134,33 @@ module.exports = {
           900: "#000000",
           950: "#000000",
         },
+        // forest: {
+        //   DEFAULT: "#293332",
+        //   50: "#D7DFDE",
+        //   100: "#CCD6D5",
+        //   200: "#B5C4C3",
+        //   300: "#9FB2B0",
+        //   400: "#88A09D",
+        //   500: "#718E8B",
+        //   600: "#5F7775",
+        //   700: "#4D605E",
+        //   800: "#3B4A48",
+        //   900: "#293332",
+        //   950: "#1C2323",
+        // },
         forest: {
           DEFAULT: "#293332",
-          50: "#D7DFDE",
-          100: "#CCD6D5",
+          50: "#EAECEB", // updated
+          100: "#F0F5F3",
           200: "#B5C4C3",
           300: "#9FB2B0",
           400: "#88A09D",
-          500: "#718E8B",
+          500: "#CDD8D3",
           600: "#5F7775",
-          700: "#4D605E",
-          800: "#3B4A48",
-          900: "#293332",
-          950: "#1C2323",
+          700: "#364240",
+          800: "#5A6462",
+          900: "#2A3433",
+          950: "#1B2524",
         },
         pie: {
           DEFAULT: "#D9A265",
@@ -163,5 +178,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require("nightwind")],
+  plugins: [require("nightwind"), require('tailwind-scrollbar')({ nocompatible: true }),],
 };

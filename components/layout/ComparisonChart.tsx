@@ -1,19 +1,27 @@
 "use client";
 
 import HighchartsReact from "highcharts-react-official";
-import Highcharts, { chart } from "highcharts";
+import Highcharts, {
+  AxisLabelsFormatterCallbackFunction,
+  AxisLabelsFormatterContextObject,
+  chart,
+  Series,
+  TooltipFormatterCallbackFunction,
+} from "highcharts";
 import highchartsAnnotations from "highcharts/modules/annotations";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Card } from "@/components/Card";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
 import { zinc, red, blue, amber, purple } from "tailwindcss/colors";
+import { theme as customTheme } from "tailwind.config";
 import { ArrowTrendingUpIcon } from "@heroicons/react/24/outline";
 import { useTheme } from "next-themes";
 import _, { filter } from "lodash";
 import { Switch } from "../Switch";
 import { AllChains, AllChainsByKeys } from "@/lib/chains";
+import d3 from "d3";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -79,6 +87,11 @@ const baseOptions: Highcharts.Options = {
   xAxis: {
     type: "datetime",
     lineWidth: 0,
+    crosshair: {
+      width: 0.5,
+      color: COLORS.PLOT_LINE,
+    },
+
     labels: {
       style: { color: COLORS.LABEL },
       enabled: true,
@@ -123,27 +136,14 @@ const baseOptions: Highcharts.Options = {
   },
   tooltip: {
     // backgroundColor: 'transparent',
-    xDateFormat: "%Y-%m-%d",
-    valueDecimals: 2,
     useHTML: true,
-    borderWidth: 0,
     shadow: false,
     shared: true,
-    formatter: function (tooltip) {
-      var items = this.points || splat(this),
-        series = items[0].series,
-        s;
-
-      // sort the values
-      items.sort(function (a, b) {
-        return a.y < b.y ? -1 : a.y > b.y ? 1 : 0;
-      });
-      items.reverse();
-
-      return tooltip.defaultFormatter.call(this, tooltip);
-    },
   },
   plotOptions: {
+    line: {
+      lineWidth: 2,
+    },
     spline: {
       lineWidth: 2,
     },
@@ -238,7 +238,7 @@ export default function ComparisonChart({
   // const [darkMode, setDarkMode] = useLocalStorage("darkMode", true);
   const { theme } = useTheme();
 
-  const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const [selectedTimespan, setSelectedTimespan] = useState("90d");
 
@@ -248,25 +248,156 @@ export default function ComparisonChart({
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
 
-  function getTickPositions(xMin: any, xMax: any): number[] {
-    const tickPositions: number[] = [];
-    const xMinDate = new Date(xMin);
-    const xMaxDate = new Date(xMax);
-    const xMinMonth = xMinDate.getMonth();
-    const xMaxMonth = xMaxDate.getMonth();
-    const xMinYear = xMinDate.getFullYear();
-    const xMaxYear = xMaxDate.getFullYear();
+  const [valuePrefix, setValuePrefix] = useState("");
 
-    for (let year = xMinYear; year <= xMaxYear; year++) {
-      for (let month = 0; month < 12; month++) {
-        if (year === xMinYear && month < xMinMonth) continue;
-        if (year === xMaxYear && month > xMaxMonth) continue;
-        tickPositions.push(new Date(year, month, 1).getTime());
+  const getTickPositions = useCallback(
+    (xMin: any, xMax: any): number[] => {
+      const tickPositions: number[] = [];
+      const xMinDate = new Date(xMin);
+      const xMaxDate = new Date(xMax);
+      const xMinMonth = xMinDate.getMonth();
+      const xMaxMonth = xMaxDate.getMonth();
+
+      const xMinYear = xMinDate.getFullYear();
+      const xMaxYear = xMaxDate.getFullYear();
+
+      if (selectedTimespan === "max") {
+        for (let year = xMinYear; year <= xMaxYear; year++) {
+          for (let month = 0; month < 12; month = month + 4) {
+            if (year === xMinYear && month < xMinMonth) continue;
+            if (year === xMaxYear && month > xMaxMonth) continue;
+            tickPositions.push(new Date(year, month, 1).getTime());
+          }
+        }
+        return tickPositions;
       }
-    }
 
-    return tickPositions;
-  }
+      for (let year = xMinYear; year <= xMaxYear; year++) {
+        for (let month = 0; month < 12; month++) {
+          if (year === xMinYear && month < xMinMonth) continue;
+          if (year === xMaxYear && month > xMaxMonth) continue;
+          tickPositions.push(new Date(year, month, 1).getTime());
+        }
+      }
+
+      return tickPositions;
+    },
+    [selectedTimespan]
+  );
+
+  const getSeriesType = useCallback(
+    (name: string) => {
+      if (selectedScale === "percentage") return "area";
+
+      if (name === "ethereum") return "areaspline";
+
+      return "line";
+    },
+    [selectedScale]
+  );
+
+  const getChartType = useCallback(() => {
+    if (selectedScale === "percentage") return "area";
+
+    return "line";
+  }, [selectedScale]);
+
+  const formatNumber = useCallback(
+    (value: number | string, isAxis = false) => {
+      const prefix = valuePrefix;
+      return isAxis
+        ? prefix + d3.format(".2s")(value).replace(/G/, "B")
+        : d3.format(",.2~s")(value).replace(/G/, "B");
+    },
+    [valuePrefix]
+  );
+
+  const tooltipFormatter = useCallback(
+    function (this: any) {
+      const { x, points } = this;
+      const date = new Date(x);
+      const dateString = date.toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-80 text-xs font-raleway"><div class="w-full font-bold text-[1rem] ml-6 mb-2">${dateString}</div>`;
+      const tooltipEnd = `</div>`;
+
+      let pointsSum = 0;
+      if (selectedScale !== "percentage")
+        pointsSum = points.reduce((acc: number, point: any) => {
+          acc += point.y;
+          return pointsSum;
+        }, 0);
+
+      const tooltipPoints = points
+        .sort((a: any, b: any) => b.y - a.y)
+        .map((point: any) => {
+          const { series, y, percentage } = point;
+          const { name } = series;
+          if (selectedScale === "percentage")
+            return `
+              <div class="flex w-full space-x-2 items-center font-medium mb-1">
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                  AllChainsByKeys[name].colors[theme][0]
+                }"></div>
+                <div class="tooltip-point-name">${
+                  AllChainsByKeys[name].label
+                }</div>
+                <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
+                  percentage,
+                  2
+                )}%</div>
+              </div>
+              <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
+                <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
+
+                <div class="h-[2px] rounded-full absolute left-0 top-0" style="width: ${Highcharts.numberFormat(
+                  percentage,
+                  2
+                )}%; background-color: ${
+              AllChainsByKeys[name].colors[theme][0]
+            };"> </div>
+              </div> -->`;
+
+          const value = formatNumber(y);
+          return `
+          <div class="flex w-full space-x-2 items-center font-medium mb-1">
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+              AllChainsByKeys[name].colors[theme][0]
+            }"></div>
+            <div class="tooltip-point-name text-md">${
+              AllChainsByKeys[name].label
+            }</div>
+            <div class="flex-1 text-right justify-end font-inter">
+              <div class="mr-1 inline-block"><span class="opacity-70 inline-block mr-[1px]">${valuePrefix}</span>${parseFloat(
+            y
+          ).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}</div>
+          <!-- <div class="inline-block">≈</div>
+              <div class="inline-block"><span class="opacity-70">${valuePrefix}</span>${value}</div>
+              -->
+            </div>
+          </div>
+          <!-- <div class="flex ml-4 w-[calc(100% - 1rem)] relative mb-1">
+            <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
+
+            <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
+              (y / pointsSum) * 100
+            )}%; background-color: ${
+            AllChainsByKeys[name].colors[theme][0]
+          }33;"></div>
+          </div> -->`;
+        })
+        .join("");
+      return tooltip + tooltipPoints + tooltipEnd;
+    },
+    [formatNumber, selectedScale, theme, valuePrefix]
+  );
 
   const filteredData = useMemo(() => {
     if (!data) return null;
@@ -276,9 +407,18 @@ export default function ComparisonChart({
   }, [data, showEthereumMainnet]);
 
   const options = useMemo((): Highcharts.Options => {
+    if (!filteredData) return null;
+
+    if (filteredData[0].types.includes("usd")) {
+      if (!showUsd) setValuePrefix("Ξ");
+      else setValuePrefix("$");
+    } else {
+      setValuePrefix("");
+    }
+
     const dynamicOptions: Highcharts.Options = {
       chart: {
-        type: selectedScale === "percentage" ? "area" : "spline",
+        type: getChartType(),
       },
       plotOptions: {
         area: {
@@ -294,6 +434,14 @@ export default function ComparisonChart({
           style: {
             color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
           },
+          formatter: (t: AxisLabelsFormatterContextObject) => {
+            return formatNumber(t.value, true);
+          },
+          // format: filteredData[0].types.includes("usd")
+          //   ? !showUsd
+          //     ? "Ξ{value}"
+          //     : "${value}"
+          //   : "{value}",
         },
         gridLineColor:
           theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
@@ -312,6 +460,20 @@ export default function ComparisonChart({
           },
         },
       },
+      tooltip: {
+        formatter: tooltipFormatter,
+        backgroundColor:
+          theme === "dark"
+            ? customTheme.extend.colors["forest"]["900"] + "EE"
+            : customTheme.extend.colors["forest"]["50"] + "EE",
+        borderRadius: 17,
+        borderWidth: 0,
+        padding: 0,
+
+        style: {
+          color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
+        },
+      },
       series: filteredData.map((series: any) => ({
         name: series.name,
         data:
@@ -319,9 +481,24 @@ export default function ComparisonChart({
             ? series.data.map((d: any) => [d[0], d[2]])
             : series.data.map((d: any) => [d[0], d[1]]),
 
-        type: selectedScale === "percentage" ? "area" : "spline",
+        type: getSeriesType(series.name),
+        // fill if series name is ethereum
+        fillOpacity: series.name === "ethereum" ? 1 : 0,
+        fillColor: {
+          linearGradient: {
+            x1: 0,
+            y1: 0,
+            x2: 0,
+            y2: 1,
+          },
+          stops: [
+            [0, AllChainsByKeys[series.name].colors[theme][0] + "33"],
+            [1, AllChainsByKeys[series.name].colors[theme][1] + "33"],
+          ],
+        },
+
         shadow: {
-          color: AllChainsByKeys[series.name].colors[1] + "33",
+          color: AllChainsByKeys[series.name].colors[theme][1] + "33",
           width: 10,
         },
         color: {
@@ -332,28 +509,27 @@ export default function ComparisonChart({
             y2: 0,
           },
           stops: [
-            [0, AllChainsByKeys[series.name].colors[0]],
+            [0, AllChainsByKeys[series.name].colors[theme][0]],
             // [0.33, AllChainsByKeys[series.name].colors[1]],
-            [1, AllChainsByKeys[series.name].colors[1]],
+            [1, AllChainsByKeys[series.name].colors[theme][1]],
           ],
         },
-        // shadow: {
-        // 	color: bgColors[series.name][0],
-        // 	width: 15,
-        // },
       })),
-
-      // tooltip: {
-      // 	// backgroundColor: 'transparent',
-
-      // 	borderWidth: 0,
-      // 	shadow: false,
-      // 	headerFormat: '',
-      // },
     };
 
     return _merge({}, baseOptions, dynamicOptions);
-  }, [filteredData, showUsd, selectedTimespan, selectedScale]);
+  }, [
+    filteredData,
+    getChartType,
+    selectedScale,
+    theme,
+    showUsd,
+    selectedTimespan,
+    getTickPositions,
+    tooltipFormatter,
+    formatNumber,
+    getSeriesType,
+  ]);
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
 
@@ -371,6 +547,9 @@ export default function ComparisonChart({
       switch (selectedScale) {
         case "absolute":
           chartComponent.current?.update({
+            chart: {
+              type: getChartType(),
+            },
             plotOptions: {
               series: {
                 stacking: undefined,
@@ -380,19 +559,19 @@ export default function ComparisonChart({
               type: "linear",
             },
             tooltip: {
-              pointFormat:
-                '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
+              formatter: tooltipFormatter,
+              // pointFormat:
+              //   '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
             },
             series: filteredData.map((series: any) => ({
-              ...series,
-              type: "spline",
+              type: getSeriesType(series.name),
             })),
           });
           break;
         case "log":
           chartComponent.current?.update({
             chart: {
-              type: "spline",
+              type: getChartType(),
             },
             plotOptions: {
               series: {
@@ -403,19 +582,20 @@ export default function ComparisonChart({
               type: "logarithmic",
             },
             tooltip: {
-              pointFormat:
-                '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
+              formatter: tooltipFormatter,
+              // pointFormat:
+              //   '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
             },
+
             series: filteredData.map((series: any) => ({
-              ...series,
-              type: "spline",
+              type: getSeriesType(series.name),
             })),
           });
           break;
         case "percentage":
           chartComponent.current?.update({
             chart: {
-              type: "area",
+              type: getChartType(),
             },
             plotOptions: {
               area: {
@@ -429,13 +609,12 @@ export default function ComparisonChart({
               type: "linear",
             },
             tooltip: {
-              useHTML: true,
-              pointFormat:
-                '<span style="color:{series.color}">{series.name}</span>: <b>{point.percentage:.1f}%</b><br/>',
+              formatter: tooltipFormatter,
+              // pointFormat:
+              //   '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
             },
             series: filteredData.map((series: any) => ({
-              ...series,
-              type: "area",
+              type: getSeriesType(series.name),
             })),
           });
           break;
@@ -443,7 +622,14 @@ export default function ComparisonChart({
           break;
       }
     }
-  }, [selectedScale, chartComponent, filteredData]);
+  }, [
+    selectedScale,
+    chartComponent,
+    filteredData,
+    getChartType,
+    getSeriesType,
+    tooltipFormatter,
+  ]);
 
   useEffect(() => {
     if (chartComponent.current) {
