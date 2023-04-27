@@ -40,7 +40,7 @@ export const Contributors = [
     image: "/contributors/michael.png",
     role: "Frontend",
     twitter: "https://www.twitter.com/MooMokel",
-    linkedin: null,
+    linkedin: "https://www.linkedin.com/in/michael-may-3008a1261",
   },
 ];
 
