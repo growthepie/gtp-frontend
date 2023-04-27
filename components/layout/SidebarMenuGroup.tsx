@@ -25,6 +25,7 @@ export type SidebarItem = {
     key?: string;
     rootKey?: string;
   }[];
+  href?: string;
 };
 
 type SidebarProps = {
