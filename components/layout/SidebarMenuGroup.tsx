@@ -108,19 +108,19 @@ export default function SidebarMenuGroup({
       <div className="group flex flex-col">
         <Tooltip key={item.label} placement="right">
           <TooltipTrigger className="h-6 mb-6 cursor-default pl-8 overflow-visible">
-            <div className="flex items-center justify-items-center opacity-100 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
+            <div className="flex items-center justify-items-center opacity-70 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
               <div className="w-6 mx-0">
-                <div className="text-forest-50 bg-forest-900 rounded-md w-6 mx-auto">
-                  {item.sidebarIcon}
-                </div>
+                <div className="w-6 mx-auto">{item.sidebarIcon}</div>
               </div>
               <div className="">
-                <div className="text-sm font-bold mx-4 w-80 flex ">
-                  {item.label}
-                  <div className="text-[0.6rem] leading-[1.75] px-1 py-[0.1rem] font-bold ml-2 rounded-[4px] bg-forest-900 text-forest-50">
-                    SOON
+                {sidebarOpen && (
+                  <div className="text-sm font-bold mx-4 w-80 flex ">
+                    {item.label}
+                    <div className="text-[0.6rem] leading-[1.75] px-1 py-[0.1rem] font-bold ml-2 rounded-[4px] bg-forest-900 text-forest-50">
+                      SOON
+                    </div>
                   </div>
-                </div>{" "}
+                )}
               </div>
             </div>
           </TooltipTrigger>
@@ -153,14 +153,16 @@ export default function SidebarMenuGroup({
               }
             >
               <div className="w-6 mx-0">
-                <div className="text-forest-50 bg-forest-900 rounded-md w-6 mx-auto opacity-100 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
+                <div className="w-6 mx-auto opacity-100 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
                   {item.sidebarIcon}
                 </div>
               </div>
               <div className="">
-                <div className="text-sm font-bold mx-4 w-80 flex">
-                  {item.label}
-                </div>{" "}
+                {sidebarOpen && (
+                  <div className="text-sm font-bold mx-4 w-80 flex">
+                    {item.label}
+                  </div>
+                )}
               </div>
             </Link>
           </TooltipTrigger>
@@ -179,19 +181,40 @@ export default function SidebarMenuGroup({
       <Tooltip key={item.label} placement="right">
         <TooltipTrigger className="h-6 pl-8 overflow-visible">
           <div
-            className="group flex items-start justify-items-start mb-2 cursor-pointer"
+            className="group flex items-center justify-items-start mb-2 cursor-pointer"
             onClick={handleToggle}
           >
             <div className="w-6 mx-0">
-              <div className="text-forest-50 bg-forest-900 rounded-md w-6 mx-auto opacity-100 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
+              <div className="w-6 mx-auto opacity-100 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
                 {item.sidebarIcon}
               </div>
             </div>
-            <div className={`text-left`}>
-              <div className="text-sm font-bold mx-[17px] py-0.5 w-80">
-                {item.label}
+            {sidebarOpen ? (
+              <div className={`flex-1 flex items-start justify-between`}>
+                <div className="text-sm font-bold mx-[17px] py-0.5">
+                  {item.label}
+                </div>
+                <Icon
+                  icon={
+                    isOpen
+                      ? "feather:arrow-down-circle"
+                      : "feather:arrow-left-circle"
+                  }
+                  className="w-[13px] h-[13px] mr-5 my-auto"
+                />
               </div>
-            </div>
+            ) : (
+              <div className={`flex-1 flex items-center justify-end`}>
+                <Icon
+                  icon={
+                    isOpen
+                      ? "feather:arrow-down-circle"
+                      : "feather:arrow-left-circle"
+                  }
+                  className="w-[13px] h-[13px] mr-2"
+                />
+              </div>
+            )}
           </div>
         </TooltipTrigger>
         {!sidebarOpen && (
@@ -250,7 +273,7 @@ export default function SidebarMenuGroup({
                       <div
                         className={`text-sm py-1 w-48 font-normal break-inside-auto text-left ml-10`}
                       >
-                        {option.label}
+                        {sidebarOpen ? option.label : <span>&nbsp;</span>}
                       </div>
                     </Link>
                   </TooltipTrigger>

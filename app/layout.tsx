@@ -104,28 +104,63 @@ export default function RootLayout({
           {/* </background gradient> */}
           <div className="flex justify-between h-screen w-full">
             <div className="pt-6 pl-0 bg-forest-100 dark:bg-forest-900 mix-h-screen max-h-screen hidden md:flex flex-col overflow-hidden space-y-6 border-r-2 border-black/50">
-              <div className="flex items-center justify-between px-10 space-x-6">
-                <Link href="" className="relative h-[45px] block mb-4">
-                  <div className="h-[45px] w-[192px] absolute left-3">
-                    <Image
-                      src="/logo_full.png"
-                      alt="Forest"
-                      className="mb-6 -ml-[9px] z-10 crisp-edges"
-                      fill={true}
-                      quality={100}
-                    />
+              {isSidebarOpen ? (
+                <div className="h-[45.07px]">
+                  <div className="flex items-center mx-5 justify-between h-[45.07px]">
+                    <Link
+                      href="/"
+                      className="relative h-[45.07px] w-[192.87px] block"
+                    >
+                      <div className="h-[45.07px] w-[192.87px] absolute left-3">
+                        <Image
+                          src="/logo_full.png"
+                          alt="Forest"
+                          className="mb-6 -ml-[9px] z-10 crisp-edges"
+                          fill={true}
+                          quality={100}
+                        />
+                      </div>
+                    </Link>
+                    <div>
+                      <Icon
+                        icon="feather:log-out"
+                        className={`w-3 h-3 text-forest-900 cursor-pointer`}
+                        onClick={() => {
+                          setIsSidebarOpen(isSidebarOpen ? false : true);
+                        }}
+                      />
+                    </div>
                   </div>
-                </Link>
-                <Icon
-                  icon="feather:log-out"
-                  className={`w-4 h-4 ${
-                    isSidebarOpen ? "text-forest-800" : "text-forest-600"
-                  }`}
-                  onClick={() => {
-                    setIsSidebarOpen(isSidebarOpen ? false : true);
-                  }}
-                />
-              </div>
+                </div>
+              ) : (
+                <div className="h-[45.07px]">
+                  <div className="flex items-center ml-8 mr-2 justify-between h-[45.07px]">
+                    <Link
+                      href="/"
+                      className="relative h-[24px] w-[22.29px] block"
+                    >
+                      <div className="h-[24px] w-[22.29px] absolute left-3">
+                        <Image
+                          src="/logo_pie_only.png"
+                          alt="Forest"
+                          className="mb-6 -ml-[9px] z-10 crisp-edges"
+                          fill={true}
+                          quality={100}
+                        />
+                      </div>
+                    </Link>
+                    <div>
+                      <Icon
+                        icon="feather:log-out"
+                        className={`w-3 h-3 text-forest-900 cursor-pointer`}
+                        onClick={() => {
+                          setIsSidebarOpen(isSidebarOpen ? false : true);
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <Sidebar
                 trigger={
@@ -157,7 +192,7 @@ export default function RootLayout({
                       <Link href="" className="absolute top-2 left-20">
                         <div className="h-[32px] w-[32px] absolute">
                           <Image
-                            src="/logo-pie-only.png"
+                            src="/logo_pie_only.png"
                             alt="Forest"
                             className="mb-6 -ml-[9px] z-10 antialiased hover:scale-105 hover:translate-x-0 transition-transform duration-150 ease-in-out"
                             fill={true}
