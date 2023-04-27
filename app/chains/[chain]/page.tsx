@@ -7,15 +7,14 @@ import {
   LinkIcon,
   AtSymbolIcon,
 } from "@heroicons/react/24/outline";
-import { dataTool } from "echarts";
-import { Time } from "highcharts";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { ArbitrumChainResponse } from "@/types/api/ArbitrumChainResponse";
 import { DAAMetricsResponse } from "@/types/api/DAAMetricsResponse";
 import { AllChains } from "@/lib/chains";
 import ChainChart from "@/components/layout/ChainChart";
-
+import { Poly } from "@next/font/google";
+import Image from "next/image";
 
 const Chain = ({ params }: { params: any }) => {
   // const params = useSearchParams();
@@ -28,29 +27,31 @@ const Chain = ({ params }: { params: any }) => {
   
 
   const { data: master, error: masterError } = useSWR<MasterResponse>(
-    "https://d2cfnw27176mbd.cloudfront.net/v0_3/master.json"
+    "https://d2cfnw27176mbd.cloudfront.net/v0_4/master.json"
   );
 
   const { data: Ethereum, error: ethError } = useSWR<ArbitrumChainResponse>(
-    "https://d2cfnw27176mbd.cloudfront.net/v0_3/chains/ethereum.json"
+    "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/ethereum.json"
   );
 
   const { data: Arbitrum, error: arbError } = useSWR<ArbitrumChainResponse>(
-    "https://d2cfnw27176mbd.cloudfront.net/v0_3/chains/arbitrum.json"
+    "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/arbitrum.json"
   );
 
   const { data: Optimism, error: optError } = useSWR<ArbitrumChainResponse>(
-    "https://d2cfnw27176mbd.cloudfront.net/v0_3/chains/optimism.json"
+    "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/optimism.json"
+  );
+
+  const { data: Polygon, error: polyError } = useSWR<ArbitrumChainResponse>(
+    "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/polygon_zkevm.json"
+  );
+
+  const { data: Imx, error: imxError } = useSWR<ArbitrumChainResponse>(
+    "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/imx.json"
   );
 
 
-  const chainArray = [Arbitrum, Ethereum, Optimism];
-
-  const [selectedChains, setSelectedChains] = useState(
-    AllChains.map((chain) => chain.key)
-  );
-  /*Create some kind of map for metric cards*/
-
+  const chainArray = [Arbitrum, Ethereum, Optimism, Polygon, Imx];
 
   const chainData = useMemo(() => {
     if (!master) return [];
@@ -63,23 +64,23 @@ const Chain = ({ params }: { params: any }) => {
   }, [master, chain]);
   
   const chartData = useMemo(() => {
-    if(!Arbitrum || !Ethereum || !Optimism) return [];
+    if(!Arbitrum || !Ethereum || !Optimism || !Polygon || !Imx) return [];
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 5; i++) {
       if (chainArray[i].data.chain_id === chain) {
         return chainArray[i].data;
       }
     }
-  }, [chain, chainArray, Arbitrum, Optimism, Ethereum]);
+  }, [chain, chainArray, Arbitrum, Optimism, Ethereum, Polygon, Imx]);
   
-  if (!master || !Arbitrum || !Optimism || !Ethereum) {
+  if (!master || !Arbitrum || !Optimism || !Ethereum || !Polygon) {
     return (
       <div className="flex justify-center items-center h-screen">
         Loading...
       </div>
     );
   }
-
+  console.log(chainData.name)
 
   return (
     <div className="mx-auto pt-10 w-[44rem] lg:w-[88rem]">
@@ -88,7 +89,7 @@ const Chain = ({ params }: { params: any }) => {
         <div className="flex flex-col justify-between items-start gap-y-8 lg:gap-y-0 lg:items-center lg:flex-row">
           <div className="flex gap-x-6 items-center">
             <h1 className="h-14 text-5xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#2C5282] dark:text-[#CDD8D3]">
-              {String(chain).charAt(0).toUpperCase() + String(chain).slice(1)}
+              {chainData.name} 
             </h1>
 
             {/*Uppercase first letter */}
@@ -115,7 +116,13 @@ const Chain = ({ params }: { params: any }) => {
               href={chainData.twitter}
               className="flex justify-between text-white hover:bg-forest-100 dark:bg-[#2A3433]  dark:text-[#CDD8D3] bg-blue-600 w-40 py-0 rounded-full w-168px pl-4 pr-6"
             >
-              <AtSymbolIcon className="h-4 w-4 self-center" />
+            <Image
+                src="/twitter-thin.svg"
+                alt="TwitterLogo"
+                width={16}
+                height={16}
+                className="mr-2"
+              />
               <p className="self-center font-semibold">
                 {chainData.twitter.split("https://twitter.com/")}
               </p>
