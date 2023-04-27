@@ -162,7 +162,7 @@ export default function ChainChart({
     //Hover index is set to distance from the highest index
   };
 
- 
+  //Vercel test
 
   
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
