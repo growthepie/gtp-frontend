@@ -19,7 +19,8 @@ import {
 import { useTheme } from "next-themes";
 import _ from "lodash";
 import { AllChains } from "@/lib/chains";
-
+import { Icon } from "@iconify/react";
+import Image from "next/image";
 
 
 const COLORS = {
@@ -35,6 +36,8 @@ const COLORS = {
   SERIES: ["#36a2eb", "#ff6384", "#8142ff", "#ff9f40", "#ffcd56", "#4bc0c0"],
 };
 
+
+
 const timespans = {
   // "30d": {
   //   label: "30 days",
@@ -46,25 +49,25 @@ const timespans = {
     label: "90 days",
     value: 90,
     xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
-    xMax: Date.now(),
+    xMax: Date.now() - 24 * 60 * 60 * 1000 * 2,
   },
   "180d": {
     label: "180 days",
     value: 180,
     xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
-    xMax: Date.now(),
+    xMax: Date.now() - 24 * 60 * 60 * 1000 * 2,
   },
   "365d": {
     label: "1 year",
     value: 365,
     xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
-    xMax: Date.now(),
+    xMax: Date.now() - 24 * 60 * 60 * 1000 * 2,
   },
   max: {
     label: "Maximum",
     value: 0,
     xMin: Date.parse("2021-01-01"),
-    xMax: Date.now(),
+    xMax: Date.now() - 24 * 60 * 60 * 1000 * 2,
   },
 };
 
@@ -97,7 +100,7 @@ export default function ChainChart({
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
   const [hoverIndex, setHoverIndex] = useState(0);
-  const [hoverData, setHoverData] = useState({ x:  data.metrics['daa'].daily.data[((data.metrics['daa'].daily.data).length - 1)][0], y: null });
+  const [hoverData, setHoverData] = useState({ x:  null, y: null });
   const [hoverKey, setHoverKey] = useState(null)
   const [currentIndex, setCurrentIndex] = useState(1);
 
@@ -164,9 +167,7 @@ export default function ChainChart({
     handleMouseOver(event);
     manageHoverKey(key);
     setHoverIndex(data.metrics[key].daily.data.length - index - 1)
-    
-    console.log(hoverIndex)
-    console.log(key)
+
   };
 
   const handleMouseOver = (event) => {
@@ -390,18 +391,16 @@ export default function ChainChart({
         },
         areaspline: {
           lineWidth: 2,
+          marker: {
+            radius: 12,
+            lineWidth: 4
+          }
         },
         series: {
           color: theme === "dark" ? chartStyle.colors.dark[0] : "rgb(247, 250, 252, 0.3)",
           fillColor: theme === "dark" ?
            `${hexToRgba(chartStyle.colors.dark[0], 0.3)}` : "rgb(247, 250, 252, 0.3)",
 
-          events: {
-            
-            legendItemClick: function () {
-              return false;
-            },
-          },
 
           animation: false,
         },
@@ -416,7 +415,14 @@ export default function ChainChart({
   return (
 
     <div className="w-44[rem] lg:w-[88rem] my-[1rem]">
-      <div className="flex w-[40rem] lg:w-[82rem] ml-12 mr-14 justify-center lg:dark:justify-end items-center text-xs rounded-full dark:bg-[#2A3433] p-0.5 lg:justify-center">
+      <div className="flex w-[40rem] lg:w-[82rem] ml-12 mr-14 justify-center lg:dark:justify-between items-center text-xs rounded-full dark:bg-[#2A3433] p-0.5 lg:justify-center">
+          <Image
+                src="/GTP-Metrics.png"
+                alt="pie slice"
+                width={36}
+                height={36}
+                className="ml-8"
+          />
         <div className="flex py-2 gap-x-8 justify-start items-center rounded-[999px] h-[60px] pr-6 ">
         {Object.keys(timespans).map((timespan) => (
             <button
@@ -480,7 +486,16 @@ export default function ChainChart({
                       <h1 className="pt-[1rem] pl-6 text-3xl font-[700] text-transparent bg-gradient-to-r bg-clip-text  from-[#9DECF9] to-[#5080ba] dark:text-[#CDD8D3] pointer-events-none">
                         {data.metrics[key].metric_name}
                       </h1>
-                      <BanknotesIcon className="absolute h-[75px] w-[94px] text-blue-500 bottom-[11rem] left-[32rem] mr-4 dark:text-[#CDD8D3] pointer-events-none" />
+                      {key === 'tvl'
+                            ? <Icon icon="feather:star" className="absolute h-[60px] w-[74px] text-blue-500 bottom-[11.5rem] left-[32rem] mr-4 dark:text-[#CDD8D3] opacity-30 pointer-events-none"/>
+                            : key === 'txcount'
+                            ? <Icon icon="feather:clock"  className="absolute h-[60px] w-[74px] text-blue-500 bottom-[11.5rem] left-[32rem] mr-4 dark:text-[#CDD8D3] opacity-30 pointer-events-none"/>
+                            : key === 'stables_mcap'
+                            ? <Icon icon="feather:dollar-sign"  className="absolute h-[60px] w-[74px] text-blue-500 bottom-[11.5rem] left-[32rem] mr-4 dark:text-[#CDD8D3] opacity-30 pointer-events-none"/>
+                            : key === 'fees'
+                            ? <Icon icon="feather:credit-card"  className="absolute h-[60px] w-[74px] text-blue-500 bottom-[11.5rem] left-[32rem] mr-4 dark:text-[#CDD8D3] opacity-30 pointer-events-none"/>
+                            : <Icon icon="feather:sunrise"  className="absolute h-[60px] w-[74px] text-blue-500 bottom-[11.5rem] left-[32rem] mr-4 dark:text-[#CDD8D3] opacity-30 pointer-events-none"/>}
+                      
                     </div>
                     <div className="flex pt-44 pl-6 pr-6 justify-between pointer-events-none">
                       <h1 className="text-white text-4xl font-[700] dark:text-[#CDD8D3] pointer-events-none">
