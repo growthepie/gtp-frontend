@@ -39,7 +39,7 @@ export const Contributors = [
     name: "Michael May",
     image: "/contributors/michael.png",
     role: "Frontend",
-    twitter: "https://www.twitter.com/MooMokel",
+    twitter: "https://www.twitter.com/monkelmoo",
     linkedin: "https://www.linkedin.com/in/michael-may-3008a1261",
   },
 ];
