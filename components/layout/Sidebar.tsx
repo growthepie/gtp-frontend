@@ -203,7 +203,7 @@ export const items: SidebarItems = [
     label: "Home",
     key: "home",
     icon: <ArrowsRightLeftIcon className="h-5 w-5" />,
-    sidebarIcon: <Icon icon="gtp:house" className="h-6 w-6 p-0.5 mx-auto " />,
+    sidebarIcon: <Icon icon="gtp:house" className="h-7 w-7 p-0.5 mx-auto " />,
     options: [],
     href: "/",
   },
@@ -213,7 +213,7 @@ export const items: SidebarItems = [
     key: "metrics",
     icon: <ArrowsRightLeftIcon className="h-5 w-5" />,
     sidebarIcon: (
-      <Icon icon="gtp:fundamentals" className="h-6 w-6 p-0.5 mx-auto " />
+      <Icon icon="gtp:fundamentals" className="h-7 w-7 p-0.5 mx-auto " />
     ),
     options: [
       {
@@ -229,17 +229,6 @@ export const items: SidebarItems = [
         rootKey: "metricsTvl",
       },
       {
-        label: "Transaction Count",
-        page: {
-          title: "Transaction Count",
-          description: "The number of daily transactions.",
-          icon: "feather:clock",
-        },
-        icon: <Icon icon="feather:clock" className="h-4 w-4 mx-auto" />,
-        key: "txcount",
-        rootKey: "metricsTxCount",
-      },
-      {
         label: "Stablecoin Market Cap",
         page: {
           title: "Stablecoin Market Cap",
@@ -250,6 +239,18 @@ export const items: SidebarItems = [
         key: "stables_mcap",
         rootKey: "metricsStablesMcap",
       },
+      {
+        label: "Transaction Count",
+        page: {
+          title: "Transaction Count",
+          description: "The number of daily transactions.",
+          icon: "feather:clock",
+        },
+        icon: <Icon icon="feather:clock" className="h-4 w-4 mx-auto" />,
+        key: "txcount",
+        rootKey: "metricsTxCount",
+      },
+
       {
         label: "24h Contract Usage",
         page: {
@@ -315,16 +316,16 @@ export const items: SidebarItems = [
     name: "Blockspace",
     label: "Blockspace",
     icon: <LinkIcon className="h-5 w-5" />,
-    sidebarIcon: <Icon icon="gtp:package" className="h-6 w-6 p-0.5 mx-auto" />,
+    sidebarIcon: <Icon icon="gtp:package" className="h-7 w-7 p-0.5 mx-auto" />,
     options: [],
     href: "",
   },
   {
     name: "Chains",
-    label: "Chains",
+    label: "Single Chain",
     key: "chains",
     icon: <LinkIcon className="h-5 w-5" />,
-    sidebarIcon: <Icon icon="gtp:link" className="h-6 w-6 p-0.5 mx-auto" />,
+    sidebarIcon: <Icon icon="gtp:link" className="h-7 w-7 p-0.5 mx-auto" />,
     options: [
       {
         label: "Ethereum",
@@ -376,7 +377,7 @@ export const items: SidebarItems = [
     label: "Wiki",
     icon: <LinkIcon className="h-5 w-5" />,
     sidebarIcon: (
-      <Icon icon="gtp:book-open" className="h-6 w-6 p-0.5 pb-0 mx-auto" />
+      <Icon icon="gtp:book-open" className="h-7 w-7 p-0.5 pb-0 mx-auto" />
     ),
     options: [],
     href: "https://growthepie.gitbook.io/introduction/",
@@ -386,7 +387,7 @@ export const items: SidebarItems = [
     label: "API Documentation",
     icon: <LinkIcon className="h-5 w-5" />,
     sidebarIcon: (
-      <Icon icon="gtp:file-text" className="h-6 w-6 p-0.5 mx-auto" />
+      <Icon icon="gtp:file-text" className="h-7 w-7 p-0.5 mx-auto" />
     ),
     options: [],
     href: "https://growthepie.gitbook.io/introduction/",
@@ -442,7 +443,7 @@ export default function Sidebar({
     name: "Contributors",
     label: "Contributors",
     icon: <LinkIcon className="h-5 w-5" />,
-    sidebarIcon: <Icon icon="gtp:compass" className="h-6 w-6 p-0.5 mx-auto" />,
+    sidebarIcon: <Icon icon="gtp:compass" className="h-7 w-7 p-0.5 mx-auto" />,
     options: [],
     href: "/contributors",
   };
