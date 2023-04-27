@@ -103,9 +103,9 @@ export default function RootLayout({
           </div> */}
           {/* </background gradient> */}
           <div className="flex justify-between h-screen w-full">
-            <div className="pt-6 pl-0 bg-forest-100 dark:bg-forest-900 mix-h-screen max-h-screen hidden md:flex flex-col overflow-hidden space-y-6 border-r-2 border-black/50">
+            <div className="pt-8 pl-0 bg-forest-100 dark:bg-forest-900 mix-h-screen max-h-screen hidden md:flex flex-col overflow-hidden space-y-6 border-r-2 border-black/50">
               {isSidebarOpen ? (
-                <div className="h-[45.07px]">
+                <div className="h-[45.07px] mb-[18px]">
                   <div className="flex items-center mx-5 justify-between h-[45.07px]">
                     <Link
                       href="/"
@@ -124,7 +124,7 @@ export default function RootLayout({
                     <div>
                       <Icon
                         icon="feather:log-out"
-                        className={`w-3 h-3 text-forest-900 cursor-pointer`}
+                        className={`w-[13px] h-[13px] text-forest-900 cursor-pointer mt-2`}
                         onClick={() => {
                           setIsSidebarOpen(isSidebarOpen ? false : true);
                         }}
@@ -133,7 +133,7 @@ export default function RootLayout({
                   </div>
                 </div>
               ) : (
-                <div className="h-[45.07px]">
+                <div className="h-[45.07px] mt-1 mb-[14px]">
                   <div className="flex items-center ml-8 mr-2 justify-between h-[45.07px]">
                     <Link
                       href="/"
@@ -152,7 +152,7 @@ export default function RootLayout({
                     <div>
                       <Icon
                         icon="feather:log-out"
-                        className={`w-3 h-3 text-forest-900 cursor-pointer`}
+                        className={`w-[13px] h-[13px] text-forest-900 cursor-pointer mt-2`}
                         onClick={() => {
                           setIsSidebarOpen(isSidebarOpen ? false : true);
                         }}
