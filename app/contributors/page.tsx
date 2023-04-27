@@ -12,22 +12,34 @@ const Contributors = () => {
       </Subheading>
 
       <div className="flex mt-8 space-x-2">
-        <div className="basis-1/4 flex flex-col items-center p-3 bg-forest-50 rounded-lg">
+        <div className="flex flex-col items-start p-3 bg-forest-50 rounded-lg">
           <div className="flex flex-col items-center aspect-square">
-            <Image src="/contributors/mseidl.png" alt="mseidl" />
+            <Image
+              src="/contributors/mseidl.png"
+              alt="mseidl"
+              className="rounded-lg"
+              width={228}
+              height={228}
+            />
           </div>
-          <div className="text-center mt-2">Matthais Seidl</div>
+          <div className="text-left mt-2 font-bold">Matthais Seidl</div>
           <div className="flex justify-between">
-            <div>Data</div>
+            <div className="text-sm">Data</div>
           </div>
         </div>
-        <div className="basis-1/4 flex flex-col items-center p-3 bg-forest-50 rounded-lg">
+        <div className=" flex flex-col items-start p-3 bg-forest-50 rounded-lg">
           <div className="flex flex-col items-center aspect-square">
-            <Image src="/contributors/tobsch.png" alt="tobsch" />
+            <Image
+              src="/contributors/tobsch.png"
+              alt="tobsch"
+              className="rounded-lg"
+              width={228}
+              height={228}
+            />
           </div>
-          <div className="text-center mt-2">Tobias Schreier</div>
+          <div className="text-left mt-2 font-bold w-full">Tobias Schreier</div>
           <div className="flex justify-between">
-            <div>Data</div>
+            <div className="text-sm">Data</div>
           </div>
         </div>
       </div>
