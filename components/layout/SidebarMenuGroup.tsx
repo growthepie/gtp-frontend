@@ -106,15 +106,15 @@ export default function SidebarMenuGroup({
     return (
       <div className="group flex flex-col">
         <Tooltip key={item.label} placement="right">
-          <TooltipTrigger className="h-6 mb-6 cursor-default pl-3 overflow-visible">
-            <div className="flex items-center justify-items-center opacity-70 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
+          <TooltipTrigger className="h-6 mb-6 cursor-default pl-8 overflow-visible">
+            <div className="flex items-center justify-items-center opacity-100 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
               <div className="w-6 mx-0">
                 <div className="text-forest-50 bg-forest-900 rounded-md w-6 mx-auto">
                   {item.sidebarIcon}
                 </div>
               </div>
               <div className="">
-                <div className="text-sm font-bold mx-4 w-60 flex ">
+                <div className="text-sm font-bold mx-4 w-80 flex ">
                   {item.label}
                   <div className="text-[0.6rem] leading-[1.75] px-1 py-[0.1rem] font-bold ml-2 rounded-[4px] bg-forest-900 text-forest-50">
                     SOON
@@ -135,29 +135,29 @@ export default function SidebarMenuGroup({
       </div>
     );
 
-  if (["API Documentation", "Wiki", "Contributors"].includes(item.name))
+  if (["API Documentation", "Wiki", "Contributors", "Home"].includes(item.name))
     return (
       <div className="group flex flex-col">
         {/* open in new tab */}
         <Tooltip key={item.label} placement="right">
-          <TooltipTrigger className="h-6 mb-6 cursor-default pl-3 overflow-visible">
+          <TooltipTrigger className="h-6 mb-6 cursor-default pl-8 overflow-visible">
             <Link
               target="_blank"
-              rel="noopener noreferrer"
               className="flex items-center justify-items-center mb-8"
-              href={
-                ["API Documentation", "Wiki"].includes(item.name)
-                  ? "https://growthepie.gitbook.io/introduction/"
-                  : "/contributors"
+              href={item.href ?? ""}
+              rel={
+                !["Home", "Collaborators"].includes(item.name)
+                  ? "noopener noreferrer"
+                  : ""
               }
             >
               <div className="w-6 mx-0">
-                <div className="text-forest-50 bg-forest-900 rounded-md w-6 mx-auto opacity-70 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
+                <div className="text-forest-50 bg-forest-900 rounded-md w-6 mx-auto opacity-100 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
                   {item.sidebarIcon}
                 </div>
               </div>
               <div className="">
-                <div className="text-sm font-bold mx-4 w-60 flex">
+                <div className="text-sm font-bold mx-4 w-80 flex">
                   {item.label}
                 </div>{" "}
               </div>
@@ -176,18 +176,18 @@ export default function SidebarMenuGroup({
     <div className="flex flex-col">
       <div className="text-xs"></div>
       <Tooltip key={item.label} placement="right">
-        <TooltipTrigger className="h-6 pl-3 overflow-visible">
+        <TooltipTrigger className="h-6 pl-8 overflow-visible">
           <div
             className="group flex items-start justify-items-start mb-2 cursor-pointer"
             onClick={handleToggle}
           >
             <div className="w-6 mx-0">
-              <div className="text-forest-50 bg-forest-900 rounded-md w-6 mx-auto opacity-70 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
+              <div className="text-forest-50 bg-forest-900 rounded-md w-6 mx-auto opacity-100 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
                 {item.sidebarIcon}
               </div>
             </div>
             <div className={`text-left`}>
-              <div className="text-sm font-bold mx-[17px] py-0.5 w-60">
+              <div className="text-sm font-bold mx-[17px] py-0.5 w-80">
                 {item.label}
               </div>
             </div>
@@ -201,7 +201,7 @@ export default function SidebarMenuGroup({
       </Tooltip>
 
       <div
-        className={`flex flex-col overflow-hidden mb-6 w-60 ${
+        className={`flex flex-col overflow-hidden mb-6 w-80 ${
           isOpen ? "h-auto mt-1" : "h-0 mt-0"
         }`}
       >
@@ -215,7 +215,7 @@ export default function SidebarMenuGroup({
               // if (!sidebarOpen) {
               return (
                 <Tooltip key={option.label} placement="right">
-                  <TooltipTrigger className="px-3 overflow-visible">
+                  <TooltipTrigger className="px-8 overflow-visible">
                     <Link
                       className={`group flex items-center justify-items-center rounded-l-full my-[0.25rem] relative ${
                         urlParts[1].trim().localeCompare(option.key) === 0
@@ -247,7 +247,7 @@ export default function SidebarMenuGroup({
                       </div>
                       {/* </div> */}
                       <div
-                        className={`text-sm py-1 w-44 font-normal break-inside-auto text-left ml-10`}
+                        className={`text-sm py-1 w-48 font-normal break-inside-auto text-left ml-10`}
                       >
                         {option.label}
                       </div>

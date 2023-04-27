@@ -37,9 +37,21 @@ export type SidebarItems = {
     key?: string;
     rootKey?: string;
   }[];
+  href?: string;
 }[];
 
 export const items: SidebarItems = [
+  {
+    name: "Home",
+    label: "Home",
+    key: "home",
+    icon: <ArrowsRightLeftIcon className="h-5 w-5" />,
+    sidebarIcon: (
+      <Icon icon="feather:home" className="h-6 w-6 p-0.5 mx-auto " />
+    ),
+    options: [],
+    href: "/",
+  },
   {
     name: "Fundamentals",
     label: "Fundamentals",
@@ -96,9 +108,9 @@ export const items: SidebarItems = [
         rootKey: "metrics24hContractUsage",
       },
       {
-        label: "Fees Paid to L2",
+        label: "Fees Paid by Users",
         page: {
-          title: "Fees Paid to L2",
+          title: "Fees Paid by Users",
           description:
             "The sum of fees that were paid by users of the chain in gas fees or, in the case of chains like Immutable X,  the amount of fees that were paid to the protocol wallet.",
           icon: "feather:credit-card",
@@ -152,6 +164,7 @@ export const items: SidebarItems = [
       <Icon icon="feather:layers" className="h-6 w-6 p-0.5 mx-auto" />
     ),
     options: [],
+    href: "",
   },
   {
     name: "Chains",
@@ -213,6 +226,7 @@ export const items: SidebarItems = [
       <Icon icon="feather:book-open" className="h-6 w-6 p-0.5 pb-0 mx-auto" />
     ),
     options: [],
+    href: "https://growthepie.gitbook.io/introduction/",
   },
   {
     name: "API Documentation",
@@ -222,6 +236,7 @@ export const items: SidebarItems = [
       <Icon icon="feather:file-text" className="h-6 w-6 p-0.5 mx-auto" />
     ),
     options: [],
+    href: "https://growthepie.gitbook.io/introduction/",
   },
 ];
 
@@ -278,6 +293,7 @@ export default function Sidebar({
       <Icon icon="feather:users" className="h-6 w-6 p-0.5 mx-auto" />
     ),
     options: [],
+    href: "/collaborators",
   };
 
   useEffect(() => {
@@ -346,15 +362,15 @@ export default function Sidebar({
   return (
     <div
       className={`flex-1 flex flex-col justify-items-start select-none ${
-        isOpen ? "w-[14rem]" : "w-[3rem]"
+        isOpen ? "w-[18rem]" : "w-[3rem]"
       } overflow-hidden`}
     >
       {/* trigger that opens the sidebar when clicked */}
-      <div className="text-forest-800 z-20 mb-6 pl-3">
+      {/* <div className="text-forest-800 z-20 mb-6 pl-6">
         <div onClick={handleToggle} className="w-6 h-6">
           {trigger}
         </div>
-      </div>
+      </div> */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-forest-800 scrollbar-track-forest-800/30 relative">
         {items.map((item) => (
           <SidebarMenuGroup
@@ -374,10 +390,10 @@ export default function Sidebar({
         />
         {isOpen && (
           <>
-            <div className="text-[0.7rem] text-forest-600 leading-[1] my-2 ml-3">
+            <div className="text-[0.7rem] text-forest-600 leading-[1] my-2 ml-8">
               © 2023 Grow The Pie 🥧
             </div>
-            <div className="text-[0.7rem] flex justify-between w-48 text-forest-600 leading-[1]  ml-3">
+            <div className="text-[0.7rem] flex justify-between w-48 text-forest-600 leading-[1] ml-8">
               <Link href="/privacy-policy">Privacy Policy</Link>
               <Link href="/imprint">Imprint</Link>
               <Link href="https://discord.gg/fxjJFe7QyN">Feedback</Link>

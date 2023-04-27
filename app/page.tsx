@@ -39,6 +39,55 @@ export default function Home() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  var words = [
+      "one ecosystem",
+      "...different use cases",
+      "...many chains",
+      " ...all growing the total user base",
+      "a positive sum game.",
+    ],
+    part,
+    i = 0,
+    offset = 0,
+    len = words.length,
+    forwards = true,
+    skip_count = 0,
+    skip_delay = 15,
+    speed = 50;
+  var wordflick = function () {
+    setInterval(function () {
+      if (forwards) {
+        if (offset >= words[i].length) {
+          ++skip_count;
+          if (skip_count == skip_delay) {
+            forwards = false;
+            skip_count = 0;
+          }
+        }
+      } else {
+        if (offset == 0) {
+          forwards = true;
+          i++;
+          offset = 0;
+          if (i >= len) {
+            i = 0;
+          }
+        }
+      }
+      part = words[i].substr(0, offset);
+      if (skip_count == 0) {
+        if (forwards) {
+          offset++;
+        } else {
+          offset--;
+        }
+      }
+      // select the element and update the text
+
+      // $(".word").text(part);
+    }, speed);
+  };
+
   useEffect(() => {
     setIsSidebarOpen(isLargeScreen);
   }, [isLargeScreen]);
@@ -92,7 +141,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex w-full mt-[5rem]">
+    <div className="flex w-full mt-[0rem]">
       <div className={`flex flex-col flex-1 pl-2 md:pl-6`}>
         {data && (
           <>

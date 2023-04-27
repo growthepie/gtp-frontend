@@ -65,7 +65,7 @@ const MetricsTable = ({
 
   return (
     <>
-      <div className="flex flex-col mt-12">
+      <div className="flex flex-col mt-12 font-semibold">
         <div
           className={`flex items-center p-1.5 lg:py-1.5 lg:pl-3 pr-6 rounded-full gap-x-2 lg:gap-x-8 font-semibold whitespace-nowrap text-xs lg:text-sm`}
         >
@@ -166,7 +166,7 @@ const MetricsTable = ({
                       </div>
                       <div className="absolute -bottom-[4px] right-0 w-full h-1 bg-black/30 rounded-md"></div>
                       <div
-                        className={`absolute -bottom-[4px] right-0 h-1 bg-green-500 rounded-md`}
+                        className={`absolute -bottom-[4px] right-0 h-1 bg-green-500 rounded-md font-semibold`}
                         style={{
                           width: `${
                             (data[chain.key].daily.data[

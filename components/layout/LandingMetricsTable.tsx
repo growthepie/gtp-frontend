@@ -79,7 +79,7 @@ export default function LandingMetricsTable({
             {metric} User Base
           </div>
           <div className="basis-1/5 text-right">User Share</div>
-          <div className="basis-1/5 text-right">Age</div>
+          <div className="basis-1/5">Age</div>
           <div className="basis-1/5">Technology</div>
         </div>
         {chains &&
@@ -181,7 +181,7 @@ export default function LandingMetricsTable({
                     data.chains[chain.key].user_share > 0.01 ? ".1%" : ".1%"
                   )(data.chains[chain.key].user_share)}
                 </div>
-                <div className="basis-1/5 text-right">
+                <div className="basis-1/5">
                   {/* format as 1 year 2 months */}
                   {chain.chainType === "L2" &&
                     moment

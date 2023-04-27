@@ -118,8 +118,8 @@ const baseOptions: Highcharts.Options = {
     },
     tickWidth: 4,
     tickLength: 4,
-    minPadding: 0.04,
-    maxPadding: 0.04,
+    // minPadding: 0.04,
+    // maxPadding: 0.04,
     gridLineWidth: 0,
   },
   legend: {
@@ -158,7 +158,7 @@ const baseOptions: Highcharts.Options = {
       // borderColor: "#ffffff",
       // borderWidth: 1,
       // make columns touch each other
-      pointWidth: undefined,
+      // pointWidth: undefined,
       // groupPadding: 0,
       animation: false,
     },
@@ -494,39 +494,6 @@ export default function LandingChart({
     [filteredData, selectedTimespan, showEthereumMainnet]
   );
 
-  const onXAxisSetExtremes = useCallback(
-    function (e) {
-      if (
-        e.trigger === "zoom" ||
-        e.trigger === "pan" ||
-        e.trigger === "navigator" ||
-        e.trigger === "rangeSelectorButton"
-      ) {
-        const { min, max } = e;
-        const { xMin, xMax } = timespans[selectedTimespan];
-        if (min === xMin && max === xMax) {
-          setZoomed(false);
-        } else {
-          setZoomed(true);
-        }
-        if (chartComponent && chartComponent.current) {
-          chartComponent.current.xAxis[0].update({
-            min: timespans[selectedTimespan].xMin,
-            max: timespans[selectedTimespan].xMax,
-            // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
-            tickPositions: getTickPositions(
-              timespans[selectedTimespan].xMin,
-              timespans[selectedTimespan].xMax
-            ),
-          });
-
-          setXAxis();
-        }
-      }
-    },
-    [filteredData, getNumColumnsVisible, selectedTimespan]
-  );
-
   const timespans = useMemo(
     () => ({
       // "30d": {
@@ -580,6 +547,38 @@ export default function LandingChart({
     });
   }, [getTickPositions, selectedTimespan, timespans]);
 
+  const onXAxisSetExtremes = useCallback(
+    function (e) {
+      // if (
+      //   e.trigger === "zoom" ||
+      //   e.trigger === "pan" ||
+      //   e.trigger === "navigator" ||
+      //   e.trigger === "rangeSelectorButton"
+      // ) {
+      const { min, max } = e;
+      const { xMin, xMax } = timespans[selectedTimespan];
+      if (min === xMin && max === xMax) {
+        setZoomed(false);
+      } else {
+        setZoomed(true);
+      }
+      if (chartComponent && chartComponent.current) {
+        chartComponent.current.xAxis[0].update({
+          min: timespans[selectedTimespan].xMin,
+          max: timespans[selectedTimespan].xMax,
+          // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
+          tickPositions: getTickPositions(
+            timespans[selectedTimespan].xMin,
+            timespans[selectedTimespan].xMax
+          ),
+        });
+      }
+      setXAxis();
+      // }
+    },
+    [getTickPositions, selectedTimespan, setXAxis, timespans]
+  );
+
   const options = useMemo((): Highcharts.Options => {
     const dynamicOptions: Highcharts.Options = {
       chart: {
@@ -591,7 +590,12 @@ export default function LandingChart({
           stacking: selectedScale === "percentage" ? "percent" : "normal",
         },
         column: {
-          groupPadding: 0.005,
+          // groupPadding: 0.005,
+          crisp: false,
+          pointPlacement: "on",
+          // pointStart: filteredData[0].data[0][0],
+          // pointInterval:
+          //   filteredData[0].data[1][0] - filteredData[0].data[0][0],
           // pointPadding: getNumColumnsVisible(filteredData) / 500,
           // borderColor: "#ffffff",
           // borderWidth: 1,
@@ -620,7 +624,9 @@ export default function LandingChart({
           },
         },
         gridLineColor:
-          theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
+          theme === "dark"
+            ? "rgba(215, 223, 222, 0.33)"
+            : "rgba(41, 51, 50, 0.33)",
       },
       xAxis: {
         min: timespans[selectedTimespan].xMin,
@@ -630,6 +636,7 @@ export default function LandingChart({
           timespans[selectedTimespan].xMin,
           timespans[selectedTimespan].xMax
         ),
+
         labels: {
           style: {
             color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
@@ -694,7 +701,14 @@ export default function LandingChart({
               name: series.name,
               // always show ethereum on the bottom
               zIndex: zIndex,
+              step: true,
+
               data: series.data.map((d: any) => [d[0], d[1]]),
+              // pointStart: series.data[0][0],
+              // pointInterval: series.data[1][0] - series.data[0][0],
+              // pointPadding: getNumColumnsVisible(filteredData) / 500,
+              pointPlacement: "on",
+
               borderRadiusTopLeft: borderRadius,
               borderRadiusTopRight: borderRadius,
 
@@ -716,10 +730,15 @@ export default function LandingChart({
                 ],
               },
               borderColor: AllChainsByKeys[series.name].colors[theme][0] + "66",
+              // borderColor:
+              //   theme == "dark"
+              //     ? "rgba(215, 223, 222, 0.33)"
+              //     : "rgba(41, 51, 50, 0.33)",
               borderWidth: 1,
               shadow: {
                 // color: AllChainsByKeys[series.name].colors[theme][1] + "33",
-                color: theme == "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
+                color:
+                  theme == "dark" ? "rgb(215, 223, 222)" : "rgb(41, 51, 50)",
                 opacity: 0.15,
                 offsetX: 0,
                 offsetY: 0,
@@ -741,14 +760,14 @@ export default function LandingChart({
                           AllChainsByKeys[series.name].colors[theme][0] + "FF",
                         ],
                         [
-                          0.44,
+                          0.3,
                           //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
-                          AllChainsByKeys[series.name].colors[theme][0] + "99",
+                          AllChainsByKeys[series.name].colors[theme][0] + "FF",
                         ],
                         [
                           1,
                           // AllChainsByKeys[series.name].colors[theme][0] + "99",
-                          "#2A3433FF",
+                          AllChainsByKeys[series.name].colors[theme][0] + "00",
                         ],
                       ]
                     : [
@@ -766,6 +785,10 @@ export default function LandingChart({
                         ],
                       ],
               },
+              // dataGrouping: {
+              //   enabled: true,
+              //   anchor: "start",
+              // },
               states: {
                 hover: {
                   enabled: true,
