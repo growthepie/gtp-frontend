@@ -301,7 +301,7 @@ export default function ChainChart({
   
   }
   */
-    const options: Highcharts.Options = {
+    const options = {
       accessibility: { enabled: false },
       exporting: { enabled: false },
       chart: {
