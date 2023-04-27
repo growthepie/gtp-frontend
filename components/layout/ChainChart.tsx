@@ -73,14 +73,10 @@ const timespans = {
 
 export default function ChainChart({
   data,
-}: // timeIntervals,
-// onTimeIntervalChange,
-// showTimeIntervals = true,
+}: 
 {
   data: any;
-  // timeIntervals: string[];
-  // onTimeIntervalChange: (interval: string) => void;
-  // showTimeIntervals: boolean;
+
 }) {
   useEffect(() => {
     Highcharts.setOptions({
@@ -100,14 +96,12 @@ export default function ChainChart({
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
   const [hoverIndex, setHoverIndex] = useState(0);
-  const [hoverData, setHoverData] = useState({ x:  null, y: null });
-  const [hoverKey, setHoverKey] = useState(null)
   const [currentIndex, setCurrentIndex] = useState(1);
 
 
 
   const chartStyle = useMemo(() => {
-    if (!data || !AllChains) return [];
+    if (!AllChains || !data) return [];
 
     let result = null;
 
@@ -120,7 +114,7 @@ export default function ChainChart({
     return result;
   }, [data]);
 
-  console.log(data)
+  console.log(chartStyle)
 
   function getTickPositions(xMin: any, xMax: any): number[] {
     const tickPositions: number[] = [];
@@ -163,28 +157,14 @@ export default function ChainChart({
 
   }
 
-  const handleMouseOverWithKey = (key, event, index) => {
-    handleMouseOver(event);
-    manageHoverKey(key);
+  const handleMouseOverWithKey = (key, index) => {
     setHoverIndex(data.metrics[key].daily.data.length - index - 1)
-
+    //Hover index is set to distance from the highest index
   };
 
-  const handleMouseOver = (event) => {
-    
-    const point = event.target.options;
-    setHoverData({ x: point.x, y: point.y });
-    
-  };
-
-
-  function manageHoverKey(key) {
-    setHoverKey(key);
-    
-  };
+ 
 
   
-
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
 
   useEffect(() => {
@@ -196,111 +176,7 @@ export default function ChainChart({
     }
   }, [selectedTimespan, chartComponent]);
 
-  
- 
-  console.log(chartStyle);
-  /*
-  const options = {
 
-    title: {
-      text: null
-    },
-    series: [{
-      showInLegend: false,
-      states: {
-        hover: {
-          lineWidthPlus: 0 // Disable the hover state for the series as well
-        }
-      }
-    }],
-    
-    chart: {
-      type: 'areaspline',
-      backgroundColor: null,
-      height: 250,
-      margin: [0, 0, 0, 0],
-      style: {
-        borderRadius: '0 0 12px 12px',
-      },
-    },
-  
-    plotOptions: {
-      series: {
-          color: theme === "dark" ? chartStyle.colors.dark[0] : "rgb(247, 250, 252, 0.3)",
-          fillColor: theme === "dark" ?
-           `${hexToRgba(chartStyle.colors.dark[0], 0.3)}` : "rgb(247, 250, 252, 0.3)",
-           boostThreshold: 1,
-      },
-
-      areaspline: {
-        marker: {
-          enabled: true, 
-          symbol: 'circle', 
-          radius: 4, 
-          fillColor: 'white', 
-          lineWidth: 1,
-        },
-      },
-    },
-
-    tooltip: {
-      //formatter: tooltipFormatter,
-      enabled: false
-    },
-
-    xAxis: {
-      type: "datetime",
-      labels: {
-        formatter: (item) => {
-          const date = new Date(item.value);
-          const isMonthStart = date.getDate() === 1;
-          const isYearStart = isMonthStart && date.getMonth() === 0;
-          if (isYearStart) {
-            return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
-          } else {
-            return `<span style="">${date.toLocaleDateString(undefined, {
-              month: "short",
-            })}</span>`;
-          }
-          // return `<span style="">${new Date(item.value).toLocaleDateString(
-          //   undefined,
-          //   { year: "numeric", month: "numeric", day: "numeric" }
-          // )}</span>`;
-        },
-        enabled: false
-      },
-      min: timespans[selectedTimespan].xMin,
-      max: timespans[selectedTimespan].xMax,
-
-      tickPositions: getTickPositions(
-        timespans[selectedTimespan].xMin,
-        timespans[selectedTimespan].xMax
-      ),
-
-      lineWidth: 0,
-      minorGridLineWidth: 0,
-      lineColor: 'transparent',
-      minorTickLength: 0,
-      tickLength: 0
-    },
-
-    yAxis: {
-      title: null,
-      gridLineColor: transparent,
-      labels: {
-        enabled: false,
-      }
-
-    },
-
-    credits: {
-      enabled: false
-    },
-  
-
-  
-  }
-  */
     const options = {
       accessibility: { enabled: false },
       exporting: { enabled: false },
@@ -348,10 +224,6 @@ export default function ChainChart({
                 month: "short",
               })}</span>`;
             }
-            // return `<span style="">${new Date(item.value).toLocaleDateString(
-            //   undefined,
-            //   { year: "numeric", month: "numeric", day: "numeric" }
-            // )}</span>`;
           },
 
 
@@ -367,20 +239,10 @@ export default function ChainChart({
         enabled: false,
         useHTML: false,
         symbolWidth: 0,
-        // labelFormatter: function () {
-        // 	const color = bgColors[this.name][0];
-    
-        // 	return `
-        //     <div class="flex flex-row items-center gap-x-2">
-        //         <div class="w-2 h-2 rounded-full ${color}"></div>
-        //         <div class="font-roboto font-normal text-zincus-400 text-xs">
-        //         ${this.name}
-        //         </div>
-        //     </div>`;
-        // },
+
       },
       tooltip: {
-        // backgroundColor: 'transparent',
+
         enabled: false,
       },
 
@@ -397,9 +259,9 @@ export default function ChainChart({
           }
         },
         series: {
-          color: theme === "dark" ? chartStyle.colors.dark[0] : "rgb(247, 250, 252, 0.3)",
-          fillColor: theme === "dark" ?
-           `${hexToRgba(chartStyle.colors.dark[0], 0.3)}` : "rgb(247, 250, 252, 0.3)",
+          color: chartStyle && (theme === "dark" ? chartStyle.colors.dark[0] : "rgb(247, 250, 252, 0.3)"),
+          fillColor: chartStyle &&( theme === "dark" ?
+           `${hexToRgba(chartStyle.colors.dark[0], 0.3)}` : "rgb(247, 250, 252, 0.3)"),
 
 
           animation: false,
@@ -411,6 +273,13 @@ export default function ChainChart({
       },
     };
   
+  if (!chartStyle || !data) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading...
+      </div>
+    );
+  }
 
   return (
 
@@ -462,7 +331,7 @@ export default function ChainChart({
                               events: {
                                 mouseOver: function(event) { 
                                   const index = this.index;
-                                  handleMouseOverWithKey(key, event, index)
+                                  handleMouseOverWithKey(key, index)
                                 }
 
                               }
