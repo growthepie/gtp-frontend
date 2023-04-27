@@ -114,9 +114,9 @@ export default function SidebarMenuGroup({
               </div>
               <div className="">
                 {sidebarOpen && (
-                  <div className="text-base font-semibold mx-3 w-80 flex ">
-                    {item.label}
-                    <div className="text-[0.6rem] leading-[1.75] px-1 py-[0.1rem] font-bold ml-2 rounded-[4px] bg-forest-900 text-forest-50">
+                  <div className="text-base font-semibold mx-3 w-80 flex space-x-3 items-center">
+                    <span>{item.label}</span>
+                    <div className="px-1 py-[2px] leading-[1] text-sm font-bold ml-1 rounded-[3px] bg-forest-900 text-forest-50">
                       SOON
                     </div>
                   </div>
