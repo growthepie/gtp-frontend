@@ -107,16 +107,16 @@ export default function SidebarMenuGroup({
     return (
       <div className="group flex flex-col">
         <Tooltip key={item.label} placement="right">
-          <TooltipTrigger className="h-6 mb-6 cursor-default pl-8 overflow-visible">
+          <TooltipTrigger className="h-6 mb-8 cursor-default pl-8 overflow-visible">
             <div className="flex items-center justify-items-center opacity-70 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
               <div className="w-6 mx-0">
                 <div className="w-6 mx-auto">{item.sidebarIcon}</div>
               </div>
               <div className="">
                 {sidebarOpen && (
-                  <div className="text-sm font-bold mx-4 w-80 flex ">
-                    {item.label}
-                    <div className="text-[0.6rem] leading-[1.75] px-1 py-[0.1rem] font-bold ml-2 rounded-[4px] bg-forest-900 text-forest-50">
+                  <div className="text-base font-semibold mx-3 w-80 flex space-x-3 items-center">
+                    <span>{item.label}</span>
+                    <div className="px-1 py-[2px] leading-[1] text-sm font-bold ml-1 rounded-[3px] bg-forest-900 text-forest-50">
                       SOON
                     </div>
                   </div>
@@ -141,13 +141,15 @@ export default function SidebarMenuGroup({
       <div className="group flex flex-col">
         {/* open in new tab */}
         <Tooltip key={item.label} placement="right">
-          <TooltipTrigger className="h-6 mb-6 cursor-default pl-8 overflow-visible">
+          <TooltipTrigger className="h-6 mb-8 cursor-default pl-8 overflow-visible">
             <Link
-              target="_blank"
+              target={
+                !["Home", "Contributors"].includes(item.name) ? "_blank" : ""
+              }
               className="flex items-center justify-items-center mb-8"
               href={item.href ?? ""}
               rel={
-                !["Home", "Collaborators"].includes(item.name)
+                !["Home", "Contributors"].includes(item.name)
                   ? "noopener noreferrer"
                   : ""
               }
@@ -159,7 +161,7 @@ export default function SidebarMenuGroup({
               </div>
               <div className="">
                 {sidebarOpen && (
-                  <div className="text-sm font-bold mx-4 w-80 flex">
+                  <div className="text-base font-semibold mx-3 w-80 flex">
                     {item.label}
                   </div>
                 )}
@@ -191,7 +193,7 @@ export default function SidebarMenuGroup({
             </div>
             {sidebarOpen ? (
               <div className={`flex-1 flex items-start justify-between`}>
-                <div className="text-sm font-bold mx-[17px] py-0.5">
+                <div className="text-base font-semibold mx-3 py-0.5">
                   {item.label}
                 </div>
                 <Icon
@@ -225,8 +227,8 @@ export default function SidebarMenuGroup({
       </Tooltip>
 
       <div
-        className={`flex flex-col overflow-hidden mb-6 w-80 ${
-          isOpen ? "h-auto mt-1" : "h-0 mt-0"
+        className={`flex flex-col overflow-hidden mb-8 w-80 ${
+          isOpen ? "h-auto mt-4" : "h-0 mt-0"
         }`}
       >
         {master &&
@@ -239,18 +241,18 @@ export default function SidebarMenuGroup({
               // if (!sidebarOpen) {
               return (
                 <Tooltip key={option.label} placement="right">
-                  <TooltipTrigger className="px-8 overflow-visible">
+                  <TooltipTrigger className="px-5 overflow-visible">
                     <Link
-                      className={`group flex items-center justify-items-center rounded-l-full my-[0.25rem] relative ${
+                      className={`group flex items-center justify-items-center rounded-l-full relative ${
                         urlParts[1].trim().localeCompare(option.key) === 0
-                          ? "bg-forest-900 text-forest-50 hover:bg-forest-700 hover:text-forest-50"
-                          : "hover:bg-forest-200 hover:text-forest-900"
+                          ? "bg-[#CDD8D3] dark:bg-[#151A19] hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                          : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
                       }`}
-                      href={`/${item.label.toLowerCase()}/${option.key?.toLowerCase()}`}
+                      href={`/${item.name.toLowerCase()}/${option.key?.toLowerCase()}`}
                     >
                       {/* <div className="w-6"> */}
                       <div
-                        className={`w-6 absolute top-1.5 left-0 ${
+                        className={`w-6 absolute top-2 left-3 ${
                           urlParts[1].trim().localeCompare(option.key) === 0
                             ? "opacity-100"
                             : "opacity-30 group-hover:opacity-100"
@@ -271,7 +273,7 @@ export default function SidebarMenuGroup({
                       </div>
                       {/* </div> */}
                       <div
-                        className={`text-sm py-1 w-48 font-normal break-inside-auto text-left ml-10`}
+                        className={`text-base py-1 w-48 font-normal break-inside-auto text-left ml-12`}
                       >
                         {sidebarOpen ? option.label : <span>&nbsp;</span>}
                       </div>
