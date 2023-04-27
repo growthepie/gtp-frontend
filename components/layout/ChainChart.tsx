@@ -163,7 +163,7 @@ export default function ChainChart({
   };
 
   //Vercel test
-
+  //Vercel test 2
   
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
 
