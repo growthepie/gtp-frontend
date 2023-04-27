@@ -22,7 +22,7 @@ const Contributors = () => {
               height={228}
             />
           </div>
-          <div className="text-left mt-2 font-bold">Matthais Seidl</div>
+          <div className="text-left mt-2 font-bold">Matthias Seidl</div>
           <div className="flex justify-between">
             <div className="text-sm">Data</div>
           </div>
