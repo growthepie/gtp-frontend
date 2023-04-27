@@ -7,14 +7,13 @@ import {
   LinkIcon,
   AtSymbolIcon,
 } from "@heroicons/react/24/outline";
-import { dataTool } from "echarts";
-import { Time } from "highcharts";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { ArbitrumChainResponse } from "@/types/api/ArbitrumChainResponse";
 import { DAAMetricsResponse } from "@/types/api/DAAMetricsResponse";
 import { AllChains } from "@/lib/chains";
 import ChainChart from "@/components/layout/ChainChart";
+import { Poly } from "@next/font/google";
 
 
 const Chain = ({ params }: { params: any }) => {
@@ -28,29 +27,27 @@ const Chain = ({ params }: { params: any }) => {
   
 
   const { data: master, error: masterError } = useSWR<MasterResponse>(
-    "https://d2cfnw27176mbd.cloudfront.net/v0_3/master.json"
+    "https://d2cfnw27176mbd.cloudfront.net/v0_4/master.json"
   );
 
   const { data: Ethereum, error: ethError } = useSWR<ArbitrumChainResponse>(
-    "https://d2cfnw27176mbd.cloudfront.net/v0_3/chains/ethereum.json"
+    "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/ethereum.json"
   );
 
   const { data: Arbitrum, error: arbError } = useSWR<ArbitrumChainResponse>(
-    "https://d2cfnw27176mbd.cloudfront.net/v0_3/chains/arbitrum.json"
+    "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/arbitrum.json"
   );
 
   const { data: Optimism, error: optError } = useSWR<ArbitrumChainResponse>(
-    "https://d2cfnw27176mbd.cloudfront.net/v0_3/chains/optimism.json"
+    "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/optimism.json"
+  );
+
+  const { data: Polygon, error: polyError } = useSWR<ArbitrumChainResponse>(
+    "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/polygon_zkevm.json"
   );
 
 
-  const chainArray = [Arbitrum, Ethereum, Optimism];
-
-  const [selectedChains, setSelectedChains] = useState(
-    AllChains.map((chain) => chain.key)
-  );
-  /*Create some kind of map for metric cards*/
-
+  const chainArray = [Arbitrum, Ethereum, Optimism, Polygon];
 
   const chainData = useMemo(() => {
     if (!master) return [];
@@ -63,16 +60,16 @@ const Chain = ({ params }: { params: any }) => {
   }, [master, chain]);
   
   const chartData = useMemo(() => {
-    if(!Arbitrum || !Ethereum || !Optimism) return [];
+    if(!Arbitrum || !Ethereum || !Optimism || !Polygon) return [];
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 4; i++) {
       if (chainArray[i].data.chain_id === chain) {
         return chainArray[i].data;
       }
     }
-  }, [chain, chainArray, Arbitrum, Optimism, Ethereum]);
+  }, [chain, chainArray, Arbitrum, Optimism, Ethereum, Polygon]);
   
-  if (!master || !Arbitrum || !Optimism || !Ethereum) {
+  if (!master || !Arbitrum || !Optimism || !Ethereum || !Polygon) {
     return (
       <div className="flex justify-center items-center h-screen">
         Loading...
