@@ -1,0 +1,11 @@
+name: Deploy on main push
+on:
+  push:
+    branches:
+    - main
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger rebuild on vercel
+        run: curl -X POST ${{ secrets.MAIN_DEPLOY_HOOK }}
