@@ -2,11 +2,11 @@
 <g clip-path="url(#clip0_769_11354)">
 <g clip-path="url(#clip1_769_11354)">
 <mask id="mask0_769_11354" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="3" width="43" height="9">
-<path d="M42.8571 3.57129H0V11.9468H42.8571V3.57129Z" fill="white"/>
+<path d="M42.8571 3.57227H-6.10352e-05V11.9478H42.8571V3.57227Z" fill="white"/>
 </mask>
 <g mask="url(#mask0_769_11354)">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M14.8764 7.68238L10.6563 3.57324V6.58257L6.46625 9.59565L10.6563 9.59847V11.7915L14.8764 7.68238Z" fill="#5A6462"/>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M-0.000976562 7.68043L4.21905 11.7896V8.80442L8.4092 5.76715L4.21905 5.76434V3.57129L-0.000976562 7.68043Z" fill="#5A6462"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M14.8764 7.68336L10.6563 3.57422V6.58355L6.46625 9.59663L10.6563 9.59944V11.7925L14.8764 7.68336Z" fill="#5A6462"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M-0.000976562 7.68141L4.21905 11.7906V8.80539L8.4092 5.76813L4.21905 5.76532V3.57227L-0.000976562 7.68141Z" fill="#5A6462"/>
 </g>
 </g>
 </g>

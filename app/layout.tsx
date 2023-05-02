@@ -4,17 +4,17 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Script from "next/script";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { useLocalStorage, useMediaQuery } from "usehooks-ts";
+import { useMediaQuery } from "usehooks-ts";
 import { Providers } from "./providers";
 import { getCookie } from "cookies-next";
 import CookieConsent from "@/components/layout/CookieConsent";
 import DarkModeSwitch from "@/components/layout/DarkModeSwitch";
 import EthUsdSwitch from "@/components/layout/EthUsdSwitch";
 import Sidebar from "@/components/layout/Sidebar";
-import Loader from "@/components/Loader";
 import { Icon } from "@iconify/react";
-import { Raleway } from "@next/font/google";
+import { Raleway } from "next/font/google";
+import { addCollection } from "@iconify/react";
+import GTPIcons from "@/icons/gtp.json";
 
 // If loading a variable font, you don't need to specify the font weight
 const raleway = Raleway({
@@ -22,6 +22,9 @@ const raleway = Raleway({
   variable: "--font-raleway",
   display: "swap",
 });
+
+// load icons
+addCollection(GTPIcons);
 
 export default function RootLayout({
   children,
@@ -81,7 +84,7 @@ export default function RootLayout({
         />
       )}
       <body
-        className={`bg-forest-50/30 bg-gradient-to-r dark:from-forest-800 dark:via-forest-900 dark:to-forest-900 text-forest-900 ${raleway.variable} font-raleway  overflow-hidden`}
+        className={`bg-forest-50/30 bg-gradient-to-r dark:from-forest-800 dark:via-forest-900 dark:to-forest-900 text-forest-400 ${raleway.variable} font-raleway  overflow-hidden`}
       >
         <Providers>
           {/* <div className="flex flex-col min-h-screen max-h-screen h-screen"> */}
@@ -124,7 +127,9 @@ export default function RootLayout({
                     <div>
                       <Icon
                         icon="feather:log-out"
-                        className={`w-[13px] h-[13px] text-forest-900 cursor-pointer mt-2`}
+                        className={`w-[13px] h-[13px] text-forest-900 cursor-pointer mt-2 transition-transform ${
+                          isSidebarOpen ? "rotate-180" : ""
+                        }`}
                         onClick={() => {
                           setIsSidebarOpen(isSidebarOpen ? false : true);
                         }}
@@ -174,7 +179,7 @@ export default function RootLayout({
               />
             </div>
             <div className="flex flex-col flex-1 overflow-y-auto pb-40">
-              <header className="flex justify-between space-x-6 items-center max-w-[1600px] w-full mx-auto p-2 pr-2 md:p-6 md:pr-12">
+              <header className="flex justify-between space-x-6 items-center max-w-[1600px] w-full mx-auto p-2 pr-2 md:p-6 md:pr-10">
                 <div className="flex justify-between items-center">
                   <div className="flex space-x-6">
                     <div className="block md:hidden relative">
@@ -211,20 +216,14 @@ export default function RootLayout({
                     target="_blank"
                     rel="noopener"
                   >
-                    <Icon
-                      icon="cib:twitter"
-                      className="h-6 w-6 opacity-70 hover:opacity-100"
-                    />
+                    <Icon icon="cib:twitter" className="h-6 w-6" />
                   </Link>
                   <Link
                     href="https://discord.gg/fxjJFe7QyN"
                     target="_blank"
                     rel="noopener"
                   >
-                    <Icon
-                      icon="cib:discord"
-                      className="h-6 w-6 opacity-70 hover:opacity-100"
-                    />
+                    <Icon icon="cib:discord" className="h-6 w-6" />
                   </Link>
                 </div>
               </header>

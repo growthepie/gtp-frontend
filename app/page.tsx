@@ -1,35 +1,13 @@
 "use client";
-import { Button } from "@/components/Button";
-import { Card } from "@/components/Card";
-// import { DataSelector } from "@/components/home/DataSelector";
-// import { DataSources } from "@/components/home/DataSources";
-import MainChart from "@/components/home/MainChart";
-import Popover from "@/components/Popover";
-import { useLocalStorage } from "usehooks-ts";
-import {
-  ArrowsRightLeftIcon,
-  LinkIcon,
-  TicketIcon,
-  Bars3Icon,
-} from "@heroicons/react/24/solid";
-import { Icon } from "@iconify/react";
-import styles from "./page.module.css";
-import { Tag } from "@/components/Tag";
+
 import { useEffect, useMemo, useState } from "react";
-// import { useMetricsData } from "@/context/MetricsProvider";
-import { ReactJson } from "@/components/ReactJson";
 import Image from "next/image";
-import Sidebar, { SidebarItems } from "@/components/layout/Sidebar";
 import { useMediaQuery } from "@react-hook/media-query";
 import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
-import ComparisonChart from "@/components/layout/ComparisonChart";
 import useSWR from "swr";
-import { DAAMetricsResponse } from "@/types/api/DAAMetricsResponse";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { AllChains } from "@/lib/chains";
-import _ from "lodash";
-import MetricsTable from "@/components/layout/MetricsTable";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import LandingChart from "@/components/layout/LandingChart";
 import LandingMetricsTable from "@/components/layout/LandingMetricsTable";
@@ -38,55 +16,6 @@ export default function Home() {
   const isLargeScreen = useMediaQuery("(min-width: 768px)");
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  var words = [
-      "one ecosystem",
-      "...different use cases",
-      "...many chains",
-      " ...all growing the total user base",
-      "a positive sum game.",
-    ],
-    part,
-    i = 0,
-    offset = 0,
-    len = words.length,
-    forwards = true,
-    skip_count = 0,
-    skip_delay = 15,
-    speed = 50;
-  var wordflick = function () {
-    setInterval(function () {
-      if (forwards) {
-        if (offset >= words[i].length) {
-          ++skip_count;
-          if (skip_count == skip_delay) {
-            forwards = false;
-            skip_count = 0;
-          }
-        }
-      } else {
-        if (offset == 0) {
-          forwards = true;
-          i++;
-          offset = 0;
-          if (i >= len) {
-            i = 0;
-          }
-        }
-      }
-      part = words[i].substr(0, offset);
-      if (skip_count == 0) {
-        if (forwards) {
-          offset++;
-        } else {
-          offset--;
-        }
-      }
-      // select the element and update the text
-
-      // $(".word").text(part);
-    }, speed);
-  };
 
   useEffect(() => {
     setIsSidebarOpen(isLargeScreen);
@@ -101,7 +30,7 @@ export default function Home() {
     "https://d2cfnw27176mbd.cloudfront.net/v0_3/master.json"
   );
 
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<any>(null);
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("weekly");
 

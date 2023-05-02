@@ -1,35 +1,9 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { useMetricsData } from "@/context/MetricsProvider";
 
 const Loader = () => {
-  const metricsData = useMetricsData();
-
   const [numRootkeys, setNumRootkeys] = useState(0);
   const [show, setShow] = useState(true);
-
-  useEffect(() => {
-    if (metricsData.status === "success") {
-      const numkeys = Object.keys(metricsData.data).length;
-      setNumRootkeys(numkeys);
-
-      if (numkeys >= 10) {
-        setTimeout(() => {
-          setShow(false);
-        }, 5000);
-      }
-
-      // if (metricsData.rootKeys.length >= 6) {
-      //   // remove the main loader after the page has loaded
-      //   setTimeout(() => {
-      //     const mainLoader = document.getElementById("main-loader");
-      //     if (mainLoader) {
-      //       mainLoader.remove();
-      //     }
-      //   }, 500);
-      // }
-    }
-  }, [metricsData]);
 
   if (!show) return null;
 

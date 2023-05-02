@@ -16,7 +16,7 @@ export const Contributors = [
   {
     name: "Chris Keshian",
     image: "/contributors/chris.png",
-    role: "Cheer",
+    role: "Product",
     twitter: "https://www.twitter.com/chriskeshian",
     linkedin: "https://www.linkedin.com/in/chriskeshian",
   },

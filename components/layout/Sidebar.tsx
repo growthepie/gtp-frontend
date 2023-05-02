@@ -179,6 +179,7 @@ export type SidebarItems = {
     title: string;
     description: string;
   };
+
   key?: string;
   icon: ReactNode;
   sidebarIcon: ReactNode;
@@ -188,11 +189,12 @@ export type SidebarItems = {
     page?: {
       title: string;
       description: string;
-      icon?: string;
+      icon: string;
     };
     icon: ReactNode;
     key?: string;
     rootKey?: string;
+    urlKey: string;
   }[];
   href?: string;
 }[];
@@ -227,6 +229,7 @@ export const items: SidebarItems = [
         icon: <Icon icon="feather:star" className="h-4 w-4 mx-auto" />,
         key: "tvl",
         rootKey: "metricsTvl",
+        urlKey: "total-value-locked",
       },
       {
         label: "Stablecoin Market Cap",
@@ -238,6 +241,7 @@ export const items: SidebarItems = [
         icon: <Icon icon="feather:dollar-sign" className="h-4 w-4 mx-auto" />,
         key: "stables_mcap",
         rootKey: "metricsStablesMcap",
+        urlKey: "stablecoin-market-cap",
       },
       {
         label: "Transaction Count",
@@ -249,6 +253,7 @@ export const items: SidebarItems = [
         icon: <Icon icon="feather:clock" className="h-4 w-4 mx-auto" />,
         key: "txcount",
         rootKey: "metricsTxCount",
+        urlKey: "transaction-count",
       },
 
       {
@@ -262,6 +267,7 @@ export const items: SidebarItems = [
         icon: <Icon icon="ion:time-outline" className="h-4 w-4 mx-auto" />,
         key: "24hcontractusage",
         rootKey: "metrics24hContractUsage",
+        urlKey: "24h-contract-usage",
       },
       {
         label: "Fees Paid by Users",
@@ -274,6 +280,7 @@ export const items: SidebarItems = [
         icon: <Icon icon="feather:credit-card" className="h-4 w-4 mx-auto" />,
         key: "fees",
         rootKey: "metricsFeesPaidToEthereum",
+        urlKey: "fees-paid-by-users",
       },
       {
         label: "Transactions/Second",
@@ -285,6 +292,7 @@ export const items: SidebarItems = [
         ),
         key: "txpersecond",
         rootKey: "metricsTransactionsPerSecond",
+        urlKey: "transactions-per-second",
       },
       {
         label: "Daily Active Addresses",
@@ -297,18 +305,21 @@ export const items: SidebarItems = [
         icon: <Icon icon="feather:sunrise" className="h-4 w-4 mx-auto" />,
         key: "daa",
         rootKey: "metricsDailyActiveAddresses",
+        urlKey: "daily-active-addresses",
       },
       {
         label: "New Addresses",
         icon: <Icon icon="bx:bx-user-plus" className="h-4 w-4 mx-auto" />,
         key: "newaddresses",
         rootKey: "metricsNewAddresses",
+        urlKey: "new-addresses",
       },
       {
         label: "Total Addresses",
         icon: <Icon icon="ph:address-book" className="h-4 w-4 mx-auto" />,
         key: "totaladdresses",
         rootKey: "metricsTotalAddresses",
+        urlKey: "total-addresses",
       },
     ],
   },
@@ -329,45 +340,87 @@ export const items: SidebarItems = [
     options: [
       {
         label: "Ethereum",
-        icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
+        icon: (
+          <Icon
+            icon="gtp:ethereum-logo-monochrome"
+            className="h-5 w-5 mx-auto"
+          />
+        ),
         key: "ethereum",
         rootKey: "chainsEthereum",
+        urlKey: "ethereum",
       },
       {
         label: "Arbitrum",
-        icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
+        icon: (
+          <Icon
+            icon="gtp:arbitrum-logo-monochrome"
+            className="h-5 w-5 mx-auto"
+          />
+        ),
         key: "arbitrum",
         rootKey: "chainsArbitrum",
+        urlKey: "arbitrum",
       },
       {
         label: "Aztec V2",
-        icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
+        icon: (
+          <Icon
+            icon="gtp:immutable-x-logo-monochrome"
+            className="h-5 w-5 mx-auto"
+          />
+        ),
         key: "aztecv2",
         rootKey: "chainsAztecV2",
+        urlKey: "aztec-v2",
       },
       {
         label: "Immutable X",
-        icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
+        icon: (
+          <Icon
+            icon="gtp:immutable-x-logo-monochrome"
+            className="h-5 w-5 mx-auto"
+          />
+        ),
         key: "imx",
         rootKey: "chainsImmutableX",
+        urlKey: "immutable-x",
       },
       {
         label: "Loopring",
-        icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
+        icon: (
+          <Icon
+            icon="gtp:loopring-logo-monochrome"
+            className="h-5 w-5 mx-auto"
+          />
+        ),
         key: "loopring",
         rootKey: "chainsLoopring",
+        urlKey: "loopring",
       },
       {
         label: "Polygon zkEVM",
-        icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
+        icon: (
+          <Icon
+            icon="gtp:polygon-zkevm-logo-monochrome"
+            className="h-5 w-5 mx-auto"
+          />
+        ),
         key: "polygon_zkevm",
         rootKey: "chainsPolygon",
+        urlKey: "polygon-zkevm",
       },
       {
         label: "Optimism",
-        icon: <Icon icon="bxl:react" className="h-5 w-5 mx-auto" />,
+        icon: (
+          <Icon
+            icon="gtp:optimism-logo-monochrome"
+            className="h-5 w-5 mx-auto"
+          />
+        ),
         key: "optimism",
         rootKey: "chainsOptimism",
+        urlKey: "optimism",
       },
     ],
   },
@@ -404,7 +457,7 @@ type SidebarProps = {
   onClose?: () => void;
   children?: ReactNode;
   isOpen?: boolean;
-  setIsOpen?: (isOpen: boolean) => void;
+  setIsOpen: (isOpen: boolean) => void;
   isMobile?: boolean;
 };
 

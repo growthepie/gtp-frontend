@@ -5,23 +5,23 @@ import highchartsRoundedCorners from "highcharts-rounded-corners";
 import HighchartsReact from "highcharts-react-official";
 // import Highcharts, { chart } from "highcharts";
 import Highcharts, {
-  AxisLabelsFormatterCallbackFunction,
+  // AxisLabelsFormatterCallbackFunction,
   AxisLabelsFormatterContextObject,
-  chart,
+  // chart,
 } from "highcharts/highstock";
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { Card } from "@/components/Card";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
-import fullScreen from "highcharts/modules/full-screen";
-import _merge from "lodash/merge";
-import { zinc, red, blue, amber, purple } from "tailwindcss/colors";
+// import { Card } from "@/components/Card";
+import { useSessionStorage } from "usehooks-ts";
+// import fullScreen from "highcharts/modules/full-screen";
+// import _merge from "lodash/merge";
+// import { zinc, red, blue, amber, purple } from "tailwindcss/colors";
 import { theme as customTheme } from "tailwind.config";
-import { ArrowTrendingUpIcon } from "@heroicons/react/24/outline";
+// import { ArrowTrendingUpIcon } from "@heroicons/react/24/outline";
 import { useTheme } from "next-themes";
-import _ from "lodash";
+import { merge } from "lodash";
 import { Switch } from "../Switch";
-import { AllChains, AllChainsByKeys } from "@/lib/chains";
+import { AllChainsByKeys } from "@/lib/chains";
 import d3 from "d3";
 import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
@@ -653,9 +653,11 @@ export default function LandingChart({
         followPointer: true,
         followTouchMove: true,
         backgroundColor:
-          theme === "dark"
-            ? customTheme.extend.colors["forest"]["900"] + "EE"
-            : customTheme.extend.colors["forest"]["50"] + "EE",
+          (customTheme?.extend?.colors
+            ? theme === "dark"
+              ? customTheme?.extend?.colors["forest"]["900"]
+              : customTheme?.extend?.colors["forest"]["50"]
+            : "#ffffff") + "EE",
         borderRadius: 17,
         borderWidth: 0,
         padding: 0,
@@ -689,7 +691,7 @@ export default function LandingChart({
                 : 10
               : 10;
 
-            let borderRadius = undefined;
+            let borderRadius: string | null = null;
 
             if (showEthereumMainnet && i === 1) {
               borderRadius = "8%";
@@ -909,7 +911,7 @@ export default function LandingChart({
       },
     };
 
-    return _merge({}, baseOptions, dynamicOptions);
+    return merge({}, baseOptions, dynamicOptions);
   }, [
     filteredData,
     formatNumber,

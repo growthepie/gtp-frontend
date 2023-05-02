@@ -21,9 +21,15 @@ export type SidebarItem = {
   options: {
     // name?: string;
     label: string;
+    page?: {
+      title: string;
+      description: string;
+      icon: string;
+    };
     icon: ReactNode;
     key?: string;
     rootKey?: string;
+    urlKey: string;
   }[];
   href?: string;
 };
@@ -63,6 +69,8 @@ export default function SidebarMenuGroup({
   const [urlParts, setUrlParts] = useState<string[]>(["", ""]);
 
   useEffect(() => {
+    if (!pathname) return;
+
     const parts = pathname.slice(1).split("/");
     switch (parts.length) {
       case 0:
@@ -233,9 +241,10 @@ export default function SidebarMenuGroup({
       >
         {master &&
           item.options
-            .filter((option) =>
-              Object.keys(master[item.key]).includes(option.key)
-            )
+            .filter((option) => {
+              if (item.key && option.key)
+                return Object.keys(master[item.key]).includes(option.key);
+            })
             .map((option) => {
               // console.log(option.label);
               // if (!sidebarOpen) {
@@ -244,22 +253,24 @@ export default function SidebarMenuGroup({
                   <TooltipTrigger className="px-5 overflow-visible">
                     <Link
                       className={`group flex items-center justify-items-center rounded-l-full relative ${
-                        urlParts[1].trim().localeCompare(option.key) === 0
+                        urlParts[1].trim().localeCompare(option.urlKey) === 0
                           ? "bg-[#CDD8D3] dark:bg-[#151A19] hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
                           : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
                       }`}
-                      href={`/${item.name.toLowerCase()}/${option.key?.toLowerCase()}`}
+                      href={`/${item.name.toLowerCase()}/${option.urlKey}`}
                     >
                       {/* <div className="w-6"> */}
                       <div
                         className={`w-6 absolute top-2 left-3 ${
-                          urlParts[1].trim().localeCompare(option.key) === 0
+                          urlParts[1].trim().localeCompare(option.urlKey) === 0
                             ? "opacity-100"
                             : "opacity-30 group-hover:opacity-100"
                         }`}
                       >
-                        {item.name === "Fundamentals" && option.icon}
-                        {item.name === "Chains" && (
+                        {(item.name === "Fundamentals" ||
+                          item.name === "Chains") &&
+                          option.icon}
+                        {/* {item.name === "Chains" && (
                           <Image
                             src={
                               AllChains.find((c) => c.key == option.key)?.icon
@@ -269,7 +280,7 @@ export default function SidebarMenuGroup({
                             alt={item.key}
                             className="ml-0.5 saturate-0 contrast-200 invert"
                           />
-                        )}
+                        )} */}
                       </div>
                       {/* </div> */}
                       <div

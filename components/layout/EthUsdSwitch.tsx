@@ -38,24 +38,22 @@ export default function EthUsdSwitch() {
             {showUsd === true ? <>USD</> : <>ETH</>}
           </div> */}
           <div
-            className="relative"
+            className="relative nightwind-prevent-block"
             onClick={() => {
               setShowUsd(showUsd ? false : true);
             }}
           >
             <div
               className={` 
-                        w-[6.25rem] h-7 flex justify-between items-center px-3 text-sm font-medium
-                        rounded-full transition duration-200 ease-in-out text-black/50 ${
-                          showUsd ? "bg-forest-500" : "bg-forest-500/50"
-                        }`}
+                        w-[6.25rem] h-7 flex justify-between items-center px-3 text-base font-medium
+                        rounded-full transition duration-200 ease-in-out text-forest-900 bg-forest-500`}
             >
               <div>ETH</div>
               <div>USD</div>
             </div>
             <div
               className={`dot absolute left-0.5 top-0.5 w-12 h-6 rounded-full transition-transform duration-200 
-                          ease-in-out bg-forest-900 text-forest-50 text-sm font-medium
+                          ease-in-out text-forest-500 bg-forest-900 text-sm font-medium
                           py-0.5 px-1.5 text-center
                           ${
                             showUsd ? "transform translate-x-full" : ""

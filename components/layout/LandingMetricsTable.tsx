@@ -39,7 +39,7 @@ export default function LandingMetricsTable({
   useEffect(() => {
     if (!data) return;
 
-    let clv = [];
+    let clv: any = [];
 
     let max = 0;
     console.log("chains", chains);
@@ -109,7 +109,9 @@ export default function LandingMetricsTable({
                 <div className="flex basis-2/5 items-center space-x-4">
                   <div className="relative">
                     <div
-                      className={`w-8 h-8 rounded-full bg-white border-[5px] ${chain.border[theme][1]}`}
+                      className={`w-8 h-8 rounded-full bg-white border-[5px] ${
+                        chain.border[theme ?? "dark"][1]
+                      }`}
                     ></div>
                     <Image
                       src={chain.icon}

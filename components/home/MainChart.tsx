@@ -3,9 +3,9 @@
 import HighchartsReact from "highcharts-react-official";
 import Highcharts, { chart } from "highcharts";
 import highchartsAnnotations from "highcharts/modules/annotations";
-import { useState, useEffect, useMemo, useRef } from "react";
-import { Card } from "@/components/Card";
-import { useLocalStorage } from "usehooks-ts";
+import { useEffect, useMemo, useRef } from "react";
+// import { Card } from "@/components/Card";
+// import { useLocalStorage } from "usehooks-ts";
 import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
 import { zinc, red, blue, amber } from "tailwindcss/colors";
