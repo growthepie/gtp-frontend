@@ -64,7 +64,7 @@ export const Sponsors = [
     image: "/contributors/flipside-logo.png",
     width: 200,
     height: 30,
-    url: "https://flipsidecrypto.xy",
+    url: "https://flipsidecrypto.xyz",
   },
   {
     name: "Zetta Block",
