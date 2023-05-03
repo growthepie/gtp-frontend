@@ -33,7 +33,6 @@ import MetricsTable from "@/components/layout/MetricsTable";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import LandingChart from "@/components/layout/LandingChart";
 import LandingMetricsTable from "@/components/layout/LandingMetricsTable";
-import TopAnimation from "@/components/TopAnimation"
 
 export default function Home() {
   const isLargeScreen = useMediaQuery("(min-width: 768px)");
@@ -150,7 +149,6 @@ export default function Home() {
             <Heading className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl mb-6">
               Growing the Ethereum Ecosystem Together
             </Heading>
-            <TopAnimation />
             <Subheading className="text-sm">
               Compare Ethereum&apos;s Layer-2 solutions and better understand
               the metrics to grow the ecosystem.
