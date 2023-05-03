@@ -200,6 +200,7 @@ export default function LandingChart({
   l2_dominance,
   selectedMetric,
   setSelectedMetric,
+  source,
 }: // timeIntervals,
 // onTimeIntervalChange,
 // showTimeIntervals = true,
@@ -209,6 +210,7 @@ export default function LandingChart({
   l2_dominance: number;
   selectedMetric: string;
   setSelectedMetric: (metric: string) => void;
+  source: string;
   // timeIntervals: string[];
   // onTimeIntervalChange: (interval: string) => void;
   // showTimeIntervals: boolean;
@@ -1022,7 +1024,7 @@ export default function LandingChart({
           <button
             className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
               showTotalUsers
-                ? "bg-forest-900 text-forest-50"
+                ? "bg-forest-100 dark:bg-[#151A19]"
                 : "hover:bg-forest-100"
             }`}
             onClick={() => {
@@ -1036,7 +1038,7 @@ export default function LandingChart({
           <button
             className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
               "absolute" === selectedScale && !showTotalUsers
-                ? "bg-forest-900 text-forest-50"
+                ? "bg-forest-100 dark:bg-[#151A19]"
                 : "hover:bg-forest-100"
             }`}
             onClick={() => {
@@ -1051,7 +1053,7 @@ export default function LandingChart({
           <button
             className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
               "percentage" === selectedScale
-                ? "bg-forest-900 text-forest-50"
+                ? "bg-forest-100 dark:bg-[#151A19]"
                 : "hover:bg-forest-100"
             }`}
             onClick={() => {
@@ -1089,7 +1091,7 @@ export default function LandingChart({
               key={timespan}
               className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
                 selectedTimespan === timespan
-                  ? "bg-forest-900 text-forest-50 hover:bg-forest-700"
+                  ? "bg-forest-100 dark:bg-[#151A19]"
                   : "hover:bg-forest-100"
               }`}
               onClick={() => {
@@ -1191,7 +1193,7 @@ export default function LandingChart({
               </div>
             </div>
           </div>
-          <div className="flex bg-forest-100 rounded-xl p-3 items-center mr-2">
+          <div className="flex bg-forest-100 rounded-xl p-3 items-center mr-1.5">
             <Icon
               icon="feather:layers"
               className="w-8 h-8 lg:w-14 lg:h-14 text-forest-900 mr-2"
@@ -1205,15 +1207,16 @@ export default function LandingChart({
               </div>
             </div>
           </div>
-          <Tooltip placement="left">
+          <Tooltip placement="left" allowInteract>
             <TooltipTrigger>
               <div className="p-1.5 z-10 mr-1">
                 <Icon icon="feather:info" className="w-6 h-6 text-forest-900" />
               </div>
             </TooltipTrigger>
-            <TooltipContent>
-              <div className="p-2 text-xs font-medium bg-forest-900 text-forest-50 rounded-md shadow-lg">
-                {data.source}
+            <TooltipContent className="p-3 text-sm font-medium bg-forest-300 text-forest-900 rounded-xl shadow-lg z-50 w-[420px] h-[82px] flex items-center">
+              <div className="flex flex-col space-y-1">
+                <div className="font-semibold">Data Sources:</div>
+                <div>{source}</div>
               </div>
             </TooltipContent>
           </Tooltip>

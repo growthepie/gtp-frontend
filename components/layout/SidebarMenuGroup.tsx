@@ -133,7 +133,7 @@ export default function SidebarMenuGroup({
             </div>
           </TooltipTrigger>
           {!sidebarOpen && (
-            <TooltipContent className="bg-forest-900 text-forest-50 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md flex">
+            <TooltipContent className="bg-forest-900 text-forest-50 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md flex z-50">
               {item.label}{" "}
               <div className="text-[0.5rem] leading-[1.75] px-1 py-[0.1rem] font-bold ml-1 rounded-[4px] bg-forest-50 text-forest-900">
                 SOON
@@ -177,7 +177,7 @@ export default function SidebarMenuGroup({
             </Link>
           </TooltipTrigger>
           {!sidebarOpen && (
-            <TooltipContent className="bg-forest-900 text-forest-50 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md flex">
+            <TooltipContent className="bg-forest-900 text-forest-50 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md flex z-50">
               {item.label}
             </TooltipContent>
           )}
@@ -228,7 +228,7 @@ export default function SidebarMenuGroup({
           </div>
         </TooltipTrigger>
         {!sidebarOpen && (
-          <TooltipContent className="bg-forest-900 text-forest-50 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md">
+          <TooltipContent className="bg-forest-900 text-forest-50 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md z-50">
             {item.label}
           </TooltipContent>
         )}
@@ -291,7 +291,7 @@ export default function SidebarMenuGroup({
                     </Link>
                   </TooltipTrigger>
                   {!sidebarOpen && (
-                    <TooltipContent className="bg-forest-900 text-forest-50 rounded-md p-2 text-xs font-medium break-inside-auto -ml-48 shadow-md">
+                    <TooltipContent className="bg-forest-900 text-forest-50 rounded-md p-2 text-xs font-medium break-inside-auto -ml-56 shadow-md z-50">
                       {option.label}
                     </TooltipContent>
                   )}

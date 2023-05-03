@@ -96,23 +96,24 @@ export const AllChains = [
   },
   {
     label: "Multiple",
-    icon: "/icons/x.png",
+    icon: null,
     key: "multiple",
     chainType: "all-L2",
     border: {
-      light: ["border-[#45AA6F]", "border-[#45AA6F]"],
-      dark: ["border-[#4CFF7E]", "border-[#4CFF7E]"],
+      light: ["border-[#cdd8d3]", "border-[#cdd8d3]"],
+      dark: ["border-[#cdd8d3]", "border-[#cdd8d3]"],
     },
     colors: {
       // light: ["#F130DE", "#FB4FF2"], // pink
       // dark: ["#F130DE", "#FB4FF2"] // pink
-      light: ["#45AA6F", "#45AA6F"], // soft green
-      dark: ["#4CFF7E", "#4CFF7E"], // soft green
+      light: ["#cdd8d3", "#cdd8d3"], // soft green
+      dark: ["#cdd8d3", "#cdd8d3"], // soft green
     },
   },
   {
     label: "All L2s",
     icon: "/icons/x.png",
+
     key: "all_l2s",
     chainType: null,
     border: {

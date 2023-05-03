@@ -433,7 +433,7 @@ export const items: SidebarItems = [
       <Icon icon="gtp:book-open" className="h-7 w-7 p-0.5 pb-0 mx-auto" />
     ),
     options: [],
-    href: "https://growthepie.gitbook.io/introduction/",
+    href: "https://docs.growthepie.xyz/",
   },
   {
     name: "API Documentation",
@@ -443,7 +443,7 @@ export const items: SidebarItems = [
       <Icon icon="gtp:file-text" className="h-7 w-7 p-0.5 mx-auto" />
     ),
     options: [],
-    href: "https://growthepie.gitbook.io/introduction/",
+    href: "https://docs.growthepie.xyz/api",
   },
 ];
 

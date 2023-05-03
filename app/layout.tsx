@@ -84,7 +84,7 @@ export default function RootLayout({
         />
       )}
       <body
-        className={`bg-forest-50/30 bg-gradient-to-r dark:from-forest-800 dark:via-forest-900 dark:to-forest-900 text-forest-400 ${raleway.variable} font-raleway  overflow-hidden`}
+        className={`bg-forest-50 text-forest-400 ${raleway.variable} font-raleway  overflow-hidden`}
       >
         <Providers>
           {/* <div className="flex flex-col min-h-screen max-h-screen h-screen"> */}
@@ -105,132 +105,178 @@ export default function RootLayout({
             </div>
           </div> */}
           {/* </background gradient> */}
-          <div className="flex justify-between h-screen w-full">
-            <div className="pt-8 pl-0 bg-forest-100 dark:bg-forest-900 mix-h-screen max-h-screen hidden md:flex flex-col overflow-hidden space-y-6 border-r-2 border-black/50">
-              {isSidebarOpen ? (
-                <div className="h-[45.07px] mb-[18px]">
-                  <div className="flex items-center mx-5 justify-between h-[45.07px]">
-                    <Link
-                      href="/"
-                      className="relative h-[45.07px] w-[192.87px] block"
-                    >
-                      <div className="h-[45.07px] w-[192.87px] absolute left-3">
-                        <Image
-                          src="/logo_full.png"
-                          alt="Forest"
-                          className="mb-6 -ml-[9px] z-10 crisp-edges"
-                          fill={true}
-                          quality={100}
-                        />
-                      </div>
-                    </Link>
-                    <div>
-                      <Icon
-                        icon="feather:log-out"
-                        className={`w-[13px] h-[13px] text-forest-900 cursor-pointer mt-2 transition-transform ${
-                          isSidebarOpen ? "rotate-180" : ""
-                        }`}
-                        onClick={() => {
-                          setIsSidebarOpen(isSidebarOpen ? false : true);
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="h-[45.07px] mt-1 mb-[14px]">
-                  <div className="flex items-center ml-8 mr-2 justify-between h-[45.07px]">
-                    <Link
-                      href="/"
-                      className="relative h-[24px] w-[22.29px] block"
-                    >
-                      <div className="h-[24px] w-[22.29px] absolute left-3">
-                        <Image
-                          src="/logo_pie_only.png"
-                          alt="Forest"
-                          className="mb-6 -ml-[9px] z-10 crisp-edges"
-                          fill={true}
-                          quality={100}
-                        />
-                      </div>
-                    </Link>
-                    <div>
-                      <Icon
-                        icon="feather:log-out"
-                        className={`w-[13px] h-[13px] text-forest-900 cursor-pointer mt-2`}
-                        onClick={() => {
-                          setIsSidebarOpen(isSidebarOpen ? false : true);
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <Sidebar
-                trigger={
-                  <button className="flex items-center space-x-2">
-                    <Icon icon="feather:menu" className="h-6 w-6" />
-                  </button>
-                }
-                open={startSidebarOpen}
-                isOpen={isSidebarOpen}
-                setIsOpen={setIsSidebarOpen}
-              />
-            </div>
-            <div className="flex flex-col flex-1 overflow-y-auto pb-40">
-              <header className="flex justify-between space-x-6 items-center max-w-[1600px] w-full mx-auto p-2 pr-2 md:p-6 md:pr-10">
-                <div className="flex justify-between items-center">
-                  <div className="flex space-x-6">
-                    <div className="block md:hidden relative">
-                      <Sidebar
-                        trigger={
-                          <button className="flex items-center space-x-2">
-                            <Icon icon="feather:menu" className="h-8 w-8" />
-                          </button>
-                        }
-                        isMobile={true}
-                        open={startSidebarOpen}
-                        isOpen={isSidebarOpen}
-                        setIsOpen={setIsSidebarOpen}
-                      />
-                      <Link href="" className="absolute top-2 left-20">
-                        <div className="h-[32px] w-[32px] absolute">
+          <div className="flex h-screen w-full justify-center">
+            <div className="flex w-full max-w-[1920px]">
+              <div className="pt-8 pl-0 bg-forest-100 dark:bg-forest-900 mix-h-screen max-h-screen hidden md:flex flex-col overflow-hidden space-y-6 border-r-2 border-black/50">
+                {isSidebarOpen ? (
+                  <div className="h-[45.07px] mb-[18px]">
+                    <div className="flex items-center mx-5 justify-between h-[45.07px]">
+                      <Link
+                        href="/"
+                        className="relative h-[45.07px] w-[192.87px] block"
+                      >
+                        <div className="h-[45.07px] w-[192.87px] absolute left-3">
                           <Image
-                            src="/logo_pie_only.png"
+                            src="/logo_full.png"
                             alt="Forest"
-                            className="mb-6 -ml-[9px] z-10 antialiased hover:scale-105 hover:translate-x-0 transition-transform duration-150 ease-in-out"
+                            className="mb-6 -ml-[9px] z-10 crisp-edges"
                             fill={true}
                             quality={100}
                           />
                         </div>
                       </Link>
+                      <div>
+                        <Icon
+                          icon="feather:log-out"
+                          className={`w-[13px] h-[13px] text-forest-900 cursor-pointer mt-2 transition-transform ${
+                            isSidebarOpen ? "rotate-180" : ""
+                          }`}
+                          onClick={() => {
+                            setIsSidebarOpen(isSidebarOpen ? false : true);
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex space-x-6 items-center">
-                  <EthUsdSwitch />
-                  <DarkModeSwitch />
-                  <Link
-                    href="https://twitter.com/growthepie_eth"
-                    target="_blank"
-                    rel="noopener"
-                  >
-                    <Icon icon="cib:twitter" className="h-6 w-6" />
-                  </Link>
-                  <Link
-                    href="https://discord.gg/fxjJFe7QyN"
-                    target="_blank"
-                    rel="noopener"
-                  >
-                    <Icon icon="cib:discord" className="h-6 w-6" />
-                  </Link>
-                </div>
-              </header>
+                ) : (
+                  <div className="h-[45.07px] mt-1 mb-[14px]">
+                    <div className="flex items-center ml-8 mr-2 justify-between h-[45.07px]">
+                      <Link
+                        href="/"
+                        className="relative h-[24px] w-[22.29px] block"
+                      >
+                        <div className="h-[24px] w-[22.29px] absolute left-3">
+                          <Image
+                            src="/logo_pie_only.png"
+                            alt="Forest"
+                            className="mb-6 -ml-[9px] z-10 crisp-edges"
+                            fill={true}
+                            quality={100}
+                          />
+                        </div>
+                      </Link>
+                      <div>
+                        <Icon
+                          icon="feather:log-out"
+                          className={`w-[13px] h-[13px] text-forest-900 cursor-pointer mt-2`}
+                          onClick={() => {
+                            setIsSidebarOpen(isSidebarOpen ? false : true);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-              <main className="flex-1 max-w-[1600px] w-full mx-auto p-2 pr-2 md:p-6 md:pr-12">
-                {children}
-              </main>
+                <Sidebar
+                  trigger={
+                    <button className="flex items-center space-x-2">
+                      <Icon icon="feather:menu" className="h-6 w-6" />
+                    </button>
+                  }
+                  open={startSidebarOpen}
+                  isOpen={isSidebarOpen}
+                  setIsOpen={setIsSidebarOpen}
+                />
+              </div>
+              <div
+                className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative"
+                style={{
+                  background: `radial-gradient(75.11% 75.11% at 69.71% 24.89%, #1B2524 0%, #364240 100%) fixed`,
+                }}
+              >
+                <div className="w-full relative">
+                  <div
+                    style={{
+                      // left: "0",
+                      // top: "0",
+                      // bottom: "0",
+                      // right: "0",
+                      mixBlendMode: "overlay",
+                      opacity: 0.3,
+                      pointerEvents: "none",
+                    }}
+                    className="absolute z-0 mouse-events-none overflow-hidden w-full h-full"
+                  >
+                    <div
+                      style={{
+                        height: "164vw",
+                        width: "97vw",
+                        left: "14%",
+                        right: "-30%",
+                        top: "-5vw",
+                        background: `radial-gradient(50% 50% at 50% 50%, #0DF6B9 0%, rgba(217, 217, 217, 0) 100%, rgba(13, 246, 185, 0) 100%)`,
+                      }}
+                      className="absolute z-0 mouse-events-none"
+                    ></div>
+                    <div
+                      style={{
+                        height: "164vw",
+                        width: "97vw",
+                        left: "0%",
+                        right: "-1%",
+                        top: "2vw",
+                        bottom: "40vw",
+                        background: `radial-gradient(50% 50% at 50% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
+                      }}
+                      className="absolute z-0 mouse-events-none"
+                    ></div>
+                  </div>
+                  <header className="flex justify-between space-x-6 items-center max-w-[1600px] w-full mx-auto p-2 pr-2 md:p-6 md:pr-10">
+                    <div className="flex justify-between items-center">
+                      <div className="flex space-x-6">
+                        <div className="block md:hidden relative">
+                          <Sidebar
+                            trigger={
+                              <button className="flex items-center space-x-2">
+                                <Icon icon="feather:menu" className="h-8 w-8" />
+                              </button>
+                            }
+                            isMobile={true}
+                            open={startSidebarOpen}
+                            isOpen={isSidebarOpen}
+                            setIsOpen={setIsSidebarOpen}
+                          />
+                          <Link href="" className="absolute top-2 left-20">
+                            <div className="h-[32px] w-[32px] absolute">
+                              <Image
+                                src="/logo_pie_only.png"
+                                alt="Forest"
+                                className="mb-6 -ml-[9px] z-10 antialiased hover:scale-105 hover:translate-x-0 transition-transform duration-150 ease-in-out"
+                                fill={true}
+                                quality={100}
+                              />
+                            </div>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex space-x-6 items-center">
+                      <EthUsdSwitch />
+                      <DarkModeSwitch />
+                      <Link
+                        href="https://twitter.com/growthepie_eth"
+                        target="_blank"
+                        rel="noopener"
+                      >
+                        <Icon icon="cib:twitter" className="h-6 w-6" />
+                      </Link>
+                      <Link
+                        href="https://discord.gg/fxjJFe7QyN"
+                        target="_blank"
+                        rel="noopener"
+                      >
+                        <Icon icon="cib:discord" className="h-6 w-6" />
+                      </Link>
+                    </div>
+                  </header>
+
+                  <main className="flex-1 w-full mx-auto p-2 pr-2 md:p-6 md:pr-12 relative z-10">
+                    {children}
+                  </main>
+                  <div className="mt-40"></div>
+                </div>
+              </div>
             </div>
           </div>
           {/* <Loader /> */}
