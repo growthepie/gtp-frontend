@@ -12,6 +12,7 @@ import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsRespon
 import LandingChart from "@/components/layout/LandingChart";
 import LandingMetricsTable from "@/components/layout/LandingMetricsTable";
 import { Icon } from "@iconify/react";
+import TopAnimation from "@/components/TopAnimation";
 
 export default function Home() {
   const isLargeScreen = useMediaQuery("(min-width: 768px)");
@@ -78,11 +79,12 @@ export default function Home() {
             <Heading className="text-2xl leading-snug md:text-3xl lg:text-4xl xl:text-5xl mb-[30px]">
               Growing the Ethereum Ecosystem Together
             </Heading>
+            <TopAnimation />
             {/* <Subheading className="text-sm leading-snug">
               Compare Ethereum&apos;s Layer-2 solutions and better understand
               the metrics to grow the ecosystem.
             </Subheading> */}
-            <div className="flex mt-10 mb-4 space-x-2 items-center">
+            <div className="flex mt-[90px] mb-4 space-x-2 items-center">
               <Icon icon="gtp:gtp-pie" className="w-9 h-9" />
               <Heading className="text-[30px] leading-snug font-bold">
                 Layer 2 User Base
