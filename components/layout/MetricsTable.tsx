@@ -35,7 +35,7 @@ const MetricsTable = ({
   useEffect(() => {
     if (!data) return;
 
-    let clv = [];
+    let clv: any = [];
 
     let max = 0;
     chains.forEach((chain) => {
@@ -110,7 +110,7 @@ const MetricsTable = ({
                   <div className="relative">
                     <div
                       className={`w-8 h-8 rounded-full bg-white border-[5px] ${
-                        chain.border[theme][1]
+                        chain.border[theme ?? "dark"][1]
                       } ${selectedChains.includes(chain.key) ? "" : ""}`}
                     ></div>
                     <Image

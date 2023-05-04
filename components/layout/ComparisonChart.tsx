@@ -2,25 +2,25 @@
 
 import HighchartsReact from "highcharts-react-official";
 import Highcharts, {
-  AxisLabelsFormatterCallbackFunction,
+  // AxisLabelsFormatterCallbackFunction,
   AxisLabelsFormatterContextObject,
-  chart,
-  Series,
-  TooltipFormatterCallbackFunction,
+  // chart,
+  // Series,
+  // TooltipFormatterCallbackFunction,
 } from "highcharts";
 import highchartsAnnotations from "highcharts/modules/annotations";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { Card } from "@/components/Card";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+// import { Card } from "@/components/Card";
+import { useLocalStorage } from "usehooks-ts";
 import fullScreen from "highcharts/modules/full-screen";
-import _merge from "lodash/merge";
-import { zinc, red, blue, amber, purple } from "tailwindcss/colors";
+import { merge } from "lodash";
+// import { zinc, red, blue, amber, purple } from "tailwindcss/colors";
 import { theme as customTheme } from "tailwind.config";
 import { ArrowTrendingUpIcon } from "@heroicons/react/24/outline";
 import { useTheme } from "next-themes";
-import _, { filter } from "lodash";
+// import _ from "lodash";
 import { Switch } from "../Switch";
-import { AllChains, AllChainsByKeys } from "@/lib/chains";
+import { AllChainsByKeys } from "@/lib/chains";
 import d3 from "d3";
 
 const COLORS = {
@@ -407,7 +407,7 @@ export default function ComparisonChart({
   }, [data, showEthereumMainnet]);
 
   const options = useMemo((): Highcharts.Options => {
-    if (!filteredData) return null;
+    if (!filteredData) return {};
 
     if (filteredData[0].types.includes("usd")) {
       if (!showUsd) setValuePrefix("Ξ");
@@ -463,9 +463,11 @@ export default function ComparisonChart({
       tooltip: {
         formatter: tooltipFormatter,
         backgroundColor:
-          theme === "dark"
-            ? customTheme.extend.colors["forest"]["900"] + "EE"
-            : customTheme.extend.colors["forest"]["50"] + "EE",
+          (customTheme?.extend?.colors
+            ? theme === "dark"
+              ? customTheme?.extend?.colors["forest"]["900"]
+              : customTheme?.extend?.colors["forest"]["50"]
+            : "#ffffff") + "EE",
         borderRadius: 17,
         borderWidth: 0,
         padding: 0,
@@ -517,7 +519,7 @@ export default function ComparisonChart({
       })),
     };
 
-    return _merge({}, baseOptions, dynamicOptions);
+    return merge({}, baseOptions, dynamicOptions);
   }, [
     filteredData,
     getChartType,

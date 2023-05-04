@@ -28,20 +28,18 @@ export const Switch = ({
               {leftLabel}
             </div>
           )}
-          <div className="relative" onClick={onChange}>
+          <div className="relative nightwind-prevent-block" onClick={onChange}>
             <div
               className={`block 
                         w-[3.25rem] h-7
-                        rounded-full transition duration-200 ease-in-out ${
-                          checked ? "bg-forest-500" : "bg-forest-500/50"
-                        }`}
+                        rounded-full transition duration-200 ease-in-out text-forest-900 bg-forest-500`}
             ></div>
             <div
               className={`dot absolute left-0.5 top-0.5
                         w-6
                         h-6
                         rounded-full transition duration-200 ease-in-out
-                        bg-white dark:bg-forest-50 dark:text-forest-900 
+                        bg-forest-900 text-forest-500 
                         ${checked ? "transform translate-x-full" : ""}
                         rounded-full`}
             ></div>
