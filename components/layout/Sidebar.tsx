@@ -595,10 +595,7 @@ export default function Sidebar({
         />
         {isOpen && (
           <>
-            <div className="text-[0.7rem] text-forest-600 leading-[1] my-2 ml-8">
-              © 2023 Grow The Pie 🥧
-            </div>
-            <div className="text-[0.7rem] flex justify-between w-48 text-forest-600 leading-[1] ml-8">
+            <div className="text-[0.7rem] flex justify-between w-48 text-inherit dark:text-forest-400 leading-[1] ml-8">
               <Link href="/privacy-policy">Privacy Policy</Link>
               <Link href="/imprint">Imprint</Link>
               <Link href="https://discord.gg/fxjJFe7QyN">Feedback</Link>

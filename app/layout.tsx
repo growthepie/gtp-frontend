@@ -15,6 +15,7 @@ import { Icon } from "@iconify/react";
 import { Raleway } from "next/font/google";
 import { addCollection } from "@iconify/react";
 import GTPIcons from "@/icons/gtp.json";
+import { useTheme } from "next-themes";
 
 // If loading a variable font, you don't need to specify the font weight
 const raleway = Raleway({
@@ -37,6 +38,8 @@ export default function RootLayout({
 
   const [startSidebarOpen, setStartSidebarOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const { theme } = useTheme();
 
   useEffect(() => {
     setStartSidebarOpen(isLargeScreen);
@@ -84,7 +87,7 @@ export default function RootLayout({
         />
       )}
       <body
-        className={`bg-forest-50 text-forest-400 ${raleway.variable} font-raleway  overflow-hidden`}
+        className={`bg-forest-50 text-forest-900 dark:text-forest-500 ${raleway.variable} font-raleway  overflow-hidden`}
       >
         <Providers>
           {/* <div className="flex flex-col min-h-screen max-h-screen h-screen"> */}
@@ -107,7 +110,7 @@ export default function RootLayout({
           {/* </background gradient> */}
           <div className="flex h-screen w-full justify-center">
             <div className="flex w-full max-w-[1920px]">
-              <div className="pt-8 pl-0 bg-forest-100 dark:bg-forest-900 mix-h-screen max-h-screen hidden md:flex flex-col overflow-hidden space-y-6 border-r-2 border-black/50">
+              <div className="pt-8 pl-0 bg-forest-50 dark:bg-forest-900 mix-h-screen max-h-screen hidden md:flex flex-col overflow-hidden space-y-6 border-r-2 border-forest-500 dark:border-black/50">
                 {isSidebarOpen ? (
                   <div className="h-[45.07px] mb-[18px]">
                     <div className="flex items-center mx-5 justify-between h-[45.07px]">
@@ -119,9 +122,18 @@ export default function RootLayout({
                           <Image
                             src="/logo_full.png"
                             alt="Forest"
-                            className="mb-6 -ml-[9px] z-10 crisp-edges"
+                            className="mb-6 -ml-[9px] z-10 crisp-edges hidden dark:block"
                             fill={true}
                             quality={100}
+                            priority
+                          />
+                          <Image
+                            src="/logo_full_light.png"
+                            alt="Forest"
+                            className="mb-6 -ml-[9px] z-10 crisp-edges block dark:hidden"
+                            fill={true}
+                            quality={100}
+                            priority
                           />
                         </div>
                       </Link>
@@ -152,6 +164,7 @@ export default function RootLayout({
                             className="mb-6 -ml-[9px] z-10 crisp-edges"
                             fill={true}
                             quality={100}
+                            priority
                           />
                         </div>
                       </Link>
@@ -180,10 +193,12 @@ export default function RootLayout({
                 />
               </div>
               <div
-                className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative"
-                style={{
-                  background: `radial-gradient(75.11% 75.11% at 69.71% 24.89%, #1B2524 0%, #364240 100%) fixed`,
-                }}
+                className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative bg-white dark:bg-inherit"
+                // style={
+                //   // theme === "dark"?
+                //   // background: `radial-gradient(75.11% 75.11% at 69.71% 24.89%, #1B2524 0%, #364240 100%) fixed`,
+                //   // : { background: "white" }
+                // }
               >
                 <div className="w-full relative">
                   <div
@@ -195,8 +210,21 @@ export default function RootLayout({
                       mixBlendMode: "overlay",
                       opacity: 0.3,
                       pointerEvents: "none",
+                      background: `radial-gradient(75.11% 75.11% at 69.71% 24.89%, #1B2524 0%, #364240 100%) fixed`,
                     }}
-                    className="absolute z-0 mouse-events-none overflow-hidden w-full h-full"
+                    className="absolute z-0 mouse-events-none overflow-hidden w-full h-full hidden dark:block"
+                  ></div>
+                  <div
+                    style={{
+                      // left: "0",
+                      // top: "0",
+                      // bottom: "0",
+                      // right: "0",
+                      mixBlendMode: "overlay",
+                      opacity: 0.3,
+                      pointerEvents: "none",
+                    }}
+                    className="absolute z-0 mouse-events-none overflow-hidden w-full h-full hidden dark:block"
                   >
                     <div
                       style={{
@@ -274,7 +302,11 @@ export default function RootLayout({
                   <main className="flex-1 w-full mx-auto p-2 pr-2 md:p-6 md:pr-12 relative z-10">
                     {children}
                   </main>
-                  <div className="mt-40"></div>
+                  <div className="mt-24 w-full text-center py-6">
+                    <div className="text-[0.7rem] text-inherit dark:text-forest-400 leading-[1] ml-8">
+                      © 2023 Grow The Pie 🥧
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
