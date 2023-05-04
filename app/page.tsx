@@ -161,7 +161,7 @@ export default function Home() {
         </div>
         <div className="flex flex-col space-y-[15px]">
           <div className="rounded-3xl bg-forest-50 px-10 py-5 flex flex-col space-y-[15px]">
-            <div className="font-semibold">What's up with the name?</div>
+            <div className="font-semibold">What&apos;s up with the name?</div>
             <div>
               At GrowThePie, our mission is to provide comprehensive and
               accurate analytics of layer 2 solutions for the Ethereum
