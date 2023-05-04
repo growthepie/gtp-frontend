@@ -51,6 +51,15 @@ const baseOptions: Highcharts.Options = {
     animation: true,
     backgroundColor: "transparent",
     showAxes: false,
+    events: {
+      // fix animation bug
+      // load: function () {
+      //   const chart = this;
+      //   setTimeout(function () {
+      //     chart.reflow();
+      //   }, 0);
+      // },
+    },
     zooming: {
       type: "x",
       resetButton: {
@@ -152,6 +161,7 @@ const baseOptions: Highcharts.Options = {
     //   lineWidth: 2,
     // },
     column: {
+      grouping: true,
       stacking: "normal",
       events: {
         legendItemClick: function () {
@@ -163,6 +173,10 @@ const baseOptions: Highcharts.Options = {
       // make columns touch each other
       // pointWidth: undefined,
       groupPadding: 0,
+      // animation: {
+      //   duration: 500,
+      //   defer: 500,
+      // },
       animation: false,
     },
     series: {
@@ -766,10 +780,20 @@ export default function LandingChart({
                   y2: 1,
                 },
                 stops: [
-                  [0, AllChainsByKeys[series.name].colors[theme][0] + "99"],
-                  [0.33, AllChainsByKeys[series.name].colors[theme][1] + "33"],
-                  [0.66, AllChainsByKeys[series.name].colors[theme][1] + "00"],
+                  [0, AllChainsByKeys[series.name].colors[theme][0] + "33"],
+                  [1, AllChainsByKeys[series.name].colors[theme][1] + "33"],
                 ],
+                // linearGradient: {
+                //   x1: 0,
+                //   y1: 0,
+                //   x2: 0,
+                //   y2: 1,
+                // },
+                // stops: [
+                //   [0, AllChainsByKeys[series.name].colors[theme][0] + "99"],
+                //   [0.33, AllChainsByKeys[series.name].colors[theme][1] + "33"],
+                //   [0.66, AllChainsByKeys[series.name].colors[theme][1] + "00"],
+                // ],
               },
               borderColor: AllChainsByKeys[series.name].colors[theme][0] + "66",
               // borderColor:
@@ -777,56 +801,87 @@ export default function LandingChart({
               //     ? "rgba(215, 223, 222, 0.33)"
               //     : "rgba(41, 51, 50, 0.33)",
               borderWidth: 1,
-              shadow: {
-                // color: AllChainsByKeys[series.name].colors[theme][1] + "33",
-                color:
-                  theme == "dark" ? "rgb(215, 223, 222)" : "rgb(41, 51, 50)",
-                opacity: 0.15,
-                offsetX: 0,
-                offsetY: 0,
-                width: 1.5,
-              },
-
-              color: {
-                linearGradient: {
-                  x1: 0,
-                  y1: 0,
-                  x2: 0,
-                  y2: 1,
-                },
-                stops:
-                  theme === "dark"
-                    ? [
-                        [
-                          0,
-                          AllChainsByKeys[series.name].colors[theme][0] + "FF",
-                        ],
-                        [
-                          0.3,
-                          //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
-                          AllChainsByKeys[series.name].colors[theme][0] + "FF",
-                        ],
-                        [
-                          1,
-                          // AllChainsByKeys[series.name].colors[theme][0] + "99",
-                          AllChainsByKeys[series.name].colors[theme][0] + "00",
-                        ],
-                      ]
-                    : [
-                        [
-                          0,
-                          AllChainsByKeys[series.name].colors[theme][0] + "FF",
-                        ],
-                        [
-                          0.7,
-                          AllChainsByKeys[series.name].colors[theme][0] + "88",
-                        ],
-                        [
-                          1,
-                          AllChainsByKeys[series.name].colors[theme][0] + "55",
-                        ],
+              ...(getSeriesType(series.name) !== "column"
+                ? {
+                    shadow: {
+                      color:
+                        AllChainsByKeys[series.name].colors[theme][1] + "33",
+                      width: 10,
+                    },
+                    color: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 1,
+                        y2: 0,
+                      },
+                      stops: [
+                        [0, AllChainsByKeys[series.name].colors[theme][0]],
+                        // [0.33, AllChainsByKeys[series.name].colors[1]],
+                        [1, AllChainsByKeys[series.name].colors[theme][1]],
                       ],
-              },
+                    },
+                  }
+                : {
+                    shadow: {
+                      // color: AllChainsByKeys[series.name].colors[theme][1] + "33",
+                      color:
+                        theme == "dark"
+                          ? "rgb(215, 223, 222)"
+                          : "rgb(41, 51, 50)",
+                      opacity: 0.15,
+                      offsetX: 0,
+                      offsetY: 0,
+                      width: 1.5,
+                    },
+
+                    color: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 0,
+                        y2: 1,
+                      },
+                      stops:
+                        theme === "dark"
+                          ? [
+                              [
+                                0,
+                                AllChainsByKeys[series.name].colors[theme][0] +
+                                  "FF",
+                              ],
+                              [
+                                0.3,
+                                //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
+                                AllChainsByKeys[series.name].colors[theme][0] +
+                                  "FF",
+                              ],
+                              [
+                                1,
+                                // AllChainsByKeys[series.name].colors[theme][0] + "99",
+                                AllChainsByKeys[series.name].colors[theme][0] +
+                                  "00",
+                              ],
+                            ]
+                          : [
+                              [
+                                0,
+                                AllChainsByKeys[series.name].colors[theme][0] +
+                                  "FF",
+                              ],
+                              [
+                                0.7,
+                                AllChainsByKeys[series.name].colors[theme][0] +
+                                  "88",
+                              ],
+                              [
+                                1,
+                                AllChainsByKeys[series.name].colors[theme][0] +
+                                  "55",
+                              ],
+                            ],
+                    },
+                  }),
               // dataGrouping: {
               //   enabled: true,
               //   anchor: "start",
