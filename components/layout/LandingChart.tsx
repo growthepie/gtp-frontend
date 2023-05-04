@@ -5,23 +5,23 @@ import highchartsRoundedCorners from "highcharts-rounded-corners";
 import HighchartsReact from "highcharts-react-official";
 // import Highcharts, { chart } from "highcharts";
 import Highcharts, {
-  AxisLabelsFormatterCallbackFunction,
+  // AxisLabelsFormatterCallbackFunction,
   AxisLabelsFormatterContextObject,
-  chart,
+  // chart,
 } from "highcharts/highstock";
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { Card } from "@/components/Card";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
-import fullScreen from "highcharts/modules/full-screen";
-import _merge from "lodash/merge";
-import { zinc, red, blue, amber, purple } from "tailwindcss/colors";
+// import { Card } from "@/components/Card";
+import { useSessionStorage } from "usehooks-ts";
+// import fullScreen from "highcharts/modules/full-screen";
+// import _merge from "lodash/merge";
+// import { zinc, red, blue, amber, purple } from "tailwindcss/colors";
 import { theme as customTheme } from "tailwind.config";
-import { ArrowTrendingUpIcon } from "@heroicons/react/24/outline";
+// import { ArrowTrendingUpIcon } from "@heroicons/react/24/outline";
 import { useTheme } from "next-themes";
-import _ from "lodash";
+import { merge } from "lodash";
 import { Switch } from "../Switch";
-import { AllChains, AllChainsByKeys } from "@/lib/chains";
+import { AllChainsByKeys } from "@/lib/chains";
 import d3 from "d3";
 import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
@@ -48,9 +48,18 @@ const baseOptions: Highcharts.Options = {
   exporting: { enabled: false },
   chart: {
     type: "column",
-    animation: false,
+    animation: true,
     backgroundColor: "transparent",
     showAxes: false,
+    events: {
+      // fix animation bug
+      // load: function () {
+      //   const chart = this;
+      //   setTimeout(function () {
+      //     chart.reflow();
+      //   }, 0);
+      // },
+    },
     zooming: {
       type: "x",
       resetButton: {
@@ -94,6 +103,7 @@ const baseOptions: Highcharts.Options = {
     crosshair: {
       width: 0.5,
       color: COLORS.PLOT_LINE,
+      snap: false,
     },
 
     labels: {
@@ -103,6 +113,7 @@ const baseOptions: Highcharts.Options = {
         const date = new Date(item.value);
         const isMonthStart = date.getDate() === 1;
         const isYearStart = isMonthStart && date.getMonth() === 0;
+
         if (isYearStart) {
           return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
         } else {
@@ -116,6 +127,7 @@ const baseOptions: Highcharts.Options = {
         // )}</span>`;
       },
     },
+    tickmarkPlacement: "on",
     tickWidth: 4,
     tickLength: 4,
     // minPadding: 0.04,
@@ -149,6 +161,7 @@ const baseOptions: Highcharts.Options = {
     //   lineWidth: 2,
     // },
     column: {
+      grouping: true,
       stacking: "normal",
       events: {
         legendItemClick: function () {
@@ -159,7 +172,11 @@ const baseOptions: Highcharts.Options = {
       // borderWidth: 1,
       // make columns touch each other
       // pointWidth: undefined,
-      // groupPadding: 0,
+      groupPadding: 0,
+      // animation: {
+      //   duration: 500,
+      //   defer: 500,
+      // },
       animation: false,
     },
     series: {
@@ -200,6 +217,8 @@ export default function LandingChart({
   l2_dominance,
   selectedMetric,
   setSelectedMetric,
+  metric,
+  source,
 }: // timeIntervals,
 // onTimeIntervalChange,
 // showTimeIntervals = true,
@@ -209,6 +228,8 @@ export default function LandingChart({
   l2_dominance: number;
   selectedMetric: string;
   setSelectedMetric: (metric: string) => void;
+  metric: string;
+  source: string;
   // timeIntervals: string[];
   // onTimeIntervalChange: (interval: string) => void;
   // showTimeIntervals: boolean;
@@ -271,7 +292,7 @@ export default function LandingChart({
 
   const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
 
-  const [selectedTimespan, setSelectedTimespan] = useState("180d");
+  const [selectedTimespan, setSelectedTimespan] = useState("365d");
 
   const [selectedScale, setSelectedScale] = useState("absolute");
 
@@ -280,6 +301,8 @@ export default function LandingChart({
   const [zoomed, setZoomed] = useState(false);
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
+
+  const [totalUsersIncrease, setTotalUsersIncrease] = useState(0);
 
   const getTickPositions = useCallback(
     (xMin: any, xMax: any): number[] => {
@@ -310,6 +333,18 @@ export default function LandingChart({
           tickPositions.push(new Date(year, month, 1).getTime());
         }
       }
+
+      // for (let year = xMinYear; year <= xMaxYear; year++) {
+      //   for (let month = 0; month < 12; month++) {
+      //     let daysInMonth = new Date(year, month, 0).getDate();
+      //     for (let day = 2; day <= daysInMonth; day = day + 1) {
+      //       if (year === xMinYear && month < xMinMonth) continue;
+      //       if (year === xMaxYear && month > xMaxMonth) continue;
+      //       tickPositions.push(new Date(year, month, day).getTime());
+      //     }
+
+      //   }
+      // }
 
       return tickPositions;
     },
@@ -451,48 +486,27 @@ export default function LandingChart({
   },
   []);
 
-  useEffect(() => {
-    if (chartComponent.current) {
-      chartComponent.current.xAxis[0].setExtremes(
-        timespans[selectedTimespan].xMin,
-        timespans[selectedTimespan].xMax
-      );
-    }
-  }, [selectedTimespan, chartComponent]);
-
-  const [showTotalUsers, setShowTotalUsers] = useState(false);
+  const [showTotalUsers, setShowTotalUsers] = useState(true);
 
   const filteredData = useMemo(() => {
     if (!data) return null;
 
+    const l2s = data.filter((d) => ["all_l2s"].includes(d.name))[0];
+
+    setTotalUsersIncrease(
+      (l2s.data[l2s.data.length - 1][1] - l2s.data[l2s.data.length - 2][1]) /
+        l2s.data[l2s.data.length - 2][1]
+    );
+
     if (showTotalUsers)
       return showEthereumMainnet
         ? data.filter((d) => ["all_l2s", "ethereum"].includes(d.name))
-        : data.filter((d) => ["all_l2s"].includes(d.name));
+        : [l2s];
 
     return showEthereumMainnet
       ? data.filter((d) => !["all_l2s"].includes(d.name))
       : data.filter((d) => !["all_l2s", "ethereum"].includes(d.name));
   }, [data, showEthereumMainnet, showTotalUsers]);
-
-  const getNumColumnsVisible = useCallback(
-    (data: any) => {
-      const extremes = chartComponent.current
-        ? chartComponent.current.xAxis[0].getExtremes()
-        : {
-            min: timespans[selectedTimespan].xMin,
-            max: timespans[selectedTimespan].xMax,
-          };
-      if (showEthereumMainnet)
-        return filteredData
-          .find((d: any) => d.name === "ethereum")
-          .data.filter((d) => d[0] >= extremes.min && d[0] <= extremes.max);
-      return filteredData[0].data.filter(
-        (d) => d[0] >= extremes.min && d[0] <= extremes.max
-      ).length;
-    },
-    [filteredData, selectedTimespan, showEthereumMainnet]
-  );
 
   const timespans = useMemo(
     () => ({
@@ -534,49 +548,57 @@ export default function LandingChart({
     [filteredData]
   );
 
+  useEffect(() => {
+    if (chartComponent.current) {
+      chartComponent.current.xAxis[0].setExtremes(
+        timespans[selectedTimespan].xMin,
+        timespans[selectedTimespan].xMax
+      );
+    }
+  }, [selectedTimespan, timespans]);
+
   const setXAxis = useCallback(() => {
     if (!chartComponent.current) return;
     chartComponent.current.xAxis[0].update({
       min: timespans[selectedTimespan].xMin,
       max: timespans[selectedTimespan].xMax,
       // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
-      tickPositions: getTickPositions(
-        timespans[selectedTimespan].xMin,
-        timespans[selectedTimespan].xMax
-      ),
+      tickPositions: getTickPositions(timespans.max.xMin, timespans.max.xMax),
     });
   }, [getTickPositions, selectedTimespan, timespans]);
 
   const onXAxisSetExtremes = useCallback(
     function (e) {
-      // if (
-      //   e.trigger === "zoom" ||
-      //   e.trigger === "pan" ||
-      //   e.trigger === "navigator" ||
-      //   e.trigger === "rangeSelectorButton"
-      // ) {
-      const { min, max } = e;
-      const { xMin, xMax } = timespans[selectedTimespan];
-      if (min === xMin && max === xMax) {
-        setZoomed(false);
-      } else {
-        setZoomed(true);
+      if (
+        e.trigger === "zoom" ||
+        e.trigger === "pan" ||
+        e.trigger === "navigator" ||
+        e.trigger === "rangeSelectorButton"
+      ) {
+        const { min, max } = e;
+        const { xMin, xMax } = timespans[selectedTimespan];
+
+        if (min === xMin && max === xMax) {
+          setZoomed(false);
+        } else {
+          setZoomed(true);
+        }
+
+        // if (chartComponent && chartComponent.current) {
+        //   chartComponent.current.xAxis[0].update({
+        //     min: timespans[selectedTimespan].xMin,
+        //     max: timespans[selectedTimespan].xMax,
+        //     // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
+        //     tickPositions: getTickPositions(
+        //       timespans[selectedTimespan].xMin,
+        //       timespans[selectedTimespan].xMax
+        //     ),
+        //   });
+        // }
+        // setXAxis();
       }
-      if (chartComponent && chartComponent.current) {
-        chartComponent.current.xAxis[0].update({
-          min: timespans[selectedTimespan].xMin,
-          max: timespans[selectedTimespan].xMax,
-          // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
-          tickPositions: getTickPositions(
-            timespans[selectedTimespan].xMin,
-            timespans[selectedTimespan].xMax
-          ),
-        });
-      }
-      setXAxis();
-      // }
     },
-    [getTickPositions, selectedTimespan, setXAxis, timespans]
+    [selectedTimespan, timespans]
   );
 
   const options = useMemo((): Highcharts.Options => {
@@ -592,7 +614,15 @@ export default function LandingChart({
         column: {
           // groupPadding: 0.005,
           crisp: false,
-          pointPlacement: "on",
+          // pointPlacement: 1,
+          // // pointIntervalUnit: "day",
+          // // pointInterval: 7 * 24 * 3600 * 1000,
+          // pointPadding: 0,
+          // pointRange: 7 * 24 * 3600 * 1000,
+          // grouping: false,
+          // shadow: false,
+          // borderWidth: 0,
+
           // pointStart: filteredData[0].data[0][0],
           // pointInterval:
           //   filteredData[0].data[1][0] - filteredData[0].data[0][0],
@@ -629,13 +659,15 @@ export default function LandingChart({
             : "rgba(41, 51, 50, 0.33)",
       },
       xAxis: {
-        min: timespans[selectedTimespan].xMin,
-        max: timespans[selectedTimespan].xMax,
+        minorTicks: true,
+        minorTickLength: 2,
+        minorTickWidth: 2,
+        minorGridLineWidth: 0,
+        minorTickInterval: 1000 * 60 * 60 * 24 * 7,
+        // min: timespans[selectedTimespan].xMin,
+        // max: timespans[selectedTimespan].xMax,
         // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
-        tickPositions: getTickPositions(
-          timespans[selectedTimespan].xMin,
-          timespans[selectedTimespan].xMax
-        ),
+        tickPositions: getTickPositions(timespans.max.xMin, timespans.max.xMax),
 
         labels: {
           style: {
@@ -653,9 +685,11 @@ export default function LandingChart({
         followPointer: true,
         followTouchMove: true,
         backgroundColor:
-          theme === "dark"
-            ? customTheme.extend.colors["forest"]["900"] + "EE"
-            : customTheme.extend.colors["forest"]["50"] + "EE",
+          (customTheme?.extend?.colors
+            ? theme === "dark"
+              ? customTheme?.extend?.colors["forest"]["900"]
+              : customTheme?.extend?.colors["forest"]["50"]
+            : "#ffffff") + "EE",
         borderRadius: 17,
         borderWidth: 0,
         padding: 0,
@@ -689,13 +723,31 @@ export default function LandingChart({
                 : 10
               : 10;
 
-            let borderRadius = undefined;
+            let borderRadius: string | null = null;
 
             if (showEthereumMainnet && i === 1) {
               borderRadius = "8%";
             } else if (i === 0) {
               borderRadius = "8%";
             }
+            const timeIntervalToMilliseconds = {
+              daily: 1 * 24 * 3600 * 1000,
+              weekly: 7 * 24 * 3600 * 1000,
+              monthly: 30 * 24 * 3600 * 1000,
+            };
+
+            const pointsSettings =
+              getSeriesType(series.name) === "column"
+                ? {
+                    pointPlacement: 0.4,
+                    pointPadding: 0.05,
+                    pointRange: timeIntervalToMilliseconds[metric],
+                  }
+                : {
+                    pointPlacement: -0.1,
+                    // pointInterval: 7,
+                    // pointIntervalUnit: "day",
+                  };
 
             return {
               name: series.name,
@@ -707,7 +759,11 @@ export default function LandingChart({
               // pointStart: series.data[0][0],
               // pointInterval: series.data[1][0] - series.data[0][0],
               // pointPadding: getNumColumnsVisible(filteredData) / 500,
-              pointPlacement: "on",
+              // pointPlacement: 0.4,
+              // pointPadding: 0.05,
+              // pointRange: 7 * 24 * 3600 * 1000,
+              ...pointsSettings,
+              clip: true,
 
               borderRadiusTopLeft: borderRadius,
               borderRadiusTopRight: borderRadius,
@@ -724,10 +780,20 @@ export default function LandingChart({
                   y2: 1,
                 },
                 stops: [
-                  [0, AllChainsByKeys[series.name].colors[theme][0] + "99"],
-                  [0.33, AllChainsByKeys[series.name].colors[theme][1] + "33"],
-                  [0.66, AllChainsByKeys[series.name].colors[theme][1] + "00"],
+                  [0, AllChainsByKeys[series.name].colors[theme][0] + "33"],
+                  [1, AllChainsByKeys[series.name].colors[theme][1] + "33"],
                 ],
+                // linearGradient: {
+                //   x1: 0,
+                //   y1: 0,
+                //   x2: 0,
+                //   y2: 1,
+                // },
+                // stops: [
+                //   [0, AllChainsByKeys[series.name].colors[theme][0] + "99"],
+                //   [0.33, AllChainsByKeys[series.name].colors[theme][1] + "33"],
+                //   [0.66, AllChainsByKeys[series.name].colors[theme][1] + "00"],
+                // ],
               },
               borderColor: AllChainsByKeys[series.name].colors[theme][0] + "66",
               // borderColor:
@@ -735,56 +801,87 @@ export default function LandingChart({
               //     ? "rgba(215, 223, 222, 0.33)"
               //     : "rgba(41, 51, 50, 0.33)",
               borderWidth: 1,
-              shadow: {
-                // color: AllChainsByKeys[series.name].colors[theme][1] + "33",
-                color:
-                  theme == "dark" ? "rgb(215, 223, 222)" : "rgb(41, 51, 50)",
-                opacity: 0.15,
-                offsetX: 0,
-                offsetY: 0,
-                width: 1.5,
-              },
-
-              color: {
-                linearGradient: {
-                  x1: 0,
-                  y1: 0,
-                  x2: 0,
-                  y2: 1,
-                },
-                stops:
-                  theme === "dark"
-                    ? [
-                        [
-                          0,
-                          AllChainsByKeys[series.name].colors[theme][0] + "FF",
-                        ],
-                        [
-                          0.3,
-                          //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
-                          AllChainsByKeys[series.name].colors[theme][0] + "FF",
-                        ],
-                        [
-                          1,
-                          // AllChainsByKeys[series.name].colors[theme][0] + "99",
-                          AllChainsByKeys[series.name].colors[theme][0] + "00",
-                        ],
-                      ]
-                    : [
-                        [
-                          0,
-                          AllChainsByKeys[series.name].colors[theme][0] + "FF",
-                        ],
-                        [
-                          0.7,
-                          AllChainsByKeys[series.name].colors[theme][0] + "88",
-                        ],
-                        [
-                          1,
-                          AllChainsByKeys[series.name].colors[theme][0] + "55",
-                        ],
+              ...(getSeriesType(series.name) !== "column"
+                ? {
+                    shadow: {
+                      color:
+                        AllChainsByKeys[series.name].colors[theme][1] + "33",
+                      width: 10,
+                    },
+                    color: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 1,
+                        y2: 0,
+                      },
+                      stops: [
+                        [0, AllChainsByKeys[series.name].colors[theme][0]],
+                        // [0.33, AllChainsByKeys[series.name].colors[1]],
+                        [1, AllChainsByKeys[series.name].colors[theme][1]],
                       ],
-              },
+                    },
+                  }
+                : {
+                    shadow: {
+                      // color: AllChainsByKeys[series.name].colors[theme][1] + "33",
+                      color:
+                        theme == "dark"
+                          ? "rgb(215, 223, 222)"
+                          : "rgb(41, 51, 50)",
+                      opacity: 0.15,
+                      offsetX: 0,
+                      offsetY: 0,
+                      width: 1.5,
+                    },
+
+                    color: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 0,
+                        y2: 1,
+                      },
+                      stops:
+                        theme === "dark"
+                          ? [
+                              [
+                                0,
+                                AllChainsByKeys[series.name].colors[theme][0] +
+                                  "FF",
+                              ],
+                              [
+                                0.3,
+                                //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
+                                AllChainsByKeys[series.name].colors[theme][0] +
+                                  "FF",
+                              ],
+                              [
+                                1,
+                                // AllChainsByKeys[series.name].colors[theme][0] + "99",
+                                AllChainsByKeys[series.name].colors[theme][0] +
+                                  "00",
+                              ],
+                            ]
+                          : [
+                              [
+                                0,
+                                AllChainsByKeys[series.name].colors[theme][0] +
+                                  "FF",
+                              ],
+                              [
+                                0.7,
+                                AllChainsByKeys[series.name].colors[theme][0] +
+                                  "88",
+                              ],
+                              [
+                                1,
+                                AllChainsByKeys[series.name].colors[theme][0] +
+                                  "55",
+                              ],
+                            ],
+                    },
+                  }),
               // dataGrouping: {
               //   enabled: true,
               //   anchor: "start",
@@ -803,6 +900,8 @@ export default function LandingChart({
                       "stroke-width": 0,
                     },
                   },
+                  // lineWidth: 4,
+                  // lineWidthPlus: 4,
                   brightness: 0.3,
                 },
                 inactive: {
@@ -909,18 +1008,19 @@ export default function LandingChart({
       },
     };
 
-    return _merge({}, baseOptions, dynamicOptions);
+    return merge({}, baseOptions, dynamicOptions);
   }, [
     filteredData,
     formatNumber,
     getSeriesType,
     getTickPositions,
+    metric,
     onXAxisSetExtremes,
     selectedScale,
-    selectedTimespan,
     showEthereumMainnet,
     theme,
-    timespans,
+    timespans.max.xMax,
+    timespans.max.xMin,
     tooltipFormatter,
   ]);
 
@@ -1020,7 +1120,7 @@ export default function LandingChart({
           <button
             className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
               showTotalUsers
-                ? "bg-forest-900 text-forest-50"
+                ? "bg-forest-500 dark:bg-[#151A19]"
                 : "hover:bg-forest-100"
             }`}
             onClick={() => {
@@ -1034,7 +1134,7 @@ export default function LandingChart({
           <button
             className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
               "absolute" === selectedScale && !showTotalUsers
-                ? "bg-forest-900 text-forest-50"
+                ? "bg-forest-500 dark:bg-[#151A19]"
                 : "hover:bg-forest-100"
             }`}
             onClick={() => {
@@ -1049,7 +1149,7 @@ export default function LandingChart({
           <button
             className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
               "percentage" === selectedScale
-                ? "bg-forest-900 text-forest-50"
+                ? "bg-forest-500 dark:bg-[#151A19]"
                 : "hover:bg-forest-100"
             }`}
             onClick={() => {
@@ -1082,37 +1182,80 @@ export default function LandingChart({
             ))} */}
         </div>
         <div className="flex justify-center items-center space-x-1">
-          {Object.keys(timespans).map((timespan) => (
-            <button
-              key={timespan}
-              className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
-                selectedTimespan === timespan
-                  ? "bg-forest-900 text-forest-50 hover:bg-forest-700"
-                  : "hover:bg-forest-100"
-              }`}
-              onClick={() => {
-                setSelectedTimespan(timespan);
-                setXAxis();
-                setZoomed(false);
-                // chartComponent.current?.xAxis[0].setExtremes(
-                //   timespans[timespan].xMin,
-                //   timespans[timespan].xMax
-                // );
-              }}
-            >
-              {timespans[timespan].label}
-            </button>
-          ))}
+          {!zoomed ? (
+            Object.keys(timespans).map((timespan) => (
+              <button
+                key={timespan}
+                className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
+                  selectedTimespan === timespan
+                    ? "bg-forest-500 dark:bg-[#151A19]"
+                    : "hover:bg-forest-100"
+                }`}
+                onClick={() => {
+                  setSelectedTimespan(timespan);
+                  // setXAxis();
+                  chartComponent?.current?.xAxis[0].update({
+                    min: timespans[selectedTimespan].xMin,
+                    max: timespans[selectedTimespan].xMax,
+                    // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
+                    tickPositions: getTickPositions(
+                      timespans.max.xMin,
+                      timespans.max.xMax
+                    ),
+                  });
+                  setZoomed(false);
+                  // chartComponent.current?.xAxis[0].setExtremes(
+                  //   timespans[timespan].xMin,
+                  //   timespans[timespan].xMax
+                  // );
+                }}
+              >
+                {timespans[timespan].label}
+              </button>
+            ))
+          ) : (
+            <>
+              <button
+                className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium border-[1px] border-forest-800`}
+                onClick={() => {
+                  chartComponent?.current?.xAxis[0].setExtremes(
+                    timespans[selectedTimespan].xMin,
+                    timespans[selectedTimespan].xMax
+                  );
+                  setZoomed(false);
+                }}
+              >
+                Reset Zoom
+              </button>
+              <button
+                className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium bg-forest-100 dark:bg-[#151A19]`}
+              >
+                {chartComponent?.current &&
+                  Math.round(
+                    (chartComponent.current.xAxis[0].getExtremes().max -
+                      chartComponent.current.xAxis[0].getExtremes().min) /
+                      1000 /
+                      60 /
+                      60 /
+                      24
+                  )}{" "}
+                days
+              </button>
+            </>
+          )}
         </div>
       </div>
-      <div className="flex justify-end items-center absolute -top-10 left-0 right-0 rounded-full p-0.5">
+      {/* <div className="flex justify-end items-center absolute -top-10 left-0 right-0 rounded-full p-0.5">
         {zoomed && (
           <Tooltip placement="left">
             <TooltipTrigger>
               <button
                 className="rounded-full p-2 text-forest-900 bg-forest-50 hover:bg-forest-100"
                 onClick={() => {
-                  chartComponent.current?.zoomOut();
+                  chartComponent?.current?.xAxis[0].setExtremes(
+                    timespans[selectedTimespan].xMin,
+                    timespans[selectedTimespan].xMax
+                  );
                 }}
               >
                 <Icon icon="feather:minimize" className="w-8 h-8 leading-[1]" />
@@ -1125,7 +1268,7 @@ export default function LandingChart({
             </TooltipContent>
           </Tooltip>
         )}
-      </div>
+      </div> */}
 
       <div className="w-full py-4 rounded-xl">
         <div className="w-full h-[26rem] relative rounded-xl">
@@ -1175,43 +1318,62 @@ export default function LandingChart({
         {/* toggle ETH */}
 
         <div className="flex justify-center items-center">
-          <div className="flex bg-forest-100 rounded-xl p-3 items-center mr-5">
+          <div className="flex bg-forest-100 rounded-xl px-3 py-1.5 items-center mr-5">
             <Icon
               icon="feather:users"
               className="w-8 h-8 lg:w-14 lg:h-14 text-forest-900 mr-2"
             />
-            <div className="flex flex-col items-center justify-center space-y-1.5">
+            <div className="flex flex-col items-center justify-center">
+              <div className="text-[0.65rem] lg:text-xs font-medium text-forest-900 leading-tight">
+                Total Users
+              </div>
               <div className="text-xl lg:text-3xl font-[650] text-forest-900">
                 {latest_total.toLocaleString()}
               </div>
-              <div className="text-[0.65rem] lg:text-xs font-medium text-forest-900">
-                Total Users
+              <div className="text-[0.65rem] lg:text-xs font-medium text-forest-900 leading-tight">
+                {totalUsersIncrease > 0 ? (
+                  <span className="text-green-500 dark:text-green-400 font-medium">
+                    +{Math.round(totalUsersIncrease * 1000) / 100.0}%
+                  </span>
+                ) : (
+                  <span className="text-red-500 dark:text-red-400 font-semibold">
+                    {Math.round(totalUsersIncrease * 1000) / 100.0}%
+                  </span>
+                )}{" "}
+                in last week
               </div>
             </div>
           </div>
-          <div className="flex bg-forest-100 rounded-xl p-3 items-center mr-2">
+          <div className="flex bg-forest-100 rounded-xl px-3 py-1.5 items-center mr-1.5">
             <Icon
               icon="feather:layers"
               className="w-8 h-8 lg:w-14 lg:h-14 text-forest-900 mr-2"
             />
-            <div className="flex flex-col items-center justify-center space-y-1.5">
+            <div className="flex flex-col items-center justify-center">
+              <div className="text-[0.65rem] lg:text-xs font-medium text-forest-900 leading-tight">
+                Layer-2 Dominance
+              </div>
               <div className="text-xl lg:text-3xl font-[650] text-forest-900">
                 {l2_dominance.toFixed(2)}x
               </div>
-              <div className="text-[0.65rem] lg:text-xs font-medium text-forest-900">
-                Layer-2 Dominance
+              <div className="text-[0.65rem] lg:text-xs font-medium text-forest-900 leading-tight">
+                <span className="text-green-500 dark:text-green-400 font-semibold">
+                  +??%
+                </span>{" "}
+                in last week
               </div>
             </div>
           </div>
-          <Tooltip placement="left">
+          <Tooltip placement="left" allowInteract>
             <TooltipTrigger>
               <div className="p-1.5 z-10 mr-1">
                 <Icon icon="feather:info" className="w-6 h-6 text-forest-900" />
               </div>
             </TooltipTrigger>
-            <TooltipContent>
-              <div className="p-2 text-xs font-medium bg-forest-900 text-forest-50 rounded-md shadow-lg">
-                {data.source}
+            <TooltipContent className="p-3 text-sm font-medium bg-forest-300 text-forest-900 rounded-xl shadow-lg z-50 w-[420px] h-[82px] flex items-center">
+              <div className="flex flex-col space-y-1">
+                <div className="font-semibold">Data Sources:</div>
+                <div>{source}</div>
               </div>
             </TooltipContent>
           </Tooltip>

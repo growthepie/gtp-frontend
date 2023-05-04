@@ -14,7 +14,7 @@ module.exports = {
     extend: {
       fontFamily: {
         inter: ["Inter", "sans-serif"],
-        raleway: ['var(--font-raleway)', "sans-serif"],
+        raleway: ["var(--font-raleway)", "sans-serif"],
         sans: ["Inter var", ...defaultTheme.fontFamily.sans],
       },
       transitionProperty: {
@@ -161,6 +161,7 @@ module.exports = {
           800: "#5A6462",
           900: "#2A3433",
           950: "#1B2524",
+          1000: "#151A19",
         },
         pie: {
           DEFAULT: "#D9A265",
@@ -178,5 +179,8 @@ module.exports = {
       },
     },
   },
-  plugins: [require("nightwind"), require('tailwind-scrollbar')({ nocompatible: true }),],
+  plugins: [
+    require("nightwind"),
+    require("tailwind-scrollbar")({ nocompatible: true }),
+  ],
 };

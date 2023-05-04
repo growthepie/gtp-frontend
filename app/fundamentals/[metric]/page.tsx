@@ -1,26 +1,17 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Error from "next/error";
-// import { useMetricsData } from "@/context/MetricsProvider";
 import { TVLMetricsResponse } from "@/types/api/TVLMetricsResponse";
 import { TxCountMetricsResponse } from "@/types/api/TxCountMetricsResponse";
 import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
-import MainChart from "@/components/home/MainChart";
 import ComparisonChart from "@/components/layout/ComparisonChart";
-import Image from "next/image";
-import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-} from "@heroicons/react/24/solid";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { useSessionStorage } from "usehooks-ts";
 import useSWR from "swr";
 import MetricsTable from "@/components/layout/MetricsTable";
 import { MetricsURLs } from "@/lib/urls";
 import { AllChains } from "@/lib/chains";
-import _ from "lodash";
+import { intersection } from "lodash";
 import { items as sidebarItems } from "@/components/layout/Sidebar";
 import { Icon } from "@iconify/react";
 
@@ -47,6 +38,14 @@ const Chain = ({ params }: { params: any }) => {
     );
   }, [metricData]);
 
+  const pageData = sidebarItems[1]?.options.find(
+    (item) => item.urlKey === params.metric
+  )?.page ?? {
+    title: "",
+    description: "",
+    icon: "",
+  };
+
   const [selectedChains, setSelectedChains] = useState(
     AllChains.map((chain) => chain.key)
   );
@@ -64,27 +63,10 @@ const Chain = ({ params }: { params: any }) => {
       {/* <h1>Metric: {params.metric}</h1> */}
       {metricData && (
         <div className="flex flex-col space-y-4 mt-8 pl-2 md:pl-6">
-          <Heading>
-            {
-              sidebarItems[0].options.find((item) => item.key === params.metric)
-                ?.page.title
-            }
-          </Heading>
+          <Heading>{pageData.title}</Heading>
           <Subheading className="flex items-center space-x-1.5">
-            <Icon
-              icon={
-                sidebarItems[0].options.find(
-                  (item) => item.key === params.metric
-                )?.page.icon
-              }
-            />
-            <div>
-              {
-                sidebarItems[0].options.find(
-                  (item) => item.key === params.metric
-                )?.page.description
-              }
-            </div>
+            <Icon icon={pageData.icon} />
+            <div>{pageData.description}</div>
           </Subheading>
 
           <div className="flex flex-col-reverse xl:flex-row space-x-0 xl:space-x-8">
@@ -112,7 +94,7 @@ const Chain = ({ params }: { params: any }) => {
                         .data,
                     };
                   })}
-                timeIntervals={_.intersection(
+                timeIntervals={intersection(
                   Object.keys(metricData.data.chains.arbitrum),
                   ["daily", "weekly", "monthly"]
                 )}

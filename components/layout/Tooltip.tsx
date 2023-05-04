@@ -12,6 +12,7 @@ import {
   useInteractions,
   useMergeRefs,
   FloatingPortal,
+  safePolygon,
 } from "@floating-ui/react";
 import type { Placement } from "@floating-ui/react";
 import { motion } from "framer-motion";
@@ -21,6 +22,7 @@ interface TooltipOptions {
   placement?: Placement;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  allowInteract?: boolean;
 }
 
 export function useTooltip({
@@ -28,6 +30,7 @@ export function useTooltip({
   placement = "top",
   open: controlledOpen,
   onOpenChange: setControlledOpen,
+  allowInteract = false,
 }: TooltipOptions = {}) {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(initialOpen);
 
@@ -53,6 +56,7 @@ export function useTooltip({
   const hover = useHover(context, {
     move: false,
     enabled: controlledOpen == null,
+    handleClose: allowInteract ? safePolygon() : null,
   });
   const focus = useFocus(context, {
     enabled: controlledOpen == null,

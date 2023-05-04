@@ -10,9 +10,8 @@ export const AllChains = [
     },
     colors: {
       light: ["#293305", "#293305"], // text color
-      dark: ["#d7dfde", "#d7dfde"]  // text color
-    },// yellow-orange
-
+      dark: ["#d7dfde", "#d7dfde"], // text color
+    }, // yellow-orange
   },
   {
     label: "Arbitrum",
@@ -27,7 +26,6 @@ export const AllChains = [
       light: ["#2ECEE8", "#2ECEE8"], // tropical sea
       dark: ["#1DF7EF", "#1DF7EF"], // tropical sea
     },
-
   },
   {
     label: "Aztec V2",
@@ -65,9 +63,8 @@ export const AllChains = [
     },
     colors: {
       light: ["#800094", "#800094"], // purple
-      dark: ["#AD0DC5", "#AD0DC5"] // purple
+      dark: ["#AD0DC5", "#AD0DC5"], // purple
     },
-
   },
   {
     label: "Loopring",
@@ -80,7 +77,7 @@ export const AllChains = [
     },
     colors: {
       light: ["#000000", "#000000"], // black
-      dark: ["#000000", "#000000"] // black
+      dark: ["#000000", "#000000"], // black
     },
   },
   {
@@ -94,28 +91,29 @@ export const AllChains = [
     },
     colors: {
       light: ["#DD3408", "#DD3408"], // red-orange
-      dark: ["#FE5468", "#FE5468"] // red-orange
+      dark: ["#FE5468", "#FE5468"], // red-orange
     },
   },
   {
     label: "Multiple",
-    icon: "/icons/x.png",
+    icon: null,
     key: "multiple",
     chainType: "all-L2",
     border: {
-      light: ["border-[#45AA6F]", "border-[#45AA6F]"],
-      dark: ["border-[#4CFF7E]", "border-[#4CFF7E]"],
+      light: ["border-[#cdd8d3]", "border-[#cdd8d3]"],
+      dark: ["border-[#cdd8d3]", "border-[#cdd8d3]"],
     },
     colors: {
       // light: ["#F130DE", "#FB4FF2"], // pink
       // dark: ["#F130DE", "#FB4FF2"] // pink
-      light: ["#45AA6F", "#45AA6F"], // soft green
-      dark: ["#4CFF7E", "#4CFF7E"] // soft green
+      light: ["#cdd8d3", "#cdd8d3"], // soft green
+      dark: ["#cdd8d3", "#cdd8d3"], // soft green
     },
   },
   {
     label: "All L2s",
     icon: "/icons/x.png",
+
     key: "all_l2s",
     chainType: null,
     border: {
@@ -124,13 +122,17 @@ export const AllChains = [
     },
     colors: {
       light: ["#DAEE75", "#DAEE75"], // light green
-      dark: ["#EEFF97", "#EEFF97"] // light green
-
+      dark: ["#EEFF97", "#EEFF97"], // light green
     },
   },
 ];
 
 export const AllChainsByKeys = AllChains.reduce((acc, chain) => {
   acc[chain.key] = chain;
+  return acc;
+}, {});
+
+export const AllChainsByLabels = AllChains.reduce((acc, chain) => {
+  acc[chain.label] = chain;
   return acc;
 }, {});

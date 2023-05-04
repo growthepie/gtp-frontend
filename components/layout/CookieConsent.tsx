@@ -42,7 +42,7 @@ export default function CookieConsent() {
 
   return (
     <div
-      className={`flex flex-col lg:flex-row items-center justify-between px-10 py-8  space-y-4 lg:space-y-0 lg:space-x-8 bg-forest-50 text-forest-900 border-forest-200 border-[1px] bottom-0 mb-10 fixed z-50 w-5/6 mx-auto rounded-3xl lg:rounded-full left-[50%] transform -translate-x-1/2 shadow-2xl ${
+      className={`flex flex-col lg:flex-row items-center justify-between px-10 py-8  space-y-4 lg:space-y-0 lg:space-x-8 bg-forest-50 text-forest-900 border-forest-200 border-[1px] bottom-0 mb-10 fixed z-50 w-9/12 mx-auto rounded-3xl lg:rounded-full left-[50%] transform -translate-x-1/2 shadow-2xl ${
         consent ? "hidden" : ""
       }`}
     >

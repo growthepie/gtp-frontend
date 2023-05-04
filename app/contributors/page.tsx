@@ -87,7 +87,6 @@ const Page = () => {
               <Image
                 src={s.image}
                 alt={s.name}
-                className="rounded-md"
                 width={s.width}
                 height={s.height}
               />

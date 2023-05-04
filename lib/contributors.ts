@@ -16,7 +16,7 @@ export const Contributors = [
   {
     name: "Chris Keshian",
     image: "/contributors/chris.png",
-    role: "Cheer",
+    role: "Product",
     twitter: "https://www.twitter.com/chriskeshian",
     linkedin: "https://www.linkedin.com/in/chriskeshian",
   },
@@ -64,7 +64,7 @@ export const Sponsors = [
     image: "/contributors/flipside-logo.png",
     width: 200,
     height: 30,
-    url: "https://flipsidecrypto.xy",
+    url: "https://flipsidecrypto.xyz",
   },
   {
     name: "Zetta Block",
