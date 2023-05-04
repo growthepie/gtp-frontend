@@ -10,3 +10,27 @@ export const MetricsURLs = {
   "transaction-count":
     "https://d2cfnw27176mbd.cloudfront.net/v0_4/metrics/txcount.json",
 };
+
+// const { data: Arbitrum, error: arbError } = useSWR<ArbitrumChainResponse>(
+//   "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/arbitrum.json"
+// );
+
+// const { data: Optimism, error: optError } = useSWR<ArbitrumChainResponse>(
+//   "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/optimism.json"
+// );
+
+// const { data: Polygon, error: polyError } = useSWR<ArbitrumChainResponse>(
+//   "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/polygon_zkevm.json"
+// );
+
+// const { data: Imx, error: imxError } = useSWR<ArbitrumChainResponse>(
+//   "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/imx.json"
+// );
+
+export const ChainURLs = {
+  ethereum: "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/ethereum.json",
+  arbitrum: "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/arbitrum.json",
+  polygon:
+    "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/polygon_zkevm.json",
+  imx: "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/imx.json",
+};

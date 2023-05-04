@@ -3,6 +3,7 @@ export const AllChains = [
     label: "Ethereum",
     icon: "/icons/ethereum.png",
     key: "ethereum",
+    urlKey: "ethereum",
     chainType: "L1",
     border: {
       light: ["border-[#293305]", "border-[#293305]"],
@@ -17,6 +18,7 @@ export const AllChains = [
     label: "Arbitrum",
     icon: "/icons/arbitrum.png",
     key: "arbitrum",
+    urlKey: "arbitrum",
     chainType: "L2",
     border: {
       light: ["border-[#2ECEE8]", "border-[#2ECEE8]"],
@@ -31,6 +33,7 @@ export const AllChains = [
     label: "Aztec V2",
     icon: "/icons/aztec.png",
     key: "aztecv2",
+    urlKey: "aztec-v2",
     chainType: "L2",
     border: {
       light: ["border-[#000000]", "border-[#000000]"],
@@ -42,6 +45,7 @@ export const AllChains = [
     label: "Immutable X",
     icon: "/icons/immutablex.png",
     key: "imx",
+    urlKey: "immutable-x",
     chainType: "L2",
     border: {
       light: ["border-[#08373C]", "border-[#08373C]"],
@@ -56,6 +60,7 @@ export const AllChains = [
     label: "Polygon zkEVM",
     icon: "/icons/polygon-pos.png",
     key: "polygon_zkevm",
+    urlKey: "polygon-zkevm",
     chainType: "L2",
     border: {
       light: ["border-[#800094]", "border-[#800094]"],
@@ -70,6 +75,7 @@ export const AllChains = [
     label: "Loopring",
     icon: "/icons/loopring.png",
     key: "loopring",
+    urlKey: "loopring",
     chainType: "L2",
     border: {
       light: ["border-[#000000]", "border-[#000000]"],
@@ -84,6 +90,7 @@ export const AllChains = [
     label: "Optimism",
     icon: "/icons/optimism.png",
     key: "optimism",
+    urlKey: "optimism",
     chainType: "L2",
     border: {
       light: ["border-[#DD3408]", "border-[#DD3408]"],
@@ -98,6 +105,7 @@ export const AllChains = [
     label: "Multiple",
     icon: null,
     key: "multiple",
+    urlKey: "multiple",
     chainType: "all-L2",
     border: {
       light: ["border-[#cdd8d3]", "border-[#cdd8d3]"],
@@ -115,6 +123,7 @@ export const AllChains = [
     icon: "/icons/x.png",
 
     key: "all_l2s",
+    urlKey: "all-l2s",
     chainType: null,
     border: {
       light: ["border-[#DAEE75]", "border-[#DAEE75]"],

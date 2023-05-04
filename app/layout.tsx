@@ -278,7 +278,7 @@ export default function RootLayout({
                         </div>
                       </div>
                     </div>
-                    <div className="flex space-x-6 items-center">
+                    <div className="flex space-x-6 items-center z-10">
                       <EthUsdSwitch />
                       <DarkModeSwitch />
                       <Link
@@ -301,8 +301,8 @@ export default function RootLayout({
                   <main className="flex-1 w-full mx-auto p-2 pr-2 md:p-6 md:pr-12 relative z-10">
                     {children}
                   </main>
-                  <div className="mt-24 w-full text-center py-6">
-                    <div className="text-[0.7rem] text-inherit dark:text-forest-400 leading-[1] ml-8">
+                  <div className="mt-24 w-full text-center py-6 relative">
+                    <div className="text-[0.7rem] text-inherit dark:text-forest-400 leading-[1] ml-8 z-20">
                       © 2023 Grow The Pie 🥧
                     </div>
                   </div>
