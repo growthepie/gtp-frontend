@@ -7,11 +7,11 @@ export const AllChains = [
     chainType: "L1",
     border: {
       light: ["border-[#293305]", "border-[#293305]"],
-      dark: ["border-[#d7dfde]", "border-[#d7dfde]"],
+      dark: ["border-[#C1C1C1]", "border-[#C1C1C1]"],
     },
     colors: {
       light: ["#293305", "#293305"], // text color
-      dark: ["#d7dfde", "#d7dfde"], // text color
+      dark: ["#C1C1C1", "#C1C1C1"], // text color
     }, // yellow-orange
   },
   {
@@ -49,11 +49,11 @@ export const AllChains = [
     chainType: "L2",
     border: {
       light: ["border-[#08373C]", "border-[#08373C]"],
-      dark: ["border-[#10808C]", "border-[#10808C]"],
+      dark: ["border-[#3AFCC9]", "border-[#3AFCC9]"],
     },
     colors: {
       light: ["#08373C", "#08373C"], // dark sea
-      dark: ["#10808C", "#10808C"], // dark sea
+      dark: ["#3AFCC9", "#3AFCC9"], // dark sea
     },
   },
   {
@@ -127,11 +127,11 @@ export const AllChains = [
     chainType: null,
     border: {
       light: ["border-[#DAEE75]", "border-[#DAEE75]"],
-      dark: ["border-[#EEFF97]", "border-[#EEFF97]"],
+      dark: ["border-[#47D96F]", "border-[#47D96F]"],
     },
     colors: {
       light: ["#DAEE75", "#DAEE75"], // light green
-      dark: ["#EEFF97", "#EEFF97"], // light green
+      dark: ["#47D96F", "#47D96F"], // light green
     },
   },
 ];

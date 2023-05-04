@@ -30,7 +30,8 @@ export const MetricsURLs = {
 export const ChainURLs = {
   ethereum: "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/ethereum.json",
   arbitrum: "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/arbitrum.json",
-  polygon:
+  polygon_zkevm:
     "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/polygon_zkevm.json",
+  optimism: "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/optimism.json",
   imx: "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/imx.json",
 };
