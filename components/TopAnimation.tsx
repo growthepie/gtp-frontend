@@ -211,6 +211,7 @@ const TopAnimation = () => {
                 width={69}
                 height={52}
                 className=""
+                loading="eager"
               />
             </animated.div>
             <animated.h1 className="w-[160px] font-bold text-[21px]" style={RightAnimate(1)}>
