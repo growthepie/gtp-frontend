@@ -17,6 +17,9 @@ module.exports = {
         raleway: ["var(--font-raleway)", "sans-serif"],
         sans: ["Inter var", ...defaultTheme.fontFamily.sans],
       },
+      lineHeight: {
+        snug: "1.2",
+      },
       transitionProperty: {
         height: "height",
         width: "width",

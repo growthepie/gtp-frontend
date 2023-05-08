@@ -13,6 +13,7 @@ import LandingChart from "@/components/layout/LandingChart";
 import LandingMetricsTable from "@/components/layout/LandingMetricsTable";
 import { Icon } from "@iconify/react";
 import TopAnimation from "@/components/TopAnimation";
+import { LandingURL, MasterURL } from "@/lib/urls";
 
 export default function Home() {
   const isLargeScreen = useMediaQuery("(min-width: 768px)");
@@ -24,13 +25,10 @@ export default function Home() {
   }, [isLargeScreen]);
 
   const { data: landing, error: landingError } =
-    useSWR<LandingPageMetricsResponse>(
-      "https://d2cfnw27176mbd.cloudfront.net/v0_3/landing_page.json"
-    );
+    useSWR<LandingPageMetricsResponse>(LandingURL);
 
-  const { data: master, error: masterError } = useSWR<MasterResponse>(
-    "https://d2cfnw27176mbd.cloudfront.net/v0_3/master.json"
-  );
+  const { data: master, error: masterError } =
+    useSWR<MasterResponse>(MasterURL);
 
   const [data, setData] = useState<any>(null);
 
@@ -72,25 +70,25 @@ export default function Home() {
   }
 
   return (
-    <div className="flex w-full mt-[0rem]">
+    <div className="flex w-full mt-[65px]">
       <div className={`flex flex-col flex-1 pl-2 md:pl-6`}>
         {data && (
           <>
-            <Heading className="text-2xl leading-snug md:text-3xl lg:text-4xl xl:text-5xl mb-[30px]">
-              Growing the Ethereum Ecosystem Together
+            <Heading className="text-2xl leading-snug md:text-[36px] mb-[30px]">
+              Growing Ethereum’s Ecosystem Together
             </Heading>
             <TopAnimation />
             {/* <Subheading className="text-sm leading-snug">
               Compare Ethereum&apos;s Layer-2 solutions and better understand
               the metrics to grow the ecosystem.
             </Subheading> */}
-            <div className="flex mt-[90px] mb-4 space-x-2 items-center">
+            <div className="flex mt-[100px] mb-[32px] space-x-2 items-center">
               <Icon icon="gtp:gtp-pie" className="w-9 h-9" />
               <Heading className="text-[30px] leading-snug font-bold">
                 Layer 2 User Base
               </Heading>
             </div>
-            <Subheading className="text-base leading-snug mb-[15px]">
+            <Subheading className="text-base leading-snug mb-[15px] px-[45px]">
               Number of unique addresses interacting with one or multiple L2s in
               a given week.
             </Subheading>
@@ -106,9 +104,11 @@ export default function Home() {
                       data: data.chains[chain].data.data,
                     };
                   })}
-                source={landing.data.metrics.user_base.source}
+                sources={landing.data.metrics.user_base.source}
                 latest_total={data.latest_total}
+                latest_total_comparison={data.latest_total_comparison}
                 l2_dominance={data.l2_dominance}
+                l2_dominance_comparison={data.l2_dominance_comparison}
                 selectedMetric={selectedMetric}
                 metric={selectedTimeInterval}
                 setSelectedMetric={setSelectedMetric}
@@ -126,24 +126,28 @@ export default function Home() {
             />
           </>
         )}
-        <div className="flex mt-[90px] mb-[30px] space-x-2 items-center">
-          <Icon icon="gtp:gtp-about" className="w-9 h-9" />
-          <Heading className="text-[30px] leading-snug font-bold">
-            About Grow The Pie
-          </Heading>
-        </div>
-        <div className="flex">
-          <div className="text-sm lg:text-base w-1/2 xl:w-1/3">
-            At GrowThePie, our mission is to provide comprehensive and accurate
-            analytics of layer 2 solutions for the Ethereum ecosystem, acting as
-            a trusted data aggregator from reliable sources such as L2Beat and
-            DefiLlama, while also developing our own metrics. Through our
-            analytics interface, we aim to educate and increase transparency.
-            Our goal is to be one of the go-to resources for those seeking to
-            learn more about the potential of layer 2 technologies and their
-            impact on the future of the Ethereum ecosystem.
+
+        <div className="flex gap-x-10 mt-[90px]">
+          <div className="flex flex-col w-1/2 lg:w-2/3">
+            <div className="flex space-x-2 mb-[30px] items-center">
+              <Icon icon="gtp:gtp-about" className="w-9 h-9" />
+              <Heading className="text-[30px] leading-snug font-bold">
+                About Grow The Pie
+              </Heading>
+            </div>
+            <div className="text-sm lg:text-base">
+              At GrowThePie, our mission is to provide comprehensive and
+              accurate analytics of layer 2 solutions for the Ethereum
+              ecosystem, acting as a trusted data aggregator from reliable
+              sources such as L2Beat and DefiLlama, while also developing our
+              own metrics. Through our analytics interface, we aim to educate
+              and increase transparency. Our goal is to be one of the go-to
+              resources for those seeking to learn more about the potential of
+              layer 2 technologies and their impact on the future of the
+              Ethereum ecosystem.
+            </div>
           </div>
-          <div className="flex-1 relative">
+          <div className="flex-1 relative mt-[5px] lg:mt-[15px] -mb-[10px] lg:-mb-[30px]">
             <Image
               src="/GTP-Data-Kraken.png"
               fill={true}

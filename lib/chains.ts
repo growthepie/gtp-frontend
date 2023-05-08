@@ -126,12 +126,12 @@ export const AllChains = [
     urlKey: "all-l2s",
     chainType: null,
     border: {
-      light: ["border-[#DAEE75]", "border-[#DAEE75]"],
-      dark: ["border-[#47D96F]", "border-[#47D96F]"],
+      light: ["border-[#FFDF27]", "border-[#FE5468]"],
+      dark: ["border-[#FFDF27]", "border-[#FE5468]"],
     },
     colors: {
-      light: ["#DAEE75", "#DAEE75"], // light green
-      dark: ["#47D96F", "#47D96F"], // light green
+      light: ["#FFDF27", "#FE5468"], // light green
+      dark: ["#FFDF27", "#FE5468"], // light green
     },
   },
 ];

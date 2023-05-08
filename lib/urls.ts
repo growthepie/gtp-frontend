@@ -35,3 +35,9 @@ export const ChainURLs = {
   optimism: "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/optimism.json",
   imx: "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/imx.json",
 };
+
+export const LandingURL =
+  "https://d2cfnw27176mbd.cloudfront.net/v0_4/landing_page.json";
+
+export const MasterURL =
+  "https://d2cfnw27176mbd.cloudfront.net/v0_4/master.json";

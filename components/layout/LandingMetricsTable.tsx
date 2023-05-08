@@ -5,6 +5,8 @@ import { useLocalStorage, useMediaQuery, useSessionStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import d3 from "d3";
 import moment from "moment";
+import { Icon } from "@iconify/react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 
 export default function LandingMetricsTable({
   data,
@@ -81,7 +83,7 @@ export default function LandingMetricsTable({
         }`}
       >
         <div
-          className={`flex items-center py-1 pl-2 pr-4 rounded-full gap-x-2 lg:gap-x-8 font-semibold whitespace-nowrap text-xs lg:text-sm`}
+          className={`flex items-center py-1 pl-2 pr-2 rounded-full gap-x-2 lg:gap-x-8 font-semibold whitespace-nowrap text-xs lg:text-sm`}
         >
           <div className="basis-3/12 pl-14">Chain</div>
           <div className="basis-2/12">Age</div>
@@ -164,7 +166,7 @@ export default function LandingMetricsTable({
                           <>
                             <span>{master.chains[chain.key].rollup}</span>{" "}
                             <span className="hidden lg:inline-block">
-                              Rollup
+                              {master.chains[chain.key].technology}
                             </span>
                           </>
                         )}
@@ -235,6 +237,21 @@ export default function LandingMetricsTable({
               </>
             );
           })}
+      </div>
+      <div className="flex space-x-2 pl-14 mt-2">
+        <Tooltip placement="right">
+          <TooltipTrigger>
+            <Icon icon="feather:info" className="w-4 h-4 font-semibold" />
+          </TooltipTrigger>
+          <TooltipContent className="p-3 text-sm font-medium bg-forest-300 text-forest-900 rounded-xl shadow-lg z-50 flex items-center">
+            Number of unique addresses interacting with one or multiple L2s in a
+            given week.
+          </TooltipContent>
+        </Tooltip>
+        <span className="text-xs">
+          Number of unique addresses interacting with one or multiple L2s in a
+          given week.
+        </span>
       </div>
     </>
   );

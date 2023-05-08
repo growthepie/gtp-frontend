@@ -62,48 +62,90 @@ const Chain = ({ params }: { params: any }) => {
     <>
       {/* <h1>Metric: {params.metric}</h1> */}
       {metricData && (
-        <div className="flex flex-col space-y-4 mt-8 pl-2 md:pl-6">
-          <Heading>{pageData.title}</Heading>
-          <Subheading className="flex items-center space-x-1.5">
-            <Icon icon={pageData.icon} />
-            <div>{pageData.description}</div>
-          </Subheading>
+        <div className="flex w-full pl-2 md:pl-6 mt-[75px]">
+          <div className="flex flex-col w-full">
+            <div className="flex justify-between items-start w-full">
+              <div className="flex items-start">
+                <Heading className="text-2xl leading-snug md:text-3xl lg:text-[48px] mb-[30px]">
+                  {pageData.title}
+                </Heading>
+              </div>
+            </div>
+            <Subheading
+              className="text-[20px]"
+              leftIcon={
+                pageData.icon && (
+                  <Icon
+                    icon={pageData.icon}
+                    className="w-6 h-6 mr-[16px] ml-[24px] mt-0.5"
+                  />
+                )
+              }
+              iconContainerClassName="items-start mb-[30px]"
+            >
+              {pageData.description}
+            </Subheading>
+            {/* <Subheading
+              className="text-[20px] mb-[30px]"
+              leftIcon={
+                <div>
+                  <Icon icon="feather:gift" className="w-6 h-6 mr-[16px]" />
+                </div>
+              }
+            >
+              {pageData.why}
+            </Subheading> */}
 
-          <div className="flex flex-col-reverse xl:flex-row space-x-0 xl:space-x-8">
-            <div className="flex flex-col xl:min-w-[600px]">
-              <MetricsTable
-                data={metricData.data.chains}
-                selectedChains={selectedChains}
-                setSelectedChains={setSelectedChains}
-                chains={chains}
-                metric={metricData.data.metric_id}
-              />
+            <div className="flex flex-col-reverse xl:flex-row space-x-0 xl:space-x-8">
+              <div className="flex-1">
+                <ComparisonChart
+                  data={Object.keys(metricData.data.chains)
+                    .filter((chain) => selectedChains.includes(chain))
+                    .map((chain) => {
+                      return {
+                        name: chain,
+                        // type: 'spline',
+                        types:
+                          metricData.data.chains[chain][selectedTimeInterval]
+                            .types,
+                        data: metricData.data.chains[chain][
+                          selectedTimeInterval
+                        ].data,
+                      };
+                    })}
+                  timeIntervals={intersection(
+                    Object.keys(metricData.data.chains.arbitrum),
+                    ["daily", "weekly", "monthly"]
+                  )}
+                  onTimeIntervalChange={(timeInterval) =>
+                    setSelectedTimeInterval(timeInterval)
+                  }
+                  showTimeIntervals={true}
+                  sources={metricData.data.source}
+                >
+                  <MetricsTable
+                    data={metricData.data.chains}
+                    selectedChains={selectedChains}
+                    setSelectedChains={setSelectedChains}
+                    chains={chains}
+                    metric={metricData.data.metric_id}
+                  />
+                </ComparisonChart>
+              </div>
             </div>
-            <div className="flex-1">
-              <ComparisonChart
-                data={Object.keys(metricData.data.chains)
-                  .filter((chain) => selectedChains.includes(chain))
-                  .map((chain) => {
-                    return {
-                      name: chain,
-                      // type: 'spline',
-                      types:
-                        metricData.data.chains[chain][selectedTimeInterval]
-                          .types,
-                      data: metricData.data.chains[chain][selectedTimeInterval]
-                        .data,
-                    };
-                  })}
-                timeIntervals={intersection(
-                  Object.keys(metricData.data.chains.arbitrum),
-                  ["daily", "weekly", "monthly"]
-                )}
-                onTimeIntervalChange={(timeInterval) =>
-                  setSelectedTimeInterval(timeInterval)
-                }
-                showTimeIntervals={true}
-              />
-            </div>
+            <Subheading
+              className="text-[20px] mt-[30px] w-5/6"
+              leftIcon={
+                <div>
+                  <Icon
+                    icon="feather:gift"
+                    className="w-6 h-6 mr-[16px] mt-[30px] ml-8"
+                  />
+                </div>
+              }
+            >
+              {pageData.why}
+            </Subheading>
           </div>
         </div>
       )}

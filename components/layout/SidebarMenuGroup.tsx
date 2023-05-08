@@ -11,6 +11,7 @@ import { usePathname } from "next/navigation";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./Tooltip";
 import { AllChains } from "@/lib/chains";
 import Image from "next/image";
+import { MasterURL } from "@/lib/urls";
 
 export type SidebarItem = {
   name: string;
@@ -22,9 +23,10 @@ export type SidebarItem = {
     // name?: string;
     label: string;
     page?: {
-      title: string;
+      title?: string;
       description: string;
-      icon: string;
+      why?: string;
+      icon?: string;
     };
     icon: ReactNode;
     key?: string;
@@ -56,9 +58,7 @@ export default function SidebarMenuGroup({
   onClose = () => {},
   sidebarOpen,
 }: SidebarProps) {
-  const { data: master } = useSWR<any>(
-    "https://d2cfnw27176mbd.cloudfront.net/v0_3/master.json"
-  );
+  const { data: master } = useSWR<any>(MasterURL);
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -116,13 +116,13 @@ export default function SidebarMenuGroup({
       <div className="group flex flex-col">
         <Tooltip key={item.label} placement="right">
           <TooltipTrigger className="h-6 mb-8 cursor-default pl-8 overflow-visible">
-            <div className="flex items-center justify-items-center opacity-70 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
+            <div className="flex items-center justify-items-center">
               <div className="w-6 mx-0">
                 <div className="w-6 mx-auto">{item.sidebarIcon}</div>
               </div>
               <div className="">
                 {sidebarOpen && (
-                  <div className="text-base font-semibold mx-3 w-80 flex space-x-3 items-center">
+                  <div className="text-base font-bold mx-3 w-80 flex space-x-3 items-center">
                     <span>{item.label}</span>
                     <div className="px-1 py-[2px] leading-[1] text-sm font-bold ml-1 rounded-[3px] bg-forest-900 text-forest-50">
                       SOON
@@ -163,13 +163,11 @@ export default function SidebarMenuGroup({
               }
             >
               <div className="w-6 mx-0">
-                <div className="w-6 mx-auto opacity-100 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
-                  {item.sidebarIcon}
-                </div>
+                <div className="w-6 mx-auto">{item.sidebarIcon}</div>
               </div>
               <div className="">
                 {sidebarOpen && (
-                  <div className="text-base font-semibold mx-3 w-80 flex">
+                  <div className="text-base font-bold mx-3 w-80 flex">
                     {item.label}
                   </div>
                 )}
@@ -195,13 +193,11 @@ export default function SidebarMenuGroup({
             onClick={handleToggle}
           >
             <div className="w-6 mx-0">
-              <div className="w-6 mx-auto opacity-100 group-hover:opacity-100 transition-opacity duration-100 ease-in-out">
-                {item.sidebarIcon}
-              </div>
+              <div className="w-6 mx-auto">{item.sidebarIcon}</div>
             </div>
             {sidebarOpen ? (
               <div className={`flex-1 flex items-start justify-between`}>
-                <div className="text-base font-semibold mx-3 py-0.5">
+                <div className="text-base font-bold mx-3 py-0.5">
                   {item.label}
                 </div>
                 <Icon
@@ -263,8 +259,8 @@ export default function SidebarMenuGroup({
                       <div
                         className={`w-6 absolute top-2 left-3 ${
                           urlParts[1].trim().localeCompare(option.urlKey) === 0
-                            ? "opacity-100"
-                            : "opacity-30 group-hover:opacity-100"
+                            ? "text-inherit"
+                            : "text-[#5A6462] group-hover:text-inherit"
                         }`}
                       >
                         {(item.name === "Fundamentals" ||

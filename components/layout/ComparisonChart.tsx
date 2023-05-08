@@ -22,6 +22,11 @@ import { useTheme } from "next-themes";
 import { Switch } from "../Switch";
 import { AllChainsByKeys } from "@/lib/chains";
 import d3 from "d3";
+import Image from "next/image";
+import { Icon } from "@iconify/react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
+import Link from "next/link";
+import { Sources } from "@/lib/datasources";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -219,11 +224,15 @@ export default function ComparisonChart({
   timeIntervals,
   onTimeIntervalChange,
   showTimeIntervals = true,
+  children,
+  sources,
 }: {
   data: any;
   timeIntervals: string[];
   onTimeIntervalChange: (interval: string) => void;
   showTimeIntervals: boolean;
+  children?: React.ReactNode;
+  sources: string[];
 }) {
   useEffect(() => {
     Highcharts.setOptions({
@@ -240,7 +249,7 @@ export default function ComparisonChart({
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
-  const [selectedTimespan, setSelectedTimespan] = useState("90d");
+  const [selectedTimespan, setSelectedTimespan] = useState("365d");
 
   const [selectedScale, setSelectedScale] = useState("absolute");
 
@@ -305,11 +314,14 @@ export default function ComparisonChart({
   const formatNumber = useCallback(
     (value: number | string, isAxis = false) => {
       const prefix = valuePrefix;
+
       return isAxis
-        ? prefix + d3.format(".2s")(value).replace(/G/, "B")
+        ? selectedScale !== "percentage"
+          ? prefix + d3.format(".2s")(value).replace(/G/, "B")
+          : d3.format(".2~s")(value).replace(/G/, "B") + "%"
         : d3.format(",.2~s")(value).replace(/G/, "B");
     },
-    [valuePrefix]
+    [valuePrefix, selectedScale]
   );
 
   const tooltipFormatter = useCallback(
@@ -559,6 +571,8 @@ export default function ComparisonChart({
             },
             yAxis: {
               type: "linear",
+              max: undefined,
+              min: undefined,
             },
             tooltip: {
               formatter: tooltipFormatter,
@@ -582,6 +596,8 @@ export default function ComparisonChart({
             },
             yAxis: {
               type: "logarithmic",
+              max: undefined,
+              min: undefined,
             },
             tooltip: {
               formatter: tooltipFormatter,
@@ -609,6 +625,8 @@ export default function ComparisonChart({
             },
             yAxis: {
               type: "linear",
+              max: 100,
+              min: 1,
             },
             tooltip: {
               formatter: tooltipFormatter,
@@ -645,45 +663,33 @@ export default function ComparisonChart({
   };
 
   return (
-    <div className="w-full my-12 relative">
-      <div className="flex w-full justify-between items-center absolute -top-10 left-0 right-0 text-xs">
-        <div className="flex justify-center items-center space-x-1 rounded-full bg-forest-50 p-0.5">
-          {showTimeIntervals &&
-            timeIntervals.map((timeInterval, i) => (
-              <button
-                key={timeInterval}
-                className={`rounded-full px-2 py-1 font-medium capitalize ${
-                  selectedTimeInterval === timeInterval
-                    ? "bg-forest-900 text-forest-50 hover:bg-forest-700"
-                    : "hover:bg-forest-100"
-                }`}
-                onClick={() => {
-                  onTimeIntervalChange(timeInterval);
-                  // chartComponent.current?.xAxis[0].setExtremes(
-                  //   timespans[timespan].xMin,
-                  //   timespans[timespan].xMax
-                  // );
-                }}
-              >
-                {timeInterval}
-              </button>
-            ))}
+    <div className="w-full flex-col">
+      <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 p-0.5">
+        <div className="flex justify-center items-center space-x-2">
+          <div className="w-7 h-7 lg:w-9 lg:h-9 relative ml-4">
+            <Image
+              src="/GTP-Chain.png"
+              alt="GTP Chain"
+              className="object-contain"
+              fill
+            />
+          </div>
+          {/* <Icon icon="gtp:chain" className="w-7 h-7 lg:w-9 lg:h-9" /> */}
+          <h2 className="text-[24px] xl:text-[30px] leading-snug font-bold hidden lg:block">
+            Selected Chains
+          </h2>
         </div>
-        <div className="flex justify-center items-center space-x-1 rounded-full bg-forest-50 p-0.5">
+        <div className="flex justify-center items-center space-x-1">
           {Object.keys(timespans).map((timespan) => (
             <button
               key={timespan}
-              className={`rounded-full px-2 py-1 font-medium ${
+              className={`rounded-full px-2 py-1 text-base lg:px-4 lg:py-1.5 lg:text-base xl:px-4 xl:py-1.5 xl:text-base font-medium ${
                 selectedTimespan === timespan
-                  ? "bg-forest-900 text-forest-50 hover:bg-forest-700"
+                  ? "bg-forest-500 dark:bg-[#151A19]"
                   : "hover:bg-forest-100"
               }`}
               onClick={() => {
                 setSelectedTimespan(timespan);
-                // chartComponent.current?.xAxis[0].setExtremes(
-                //   timespans[timespan].xMin,
-                //   timespans[timespan].xMax
-                // );
               }}
             >
               {timespans[timespan].label}
@@ -691,94 +697,132 @@ export default function ComparisonChart({
           ))}
         </div>
       </div>
-      <div className="w-full p-4 rounded-xl bg-forest-50/10 dark:bg-forest-900/10">
-        <div className="w-full h-[26rem] relative rounded-xl">
-          <div className="absolute w-full h-[24rem] top-4">
-            <HighchartsReact
-              highcharts={Highcharts}
-              options={options}
-              ref={(chart) => {
-                chartComponent.current = chart?.chart;
-              }}
+      <div className="w-full flex flex-col-reverse lg:flex-row">
+        <div className="hidden lg:block lg:w-1/2 xl:w-1/3 pl-2 pr-[19px]">
+          {children}
+        </div>
+        <div className="w-full lg:w-1/2 xl:w-2/3 relative">
+          <div className="w-full p-4 rounded-xl bg-forest-50/10 dark:bg-forest-900/10">
+            <div className="w-full h-[26rem] relative rounded-xl">
+              <div className="absolute w-full h-[24rem] top-4">
+                <HighchartsReact
+                  highcharts={Highcharts}
+                  options={options}
+                  ref={(chart) => {
+                    chartComponent.current = chart?.chart;
+                  }}
 
-              // immutable={true}
-              // oneToOne={true}
-              // callBack={(chart) => {
-              // 	setChart(chart);
-              // }}
-            />
+                  // immutable={true}
+                  // oneToOne={true}
+                  // callBack={(chart) => {
+                  // 	setChart(chart);
+                  // }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <div className="flex justify-between items-center absolute -bottom-10 left-0 right-0 ">
+      <div className="flex w-full justify-between items-center text-base rounded-full bg-forest-50 p-0.5 px-1">
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
         {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
         {/* toggle ETH */}
-        <div>
-          {data.filter((d) => d.name === "ethereum").length > 0 && (
-            <Switch
-              checked={showEthereumMainnet}
-              onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
-              rightLabel="Show Ethereum"
-            />
-          )}
+        <div className="z-10 block lg:hidden">
+          <Switch
+            checked={showEthereumMainnet}
+            onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
+            rightLabel="ETH"
+          />
         </div>
+        <div className="z-10 hidden lg:block">
+          <Switch
+            checked={showEthereumMainnet}
+            onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
+            rightLabel="Show Ethereum"
+          />
+        </div>
+        <div className="flex justify-end items-center">
+          {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
+          {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
+          {/* toggle ETH */}
 
-        {/* <button
-            className={`rounded-full px-2 py-1 text-xs font-bold
-            ${
-              showEthereumMainnet
-                ? "bg-forest-900 text-forest-50 hover:bg-forest-700"
-                : "bg-transparent text-forest-800 hover:bg-forest-700"
-            }`}
-            onClick={() => setShowEthereumMainnet(!showEthereumMainnet)}
-          >
-            {showEthereumMainnet ? "Hide ETH Mainnet" : "Show ETH Mainnet"}
-          </button> */}
-        {/* </div> */}
-        <div className="flex justify-center items-center space-x-1 rounded-full bg-forest-50 p-0.5">
-          <button
-            className={`rounded-full px-2 py-1 text-xs font-bold ${
-              "absolute" === selectedScale
-                ? "bg-forest-900 text-forest-50"
-                : "hover:bg-forest-100"
-            }`}
-            onClick={() => {
-              setSelectedScale("absolute");
-            }}
-          >
-            <span className=" font-bold text-[0.6rem] font-mono mr-0.5">
-              {"<>"}
-            </span>
-            Absolute
-          </button>
-          <button
-            className={`rounded-full px-2 py-1 text-xs font-bold ${
-              "log" === selectedScale
-                ? "bg-forest-900 text-forest-50"
-                : "hover:bg-forest-100"
-            }`}
-            onClick={() => {
-              setSelectedScale("log");
-            }}
-          >
-            <ArrowTrendingUpIcon className="w-3 h-3 font-bold inline-block mr-0.5" />
-            Log
-          </button>
-          <button
-            className={`rounded-full px-2 py-1 text-xs font-bold ${
-              "percentage" === selectedScale
-                ? "bg-forest-900 text-forest-50"
-                : "hover:bg-forest-100"
-            }`}
-            onClick={() => {
-              setSelectedScale("percentage");
-            }}
-          >
-            <span className="font-bold text-[0.6rem]">%</span> Percentage
-          </button>
+          <div className="flex justify-center items-center">
+            <div className="flex justify-center items-center space-x-1">
+              <button
+                className={`rounded-full px-2 py-1 text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
+                  "absolute" === selectedScale
+                    ? "bg-forest-500 dark:bg-[#151A19]"
+                    : "hover:bg-forest-100"
+                }`}
+                onClick={() => {
+                  setSelectedScale("absolute");
+                }}
+              >
+                Absolute
+              </button>
+              <button
+                className={`rounded-full px-2 py-1 text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
+                  "log" === selectedScale
+                    ? "bg-forest-500 dark:bg-[#151A19]"
+                    : "hover:bg-forest-100"
+                }`}
+                onClick={() => {
+                  setSelectedScale("log");
+                }}
+              >
+                Stacked
+              </button>
+              <button
+                className={`rounded-full px-2 py-1 text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
+                  "percentage" === selectedScale
+                    ? "bg-forest-500 dark:bg-[#151A19]"
+                    : "hover:bg-forest-100"
+                }`}
+                onClick={() => {
+                  setSelectedScale("percentage");
+                }}
+              >
+                Percentage
+              </button>
+            </div>
+            <Tooltip placement="left" allowInteract>
+              <TooltipTrigger>
+                <div className="p-1 z-10">
+                  <Icon
+                    icon="feather:info"
+                    className="w-6 h-6 text-forest-900"
+                  />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
+                <div className="px-3 text-sm font-medium bg-forest-100 text-forest-900 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
+                  <div className="flex flex-col space-y-1">
+                    <div className="font-bold text-sm leading-snug">
+                      Data Sources:
+                    </div>
+                    <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
+                      {sources
+                        .map<React.ReactNode>((s) => (
+                          <Link
+                            key={s}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                            href={Sources[s]}
+                            className="text-forest-900 hover:text-forest-500 dark:text-forest-100 dark:hover:text-forest-500 underline"
+                          >
+                            {s}
+                          </Link>
+                        ))
+                        .reduce((prev, curr) => [prev, ", ", curr])}
+                    </div>
+                  </div>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
       </div>
+      <div className="block lg:hidden w-full">{children}</div>
     </div>
   );
 }

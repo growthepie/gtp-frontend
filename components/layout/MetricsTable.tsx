@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocalStorage, useMediaQuery, useSessionStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
+import { Icon } from "@iconify/react";
 
 const MetricsTable = ({
   data,
@@ -63,110 +64,108 @@ const MetricsTable = ({
     setMaxVal(max);
   }, [chains, data, lastIndex]);
 
+  const timespanLabels = {
+    "1d": "24h",
+    "7d": "7 days",
+    "30d": "30 days",
+    "365d": "1 year",
+  };
+
   return (
-    <>
-      <div className="flex flex-col mt-12 font-semibold">
-        <div
-          className={`flex items-center p-1.5 lg:py-1.5 lg:pl-3 pr-6 rounded-full gap-x-2 lg:gap-x-8 font-semibold whitespace-nowrap text-xs lg:text-sm`}
-        >
-          <div className={`basis-1/3 pl-14`}>Chain</div>
-          <div className="basis-2/3 flex w-full">
-            <div className={`basis-1/5 text-right capitalize`}>
-              {/* {metric} */}
+    <div className="flex flex-col mt-6 font-semibold space-y-[5px] w-full">
+      <div
+        className={`flex items-center py-1 pl-2 pr-4 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm`}
+      >
+        <div className="basis-1/3 pl-12">Chain</div>
+        <div className="basis-2/3 flex w-full pr-4">
+          {/* <div className={`basis-1/5 text-right capitalize`}>
               Current
+            </div> */}
+          {["1d", "7d", "30d", "365d"].map((timespan) => (
+            <div key={timespan} className="basis-1/4 text-right">
+              {timespanLabels[timespan]}
             </div>
-            {["1d", "7d", "30d", "365d"].map((timespan) => (
-              <div key={timespan} className="basis-1/5 text-right">
-                {timespan}
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
-        {chains &&
-          chainsLastVal &&
-          chainsLastVal.map((clv, i) => {
-            const chain = clv.chain;
-            return (
-              <div
-                key={chain.key}
-                className={`flex gap-x-2 lg:gap-x-8 items-center cursor-pointer p-1.5 lg:py-3 lg:pl-3 pr-6 rounded-full w-full font-[400] border-[1px] border-forest-500 whitespace-nowrap text-xs lg:text-sm ${
-                  i > 0 ? "-mt-[1px]" : ""
-                } ${
-                  selectedChains.includes(chain.key)
-                    ? " hover:bg-forest-50"
-                    : "opacity-50 grayscale hover:opacity-70 hover:grayscale-20 transition-all duration-100"
-                }`}
-                onClick={() => {
-                  if (selectedChains.includes(chain.key)) {
-                    setSelectedChains(
-                      selectedChains.filter((c) => c !== chain.key)
-                    );
-                  } else {
-                    setSelectedChains([...selectedChains, chain.key]);
-                  }
-                }}
-              >
-                <div className="flex basis-1/3 items-center space-x-4">
-                  <div className="relative">
-                    <div
-                      className={`w-8 h-8 rounded-full bg-white border-[5px] ${
-                        chain.border[theme ?? "dark"][1]
-                      } ${selectedChains.includes(chain.key) ? "" : ""}`}
-                    ></div>
-                    <Image
-                      src={chain.icon}
-                      alt={chain.label}
-                      width={18}
-                      height={18}
-                      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-                    />
-                  </div>
-                  <div className="break-inside-avoid text-xs md:text-sm lg:text-lg">
-                    {chain.label}
-                  </div>
+      </div>
+      {chains &&
+        chainsLastVal &&
+        chainsLastVal.map((clv, i) => {
+          const chain = clv.chain;
+          return (
+            <div
+              key={chain.key}
+              className={`flex relative items-center cursor-pointer p-1.5 lg:p-3 rounded-full w-full font-[400] border-[1px] border-forest-500 whitespace-nowrap text-xs lg:text-[0.95rem] ${
+                selectedChains.includes(chain.key)
+                  ? " hover:bg-forest-50/10"
+                  : "opacity-50 grayscale hover:opacity-70 hover:grayscale-20 transition-all duration-100"
+              }`}
+              onClick={() => {
+                if (selectedChains.includes(chain.key)) {
+                  setSelectedChains(
+                    selectedChains.filter((c) => c !== chain.key)
+                  );
+                } else {
+                  setSelectedChains([...selectedChains, chain.key]);
+                }
+              }}
+            >
+              <div className="flex basis-1/3 items-center space-x-2">
+                <div className="relative">
+                  <div
+                    className={`w-8 h-8 rounded-full bg-white border-[5px] ${
+                      chain.border[theme ?? "dark"][1]
+                    } ${selectedChains.includes(chain.key) ? "" : ""}`}
+                  ></div>
+                  <Image
+                    src={chain.icon}
+                    alt={chain.label}
+                    width={18}
+                    height={18}
+                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                  />
                 </div>
-                <div className="basis-2/3 flex w-full">
-                  <div className="flex basis-1/5 justify-end items-center">
-                    {/* <div className="flex flex-1 align-middle items-center"> */}
-                    <div className={`relative w-full`}>
-                      <div className="flex w-full justify-end">
-                        {data[chain.key].daily.types.includes("usd") && (
-                          <>
-                            {showUsd ? (
-                              <div className="">$</div>
-                            ) : (
-                              <div className="">Ξ</div>
-                            )}
-                          </>
-                        )}
-                        {data[chain.key].daily.types.includes("usd")
-                          ? Intl.NumberFormat(undefined, {
-                              notation: "compact",
-                              maximumFractionDigits: 2,
-                              minimumFractionDigits: 2,
-                            }).format(
-                              data[chain.key].daily.data[
-                                data[chain.key].daily.data.length - 1
-                              ][
-                                !showUsd &&
-                                data[chain.key].daily.types.includes("usd")
-                                  ? 2
-                                  : 1
-                              ]
-                            )
-                          : Intl.NumberFormat(undefined, {
-                              notation: "compact",
-                              maximumFractionDigits: 2,
-                              minimumFractionDigits: 2,
-                            }).format(
-                              data[chain.key].daily.data[
-                                data[chain.key].daily.data.length - 1
-                              ][1]
-                            )}
-                      </div>
-                      <div className="absolute -bottom-[4px] right-0 w-full h-1 bg-black/30 rounded-md"></div>
+                <div className="w-full break-inside-avoid">
+                  <div className="w-full flex flex-col space-y-0.5 -mt-1">
+                    <div className="flex w-full items-baseline text-sm font-bold">
+                      {data[chain.key].daily.types.includes("usd") && (
+                        <>
+                          {showUsd ? (
+                            <div className="text-[10px] font-normal">$</div>
+                          ) : (
+                            <div className="text-[10px] font-normal">Ξ</div>
+                          )}
+                        </>
+                      )}
+                      {data[chain.key].daily.types.includes("usd")
+                        ? Intl.NumberFormat(undefined, {
+                            notation: "compact",
+                            maximumFractionDigits: 2,
+                            minimumFractionDigits: 2,
+                          }).format(
+                            data[chain.key].daily.data[
+                              data[chain.key].daily.data.length - 1
+                            ][
+                              !showUsd &&
+                              data[chain.key].daily.types.includes("usd")
+                                ? 2
+                                : 1
+                            ]
+                          )
+                        : Intl.NumberFormat(undefined, {
+                            notation: "compact",
+                            maximumFractionDigits: 2,
+                            minimumFractionDigits: 2,
+                          }).format(
+                            data[chain.key].daily.data[
+                              data[chain.key].daily.data.length - 1
+                            ][1]
+                          )}
+                    </div>
+                    <div className="relative w-full">
+                      <div className="absolute left-0 -top-[3px] w-full h-1 bg-black/30"></div>
                       <div
-                        className={`absolute -bottom-[4px] right-0 h-1 bg-green-500 rounded-md font-semibold`}
+                        className={`absolute left-0 -top-[3px] h-1 bg-forest-400 rounded-none font-semibold`}
                         style={{
                           width: `${
                             (data[chain.key].daily.data[
@@ -178,35 +177,59 @@ const MetricsTable = ({
                         }}
                       ></div>
                     </div>
+                    <div className="text-xs mt-1">{chain.label}</div>
                   </div>
-                  {["1d", "7d", "30d", "365d"].map((timespan) => (
-                    <div key={timespan} className="basis-1/5 text-right">
-                      {/* {data[chain.key].changes[timespan][0] > 0 ? (
+                </div>
+              </div>
+              <div className="basis-2/3 pr-4 flex w-full">
+                {/* <div className="flex basis-1/5 justify-end items-center">
+                    
+                    
+                  </div> */}
+                {["1d", "7d", "30d", "365d"].map((timespan) => (
+                  <div
+                    key={timespan}
+                    className="basis-1/4 text-right text-base"
+                  >
+                    {/* {data[chain.key].changes[timespan][0] > 0 ? (
                         <div className="text-green-500 text-[0.5rem]">▲</div>
                       ) : (
                         <div className="text-red-500 text-[0.5rem]">▼</div>
                       )} */}
-                      {data[chain.key].changes[timespan][0] >= 0 ? (
-                        <span className="w-12 text-green-500">
-                          +
-                          {Math.round(
-                            data[chain.key].changes[timespan][0] * 1000
-                          ) / 10}
-                          %
-                        </span>
-                      ) : (
-                        <span className="w-12 text-red-500">
-                          {Math.round(
-                            data[chain.key].changes[timespan][0] * 1000
-                          ) / 10}
-                          %
-                        </span>
-                      )}
-                    </div>
-                  ))}
+                    {data[chain.key].changes[timespan][0] >= 0 ? (
+                      <span className="w-12 text-green-500">
+                        +
+                        {Math.round(
+                          data[chain.key].changes[timespan][0] * 1000
+                        ) / 10}
+                        %
+                      </span>
+                    ) : (
+                      <span className="w-12 text-red-500">
+                        {Math.round(
+                          data[chain.key].changes[timespan][0] * 1000
+                        ) / 10}
+                        %
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {selectedChains.includes(chain.key) ? (
+                <div className="absolute -right-[20px]">
+                  <div className="p-1 rounded-full bg-forest-50">
+                    <Icon icon="feather:check-circle" className="w-6 h-6" />
+                  </div>
                 </div>
-                {/* </div> */}
-                {/* <div className="w-1/4 text-right">
+              ) : (
+                <div className="absolute -right-[20px]">
+                  <div className="p-1 rounded-full bg-forest-50">
+                    <Icon icon="feather:circle" className="w-6 h-6" />
+                  </div>
+                </div>
+              )}
+              {/* </div> */}
+              {/* <div className="w-1/4 text-right">
                       {Math.round(
                         data[chain.key].changes["7d"][0] * 1000
                       ) / 10}
@@ -224,11 +247,10 @@ const MetricsTable = ({
                       ) / 10}
                       %
                     </div> */}
-              </div>
-            );
-          })}
-      </div>
-    </>
+            </div>
+          );
+        })}
+    </div>
   );
 };
 

@@ -3,7 +3,7 @@
     metric_id: string;
     metric_name: string;
     description: string;
-    source: string;
+    source: string[];
     chains: {
       ethereum: {
         chain_name: string;

@@ -25,7 +25,7 @@ export default function EthUsdSwitch() {
   }
 
   return (
-    <div className="flex justify-between">
+    <div className="flex justify-between mr-[34px]">
       <div className="flex items-center">
         <input id="toggle" type="checkbox" className="hidden" />
         <label htmlFor="toggle" className="flex items-center cursor-pointer">
@@ -45,7 +45,7 @@ export default function EthUsdSwitch() {
           >
             <div
               className={` 
-                        w-[6.25rem] h-7 flex justify-between items-center px-3 text-base font-medium
+                        w-[103px] h-7 flex justify-between items-center px-3 text-base font-medium
                         rounded-full transition duration-200 ease-in-out text-forest-900 bg-forest-500`}
             >
               <div>ETH</div>

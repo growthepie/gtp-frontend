@@ -109,7 +109,7 @@ export default function RootLayout({
           </div> */}
           {/* </background gradient> */}
           <div className="flex h-screen w-full justify-center">
-            <div className="flex w-full max-w-[1920px]">
+            <div className="flex w-full max-w-[1680px]">
               <div className="pt-8 pl-0 bg-forest-50 dark:bg-forest-900 mix-h-screen max-h-screen hidden md:flex flex-col overflow-hidden space-y-6 border-r-2 border-forest-500 dark:border-black/50">
                 {isSidebarOpen ? (
                   <div className="h-[45.07px] mb-[18px]">
@@ -249,7 +249,7 @@ export default function RootLayout({
                       className="absolute z-0 mouse-events-none"
                     ></div>
                   </div>
-                  <header className="flex justify-between space-x-6 items-center max-w-[1600px] w-full mx-auto p-2 pr-2 md:p-6 md:pr-10">
+                  <header className="flex justify-between space-x-6 items-center max-w-[1600px] w-full mx-auto px-[50px] pt-[50px]">
                     <div className="flex justify-between items-center">
                       <div className="flex space-x-6">
                         <div className="block md:hidden relative">
@@ -278,13 +278,14 @@ export default function RootLayout({
                         </div>
                       </div>
                     </div>
-                    <div className="flex space-x-6 items-center z-10">
+                    <div className="flex items-center z-10">
                       <EthUsdSwitch />
                       <DarkModeSwitch />
                       <Link
                         href="https://twitter.com/growthepie_eth"
                         target="_blank"
                         rel="noopener"
+                        className="mr-[22px]"
                       >
                         <Icon icon="cib:twitter" className="h-6 w-6" />
                       </Link>
@@ -298,7 +299,7 @@ export default function RootLayout({
                     </div>
                   </header>
 
-                  <main className="flex-1 w-full mx-auto p-2 pr-2 md:p-6 md:pr-12 relative z-10">
+                  <main className="flex-1 w-full mx-auto pl-2 pr-2 md:pl-6 md:pr-[50px] relative z-10">
                     {children}
                   </main>
                   <div className="mt-24 w-full text-center py-6 relative">

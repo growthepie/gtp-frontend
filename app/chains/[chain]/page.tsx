@@ -10,7 +10,7 @@ import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
 import { Icon } from "@iconify/react";
 import { ChainResponse } from "@/types/api/ChainResponse";
-import { ChainURLs } from "@/lib/urls";
+import { ChainURLs, MasterURL } from "@/lib/urls";
 
 const Chain = ({ params }: { params: any }) => {
   // const params = useSearchParams();
@@ -23,31 +23,12 @@ const Chain = ({ params }: { params: any }) => {
     String(chain).charAt(0).toUpperCase() + String(chain).slice(1)
   );
 
-  const { data: master, error: masterError } = useSWR<MasterResponse>(
-    "https://d2cfnw27176mbd.cloudfront.net/v0_4/master.json"
-  );
+  const { data: master, error: masterError } =
+    useSWR<MasterResponse>(MasterURL);
 
   const { data: ChainResponse, error: ethError } = useSWR<ChainResponse>(
     chainKey ? ChainURLs[chainKey] : null
   );
-
-  // const { data: Arbitrum, error: arbError } = useSWR<ArbitrumChainResponse>(
-  //   "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/arbitrum.json"
-  // );
-
-  // const { data: Optimism, error: optError } = useSWR<ArbitrumChainResponse>(
-  //   "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/optimism.json"
-  // );
-
-  // const { data: Polygon, error: polyError } = useSWR<ArbitrumChainResponse>(
-  //   "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/polygon_zkevm.json"
-  // );
-
-  // const { data: Imx, error: imxError } = useSWR<ArbitrumChainResponse>(
-  //   "https://d2cfnw27176mbd.cloudfront.net/v0_4/chains/imx.json"
-  // );
-
-  // const chainArray = [Arbitrum, Ethereum, Optimism, Polygon, Imx];
 
   const [chainData, setChainData] = useState<any>(null);
   const [chartData, setChartData] = useState<any>(null);
@@ -111,8 +92,26 @@ const Chain = ({ params }: { params: any }) => {
               <Heading className="text-2xl leading-snug md:text-3xl lg:text-4xl xl:text-5xl mb-[15px]">
                 {chainData.name}
               </Heading>
-              <div className="inline-block text-xs leading-[1] border-[1px] border-forest-400 p-0.5 uppercase font-semibold rounded-sm ml-5">
-                {chainData.technology}
+              <div className="flex items-start space-x-1.5 font-inter uppercase">
+                <div className="inline-block text-xs leading-snug border-[1px] border-forest-400 py-0.5 px-1 font-semibold rounded-sm ml-5">
+                  {chainData.technology}
+                </div>
+                {chainData.purpose.includes("(EVM)") ? (
+                  <div className="inline-block text-xs leading-snug bg-forest-400 text-forest-50 py-[3px] px-1  font-semibold rounded-sm ml-5">
+                    EVM
+                  </div>
+                ) : (
+                  <>
+                    {chainData.purpose.split(", ").map((purpose: string) => (
+                      <div
+                        key={purpose}
+                        className="inline-block text-xs leading-snug bg-forest-400 text-forest-50 py-[3px] px-1 font-semibold rounded-sm ml-5"
+                      >
+                        {purpose}
+                      </div>
+                    ))}
+                  </>
+                )}
               </div>
             </div>
             <div className="flex space-x-4 text-xs md:text-sm xl:text-base items-start">

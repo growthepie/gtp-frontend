@@ -133,9 +133,9 @@ export const TooltipTrigger = React.forwardRef<
       data-state={context.open ? "open" : "closed"}
       {...context.getReferenceProps(props)}
     >
-      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 1.0 }}>
-        {children}
-      </motion.div>
+      {/* <motion.div whileHover={{ size: 1.02 }} whileTap={{ size: 1.0 }}> */}
+      {children}
+      {/* </motion.div> */}
     </button>
   );
 });

@@ -63,19 +63,23 @@ addCollection({
 
 const Page = () => {
   return (
-    <div className="container mx-auto px-4 py-8 flex flex-col">
-      <Heading className="text-5xl">Contributors</Heading>
-      <Subheading className="text-base mt-3">
+    <div className="container mx-auto mt-[25px] px-4 py-8 flex flex-col">
+      <Heading className="text-[48px] mb-[30px] leading-snug">
+        Contributors
+      </Heading>
+      <Subheading className="text-base mb-[45px] leading-snug">
         The people who make it happen
       </Subheading>
 
-      <div className="mt-8 bg-forest-50 rounded-full px-5 py-3 flex space-x-2">
+      <div className="bg-forest-50 rounded-full px-5 py-3 flex space-x-2 mb-[45px]">
         <Icon icon="gtp:supported-by" className="w-9 h-9" />
-        <Heading className="text-3xl font-semibold">Supported By</Heading>
+        <Heading className="text-3xl font-semibold leading-snug">
+          Supported By
+        </Heading>
       </div>
 
-      <div>
-        <div className="flex items-center space-x-8 mt-8 mx-5">
+      <div className="mb-[90px]">
+        <div className="flex items-center space-x-8 mx-5">
           {Sponsors.map((s) => (
             <Link
               key={s.name}
@@ -95,12 +99,12 @@ const Page = () => {
         </div>
       </div>
 
-      <div className="mt-16 bg-forest-50 rounded-full px-5 py-3 flex space-x-2">
+      <div className="mb-[30px] bg-forest-50 rounded-full px-5 py-3 flex space-x-2">
         <Icon icon="gtp:team" className="w-9 h-9" />
-        <Heading className="text-3xl font-semibold">Team</Heading>
+        <Heading className="text-3xl font-semibold leading-snug">Team</Heading>
       </div>
 
-      <div className="grid grid-cols-3 xl:grid-cols-4 gap-2 mt-8">
+      <div className="grid grid-cols-3 xl:grid-cols-4 gap-x-2 gap-y-[30px]">
         {Contributors.map((c) => (
           <div
             key={c.name}

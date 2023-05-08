@@ -25,6 +25,8 @@ import { AllChainsByKeys } from "@/lib/chains";
 import d3 from "d3";
 import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
+import Link from "next/link";
+import { Sources } from "@/lib/datasources";
 // import borderRadius from "highcharts-border-radius";
 
 const COLORS = {
@@ -214,22 +216,26 @@ const baseOptions: Highcharts.Options = {
 export default function LandingChart({
   data,
   latest_total,
+  latest_total_comparison,
   l2_dominance,
+  l2_dominance_comparison,
   selectedMetric,
   setSelectedMetric,
   metric,
-  source,
+  sources,
 }: // timeIntervals,
 // onTimeIntervalChange,
 // showTimeIntervals = true,
 {
   data: any;
   latest_total: number;
+  latest_total_comparison: number;
   l2_dominance: number;
+  l2_dominance_comparison: number;
   selectedMetric: string;
   setSelectedMetric: (metric: string) => void;
   metric: string;
-  source: string;
+  sources: string[];
   // timeIntervals: string[];
   // onTimeIntervalChange: (interval: string) => void;
   // showTimeIntervals: boolean;
@@ -364,12 +370,20 @@ export default function LandingChart({
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
 
-  const formatNumber = useCallback((value: number | string, isAxis = false) => {
-    return isAxis ? d3.format(".2s")(value) : d3.format(",.2~s")(value);
-  }, []);
+  const formatNumber = useCallback(
+    (value: number | string, isAxis = false) => {
+      return isAxis
+        ? selectedScale !== "percentage"
+          ? d3.format(".2s")(value)
+          : d3.format(".2s")(value) + "%"
+        : d3.format(",.2~s")(value);
+    },
+    [selectedScale]
+  );
 
   const tooltipFormatter = useCallback(
     function (this: any) {
+      console.log(this);
       const { x, points } = this;
       const date = new Date(x);
       const dateString = date.toLocaleDateString(undefined, {
@@ -402,10 +416,9 @@ export default function LandingChart({
                 <div class="tooltip-point-name">${
                   AllChainsByKeys[name].label
                 }</div>
-                <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                  percentage,
-                  2
-                )}%</div>
+                <div class="flex-1 text-right font-inter${
+                  this.y === point.y ? "font-bold" : "font-normal"
+                }">${Highcharts.numberFormat(percentage, 2)}%</div>
               </div>
               <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
                 <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
@@ -428,12 +441,11 @@ export default function LandingChart({
               AllChainsByKeys[name].label
             }</div>
             <div class="flex-1 text-right justify-end font-inter">
-              <div class="mr-1 inline-block">${parseFloat(y).toLocaleString(
-                undefined,
-                {
-                  minimumFractionDigits: 0,
-                }
-              )}</div>
+              <div class="mr-1 inline-block ${
+                this.y === point.y ? "text-green-500" : "font-normal"
+              }">${parseFloat(y).toLocaleString(undefined, {
+            minimumFractionDigits: 0,
+          })}</div>
           <!-- <div class="inline-block">≈</div>
               <div class="inline-block">${value}</div>
               -->
@@ -508,8 +520,14 @@ export default function LandingChart({
       : data.filter((d) => !["all_l2s", "ethereum"].includes(d.name));
   }, [data, showEthereumMainnet, showTotalUsers]);
 
-  const timespans = useMemo(
-    () => ({
+  const timespans = useMemo(() => {
+    const maxDate = new Date(
+      filteredData[0].data[filteredData[0].data.length - 1][0]
+    );
+
+    const maxPlusBuffer = maxDate.valueOf() + 3.5 * 24 * 60 * 60 * 1000;
+
+    return {
       // "30d": {
       //   label: "30 days",
       //   value: 30,
@@ -520,19 +538,19 @@ export default function LandingChart({
         label: "90 days",
         value: 90,
         xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
-        xMax: Date.now(),
+        xMax: maxPlusBuffer,
       },
       "180d": {
         label: "180 days",
         value: 180,
         xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
-        xMax: Date.now(),
+        xMax: maxPlusBuffer,
       },
       "365d": {
         label: "1 year",
         value: 365,
         xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
-        xMax: Date.now(),
+        xMax: maxPlusBuffer,
       },
       max: {
         label: "Maximum",
@@ -542,11 +560,10 @@ export default function LandingChart({
           Infinity
         ),
 
-        xMax: Date.now(),
+        xMax: maxPlusBuffer,
       },
-    }),
-    [filteredData]
-  );
+    };
+  }, [filteredData]);
 
   useEffect(() => {
     if (chartComponent.current) {
@@ -567,15 +584,31 @@ export default function LandingChart({
     });
   }, [getTickPositions, selectedTimespan, timespans]);
 
+  const [intervalShown, setIntervalShown] = useState<{
+    min: number;
+    max: number;
+    num: number;
+    label: string;
+  } | null>(null);
+
   const onXAxisSetExtremes = useCallback(
     function (e) {
+      const { min, max } = e;
+      const numDays = (max - min) / (24 * 60 * 60 * 1000);
+
+      setIntervalShown({
+        min,
+        max,
+        num: numDays,
+        label: `${Math.round(numDays)} day${numDays > 1 ? "s" : ""}`,
+      });
+
       if (
         e.trigger === "zoom" ||
         e.trigger === "pan" ||
         e.trigger === "navigator" ||
         e.trigger === "rangeSelectorButton"
       ) {
-        const { min, max } = e;
         const { xMin, xMax } = timespans[selectedTimespan];
 
         if (min === xMin && max === xMax) {
@@ -606,6 +639,31 @@ export default function LandingChart({
       chart: {
         type: selectedScale === "percentage" ? "area" : "column",
         plotBorderColor: "transparent",
+        zooming: {
+          resetButton: {
+            theme: {
+              zIndex: -10,
+              fill: "transparent",
+              stroke: "transparent",
+              style: {
+                color: "transparent",
+                height: 0,
+                width: 0,
+              },
+              states: {
+                hover: {
+                  fill: "transparent",
+                  stroke: "transparent",
+                  style: {
+                    color: "transparent",
+                    height: 0,
+                    width: 0,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       plotOptions: {
         area: {
@@ -613,7 +671,7 @@ export default function LandingChart({
         },
         column: {
           // groupPadding: 0.005,
-          crisp: false,
+          crisp: true,
           // pointPlacement: 1,
           // // pointIntervalUnit: "day",
           // // pointInterval: 7 * 24 * 3600 * 1000,
@@ -739,12 +797,12 @@ export default function LandingChart({
             const pointsSettings =
               getSeriesType(series.name) === "column"
                 ? {
-                    pointPlacement: 0.4,
-                    pointPadding: 0.05,
+                    pointPlacement: 0.5,
+                    pointPadding: 0.15,
                     pointRange: timeIntervalToMilliseconds[metric],
                   }
                 : {
-                    pointPlacement: -0.1,
+                    pointPlacement: 0.5,
                     // pointInterval: 7,
                     // pointIntervalUnit: "day",
                   };
@@ -753,7 +811,7 @@ export default function LandingChart({
               name: series.name,
               // always show ethereum on the bottom
               zIndex: zIndex,
-              step: true,
+              step: "center",
 
               data: series.data.map((d: any) => [d[0], d[1]]),
               // pointStart: series.data[0][0],
@@ -763,7 +821,7 @@ export default function LandingChart({
               // pointPadding: 0.05,
               // pointRange: 7 * 24 * 3600 * 1000,
               ...pointsSettings,
-              clip: true,
+              clip: false,
 
               borderRadiusTopLeft: borderRadius,
               borderRadiusTopRight: borderRadius,
@@ -795,7 +853,7 @@ export default function LandingChart({
                 //   [0.66, AllChainsByKeys[series.name].colors[theme][1] + "00"],
                 // ],
               },
-              borderColor: AllChainsByKeys[series.name].colors[theme][0] + "66",
+              borderColor: AllChainsByKeys[series.name].colors[theme][0],
               // borderColor:
               //   theme == "dark"
               //     ? "rgba(215, 223, 222, 0.33)"
@@ -822,19 +880,136 @@ export default function LandingChart({
                       ],
                     },
                   }
-                : {
+                : series.name === "all_l2s"
+                ? {
+                    borderColor: "transparent",
+
                     shadow: {
-                      // color: AllChainsByKeys[series.name].colors[theme][1] + "33",
-                      color:
-                        theme == "dark"
-                          ? "rgb(215, 223, 222)"
-                          : "rgb(41, 51, 50)",
-                      opacity: 0.15,
+                      color: "#CDD8D3" + "FF",
+                      // color:
+                      //   AllChainsByKeys[series.name].colors[theme][1] + "33",
+                      // width: 10,
                       offsetX: 0,
                       offsetY: 0,
-                      width: 1.5,
+                      width: 2,
                     },
+                    color: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 0,
+                        y2: 1,
+                      },
+                      stops:
+                        theme === "dark"
+                          ? [
+                              [
+                                0,
+                                AllChainsByKeys[series.name].colors[theme][0] +
+                                  "E6",
+                              ],
+                              // [
+                              //   0.3,
+                              //   //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
+                              //   AllChainsByKeys[series.name].colors[theme][0] +
+                              //     "FF",
+                              // ],
+                              [
+                                1,
+                                // AllChainsByKeys[series.name].colors[theme][0] + "99",
+                                AllChainsByKeys[series.name].colors[theme][1] +
+                                  "E6",
+                              ],
+                            ]
+                          : [
+                              [
+                                0,
+                                AllChainsByKeys[series.name].colors[theme][0] +
+                                  "E6",
+                              ],
+                              // [
+                              //   0.7,
+                              //   AllChainsByKeys[series.name].colors[theme][0] +
+                              //     "88",
+                              // ],
+                              [
+                                1,
+                                AllChainsByKeys[series.name].colors[theme][1] +
+                                  "E6",
+                              ],
+                            ],
+                    },
+                    // color: AllChainsByKeys[series.name].colors[theme][1] + "E6",
+                    // shadow: {
+                    //   // color: AllChainsByKeys[series.name].colors[theme][1] + "33",
+                    //   color:
+                    //     theme == "dark"
+                    //       ? "rgb(215, 223, 222)"
+                    //       : "rgb(41, 51, 50)",
+                    //   opacity: 0.15,
+                    //   offsetX: 0,
+                    //   offsetY: 0,
+                    //   width: 1.5,
+                    // },
 
+                    // color: {
+                    //   linearGradient: {
+                    //     x1: 0,
+                    //     y1: 0,
+                    //     x2: 0,
+                    //     y2: 1,
+                    //   },
+                    //   stops:
+                    //     theme === "dark"
+                    //       ? [
+                    //           [
+                    //             0,
+                    //             AllChainsByKeys[series.name].colors[theme][0] +
+                    //               "FF",
+                    //           ],
+                    //           [
+                    //             0.3,
+                    //             //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
+                    //             AllChainsByKeys[series.name].colors[theme][0] +
+                    //               "FF",
+                    //           ],
+                    //           [
+                    //             1,
+                    //             // AllChainsByKeys[series.name].colors[theme][0] + "99",
+                    //             AllChainsByKeys[series.name].colors[theme][0] +
+                    //               "00",
+                    //           ],
+                    //         ]
+                    //       : [
+                    //           [
+                    //             0,
+                    //             AllChainsByKeys[series.name].colors[theme][0] +
+                    //               "FF",
+                    //           ],
+                    //           [
+                    //             0.7,
+                    //             AllChainsByKeys[series.name].colors[theme][0] +
+                    //               "88",
+                    //           ],
+                    //           [
+                    //             1,
+                    //             AllChainsByKeys[series.name].colors[theme][0] +
+                    //               "55",
+                    //           ],
+                    //         ],
+                    // },
+                  }
+                : {
+                    borderColor: "transparent",
+                    shadow: {
+                      color: "#CDD8D3" + "FF",
+                      // color:
+                      //   AllChainsByKeys[series.name].colors[theme][1] + "33",
+                      // width: 10,
+                      offsetX: 0,
+                      offsetY: 0,
+                      width: 2,
+                    },
                     color: {
                       linearGradient: {
                         x1: 0,
@@ -967,7 +1142,7 @@ export default function LandingChart({
           gridLineWidth: 0,
         },
 
-        enabled: true,
+        enabled: false,
         handles: {
           backgroundColor:
             theme === "dark"
@@ -1026,6 +1201,7 @@ export default function LandingChart({
 
   useEffect(() => {
     if (chartComponent.current) {
+      setZoomed(false);
       switch (selectedScale) {
         case "absolute":
           chartComponent.current?.update({
@@ -1044,7 +1220,6 @@ export default function LandingChart({
               type: getSeriesType(series.name),
             })),
           });
-          break;
         case "log":
           chartComponent.current?.update({
             chart: {
@@ -1065,7 +1240,6 @@ export default function LandingChart({
               type: getSeriesType(series.name),
             })),
           });
-          break;
         case "percentage":
           chartComponent.current?.update({
             chart: {
@@ -1089,8 +1263,8 @@ export default function LandingChart({
               type: getSeriesType(series.name),
             })),
           });
-          break;
         default:
+          // setZoomed(false);
           break;
       }
     }
@@ -1216,7 +1390,7 @@ export default function LandingChart({
           ) : (
             <>
               <button
-                className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium border-[1px] border-forest-800`}
+                className={`rounded-full px-2 py-[5px] text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium border-[1px] border-forest-800`}
                 onClick={() => {
                   chartComponent?.current?.xAxis[0].setExtremes(
                     timespans[selectedTimespan].xMin,
@@ -1225,12 +1399,12 @@ export default function LandingChart({
                   setZoomed(false);
                 }}
               >
-                Reset Zoom
+                <Icon icon="feather:zoom-out" className="w-6 h-6" />
               </button>
               <button
                 className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium bg-forest-100 dark:bg-[#151A19]`}
               >
-                {chartComponent?.current &&
+                {/* {chartComponent?.current &&
                   Math.round(
                     (chartComponent.current.xAxis[0].getExtremes().max -
                       chartComponent.current.xAxis[0].getExtremes().min) /
@@ -1239,7 +1413,8 @@ export default function LandingChart({
                       60 /
                       24
                   )}{" "}
-                days
+                days */}
+                {intervalShown?.label}
               </button>
             </>
           )}
@@ -1328,16 +1503,32 @@ export default function LandingChart({
                 Total Users
               </div>
               <div className="text-xl lg:text-3xl font-[650] text-forest-900">
-                {latest_total.toLocaleString()}
+                {latest_total}
               </div>
               <div className="text-[0.65rem] lg:text-xs font-medium text-forest-900 leading-tight">
-                {totalUsersIncrease > 0 ? (
-                  <span className="text-green-500 dark:text-green-400 font-medium">
-                    +{Math.round(totalUsersIncrease * 1000) / 100.0}%
+                {latest_total_comparison > 0 ? (
+                  <span
+                    className="text-green-500 dark:text-green-400 font-semibold"
+                    style={{
+                      textShadow:
+                        theme === "dark"
+                          ? "1px 1px 4px #00000066"
+                          : "1px 1px 4px #ffffff99",
+                    }}
+                  >
+                    +{(latest_total_comparison * 100).toFixed(2)}%
                   </span>
                 ) : (
-                  <span className="text-red-500 dark:text-red-400 font-semibold">
-                    {Math.round(totalUsersIncrease * 1000) / 100.0}%
+                  <span
+                    className="text-red-500 dark:text-red-400 font-semibold"
+                    style={{
+                      textShadow:
+                        theme === "dark"
+                          ? "1px 1px 4px #00000066"
+                          : "1px 1px 4px #ffffff99",
+                    }}
+                  >
+                    {(latest_total_comparison * 100).toFixed(2)}%
                   </span>
                 )}{" "}
                 in last week
@@ -1357,9 +1548,31 @@ export default function LandingChart({
                 {l2_dominance.toFixed(2)}x
               </div>
               <div className="text-[0.65rem] lg:text-xs font-medium text-forest-900 leading-tight">
-                <span className="text-green-500 dark:text-green-400 font-semibold">
-                  +??%
-                </span>{" "}
+                {l2_dominance_comparison > 0 ? (
+                  <span
+                    className="text-green-500 dark:text-green-400 font-semibold"
+                    style={{
+                      textShadow:
+                        theme === "dark"
+                          ? "1px 1px 4px #00000066"
+                          : "1px 1px 4px #ffffff99",
+                    }}
+                  >
+                    +{l2_dominance_comparison.toFixed(2)}%
+                  </span>
+                ) : (
+                  <span
+                    className="text-green-500 dark:text-green-400 font-semibold"
+                    style={{
+                      textShadow:
+                        theme === "dark"
+                          ? "1px 1px 4px #00000066"
+                          : "1px 1px 4px #ffffff99",
+                    }}
+                  >
+                    {l2_dominance_comparison.toFixed(2)}%
+                  </span>
+                )}{" "}
                 in last week
               </div>
             </div>
@@ -1370,10 +1583,28 @@ export default function LandingChart({
                 <Icon icon="feather:info" className="w-6 h-6 text-forest-900" />
               </div>
             </TooltipTrigger>
-            <TooltipContent className="p-3 text-sm font-medium bg-forest-300 text-forest-900 rounded-xl shadow-lg z-50 w-[420px] h-[82px] flex items-center">
-              <div className="flex flex-col space-y-1">
-                <div className="font-semibold">Data Sources:</div>
-                <div>{source}</div>
+            <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
+              <div className="px-3 text-sm font-medium bg-forest-100 text-forest-900 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
+                <div className="flex flex-col space-y-1">
+                  <div className="font-bold text-sm leading-snug">
+                    Data Sources:
+                  </div>
+                  <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
+                    {sources
+                      .map<React.ReactNode>((s) => (
+                        <Link
+                          key={s}
+                          rel="noopener noreferrer"
+                          target="_blank"
+                          href={Sources[s]}
+                          className="text-forest-900 hover:text-forest-500 dark:text-forest-100 dark:hover:text-forest-500 underline"
+                        >
+                          {s}
+                        </Link>
+                      ))
+                      .reduce((prev, curr) => [prev, ", ", curr])}
+                  </div>
+                </div>
               </div>
             </TooltipContent>
           </Tooltip>

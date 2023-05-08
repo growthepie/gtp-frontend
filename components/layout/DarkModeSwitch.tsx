@@ -26,11 +26,11 @@ export default function DarkModeSwitch() {
   }
 
   return (
-    <div className="flex justify-between">
+    <div className="flex justify-between mr-[34px]">
       <div className="flex items-center">
         <input id="toggle" type="checkbox" className="hidden" />
         <label htmlFor="toggle" className="flex items-center cursor-pointer">
-          <div className="mr-2 font-medium" onClick={handleToggle}>
+          <div className="mr-3 font-medium" onClick={handleToggle}>
             {theme === "dark" ? (
               <Icon icon="feather:moon" className="h-6 w-6" />
             ) : (
