@@ -755,7 +755,7 @@ export default function ComparisonChart({
           {/* toggle ETH */}
 
           <div className="flex justify-center items-center">
-            <div className="flex justify-center items-center space-x-1">
+            <div className="flex justify-center items-center space-x-1 mr-2.5">
               <button
                 className={`rounded-full px-2 py-1 text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
                   "absolute" === selectedScale
