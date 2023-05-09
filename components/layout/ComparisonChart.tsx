@@ -2,27 +2,15 @@
 
 import HighchartsReact from "highcharts-react-official";
 import Highcharts, {
-  // AxisLabelsFormatterCallbackFunction,
   AxisLabelsFormatterContextObject,
-  // chart,
-  // Series,
-  // TooltipFormatterCallbackFunction,
 } from "highcharts/highstock";
 import highchartsAnnotations from "highcharts/modules/annotations";
-// import highchartsIndicators from "highcharts/indicators/indicators";
-// import highchartsExporting from "highcharts/modules/exporting";
-// import highchartsEma from "highcharts/indicators/ema";
-// import highchartsData from "highcharts/modules/data";
+import highchartsRoundedCorners from "highcharts-rounded-corners";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-// import { Card } from "@/components/Card";
 import { useLocalStorage } from "usehooks-ts";
-import fullScreen from "highcharts/modules/full-screen";
 import { merge } from "lodash";
-// import { zinc, red, blue, amber, purple } from "tailwindcss/colors";
 import { theme as customTheme } from "tailwind.config";
-import { ArrowTrendingUpIcon } from "@heroicons/react/24/outline";
 import { useTheme } from "next-themes";
-// import _ from "lodash";
 import { Switch } from "../Switch";
 import { AllChainsByKeys } from "@/lib/chains";
 import d3 from "d3";
@@ -242,13 +230,8 @@ export default function ComparisonChart({
         numericSymbols: ["K", " M", "B", "T", "P", "E"],
       },
     });
-    // highchartsData(Highcharts);
+    highchartsRoundedCorners(Highcharts);
     highchartsAnnotations(Highcharts);
-    // highchartsIndicators(Highcharts);
-    // highchartsEma(Highcharts);
-    // highchartsExporting(Highcharts);
-
-    // fullScreen(Highcharts);
 
     setHighchartsLoaded(true);
   }, []);
@@ -917,8 +900,6 @@ export default function ComparisonChart({
                       "stroke-width": 0,
                     },
                   },
-                  // lineWidth: 4,
-                  // lineWidthPlus: 4,
                   brightness: 0.3,
                 },
                 inactive: {
@@ -933,28 +914,6 @@ export default function ComparisonChart({
             };
           }),
       ],
-      // ...filteredData.map((series: any) => ({
-      //   type: "sma",
-      //   linkedTo: series.name,
-      //   zIndex: 100,
-      //   marker: {
-      //     enabled: false,
-      //   },
-      //   params: {
-      //     period: 50,
-      //   },
-
-      //   color: AllChainsByKeys[series.name].colors[theme][1],
-
-      //   tooltip: {
-      //     valueDecimals: 2,
-      //   },
-      //   dataGrouping: {
-      //     approximation: "averages",
-      //     groupPixelWidth: 5,
-      //   },
-      // })),]
-      // stockchart options
       navigator: {
         enabled: false,
         outlineWidth: 0,

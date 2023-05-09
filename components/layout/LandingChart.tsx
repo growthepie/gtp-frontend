@@ -1,23 +1,14 @@
 "use client";
 
 import highchartsAnnotations from "highcharts/modules/annotations";
-// import highchartsRoundedCorners from "highcharts-rounded-corners";
+import highchartsRoundedCorners from "highcharts-rounded-corners";
 import HighchartsReact from "highcharts-react-official";
-// import Highcharts, { chart } from "highcharts";
 import Highcharts, {
-  // AxisLabelsFormatterCallbackFunction,
   AxisLabelsFormatterContextObject,
-  // chart,
 } from "highcharts/highstock";
-
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-// import { Card } from "@/components/Card";
 import { useSessionStorage } from "usehooks-ts";
-// import fullScreen from "highcharts/modules/full-screen";
-// import _merge from "lodash/merge";
-// import { zinc, red, blue, amber, purple } from "tailwindcss/colors";
 import { theme as customTheme } from "tailwind.config";
-// import { ArrowTrendingUpIcon } from "@heroicons/react/24/outline";
 import { useTheme } from "next-themes";
 import { merge } from "lodash";
 import { Switch } from "../Switch";
@@ -27,7 +18,6 @@ import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
 import { Sources } from "@/lib/datasources";
-// import borderRadius from "highcharts-border-radius";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -79,6 +69,10 @@ const baseOptions: Highcharts.Options = {
         },
       },
     },
+    panning: {
+      enabled: true,
+    },
+    panKey: "shift",
   },
   title: undefined,
   yAxis: {
@@ -203,14 +197,12 @@ export default function LandingChart({
         numericSymbols: ["K", " M", "B", "T", "P", "E"],
       },
     });
-    // highchartsRoundedCorners(Highcharts);
+    highchartsRoundedCorners(Highcharts);
     highchartsAnnotations(Highcharts);
-    // fullScreen(Highcharts);
 
     setHighchartsLoaded(true);
   }, []);
 
-  // const [darkMode, setDarkMode] = useLocalStorage("darkMode", true);
   const { theme } = useTheme();
 
   const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
