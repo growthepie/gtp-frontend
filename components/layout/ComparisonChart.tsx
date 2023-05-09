@@ -815,7 +815,7 @@ export default function ComparisonChart({
                             key={s}
                             rel="noopener noreferrer"
                             target="_blank"
-                            href={Sources[s]}
+                            href={Sources[s] ?? ""}
                             className="text-forest-900 hover:text-forest-500 dark:text-forest-100 dark:hover:text-forest-500 underline"
                           >
                             {s}

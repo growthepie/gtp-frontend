@@ -127,7 +127,7 @@ const MetricsTable = ({
                 </div>
                 <div className="w-full break-inside-avoid">
                   <div className="w-full flex flex-col space-y-0.5">
-                    <div className="flex w-full items-baseline text-sm font-bold">
+                    <div className="flex w-full items-baseline text-sm font-bold pb-0.5">
                       {data[chain.key].daily.types.includes("usd") && (
                         <>
                           {showUsd ? (
@@ -177,7 +177,7 @@ const MetricsTable = ({
                         }}
                       ></div>
                     </div>
-                    <div className="text-xs mt-1">{chain.label}</div>
+                    <div className="text-xs font-medium">{chain.label}</div>
                   </div>
                 </div>
               </div>
