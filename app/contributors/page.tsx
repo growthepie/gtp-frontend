@@ -4,7 +4,7 @@ import Subheading from "@/components/layout/Subheading";
 import { addCollection, Icon } from "@iconify/react";
 import Image from "next/image";
 import React from "react";
-import { Contributors, Sponsors } from "@/lib/contributors";
+import { Contributors, Supporters } from "@/lib/contributors";
 import Link from "next/link";
 
 addCollection({
@@ -80,7 +80,7 @@ const Page = () => {
 
       <div className="mb-[90px]">
         <div className="flex items-center space-x-8 mx-5">
-          {Sponsors.map((s) => (
+          {Supporters.map((s) => (
             <Link
               key={s.name}
               target="_blank"

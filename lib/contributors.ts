@@ -3,8 +3,8 @@ export const Contributors = [
     name: "Matthias Seidl",
     image: "/contributors/matthias.jpg",
     role: "Data",
-    twitter: "https://www.twitter.com/web3_data",
-    linkedin: "https://www.linkedin.com/in/matthias-seidl-85b81125",
+    twitter: "https://www.twitter.com/mseidl_",
+    linkedin: "https://www.linkedin.com/in/seidlmatthias",
   },
   {
     name: "Tobias Schreier",
@@ -46,7 +46,7 @@ export const Contributors = [
     name: "Ahoura Azarbin",
     image: "/contributors/ahoura.jpg",
     role: "Socials",
-    twitter: null,
+    twitter: "https://twitter.com/AhouraAzarbin",
     linkedin: "https://www.linkedin.com/in/ahoura-azarbin-a3887b180",
   },
 ];
