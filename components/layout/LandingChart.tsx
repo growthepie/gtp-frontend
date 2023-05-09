@@ -441,11 +441,12 @@ export default function LandingChart({
               AllChainsByKeys[name].label
             }</div>
             <div class="flex-1 text-right justify-end font-inter">
-              <div class="mr-1 inline-block ${
-                this.y === point.y ? "text-green-500" : "font-normal"
-              }">${parseFloat(y).toLocaleString(undefined, {
-            minimumFractionDigits: 0,
-          })}</div>
+              <div class="mr-1 inline-block">${parseFloat(y).toLocaleString(
+                undefined,
+                {
+                  minimumFractionDigits: 0,
+                }
+              )}</div>
           <!-- <div class="inline-block">≈</div>
               <div class="inline-block">${value}</div>
               -->

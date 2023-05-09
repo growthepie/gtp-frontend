@@ -698,10 +698,10 @@ export default function ComparisonChart({
         </div>
       </div>
       <div className="w-full flex flex-col-reverse lg:flex-row">
-        <div className="hidden lg:block lg:w-1/2 xl:w-1/3 pl-2 pr-[19px]">
+        <div className="hidden lg:block lg:w-1/2 xl:w-5/12 pl-2 pr-[19px]">
           {children}
         </div>
-        <div className="w-full lg:w-1/2 xl:w-2/3 relative">
+        <div className="w-full lg:w-1/2 xl:w-7/12 relative">
           <div className="w-full p-4 rounded-xl bg-forest-50/10 dark:bg-forest-900/10">
             <div className="w-full h-[26rem] relative rounded-xl">
               <div className="absolute w-full h-[24rem] top-4">
@@ -727,19 +727,25 @@ export default function ComparisonChart({
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
         {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
         {/* toggle ETH */}
-        <div className="z-10 block lg:hidden">
-          <Switch
-            checked={showEthereumMainnet}
-            onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
-            rightLabel="ETH"
-          />
-        </div>
-        <div className="z-10 hidden lg:block">
-          <Switch
-            checked={showEthereumMainnet}
-            onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
-            rightLabel="Show Ethereum"
-          />
+        <div>
+          {data.filter((d) => d.name === "ethereum").length > 0 && (
+            <>
+              <div className="z-10 block lg:hidden">
+                <Switch
+                  checked={showEthereumMainnet}
+                  onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
+                  rightLabel="ETH"
+                />
+              </div>
+              <div className="z-10 hidden lg:block">
+                <Switch
+                  checked={showEthereumMainnet}
+                  onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
+                  rightLabel="Show Ethereum"
+                />
+              </div>
+            </>
+          )}
         </div>
         <div className="flex justify-end items-center">
           {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}

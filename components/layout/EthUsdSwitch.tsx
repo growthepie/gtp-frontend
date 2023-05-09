@@ -45,14 +45,14 @@ export default function EthUsdSwitch() {
           >
             <div
               className={` 
-                        w-[103px] h-7 flex justify-between items-center px-3 text-base font-medium
+                        w-[104px] h-7 flex justify-between items-center px-3 text-base font-medium
                         rounded-full transition duration-200 ease-in-out text-forest-900 bg-forest-500`}
             >
               <div>ETH</div>
               <div>USD</div>
             </div>
             <div
-              className={`dot absolute left-0.5 top-0.5 w-12 h-6 rounded-full transition-transform duration-200 
+              className={`dot absolute left-0.5 top-0.5 w-[50px] h-6 rounded-full transition-transform duration-200 
                           ease-in-out text-forest-500 bg-forest-900 text-sm font-medium
                           py-0.5 px-1.5 text-center
                           ${

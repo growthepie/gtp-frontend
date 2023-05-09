@@ -131,9 +131,9 @@ const MetricsTable = ({
                       {data[chain.key].daily.types.includes("usd") && (
                         <>
                           {showUsd ? (
-                            <div className="text-[10px] font-normal">$</div>
+                            <div className="text-[13px] font-normal">$</div>
                           ) : (
-                            <div className="text-[10px] font-normal">Ξ</div>
+                            <div className="text-[13px] font-normal">Ξ</div>
                           )}
                         </>
                       )}
