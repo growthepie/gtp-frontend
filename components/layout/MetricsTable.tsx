@@ -113,7 +113,7 @@ const MetricsTable = ({
               <div className="flex basis-1/3 items-center space-x-2">
                 <div className="relative">
                   <div
-                    className={`w-9 h-9 rounded-full bg-white border-[5px] ${
+                    className={`w-9 h-9 rounded-full border-[5px] ${
                       chain.border[theme ?? "dark"][1]
                     } ${selectedChains.includes(chain.key) ? "" : ""}`}
                   ></div>

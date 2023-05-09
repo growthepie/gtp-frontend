@@ -147,7 +147,7 @@ export default function LandingMetricsTable({
                   <div className="flex basis-3/12 items-center space-x-4">
                     <div className="relative">
                       <div
-                        className={`w-9 h-9 rounded-full bg-transparent border-[5px] ${
+                        className={`w-9 h-9 rounded-full border-[5px] ${
                           chain.border[theme ?? "dark"][1]
                         }`}
                       ></div>
