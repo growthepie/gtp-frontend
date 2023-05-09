@@ -46,8 +46,8 @@ export const Contributors = [
     name: "Ahoura Azarbin",
     image: "/contributors/ahoura.jpg",
     role: "Socials",
-    twitter: "https://www.twitter.com/monkelmoo",
-    linkedin: "https://www.linkedin.com/in/michael-may-3008a1261",
+    twitter: null,
+    linkedin: "https://www.linkedin.com/in/ahoura-azarbin-a3887b180",
   },
 ];
 
