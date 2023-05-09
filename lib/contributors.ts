@@ -51,7 +51,7 @@ export const Contributors = [
   },
 ];
 
-export const Sponsors = [
+export const Supporters = [
   {
     name: "Ethereum Foundation",
     image: "/contributors/ef-logo.png",

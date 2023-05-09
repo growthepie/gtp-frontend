@@ -2,6 +2,7 @@
   data: Data;
 }
 export interface Data {
+  avg?: boolean;
   metric_id: string;
   metric_name: string;
   description: string;

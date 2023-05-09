@@ -1,5 +1,6 @@
 ﻿export type TVLMetricsResponse = {
   data: {
+    avg?: boolean;
     metric_id: string;
     metric_name: string;
     description: string;

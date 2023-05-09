@@ -123,6 +123,7 @@ const Chain = ({ params }: { params: any }) => {
                   }
                   showTimeIntervals={true}
                   sources={metricData.data.source}
+                  avg={metricData.data.avg}
                 >
                   <MetricsTable
                     data={metricData.data.chains}

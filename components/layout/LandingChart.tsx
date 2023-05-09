@@ -53,15 +53,6 @@ const baseOptions: Highcharts.Options = {
     animation: true,
     backgroundColor: "transparent",
     showAxes: false,
-    events: {
-      // fix animation bug
-      // load: function () {
-      //   const chart = this;
-      //   setTimeout(function () {
-      //     chart.reflow();
-      //   }, 0);
-      // },
-    },
     zooming: {
       type: "x",
       resetButton: {
@@ -89,7 +80,6 @@ const baseOptions: Highcharts.Options = {
       },
     },
   },
-
   title: undefined,
   yAxis: {
     title: { text: undefined },
@@ -107,7 +97,6 @@ const baseOptions: Highcharts.Options = {
       color: COLORS.PLOT_LINE,
       snap: false,
     },
-
     labels: {
       style: { color: COLORS.LABEL },
       enabled: true,
@@ -123,34 +112,17 @@ const baseOptions: Highcharts.Options = {
             month: "short",
           })}</span>`;
         }
-        // return `<span style="">${new Date(item.value).toLocaleDateString(
-        //   undefined,
-        //   { year: "numeric", month: "numeric", day: "numeric" }
-        // )}</span>`;
       },
     },
     tickmarkPlacement: "on",
     tickWidth: 4,
     tickLength: 4,
-    // minPadding: 0.04,
-    // maxPadding: 0.04,
     gridLineWidth: 0,
   },
   legend: {
     enabled: false,
     useHTML: false,
     symbolWidth: 0,
-    // labelFormatter: function () {
-    // 	const color = bgColors[this.name][0];
-
-    // 	return `
-    //     <div class="flex flex-row items-center gap-x-2">
-    //         <div class="w-2 h-2 rounded-full ${color}"></div>
-    //         <div class="font-roboto font-normal text-zincus-400 text-xs">
-    //         ${this.name}
-    //         </div>
-    //     </div>`;
-    // },
   },
   tooltip: {
     // backgroundColor: 'transparent',
@@ -159,9 +131,6 @@ const baseOptions: Highcharts.Options = {
     shared: true,
   },
   plotOptions: {
-    // spline: {
-    //   lineWidth: 2,
-    // },
     column: {
       grouping: true,
       stacking: "normal",
@@ -170,15 +139,7 @@ const baseOptions: Highcharts.Options = {
           return false;
         },
       },
-      // borderColor: "#ffffff",
-      // borderWidth: 1,
-      // make columns touch each other
-      // pointWidth: undefined,
       groupPadding: 0,
-      // animation: {
-      //   duration: 500,
-      //   defer: 500,
-      // },
       animation: false,
     },
     series: {
@@ -193,16 +154,10 @@ const baseOptions: Highcharts.Options = {
         radius: 0,
         symbol: "circle",
       },
-      // states: {
-      //   hover: {
-      //     enabled: false,
-      //   },
-      // },
       shadow: false,
       animation: false,
     },
   },
-
   credits: {
     enabled: false,
   },
@@ -339,18 +294,6 @@ export default function LandingChart({
           tickPositions.push(new Date(year, month, 1).getTime());
         }
       }
-
-      // for (let year = xMinYear; year <= xMaxYear; year++) {
-      //   for (let month = 0; month < 12; month++) {
-      //     let daysInMonth = new Date(year, month, 0).getDate();
-      //     for (let day = 2; day <= daysInMonth; day = day + 1) {
-      //       if (year === xMinYear && month < xMinMonth) continue;
-      //       if (year === xMaxYear && month > xMaxMonth) continue;
-      //       tickPositions.push(new Date(year, month, day).getTime());
-      //     }
-
-      //   }
-      // }
 
       return tickPositions;
     },
@@ -523,7 +466,9 @@ export default function LandingChart({
 
   const timespans = useMemo(() => {
     const maxDate = new Date(
-      filteredData[0].data[filteredData[0].data.length - 1][0]
+      filteredData.length > 0
+        ? filteredData[0].data[filteredData[0].data.length - 1][0]
+        : 0
     );
 
     const maxPlusBuffer = maxDate.valueOf() + 3.5 * 24 * 60 * 60 * 1000;
@@ -592,48 +537,37 @@ export default function LandingChart({
     label: string;
   } | null>(null);
 
-  const onXAxisSetExtremes = useCallback(
-    function (e) {
-      const { min, max } = e;
-      const numDays = (max - min) / (24 * 60 * 60 * 1000);
+  const onXAxisSetExtremes =
+    useCallback<Highcharts.AxisSetExtremesEventCallbackFunction>(
+      function (e) {
+        if (e.trigger === "pan") return;
+        const { min, max } = e;
+        const numDays = (max - min) / (24 * 60 * 60 * 1000);
 
-      setIntervalShown({
-        min,
-        max,
-        num: numDays,
-        label: `${Math.round(numDays)} day${numDays > 1 ? "s" : ""}`,
-      });
+        setIntervalShown({
+          min,
+          max,
+          num: numDays,
+          label: `${Math.round(numDays)} day${numDays > 1 ? "s" : ""}`,
+        });
 
-      if (
-        e.trigger === "zoom" ||
-        e.trigger === "pan" ||
-        e.trigger === "navigator" ||
-        e.trigger === "rangeSelectorButton"
-      ) {
-        const { xMin, xMax } = timespans[selectedTimespan];
+        if (
+          e.trigger === "zoom" ||
+          // e.trigger === "pan" ||
+          e.trigger === "navigator" ||
+          e.trigger === "rangeSelectorButton"
+        ) {
+          const { xMin, xMax } = timespans[selectedTimespan];
 
-        if (min === xMin && max === xMax) {
-          setZoomed(false);
-        } else {
-          setZoomed(true);
+          if (min === xMin && max === xMax) {
+            setZoomed(false);
+          } else {
+            setZoomed(true);
+          }
         }
-
-        // if (chartComponent && chartComponent.current) {
-        //   chartComponent.current.xAxis[0].update({
-        //     min: timespans[selectedTimespan].xMin,
-        //     max: timespans[selectedTimespan].xMax,
-        //     // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
-        //     tickPositions: getTickPositions(
-        //       timespans[selectedTimespan].xMin,
-        //       timespans[selectedTimespan].xMax
-        //     ),
-        //   });
-        // }
-        // setXAxis();
-      }
-    },
-    [selectedTimespan, timespans]
-  );
+      },
+      [selectedTimespan, timespans]
+    );
 
   const options = useMemo((): Highcharts.Options => {
     const dynamicOptions: Highcharts.Options = {
@@ -671,30 +605,9 @@ export default function LandingChart({
           stacking: selectedScale === "percentage" ? "percent" : "normal",
         },
         column: {
-          // groupPadding: 0.005,
           crisp: true,
-          // pointPlacement: 1,
-          // // pointIntervalUnit: "day",
-          // // pointInterval: 7 * 24 * 3600 * 1000,
-          // pointPadding: 0,
-          // pointRange: 7 * 24 * 3600 * 1000,
-          // grouping: false,
-          // shadow: false,
-          // borderWidth: 0,
-
-          // pointStart: filteredData[0].data[0][0],
-          // pointInterval:
-          //   filteredData[0].data[1][0] - filteredData[0].data[0][0],
-          // pointPadding: getNumColumnsVisible(filteredData) / 500,
-          // borderColor: "#ffffff",
-          // borderWidth: 1,
-          // shadow: {
-          //   color: "#ffffff" + "ff",
-          //   width: 1,
-          // },
         },
       },
-
       legend: {
         enabled: false,
       },
@@ -718,16 +631,14 @@ export default function LandingChart({
             : "rgba(41, 51, 50, 0.33)",
       },
       xAxis: {
+        ordinal: false,
         minorTicks: true,
         minorTickLength: 2,
         minorTickWidth: 2,
         minorGridLineWidth: 0,
         minorTickInterval: 1000 * 60 * 60 * 24 * 7,
-        // min: timespans[selectedTimespan].xMin,
-        // max: timespans[selectedTimespan].xMax,
         // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
         tickPositions: getTickPositions(timespans.max.xMin, timespans.max.xMax),
-
         labels: {
           style: {
             color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
@@ -813,23 +724,12 @@ export default function LandingChart({
               // always show ethereum on the bottom
               zIndex: zIndex,
               step: "center",
-
               data: series.data.map((d: any) => [d[0], d[1]]),
-              // pointStart: series.data[0][0],
-              // pointInterval: series.data[1][0] - series.data[0][0],
-              // pointPadding: getNumColumnsVisible(filteredData) / 500,
-              // pointPlacement: 0.4,
-              // pointPadding: 0.05,
-              // pointRange: 7 * 24 * 3600 * 1000,
               ...pointsSettings,
               clip: false,
-
               borderRadiusTopLeft: borderRadius,
               borderRadiusTopRight: borderRadius,
-
-              // type: selectedScale === "percentage" ? "area" : "column",
               type: getSeriesType(series.name),
-              // fill if series name is ethereum
               fillOpacity: series.name === "ethereum" ? 1 : 0,
               fillColor: {
                 linearGradient: {
@@ -842,23 +742,8 @@ export default function LandingChart({
                   [0, AllChainsByKeys[series.name].colors[theme][0] + "33"],
                   [1, AllChainsByKeys[series.name].colors[theme][1] + "33"],
                 ],
-                // linearGradient: {
-                //   x1: 0,
-                //   y1: 0,
-                //   x2: 0,
-                //   y2: 1,
-                // },
-                // stops: [
-                //   [0, AllChainsByKeys[series.name].colors[theme][0] + "99"],
-                //   [0.33, AllChainsByKeys[series.name].colors[theme][1] + "33"],
-                //   [0.66, AllChainsByKeys[series.name].colors[theme][1] + "00"],
-                // ],
               },
               borderColor: AllChainsByKeys[series.name].colors[theme][0],
-              // borderColor:
-              //   theme == "dark"
-              //     ? "rgba(215, 223, 222, 0.33)"
-              //     : "rgba(41, 51, 50, 0.33)",
               borderWidth: 1,
               ...(getSeriesType(series.name) !== "column"
                 ? {
@@ -917,7 +802,6 @@ export default function LandingChart({
                               // ],
                               [
                                 1,
-                                // AllChainsByKeys[series.name].colors[theme][0] + "99",
                                 AllChainsByKeys[series.name].colors[theme][1] +
                                   "E6",
                               ],
@@ -940,73 +824,11 @@ export default function LandingChart({
                               ],
                             ],
                     },
-                    // color: AllChainsByKeys[series.name].colors[theme][1] + "E6",
-                    // shadow: {
-                    //   // color: AllChainsByKeys[series.name].colors[theme][1] + "33",
-                    //   color:
-                    //     theme == "dark"
-                    //       ? "rgb(215, 223, 222)"
-                    //       : "rgb(41, 51, 50)",
-                    //   opacity: 0.15,
-                    //   offsetX: 0,
-                    //   offsetY: 0,
-                    //   width: 1.5,
-                    // },
-
-                    // color: {
-                    //   linearGradient: {
-                    //     x1: 0,
-                    //     y1: 0,
-                    //     x2: 0,
-                    //     y2: 1,
-                    //   },
-                    //   stops:
-                    //     theme === "dark"
-                    //       ? [
-                    //           [
-                    //             0,
-                    //             AllChainsByKeys[series.name].colors[theme][0] +
-                    //               "FF",
-                    //           ],
-                    //           [
-                    //             0.3,
-                    //             //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
-                    //             AllChainsByKeys[series.name].colors[theme][0] +
-                    //               "FF",
-                    //           ],
-                    //           [
-                    //             1,
-                    //             // AllChainsByKeys[series.name].colors[theme][0] + "99",
-                    //             AllChainsByKeys[series.name].colors[theme][0] +
-                    //               "00",
-                    //           ],
-                    //         ]
-                    //       : [
-                    //           [
-                    //             0,
-                    //             AllChainsByKeys[series.name].colors[theme][0] +
-                    //               "FF",
-                    //           ],
-                    //           [
-                    //             0.7,
-                    //             AllChainsByKeys[series.name].colors[theme][0] +
-                    //               "88",
-                    //           ],
-                    //           [
-                    //             1,
-                    //             AllChainsByKeys[series.name].colors[theme][0] +
-                    //               "55",
-                    //           ],
-                    //         ],
-                    // },
                   }
                 : {
                     borderColor: "transparent",
                     shadow: {
                       color: "#CDD8D3" + "FF",
-                      // color:
-                      //   AllChainsByKeys[series.name].colors[theme][1] + "33",
-                      // width: 10,
                       offsetX: 0,
                       offsetY: 0,
                       width: 2,
@@ -1027,14 +849,12 @@ export default function LandingChart({
                                   "FF",
                               ],
                               [
-                                0.3,
-                                //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
+                                0.349,
                                 AllChainsByKeys[series.name].colors[theme][0] +
-                                  "FF",
+                                  "88",
                               ],
                               [
                                 1,
-                                // AllChainsByKeys[series.name].colors[theme][0] + "99",
                                 AllChainsByKeys[series.name].colors[theme][0] +
                                   "00",
                               ],
@@ -1046,22 +866,18 @@ export default function LandingChart({
                                   "FF",
                               ],
                               [
-                                0.7,
+                                0.349,
                                 AllChainsByKeys[series.name].colors[theme][0] +
                                   "88",
                               ],
                               [
                                 1,
                                 AllChainsByKeys[series.name].colors[theme][0] +
-                                  "55",
+                                  "00",
                               ],
                             ],
                     },
                   }),
-              // dataGrouping: {
-              //   enabled: true,
-              //   anchor: "start",
-              // },
               states: {
                 hover: {
                   enabled: true,
@@ -1088,12 +904,13 @@ export default function LandingChart({
                   enabled: false,
                 },
               },
-              showInNavigator: true,
+              showInNavigator: false,
             };
           }),
       ],
       // stockchart options
       navigator: {
+        enabled: false,
         outlineWidth: 0,
         outlineColor: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
         maskFill:
@@ -1166,7 +983,7 @@ export default function LandingChart({
       },
       scrollbar: {
         enabled: false,
-        height: 0,
+        height: 1,
         barBackgroundColor:
           theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41, 51, 50)",
         barBorderRadius: 7,
@@ -1289,8 +1106,8 @@ export default function LandingChart({
   };
 
   return (
-    <div className="w-full my-[8rem] relative">
-      <div className="flex w-full justify-between items-center absolute -top-32 left-0 right-0 text-xs rounded-full bg-forest-50 p-0.5">
+    <div className="w-full mb-[6rem] mt-[3rem] relative">
+      <div className="flex w-full justify-between items-center absolute -top-[3rem] left-0 right-0 text-xs rounded-full bg-forest-50 p-0.5">
         <div className="flex justify-center items-center space-x-1">
           <button
             className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
@@ -1379,10 +1196,6 @@ export default function LandingChart({
                     ),
                   });
                   setZoomed(false);
-                  // chartComponent.current?.xAxis[0].setExtremes(
-                  //   timespans[timespan].xMin,
-                  //   timespans[timespan].xMax
-                  // );
                 }}
               >
                 {timespans[timespan].label}
@@ -1391,7 +1204,7 @@ export default function LandingChart({
           ) : (
             <>
               <button
-                className={`rounded-full px-2 py-[5px] text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium border-[1px] border-forest-800`}
+                className={`rounded-full flex items-center space-x-3 px-2 py-[5px] text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium border-[1px] border-forest-800`}
                 onClick={() => {
                   chartComponent?.current?.xAxis[0].setExtremes(
                     timespans[selectedTimespan].xMin,
@@ -1401,55 +1214,21 @@ export default function LandingChart({
                 }}
               >
                 <Icon icon="feather:zoom-out" className="w-6 h-6" />
+                <div>Reset Zoom</div>
               </button>
               <button
                 className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium bg-forest-100 dark:bg-[#151A19]`}
               >
-                {/* {chartComponent?.current &&
-                  Math.round(
-                    (chartComponent.current.xAxis[0].getExtremes().max -
-                      chartComponent.current.xAxis[0].getExtremes().min) /
-                      1000 /
-                      60 /
-                      60 /
-                      24
-                  )}{" "}
-                days */}
                 {intervalShown?.label}
               </button>
             </>
           )}
         </div>
       </div>
-      {/* <div className="flex justify-end items-center absolute -top-10 left-0 right-0 rounded-full p-0.5">
-        {zoomed && (
-          <Tooltip placement="left">
-            <TooltipTrigger>
-              <button
-                className="rounded-full p-2 text-forest-900 bg-forest-50 hover:bg-forest-100"
-                onClick={() => {
-                  chartComponent?.current?.xAxis[0].setExtremes(
-                    timespans[selectedTimespan].xMin,
-                    timespans[selectedTimespan].xMax
-                  );
-                }}
-              >
-                <Icon icon="feather:minimize" className="w-8 h-8 leading-[1]" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <div className="p-2 text-xs font-medium bg-forest-900 text-forest-50 rounded-md shadow-lg">
-                Reset Chart
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        )}
-      </div> */}
-
       <div className="w-full py-4 rounded-xl">
         <div className="w-full h-[26rem] relative rounded-xl">
           <div className="absolute w-full h-[24rem] top-4">
-            {highchartsLoaded && (
+            {highchartsLoaded && filteredData.length > 0 && (
               <HighchartsReact
                 highcharts={Highcharts}
                 options={options}
@@ -1469,7 +1248,7 @@ export default function LandingChart({
         </div>
       </div>
 
-      <div className="flex justify-between items-center absolute -bottom-14 left-0 right-0 rounded-full bg-forest-50 p-0.5">
+      <div className="flex justify-between items-center absolute -bottom-[5rem] left-0 right-0 rounded-full bg-forest-50 p-0.5">
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
         {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
         {/* toggle ETH */}
@@ -1488,7 +1267,7 @@ export default function LandingChart({
           />
         </div>
       </div>
-      <div className="flex justify-end items-center absolute -bottom-20 left-0 right-0 rounded-full">
+      <div className="flex justify-end items-center absolute -bottom-[6.5rem] left-0 right-0 rounded-full">
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
         {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
         {/* toggle ETH */}
