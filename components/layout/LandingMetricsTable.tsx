@@ -100,9 +100,30 @@ export default function LandingMetricsTable({
             return (
               <>
                 {i === chainsLastVal.length - 1 && (
-                  <div className="py-[30px] w-3/5 mx-auto">
-                    <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
-                  </div>
+                  <>
+                    <div className="pt-[32px] pb-[32px] w-3/5 mx-auto">
+                      <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
+                    </div>
+                    <div className="flex space-x-2 pl-16 pb-0.5">
+                      {/* <Tooltip placement="right">
+                        <TooltipTrigger>
+                          <Icon
+                            icon="feather:info"
+                            className="w-4 h-4 font-semibold"
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent className="p-3 text-sm font-medium bg-forest-300 text-forest-900 rounded-xl shadow-lg z-50 flex items-center">
+                          Number of unique addresses interacting with one or
+                          multiple L2s in a given week.
+                        </TooltipContent>
+                      </Tooltip> */}
+                      <span className="text-xs">
+                        The following figure, “Multiple”, represents the number
+                        of unique addresses interacting with one or multiple L2s
+                        in a given week.
+                      </span>
+                    </div>
+                  </>
                 )}
                 <div
                   key={chain.key}
@@ -126,19 +147,17 @@ export default function LandingMetricsTable({
                   <div className="flex basis-3/12 items-center space-x-4">
                     <div className="relative">
                       <div
-                        className={`w-8 h-8 rounded-full bg-transparent border-[5px] ${
+                        className={`w-9 h-9 rounded-full bg-transparent border-[5px] ${
                           chain.border[theme ?? "dark"][1]
                         }`}
                       ></div>
-                      {chain.icon && (
-                        <Image
-                          src={chain.icon}
-                          alt={chain.label}
-                          width={18}
-                          height={18}
-                          className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2`}
-                        />
-                      )}
+                      <Icon
+                        icon={`gtp:${chain.urlKey}-logo-monochrome`}
+                        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5 h-5"
+                        style={{
+                          color: chain.colors[theme ?? "dark"][1],
+                        }}
+                      />
                     </div>
                     <div className="break-inside-avoid text-xs md:text-sm lg:text-lg">
                       {chain.label}
@@ -237,21 +256,6 @@ export default function LandingMetricsTable({
               </>
             );
           })}
-      </div>
-      <div className="flex space-x-2 pl-14 mt-2">
-        <Tooltip placement="right">
-          <TooltipTrigger>
-            <Icon icon="feather:info" className="w-4 h-4 font-semibold" />
-          </TooltipTrigger>
-          <TooltipContent className="p-3 text-sm font-medium bg-forest-300 text-forest-900 rounded-xl shadow-lg z-50 flex items-center">
-            Number of unique addresses interacting with one or multiple L2s in a
-            given week.
-          </TooltipContent>
-        </Tooltip>
-        <span className="text-xs">
-          Number of unique addresses interacting with one or multiple L2s in a
-          given week.
-        </span>
       </div>
     </>
   );

@@ -625,14 +625,18 @@ export default function Sidebar({
           trigger={trigger}
           sidebarOpen={isOpen}
         />
-        {isOpen && (
-          <>
-            <div className="text-[0.7rem] flex justify-between w-48 text-inherit dark:text-forest-400 leading-[1] ml-8">
-              <Link href="/privacy-policy">Privacy Policy</Link>
-              <Link href="/imprint">Imprint</Link>
-              <Link href="https://discord.gg/fxjJFe7QyN">Feedback</Link>
-            </div>
-          </>
+        {isOpen ? (
+          <div className="text-[0.7rem] flex justify-between w-48 text-inherit dark:text-forest-400 leading-[1] ml-8">
+            <Link href="/privacy-policy">Privacy Policy</Link>
+            <Link href="/imprint">Imprint</Link>
+            <Link href="https://discord.gg/fxjJFe7QyN">Feedback</Link>
+          </div>
+        ) : (
+          <div className="text-[0.7rem] flex flex-col justify-between w-48 text-inherit dark:text-forest-400 leading-[2] ml-8">
+            <Link href="/privacy-policy">Privacy</Link>
+            <Link href="/imprint">Imprint</Link>
+            <Link href="https://discord.gg/fxjJFe7QyN">Feedback</Link>
+          </div>
         )}
       </div>
     </div>

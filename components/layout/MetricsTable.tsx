@@ -113,20 +113,20 @@ const MetricsTable = ({
               <div className="flex basis-1/3 items-center space-x-2">
                 <div className="relative">
                   <div
-                    className={`w-8 h-8 rounded-full bg-white border-[5px] ${
+                    className={`w-9 h-9 rounded-full bg-white border-[5px] ${
                       chain.border[theme ?? "dark"][1]
                     } ${selectedChains.includes(chain.key) ? "" : ""}`}
                   ></div>
-                  <Image
-                    src={chain.icon}
-                    alt={chain.label}
-                    width={18}
-                    height={18}
-                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                  <Icon
+                    icon={`gtp:${chain.urlKey}-logo-monochrome`}
+                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5 h-5"
+                    style={{
+                      color: chain.colors[theme ?? "dark"][1],
+                    }}
                   />
                 </div>
                 <div className="w-full break-inside-avoid">
-                  <div className="w-full flex flex-col space-y-0.5 -mt-1">
+                  <div className="w-full flex flex-col space-y-0.5">
                     <div className="flex w-full items-baseline text-sm font-bold">
                       {data[chain.key].daily.types.includes("usd") && (
                         <>
@@ -163,7 +163,7 @@ const MetricsTable = ({
                           )}
                     </div>
                     <div className="relative w-full">
-                      <div className="absolute left-0 -top-[3px] w-full h-1 bg-black/30"></div>
+                      <div className="absolute left-0 -top-[3px] w-full h-1 bg-black/10"></div>
                       <div
                         className={`absolute left-0 -top-[3px] h-1 bg-forest-400 rounded-none font-semibold`}
                         style={{
