@@ -61,31 +61,31 @@ const Chain = ({ params }: { params: any }) => {
   return (
     <>
       {/* <h1>Metric: {params.metric}</h1> */}
-      {metricData && (
-        <div className="flex w-full pl-2 md:pl-6 mt-[75px]">
-          <div className="flex flex-col w-full">
-            <div className="flex justify-between items-start w-full">
-              <div className="flex items-start">
-                <Heading className="text-2xl leading-snug md:text-3xl lg:text-[48px] mb-[30px]">
-                  {pageData.title}
-                </Heading>
-              </div>
+
+      <div className="flex w-full pl-2 md:pl-6 mt-[75px]">
+        <div className="flex flex-col w-full">
+          <div className="flex justify-between items-start w-full">
+            <div className="flex items-start">
+              <Heading className="text-2xl leading-snug md:text-3xl lg:text-[48px] mb-[30px]">
+                {pageData.title}
+              </Heading>
             </div>
-            <Subheading
-              className="text-[20px]"
-              leftIcon={
-                pageData.icon && (
-                  <Icon
-                    icon={pageData.icon}
-                    className="w-6 h-6 mr-[16px] ml-[24px] mt-0.5"
-                  />
-                )
-              }
-              iconContainerClassName="items-start mb-[30px]"
-            >
-              {pageData.description}
-            </Subheading>
-            {/* <Subheading
+          </div>
+          <Subheading
+            className="text-[20px]"
+            leftIcon={
+              pageData.icon && (
+                <Icon
+                  icon={pageData.icon}
+                  className="w-6 h-6 mr-[16px] ml-[24px] mt-0.5"
+                />
+              )
+            }
+            iconContainerClassName="items-start mb-[30px]"
+          >
+            {pageData.description}
+          </Subheading>
+          {/* <Subheading
               className="text-[20px] mb-[30px]"
               leftIcon={
                 <div>
@@ -96,8 +96,9 @@ const Chain = ({ params }: { params: any }) => {
               {pageData.why}
             </Subheading> */}
 
-            <div className="flex flex-col-reverse xl:flex-row space-x-0 xl:space-x-8">
-              <div className="flex-1">
+          <div className="flex flex-col-reverse xl:flex-row space-x-0 xl:space-x-8">
+            <div className="flex-1">
+              {metricData && (
                 <ComparisonChart
                   data={Object.keys(metricData.data.chains)
                     .filter((chain) => selectedChains.includes(chain))
@@ -131,24 +132,24 @@ const Chain = ({ params }: { params: any }) => {
                     metric={metricData.data.metric_id}
                   />
                 </ComparisonChart>
-              </div>
+              )}
             </div>
-            <Subheading
-              className="text-[20px] mt-[30px] w-5/6"
-              leftIcon={
-                <div>
-                  <Icon
-                    icon="feather:gift"
-                    className="w-6 h-6 mr-[16px] mt-[30px] ml-8"
-                  />
-                </div>
-              }
-            >
-              {pageData.why}
-            </Subheading>
           </div>
+          <Subheading
+            className="text-[20px] mt-[30px] w-5/6"
+            leftIcon={
+              <div>
+                <Icon
+                  icon="feather:gift"
+                  className="w-6 h-6 mr-[16px] mt-[30px] ml-8"
+                />
+              </div>
+            }
+          >
+            {pageData.why}
+          </Subheading>
         </div>
-      )}
+      </div>
 
       {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
     </>

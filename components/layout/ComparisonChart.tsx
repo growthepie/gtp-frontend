@@ -419,7 +419,7 @@ export default function ComparisonChart({
   }, [data, showEthereumMainnet]);
 
   const options = useMemo((): Highcharts.Options => {
-    if (!filteredData) return {};
+    if (!filteredData || filteredData.length === 0) return {};
 
     if (filteredData[0].types.includes("usd")) {
       if (!showUsd) setValuePrefix("Ξ");
@@ -705,19 +705,21 @@ export default function ComparisonChart({
           <div className="w-full p-4 rounded-xl bg-forest-50/10 dark:bg-forest-900/10">
             <div className="w-full h-[26rem] relative rounded-xl">
               <div className="absolute w-full h-[24rem] top-4">
-                <HighchartsReact
-                  highcharts={Highcharts}
-                  options={options}
-                  ref={(chart) => {
-                    chartComponent.current = chart?.chart;
-                  }}
+                {filteredData.length > 0 && (
+                  <HighchartsReact
+                    highcharts={Highcharts}
+                    options={options}
+                    ref={(chart) => {
+                      chartComponent.current = chart?.chart;
+                    }}
 
-                  // immutable={true}
-                  // oneToOne={true}
-                  // callBack={(chart) => {
-                  // 	setChart(chart);
-                  // }}
-                />
+                    // immutable={true}
+                    // oneToOne={true}
+                    // callBack={(chart) => {
+                    // 	setChart(chart);
+                    // }}
+                  />
+                )}
               </div>
             </div>
           </div>
