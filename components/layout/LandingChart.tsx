@@ -1504,7 +1504,7 @@ export default function LandingChart({
                 Total Users
               </div>
               <div className="text-xl lg:text-3xl font-[650] text-forest-900">
-                {latest_total}
+                {latest_total.toLocaleString()}
               </div>
               <div className="text-[0.65rem] lg:text-xs font-medium text-forest-900 leading-tight">
                 {latest_total_comparison > 0 ? (
@@ -1585,7 +1585,7 @@ export default function LandingChart({
               </div>
             </TooltipTrigger>
             <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-              <div className="px-3 text-sm font-medium bg-forest-100 text-forest-900 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
+              <div className="px-3 text-sm font-medium bg-forest-100 text-forest-900 rounded-xl shadow-lg z-50 w-[435px] h-[80px] flex items-center">
                 <div className="flex flex-col space-y-1">
                   <div className="font-bold text-sm leading-snug">
                     Data Sources:
