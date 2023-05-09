@@ -163,39 +163,6 @@ const baseOptions: Highcharts.Options = {
   },
 };
 
-// const timespans = {
-//   // "30d": {
-//   //   label: "30 days",
-//   //   value: 30,
-//   //   xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
-//   //   xMax: Date.now(),
-//   // },
-//   "90d": {
-//     label: "90 days",
-//     value: 90,
-//     xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
-//     xMax: Date.now(),
-//   },
-//   "180d": {
-//     label: "180 days",
-//     value: 180,
-//     xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
-//     xMax: Date.now(),
-//   },
-//   "365d": {
-//     label: "1 year",
-//     value: 365,
-//     xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
-//     xMax: Date.now(),
-//   },
-//   max: {
-//     label: "Maximum",
-//     value: 0,
-//     xMin: Date.parse("2020-09-28"),
-//     xMax: Date.now(),
-//   },
-// };
-
 type MainChartProps = {
   data: {
     name: string;
@@ -606,7 +573,9 @@ export default function ComparisonChart({
         opposite: false,
         showFirstLabel: true,
         showLastLabel: true,
-        type: selectedScale === "log" ? "logarithmic" : "linear",
+        type: ["absolute", "percentage"].includes(selectedScale)
+          ? "linear"
+          : "logarithmic",
         labels: {
           y: 5,
           style: {
@@ -1006,24 +975,24 @@ export default function ComparisonChart({
 
     return merge({}, baseOptions, dynamicOptions);
   }, [
-    dataGrouping,
     filteredData,
-    formatNumber,
     getSeriesType,
-    getTickPositions,
-    onXAxisSetExtremes,
     selectedScale,
-    showEthereumMainnet,
-    showUsd,
     theme,
-    selectedTimespan,
+    getTickPositions,
     timespans,
+    onXAxisSetExtremes,
+    selectedTimespan,
     tooltipFormatter,
+    showUsd,
+    formatNumber,
+    showEthereumMainnet,
+    dataGrouping,
   ]);
 
   useEffect(() => {
     if (chartComponent.current) {
-      setZoomed(false);
+      // setZoomed(false);
       switch (selectedScale) {
         case "absolute":
           chartComponent.current?.update({
@@ -1035,11 +1004,15 @@ export default function ComparisonChart({
                 stacking: "normal",
               },
             },
-            yAxis: {
-              type: "linear",
-              // max: undefined,
-              // min: undefined,
+            xAxis: {
+              min: timespans[selectedTimespan].xMin,
+              max: timespans[selectedTimespan].xMax,
             },
+            // yAxis: {
+            //   type: "linear",
+            //   // max: undefined,
+            //   // min: undefined,
+            // },
             tooltip: {
               formatter: tooltipFormatter,
               // pointFormat:
@@ -1060,11 +1033,15 @@ export default function ComparisonChart({
                 stacking: "normal",
               },
             },
-            yAxis: {
-              type: "logarithmic",
-              // max: undefined,
-              // min: undefined,
+            xAxis: {
+              min: timespans[selectedTimespan].xMin,
+              max: timespans[selectedTimespan].xMax,
             },
+            // yAxis: {
+            //   type: "logarithmic",
+            //   max: undefined,
+            //   min: undefined,
+            // },
             tooltip: {
               formatter: tooltipFormatter,
               // pointFormat:
@@ -1089,11 +1066,15 @@ export default function ComparisonChart({
                 },
               },
             },
-            yAxis: {
-              type: "linear",
-              // max: 100,
-              // min: 1,
+            xAxis: {
+              min: timespans[selectedTimespan].xMin,
+              max: timespans[selectedTimespan].xMax,
             },
+            // yAxis: {
+            //   type: "linear",
+            //   // max: 100,
+            //   // min: 1,
+            // },
             tooltip: {
               formatter: tooltipFormatter,
               // pointFormat:
@@ -1114,6 +1095,8 @@ export default function ComparisonChart({
     filteredData,
     tooltipFormatter,
     getSeriesType,
+    timespans,
+    selectedTimespan,
   ]);
 
   useEffect(() => {
