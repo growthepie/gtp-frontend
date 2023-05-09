@@ -44,12 +44,9 @@ export default function LandingMetricsTable({
     let clv: any[] = [];
 
     let max = 0;
-    console.log("chains", chains);
-    console.log(data);
 
     chains.forEach((chain) => {
       if (!chain.chainType) return;
-      console.log("chain", chain);
 
       let last =
         data.chains[chain.key].data.data[
@@ -98,7 +95,7 @@ export default function LandingMetricsTable({
           chainsLastVal.map((clv, i) => {
             const chain = clv.chain;
             return (
-              <>
+              <div key={i} className="flex flex-col">
                 {i === chainsLastVal.length - 1 && (
                   <>
                     <div className="pt-[32px] pb-[32px] w-3/5 mx-auto">
@@ -253,7 +250,7 @@ export default function LandingMetricsTable({
                     )(data.chains[chain.key].user_share)}
                   </div>
                 </div>
-              </>
+              </div>
             );
           })}
       </div>

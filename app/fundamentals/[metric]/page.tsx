@@ -50,7 +50,7 @@ const Chain = ({ params }: { params: any }) => {
     AllChains.map((chain) => chain.key)
   );
 
-  const [selectedTimespan, setSelectedTimespan] = useState("30d");
+  const [selectedTimespan, setSelectedTimespan] = useState("365d");
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 

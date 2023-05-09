@@ -1,7 +1,7 @@
 "use client";
 
 import highchartsAnnotations from "highcharts/modules/annotations";
-import highchartsRoundedCorners from "highcharts-rounded-corners";
+// import highchartsRoundedCorners from "highcharts-rounded-corners";
 import HighchartsReact from "highcharts-react-official";
 // import Highcharts, { chart } from "highcharts";
 import Highcharts, {
@@ -198,50 +198,12 @@ export default function LandingChart({
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
   useEffect(() => {
-    Highcharts.SVGRenderer.prototype.symbols.doublearrow = function (
-      x,
-      y,
-      w,
-      h
-    ) {
-      return [
-        // right arrow (curved)
-        "M",
-        x + w / 2 + 1,
-        y,
-        "Q",
-        x + w + w + 1,
-        y + h / 2,
-        x + w / 2 + 1,
-        y + h,
-        "Q",
-        x + w / 2 + 1,
-        y + h / 2,
-        x + w / 2 + 1,
-        y,
-        "Z",
-        "M",
-        x + w / 2 - 1,
-        y,
-        "Q",
-        x - w - 1,
-        y + h / 2,
-        x + w / 2 - 1,
-        y + h,
-        "Q",
-        x + w / 2 - 1,
-        y + h / 2,
-        x + w / 2 - 1,
-        y,
-        "Z",
-      ];
-    };
     Highcharts.setOptions({
       lang: {
         numericSymbols: ["K", " M", "B", "T", "P", "E"],
       },
     });
-    highchartsRoundedCorners(Highcharts);
+    // highchartsRoundedCorners(Highcharts);
     highchartsAnnotations(Highcharts);
     // fullScreen(Highcharts);
 
@@ -326,7 +288,6 @@ export default function LandingChart({
 
   const tooltipFormatter = useCallback(
     function (this: any) {
-      console.log(this);
       const { x, points } = this;
       const date = new Date(x);
       const dateString = date.toLocaleDateString(undefined, {
@@ -411,37 +372,6 @@ export default function LandingChart({
     [formatNumber, selectedScale, theme]
   );
 
-  const tooltipPositioner = useCallback(function (
-    this: any,
-    labelWidth: any,
-    labelHeight: any,
-    point: any
-  ) {
-    const { chart } = this;
-    const { plotLeft, plotTop, plotWidth, plotHeight } = chart;
-    const { plotX } = point;
-
-    const pos = {
-      x: plotX - labelWidth / 2,
-      y: plotTop + plotHeight / 2 - labelHeight,
-    };
-
-    if (pos.x < plotLeft) pos.x = plotLeft;
-    if (pos.x + labelWidth > plotLeft + plotWidth)
-      pos.x = plotLeft + plotWidth - labelWidth;
-
-    // if (plotX < chart.plotLeft + labelWidth / 2)
-    //   return { x: plotLeft, y: plotTop + plotHeight / 2 - labelHeight };
-    // if (plotX > chart.plotLeft + plotWidth - labelWidth / 2)
-    //   return {
-    //     x: plotX - labelWidth,
-    //     y: plotTop + plotHeight / 2 - labelHeight,
-    //   };
-
-    return pos;
-  },
-  []);
-
   const [showTotalUsers, setShowTotalUsers] = useState(true);
 
   const filteredData = useMemo(() => {
@@ -519,16 +449,6 @@ export default function LandingChart({
       );
     }
   }, [selectedTimespan, timespans]);
-
-  const setXAxis = useCallback(() => {
-    if (!chartComponent.current) return;
-    chartComponent.current.xAxis[0].update({
-      min: timespans[selectedTimespan].xMin,
-      max: timespans[selectedTimespan].xMax,
-      // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
-      tickPositions: getTickPositions(timespans.max.xMin, timespans.max.xMax),
-    });
-  }, [getTickPositions, selectedTimespan, timespans]);
 
   const [intervalShown, setIntervalShown] = useState<{
     min: number;
@@ -1080,7 +1000,6 @@ export default function LandingChart({
             })),
           });
         default:
-          // setZoomed(false);
           break;
       }
     }
@@ -1097,11 +1016,6 @@ export default function LandingChart({
       chartComponent.current.reflow();
     }
   }, [chartComponent, filteredData]);
-
-  const toggleFullScreen = () => {
-    // @ts-ignore
-    chartComponent.current?.chart?.fullScreen.toggle();
-  };
 
   return (
     <div className="w-full mb-[6rem] mt-[3rem] relative">
@@ -1234,12 +1148,6 @@ export default function LandingChart({
                 ref={(chart) => {
                   chartComponent.current = chart?.chart;
                 }}
-
-                // immutable={true}
-                // oneToOne={true}
-                // callBack={(chart) => {
-                // 	setChart(chart);
-                // }}
               />
             )}
           </div>

@@ -1,7 +1,4 @@
-"use client";
-
 import { ThemeProvider } from "next-themes";
-// import { MetricsProvider } from "@/context/MetricsProvider";
 import { SWRConfig } from "swr";
 
 export function Providers({ children }) {
@@ -14,9 +11,7 @@ export function Providers({ children }) {
           refreshInterval: 1000 * 60 * 60, // 1 hour
         }}
       >
-        {/* <MetricsProvider> */}
         {children}
-        {/* </MetricsProvider> */}
       </SWRConfig>
     </ThemeProvider>
   );

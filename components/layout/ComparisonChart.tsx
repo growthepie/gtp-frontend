@@ -316,12 +316,14 @@ export default function ComparisonChart({
     [selectedScale]
   );
 
-  const getChartType = useCallback(() => {
-    if (selectedScale === "percentage") return "area";
-    if (selectedScale === "log") return "column";
+  // const getChartType = useCallback(() => {
+  //   if (selectedScale === "percentage") return "area";
+  //   if (selectedScale === "log") return "column";
 
-    return "line";
-  }, [selectedScale]);
+  //   return "line";
+  // }, [selectedScale]);
+
+  const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
 
   const formatNumber = useCallback(
     (value: number | string, isAxis = false) => {
@@ -578,7 +580,7 @@ export default function ComparisonChart({
 
     const dynamicOptions: Highcharts.Options = {
       chart: {
-        type: getChartType(),
+        type: getSeriesType(filteredData[0].name),
         plotBorderColor: "transparent",
         zooming: {
           resetButton: {
@@ -653,6 +655,9 @@ export default function ComparisonChart({
         events: {
           afterSetExtremes: onXAxisSetExtremes,
         },
+        // ...xAxisMinMax,
+        min: timespans[selectedTimespan].xMin,
+        max: timespans[selectedTimespan].xMax,
       },
       tooltip: {
         formatter: tooltipFormatter,
@@ -949,7 +954,69 @@ export default function ComparisonChart({
       //     groupPixelWidth: 5,
       //   },
       // })),]
+      // stockchart options
+      navigator: {
+        enabled: false,
+        outlineWidth: 0,
+        outlineColor: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
+        maskFill:
+          theme === "dark"
+            ? "rgba(215, 223, 222, 0.08)"
+            : "rgba(41, 51, 50, 0.08)",
+        maskInside: true,
 
+        series: {
+          // type: "column",
+          // color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
+          opacity: 0.5,
+          fillOpacity: 0.3,
+          lineWidth: 1,
+          dataGrouping: {
+            enabled: false,
+          },
+          height: 30,
+        },
+        xAxis: {
+          labels: {
+            enabled: true,
+            style: {
+              color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
+              fontSize: "8px",
+              fontWeight: "400",
+              // textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              lineHeight: "1.5em",
+              textShadow: "none",
+              textOutline: "none",
+              cursor: "default",
+              pointerEvents: "none",
+              userSelect: "none",
+              opacity: 0.5,
+            },
+            formatter: function () {
+              return new Date(this.value).toLocaleDateString(undefined, {
+                month: "short",
+                //day: "numeric",
+                year: "numeric",
+              });
+            },
+          },
+          tickLength: 0,
+          lineWidth: 0,
+          gridLineWidth: 0,
+        },
+        handles: {
+          backgroundColor:
+            theme === "dark"
+              ? "rgba(215, 223, 222, 0.3)"
+              : "rgba(41, 51, 50, 0.3)",
+          borderColor:
+            theme === "dark" ? "rgba(215, 223, 222, 0)" : "rgba(41, 51, 50, 0)",
+          width: 8,
+          height: 20,
+          symbols: ["doublearrow", "doublearrow"],
+        },
+      },
       rangeSelector: {
         enabled: false,
       },
@@ -957,10 +1024,6 @@ export default function ComparisonChart({
         gui: {
           enabled: false,
         },
-      },
-
-      navigator: {
-        enabled: false,
       },
       scrollbar: {
         enabled: false,
@@ -984,41 +1047,30 @@ export default function ComparisonChart({
 
     return merge({}, baseOptions, dynamicOptions);
   }, [
-    filteredData,
-    getChartType,
-    selectedScale,
-    theme,
-    getTickPositions,
-    timespans.max.xMin,
-    timespans.max.xMax,
-    onXAxisSetExtremes,
-    tooltipFormatter,
-    showUsd,
-    formatNumber,
-    showEthereumMainnet,
-    getSeriesType,
     dataGrouping,
+    filteredData,
+    formatNumber,
+    getSeriesType,
+    getTickPositions,
+    onXAxisSetExtremes,
+    selectedScale,
+    showEthereumMainnet,
+    showUsd,
+    theme,
+    selectedTimespan,
+    timespans,
+    tooltipFormatter,
   ]);
 
-  const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
-
   useEffect(() => {
     if (chartComponent.current) {
-      chartComponent.current.xAxis[0].setExtremes(
-        timespans[selectedTimespan].xMin,
-        timespans[selectedTimespan].xMax
-      );
-    }
-  }, [selectedTimespan, chartComponent, timespans]);
-
-  useEffect(() => {
-    if (chartComponent.current) {
+      setZoomed(false);
       switch (selectedScale) {
         case "absolute":
           chartComponent.current?.update({
-            chart: {
-              type: getChartType(),
-            },
+            // chart: {
+            //   type: "line",
+            // },
             plotOptions: {
               series: {
                 stacking: "normal",
@@ -1026,8 +1078,8 @@ export default function ComparisonChart({
             },
             yAxis: {
               type: "linear",
-              max: undefined,
-              min: undefined,
+              // max: undefined,
+              // min: undefined,
             },
             tooltip: {
               formatter: tooltipFormatter,
@@ -1039,11 +1091,10 @@ export default function ComparisonChart({
               step: undefined,
             })),
           });
-          break;
         case "log":
           chartComponent.current?.update({
             chart: {
-              type: getChartType(),
+              type: "column",
             },
             plotOptions: {
               series: {
@@ -1052,8 +1103,8 @@ export default function ComparisonChart({
             },
             yAxis: {
               type: "logarithmic",
-              max: undefined,
-              min: undefined,
+              // max: undefined,
+              // min: undefined,
             },
             tooltip: {
               formatter: tooltipFormatter,
@@ -1066,11 +1117,10 @@ export default function ComparisonChart({
               step: "center",
             })),
           });
-          break;
         case "percentage":
           chartComponent.current?.update({
             chart: {
-              type: getChartType(),
+              type: "area",
             },
             plotOptions: {
               area: {
@@ -1082,8 +1132,8 @@ export default function ComparisonChart({
             },
             yAxis: {
               type: "linear",
-              max: 100,
-              min: 1,
+              // max: 100,
+              // min: 1,
             },
             tooltip: {
               formatter: tooltipFormatter,
@@ -1095,7 +1145,6 @@ export default function ComparisonChart({
               step: undefined,
             })),
           });
-          break;
         default:
           break;
       }
@@ -1104,11 +1153,8 @@ export default function ComparisonChart({
     selectedScale,
     chartComponent,
     filteredData,
-    getChartType,
-    getSeriesType,
     tooltipFormatter,
-    selectedTimespan,
-    avg,
+    getSeriesType,
   ]);
 
   useEffect(() => {
@@ -1116,11 +1162,6 @@ export default function ComparisonChart({
       chartComponent.current.reflow();
     }
   }, [chartComponent, filteredData]);
-
-  const toggleFullScreen = () => {
-    // @ts-ignore
-    chartComponent.current?.chart?.fullScreen.toggle();
-  };
 
   return (
     <div className="w-full flex-col">
@@ -1199,7 +1240,7 @@ export default function ComparisonChart({
           <div className="w-full p-4 rounded-xl bg-forest-50/10 dark:bg-forest-900/10">
             <div className="w-full h-[26rem] relative rounded-xl">
               <div className="absolute w-full h-[24rem] top-4">
-                {filteredData.length > 0 && highchartsLoaded && (
+                {highchartsLoaded && filteredData.length > 0 && (
                   <HighchartsReact
                     highcharts={Highcharts}
                     options={options}
@@ -1207,12 +1248,6 @@ export default function ComparisonChart({
                       chartComponent.current = chart?.chart;
                     }}
                     constructorType={"stockChart"}
-
-                    // immutable={true}
-                    // oneToOne={true}
-                    // callBack={(chart) => {
-                    // 	setChart(chart);
-                    // }}
                   />
                 )}
               </div>

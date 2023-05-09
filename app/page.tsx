@@ -72,60 +72,62 @@ export default function Home() {
   return (
     <div className="flex w-full mt-[65px]">
       <div className={`flex flex-col flex-1 pl-2 md:pl-6`}>
-        {data && (
-          <>
-            <Heading className="text-2xl leading-snug md:text-[36px] mb-[30px]">
-              Growing Ethereum’s Ecosystem Together
-            </Heading>
-            <TopAnimation />
-            {/* <Subheading className="text-sm leading-snug">
+        <>
+          <Heading className="text-2xl leading-snug md:text-[36px] mb-[30px]">
+            Growing Ethereum’s Ecosystem Together
+          </Heading>
+          <TopAnimation />
+          {/* <Subheading className="text-sm leading-snug">
               Compare Ethereum&apos;s Layer-2 solutions and better understand
               the metrics to grow the ecosystem.
             </Subheading> */}
-            <div className="flex mt-[100px] mb-[32px] space-x-2 items-center">
-              <Icon icon="gtp:gtp-pie" className="w-9 h-9" />
-              <Heading className="text-[30px] leading-snug font-bold">
-                Layer 2 User Base
-              </Heading>
-            </div>
-            <Subheading className="text-base leading-snug mb-[15px] px-[45px]">
-              Number of unique addresses interacting with one or multiple L2s in
-              a given week.
-            </Subheading>
-            <div className="flex-1">
-              <LandingChart
-                data={Object.keys(data.chains)
-                  .filter((chain) => selectedChains.includes(chain))
-                  .map((chain) => {
-                    return {
-                      name: chain,
-                      // type: 'spline',
-                      types: data.chains[chain].data.types,
-                      data: data.chains[chain].data.data,
-                    };
-                  })}
-                sources={landing.data.metrics.user_base.source}
-                latest_total={data.latest_total}
-                latest_total_comparison={data.latest_total_comparison}
-                l2_dominance={data.l2_dominance}
-                l2_dominance_comparison={data.l2_dominance_comparison}
-                selectedMetric={selectedMetric}
+          <div className="flex mt-[100px] mb-[32px] space-x-2 items-center">
+            <Icon icon="gtp:gtp-pie" className="w-9 h-9" />
+            <Heading className="text-[30px] leading-snug font-bold">
+              Layer 2 User Base
+            </Heading>
+          </div>
+          <Subheading className="text-base leading-snug mb-[15px] px-[45px]">
+            Number of unique addresses interacting with one or multiple L2s in a
+            given week.
+          </Subheading>
+          {data && (
+            <>
+              <div className="flex-1">
+                <LandingChart
+                  data={Object.keys(data.chains)
+                    .filter((chain) => selectedChains.includes(chain))
+                    .map((chain) => {
+                      return {
+                        name: chain,
+                        // type: 'spline',
+                        types: data.chains[chain].data.types,
+                        data: data.chains[chain].data.data,
+                      };
+                    })}
+                  sources={landing.data.metrics.user_base.source}
+                  latest_total={data.latest_total}
+                  latest_total_comparison={data.latest_total_comparison}
+                  l2_dominance={data.l2_dominance}
+                  l2_dominance_comparison={data.l2_dominance_comparison}
+                  selectedMetric={selectedMetric}
+                  metric={selectedTimeInterval}
+                  setSelectedMetric={setSelectedMetric}
+                />
+              </div>
+              {/* {master && <ReactJson src={master} collapsed={true} />} */}
+              <LandingMetricsTable
+                data={data}
+                selectedChains={selectedChains}
+                setSelectedChains={setSelectedChains}
+                chains={chains}
                 metric={selectedTimeInterval}
-                setSelectedMetric={setSelectedMetric}
+                master={master}
+                interactable={selectedMetric !== "Total Users"}
               />
-            </div>
-            {/* {master && <ReactJson src={master} collapsed={true} />} */}
-            <LandingMetricsTable
-              data={data}
-              selectedChains={selectedChains}
-              setSelectedChains={setSelectedChains}
-              chains={chains}
-              metric={selectedTimeInterval}
-              master={master}
-              interactable={selectedMetric !== "Total Users"}
-            />
-          </>
-        )}
+            </>
+          )}
+        </>
 
         <div className="flex gap-x-10 mt-[90px]">
           <div className="flex flex-col w-1/2 lg:w-2/3">
