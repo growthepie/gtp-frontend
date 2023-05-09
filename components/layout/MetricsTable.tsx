@@ -196,21 +196,29 @@ const MetricsTable = ({
                       ) : (
                         <div className="text-red-500 text-[0.5rem]">▼</div>
                       )} */}
-                    {data[chain.key].changes[timespan][0] >= 0 ? (
-                      <span className="w-12 text-green-500">
-                        +
-                        {Math.round(
-                          data[chain.key].changes[timespan][0] * 1000
-                        ) / 10}
-                        %
+                    {data[chain.key].changes[timespan][0] === null ? (
+                      <span className="text-gray-500 text-center mx-4 inline-block">
+                        —
                       </span>
                     ) : (
-                      <span className="w-12 text-red-500">
-                        {Math.round(
-                          data[chain.key].changes[timespan][0] * 1000
-                        ) / 10}
-                        %
-                      </span>
+                      <>
+                        {data[chain.key].changes[timespan][0] >= 0 ? (
+                          <span className="text-green-500">
+                            +
+                            {Math.round(
+                              data[chain.key].changes[timespan][0] * 1000
+                            ) / 10}
+                            %
+                          </span>
+                        ) : (
+                          <span className="text-red-500">
+                            {Math.round(
+                              data[chain.key].changes[timespan][0] * 1000
+                            ) / 10}
+                            %
+                          </span>
+                        )}
+                      </>
                     )}
                   </div>
                 ))}
