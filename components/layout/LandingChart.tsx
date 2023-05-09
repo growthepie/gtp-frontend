@@ -959,8 +959,6 @@ export default function LandingChart({
           lineWidth: 0,
           gridLineWidth: 0,
         },
-
-        enabled: false,
         handles: {
           backgroundColor:
             theme === "dark"
