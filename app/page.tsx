@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useMediaQuery } from "@react-hook/media-query";
@@ -102,7 +101,7 @@ export default function Home() {
               Number of unique addresses interacting with one or multiple L2s in
               a given week.
             </Subheading>
-            {data && landing && (
+            {data && landing && master && (
               <>
                 <div className="flex-1">
                   <LandingChart
