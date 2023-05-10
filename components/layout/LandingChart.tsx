@@ -1129,10 +1129,10 @@ export default function LandingChart({
           )}
         </div>
       </div>
-      <div className="w-full py-4 rounded-xl">
-        <div className="w-full h-[26rem] relative rounded-xl">
-          <div className="absolute w-full h-[24rem] top-4">
-            {highchartsLoaded && filteredData.length > 0 && (
+      {highchartsLoaded && filteredData.length > 0 ? (
+        <div className="w-full py-4 rounded-xl">
+          <div className="w-full h-[26rem] relative rounded-xl">
+            <div className="absolute w-full h-[24rem] top-4">
               <HighchartsReact
                 highcharts={Highcharts}
                 options={options}
@@ -1141,10 +1141,16 @@ export default function LandingChart({
                   chartComponent.current = chart?.chart;
                 }}
               />
-            )}
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="w-full h-[26rem] my-4 flex justify-center items-center">
+          <div className="w-10 h-10 animate-spin">
+            <Icon icon="feather:loader" className="w-10 h-10 text-forest-500" />
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-between items-center absolute -bottom-[5rem] left-0 right-0 rounded-full bg-forest-50 p-0.5">
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}

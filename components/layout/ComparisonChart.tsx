@@ -6,7 +6,14 @@ import Highcharts, {
 } from "highcharts/highstock";
 import highchartsAnnotations from "highcharts/modules/annotations";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+  ReactNode,
+} from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { merge } from "lodash";
 import { theme as customTheme } from "tailwind.config";
@@ -185,7 +192,7 @@ export default function ComparisonChart({
   timeIntervals: string[];
   onTimeIntervalChange: (interval: string) => void;
   showTimeIntervals: boolean;
-  children?: React.ReactNode;
+  children?: ReactNode;
   sources: string[];
   avg?: boolean;
 }) {
@@ -1175,34 +1182,45 @@ export default function ComparisonChart({
         </div>
       </div>
       <div className="w-full flex flex-col-reverse lg:flex-row">
-        <div className="hidden lg:block lg:w-1/2 xl:w-5/12 pl-2 pr-[19px]">
-          {children}
-        </div>
-        <div className="w-full lg:w-1/2 xl:w-7/12 relative">
-          <div className="w-full p-4 rounded-xl bg-forest-50/10 dark:bg-forest-900/10">
-            <div className="w-full h-[26rem] relative rounded-xl">
-              <div className="absolute w-full h-[24rem] top-4">
-                {highchartsLoaded && filteredData.length > 0 && (
-                  <HighchartsReact
-                    highcharts={Highcharts}
-                    options={options}
-                    ref={(chart) => {
-                      chartComponent.current = chart?.chart;
-                    }}
-                    constructorType={"stockChart"}
-                  />
-                )}
+        {highchartsLoaded && filteredData.length > 0 ? (
+          <>
+            <div className="hidden lg:block lg:w-1/2 xl:w-5/12 pl-2 pr-[19px]">
+              {children}
+            </div>
+            <div className="w-full lg:w-1/2 xl:w-7/12 relative">
+              <div className="w-full p-4 rounded-xl bg-forest-50/10 dark:bg-forest-900/10">
+                <div className="w-full h-[26rem] relative rounded-xl">
+                  <div className="absolute w-full h-[24rem] top-4">
+                    <HighchartsReact
+                      highcharts={Highcharts}
+                      options={options}
+                      ref={(chart) => {
+                        chartComponent.current = chart?.chart;
+                      }}
+                      constructorType={"stockChart"}
+                    />
+                  </div>
+                </div>
               </div>
+              {dataGrouping.enabled && dataGrouping.units && (
+                <div className="absolute top-3 right-[calc(0%+1.75rem)] rounded-full text-xs font-medium capitalize">
+                  Displaying {dataGrouping.units[0][1]}-
+                  {dataGrouping.units[0][0]} Average
+                </div>
+              )}
+              <div className="absolute top-3 left-[calc(0%-1.75rem)] rounded-full text-xs font-medium"></div>
+            </div>
+          </>
+        ) : (
+          <div className="w-full h-[26rem] my-4 flex justify-center items-center">
+            <div className="w-10 h-10 animate-spin">
+              <Icon
+                icon="feather:loader"
+                className="w-10 h-10 text-forest-500"
+              />
             </div>
           </div>
-          {dataGrouping.enabled && dataGrouping.units && (
-            <div className="absolute top-3 right-[calc(0%+1.75rem)] rounded-full text-xs font-medium capitalize">
-              Displaying {dataGrouping.units[0][1]}-{dataGrouping.units[0][0]}{" "}
-              Average
-            </div>
-          )}
-          <div className="absolute top-3 left-[calc(0%-1.75rem)] rounded-full text-xs font-medium"></div>
-        </div>
+        )}
       </div>
       <div className="flex w-full justify-between items-center text-base rounded-full bg-forest-50 p-0.5 px-1">
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
@@ -1289,7 +1307,7 @@ export default function ComparisonChart({
                     </div>
                     <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
                       {sources
-                        .map<React.ReactNode>((s) => (
+                        .map<ReactNode>((s) => (
                           <Link
                             key={s}
                             rel="noopener noreferrer"
