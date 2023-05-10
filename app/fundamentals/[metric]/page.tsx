@@ -54,6 +54,8 @@ const Chain = ({ params }: { params: any }) => {
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
+  const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
+
   if (errorCode) {
     return <Error statusCode={errorCode} />;
   }
@@ -124,6 +126,8 @@ const Chain = ({ params }: { params: any }) => {
                   showTimeIntervals={true}
                   sources={metricData.data.source}
                   avg={metricData.data.avg}
+                  showEthereumMainnet={showEthereumMainnet}
+                  setShowEthereumMainnet={setShowEthereumMainnet}
                 >
                   <MetricsTable
                     data={metricData.data.chains}
@@ -131,6 +135,8 @@ const Chain = ({ params }: { params: any }) => {
                     setSelectedChains={setSelectedChains}
                     chains={chains}
                     metric={metricData.data.metric_id}
+                    showEthereumMainnet={showEthereumMainnet}
+                    setShowEthereumMainnet={setShowEthereumMainnet}
                   />
                 </ComparisonChart>
               )}
@@ -142,7 +148,7 @@ const Chain = ({ params }: { params: any }) => {
               <div>
                 <Icon
                   icon="feather:gift"
-                  className="w-6 h-6 mr-[16px] mt-[30px] ml-8"
+                  className="w-6 h-6 mr-[16px] mt-[30px] ml-[24px]"
                 />
               </div>
             }

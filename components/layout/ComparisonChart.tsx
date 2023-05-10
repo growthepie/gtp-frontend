@@ -1,5 +1,3 @@
-"use client";
-
 import HighchartsReact from "highcharts-react-official";
 import Highcharts, {
   AxisLabelsFormatterContextObject,
@@ -187,6 +185,8 @@ export default function ComparisonChart({
   children,
   sources,
   avg,
+  showEthereumMainnet,
+  setShowEthereumMainnet,
 }: {
   data: any;
   timeIntervals: string[];
@@ -195,6 +195,8 @@ export default function ComparisonChart({
   children?: ReactNode;
   sources: string[];
   avg?: boolean;
+  showEthereumMainnet: boolean;
+  setShowEthereumMainnet: (show: boolean) => void;
 }) {
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
@@ -222,8 +224,6 @@ export default function ComparisonChart({
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
   const [zoomed, setZoomed] = useState(false);
-
-  const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
 
   const [valuePrefix, setValuePrefix] = useState("");
 
@@ -382,19 +382,40 @@ export default function ComparisonChart({
     [formatNumber, selectedScale, theme, valuePrefix]
   );
 
-  const filteredData = useMemo(() => {
-    if (!data) return null;
-    return showEthereumMainnet
+  const filteredData = useMemo<any[]>(() => {
+    if (!data)
+      return [
+        {
+          name: "",
+          data: [],
+          types: [],
+        },
+      ];
+
+    const d: any[] = showEthereumMainnet
       ? data
       : data.filter((d) => d.name !== "ethereum");
+
+    if (d.length === 0)
+      return [
+        {
+          name: "",
+          data: [],
+          types: [],
+        },
+      ];
+    return d;
   }, [data, showEthereumMainnet]);
 
   const timespans = useMemo(() => {
-    const maxDate = new Date(
-      filteredData.length > 0
-        ? filteredData[0].data[filteredData[0].data.length - 1][0]
-        : 0
-    );
+    let maxDate = new Date();
+    if (filteredData && filteredData[0].name !== "") {
+      maxDate = new Date(
+        filteredData.length > 0
+          ? filteredData[0].data[filteredData[0].data.length - 1][0]
+          : 0
+      );
+    }
 
     const maxPlusBuffer = maxDate.valueOf() + 3.5 * 24 * 60 * 60 * 1000;
 
@@ -426,10 +447,13 @@ export default function ComparisonChart({
       max: {
         label: "Maximum",
         value: 0,
-        xMin: filteredData.reduce(
-          (min, d) => Math.min(min, d.data[0][0]),
-          Infinity
-        ),
+        xMin:
+          filteredData[0].name === ""
+            ? Date.now() - 365 * 24 * 60 * 60 * 1000
+            : filteredData.reduce(
+                (min, d) => Math.min(min, d.data[0][0]),
+                Infinity
+              ),
 
         xMax: maxPlusBuffer,
       },
@@ -489,41 +513,58 @@ export default function ComparisonChart({
       enabled: false,
     };
 
-    if (selectedScale !== "log") {
-      if (selectedTimespan === "max" || selectedTimespan === "365d")
-        grouping = {
-          enabled: true,
-          units: [["week", [1]]],
-          approximation: "average",
-          forced: true,
-        };
+    if (
+      (avg === true || selectedScale === "log") &&
+      ["max", "365d"].includes(selectedTimespan)
+    ) {
+      grouping = {
+        enabled: true,
+        units: [["week", [1]]],
+        approximation: "average",
+        forced: true,
+      };
     } else {
-      if (selectedTimespan === "max") {
-        grouping = {
-          enabled: true,
-          units: [["week", [1]]],
-          approximation: "average",
-          forced: true,
-        };
-      } else if (selectedTimespan === "365d") {
-        grouping = {
-          enabled: true,
-          units: [["week", [1]]],
-          approximation: "average",
-          forced: true,
-        };
-      } else {
-        grouping = {
-          enabled: false,
-          units: [["day", [2]]],
-          approximation: "average",
-          forced: true,
-        };
-      }
+      grouping = {
+        enabled: false,
+      };
     }
 
     return grouping;
-  }, [selectedScale, selectedTimespan]);
+  }, [avg, selectedScale, selectedTimespan]);
+
+  const scaleToPlotOptions = useMemo<Highcharts.PlotOptions>(() => {
+    switch (selectedScale) {
+      case "absolute":
+        return {
+          line: {
+            stacking: undefined,
+          },
+          area: {
+            stacking: undefined,
+          },
+        };
+      case "percentage":
+        return {
+          line: {
+            stacking: "percent",
+          },
+          area: {
+            stacking: "percent",
+          },
+        };
+      case "log":
+        return {
+          column: {
+            stacking: "normal",
+          },
+          area: {
+            stacking: undefined,
+          },
+        };
+      default:
+        return undefined;
+    }
+  }, [selectedScale]);
 
   const options = useMemo((): Highcharts.Options => {
     if (!filteredData || filteredData.length === 0) return {};
@@ -565,14 +606,7 @@ export default function ComparisonChart({
           },
         },
       },
-      plotOptions: {
-        area: {
-          stacking: selectedScale === "percentage" ? "percent" : "normal",
-        },
-        column: {
-          crisp: true,
-        },
-      },
+      plotOptions: scaleToPlotOptions,
       legend: {
         enabled: false,
       },
@@ -580,9 +614,10 @@ export default function ComparisonChart({
         opposite: false,
         showFirstLabel: true,
         showLastLabel: true,
-        type: ["absolute", "percentage"].includes(selectedScale)
-          ? "linear"
-          : "logarithmic",
+        type: "linear",
+        // ["absolute", "percentage"].includes(selectedScale)
+        //   ? "linear"
+        //   : "logarithmic",
         labels: {
           y: 5,
           style: {
@@ -723,17 +758,28 @@ export default function ComparisonChart({
                   y2: 1,
                 },
                 stops: [
-                  [0, AllChainsByKeys[series.name].colors[theme][0] + "33"],
-                  [1, AllChainsByKeys[series.name].colors[theme][1] + "33"],
+                  [
+                    0,
+                    AllChainsByKeys[series.name]?.colors[theme ?? "dark"][0] +
+                      "33",
+                  ],
+                  [
+                    1,
+                    AllChainsByKeys[series.name]?.colors[theme ?? "dark"][1] +
+                      "33",
+                  ],
                 ],
               },
-              borderColor: AllChainsByKeys[series.name].colors[theme][0],
+              borderColor:
+                AllChainsByKeys[series.name]?.colors[theme ?? "dark"][0],
               borderWidth: 1,
               ...(getSeriesType(series.name) !== "column"
                 ? {
                     shadow: {
                       color:
-                        AllChainsByKeys[series.name].colors[theme][1] + "33",
+                        AllChainsByKeys[series.name]?.colors[
+                          theme ?? "dark"
+                        ][1] + "33",
                       width: 10,
                     },
                     color: {
@@ -744,9 +790,19 @@ export default function ComparisonChart({
                         y2: 0,
                       },
                       stops: [
-                        [0, AllChainsByKeys[series.name].colors[theme][0]],
+                        [
+                          0,
+                          AllChainsByKeys[series.name]?.colors[
+                            theme ?? "dark"
+                          ][0],
+                        ],
                         // [0.33, AllChainsByKeys[series.name].colors[1]],
-                        [1, AllChainsByKeys[series.name].colors[theme][1]],
+                        [
+                          1,
+                          AllChainsByKeys[series.name]?.colors[
+                            theme ?? "dark"
+                          ][1],
+                        ],
                       ],
                     },
                   }
@@ -775,8 +831,9 @@ export default function ComparisonChart({
                           ? [
                               [
                                 0,
-                                AllChainsByKeys[series.name].colors[theme][0] +
-                                  "E6",
+                                AllChainsByKeys[series.name]?.colors[
+                                  theme ?? "dark"
+                                ][0] + "E6",
                               ],
                               // [
                               //   0.3,
@@ -786,15 +843,17 @@ export default function ComparisonChart({
                               // ],
                               [
                                 1,
-                                AllChainsByKeys[series.name].colors[theme][1] +
-                                  "E6",
+                                AllChainsByKeys[series.name]?.colors[
+                                  theme ?? "dark"
+                                ][1] + "E6",
                               ],
                             ]
                           : [
                               [
                                 0,
-                                AllChainsByKeys[series.name].colors[theme][0] +
-                                  "E6",
+                                AllChainsByKeys[series.name]?.colors[
+                                  theme ?? "dark"
+                                ][0] + "E6",
                               ],
                               // [
                               //   0.7,
@@ -803,8 +862,9 @@ export default function ComparisonChart({
                               // ],
                               [
                                 1,
-                                AllChainsByKeys[series.name].colors[theme][1] +
-                                  "E6",
+                                AllChainsByKeys[series.name]?.colors[
+                                  theme ?? "dark"
+                                ][1] + "E6",
                               ],
                             ],
                     },
@@ -824,42 +884,26 @@ export default function ComparisonChart({
                         x2: 0,
                         y2: 1,
                       },
-                      stops:
-                        theme === "dark"
-                          ? [
-                              [
-                                0,
-                                AllChainsByKeys[series.name].colors[theme][0] +
-                                  "FF",
-                              ],
-                              [
-                                0.349,
-                                AllChainsByKeys[series.name].colors[theme][0] +
-                                  "88",
-                              ],
-                              [
-                                1,
-                                AllChainsByKeys[series.name].colors[theme][0] +
-                                  "00",
-                              ],
-                            ]
-                          : [
-                              [
-                                0,
-                                AllChainsByKeys[series.name].colors[theme][0] +
-                                  "FF",
-                              ],
-                              [
-                                0.349,
-                                AllChainsByKeys[series.name].colors[theme][0] +
-                                  "88",
-                              ],
-                              [
-                                1,
-                                AllChainsByKeys[series.name].colors[theme][0] +
-                                  "00",
-                              ],
-                            ],
+                      stops: [
+                        [
+                          0,
+                          AllChainsByKeys[series.name]?.colors[
+                            theme ?? "dark"
+                          ][0] + "FF",
+                        ],
+                        [
+                          0.349,
+                          AllChainsByKeys[series.name]?.colors[
+                            theme ?? "dark"
+                          ][0] + "88",
+                        ],
+                        [
+                          1,
+                          AllChainsByKeys[series.name]?.colors[
+                            theme ?? "dark"
+                          ][0] + "00",
+                        ],
+                      ],
                     },
                   }),
               states: {
@@ -870,9 +914,13 @@ export default function ComparisonChart({
                     opacity: 1,
                     attributes: {
                       fill:
-                        AllChainsByKeys[series.name].colors[theme][0] + "99",
+                        AllChainsByKeys[series.name]?.colors[
+                          theme ?? "dark"
+                        ][0] + "99",
                       stroke:
-                        AllChainsByKeys[series.name].colors[theme][0] + "66",
+                        AllChainsByKeys[series.name]?.colors[
+                          theme ?? "dark"
+                        ][0] + "66",
                       "stroke-width": 0,
                     },
                   },
@@ -984,6 +1032,7 @@ export default function ComparisonChart({
   }, [
     filteredData,
     getSeriesType,
+    scaleToPlotOptions,
     selectedScale,
     theme,
     getTickPositions,
@@ -995,115 +1044,6 @@ export default function ComparisonChart({
     formatNumber,
     showEthereumMainnet,
     dataGrouping,
-  ]);
-
-  useEffect(() => {
-    if (chartComponent.current) {
-      // setZoomed(false);
-      switch (selectedScale) {
-        case "absolute":
-          chartComponent.current?.update({
-            // chart: {
-            //   type: "line",
-            // },
-            plotOptions: {
-              series: {
-                stacking: "normal",
-              },
-            },
-            xAxis: {
-              min: timespans[selectedTimespan].xMin,
-              max: timespans[selectedTimespan].xMax,
-            },
-            // yAxis: {
-            //   type: "linear",
-            //   // max: undefined,
-            //   // min: undefined,
-            // },
-            tooltip: {
-              formatter: tooltipFormatter,
-              // pointFormat:
-              //   '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
-            },
-            series: filteredData.map((series: any) => ({
-              type: getSeriesType(series.name),
-              step: undefined,
-            })),
-          });
-        case "log":
-          chartComponent.current?.update({
-            chart: {
-              type: "column",
-            },
-            plotOptions: {
-              series: {
-                stacking: "normal",
-              },
-            },
-            xAxis: {
-              min: timespans[selectedTimespan].xMin,
-              max: timespans[selectedTimespan].xMax,
-            },
-            // yAxis: {
-            //   type: "logarithmic",
-            //   max: undefined,
-            //   min: undefined,
-            // },
-            tooltip: {
-              formatter: tooltipFormatter,
-              // pointFormat:
-              //   '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
-            },
-
-            series: filteredData.map((series: any) => ({
-              type: getSeriesType(series.name),
-              step: "center",
-            })),
-          });
-        case "percentage":
-          chartComponent.current?.update({
-            chart: {
-              type: "area",
-            },
-            plotOptions: {
-              area: {
-                stacking: "percent",
-                marker: {
-                  enabled: false,
-                },
-              },
-            },
-            xAxis: {
-              min: timespans[selectedTimespan].xMin,
-              max: timespans[selectedTimespan].xMax,
-            },
-            // yAxis: {
-            //   type: "linear",
-            //   // max: 100,
-            //   // min: 1,
-            // },
-            tooltip: {
-              formatter: tooltipFormatter,
-              // pointFormat:
-              //   '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
-            },
-            series: filteredData.map((series: any) => ({
-              type: getSeriesType(series.name),
-              step: undefined,
-            })),
-          });
-        default:
-          break;
-      }
-    }
-  }, [
-    selectedScale,
-    chartComponent,
-    filteredData,
-    tooltipFormatter,
-    getSeriesType,
-    timespans,
-    selectedTimespan,
   ]);
 
   useEffect(() => {
@@ -1160,7 +1100,7 @@ export default function ComparisonChart({
           ) : (
             <>
               <button
-                className={`rounded-full flex items-center space-x-3 px-2 py-[4px] text-md lg:px-4 lg:py-[10px] lg:text-md xl:px-4 xl:py-[10px] xl:text-lg font-medium border-[2px] border-forest-800`}
+                className={`rounded-full flex items-center space-x-3 px-2 py-[5px] text-md lg:px-4 lg:py-[11px] lg:text-md xl:px-4 xl:py-[11px] xl:text-lg font-medium border-[1px] border-forest-800`}
                 onClick={() => {
                   chartComponent?.current?.xAxis[0].setExtremes(
                     timespans[selectedTimespan].xMin,
@@ -1182,11 +1122,11 @@ export default function ComparisonChart({
         </div>
       </div>
       <div className="w-full flex flex-col-reverse lg:flex-row">
-        {highchartsLoaded && filteredData.length > 0 ? (
+        <div className="hidden lg:block lg:w-1/2 xl:w-5/12 pl-2 pr-[19px]">
+          {children}
+        </div>
+        {highchartsLoaded ? (
           <>
-            <div className="hidden lg:block lg:w-1/2 xl:w-5/12 pl-2 pr-[19px]">
-              {children}
-            </div>
             <div className="w-full lg:w-1/2 xl:w-7/12 relative">
               <div className="w-full p-4 rounded-xl bg-forest-50/10 dark:bg-forest-900/10">
                 <div className="w-full h-[26rem] relative rounded-xl">
@@ -1202,6 +1142,9 @@ export default function ComparisonChart({
                   </div>
                 </div>
               </div>
+              <div className="absolute top-3 left-[calc(0%+1.75rem)] rounded-full text-xs font-medium capitalize">
+                {avg ? "true" : "false"}
+              </div>
               {dataGrouping.enabled && dataGrouping.units && (
                 <div className="absolute top-3 right-[calc(0%+1.75rem)] rounded-full text-xs font-medium capitalize">
                   Displaying {dataGrouping.units[0][1]}-
@@ -1212,7 +1155,7 @@ export default function ComparisonChart({
             </div>
           </>
         ) : (
-          <div className="w-full h-[26rem] my-4 flex justify-center items-center">
+          <div className="w-full lg:w-1/2 xl:w-7/12 h-[26rem] my-4 flex justify-center items-center">
             <div className="w-10 h-10 animate-spin">
               <Icon
                 icon="feather:loader"
