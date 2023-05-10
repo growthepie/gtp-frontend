@@ -25,7 +25,7 @@ const MetricsTable = ({
 }) => {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
-  const [maxVal, setMaxVal] = useState(0);
+  const [maxVal, setMaxVal] = useState<number | null>(null);
 
   const { theme } = useTheme();
 
@@ -39,7 +39,11 @@ const MetricsTable = ({
           .filter((chain) => chain !== "ethereum")
           .map((chain) => {
             return data[chain].daily.data[data[chain].daily.data.length - 1][
-              showUsd ? 2 : 1
+              data[chain].daily.types.length > 2
+                ? showUsd && data[chain].daily.types.includes("usd")
+                  ? data[chain].daily.types.indexOf("usd")
+                  : data[chain].daily.types.indexOf("eth")
+                : 1
             ];
           })
       )
@@ -47,13 +51,22 @@ const MetricsTable = ({
   }, [data, showUsd]);
 
   const rows = useCallback(() => {
-    if (!data) return [];
+    if (!data || maxVal === null) return [];
     return Object.keys(data)
       .map((chain: any) => {
+        const lastVal =
+          data[chain].daily.data[data[chain].daily.data.length - 1][
+            data[chain].daily.types.length > 2
+              ? showUsd && data[chain].daily.types.includes("usd")
+                ? data[chain].daily.types.indexOf("usd")
+                : data[chain].daily.types.indexOf("eth")
+              : 1
+          ];
         return {
           data: data[chain],
           chain: AllChainsByKeys[chain],
-          lastVal: data[chain].daily.data[data[chain].daily.data.length - 1][1],
+          lastVal: lastVal,
+          barWidth: `${(lastVal / maxVal) * 100}%`,
         };
       })
       .sort((a, b) => {
@@ -76,7 +89,7 @@ const MetricsTable = ({
           }
         }
       });
-  }, [data, selectedChains]);
+  }, [data, selectedChains, showUsd, maxVal]);
 
   let height = 0;
   const transitions = useTransition(
@@ -208,15 +221,9 @@ const MetricsTable = ({
                         <>
                           <div className="absolute left-0 -top-[3px] w-full h-1 bg-black/10"></div>
                           <div
-                            className={`absolute left-0 -top-[3px] h-1 bg-forest-400 rounded-none font-semibold`}
+                            className={`absolute left-0 -top-[3px] h-1 bg-forest-400 rounded-none font-semibold transition-width duration-300 `}
                             style={{
-                              width: `${
-                                (item.data.daily.data[
-                                  item.data.daily.data.length - 1
-                                ][1] /
-                                  maxVal) *
-                                100
-                              }%`,
+                              width: item.barWidth,
                             }}
                           ></div>
                         </>
