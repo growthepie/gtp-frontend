@@ -562,7 +562,17 @@ export default function ComparisonChart({
           },
         };
       default:
-        return undefined;
+        return {
+          column: {
+            stacking: "normal",
+          },
+          line: {
+            stacking: undefined,
+          },
+          area: {
+            stacking: undefined,
+          },
+        };
     }
   }, [selectedScale]);
 
@@ -678,6 +688,7 @@ export default function ComparisonChart({
           color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
         },
       },
+      //@ts-ignore
       series: [
         ...filteredData
           .sort((a, b) => {
