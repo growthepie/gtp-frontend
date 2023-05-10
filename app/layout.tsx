@@ -43,7 +43,7 @@ export default function RootLayout({
   // }, [isLargeScreen]);
 
   return (
-    <html lang="en" className="--font-raleway">
+    <html lang="en" className={`${raleway.variable}`}>
       <head />
       <body className="bg-forest-50 text-forest-900 dark:text-forest-500 font-raleway  overflow-hidden">
         <Providers>
