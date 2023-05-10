@@ -1,10 +1,4 @@
 "use client";
-import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  ArrowsRightLeftIcon,
-  LinkIcon,
-} from "@heroicons/react/24/solid";
 import { useEffect, useState, ReactNode } from "react";
 import { Icon } from "@iconify/react";
 import SidebarMenuGroup from "./SidebarMenuGroup";
@@ -18,6 +12,7 @@ import { addCollection } from "@iconify/react";
 import GTPIcons from "icons/gtp.json";
 import GTPHouse from "icons/svg/GTP-House.svg";
 import { MasterURL } from "@/lib/urls";
+import { motion } from "framer-motion";
 
 // import iconset from "icons/gtp.json"
 addCollection({
@@ -206,7 +201,7 @@ export const items: SidebarItems = [
     name: "Home",
     label: "Home",
     key: "home",
-    icon: <ArrowsRightLeftIcon className="h-5 w-5" />,
+    icon: <Icon icon="feather:arrow-right" className="h-5 w-5" />,
     sidebarIcon: <Icon icon="gtp:house" className="h-7 w-7 p-0.5 mx-auto " />,
     options: [],
     href: "/",
@@ -215,7 +210,7 @@ export const items: SidebarItems = [
     name: "Fundamentals",
     label: "Fundamentals",
     key: "metrics",
-    icon: <ArrowsRightLeftIcon className="h-5 w-5" />,
+    icon: <Icon icon="feather:arrow-right" className="h-5 w-5" />,
     sidebarIcon: (
       <Icon icon="gtp:fundamentals" className="h-7 w-7 p-0.5 mx-auto " />
     ),
@@ -334,7 +329,7 @@ export const items: SidebarItems = [
   {
     name: "Blockspace",
     label: "Blockspace",
-    icon: <LinkIcon className="h-5 w-5" />,
+    icon: <Icon icon="feather:link" className="h-5 w-5" />,
     sidebarIcon: <Icon icon="gtp:package" className="h-7 w-7 p-0.5 mx-auto" />,
     options: [],
     href: "",
@@ -343,7 +338,7 @@ export const items: SidebarItems = [
     name: "Chains",
     label: "Single Chain",
     key: "chains",
-    icon: <LinkIcon className="h-5 w-5" />,
+    icon: <Icon icon="feather:link" className="h-5 w-5" />,
     sidebarIcon: <Icon icon="gtp:link" className="h-7 w-7 p-0.5 mx-auto" />,
     options: [
       {
@@ -462,7 +457,7 @@ export const items: SidebarItems = [
   {
     name: "Wiki",
     label: "Wiki",
-    icon: <LinkIcon className="h-5 w-5" />,
+    icon: <Icon icon="feather:link" className="h-5 w-5" />,
     sidebarIcon: (
       <Icon icon="gtp:book-open" className="h-7 w-7 p-0.5 pb-0 mx-auto" />
     ),
@@ -472,7 +467,7 @@ export const items: SidebarItems = [
   {
     name: "API Documentation",
     label: "API Documentation",
-    icon: <LinkIcon className="h-5 w-5" />,
+    icon: <Icon icon="feather:link" className="h-5 w-5" />,
     sidebarIcon: (
       <Icon icon="gtp:file-text" className="h-7 w-7 p-0.5 mx-auto" />
     ),
@@ -527,7 +522,7 @@ export default function Sidebar({
   const contributors = {
     name: "Contributors",
     label: "Contributors",
-    icon: <LinkIcon className="h-5 w-5" />,
+    icon: <Icon icon="feather:link" className="h-5 w-5" />,
     sidebarIcon: <Icon icon="gtp:compass" className="h-7 w-7 p-0.5 mx-auto" />,
     options: [],
     href: "/contributors",
@@ -597,10 +592,11 @@ export default function Sidebar({
     );
 
   return (
-    <div
-      className={`flex-1 flex flex-col justify-items-start select-none ${
-        isOpen ? "w-[18rem]" : "w-[5.5rem]"
-      } overflow-hidden`}
+    <motion.div
+      className={`flex-1 flex flex-col justify-items-start select-none overflow-hidden`}
+      animate={{
+        width: isOpen ? "18rem" : "5.5rem",
+      }}
     >
       {/* trigger that opens the sidebar when clicked */}
       {/* <div className="text-forest-800 z-20 mb-6 pl-6">
@@ -632,13 +628,13 @@ export default function Sidebar({
             <Link href="https://discord.gg/fxjJFe7QyN">Feedback</Link>
           </div>
         ) : (
-          <div className="text-[0.7rem] flex flex-col justify-between w-48 text-inherit dark:text-forest-400 leading-[2] ml-8">
+          <div className="text-[0.7rem] flex flex-col justify-between w-6 text-inherit dark:text-forest-400 leading-[2] ml-8 items-center">
             <Link href="/privacy-policy">Privacy</Link>
             <Link href="/imprint">Imprint</Link>
             <Link href="https://discord.gg/fxjJFe7QyN">Feedback</Link>
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

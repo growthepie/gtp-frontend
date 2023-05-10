@@ -1,5 +1,11 @@
+"use client";
 import { ThemeProvider } from "next-themes";
 import { SWRConfig } from "swr";
+import { addCollection } from "@iconify/react";
+import GTPIcons from "@/icons/gtp.json";
+
+// load icons
+addCollection(GTPIcons);
 
 export function Providers({ children }) {
   return (

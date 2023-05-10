@@ -1,11 +1,6 @@
 "use client";
-
-import { Switch } from "@/components/Switch";
 import { useEffect, useState } from "react";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
-import { SunIcon } from "@heroicons/react/24/outline";
-import { MoonIcon } from "@heroicons/react/24/solid";
-import { useTheme } from "next-themes";
 
 export default function EthUsdSwitch() {
   const [mounted, setMounted] = useState(false);

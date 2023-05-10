@@ -9,8 +9,8 @@ import { useEffect, useMemo, useRef } from "react";
 import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
 import { zinc, red, blue, amber } from "tailwindcss/colors";
-import { ArrowTrendingUpIcon } from "@heroicons/react/24/outline";
 import { useTheme } from "next-themes";
+import { Icon } from "@iconify/react";
 
 const COLORS = {
   GRID: "#262e48",
@@ -366,7 +366,10 @@ export default function MainChart({ data }: { data: any }) {
                 });
               }}
             >
-              <ArrowTrendingUpIcon className="w-3 h-3 font-bold inline-block mr-0.5" />
+              <Icon
+                icon="feather:link"
+                className="w-3 h-3 font-bold inline-block mr-0.5"
+              />
               Log
             </button>
             <button

@@ -9,12 +9,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useSessionStorage } from "usehooks-ts";
 import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
-import { BanknotesIcon } from "@heroicons/react/24/solid";
-import {
-  ArrowTopRightOnSquareIcon,
-  LinkIcon,
-  AtSymbolIcon,
-} from "@heroicons/react/24/outline";
+
 import { useTheme } from "next-themes";
 import _ from "lodash";
 import { AllChains } from "@/lib/chains";

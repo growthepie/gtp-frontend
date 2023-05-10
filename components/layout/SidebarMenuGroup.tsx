@@ -1,16 +1,10 @@
 "use client";
-import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState, ReactNode } from "react";
 import { Icon } from "@iconify/react";
-import { useMediaQuery } from "@react-hook/media-query";
 import Link from "next/link";
-import { MasterResponse } from "@/types/api/MasterResponse";
-// import { useMetricsData } from "@/context/MetricsProvider";
 import useSWR from "swr";
 import { usePathname } from "next/navigation";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./Tooltip";
-import { AllChains } from "@/lib/chains";
-import Image from "next/image";
 import { MasterURL } from "@/lib/urls";
 
 export type SidebarItem = {

@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import { setCookie, hasCookie } from "cookies-next";
 import { Icon } from "@iconify/react";

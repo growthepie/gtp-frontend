@@ -1,10 +1,5 @@
 "use client";
-
-import { Switch } from "@/components/Switch";
 import { useEffect, useState } from "react";
-import { useLocalStorage } from "usehooks-ts";
-import { SunIcon } from "@heroicons/react/24/outline";
-import { MoonIcon } from "@heroicons/react/24/solid";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
 

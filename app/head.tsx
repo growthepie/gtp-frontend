@@ -6,11 +6,13 @@ export default function Head() {
 
   return (
     <>
-      <title>Grow The Pie - L2 Metrics - Track the layer two ecosystem</title>
+      <title>
+        Grow The Pie - Growing Ethereum’s Ecosystem Together - Layer 2 User Base
+      </title>
       <meta content="width=device-width, initial-scale=1" name="viewport" />
       <meta
         name="description"
-        content="Grow The Pie - L2 Metrics - Track the layer two ecosystem"
+        content="At GrowThePie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics."
       />
       <link
         rel="apple-touch-icon"
@@ -29,6 +31,9 @@ export default function Head() {
         sizes="16x16"
         href="/favicon-16x16.png"
       />
+      <link rel="preload" as="image" href="/logo_pie_only.png" />
+      <link rel="preload" as="image" href="/logo_full.png" />
+      <link rel="preload" as="image" href="/logo_full_light.png" />
       <link rel="manifest" href="/site.webmanifest" />
       <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
       <meta name="msapplication-TileColor" content="#da532c" />
