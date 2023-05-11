@@ -114,7 +114,7 @@ const MetricsTable = ({
   };
 
   return (
-    <div className="flex flex-col mt-6 font-semibold space-y-[5px] w-full transition-all duration-300">
+    <div className="flex flex-col font-semibold space-y-[5px] w-full transition-all duration-300">
       <div
         className={`flex items-center py-1 pl-2 pr-4 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm`}
       >

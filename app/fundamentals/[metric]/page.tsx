@@ -80,7 +80,7 @@ const Chain = ({ params }: { params: any }) => {
               pageData.icon && (
                 <Icon
                   icon={pageData.icon}
-                  className="w-6 h-6 mr-[10px] ml-[22px] -mt-0.5"
+                  className="w-6 h-6 mr-[12px] ml-[28px] -mt-0.5"
                 />
               )
             }

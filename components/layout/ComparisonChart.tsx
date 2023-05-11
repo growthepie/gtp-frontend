@@ -1083,8 +1083,8 @@ export default function ComparisonChart({
   return (
     <div className="w-full flex-col relative">
       <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 p-0.5">
-        <div className="flex justify-center items-center space-x-2">
-          <div className="w-7 h-7 lg:w-9 lg:h-9 relative ml-4">
+        <div className="flex justify-center items-center">
+          <div className="w-7 h-7 lg:w-9 lg:h-9 relative ml-[21px] mr-1.5">
             <Image
               src="/GTP-Chain.png"
               alt="GTP Chain"
@@ -1093,7 +1093,7 @@ export default function ComparisonChart({
             />
           </div>
           {/* <Icon icon="gtp:chain" className="w-7 h-7 lg:w-9 lg:h-9" /> */}
-          <h2 className="text-[24px] xl:text-[30px] leading-snug font-bold hidden lg:block">
+          <h2 className="text-[24px] xl:text-[30px] leading-snug font-bold hidden lg:block my-[10px]">
             Selected Chains
           </h2>
         </div>
@@ -1102,7 +1102,7 @@ export default function ComparisonChart({
             Object.keys(timespans).map((timespan) => (
               <button
                 key={timespan}
-                className={`rounded-full px-2 py-1.5 text-base lg:px-4 lg:py-3 xl:px-4 xl:py-3 font-medium ${
+                className={`rounded-full px-2 py-1.5 text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
                   selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-[#151A19]"
                     : "hover:bg-forest-100"
@@ -1150,13 +1150,13 @@ export default function ComparisonChart({
         </div>
       </div>
       <div className="w-full flex flex-col-reverse lg:flex-row">
-        <div className="hidden lg:block lg:w-1/2 xl:w-5/12 pl-2 pr-[19px]">
-          {children}
+        <div className="hidden lg:block lg:w-1/2 xl:w-5/12 pl-2 pr-[19px] self-center">
+          <div className="-mt-7">{children}</div>
         </div>
         {highchartsLoaded ? (
           <>
             <div className="w-full lg:w-1/2 xl:w-7/12 relative">
-              <div className="w-full p-4 rounded-xl bg-forest-50/10 dark:bg-forest-900/10">
+              <div className="w-full p-4 py-14">
                 <div className="w-full h-[26rem] relative rounded-xl">
                   <div className="absolute w-full h-[24rem] top-4">
                     <HighchartsReact
@@ -1170,11 +1170,8 @@ export default function ComparisonChart({
                   </div>
                 </div>
               </div>
-              <div className="absolute top-3 left-[calc(0%+1.75rem)] rounded-full text-xs font-medium capitalize">
-                {avg ? "true" : "false"}
-              </div>
               {dataGrouping.enabled && dataGrouping.units && (
-                <div className="absolute top-3 right-[calc(0%+1.75rem)] rounded-full text-xs font-medium capitalize">
+                <div className="absolute top-[60px] right-[calc(0%+1.75rem)] rounded-full text-xs font-medium capitalize">
                   Displaying {dataGrouping.units[0][1]}-
                   {dataGrouping.units[0][0]} Average
                 </div>
@@ -1298,7 +1295,7 @@ export default function ComparisonChart({
           </div>
         </div>
       </div>
-      <div className="block lg:hidden w-full">{children}</div>
+      <div className="block mt-6 lg:hidden w-full">{children}</div>
     </div>
   );
 }
