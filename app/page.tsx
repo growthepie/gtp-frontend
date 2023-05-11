@@ -14,6 +14,7 @@ import { Icon } from "@iconify/react";
 import TopAnimation from "@/components/TopAnimation";
 import { LandingURL, MasterURL } from "@/lib/urls";
 import Link from "next/link";
+import QuestionAnswer from "@/components/layout/QuestionAnswer";
 
 export default function Home() {
   const isLargeScreen = useMediaQuery("(min-width: 768px)");
@@ -182,69 +183,72 @@ export default function Home() {
               Frequently Asked Questions
             </Heading>
           </div>
-          <div className="flex flex-col space-y-[15px]">
-            <div className="rounded-3xl bg-forest-50 px-10 py-5 flex flex-col space-y-[15px]">
-              <div className="font-semibold">What&apos;s up with the name?</div>
-              <div>
-                We view the different layer 2 solutions for the Ethereum
-                ecosystem as complementary technologies that enable more use
-                cases, rather than competitors vying for market share. We
-                believe that the space is a positive-sum game, where each unique
-                flavor of layer 2 technology brings its own benefits to the
-                table. Through collaboration and innovation, the Ethereum
-                community can unlock the full potential of layer 2 solutions and
-                continue to expand it&apos;s user-base and evolve in exciting
-                ways.
-              </div>
-            </div>
-
-            <div className="rounded-3xl bg-forest-50 px-10 py-5 flex flex-col space-y-[15px]">
-              <div className="font-semibold">
-                What exactly does &quot;multiple&quot; stand for?
-              </div>
-              <div>
-                The &quot;multiple&quot; category denotes addresses that were
-                active on multiple Layer 2 (L2) networks within a given week.
-                This implies that if an address was active on different L2
-                networks, such as Arbitrum and Optimism, in the same week, it
-                would be included in the &quot;multiple&quot; category, but not
-                attributed to either Arbitrum or Optimism. For a more detailed
-                breakdown of active addresses on each individual chain, please
-                refer to the{" "}
-                <Link
-                  href="https://www.growthepie.xyz/fundamentals/daily-active-addresses"
-                  className="underline"
-                >
-                  &quot;Daily active addresses&quot;
-                </Link>{" "}
-                tab.
-              </div>
-            </div>
-            <div className="rounded-3xl bg-forest-50 px-10 py-5 flex flex-col space-y-[15px]">
-              <div className="font-semibold">
-                Why have the numbers on the landing page not updated for a few
-                days?
-              </div>
-              <div>
-                The numbers on the landing page use a weekly aggregation. In
-                order to avoid confusion we only show completed weeks and no
-                partial weeks. The date that you can see in the chart is always
-                the start of the week (Monday). Our landing page numbers will
-                update every Monday.
-              </div>
-            </div>
-            <div className="rounded-3xl bg-forest-50 px-10 py-5 flex flex-col space-y-[15px]">
-              <div className="font-semibold">
-                L2Beat has way more Layer 2s listed why do you not cover all of
-                them?
-              </div>
-              <div>
-                The goal is to cover as many L2s as possible. We will add more
-                L2s over time. For our type of analysis we need access to the
-                raw data of each L2. This makes adding new L2s time and resource
-                consuming.
-              </div>
-            </div>
+          <div className="flex flex-col space-y-[15px] my-[30px]">
+            <QuestionAnswer
+              className="rounded-3xl bg-forest-50 px-[46px] py-[23px] flex flex-col"
+              question="What's up with the name?"
+              answer={
+                <>
+                  We view the different layer 2 solutions for the Ethereum
+                  ecosystem as complementary technologies that enable more use
+                  cases, rather than competitors vying for market share. We
+                  believe that the space is a positive-sum game, where each
+                  unique flavor of layer 2 technology brings its own benefits to
+                  the table. Through collaboration and innovation, the Ethereum
+                  community can unlock the full potential of layer 2 solutions
+                  and continue to expand it&apos;s user-base and evolve in
+                  exciting ways.
+                </>
+              }
+            />
+            <QuestionAnswer
+              className="rounded-3xl bg-forest-50 px-[46px] py-[23px] flex flex-col"
+              question='What exactly does "multiple" stand for?'
+              answer={
+                <>
+                  The &quot;multiple&quot; category denotes addresses that were
+                  active on multiple Layer 2 (L2) networks within a given week.
+                  This implies that if an address was active on different L2
+                  networks, such as Arbitrum and Optimism, in the same week, it
+                  would be included in the &quot;multiple&quot; category, but
+                  not attributed to either Arbitrum or Optimism. For a more
+                  detailed breakdown of active addresses on each individual
+                  chain, please refer to the{" "}
+                  <Link
+                    href="https://www.growthepie.xyz/fundamentals/daily-active-addresses"
+                    className="underline"
+                  >
+                    &quot;Daily active addresses&quot;
+                  </Link>{" "}
+                  tab.
+                </>
+              }
+            />
+            <QuestionAnswer
+              className="rounded-3xl bg-forest-50 px-[46px] py-[23px] flex flex-col"
+              question="Why have the numbers on the landing page not updated for a few days?"
+              answer={
+                <>
+                  The numbers on the landing page use a weekly aggregation. In
+                  order to avoid confusion we only show completed weeks and no
+                  partial weeks. The date that you can see in the chart is
+                  always the start of the week (Monday). Our landing page
+                  numbers will update every Monday.
+                </>
+              }
+            />
+            <QuestionAnswer
+              className="rounded-3xl bg-forest-50 px-[46px] py-[23px] flex flex-col"
+              question="L2Beat has way more Layer 2s listed why do you not cover all of them?"
+              answer={
+                <>
+                  The goal is to cover as many L2s as possible. We will add more
+                  L2s over time. For our type of analysis we need access to the
+                  raw data of each L2. This makes adding new L2s time and
+                  resource consuming.
+                </>
+              }
+            />
           </div>
         </div>
       </div>

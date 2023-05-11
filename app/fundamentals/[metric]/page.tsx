@@ -14,6 +14,7 @@ import { AllChains } from "@/lib/chains";
 import { intersection } from "lodash";
 import { items as sidebarItems } from "@/components/layout/Sidebar";
 import { Icon } from "@iconify/react";
+import QuestionAnswer from "@/components/layout/QuestionAnswer";
 
 const Chain = ({ params }: { params: any }) => {
   const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
@@ -142,23 +143,15 @@ const Chain = ({ params }: { params: any }) => {
               )}
             </div>
           </div>
-          <Subheading
-            className="text-[20px] mt-[30px] w-5/6"
-            leftIcon={
-              <div>
-                <Icon
-                  icon="feather:gift"
-                  className="w-6 h-6 mr-[16px] mt-[30px] ml-[24px]"
-                />
-              </div>
-            }
-          >
-            {pageData.why}
-          </Subheading>
+          <div className="flex flex-col space-y-[15px] mt-[30px]">
+            <QuestionAnswer
+              className="rounded-3xl bg-forest-50 px-[63px] py-[23px] flex flex-col"
+              question={`What does ${pageData.title} tell you?`}
+              answer={pageData.why}
+            />
+          </div>
         </div>
       </div>
-
-      {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
     </>
   );
 };

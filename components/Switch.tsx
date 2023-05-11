@@ -20,7 +20,7 @@ export const Switch = ({
         <label htmlFor="toggle" className="flex items-center cursor-pointer">
           {leftLabel && (
             <div
-              className={`mr-2 font-medium ${
+              className={`mr-[10px] font-medium ${
                 checked ? "opacity-100" : "opacity-60"
               }`}
               onClick={onChange}
@@ -31,7 +31,7 @@ export const Switch = ({
           <div className="relative nightwind-prevent-block" onClick={onChange}>
             <div
               className={`block 
-                        w-[3.25rem] h-7
+                        w-[50px] h-7
                         rounded-full transition duration-200 ease-in-out text-forest-900 bg-forest-500`}
             ></div>
             <div
@@ -40,13 +40,13 @@ export const Switch = ({
                         h-6
                         rounded-full transition duration-200 ease-in-out
                         bg-forest-900 text-forest-500 
-                        ${checked ? "transform translate-x-full" : ""}
+                        ${checked ? "transform translate-x-[22px]" : ""}
                         rounded-full`}
             ></div>
           </div>
           {rightLabel && (
             <div
-              className={`ml-2 font-medium ${
+              className={`ml-[10px] font-medium ${
                 checked ? "opacity-100" : "opacity-60"
               }`}
               onClick={onChange}
