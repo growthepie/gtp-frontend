@@ -1210,25 +1210,25 @@ export default function LandingChart({
               <div className="text-[0.65rem] lg:text-xs font-medium text-forest-900 leading-tight">
                 {latest_total_comparison > 0 ? (
                   <span
-                    className="text-green-500 dark:text-green-400 font-semibold"
-                    style={{
-                      textShadow:
-                        theme === "dark"
-                          ? "1px 1px 4px #00000066"
-                          : "1px 1px 4px #ffffff99",
-                    }}
+                    className="text-[#45AA6F] dark:text-[#4CFF7E] font-semibold"
+                    // style={{
+                    //   textShadow:
+                    //     theme === "dark"
+                    //       ? "1px 1px 4px #00000066"
+                    //       : "1px 1px 4px #ffffff99",
+                    // }}
                   >
                     +{(latest_total_comparison * 100).toFixed(2)}%
                   </span>
                 ) : (
                   <span
-                    className="text-red-500 dark:text-red-400 font-semibold"
-                    style={{
-                      textShadow:
-                        theme === "dark"
-                          ? "1px 1px 4px #00000066"
-                          : "1px 1px 4px #ffffff99",
-                    }}
+                    className="text-[#DD3408] dark:text-[#FE5468] font-semibold"
+                    // style={{
+                    //   textShadow:
+                    //     theme === "dark"
+                    //       ? "1px 1px 4px #00000066"
+                    //       : "1px 1px 4px #ffffff99",
+                    // }}
                   >
                     {(latest_total_comparison * 100).toFixed(2)}%
                   </span>
@@ -1252,25 +1252,25 @@ export default function LandingChart({
               <div className="text-[0.65rem] lg:text-xs font-medium text-forest-900 leading-tight">
                 {l2_dominance_comparison > 0 ? (
                   <span
-                    className="text-green-500 dark:text-green-400 font-semibold"
-                    style={{
-                      textShadow:
-                        theme === "dark"
-                          ? "1px 1px 4px #00000066"
-                          : "1px 1px 4px #ffffff99",
-                    }}
+                    className="text-[#45AA6F] dark:text-[#4CFF7E] font-semibold"
+                    // style={{
+                    //   textShadow:
+                    //     theme === "dark"
+                    //       ? "1px 1px 4px #00000066"
+                    //       : "1px 1px 4px #ffffff99",
+                    // }}
                   >
                     +{l2_dominance_comparison.toFixed(2)}%
                   </span>
                 ) : (
                   <span
-                    className="text-green-500 dark:text-green-400 font-semibold"
-                    style={{
-                      textShadow:
-                        theme === "dark"
-                          ? "1px 1px 4px #00000066"
-                          : "1px 1px 4px #ffffff99",
-                    }}
+                    className="text-[#DD3408] dark:text-[#FE5468] font-semibold"
+                    // style={{
+                    //   textShadow:
+                    //     theme === "dark"
+                    //       ? "1px 1px 4px #00000066"
+                    //       : "1px 1px 4px #ffffff99",
+                    // }}
                   >
                     {l2_dominance_comparison.toFixed(2)}%
                   </span>

@@ -249,14 +249,14 @@ const MetricsTable = ({
                     ) : (
                       <>
                         {item.data.changes[timespan][0] >= 0 ? (
-                          <span className="text-green-500">
+                          <span className="text-[#45AA6F] dark:text-[#4CFF7E]">
                             +
                             {Math.round(item.data.changes[timespan][0] * 1000) /
                               10}
                             %
                           </span>
                         ) : (
-                          <span className="text-red-500">
+                          <span className="text-[#DD3408] dark:text-[#FE5468]">
                             {Math.round(item.data.changes[timespan][0] * 1000) /
                               10}
                             %
