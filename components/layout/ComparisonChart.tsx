@@ -671,13 +671,13 @@ export default function ComparisonChart({
           const pointX = point.plotX + plotLeft;
           const pointY = point.plotY + plotTop;
           const tooltipX =
-            pointX + distance > plotLeft + plotWidth - width
-              ? pointX - width - distance
-              : pointX + distance;
+            pointX - distance - tooltipWidth < plotLeft
+              ? pointX + distance
+              : pointX - tooltipWidth - distance;
           const tooltipY =
-            pointY - height < plotTop
+            pointY - tooltipHeight / 2 < plotTop
               ? pointY + distance
-              : pointY - height / 2 - distance;
+              : pointY - tooltipHeight / 2;
           return {
             x: tooltipX,
             y: tooltipY,
