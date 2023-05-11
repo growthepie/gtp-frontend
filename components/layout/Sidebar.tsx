@@ -216,6 +216,33 @@ export const items: SidebarItems = [
     ),
     options: [
       {
+        label: "Transaction Count",
+        page: {
+          title: "Transaction Count",
+          description: "The number of daily transactions.",
+          why: "The number of transactions processed on a blockchain is a reliable metric for measuring its usage. However, it should be noted that this metric alone may not provide sufficient insight into the actual value of the transactions being conducted. For instance, while some chains may have a lower transaction count, the value of these transactions may be significantly higher due to their use in decentralized finance (DeFi) applications. On the other hand, certain chains may have a higher transaction count due to their use in gaming or other applications involving lower value transactions.",
+          icon: "feather:clock",
+        },
+        icon: <Icon icon="feather:clock" className="h-4 w-4 mx-auto" />,
+        key: "txcount",
+        rootKey: "metricsTxCount",
+        urlKey: "transaction-count",
+      },
+      {
+        label: "Daily Active Addresses",
+        page: {
+          title: "Daily Active Addresses",
+          description:
+            "The number of unique daily addresses that interacted with a chain.",
+          why: "Daily active addresses is a widely used metric for estimating the number of users on a blockchain network. Although it is not a perfect metric due to the possibility of a single person owning multiple addresses, it can still provide valuable insights into the overall user base of a chain. It is worth noting, however, that this metric can be influenced by Sybil attacks, where an attacker creates a large number of fake identities to artificially inflate the active address count. Therefore, while daily active addresses can be a useful measure, it should be used in conjunction with other metrics to provide a more comprehensive analysis of a chain's user activity.",
+          icon: "feather:sunrise",
+        },
+        icon: <Icon icon="feather:sunrise" className="h-4 w-4 mx-auto" />,
+        key: "daa",
+        rootKey: "metricsDailyActiveAddresses",
+        urlKey: "daily-active-addresses",
+      },
+      {
         label: "Total Value Locked",
         page: {
           title: "TVL On-Chain",
@@ -228,32 +255,6 @@ export const items: SidebarItems = [
         key: "tvl",
         rootKey: "metricsTvl",
         urlKey: "total-value-locked",
-      },
-      {
-        label: "Stablecoin Market Cap",
-        page: {
-          title: "Stablecoin Market Cap",
-          description: "The sum of stablecoins that are locked on the chain.",
-          why: "Stablecoin market cap is a crucial metric for evaluating the growth and development of a blockchain's decentralized finance (DeFi) ecosystem.Stables are a popular choice for use in DeFi applications such as lending, borrowing, and trading. The market cap of stablecoins on a particular chain can provide valuable insights into the level of adoption and usage of DeFi applications on the network. A high stablecoin market cap is indicative of a robust and thriving DeFi ecosystem, where users are actively engaged in utilizing the various financial applications available on the chain.",
-          icon: "feather:dollar-sign",
-        },
-        icon: <Icon icon="feather:dollar-sign" className="h-4 w-4 mx-auto" />,
-        key: "stables_mcap",
-        rootKey: "metricsStablesMcap",
-        urlKey: "stablecoin-market-cap",
-      },
-      {
-        label: "Transaction Count",
-        page: {
-          title: "Transaction Count",
-          description: "The number of daily transactions.",
-          why: "The number of transactions processed on a blockchain is a reliable metric for measuring its usage. However, it should be noted that this metric alone may not provide sufficient insight into the actual value of the transactions being conducted. For instance, while some chains may have a lower transaction count, the value of these transactions may be significantly higher due to their use in decentralized finance (DeFi) applications. On the other hand, certain chains may have a higher transaction count due to their use in gaming or other applications involving lower value transactions.",
-          icon: "feather:clock",
-        },
-        icon: <Icon icon="feather:clock" className="h-4 w-4 mx-auto" />,
-        key: "txcount",
-        rootKey: "metricsTxCount",
-        urlKey: "transaction-count",
       },
 
       {
@@ -285,6 +286,19 @@ export const items: SidebarItems = [
         urlKey: "fees-paid-by-users",
       },
       {
+        label: "Stablecoin Market Cap",
+        page: {
+          title: "Stablecoin Market Cap",
+          description: "The sum of stablecoins that are locked on the chain.",
+          why: "Stablecoin market cap is a crucial metric for evaluating the growth and development of a blockchain's decentralized finance (DeFi) ecosystem.Stables are a popular choice for use in DeFi applications such as lending, borrowing, and trading. The market cap of stablecoins on a particular chain can provide valuable insights into the level of adoption and usage of DeFi applications on the network. A high stablecoin market cap is indicative of a robust and thriving DeFi ecosystem, where users are actively engaged in utilizing the various financial applications available on the chain.",
+          icon: "feather:dollar-sign",
+        },
+        icon: <Icon icon="feather:dollar-sign" className="h-4 w-4 mx-auto" />,
+        key: "stables_mcap",
+        rootKey: "metricsStablesMcap",
+        urlKey: "stablecoin-market-cap",
+      },
+      {
         label: "Transactions/Second",
         icon: (
           <Icon
@@ -296,20 +310,7 @@ export const items: SidebarItems = [
         rootKey: "metricsTransactionsPerSecond",
         urlKey: "transactions-per-second",
       },
-      {
-        label: "Daily Active Addresses",
-        page: {
-          title: "Daily Active Addresses",
-          description:
-            "The number of unique daily addresses that interacted with a chain.",
-          why: "Daily active addresses is a widely used metric for estimating the number of users on a blockchain network. Although it is not a perfect metric due to the possibility of a single person owning multiple addresses, it can still provide valuable insights into the overall user base of a chain. It is worth noting, however, that this metric can be influenced by Sybil attacks, where an attacker creates a large number of fake identities to artificially inflate the active address count. Therefore, while daily active addresses can be a useful measure, it should be used in conjunction with other metrics to provide a more comprehensive analysis of a chain's user activity.",
-          icon: "feather:sunrise",
-        },
-        icon: <Icon icon="feather:sunrise" className="h-4 w-4 mx-auto" />,
-        key: "daa",
-        rootKey: "metricsDailyActiveAddresses",
-        urlKey: "daily-active-addresses",
-      },
+
       {
         label: "New Addresses",
         icon: <Icon icon="bx:bx-user-plus" className="h-4 w-4 mx-auto" />,

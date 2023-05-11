@@ -207,7 +207,7 @@ export default function LandingChart({
 
   const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
 
-  const [selectedTimespan, setSelectedTimespan] = useState("365d");
+  const [selectedTimespan, setSelectedTimespan] = useState("max");
 
   const [selectedScale, setSelectedScale] = useState("absolute");
 

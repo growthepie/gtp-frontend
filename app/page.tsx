@@ -13,6 +13,7 @@ import LandingMetricsTable from "@/components/layout/LandingMetricsTable";
 import { Icon } from "@iconify/react";
 import TopAnimation from "@/components/TopAnimation";
 import { LandingURL, MasterURL } from "@/lib/urls";
+import Link from "next/link";
 
 export default function Home() {
   const isLargeScreen = useMediaQuery("(min-width: 768px)");
@@ -23,11 +24,17 @@ export default function Home() {
     setIsSidebarOpen(isLargeScreen);
   }, [isLargeScreen]);
 
-  const { data: landing, error: landingError } =
-    useSWR<LandingPageMetricsResponse>(LandingURL);
+  const {
+    data: landing,
+    error: landingError,
+    isLoading: landingLoading,
+  } = useSWR<LandingPageMetricsResponse>(LandingURL);
 
-  const { data: master, error: masterError } =
-    useSWR<MasterResponse>(MasterURL);
+  const {
+    data: master,
+    error: masterError,
+    isLoading: masterLoading,
+  } = useSWR<MasterResponse>(MasterURL);
 
   const [data, setData] = useState<any>(null);
 
@@ -72,9 +79,9 @@ export default function Home() {
     <>
       <div
         className={`fixed top-0 left-0 w-screen h-screen flex items-center justify-center bg-forest-50 ${
-          master && landing
-            ? "opacity-0 -z-10 pointer-events-none"
-            : "opacity-100 z-50"
+          masterLoading && landingLoading
+            ? "opacity-100 z-50"
+            : "opacity-0 -z-10 pointer-events-none"
         } transition-opacity duration-300`}
       >
         {/* Animated Looping Growing Pie Logo */}
@@ -179,27 +186,63 @@ export default function Home() {
             <div className="rounded-3xl bg-forest-50 px-10 py-5 flex flex-col space-y-[15px]">
               <div className="font-semibold">What&apos;s up with the name?</div>
               <div>
-                At GrowThePie, our mission is to provide comprehensive and
-                accurate analytics of layer 2 solutions for the Ethereum
-                ecosystem, acting as a trusted data aggregator from reliable
-                sources such as L2Beat and DefiLlama, while also developing our
-                own metrics. Through our analytics interface, we aim to educate
-                and increase transparency. Our goal is to be one of the go-to
-                resources for those seeking to learn more about the potential of
-                layer 2 technologies and their impact on the future of the
-                Ethereum ecosystem.
+                We view the different layer 2 solutions for the Ethereum
+                ecosystem as complementary technologies that enable more use
+                cases, rather than competitors vying for market share. We
+                believe that the space is a positive-sum game, where each unique
+                flavor of layer 2 technology brings its own benefits to the
+                table. Through collaboration and innovation, the Ethereum
+                community can unlock the full potential of layer 2 solutions and
+                continue to expand it&apos;s user-base and evolve in exciting
+                ways.
               </div>
             </div>
 
             <div className="rounded-3xl bg-forest-50 px-10 py-5 flex flex-col space-y-[15px]">
               <div className="font-semibold">
-                Am I a sophisticated question?
+                What exactly does &quot;multiple&quot; stand for?
               </div>
               <div>
-                Yes I think you are, and here is my lengthy sophisticated answer
-                to your ridiculously sophisticated question. My main goal here
-                is to explain that I try to use 2 lines of text, to see if this
-                is good looking. And I think it is. Great!
+                The &quot;multiple&quot; category denotes addresses that were
+                active on multiple Layer 2 (L2) networks within a given week.
+                This implies that if an address was active on different L2
+                networks, such as Arbitrum and Optimism, in the same week, it
+                would be included in the &quot;multiple&quot; category, but not
+                attributed to either Arbitrum or Optimism. For a more detailed
+                breakdown of active addresses on each individual chain, please
+                refer to the{" "}
+                <Link
+                  href="https://www.growthepie.xyz/fundamentals/daily-active-addresses"
+                  className="underline"
+                >
+                  &quot;Daily active addresses&quot;
+                </Link>{" "}
+                tab.
+              </div>
+            </div>
+            <div className="rounded-3xl bg-forest-50 px-10 py-5 flex flex-col space-y-[15px]">
+              <div className="font-semibold">
+                Why have the numbers on the landing page not updated for a few
+                days?
+              </div>
+              <div>
+                The numbers on the landing page use a weekly aggregation. In
+                order to avoid confusion we only show completed weeks and no
+                partial weeks. The date that you can see in the chart is always
+                the start of the week (Monday). Our landing page numbers will
+                update every Monday.
+              </div>
+            </div>
+            <div className="rounded-3xl bg-forest-50 px-10 py-5 flex flex-col space-y-[15px]">
+              <div className="font-semibold">
+                L2Beat has way more Layer 2s listed why do you not cover all of
+                them?
+              </div>
+              <div>
+                The goal is to cover as many L2s as possible. We will add more
+                L2s over time. For our type of analysis we need access to the
+                raw data of each L2. This makes adding new L2s time and resource
+                consuming.
               </div>
             </div>
           </div>

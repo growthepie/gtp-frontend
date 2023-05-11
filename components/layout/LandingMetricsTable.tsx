@@ -128,10 +128,12 @@ export default function LandingMetricsTable({
           className={`flex items-center py-1 pl-2 pr-2 rounded-full gap-x-2 lg:gap-x-8 font-semibold whitespace-nowrap text-xs lg:text-sm`}
         >
           <div className="basis-3/12 pl-14">Chain</div>
-          <div className="basis-2/12">Age</div>
+          <div className="basis-1/12">Age</div>
+          <div className="basis-2/12">Purpose</div>
+
           <div className="basis-2/12">Technology</div>
-          <div className="basis-3/12 text-right capitalize">
-            Daily Active Addresses
+          <div className="basis-2/12 text-right capitalize">
+            Weekly Active Addresses
           </div>
           <div className="basis-2/12 text-right pr-14">User Share</div>
         </div>
@@ -181,7 +183,7 @@ export default function LandingMetricsTable({
                         {item.chain.label}
                       </div>
                     </div>
-                    <div className="basis-2/12">
+                    <div className="basis-1/12">
                       {/* format as 1 year 2 months */}
                       {item.chain.chainType === "L2" &&
                         moment
@@ -191,6 +193,11 @@ export default function LandingMetricsTable({
                             )
                           )
                           .humanize()}
+                    </div>
+                    <div className="basis-2/12 capitalize">
+                      {master && master.chains[item.chain.key].purpose && (
+                        <span>{master.chains[item.chain.key].purpose}</span>
+                      )}
                     </div>
                     <div className="basis-2/12 capitalize">
                       {item.chain.chainType === "L2" &&
@@ -212,7 +219,8 @@ export default function LandingMetricsTable({
                         </>
                       )}
                     </div>
-                    <div className="basis-3/12 flex justify-end items-center">
+
+                    <div className="basis-2/12 flex justify-end items-center">
                       {/* <div className="flex flex-1 align-middle items-center"> */}
                       <div className={`relative w-full`}>
                         <div className="flex w-full justify-end">
