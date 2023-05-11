@@ -110,9 +110,9 @@ export default function SidebarMenuGroup({
       <div className="group flex flex-col">
         <Tooltip key={item.label} placement="right">
           <TooltipTrigger className="h-6 mb-8 cursor-default pl-8 overflow-visible">
-            <div className="flex items-center justify-items-center">
+            <div className="flex items-center justify-items-center opacity-70">
               <div className="w-6 mx-0">
-                <div className="w-6 mx-auto">{item.sidebarIcon}</div>
+                <div className="w-6 mx-auto grayscale">{item.sidebarIcon}</div>
               </div>
               <div className="">
                 {sidebarOpen && (

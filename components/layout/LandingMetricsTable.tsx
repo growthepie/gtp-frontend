@@ -130,7 +130,6 @@ export default function LandingMetricsTable({
           <div className="basis-3/12 pl-14">Chain</div>
           <div className="basis-1/12">Age</div>
           <div className="basis-2/12">Purpose</div>
-
           <div className="basis-2/12">Technology</div>
           <div className="basis-2/12 text-right capitalize">
             Weekly Active Addresses

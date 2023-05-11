@@ -1102,7 +1102,7 @@ export default function ComparisonChart({
             Object.keys(timespans).map((timespan) => (
               <button
                 key={timespan}
-                className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
+                className={`rounded-full px-2 py-1.5 text-base lg:px-4 lg:py-3 xl:px-4 xl:py-3 font-medium ${
                   selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-[#151A19]"
                     : "hover:bg-forest-100"
@@ -1128,7 +1128,7 @@ export default function ComparisonChart({
           ) : (
             <>
               <button
-                className={`rounded-full flex items-center space-x-3 px-2 py-[5px] text-md lg:px-4 lg:py-[11px] lg:text-md xl:px-4 xl:py-[11px] xl:text-lg font-medium border-[1px] border-forest-800`}
+                className={`rounded-full flex items-center space-x-3 px-2 py-[5px] text-base lg:px-4 lg:py-[11px] xl:px-4 xl:py-[11px] font-medium border-[0.5px] border-forest-400`}
                 onClick={() => {
                   chartComponent?.current?.xAxis[0].setExtremes(
                     timespans[selectedTimespan].xMin,
@@ -1141,7 +1141,7 @@ export default function ComparisonChart({
                 <div>Reset Zoom</div>
               </button>
               <button
-                className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium bg-forest-100 dark:bg-[#151A19]`}
+                className={`rounded-full px-2 py-1.5 text-base lg:px-4 lg:py-3 xl:px-4 xl:py-3 font-medium bg-forest-100 dark:bg-[#151A19]`}
               >
                 {intervalShown?.label}
               </button>

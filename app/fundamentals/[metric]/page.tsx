@@ -69,18 +69,18 @@ const Chain = ({ params }: { params: any }) => {
         <div className="flex flex-col w-full">
           <div className="flex justify-between items-start w-full">
             <div className="flex items-start">
-              <Heading className="text-2xl leading-snug md:text-3xl lg:text-[48px] mb-[30px]">
+              <Heading className="text-2xl leading-snug md:text-[36px] mb-[30px]">
                 {pageData.title}
               </Heading>
             </div>
           </div>
           <Subheading
-            className="text-[20px]"
+            className="text-[16px] leading-snug"
             leftIcon={
               pageData.icon && (
                 <Icon
                   icon={pageData.icon}
-                  className="w-6 h-6 mr-[16px] ml-[24px] mt-0.5"
+                  className="w-6 h-6 mr-[10px] ml-[22px] -mt-0.5"
                 />
               )
             }
