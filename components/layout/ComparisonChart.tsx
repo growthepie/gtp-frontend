@@ -305,7 +305,7 @@ export default function ComparisonChart({
         year: "numeric",
       });
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-80 text-xs font-raleway"><div class="w-full font-bold text-[1rem] ml-6 mb-2">${dateString}</div>`;
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-60 text-xs font-raleway"><div class="w-full font-bold text-[1rem] ml-6 mb-2">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
       let pointsSum = 0;
@@ -361,9 +361,6 @@ export default function ComparisonChart({
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
           })}</div>
-          <!-- <div class="inline-block">≈</div>
-              <div class="inline-block"><span class="opacity-70">${valuePrefix}</span>${value}</div>
-              -->
             </div>
           </div>
           <!-- <div class="flex ml-4 w-[calc(100% - 1rem)] relative mb-1">
@@ -665,7 +662,27 @@ export default function ComparisonChart({
       },
       tooltip: {
         formatter: tooltipFormatter,
-        // positioner: tooltipPositioner,
+        positioner: function (this: any, width: any, height: any, point: any) {
+          const chart = this.chart;
+          const { plotLeft, plotTop, plotWidth, plotHeight } = chart;
+          const tooltipWidth = width;
+          const tooltipHeight = height;
+          const distance = 20;
+          const pointX = point.plotX + plotLeft;
+          const pointY = point.plotY + plotTop;
+          const tooltipX =
+            pointX + distance > plotLeft + plotWidth - width
+              ? pointX - width - distance
+              : pointX + distance;
+          const tooltipY =
+            pointY - height < plotTop
+              ? pointY + distance
+              : pointY - height / 2 - distance;
+          return {
+            x: tooltipX,
+            y: tooltipY,
+          };
+        },
         split: false,
         followPointer: true,
         followTouchMove: true,
@@ -1064,7 +1081,7 @@ export default function ComparisonChart({
   }, [chartComponent, filteredData]);
 
   return (
-    <div className="w-full flex-col">
+    <div className="w-full flex-col relative">
       <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 p-0.5">
         <div className="flex justify-center items-center space-x-2">
           <div className="w-7 h-7 lg:w-9 lg:h-9 relative ml-4">

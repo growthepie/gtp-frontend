@@ -10,7 +10,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useSessionStorage } from "usehooks-ts";
 import { theme as customTheme } from "tailwind.config";
 import { useTheme } from "next-themes";
-import { merge } from "lodash";
+import { clamp, merge } from "lodash";
 import { Switch } from "../Switch";
 import { AllChainsByKeys } from "@/lib/chains";
 import d3 from "d3";
@@ -288,7 +288,7 @@ export default function LandingChart({
         year: "numeric",
       });
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-80 text-xs font-raleway"><div class="w-full font-bold text-[1rem] ml-6 mb-2">${dateString}</div>`;
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-60 text-xs font-raleway"><div class="w-full font-bold text-[1rem] ml-6 mb-2">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
       let pointsSum = 0;
@@ -312,9 +312,10 @@ export default function LandingChart({
                 <div class="tooltip-point-name">${
                   AllChainsByKeys[name].label
                 }</div>
-                <div class="flex-1 text-right font-inter${
-                  this.y === point.y ? "font-bold" : "font-normal"
-                }">${Highcharts.numberFormat(percentage, 2)}%</div>
+                <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
+                  percentage,
+                  2
+                )}%</div>
               </div>
               <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
                 <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
@@ -343,9 +344,6 @@ export default function LandingChart({
                   minimumFractionDigits: 0,
                 }
               )}</div>
-          <!-- <div class="inline-block">≈</div>
-              <div class="inline-block">${value}</div>
-              -->
             </div>
           </div>
           <!-- <div class="flex ml-4 w-[calc(100% - 1rem)] relative mb-1">
@@ -562,7 +560,27 @@ export default function LandingChart({
       },
       tooltip: {
         formatter: tooltipFormatter,
-        // positioner: tooltipPositioner,
+        positioner: function (this: any, width: any, height: any, point: any) {
+          const chart = this.chart;
+          const { plotLeft, plotTop, plotWidth, plotHeight } = chart;
+          const tooltipWidth = width;
+          const tooltipHeight = height;
+          const distance = 20;
+          const pointX = point.plotX + plotLeft;
+          const pointY = point.plotY + plotTop;
+          const tooltipX =
+            pointX + distance > plotLeft + plotWidth - width
+              ? pointX - width - distance
+              : pointX + distance;
+          const tooltipY =
+            pointY - height < plotTop
+              ? pointY + distance
+              : pointY - height / 2 - distance;
+          return {
+            x: tooltipX,
+            y: tooltipY,
+          };
+        },
         split: false,
         followPointer: true,
         followTouchMove: true,
