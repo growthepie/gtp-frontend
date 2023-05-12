@@ -17,8 +17,8 @@ const Imprint = () => {
             Germany
           </div>
           <div className="mb-4">
-            Register Number: - <br />
-            Register Court: - <br />
+            Register Number: HRB 252443 B <br />
+            Register Court: Amtsgericht Charlottenburg <br />
             VAT Number: - <br />
           </div>
           <div className="mb-4">Represented by: Matthias Seidl</div>
