@@ -24,12 +24,8 @@ const COLORS = {
   PLOT_LINE: "rgb(215, 223, 222)",
   LABEL: "rgb(215, 223, 222)",
   LABEL_HOVER: "#6c7696",
-  TOOLTIP_BG: "#1b2135", // mignight-express but lighter
+  TOOLTIP_BG: "#1b2135",
   ANNOTATION_BG: "rgb(215, 223, 222)",
-  // visx
-  // SERIES: ["#0b7285", "#66d9e8", "#fcc419", "#ff8787", "#9c36b5", "#cc5de8", "#a61e4d"],
-  // chart.js
-  SERIES: ["#36a2eb", "#ff6384", "#8142ff", "#ff9f40", "#ffcd56", "#4bc0c0"],
 };
 const isArray = (obj: any) =>
   Object.prototype.toString.call(obj) === "[object Array]";

@@ -1,7 +1,7 @@
 import "./globals.css";
 import { Providers } from "./providers";
 import CookieConsent from "@/components/layout/CookieConsent";
-import { Raleway } from "next/font/google";
+import { Raleway, Inter } from "next/font/google";
 import type { Metadata } from "next";
 import Header from "@/components/layout/Header";
 import SidebarContainer from "@/components/layout/SidebarContainer";
@@ -19,13 +19,23 @@ const raleway = Raleway({
   display: "swap",
 });
 
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${raleway.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${raleway.variable} ${inter.variable}`}
+      suppressHydrationWarning
+    >
       <Head />
       <body className="bg-forest-50 text-forest-900 dark:text-forest-500 font-raleway  overflow-hidden">
         <Providers>

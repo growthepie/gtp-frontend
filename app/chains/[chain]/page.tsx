@@ -89,15 +89,15 @@ const Chain = ({ params }: { params: any }) => {
         <div className="flex flex-col w-full">
           <div className="flex justify-between items-start w-full">
             <div className="flex items-start">
-              <Heading className="text-2xl leading-snug md:text-3xl lg:text-4xl xl:text-5xl mb-[15px]">
+              <Heading className="text-2xl leading-snug text-[36px] mb-[19px]">
                 {chainData.name}
               </Heading>
-              <div className="flex items-start space-x-1.5 font-inter uppercase">
-                <div className="inline-block text-xs leading-snug border-[1px] border-forest-400 py-0.5 px-1 font-semibold rounded-sm ml-5">
+              <div className="flex items-start space-x-[7px] font-inter uppercase">
+                <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 px-[4px] font-bold rounded-sm ml-[19px]">
                   {chainData.technology}
                 </div>
                 {chainData.purpose.includes("(EVM)") ? (
-                  <div className="inline-block text-xs leading-snug bg-forest-400 text-forest-50 py-[3px] px-1  font-semibold rounded-sm ml-5">
+                  <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 bg-forest-400 text-forest-50 px-[4px] font-bold rounded-sm ml-[7px]">
                     EVM
                   </div>
                 ) : (
@@ -105,7 +105,7 @@ const Chain = ({ params }: { params: any }) => {
                     {chainData.purpose.split(", ").map((purpose: string) => (
                       <div
                         key={purpose}
-                        className="inline-block text-xs leading-snug bg-forest-400 text-forest-50 py-[3px] px-1 font-semibold rounded-sm ml-5"
+                        className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 bg-forest-400 text-forest-50 px-[4px] font-bold rounded-sm ml-[7px]"
                       >
                         {purpose}
                       </div>
@@ -114,34 +114,34 @@ const Chain = ({ params }: { params: any }) => {
                 )}
               </div>
             </div>
-            <div className="flex space-x-4 text-xs md:text-sm xl:text-base items-start">
+            <div className="flex space-x-[10px] text-base md:text-sm xl:text-base items-start">
               <Link
                 href={chainData.block_explorer}
-                className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 rounded-full px-4 py-1"
+                className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 rounded-full px-4 py-2"
               >
                 <Icon icon="feather:copy" className="w-4 h-4" />
                 <div>Block Explorer</div>
               </Link>
               <Link
                 href={chainData.website}
-                className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 rounded-full px-4 py-1"
+                className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 rounded-full px-4 py-2"
               >
                 <Icon icon="feather:external-link" className="w-4 h-4" />
                 <div>Website</div>
               </Link>
               <Link
                 href={chainData.twitter}
-                className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 rounded-full px-4 py-1"
+                className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 rounded-full px-4 py-2"
               >
                 <Icon icon="feather:twitter" className="w-4 h-4" />
                 <div>
-                  <span className="text-xl">@</span>
+                  <span className="">@</span>
                   {chainData.twitter.split("https://twitter.com/")}
                 </div>
               </Link>
             </div>
           </div>
-          <Subheading className="text-base leading-snug mb-[30px]">
+          <Subheading className="text-base leading-snug mb-[32px]">
             Lorem Ipsum about {pageName}
           </Subheading>
           {chartData && <ChainChart data={chartData} />}
