@@ -11,14 +11,14 @@ const Imprint = () => {
       <div className="flex flex-col">
         <div className="flex flex-col w-full">
           <div className="mb-4">
-            orbal GmbH i.G. <br />
+            orbal GmbH <br />
             Lohmühlenstraße 26 <br />
             12435 Berlin <br />
             Germany
           </div>
           <div className="mb-4">
-            Register Number: - <br />
-            Register Court: - <br />
+            Register Number: HRB 252443 B <br />
+            Register Court: Amtsgericht Charlottenburg <br />
             VAT Number: - <br />
           </div>
           <div className="mb-4">Represented by: Matthias Seidl</div>
