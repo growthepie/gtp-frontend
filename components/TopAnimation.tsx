@@ -134,7 +134,7 @@ const TopAnimation = () => {
 
   const RightAnimate = (id) =>
     useSpring({
-      delay: id === 0 ? 6200 : 6250,
+      delay: id === 0 ? 6900 : 6950,
       from: { y: 100 },
       to: { y: 0 },
       config: { tension: 200, friction: 20 },
@@ -143,7 +143,7 @@ const TopAnimation = () => {
   return (
     <div>
       <div className="w-[full] h-[125px] rounded-[99px] bg-[#2A343399] border-[2px] border-[#CDD8D3] lg:flex justify-between items-center text-[#CDD8D3] overflow-hidden
-                      hidden">
+                      hidden max-w-[1120px]">
         <div className="ml-12 items-center flex">
           <animated.div
             className="flex items-center"
@@ -178,12 +178,12 @@ const TopAnimation = () => {
         <div className="flex flex-col gap-y-2 lg:pr-0">
           <div className="flex gap-x-4 items-center">
             <animated.div style={TopMiddle(0)}>
-              <div className="w-[75px] h-[50]">
+              <div className="">
                 <Image
                   src="/control-ani.svg"
                   alt="controller"
-                  width={75}
-                  height={50}
+                  width={23}
+                  height={26}
                   loading="eager"
                   className=""
                 />
@@ -195,12 +195,12 @@ const TopAnimation = () => {
 
           <div className="flex gap-x-4 items-center">
             <animated.div style={CenterMiddle(0)}>
-              <div className="w-[75px] h-[50]">
+              <div className="">
                 <Image
                   src="/chains-ani.svg"
                   alt="chain logos"
-                  width={75}
-                  height={50}
+                  width={23}
+                  height={26}
                   loading="eager"
                   className=""
                 />
@@ -212,12 +212,12 @@ const TopAnimation = () => {
           </div>
           <div className="flex gap-x-4 items-center">
             <animated.div style={BottomMiddle(0)}>
-              <div className="w-[75px] h-[50]">
+              <div className="">
                 <Image
                   src="/emoji-ani.svg"
                   alt="user emoji"
-                  width={75}
-                  height={50}
+                  width={23}
+                  height={26}
                   loading="eager"
                   className=""
                 />
