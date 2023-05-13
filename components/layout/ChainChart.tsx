@@ -27,44 +27,17 @@ const COLORS = {
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
 
-// const timespans = {
-//   // "30d": {
-//   //   label: "30 days",
-//   //   value: 30,
-//   //   xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
-//   //   xMax: Date.now(),
-//   // },
-//   "90d": {
-//     label: "90 days",
-//     value: 90,
-//     xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
-//     xMax: Date.now() - 24 * 60 * 60 * 1000 * 2,
-//   },
-//   "180d": {
-//     label: "180 days",
-//     value: 180,
-//     xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
-//     xMax: Date.now() - 24 * 60 * 60 * 1000 * 2,
-//   },
-//   "365d": {
-//     label: "1 year",
-//     value: 365,
-//     xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
-//     xMax: Date.now() - 24 * 60 * 60 * 1000 * 2,
-//   },
-//   max: {
-//     label: "Maximum",
-//     value: 0,
-//     xMin: Date.parse("2021-01-01"),
-//     xMax: Date.now() - 24 * 60 * 60 * 1000 * 2,
-//   },
-// };
-
-export default function ChainChart({ data }: { data: any }) {
+export default function ChainChart({
+  data,
+  chain,
+}: {
+  data: any;
+  chain: string;
+}) {
   useEffect(() => {
     Highcharts.setOptions({
       lang: {
-        numericSymbols: ["K", " M", "B", "T", "P", "E"],
+        numericSymbols: ["K", "M", "B", "T", "P", "E"],
       },
     });
     highchartsAnnotations(Highcharts);
@@ -78,7 +51,7 @@ export default function ChainChart({ data }: { data: any }) {
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
 
-  const chartStyle = useMemo(() => {
+  /*const chartStyle = useMemo(() => {
     if (!AllChains || !data) return [];
 
     let result: any = null;
@@ -90,7 +63,7 @@ export default function ChainChart({ data }: { data: any }) {
     });
 
     return result;
-  }, [data]);
+  }, [data]);*/
 
   const timespans = useMemo(() => {
     let max = 0;
@@ -159,7 +132,7 @@ export default function ChainChart({ data }: { data: any }) {
 
   const formatNumber = useCallback(
     (value: number | string, isAxis = false) => {
-      // const prefix = valuePrefix;
+      const prefix = prefixes[0] ?? "";
 
       return isAxis
         ? selectedScale !== "percentage"
@@ -171,6 +144,8 @@ export default function ChainChart({ data }: { data: any }) {
   );
 
   const chartComponents = useRef<Highcharts.Chart[]>([]);
+
+  //const [prefixes, setPrefixes] = useState<string[]>([]);
 
   const prefixes = useMemo(() => {
     if (!data) return [];
@@ -186,7 +161,7 @@ export default function ChainChart({ data }: { data: any }) {
         p.push("");
       }
     });
-
+    console.log("prefixes:", p);
     return p;
   }, [data, showUsd]);
 
@@ -245,16 +220,24 @@ export default function ChainChart({ data }: { data: any }) {
   );
 
   const tooltipFormatter = useCallback(
-    function (this: any) {
-      const { x, points, chart } = this;
+    function (this: Highcharts.TooltipFormatterContextObject) {
+      const { x, points } = this;
+
+      if (!points || !x) return;
+
+      const chart = points[0].series.chart;
+
       const date = new Date(x);
+
+      const prefix = prefixes[chart.index] ?? "";
+
       const dateString = date.toLocaleDateString(undefined, {
         month: "short",
         day: "numeric",
         year: "numeric",
       });
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-60 text-xs font-raleway"><div class="w-full font-bold text-[1rem] ml-6 mb-2">${dateString}</div>`;
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-36 text-xs font-raleway"><div class="w-full font-bold text-[1rem] ml-6 mb-2">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
       let pointsSum = 0;
@@ -275,12 +258,15 @@ export default function ChainChart({ data }: { data: any }) {
                 <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
                   AllChainsByKeys[data.chain_id].colors[theme][0]
                 }"></div>
+                <!--
                 <div class="tooltip-point-name">${
                   AllChainsByKeys[data.chain_id].label
                 }</div>
-                <div class="flex-1 text-right font-inter">${
-                  prefixes[chart.index]
-                }${Highcharts.numberFormat(percentage, 2)}%</div>
+                -->
+                <div class="flex-1 text-right font-inter">${prefix}${Highcharts.numberFormat(
+              percentage,
+              2
+            )}%</div>
               </div>
               <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
                 <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
@@ -299,13 +285,15 @@ export default function ChainChart({ data }: { data: any }) {
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
               AllChainsByKeys[data.chain_id].colors[theme][0]
             }"></div>
+            <!--
             <div class="tooltip-point-name text-md">${
               AllChainsByKeys[data.chain_id].label
             }</div>
-            <div class="flex-1 text-right justify-end font-inter">
-              <div class="mr-1 inline-block">${
-                prefixes[chart.index]
-              }${parseFloat(y).toLocaleString(undefined, {
+            -->
+            <div class="flex-1 text-left justify-start font-inter">
+              <div class="mr-1 inline-block">${prefix}${parseFloat(
+            y
+          ).toLocaleString(undefined, {
             minimumFractionDigits: 0,
           })}</div>
             </div>
@@ -323,7 +311,7 @@ export default function ChainChart({ data }: { data: any }) {
         .join("");
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [data.chain_id, formatNumber, prefixes, selectedScale, theme]
+    [data, formatNumber, prefixes, selectedScale, theme]
   );
 
   const seriesHover = useCallback<
@@ -521,12 +509,12 @@ export default function ChainChart({ data }: { data: any }) {
       symbolWidth: 0,
     },
     tooltip: {
-      hideDelay: 100,
+      hideDelay: 300,
       stickOnContact: false,
       useHTML: true,
       shared: true,
       outside: true,
-
+      formatter: tooltipFormatter,
       positioner: function (this: any, width: any, height: any, point: any) {
         const chart = this.chart;
         const { plotLeft, plotTop, plotWidth, plotHeight } = chart;
@@ -536,7 +524,7 @@ export default function ChainChart({ data }: { data: any }) {
         const pointX = point.plotX + plotLeft;
         const pointY = point.plotY + plotTop;
         const tooltipX =
-          pointX - distance - tooltipWidth < plotLeft - 50
+          pointX - distance - tooltipWidth < plotLeft - 120
             ? pointX + distance
             : pointX - tooltipWidth - distance;
         const tooltipY = pointY - tooltipHeight / 2;
@@ -696,12 +684,10 @@ export default function ChainChart({ data }: { data: any }) {
     });
   }, [chartComponents]);
 
-  if (!chartStyle || !data) {
+  if (!data) {
     return (
       <div className="flex justify-center items-center h-screen">
         Loading...
-        <div>{JSON.stringify(chartStyle)}</div>
-        <div>{JSON.stringify(data)}</div>
       </div>
     );
   }
@@ -819,7 +805,7 @@ export default function ChainChart({ data }: { data: any }) {
                   <div className="text-[20px] leading-snug font-bold">
                     {data.metrics[key].metric_name}
                   </div>
-                  <div className="text-[18px] leading-snug">
+                  <div className="text-[18px] leading-snug font-medium">
                     {prefixes[i]}{" "}
                     {data.metrics[key].daily.data[
                       data.metrics[key].daily.data.length - 1

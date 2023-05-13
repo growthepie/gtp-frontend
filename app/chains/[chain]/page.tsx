@@ -144,7 +144,7 @@ const Chain = ({ params }: { params: any }) => {
           <Subheading className="text-base leading-snug mb-[32px]">
             Lorem Ipsum about {pageName}
           </Subheading>
-          {chartData && <ChainChart data={chartData} />}
+          {chartData && <ChainChart chain={chain} data={chartData} />}
         </div>
       </div>
       {/*Time selection */}
