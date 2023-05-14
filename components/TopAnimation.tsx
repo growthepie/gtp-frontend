@@ -164,7 +164,7 @@ const TopAnimation = () => {
               alt="eth logo"
               width={25}
               height={40}
-              className="relative top-[0px] right-[55px] xl:right-[41px] lg:right-[55px]"
+              className="relative top-[0px] right-[55px] xl:right-[41px] lg:right-[56px]"
             />
           </div>
           </animated.div>
