@@ -1,8 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import Error from "next/error";
-import { TVLMetricsResponse } from "@/types/api/TVLMetricsResponse";
-import { TxCountMetricsResponse } from "@/types/api/TxCountMetricsResponse";
+import { MetricsResponse } from "@/types/api/MetricsResponse";
 import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
 import ComparisonChart from "@/components/layout/ComparisonChart";
@@ -20,9 +19,9 @@ const Chain = ({ params }: { params: any }) => {
   const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
   const [errorCode, setErrorCode] = useState<number | null>(null);
 
-  const { data: metricData, error: metricError } = useSWR<
-    TVLMetricsResponse | TxCountMetricsResponse
-  >(MetricsURLs[params.metric]);
+  const { data: metricData, error: metricError } = useSWR<MetricsResponse>(
+    MetricsURLs[params.metric]
+  );
 
   // const data = useMemo(() => {
   //   if (!metricData) return null;
@@ -56,6 +55,16 @@ const Chain = ({ params }: { params: any }) => {
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
+
+  const timeIntervalKey = useMemo(() => {
+    if (!metricData) return null;
+
+    return metricData.data.avg === true &&
+      ["365d", "max"].includes(selectedTimespan) &&
+      selectedTimeInterval === "daily"
+      ? "daily_7d_rolling"
+      : selectedTimeInterval;
+  }, [metricData, selectedTimeInterval, selectedTimespan]);
 
   if (errorCode) {
     return <Error statusCode={errorCode} />;
@@ -110,11 +119,9 @@ const Chain = ({ params }: { params: any }) => {
                         name: chain,
                         // type: 'spline',
                         types:
-                          metricData.data.chains[chain][selectedTimeInterval]
-                            .types,
-                        data: metricData.data.chains[chain][
-                          selectedTimeInterval
-                        ].data,
+                          metricData.data.chains[chain][timeIntervalKey].types,
+                        data: metricData.data.chains[chain][timeIntervalKey]
+                          .data,
                       };
                     })}
                   timeIntervals={intersection(
@@ -129,6 +136,8 @@ const Chain = ({ params }: { params: any }) => {
                   avg={metricData.data.avg}
                   showEthereumMainnet={showEthereumMainnet}
                   setShowEthereumMainnet={setShowEthereumMainnet}
+                  selectedTimespan={selectedTimespan}
+                  setSelectedTimespan={setSelectedTimespan}
                 >
                   <MetricsTable
                     data={metricData.data.chains}

@@ -780,11 +780,6 @@ export default function ChainChart({
                           marker: {
                             enabled: false,
                           },
-                          // events: {
-                          //   mouseOver: seriesHover,
-                          //   mouseOut: seriesHover,
-                          // },
-
                           point: {
                             events: {
                               mouseOver: pointHover,

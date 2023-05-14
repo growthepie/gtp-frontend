@@ -1,9 +1,8 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { ArbitrumChainResponse } from "@/types/api/ArbitrumChainResponse";
 import { AllChains } from "@/lib/chains";
 import ChainChart from "@/components/layout/ChainChart";
 import Heading from "@/components/layout/Heading";

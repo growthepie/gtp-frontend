@@ -278,13 +278,23 @@ export default function LandingChart({
     function (this: any) {
       const { x, points } = this;
       const date = new Date(x);
-      const dateString = date.toLocaleDateString(undefined, {
+      const dateString = `<div>${date.toLocaleDateString(undefined, {
         month: "short",
         day: "numeric",
         year: "numeric",
-      });
+      })}</div><div>-</div><div> ${
+        //add 7 days to the date
+        new Date(date.valueOf() + 6 * 24 * 60 * 59 * 1000).toLocaleDateString(
+          undefined,
+          {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          }
+        )
+      }</div>`;
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-60 text-xs font-raleway"><div class="w-full font-bold text-[1rem] ml-6 mb-2">${dateString}</div>`;
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-60 text-xs font-raleway"><div class="w-full flex justify-between font-bold text-[1rem] pl-6 pr-1 mb-2">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
       let pointsSum = 0;

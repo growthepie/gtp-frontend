@@ -1,4 +1,4 @@
-﻿export type TVLMetricsResponse = {
+﻿export type MetricsResponse = {
   data: {
     avg?: boolean;
     metric_id: string;

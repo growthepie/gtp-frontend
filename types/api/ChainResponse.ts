@@ -21,6 +21,7 @@ export interface TvlOrTxcountOrDaa {
   source: string;
   changes: Changes;
   daily?: (number[] | null)[] | null;
+  avg: boolean;
 }
 export interface Changes {
   "1d": number;

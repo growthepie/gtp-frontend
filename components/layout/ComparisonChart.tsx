@@ -187,6 +187,8 @@ export default function ComparisonChart({
   avg,
   showEthereumMainnet,
   setShowEthereumMainnet,
+  selectedTimespan,
+  setSelectedTimespan,
 }: {
   data: any;
   timeIntervals: string[];
@@ -197,6 +199,8 @@ export default function ComparisonChart({
   avg?: boolean;
   showEthereumMainnet: boolean;
   setShowEthereumMainnet: (show: boolean) => void;
+  selectedTimespan: string;
+  setSelectedTimespan: (timespan: string) => void;
 }) {
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
@@ -217,7 +221,7 @@ export default function ComparisonChart({
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
-  const [selectedTimespan, setSelectedTimespan] = useState("365d");
+  // const [selectedTimespan, setSelectedTimespan] = useState("365d");
 
   const [selectedScale, setSelectedScale] = useState("absolute");
 
@@ -358,8 +362,8 @@ export default function ComparisonChart({
               <div class="mr-1 inline-block"><span class="opacity-70 inline-block mr-[1px]">${valuePrefix}</span>${parseFloat(
             y
           ).toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
+            minimumFractionDigits: valuePrefix ? 2 : 0,
+            maximumFractionDigits: valuePrefix ? 2 : 0,
           })}</div>
             </div>
           </div>
@@ -515,10 +519,10 @@ export default function ComparisonChart({
       ["max", "365d"].includes(selectedTimespan)
     ) {
       grouping = {
-        enabled: true,
-        units: [["week", [1]]],
-        approximation: "average",
-        forced: true,
+        enabled: false,
+        // units: [["week", [1]]],
+        // approximation: "average",
+        // forced: true,
       };
     } else {
       grouping = {
@@ -1170,10 +1174,9 @@ export default function ComparisonChart({
                   </div>
                 </div>
               </div>
-              {dataGrouping.enabled && dataGrouping.units && (
+              {avg && ["365d", "max"].includes(selectedTimespan) && (
                 <div className="absolute top-[60px] right-[calc(0%+1.75rem)] rounded-full text-xs font-medium capitalize">
-                  Displaying {dataGrouping.units[0][1]}-
-                  {dataGrouping.units[0][0]} Average
+                  Displaying 7d Rolling Average
                 </div>
               )}
               <div className="absolute top-3 left-[calc(0%-1.75rem)] rounded-full text-xs font-medium"></div>
