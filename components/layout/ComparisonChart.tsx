@@ -14,7 +14,7 @@ import {
 } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { merge } from "lodash";
-import { theme as customTheme } from "tailwind.config";
+// import { theme as customTheme } from "tailwind.config.js";
 import { useTheme } from "next-themes";
 import { Switch } from "../Switch";
 import { AllChainsByKeys } from "@/lib/chains";
@@ -690,12 +690,7 @@ export default function ComparisonChart({
         split: false,
         followPointer: true,
         followTouchMove: true,
-        backgroundColor:
-          (customTheme?.extend?.colors
-            ? theme === "dark"
-              ? customTheme?.extend?.colors["forest"]["900"]
-              : customTheme?.extend?.colors["forest"]["50"]
-            : "#ffffff") + "EE",
+        backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
         borderRadius: 17,
         borderWidth: 0,
         padding: 0,
@@ -1086,7 +1081,7 @@ export default function ComparisonChart({
 
   return (
     <div className="w-full flex-col relative">
-      <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 p-0.5">
+      <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-forest-900 p-0.5">
         <div className="flex justify-center items-center">
           <div className="w-7 h-7 lg:w-9 lg:h-9 relative ml-[21px] mr-1.5">
             <Image
@@ -1109,7 +1104,7 @@ export default function ComparisonChart({
                 className={`rounded-full px-2 py-1.5 text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
                   selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-[#151A19]"
-                    : "hover:bg-forest-100"
+                    : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {
                   setSelectedTimespan(timespan);
@@ -1193,7 +1188,7 @@ export default function ComparisonChart({
           </div>
         )}
       </div>
-      <div className="flex w-full justify-between items-center text-base rounded-full bg-forest-50 p-0.5 px-1">
+      <div className="flex w-full justify-between items-center text-base rounded-full bg-forest-50 dark:bg-forest-900 p-0.5 px-1">
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
         {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
         {/* toggle ETH */}
@@ -1228,7 +1223,7 @@ export default function ComparisonChart({
                 className={`rounded-full px-2 py-1 text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
                   "absolute" === selectedScale
                     ? "bg-forest-500 dark:bg-[#151A19]"
-                    : "hover:bg-forest-100"
+                    : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {
                   setSelectedScale("absolute");
@@ -1240,7 +1235,7 @@ export default function ComparisonChart({
                 className={`rounded-full px-2 py-1 text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
                   "log" === selectedScale
                     ? "bg-forest-500 dark:bg-[#151A19]"
-                    : "hover:bg-forest-100"
+                    : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {
                   setSelectedScale("log");
@@ -1252,7 +1247,7 @@ export default function ComparisonChart({
                 className={`rounded-full px-2 py-1 text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
                   "percentage" === selectedScale
                     ? "bg-forest-500 dark:bg-[#151A19]"
-                    : "hover:bg-forest-100"
+                    : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {
                   setSelectedScale("percentage");
@@ -1264,14 +1259,11 @@ export default function ComparisonChart({
             <Tooltip placement="left" allowInteract>
               <TooltipTrigger>
                 <div className="p-1 z-10">
-                  <Icon
-                    icon="feather:info"
-                    className="w-6 h-6 text-forest-900"
-                  />
+                  <Icon icon="feather:info" className="w-6 h-6" />
                 </div>
               </TooltipTrigger>
               <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-                <div className="px-3 text-sm font-medium bg-forest-100 text-forest-900 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
+                <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
                   <div className="flex flex-col space-y-1">
                     <div className="font-bold text-sm leading-snug">
                       Data Sources:
@@ -1284,7 +1276,7 @@ export default function ComparisonChart({
                             rel="noopener noreferrer"
                             target="_blank"
                             href={Sources[s] ?? ""}
-                            className="text-forest-900 hover:text-forest-500 dark:text-forest-100 dark:hover:text-forest-500 underline"
+                            className="hover:text-forest-500 dark:hover:text-forest-500 underline"
                           >
                             {s}
                           </Link>

@@ -146,11 +146,11 @@ export default function LandingMetricsTable({
                 >
                   <div
                     key={item.chain.key}
-                    className={`flex gap-x-2 lg:gap-x-8 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[11.5px] rounded-full w-full font-[400] border-[1px] border-forest-500 whitespace-nowrap text-xs lg:text-[0.95rem] ${
+                    className={`flex gap-x-2 lg:gap-x-8 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[11.5px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] ${
                       index > 0 ? "-mt-[1px]" : ""
                     } ${
                       selectedChains.includes(item.chain.key)
-                        ? " hover:bg-forest-50/10"
+                        ? " hover:bg-forest-500/10"
                         : "opacity-50 grayscale hover:opacity-70 hover:grayscale-20 transition-all duration-100"
                     }`}
                     onClick={() => {
@@ -318,7 +318,7 @@ export default function LandingMetricsTable({
           })} */}
           </div>
           <div className="pt-[32px] pb-[32px] w-3/5 mx-auto">
-            <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
+            <hr className="border-dotted border-top-[1px] h-[0.5px] border-black/[16%] dark:border-white/[16%]" />
           </div>
           <div className="flex space-x-2 pl-16 pb-0.5">
             <span className="text-xs">
@@ -332,9 +332,9 @@ export default function LandingMetricsTable({
               .map((item, index) => (
                 <div
                   key={item.chain.key}
-                  className={`flex gap-x-2 lg:gap-x-8 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[11.5px] rounded-full w-full font-[400] border-[1px] border-forest-500 whitespace-nowrap text-xs lg:text-[0.95rem] ${
+                  className={`flex gap-x-2 lg:gap-x-8 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[11.5px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] ${
                     selectedChains.includes(item.chain.key)
-                      ? " hover:bg-forest-50/10"
+                      ? " hover:bg-forest-500/10"
                       : "opacity-50 grayscale hover:opacity-70 hover:grayscale-20 transition-all duration-100"
                   }`}
                   onClick={() => {

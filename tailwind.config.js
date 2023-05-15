@@ -183,7 +183,7 @@ module.exports = {
     },
   },
   plugins: [
-    require("nightwind"),
+    // require("nightwind"),
     require("tailwind-scrollbar")({ nocompatible: true }),
   ],
 };

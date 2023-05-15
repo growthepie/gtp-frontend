@@ -92,11 +92,11 @@ const Chain = ({ params }: { params: any }) => {
                 {chainData.name}
               </Heading>
               <div className="flex items-start space-x-[7px] font-inter uppercase">
-                <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 px-[4px] font-bold rounded-sm ml-[19px]">
+                <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm ml-[19px]">
                   {chainData.technology}
                 </div>
                 {chainData.purpose.includes("(EVM)") ? (
-                  <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 bg-forest-400 text-forest-50 px-[4px] font-bold rounded-sm ml-[7px]">
+                  <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400  bg-forest-400 text-forest-50 dark:border-forest-500 dark:bg-forest-500 dark:text-forest-900 px-[4px] font-bold rounded-sm ml-[7px]">
                     EVM
                   </div>
                 ) : (
@@ -104,7 +104,7 @@ const Chain = ({ params }: { params: any }) => {
                     {chainData.purpose.split(", ").map((purpose: string) => (
                       <div
                         key={purpose}
-                        className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 bg-forest-400 text-forest-50 px-[4px] font-bold rounded-sm ml-[7px]"
+                        className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 bg-forest-400 text-forest-50 dark:border-forest-500 dark:bg-forest-500 dark:text-forest-900 px-[4px] font-bold rounded-sm ml-[7px]"
                       >
                         {purpose}
                       </div>
@@ -116,7 +116,7 @@ const Chain = ({ params }: { params: any }) => {
             <div className="flex space-x-[10px] text-base md:text-sm xl:text-base items-start">
               <Link
                 href={chainData.block_explorer}
-                className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 rounded-full px-4 py-2"
+                className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
                 rel="noreferrer"
                 target="_blank"
               >
@@ -125,7 +125,7 @@ const Chain = ({ params }: { params: any }) => {
               </Link>
               <Link
                 href={chainData.website}
-                className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 rounded-full px-4 py-2"
+                className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
                 rel="noreferrer"
                 target="_blank"
               >
@@ -134,7 +134,7 @@ const Chain = ({ params }: { params: any }) => {
               </Link>
               <Link
                 href={chainData.twitter}
-                className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 rounded-full px-4 py-2"
+                className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
                 rel="noreferrer"
                 target="_blank"
               >

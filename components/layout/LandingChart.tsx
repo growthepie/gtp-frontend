@@ -8,7 +8,7 @@ import Highcharts, {
 } from "highcharts/highstock";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useSessionStorage } from "usehooks-ts";
-import { theme as customTheme } from "tailwind.config";
+// import { theme as customTheme } from "tailwind.config.js";
 import { useTheme } from "next-themes";
 import { clamp, merge } from "lodash";
 import { Switch } from "../Switch";
@@ -278,21 +278,26 @@ export default function LandingChart({
     function (this: any) {
       const { x, points } = this;
       const date = new Date(x);
-      const dateString = `<div>${date.toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })}</div><div>-</div><div> ${
-        //add 7 days to the date
-        new Date(date.valueOf() + 6 * 24 * 60 * 59 * 1000).toLocaleDateString(
+      const dateString = `
+      <div>
+        ${date.toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })}
+      </div>
+      <div>-</div>
+      <div>
+        ${new Date(date.valueOf() + 6 * 24 * 60 * 59 * 1000).toLocaleDateString(
+          //add 7 days to the date
           undefined,
           {
             month: "short",
             day: "numeric",
             year: "numeric",
           }
-        )
-      }</div>`;
+        )}
+      </div>`;
 
       const tooltip = `<div class="mt-3 mr-3 mb-3 w-60 text-xs font-raleway"><div class="w-full flex justify-between font-bold text-[1rem] pl-6 pr-1 mb-2">${dateString}</div>`;
       const tooltipEnd = `</div>`;
@@ -590,12 +595,7 @@ export default function LandingChart({
         split: false,
         followPointer: true,
         followTouchMove: true,
-        backgroundColor:
-          (customTheme?.extend?.colors
-            ? theme === "dark"
-              ? customTheme?.extend?.colors["forest"]["900"]
-              : customTheme?.extend?.colors["forest"]["50"]
-            : "#ffffff") + "EE",
+        backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
         borderRadius: 17,
         borderWidth: 0,
         padding: 0,
@@ -1035,13 +1035,13 @@ export default function LandingChart({
 
   return (
     <div className="w-full mb-[6rem] mt-[3rem] relative">
-      <div className="flex w-full justify-between items-center absolute -top-[3rem] left-0 right-0 text-xs rounded-full bg-forest-50 p-0.5">
+      <div className="flex w-full justify-between items-center absolute -top-[3rem] left-0 right-0 text-xs rounded-full bg-forest-50 dark:bg-forest-900 p-0.5">
         <div className="flex justify-center items-center space-x-1">
           <button
             className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
               showTotalUsers
                 ? "bg-forest-500 dark:bg-[#151A19]"
-                : "hover:bg-forest-100"
+                : "hover:bg-forest-500/10"
             }`}
             onClick={() => {
               setShowTotalUsers(true);
@@ -1055,7 +1055,7 @@ export default function LandingChart({
             className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
               "absolute" === selectedScale && !showTotalUsers
                 ? "bg-forest-500 dark:bg-[#151A19]"
-                : "hover:bg-forest-100"
+                : "hover:bg-forest-500/10"
             }`}
             onClick={() => {
               setShowTotalUsers(false);
@@ -1070,7 +1070,7 @@ export default function LandingChart({
             className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
               "percentage" === selectedScale
                 ? "bg-forest-500 dark:bg-[#151A19]"
-                : "hover:bg-forest-100"
+                : "hover:bg-forest-500/10"
             }`}
             onClick={() => {
               setShowTotalUsers(false);
@@ -1109,7 +1109,7 @@ export default function LandingChart({
                 className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
                   selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-[#151A19]"
-                    : "hover:bg-forest-100"
+                    : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {
                   setSelectedTimespan(timespan);
@@ -1176,7 +1176,7 @@ export default function LandingChart({
         </div>
       )}
 
-      <div className="flex justify-between items-center absolute -bottom-[5rem] left-0 right-0 rounded-full bg-forest-50 p-0.5">
+      <div className="flex justify-between items-center absolute -bottom-[5rem] left-0 right-0 rounded-full bg-forest-50 dark:bg-forest-900 p-0.5">
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
         {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
         {/* toggle ETH */}
@@ -1201,19 +1201,19 @@ export default function LandingChart({
         {/* toggle ETH */}
 
         <div className="flex justify-center items-center">
-          <div className="flex bg-forest-100 rounded-xl px-3 py-1.5 items-center mr-5">
+          <div className="flex bg-forest-100 dark:bg-forest-500/20 rounded-xl px-3 py-1.5 items-center mr-5">
             <Icon
               icon="feather:users"
-              className="w-8 h-8 lg:w-14 lg:h-14 text-forest-900 mr-2"
+              className="w-8 h-8 lg:w-14 lg:h-14 mr-2"
             />
             <div className="flex flex-col items-center justify-center">
-              <div className="text-[0.65rem] lg:text-xs font-medium text-forest-900 leading-tight">
+              <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
                 Total Users
               </div>
-              <div className="text-xl lg:text-3xl font-[650] text-forest-900">
+              <div className="text-xl lg:text-3xl font-[650]">
                 {latest_total.toLocaleString()}
               </div>
-              <div className="text-[0.65rem] lg:text-xs font-medium text-forest-900 leading-tight">
+              <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
                 {latest_total_comparison > 0 ? (
                   <span
                     className="text-[#45AA6F] dark:text-[#4CFF7E] font-semibold"
@@ -1243,19 +1243,19 @@ export default function LandingChart({
               </div>
             </div>
           </div>
-          <div className="flex bg-forest-100 rounded-xl px-3 py-1.5 items-center mr-1.5">
+          <div className="flex bg-forest-100 dark:bg-forest-500/20 rounded-xl px-3 py-1.5 items-center mr-1.5">
             <Icon
               icon="feather:layers"
-              className="w-8 h-8 lg:w-14 lg:h-14 text-forest-900 mr-2"
+              className="w-8 h-8 lg:w-14 lg:h-14 mr-2"
             />
             <div className="flex flex-col items-center justify-center">
-              <div className="text-[0.65rem] lg:text-xs font-medium text-forest-900 leading-tight">
+              <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
                 Layer-2 Dominance
               </div>
-              <div className="text-xl lg:text-3xl font-[650] text-forest-900">
+              <div className="text-xl lg:text-3xl font-[650]">
                 {l2_dominance.toFixed(2)}x
               </div>
-              <div className="text-[0.65rem] lg:text-xs font-medium text-forest-900 leading-tight">
+              <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
                 {l2_dominance_comparison > 0 ? (
                   <span
                     className="text-[#45AA6F] dark:text-[#4CFF7E] font-semibold"
@@ -1288,11 +1288,11 @@ export default function LandingChart({
           <Tooltip placement="left" allowInteract>
             <TooltipTrigger>
               <div className="p-1.5 z-10 mr-1">
-                <Icon icon="feather:info" className="w-6 h-6 text-forest-900" />
+                <Icon icon="feather:info" className="w-6 h-6" />
               </div>
             </TooltipTrigger>
             <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-              <div className="px-3 text-sm font-medium bg-forest-100 text-forest-900 rounded-xl shadow-lg z-50 w-[435px] h-[80px] flex items-center">
+              <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[435px] h-[80px] flex items-center">
                 <div className="flex flex-col space-y-1">
                   <div className="font-bold text-sm leading-snug">
                     Data Sources:
@@ -1305,7 +1305,7 @@ export default function LandingChart({
                           rel="noopener noreferrer"
                           target="_blank"
                           href={Sources[s] ?? ""}
-                          className="text-forest-900 hover:text-forest-500 dark:text-forest-100 dark:hover:text-forest-500 underline"
+                          className="hover:text-forest-500 dark:hover:text-forest-500 underline"
                         >
                           {s}
                         </Link>

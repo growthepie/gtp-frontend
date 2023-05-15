@@ -138,7 +138,7 @@ const MetricsTable = ({
           >
             <div
               key={item.chain.key}
-              className={`flex relative items-center cursor-pointer rounded-full w-full font-[400] border-forest-500 whitespace-nowrap text-xs lg:text-[0.95rem] group
+              className={`flex relative items-center cursor-pointer rounded-full w-full font-[400] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] group
               ${
                 item.chain.key === "ethereum"
                   ? showEthereumMainnet
@@ -311,7 +311,7 @@ const MetricsTable = ({
                     />
                   </svg>
                 </div>
-                <div className="p-1 rounded-full bg-forest-50">
+                <div className="p-1 rounded-full bg-forest-50 dark:bg-forest-900">
                   <Icon
                     icon="feather:check-circle"
                     className={`w-6 h-6 ${

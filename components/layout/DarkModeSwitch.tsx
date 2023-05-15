@@ -32,10 +32,7 @@ export default function DarkModeSwitch() {
               <Icon icon="feather:sun" className="h-6 w-6" />
             )}
           </div>
-          <div
-            className="relative nightwind-prevent-block"
-            onClick={handleToggle}
-          >
+          <div className="relative" onClick={handleToggle}>
             <div
               className={`block 
                         w-[3.25rem] h-7

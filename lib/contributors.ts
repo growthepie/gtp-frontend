@@ -1,7 +1,7 @@
 export const Contributors = [
   {
     name: "Matthias Seidl",
-    image: "/contributors/matthias.jpg",
+    image: "/contributors/matthias.png",
     role: "Data",
     twitter: "https://www.twitter.com/mseidl_",
     linkedin: "https://www.linkedin.com/in/seidlmatthias",
@@ -44,7 +44,7 @@ export const Contributors = [
   },
   {
     name: "Ahoura Azarbin",
-    image: "/contributors/ahoura.jpg",
+    image: "/contributors/ahoura.png",
     role: "Socials",
     twitter: "https://twitter.com/AhouraAzarbin",
     linkedin: "https://www.linkedin.com/in/ahoura-azarbin-a3887b180",

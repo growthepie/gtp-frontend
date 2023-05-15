@@ -15,6 +15,7 @@ import TopAnimation from "@/components/TopAnimation";
 import { LandingURL, MasterURL } from "@/lib/urls";
 import Link from "next/link";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
+import LoadingAnimation from "@/components/layout/LoadingAnimation";
 
 export default function Home() {
   const isLargeScreen = useMediaQuery("(min-width: 768px)");
@@ -79,14 +80,13 @@ export default function Home() {
   return (
     <>
       <div
-        className={`fixed top-0 left-0 w-screen h-screen flex items-center justify-center bg-forest-50 ${
+        className={`fixed top-0 left-0 w-screen h-screen flex items-center justify-center bg-forest-50 dark:bg-forest-900 ${
           masterLoading && landingLoading
             ? "opacity-100 z-50"
             : "opacity-0 -z-10 pointer-events-none"
         } transition-opacity duration-300`}
       >
-        {/* Animated Looping Growing Pie Logo */}
-        Loading...
+        <LoadingAnimation />
       </div>
       <div className="flex w-full mt-[65px]">
         <div className={`flex flex-col flex-1 pl-2 md:pl-6`}>
@@ -185,7 +185,7 @@ export default function Home() {
           </div>
           <div className="flex flex-col space-y-[15px] my-[30px]">
             <QuestionAnswer
-              className="rounded-3xl bg-forest-50 px-[46px] py-[23px] flex flex-col"
+              className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
               question="What's up with the name?"
               answer={
                 <>
@@ -202,7 +202,7 @@ export default function Home() {
               }
             />
             <QuestionAnswer
-              className="rounded-3xl bg-forest-50 px-[46px] py-[23px] flex flex-col"
+              className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
               question='What exactly does "multiple" stand for?'
               answer={
                 <>
@@ -225,7 +225,7 @@ export default function Home() {
               }
             />
             <QuestionAnswer
-              className="rounded-3xl bg-forest-50 px-[46px] py-[23px] flex flex-col"
+              className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
               question="Why have the numbers on the landing page not updated for a few days?"
               answer={
                 <>
@@ -238,7 +238,7 @@ export default function Home() {
               }
             />
             <QuestionAnswer
-              className="rounded-3xl bg-forest-50 px-[46px] py-[23px] flex flex-col"
+              className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
               question="L2Beat has way more Layer 2s listed why do you not cover all of them?"
               answer={
                 <>

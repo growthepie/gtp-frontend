@@ -40,7 +40,7 @@ export default function SidebarContainer() {
             <div>
               <Icon
                 icon="feather:log-out"
-                className={`w-[13px] h-[13px] text-forest-900 cursor-pointer mt-2 transition-transform ${
+                className={`w-[13px] h-[13px] cursor-pointer mt-2 transition-transform ${
                   isSidebarOpen ? "rotate-180" : ""
                 }`}
                 onClick={() => {
@@ -67,7 +67,7 @@ export default function SidebarContainer() {
             <div>
               <Icon
                 icon="feather:log-out"
-                className={`w-[13px] h-[13px] text-forest-900 cursor-pointer mt-2`}
+                className={`w-[13px] h-[13px] cursor-pointer mt-2`}
                 onClick={() => {
                   setIsSidebarOpen(isSidebarOpen ? false : true);
                 }}

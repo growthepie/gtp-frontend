@@ -28,7 +28,7 @@ export const Switch = ({
               {leftLabel}
             </div>
           )}
-          <div className="relative nightwind-prevent-block" onClick={onChange}>
+          <div className="relative" onClick={onChange}>
             <div
               className={`block 
                         w-[50px] h-7

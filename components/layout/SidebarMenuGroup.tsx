@@ -118,7 +118,7 @@ export default function SidebarMenuGroup({
                 {sidebarOpen && (
                   <div className="text-base font-bold mx-3 w-80 flex space-x-3 items-center">
                     <span>{item.label}</span>
-                    <div className="px-1 py-[2px] leading-[1] text-sm font-bold ml-1 rounded-[3px] bg-forest-900 text-forest-50">
+                    <div className="px-1 py-[2px] leading-[1] text-sm font-bold ml-1 rounded-[3px] bg-forest-900 text-forest-50 dark:bg-forest-50 dark:text-forest-900">
                       SOON
                     </div>
                   </div>
@@ -127,9 +127,9 @@ export default function SidebarMenuGroup({
             </div>
           </TooltipTrigger>
           {!sidebarOpen && (
-            <TooltipContent className="bg-forest-900 text-forest-50 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md flex z-50">
+            <TooltipContent className="bg-forest-900 text-forest-50 dark:bg-forest-50 dark:text-forest-900 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md flex z-50">
               {item.label}{" "}
-              <div className="text-[0.5rem] leading-[1.75] px-1 py-[0.1rem] font-bold ml-1 rounded-[4px] bg-forest-50 text-forest-900">
+              <div className="text-[0.5rem] leading-[1] px-1 py-1 font-bold ml-1 rounded-[4px] bg-forest-50 dark:bg-forest-900 text-forest-900 dark:text-forest-50">
                 SOON
               </div>
             </TooltipContent>
@@ -169,7 +169,7 @@ export default function SidebarMenuGroup({
             </Link>
           </TooltipTrigger>
           {!sidebarOpen && (
-            <TooltipContent className="bg-forest-900 text-forest-50 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md flex z-50">
+            <TooltipContent className="bg-forest-900 text-forest-50 dark:bg-forest-50 dark:text-forest-900 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md flex z-50">
               {item.label}
             </TooltipContent>
           )}
@@ -218,7 +218,7 @@ export default function SidebarMenuGroup({
           </div>
         </TooltipTrigger>
         {!sidebarOpen && (
-          <TooltipContent className="bg-forest-900 text-forest-50 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md z-50">
+          <TooltipContent className="bg-forest-900 text-forest-50 dark:bg-forest-50 dark:text-forest-900 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md z-50">
             {item.label}
           </TooltipContent>
         )}
@@ -281,7 +281,7 @@ export default function SidebarMenuGroup({
                     </Link>
                   </TooltipTrigger>
                   {!sidebarOpen && (
-                    <TooltipContent className="bg-forest-900 text-forest-50 rounded-md p-2 text-xs font-medium break-inside-auto -ml-56 shadow-md z-50">
+                    <TooltipContent className="bg-forest-900 text-forest-50 dark:bg-forest-50 dark:text-forest-900 rounded-md p-2 text-xs font-medium break-inside-auto -ml-56 shadow-md z-50">
                       {option.label}
                     </TooltipContent>
                   )}

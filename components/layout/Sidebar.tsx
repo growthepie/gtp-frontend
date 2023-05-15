@@ -563,7 +563,7 @@ export default function Sidebar({
               }}
             ></div>
             <div
-              className={`absolute top-20 left-0 bg-forest-50 rounded-r-lg z-50 flex flex-col justify-items-start select-none overflow-hidden`}
+              className={`absolute top-20 left-0 bg-forest-50 dark:bg-forest-900 rounded-r-lg z-50 flex flex-col justify-items-start select-none overflow-hidden`}
             >
               <div className="text-forest-800 z-20 m-2 mt-10">
                 <div className="">

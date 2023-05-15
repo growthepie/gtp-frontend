@@ -71,7 +71,7 @@ const Page = () => {
         The people who make it happen
       </Subheading>
 
-      <div className="bg-forest-50 rounded-full px-5 py-3 flex space-x-2 mb-[45px]">
+      <div className="bg-forest-50 dark:bg-forest-900 rounded-full px-5 py-3 flex space-x-2 mb-[45px]">
         <Icon icon="gtp:supported-by" className="w-9 h-9" />
         <Heading className="text-3xl font-semibold leading-snug">
           Supported By
@@ -99,7 +99,7 @@ const Page = () => {
         </div>
       </div>
 
-      <div className="mb-[30px] bg-forest-50 rounded-full px-5 py-3 flex space-x-2">
+      <div className="mb-[30px] bg-forest-50 dark:bg-forest-900 rounded-full px-5 py-3 flex space-x-2">
         <Icon icon="gtp:team" className="w-9 h-9" />
         <Heading className="text-3xl font-semibold leading-snug">Team</Heading>
       </div>
@@ -108,7 +108,7 @@ const Page = () => {
         {Contributors.map((c) => (
           <div
             key={c.name}
-            className="basis-1/4 flex flex-col items-stretch p-3 bg-forest-50 rounded-xl"
+            className="basis-1/4 flex flex-col items-stretch p-3 bg-forest-50 dark:bg-forest-900 rounded-xl"
           >
             <div className="relative w-full aspect-square">
               <Image

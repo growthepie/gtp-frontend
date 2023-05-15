@@ -33,7 +33,7 @@ export default function EthUsdSwitch() {
             {showUsd === true ? <>USD</> : <>ETH</>}
           </div> */}
           <div
-            className="relative nightwind-prevent-block"
+            className="relative"
             onClick={() => {
               setShowUsd(showUsd ? false : true);
             }}

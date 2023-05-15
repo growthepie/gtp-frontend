@@ -43,7 +43,7 @@ export default function CookieConsent() {
 
   return (
     <div
-      className={`flex flex-col lg:flex-row items-center justify-between px-[35px] py-8  space-y-4 lg:space-y-0 lg:space-x-8 bg-forest-50 text-base text-forest-900 border-forest-500 border-[0.5px] bottom-0 mb-10 fixed z-50 w-9/12 max-w-[884px] mx-auto rounded-3xl lg:rounded-full left-[50%] transform -translate-x-1/2 shadow-2xl shadow-black/70 ${
+      className={`flex flex-col lg:flex-row items-center justify-between px-[35px] py-8  space-y-4 lg:space-y-0 lg:space-x-8 bg-forest-50 dark:bg-forest-900 text-base text-forest-900 dark:text-forest-50 border-forest-500 border-[0.5px] bottom-0 mb-10 fixed z-50 w-9/12 max-w-[884px] mx-auto rounded-3xl lg:rounded-full left-[50%] transform -translate-x-1/2 shadow-2xl shadow-black/70 ${
         consent ? "hidden" : ""
       }`}
     >
@@ -70,13 +70,13 @@ export default function CookieConsent() {
             onClick={() => {
               acceptCookie();
             }}
-            className="bg-white/70 dark:bg-black/40 text-forest-900 px-5 py-2 lg:py-3 rounded-full text-center whitespace-nowrap w-full lg:w-auto hover:bg-white"
+            className="bg-white/70 dark:bg-black/40 text-forest-900 dark:text-forest-50 px-5 py-2 lg:py-3 rounded-full text-center whitespace-nowrap w-full lg:w-auto hover:bg-white"
           >
             Allow All
           </button>
           <button
             onClick={(e) => denyCookie()}
-            className="bg-white/70 dark:bg-black/40 text-forest-900 px-5 py-2 lg:py-3 rounded-full text-center whitespace-nowrap w-full lg:w-auto hover:bg-white"
+            className="bg-white/70 dark:bg-black/40 text-forest-900 dark:text-forest-50 px-5 py-2 lg:py-3 rounded-full text-center whitespace-nowrap w-full lg:w-auto hover:bg-white"
           >
             Decline
           </button>

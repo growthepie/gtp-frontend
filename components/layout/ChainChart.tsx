@@ -9,7 +9,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
-import { theme as customTheme } from "tailwind.config";
+// import { theme as customTheme } from "tailwind.config.js";
 import { useTheme } from "next-themes";
 import _ from "lodash";
 import { AllChains } from "@/lib/chains";
@@ -536,12 +536,7 @@ export default function ChainChart({
       split: false,
       followPointer: true,
       followTouchMove: true,
-      backgroundColor:
-        (customTheme?.extend?.colors
-          ? theme === "dark"
-            ? customTheme?.extend?.colors["forest"]["900"]
-            : customTheme?.extend?.colors["forest"]["50"]
-          : "#ffffff") + "EE",
+      backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
       borderRadius: 17,
       borderWidth: 0,
       padding: 0,
@@ -703,7 +698,7 @@ export default function ChainChart({
           stroke-width: 0px !important;
         `}
       </style>
-      <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 p-0.5 mb-[32px]">
+      <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-forest-900 p-0.5 mb-[32px]">
         <div className="flex justify-center items-center">
           <div className="flex justify-center items-center space-x-[8px]">
             <Image
@@ -725,7 +720,7 @@ export default function ChainChart({
               className={`rounded-full px-2 py-1.5 text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
                 selectedTimespan === timespan
                   ? "bg-forest-500 dark:bg-[#151A19]"
-                  : "hover:bg-forest-100"
+                  : "hover:bg-forest-500/10"
               }`}
               onClick={() => {
                 setSelectedTimespan(timespan);
@@ -742,7 +737,7 @@ export default function ChainChart({
           {Object.keys(data.metrics).map((key, i) => (
             <div key={key} className="w-full">
               <div className="w-full h-[176px] relative">
-                <div className="absolute w-full h-full bg-forest-50 rounded-[15px]"></div>
+                <div className="absolute w-full h-full bg-forest-50 dark:bg-forest-900 rounded-[15px]"></div>
                 <div className="absolute w-full h-[142px] top-[49px]">
                   <HighchartsReact
                     highcharts={Highcharts}
@@ -824,7 +819,7 @@ export default function ChainChart({
                 </div>
               </div>
               <div className="w-full h-[15px] relative text-[10px] z-30">
-                <div className="absolute left-[15px] h-[15px] border-l border-forest-500 pl-0.5 align-bottom flex items-end">
+                <div className="absolute left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end">
                   {/* {new Date(
                     timespans[selectedTimespan].xMin
                   ).toLocaleDateString(undefined, {
@@ -833,7 +828,7 @@ export default function ChainChart({
                     year: "numeric",
                   })} */}
                 </div>
-                <div className="absolute right-[15px] h-[15px] border-r border-forest-500 pr-0.5 align-bottom flex items-end">
+                <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end">
                   {/* {new Date(
                     timespans[selectedTimespan].xMax
                   ).toLocaleDateString(undefined, {
@@ -845,11 +840,11 @@ export default function ChainChart({
               </div>
               {(key === "stables_mcap" || key === "fees") && (
                 <div
-                  className={`w-full h-[15px] relative text-[10px] text-forest-500 z-30 ${
+                  className={`w-full h-[15px] relative text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
                     key === "stables_mcap" ? "hidden lg:block" : ""
                   }`}
                 >
-                  <div className="absolute left-[15px] align-bottom flex items-end">
+                  <div className="absolute left-[15px] align-bottom flex items-end z-30">
                     {new Date(
                       timespans[selectedTimespan].xMin
                     ).toLocaleDateString(undefined, {
@@ -858,7 +853,7 @@ export default function ChainChart({
                       year: "numeric",
                     })}
                   </div>
-                  <div className="absolute right-[15px] align-bottom flex items-end">
+                  <div className="absolute right-[15px] align-bottom flex items-end z-30">
                     {new Date(
                       timespans[selectedTimespan].xMax
                     ).toLocaleDateString(undefined, {

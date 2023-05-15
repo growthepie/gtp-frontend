@@ -154,7 +154,7 @@ const Chain = ({ params }: { params: any }) => {
           </div>
           <div className="flex flex-col space-y-[15px] mt-[30px]">
             <QuestionAnswer
-              className="rounded-3xl bg-forest-50 px-[63px] py-[23px] flex flex-col"
+              className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[63px] py-[23px] flex flex-col"
               question={`What does ${pageData.title} tell you?`}
               answer={pageData.why}
             />
