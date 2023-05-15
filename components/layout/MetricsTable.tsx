@@ -236,7 +236,7 @@ const MetricsTable = ({
                   </div>
                 </div>
               </div>
-              <div className="basis-2/3 pr-4 flex w-full">
+              <div className="basis-2/3 pr-4 flex w-full font-medium">
                 {["1d", "7d", "30d", "365d"].map((timespan) => (
                   <div
                     key={timespan}
@@ -251,14 +251,20 @@ const MetricsTable = ({
                         {item.data.changes[timespan][0] >= 0 ? (
                           <span className="text-[#45AA6F] dark:text-[#4CFF7E]">
                             +
-                            {Math.round(item.data.changes[timespan][0] * 1000) /
-                              10}
+                            {(
+                              Math.round(
+                                item.data.changes[timespan][0] * 1000
+                              ) / 10
+                            ).toFixed(1)}
                             %
                           </span>
                         ) : (
-                          <span className="text-[#DD3408] dark:text-[#FE5468]">
-                            {Math.round(item.data.changes[timespan][0] * 1000) /
-                              10}
+                          <span className="text-[#DD3408] dark:text-[#FF3838]">
+                            {(
+                              Math.round(
+                                item.data.changes[timespan][0] * 1000
+                              ) / 10
+                            ).toFixed(1)}
                             %
                           </span>
                         )}

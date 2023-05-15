@@ -251,7 +251,7 @@ export default function SidebarMenuGroup({
                     >
                       {/* <div className="w-6"> */}
                       <div
-                        className={`w-6 absolute top-2 left-[13px] ${
+                        className={`w-6 absolute left-[13px]  ${
                           urlParts[1].trim().localeCompare(option.urlKey) === 0
                             ? "text-inherit"
                             : "text-[#5A6462] group-hover:text-inherit"

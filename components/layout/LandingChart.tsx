@@ -1228,7 +1228,7 @@ export default function LandingChart({
                   </span>
                 ) : (
                   <span
-                    className="text-[#DD3408] dark:text-[#FE5468] font-semibold"
+                    className="text-[#DD3408] dark:text-[#FF3838] font-semibold"
                     // style={{
                     //   textShadow:
                     //     theme === "dark"
@@ -1270,7 +1270,7 @@ export default function LandingChart({
                   </span>
                 ) : (
                   <span
-                    className="text-[#DD3408] dark:text-[#FE5468] font-semibold"
+                    className="text-[#DD3408] dark:text-[#FF3838] font-semibold"
                     // style={{
                     //   textShadow:
                     //     theme === "dark"
