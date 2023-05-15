@@ -271,7 +271,7 @@ export default function ComparisonChart({
     (name: string) => {
       if (name === "ethereum") return "area";
       if (selectedScale === "percentage") return "area";
-      if (selectedScale === "log") return "column";
+      if (selectedScale === "log") return "area";
 
       return "line";
     },
@@ -561,7 +561,7 @@ export default function ComparisonChart({
             stacking: "normal",
           },
           area: {
-            stacking: undefined,
+            stacking: "normal",
           },
         };
       default:
@@ -762,10 +762,11 @@ export default function ComparisonChart({
               // always show ethereum on the bottom
               zIndex: zIndex,
               step:
-                getSeriesType(series.name) === "column" ||
-                selectedScale === "log"
-                  ? "center"
-                  : undefined,
+                // getSeriesType(series.name) === "column" ||
+                // selectedScale === "log"
+                //   ? "center"
+                //   :
+                undefined,
               data:
                 !showUsd && series.types.includes("usd")
                   ? series.data.map((d: any) => [d[0], d[2]])
