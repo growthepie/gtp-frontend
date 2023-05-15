@@ -109,6 +109,7 @@ const baseOptions: Highcharts.Options = {
           return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
         } else {
           return `<span style="">${date.toLocaleDateString(undefined, {
+            timeZone: "UTC",
             month: "short",
           })}</span>`;
         }
@@ -304,6 +305,7 @@ export default function ComparisonChart({
       const { x, points } = this;
       const date = new Date(x);
       const dateString = date.toLocaleDateString(undefined, {
+        timeZone: "UTC",
         month: "short",
         day: "numeric",
         year: "numeric",
@@ -1005,6 +1007,7 @@ export default function ComparisonChart({
             },
             formatter: function () {
               return new Date(this.value).toLocaleDateString(undefined, {
+                timeZone: "UTC",
                 month: "short",
                 //day: "numeric",
                 year: "numeric",

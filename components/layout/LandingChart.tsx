@@ -99,6 +99,7 @@ const baseOptions: Highcharts.Options = {
           return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
         } else {
           return `<span style="">${date.toLocaleDateString(undefined, {
+            timeZone: "UTC",
             month: "short",
           })}</span>`;
         }
@@ -281,6 +282,7 @@ export default function LandingChart({
       const dateString = `
       <div>
         ${date.toLocaleDateString(undefined, {
+          timeZone: "UTC",
           month: "short",
           day: "numeric",
           year: "numeric",
@@ -288,10 +290,11 @@ export default function LandingChart({
       </div>
       <div>-</div>
       <div>
-        ${new Date(date.valueOf() + 6 * 24 * 60 * 59 * 1000).toLocaleDateString(
+        ${new Date(date.valueOf() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString(
           //add 7 days to the date
           undefined,
           {
+            timeZone: "UTC",
             month: "short",
             day: "numeric",
             year: "numeric",
@@ -299,7 +302,7 @@ export default function LandingChart({
         )}
       </div>`;
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-60 text-xs font-raleway"><div class="w-full flex justify-between font-bold text-[1rem] pl-6 pr-1 mb-2">${dateString}</div>`;
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-60 text-xs font-raleway"><div class="w-full flex justify-between font-bold text-[1rem] items-end pl-6 pr-1 mb-2">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
       let pointsSum = 0;
@@ -885,6 +888,7 @@ export default function LandingChart({
             },
             formatter: function () {
               return new Date(this.value).toLocaleDateString(undefined, {
+                timeZone: "UTC",
                 month: "short",
                 //day: "numeric",
                 year: "numeric",

@@ -40,10 +40,10 @@ export default function RootLayout({
       <body className="bg-forest-50 dark:bg-forest-900 text-forest-900 dark:text-forest-500 font-raleway overflow-x-hidden overflow-y-auto">
         <Providers>
           <div className="flex h-fit w-full justify-center">
-            <div className="flex w-full max-w-[1680px]">
+            <div className="flex w-full max-w-[1680px] min-h-screen">
               <SidebarContainer />
-              <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative bg-white dark:bg-inherit">
-                <div className="w-full relative">
+              <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
+                <div className="w-full relative min-h-full">
                   {/* <div
                     style={{
                       pointerEvents: "none",
@@ -90,13 +90,16 @@ export default function RootLayout({
                       }}
                       className="absolute z-0 mouse-events-none"
                     ></div>
+                    {/* <div className="absolute z-0 mouse-events-none overflow-hidden w-full h-full hidden dark:block">
+                      <div className="gradient"></div>
+                    </div> */}
                   </div>
                   <Header />
-                  <main className="flex-1 w-full mx-auto pl-2 pr-2 md:pl-6 md:pr-[50px] relative z-10">
+                  <main className="flex-1 w-full mx-auto pl-2 pr-2 md:pl-6 md:pr-[50px] relative z-10 mb-[165px]">
                     {children}
                   </main>
-                  <div className="mt-24 w-full text-center py-6 relative">
-                    <div className="text-[0.7rem] text-inherit dark:text-forest-400 leading-[1] ml-8 z-20">
+                  <div className="mt-24 w-full text-center py-6 absolute bottom-0">
+                    <div className="text-[0.7rem] text-inherit dark:text-forest-400 leading-[2] ml-8 z-20">
                       © 2023 Grow The Pie 🥧
                     </div>
                   </div>

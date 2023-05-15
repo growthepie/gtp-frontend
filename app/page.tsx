@@ -69,22 +69,22 @@ export default function Home() {
     AllChains.map((chain) => chain.key)
   );
 
-  // if (!master || !landing) {
-  //   return (
-  //     <div className="fixed z-50 top-0 left-0 w-screen h-screen flex items-center justify-center bg-forest-50 dark:bg-forest-900">
-  //       Loading...
-  //     </div>
-  //   );
-  // }
+  const [showLoading, setShowLoading] = useState(true);
+
+  useEffect(() => {
+    if (!master || !landing || !showLoading) return;
+
+    setTimeout(() => {
+      setShowLoading(false);
+    }, 1500);
+  }, [master, landing, showLoading]);
 
   return (
     <>
       <div
-        className={`fixed top-0 left-0 w-screen h-screen flex items-center justify-center bg-forest-50 dark:bg-forest-900 ${
-          masterLoading && landingLoading
-            ? "opacity-100 z-50"
-            : "opacity-0 -z-10 pointer-events-none"
-        } transition-opacity duration-300`}
+        className={`fixed top-0 left-0 w-screen h-screen flex items-center justify-center bg-forest-50 dark:bg-forest-900 z-50 ${
+          showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
+        } transition-opacity duration-500`}
       >
         <LoadingAnimation />
       </div>
@@ -94,7 +94,7 @@ export default function Home() {
             <Heading className="text-2xl leading-snug md:text-[36px] mb-[30px]">
               Growing Ethereum’s Ecosystem Together
             </Heading>
-            <TopAnimation />
+            {data && landing && master && <TopAnimation />}
             {/* <Subheading className="text-sm leading-snug">
               Compare Ethereum&apos;s Layer-2 solutions and better understand
               the metrics to grow the ecosystem.

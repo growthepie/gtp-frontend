@@ -232,6 +232,7 @@ export default function ChainChart({
       const prefix = prefixes[chart.index] ?? "";
 
       const dateString = date.toLocaleDateString(undefined, {
+        timeZone: "UTC",
         month: "short",
         day: "numeric",
         year: "numeric",
