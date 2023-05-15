@@ -117,6 +117,8 @@ const Chain = ({ params }: { params: any }) => {
               <Link
                 href={chainData.block_explorer}
                 className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 rounded-full px-4 py-2"
+                rel="noreferrer"
+                target="_blank"
               >
                 <Icon icon="feather:copy" className="w-4 h-4" />
                 <div>Block Explorer</div>
@@ -124,6 +126,8 @@ const Chain = ({ params }: { params: any }) => {
               <Link
                 href={chainData.website}
                 className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 rounded-full px-4 py-2"
+                rel="noreferrer"
+                target="_blank"
               >
                 <Icon icon="feather:external-link" className="w-4 h-4" />
                 <div>Website</div>
@@ -131,6 +135,8 @@ const Chain = ({ params }: { params: any }) => {
               <Link
                 href={chainData.twitter}
                 className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 rounded-full px-4 py-2"
+                rel="noreferrer"
+                target="_blank"
               >
                 <Icon icon="feather:twitter" className="w-4 h-4" />
                 <div>
