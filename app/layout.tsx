@@ -252,7 +252,28 @@ export default function RootLayout({
                   <header className="flex justify-between space-x-6 items-center max-w-[1600px] w-full mx-auto px-[50px] pt-[50px]">
                     <div className="flex justify-between items-center">
                       <div className="flex space-x-6">
-                        <div className="block md:hidden relative">
+                        <div className="flex justify-between w-[80vw] sm:w-auto md:hidden relative sm:right-0">
+                          <Link href="" className="relative right-4 h-[36px] w-[150px]">
+                              <Image
+                                src="/logo_full.png"
+                                alt="Forest"
+                                className="mb-6 -ml-[9px] z-10 crisp-edges hidden dark:block"
+                                width={150}
+                                height={36}
+                                quality={100}
+                                priority
+                              />
+                              <Image
+                                src="/logo_full_light.png"
+                                alt="Forest"
+                                className="mb-6 -ml-[9px] z-10 crisp-edges block dark:hidden"
+                                width={150}
+                                height={36}
+                                quality={100}
+                                priority
+                              />
+                          </Link>
+
                           <Sidebar
                             trigger={
                               <button className="flex items-center space-x-2">
@@ -264,28 +285,17 @@ export default function RootLayout({
                             isOpen={isSidebarOpen}
                             setIsOpen={setIsSidebarOpen}
                           />
-                          <Link href="" className="absolute top-2 left-20">
-                            <div className="h-[32px] w-[32px] absolute">
-                              <Image
-                                src="/logo_pie_only.png"
-                                alt="Forest"
-                                className="mb-6 -ml-[9px] z-10 antialiased hover:scale-105 hover:translate-x-0 transition-transform duration-150 ease-in-out"
-                                fill={true}
-                                quality={100}
-                              />
-                            </div>
-                          </Link>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center z-10">
+                    <div className="pl-12 sm:pl-0 items-center z-10 hidden sm:flex">
                       <EthUsdSwitch />
                       <DarkModeSwitch />
                       <Link
                         href="https://twitter.com/growthepie_eth"
                         target="_blank"
                         rel="noopener"
-                        className="mr-[22px]"
+                        className="mr-[22px] "
                       >
                         <Icon icon="cib:twitter" className="h-6 w-6" />
                       </Link>
@@ -294,7 +304,7 @@ export default function RootLayout({
                         target="_blank"
                         rel="noopener"
                       >
-                        <Icon icon="cib:discord" className="h-6 w-6" />
+                        <Icon icon="cib:discord" className="h-6 w-6 " />
                       </Link>
                     </div>
                   </header>

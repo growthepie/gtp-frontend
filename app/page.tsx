@@ -74,7 +74,7 @@ export default function Home() {
       <div className={`flex flex-col flex-1 pl-2 md:pl-6`}>
         {data && (
           <>
-            <Heading className="text-2xl leading-snug md:text-[36px] mb-[30px]">
+            <Heading className="text-3xl w-[90vw] leading-snug sm:text-[36px] sm:w-auto md:text-[36px] md:w-auto mb-0 sm:mb-[30px]">
               Growing Ethereum’s Ecosystem Together
             </Heading>
             <TopAnimation />
@@ -82,18 +82,18 @@ export default function Home() {
               Compare Ethereum&apos;s Layer-2 solutions and better understand
               the metrics to grow the ecosystem.
             </Subheading> */}
-            <div className="flex mt-[100px] mb-[32px] space-x-2 items-center">
+            <div className="flex mt-[40px] sm:mt-[100px] mb-[20px] sm:mb-[32px] space-x-2 items-center">
               <Icon icon="gtp:gtp-pie" className="w-9 h-9" />
-              <Heading className="text-[30px] leading-snug font-bold">
+              <Heading className="text-[20px] sm:text-[30px] leading-snug font-bold">
                 Layer 2 User Base
               </Heading>
             </div>
-            <Subheading className="text-base leading-snug mb-[15px] px-[45px]">
+            <Subheading className="px-0 text-[16px] leading-[150%] mb-[30px] sm:text-base sm:leading-snug sm:mb-[15px] sm:px-[45px]">
               Number of unique addresses interacting with one or multiple L2s in
               a given week.
             </Subheading>
             <div className="flex-1">
-              <LandingChart
+              <LandingChart 
                 data={Object.keys(data.chains)
                   .filter((chain) => selectedChains.includes(chain))
                   .map((chain) => {
@@ -128,14 +128,22 @@ export default function Home() {
         )}
 
         <div className="flex gap-x-10 mt-[90px]">
-          <div className="flex flex-col w-1/2 lg:w-2/3">
+          <div className="flex flex-col w-11/12 sm:w-1/2 lg:w-2/3">
             <div className="flex space-x-2 mb-[30px] items-center">
-              <Icon icon="gtp:gtp-about" className="w-9 h-9" />
-              <Heading className="text-[30px] leading-snug font-bold">
+              <Icon icon="gtp:gtp-about" className="w-7 h-7 sm:w-9 sm:h-9" />
+              <Heading className="text-[22px] sm:text-[30px] leading-snug font-bold">
                 About Grow The Pie
               </Heading>
             </div>
-            <div className="text-sm lg:text-base">
+            <div className="flex sm:hidden w-11/12 h-[190px] relative">
+            <Image
+              src="/GTP-Data-Kraken.png"
+              fill={true}
+              alt="About Grow The Pie"
+              className="object-contain"
+            />
+            </div>
+            <div className="text-[16px] lg:text-base mt-[25px] sm:ml-0">
               At GrowThePie, our mission is to provide comprehensive and
               accurate analytics of layer 2 solutions for the Ethereum
               ecosystem, acting as a trusted data aggregator from reliable
@@ -148,25 +156,25 @@ export default function Home() {
             </div>
           </div>
           <div className="flex-1 relative mt-[5px] lg:mt-[15px] -mb-[10px] lg:-mb-[30px]">
-            <Image
-              src="/GTP-Data-Kraken.png"
-              fill={true}
-              alt="About Grow The Pie"
-              className="object-contain"
-            />
-          </div>
+              <Image
+                src="/GTP-Data-Kraken.png"
+                fill={true}
+                alt="About Grow The Pie"
+                className="object-contain"
+              />
+            </div>
         </div>
 
         <div className="flex mt-[90px] mb-[30px] space-x-2 items-center">
-          <Icon icon="gtp:gtp-faq" className="w-9 h-9" />
-          <Heading className="text-[30px] leading-snug font-bold">
+          <Icon icon="gtp:gtp-faq" className="w-7 h-7 sm:w-9 sm:h-9" />
+          <Heading className="text-[22px] sm:text-[30px] leading-snug font-bold">
             Frequently Asked Questions
           </Heading>
         </div>
-        <div className="flex flex-col space-y-[15px]">
-          <div className="rounded-3xl bg-forest-50 px-10 py-5 flex flex-col space-y-[15px]">
-            <div className="font-semibold">What&apos;s up with the name?</div>
-            <div>
+        <div className="flex flex-col space-y-[15px] w-11/12 sm:w-auto">
+          <div className="rounded-3xl bg-forest-50 px-10 py-5 flex flex-col space-y-[15px] ml-4 sm:ml-0">
+            <div className="text-[16px] sm:text-base font-semibold">What&apos;s up with the name?</div>
+            <div className="text-[16px] sm:text-base lg:text-base mt-4 sm:ml-0">
               At GrowThePie, our mission is to provide comprehensive and
               accurate analytics of layer 2 solutions for the Ethereum
               ecosystem, acting as a trusted data aggregator from reliable
@@ -179,7 +187,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="rounded-3xl bg-forest-50 px-10 py-5 flex flex-col space-y-[15px]">
+          <div className="rounded-3xl bg-forest-50 px-10 py-5 flex flex-col space-y-[15px] ml-4 sm:ml-0">
             <div className="font-semibold">Am I a sophisticated question?</div>
             <div>
               Yes I think you are, and here is my lengthy sophisticated answer

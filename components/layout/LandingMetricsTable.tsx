@@ -78,15 +78,15 @@ export default function LandingMetricsTable({
   return (
     <>
       <div
-        className={`flex flex-col mt-12 space-y-[5px] ${
+        className={`flex flex-col mt-12 space-y-[5px]  max-w-[90vw] overflow-x-hidden ${
           interactable ? "pointer-events-auto" : "pointer-events-none"
         }`}
       >
         <div
-          className={`flex items-center py-1 pl-2 pr-2 rounded-full gap-x-2 lg:gap-x-8 font-semibold whitespace-nowrap text-xs lg:text-sm`}
+          className={`flex items-center py-1 pl-2 pr-2 rounded-full gap-x-2 lg:gap-x-8 font-semibold whitespace-nowrap text-xs lg:text-sm `}
         >
           <div className="basis-3/12 pl-14">Chain</div>
-          <div className="basis-2/12">Age</div>
+          <div className="basis-2/12 pl-[23%] pr-[100vw] sm:pl-0 sm:pr-0">Age</div>
           <div className="basis-2/12">Technology</div>
           <div className="basis-3/12 text-right capitalize">
             Daily Active Addresses
@@ -101,33 +101,35 @@ export default function LandingMetricsTable({
               <>
                 {i === chainsLastVal.length - 1 && (
                   <>
-                    <div className="pt-[32px] pb-[32px] w-3/5 mx-auto">
-                      <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
-                    </div>
-                    <div className="flex space-x-2 pl-16 pb-0.5">
-                      {/* <Tooltip placement="right">
-                        <TooltipTrigger>
-                          <Icon
-                            icon="feather:info"
-                            className="w-4 h-4 font-semibold"
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent className="p-3 text-sm font-medium bg-forest-300 text-forest-900 rounded-xl shadow-lg z-50 flex items-center">
-                          Number of unique addresses interacting with one or
-                          multiple L2s in a given week.
-                        </TooltipContent>
-                      </Tooltip> */}
-                      <span className="text-xs">
-                        The following figure, “Multiple”, represents the number
-                        of unique addresses interacting with one or multiple L2s
-                        in a given week.
-                      </span>
+                    <div>
+                      <div className="pt-[32px] pb-[32px] pl-16 sm:pl-0 sm:w-3/5 sm:mx-auto ">
+                        <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
+                      </div>
+                      <div className="flex space-x-2 pl-16 pb-0.5 w-[200vw] sm:w-auto">
+                        {/* <Tooltip placement="right">
+                          <TooltipTrigger>
+                            <Icon
+                              icon="feather:info"
+                              className="w-4 h-4 font-semibold"
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent className="p-3 text-sm font-medium bg-forest-300 text-forest-900 rounded-xl shadow-lg z-50 flex items-center">
+                            Number of unique addresses interacting with one or
+                            multiple L2s in a given week.
+                          </TooltipContent>
+                        </Tooltip> */}
+                        <span className="text-xs">
+                          The following figure, “Multiple”, represents the number
+                          of unique addresses interacting with one or multiple L2s
+                          in a given week.
+                        </span>
+                      </div>
                     </div>
                   </>
                 )}
                 <div
                   key={chain.key}
-                  className={`flex gap-x-2 lg:gap-x-8 items-center cursor-pointer p-1.5 lg:p-3 rounded-full w-full font-[400] border-[1px] border-forest-500 whitespace-nowrap text-xs lg:text-[0.95rem] ${
+                  className={`flex gap-x-2 lg:gap-x-8 items-center cursor-pointer p-1.5 lg:p-3 rounded-full sm:w-full font-[400] border-[1px] border-forest-500 whitespace-nowrap text-xs lg:text-[0.95rem] w-[180vw] overflow-x-hidden  ${
                     i > 0 ? "-mt-[1px]" : ""
                   } ${
                     selectedChains.includes(chain.key)
@@ -144,7 +146,7 @@ export default function LandingMetricsTable({
                     }
                   }}
                 >
-                  <div className="flex basis-3/12 items-center space-x-4">
+                  <div className="flex basis-3/12 items-center space-x-4 ">
                     <div className="relative">
                       <div
                         className={`w-9 h-9 rounded-full border-[5px] ${

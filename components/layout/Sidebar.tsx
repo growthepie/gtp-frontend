@@ -599,7 +599,7 @@ export default function Sidebar({
   return (
     <div
       className={`flex-1 flex flex-col justify-items-start select-none ${
-        isOpen ? "w-[18rem]" : "w-[5.5rem]"
+        isOpen ? "w-full sm:w-[18rem]" : "sm:w-[5.5rem]"
       } overflow-hidden`}
     >
       {/* trigger that opens the sidebar when clicked */}
