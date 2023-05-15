@@ -79,7 +79,10 @@ export default function LoadingAnimation() {
 
   const fillColor = "#CDD8D3";
 
-  const [pathsProps, setPathsProps] = useState<string[]>(
+  const [pathsProps, setPathsProps] = useState<{
+    d: string;
+    fill: string;
+  }>(
     PieSVG.props.children
       .map((child: ReactSVGElement) => {
         return child.props;
