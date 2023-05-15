@@ -37,9 +37,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <Head />
-      <body className="bg-forest-50 text-forest-900 dark:text-forest-500 font-raleway  overflow-hidden">
+      <body className="bg-forest-50 text-forest-900 dark:text-forest-500 font-raleway overflow-x-hidden overflow-y-auto">
         <Providers>
-          <div className="flex h-screen w-full justify-center">
+          <div className="flex h-fit w-full justify-center">
             <div className="flex w-full max-w-[1680px]">
               <SidebarContainer />
               <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative bg-white dark:bg-inherit">
