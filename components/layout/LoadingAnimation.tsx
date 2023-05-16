@@ -109,7 +109,7 @@ export default function LoadingAnimation() {
         animation-timing-function: ease-in-out;
         animation-fill-mode: forwards;
         animation-name: FadeInOut;
-        animation-duration: 1.5s;
+        animation-duration: 1.666s;
         animation-iteration-count: infinite;
       }
       /*
@@ -124,22 +124,22 @@ export default function LoadingAnimation() {
       }
       */
       .animate-smoke:nth-child(4) {
-        animation-delay: 0.550s;
+        animation-delay: 0.150s;
       }
       .animate-smoke:nth-child(5) {
-        animation-delay: 0.700s;
+        animation-delay: 0.300s;
       }
       .animate-smoke:nth-child(6) {
-        animation-delay: 0.850s;
+        animation-delay: 0.450s;
       }
       .animate-smoke:nth-child(7) {
-        animation-delay: 1.000s;
+        animation-delay: 0.600s;
       }
       .animate-smoke:nth-child(8) {
-        animation-delay: 1.150s;
+        animation-delay: 0.750s;
       }
       .animate-smoke:nth-child(9) {
-        animation-delay: 1.200s;
+        animation-delay: 0.900s;
       }
 
       .animate-pie {
@@ -197,7 +197,7 @@ export default function LoadingAnimation() {
               key={i}
               d={pathProps.d}
               fill={fillColor}
-              className={i > 2 ? "animate-smoke" : "animate-pie"}
+              className={i > 2 ? "animate-smoke" : ""}
             />
           );
         })}
