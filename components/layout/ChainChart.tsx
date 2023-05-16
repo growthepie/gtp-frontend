@@ -6,7 +6,7 @@ import highchartsAnnotations from "highcharts/modules/annotations";
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 // import { Card } from "@/components/Card";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { useLocalStorage } from "usehooks-ts";
 import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
 // import { theme as customTheme } from "tailwind.config.js";
@@ -17,6 +17,7 @@ import { Icon } from "@iconify/react";
 import Image from "next/image";
 import d3 from "d3";
 import { AllChainsByKeys } from "@/lib/chains";
+import { items } from "./Sidebar";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -597,6 +598,7 @@ export default function ChainChart({
         borderWidth: 1,
       },
       series: {
+        zIndex: 10,
         animation: false,
         marker: {
           lineColor: "white",
@@ -640,35 +642,35 @@ export default function ChainChart({
         return (
           <Icon
             icon="feather:star"
-            className="absolute h-[60px] w-[74px] top-5 right-5 dark:text-[#CDD8D3] opacity-30 pointer-events-none"
+            className="absolute h-[64px] w-[64px] top-[55px] right-[26px] dark:text-[#CDD8D3] opacity-5 pointer-events-none"
           />
         );
       case "txcount":
         return (
           <Icon
             icon="feather:clock"
-            className="absolute h-[60px] w-[74px] top-5 right-5 dark:text-[#CDD8D3] opacity-30 pointer-events-none"
+            className="absolute h-[64px] w-[64px] top-[55px] right-[26px] dark:text-[#CDD8D3] opacity-5 pointer-events-none"
           />
         );
       case "stables_mcap":
         return (
           <Icon
             icon="feather:dollar-sign"
-            className="absolute h-[60px] w-[74px] top-5 right-5 dark:text-[#CDD8D3] opacity-30 pointer-events-none"
+            className="absolute h-[64px] w-[64px] top-[55px] right-[26px] dark:text-[#CDD8D3] opacity-5 pointer-events-none"
           />
         );
       case "fees":
         return (
           <Icon
             icon="feather:credit-card"
-            className="absolute h-[60px] w-[74px] top-5 right-5 dark:text-[#CDD8D3] opacity-30 pointer-events-none"
+            className="absolute h-[64px] w-[64px] top-[55px] right-[26px] dark:text-[#CDD8D3] opacity-5 pointer-events-none"
           />
         );
       default:
         return (
           <Icon
             icon="feather:sunrise"
-            className="absolute h-[60px] w-[74px] top-5 right-5 dark:text-[#CDD8D3] opacity-30 pointer-events-none"
+            className="absolute h-[64px] w-[64px] top-[55px] right-[26px] dark:text-[#CDD8D3] opacity-5 pointer-events-none"
           />
         );
     }
@@ -794,7 +796,7 @@ export default function ChainChart({
                 </div>
                 <div className="absolute top-[14px] w-full flex justify-between items-center px-[26px]">
                   <div className="text-[20px] leading-snug font-bold">
-                    {data.metrics[key].metric_name}
+                    {items[1].options.find((o) => o.key === key)?.label}
                   </div>
                   <div className="text-[18px] leading-snug font-medium">
                     {prefixes[i]}{" "}
@@ -818,6 +820,7 @@ export default function ChainChart({
                     )}
                   </div>
                 </div>
+                <div>{getIcon(key)}</div>
               </div>
               <div className="w-full h-[15px] relative text-[10px] z-30">
                 <div className="absolute left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end">
