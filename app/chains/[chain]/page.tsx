@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { AllChains } from "@/lib/chains";
+import { AllChains, AllChainsByKeys } from "@/lib/chains";
 import ChainChart from "@/components/layout/ChainChart";
 import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
@@ -146,8 +146,23 @@ const Chain = ({ params }: { params: any }) => {
               </Link>
             </div>
           </div>
-          <Subheading className="text-base leading-snug mb-[32px]">
-            Lorem Ipsum about {pageName}
+          <Subheading
+            className="text-[16px]"
+            leftIcon={
+              AllChainsByKeys[chainKey].icon && (
+                <div>
+                  <Icon
+                    icon={`gtp:${AllChainsByKeys[chainKey].urlKey}-logo-monochrome`}
+                    className="w-6 h-6 mr-[12px] ml-[30px]"
+                  />
+                </div>
+              )
+            }
+            iconContainerClassName="items-center mb-[32px]"
+          >
+            {AllChainsByKeys[chainKey].description
+              ? AllChainsByKeys[chainKey].description
+              : ""}
           </Subheading>
           {chartData && <ChainChart chain={chain} data={chartData} />}
         </div>

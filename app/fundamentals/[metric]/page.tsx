@@ -87,10 +87,12 @@ const Chain = ({ params }: { params: any }) => {
             className="text-[16px] leading-snug"
             leftIcon={
               pageData.icon && (
-                <Icon
-                  icon={pageData.icon}
-                  className="w-6 h-6 mr-[12px] ml-[28px] -mt-0.5"
-                />
+                <div>
+                  <Icon
+                    icon={pageData.icon}
+                    className="w-6 h-6 mr-[12px] ml-[28px] -mt-0.5"
+                  />
+                </div>
               )
             }
             iconContainerClassName="items-start mb-[30px]"

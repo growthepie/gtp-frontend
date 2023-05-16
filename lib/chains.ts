@@ -5,6 +5,7 @@ export const AllChains = [
     key: "ethereum",
     urlKey: "ethereum",
     chainType: "L1",
+    description: "",
     border: {
       light: ["border-[#293305]", "border-[#293305]"],
       dark: ["border-[#C1C1C1]", "border-[#C1C1C1]"],
@@ -20,6 +21,8 @@ export const AllChains = [
     key: "arbitrum",
     urlKey: "arbitrum",
     chainType: "L2",
+    description:
+      "Arbitrum One is developed by Offchain Labs and its mainnet launched in September 2021. It uses an optimistic rollup approach and is fully compatible with the Ethereum Virtual Machine (EVM), making it developer-friendly.",
     border: {
       light: ["border-[#2ECEE8]", "border-[#2ECEE8]"],
       dark: ["border-[#1DF7EF]", "border-[#1DF7EF]"],
@@ -35,6 +38,7 @@ export const AllChains = [
     key: "aztecv2",
     urlKey: "aztec-v2",
     chainType: "L2",
+    description: "",
     border: {
       light: ["border-[#000000]", "border-[#000000]"],
       dark: ["border-[#000000]", "border-[#000000]"],
@@ -47,6 +51,8 @@ export const AllChains = [
     key: "imx",
     urlKey: "immutable-x",
     chainType: "L2",
+    description:
+      "Immutable X is an optimized game-specif zk rollup. It is designed to mint, transfer, and trade tokens and NFTs at higher volumes and zero gas fees. It is not EVM compatible but its easy-to-use APIs and SDKs aim to make development for game devs as easy as possible. It launched in April 2021.",
     border: {
       light: ["border-[#08373C]", "border-[#08373C]"],
       dark: ["border-[#3AFCC9]", "border-[#3AFCC9]"],
@@ -62,6 +68,8 @@ export const AllChains = [
     key: "polygon_zkevm",
     urlKey: "polygon-zkevm",
     chainType: "L2",
+    description:
+      "Polygon zkEVM uses zero-knowledge proofs to enable faster and cheaper transactions. It allows users to build and run EVM-compatible smart contracts, achieving up to 100x lower gas fees and up to 2,000x faster transaction speeds than the Ethereum mainnet. It's fully compatible with the Ethereum Virtual Machine, making it easy for developers to migrate their applications to the Polygon network. It launched in March 2023.",
     border: {
       light: ["border-[#800094]", "border-[#800094]"],
       dark: ["border-[#AD0DC5]", "border-[#AD0DC5]"],
@@ -77,6 +85,7 @@ export const AllChains = [
     key: "loopring",
     urlKey: "loopring",
     chainType: "L2",
+    description: "",
     border: {
       light: ["border-[#000000]", "border-[#000000]"],
       dark: ["border-[#000000]", "border-[#000000]"],
@@ -92,6 +101,8 @@ export const AllChains = [
     key: "optimism",
     urlKey: "optimism",
     chainType: "L2",
+    description:
+      "Optimism uses an optimistic rollup approach, where transactions are assumed to be valid unless proven otherwise, and only invalid transactions are rolled back. Optimism's mainnet launched in August 2021, making it one of the first rollups. It is fully compatible with the Ethereum Virtual Machine (EVM), making it easy for developers to migrate their applications to the Optimism network.",
     border: {
       light: ["border-[#DD3408]", "border-[#DD3408]"],
       dark: ["border-[#FE5468]", "border-[#FE5468]"],
@@ -107,6 +118,7 @@ export const AllChains = [
     key: "multiple",
     urlKey: "multiple",
     chainType: "all-L2",
+
     border: {
       light: ["border-[#cdd8d3]", "border-[#cdd8d3]"],
       dark: ["border-[#cdd8d3]", "border-[#cdd8d3]"],

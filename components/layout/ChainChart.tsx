@@ -798,9 +798,9 @@ export default function ChainChart({
                   <div className="text-[20px] leading-snug font-bold">
                     {items[1].options.find((o) => o.key === key)?.label}
                   </div>
-                  <div className="text-[18px] leading-snug font-medium">
-                    {prefixes[i]}{" "}
-                    {data.metrics[key].daily.data[
+                  <div className="text-[18px] leading-snug font-medium flex space-x-[2px]">
+                    <div>{prefixes[i]} </div>
+                    {/* {data.metrics[key].daily.data[
                       data.metrics[key].daily.data.length - 1
                     ][
                       !showUsd && data.metrics[key].daily.types.includes("eth")
@@ -817,7 +817,23 @@ export default function ChainChart({
                             minimumFractionDigits: 0,
                             maximumFractionDigits: 0,
                           }
-                    )}
+                    )} */}
+                    <div>
+                      {Intl.NumberFormat("en-US", {
+                        notation: "compact",
+                        maximumFractionDigits: 2,
+                      }).format(
+                        data.metrics[key].daily.data[
+                          data.metrics[key].daily.data.length - 1
+                        ][
+                          data.metrics[key].daily.types.includes("eth")
+                            ? !showUsd
+                              ? data.metrics[key].daily.types.indexOf("eth")
+                              : data.metrics[key].daily.types.indexOf("usd")
+                            : 1
+                        ]
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div>{getIcon(key)}</div>
