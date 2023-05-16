@@ -1044,7 +1044,7 @@ export default function LandingChart({
           <button
             className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
               showTotalUsers
-                ? "bg-forest-500 dark:bg-[#151A19]"
+                ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
             }`}
             onClick={() => {
@@ -1058,7 +1058,7 @@ export default function LandingChart({
           <button
             className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
               "absolute" === selectedScale && !showTotalUsers
-                ? "bg-forest-500 dark:bg-[#151A19]"
+                ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
             }`}
             onClick={() => {
@@ -1073,7 +1073,7 @@ export default function LandingChart({
           <button
             className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
               "percentage" === selectedScale
-                ? "bg-forest-500 dark:bg-[#151A19]"
+                ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
             }`}
             onClick={() => {
@@ -1112,7 +1112,7 @@ export default function LandingChart({
                 key={timespan}
                 className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
                   selectedTimespan === timespan
-                    ? "bg-forest-500 dark:bg-[#151A19]"
+                    ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {
@@ -1149,7 +1149,7 @@ export default function LandingChart({
                 <div>Reset Zoom</div>
               </button>
               <button
-                className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium bg-forest-100 dark:bg-[#151A19]`}
+                className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium bg-forest-100 dark:bg-forest-1000`}
               >
                 {intervalShown?.label}
               </button>

@@ -54,14 +54,14 @@ export default function RootLayout({
                   <div
                     style={{
                       pointerEvents: "none",
-                      background: `radial-gradient(90.11% 90.11% at 77.71% 27.89%, #1B2524 0%, #364240 100%) fixed`,
+                      // background: `radial-gradient(90.11% 90.11% at 77.71% 27.89%, #1B2524 0%, #364240 100%) fixed`,
                     }}
-                    className="absolute z-0 mouse-events-none overflow-hidden w-full h-full hidden dark:block"
+                    className="absolute z-0 mouse-events-none overflow-hidden w-full h-full hidden dark:block dark:bg-forest-1000"
                   ></div>
                   <div
                     style={{
                       mixBlendMode: "overlay",
-                      opacity: 0.4,
+                      opacity: 0.3,
                       pointerEvents: "none",
                     }}
                     className="absolute z-0 mouse-events-none overflow-hidden w-full h-full hidden dark:block"
@@ -90,9 +90,6 @@ export default function RootLayout({
                       }}
                       className="absolute z-0 mouse-events-none"
                     ></div>
-                    {/* <div className="absolute z-0 mouse-events-none overflow-hidden w-full h-full hidden dark:block">
-                      <div className="gradient"></div>
-                    </div> */}
                   </div>
                   <Header />
                   <main className="flex-1 w-full mx-auto pl-2 pr-2 md:pl-6 md:pr-[50px] relative z-10 mb-[165px]">

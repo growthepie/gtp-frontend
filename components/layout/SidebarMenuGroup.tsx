@@ -244,7 +244,7 @@ export default function SidebarMenuGroup({
                     <Link
                       className={`group flex items-center justify-items-center rounded-l-full relative ${
                         urlParts[1].trim().localeCompare(option.urlKey) === 0
-                          ? "bg-[#CDD8D3] dark:bg-[#151A19] hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                          ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
                           : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
                       }`}
                       href={`/${item.name.toLowerCase()}/${option.urlKey}`}

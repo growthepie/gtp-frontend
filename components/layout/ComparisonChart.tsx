@@ -1109,7 +1109,7 @@ export default function ComparisonChart({
                 key={timespan}
                 className={`rounded-full px-2 py-1.5 text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
                   selectedTimespan === timespan
-                    ? "bg-forest-500 dark:bg-[#151A19]"
+                    ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {
@@ -1146,7 +1146,7 @@ export default function ComparisonChart({
                 <div>Reset Zoom</div>
               </button>
               <button
-                className={`rounded-full px-2 py-1.5 text-base lg:px-4 lg:py-3 xl:px-4 xl:py-3 font-medium bg-forest-100 dark:bg-[#151A19]`}
+                className={`rounded-full px-2 py-1.5 text-base lg:px-4 lg:py-3 xl:px-4 xl:py-3 font-medium bg-forest-100 dark:bg-forest-1000`}
               >
                 {intervalShown?.label}
               </button>
@@ -1228,7 +1228,7 @@ export default function ComparisonChart({
               <button
                 className={`rounded-full px-2 py-1 text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
                   "absolute" === selectedScale
-                    ? "bg-forest-500 dark:bg-[#151A19]"
+                    ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {
@@ -1240,7 +1240,7 @@ export default function ComparisonChart({
               <button
                 className={`rounded-full px-2 py-1 text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
                   "log" === selectedScale
-                    ? "bg-forest-500 dark:bg-[#151A19]"
+                    ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {
@@ -1252,7 +1252,7 @@ export default function ComparisonChart({
               <button
                 className={`rounded-full px-2 py-1 text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
                   "percentage" === selectedScale
-                    ? "bg-forest-500 dark:bg-[#151A19]"
+                    ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
                 }`}
                 onClick={() => {
