@@ -16,6 +16,7 @@ import { LandingURL, MasterURL } from "@/lib/urls";
 import Link from "next/link";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import LoadingAnimation from "@/components/layout/LoadingAnimation";
+import { useSessionStorage } from "usehooks-ts";
 
 export default function Home() {
   const isLargeScreen = useMediaQuery("(min-width: 768px)");
@@ -30,12 +31,14 @@ export default function Home() {
     data: landing,
     error: landingError,
     isLoading: landingLoading,
+    isValidating: landingValidating,
   } = useSWR<LandingPageMetricsResponse>(LandingURL);
 
   const {
     data: master,
     error: masterError,
     isLoading: masterLoading,
+    isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
   const [data, setData] = useState<any>(null);
@@ -70,14 +73,28 @@ export default function Home() {
   );
 
   const [showLoading, setShowLoading] = useState(true);
+  const [loadingTimeoutSeconds, setLoadingTimeoutSeconds] = useState(0);
 
   useEffect(() => {
-    if (!master || !landing || !showLoading) return;
+    if (masterLoading || landingLoading) {
+      setShowLoading(true);
+      if (!landingValidating || !masterValidating)
+        setLoadingTimeoutSeconds(1200);
+    }
 
-    setTimeout(() => {
-      setShowLoading(false);
-    }, 1500);
-  }, [master, landing, showLoading]);
+    if (master && landing)
+      setTimeout(() => {
+        setShowLoading(false);
+      }, loadingTimeoutSeconds);
+  }, [
+    landing,
+    landingLoading,
+    landingValidating,
+    loadingTimeoutSeconds,
+    master,
+    masterLoading,
+    masterValidating,
+  ]);
 
   return (
     <>
@@ -85,6 +102,7 @@ export default function Home() {
         className={`fixed top-0 left-0 w-screen h-screen flex items-center justify-center bg-forest-50 dark:bg-forest-900 z-50 ${
           showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
         } transition-opacity duration-500`}
+        suppressHydrationWarning
       >
         <LoadingAnimation />
       </div>

@@ -742,20 +742,21 @@ export default function ComparisonChart({
             };
 
             const pointsSettings =
-              getSeriesType(series.name) === "column"
-                ? {
-                    pointPlacement: 0.5,
-                    pointPadding: 0.15,
-                    pointRange:
-                      timeIntervalToMilliseconds[
-                        dataGrouping.enabled ? "weekly" : "daily"
-                      ],
-                  }
-                : {
-                    pointPlacement: 0.5,
-                    // pointInterval: 7,
-                    // pointIntervalUnit: "day",
-                  };
+              // getSeriesType(series.name) === "column"
+              //   ? {
+              //       pointPlacement: 0.5,
+              //       pointPadding: 0.15,
+              //       pointRange:
+              //         timeIntervalToMilliseconds[
+              //           dataGrouping.enabled ? "weekly" : "daily"
+              //         ],
+              //     }
+              //   :
+              {
+                pointPlacement: 0.5,
+                // pointInterval: 7,
+                // pointIntervalUnit: "day",
+              };
 
             return {
               name: series.name,
@@ -803,7 +804,8 @@ export default function ComparisonChart({
               borderColor:
                 AllChainsByKeys[series.name]?.colors[theme ?? "dark"][0],
               borderWidth: 1,
-              ...(getSeriesType(series.name) !== "column"
+              ...// @ts-ignore
+              (getSeriesType(series.name) !== "column"
                 ? {
                     shadow: {
                       color:
