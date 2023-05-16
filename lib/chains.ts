@@ -5,7 +5,8 @@ export const AllChains = [
     key: "ethereum",
     urlKey: "ethereum",
     chainType: "L1",
-    description: "",
+    description: 
+      "Ethereum was proposed by Vitalik Buterin in 2013 and launched in 2015. It is arguably the most decentralized smart contract platform to date. The goal is to scale Ethereum through the usage of Layer 2s.",
     border: {
       light: ["border-[#293305]", "border-[#293305]"],
       dark: ["border-[#C1C1C1]", "border-[#C1C1C1]"],
@@ -52,7 +53,7 @@ export const AllChains = [
     urlKey: "immutable-x",
     chainType: "L2",
     description:
-      "Immutable X is an optimized game-specif zk rollup. It is designed to mint, transfer, and trade tokens and NFTs at higher volumes and zero gas fees. It is not EVM compatible but its easy-to-use APIs and SDKs aim to make development for game devs as easy as possible. It launched in April 2021.",
+      "Immutable X is an optimized game-specific zk rollup. It is designed to mint, transfer, and trade tokens and NFTs at higher volumes and zero gas fees. It is not EVM compatible but its easy-to-use APIs and SDKs aim to make development for game devs as easy as possible. It launched in April 2021.",
     border: {
       light: ["border-[#08373C]", "border-[#08373C]"],
       dark: ["border-[#3AFCC9]", "border-[#3AFCC9]"],
