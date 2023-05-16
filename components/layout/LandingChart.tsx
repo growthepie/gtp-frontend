@@ -1205,7 +1205,7 @@ export default function LandingChart({
         {/* toggle ETH */}
 
         <div className="flex justify-center items-center">
-          <div className="flex bg-forest-100 dark:bg-forest-500/20 rounded-xl px-3 py-1.5 items-center mr-5">
+          <div className="flex bg-forest-100 dark:bg-[#4B5553] rounded-xl px-3 py-1.5 items-center mr-5">
             <Icon
               icon="feather:users"
               className="w-8 h-8 lg:w-14 lg:h-14 mr-2"
@@ -1247,7 +1247,7 @@ export default function LandingChart({
               </div>
             </div>
           </div>
-          <div className="flex bg-forest-100 dark:bg-forest-500/20 rounded-xl px-3 py-1.5 items-center mr-1.5">
+          <div className="flex bg-forest-100 dark:bg-[#4B5553] rounded-xl px-3 py-1.5 items-center mr-1.5">
             <Icon
               icon="feather:layers"
               className="w-8 h-8 lg:w-14 lg:h-14 mr-2"
