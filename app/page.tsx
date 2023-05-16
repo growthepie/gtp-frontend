@@ -267,6 +267,17 @@ export default function Home() {
                 </>
               }
             />
+            <QuestionAnswer
+              className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
+              question="Are the dates on this website my regional timezone or UTC?"
+              answer={
+                <>
+                  All dates on our website use UTC time. This makes it easier 
+                  for us to aggregate data and we avoid confusion when people 
+                  in different timezones exchange charts.
+                </>
+              }
+            />
           </div>
         </div>
       </div>
