@@ -147,18 +147,18 @@ export default function LoadingAnimation() {
         animation-timing-function: ease-in;
         animation-fill-mode: forwards;
         animation-name: FadeIn;
-        animation-duration: 0.5s;
+        animation-duration: 0.777s;
         animation-iteration-count: 1;
       }
 
       .animate-pie:nth-child(1) {
-        animation-delay: 0.100s;
+        animation-delay: 0.4;
       }
       .animate-pie:nth-child(2) {
-        animation-delay: 0.250s;
+        animation-delay: 0.4;
       }
       .animate-pie:nth-child(3) {
-        animation-delay: 0.400s;
+        animation-delay: 0.4;
       }
 
       @keyframes FadeInOut {
@@ -197,7 +197,7 @@ export default function LoadingAnimation() {
               key={i}
               d={pathProps.d}
               fill={fillColor}
-              className={i > 2 ? "animate-smoke" : ""}
+              className={i > 2 ? "animate-smoke" : "animate-pie"}
             />
           );
         })}

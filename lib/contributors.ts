@@ -8,14 +8,14 @@ export const Contributors = [
   },
   {
     name: "Tobias Schreier",
-    image: "/contributors/tobias.jpg",
+    image: "/contributors/tobias.png",
     role: "Design",
     twitter: "https://www.twitter.com/tobschcom",
     linkedin: "https://www.linkedin.com/in/tobsch",
   },
   {
     name: "Chris Keshian",
-    image: "/contributors/chris.jpg",
+    image: "/contributors/chris.png",
     role: "Product",
     twitter: "https://www.twitter.com/chriskeshian",
     linkedin: "https://www.linkedin.com/in/chriskeshian",
@@ -23,21 +23,21 @@ export const Contributors = [
 
   {
     name: "Manish Gupta",
-    image: "/contributors/tobias.jpg",
+    image: "/contributors/tobias.png",
     role: "Frontend",
     twitter: "https://www.twitter.com/manishiwa",
     linkedin: "https://www.linkedin.com/in/manishiwa",
   },
   {
     name: "Lorenz Lehmann",
-    image: "/contributors/lorenz.jpg",
+    image: "/contributors/lorenz.png",
     role: "Research",
     twitter: "https://www.twitter.com/LehmannLorenz",
     linkedin: "https://www.linkedin.com/in/lorenz-lehmann",
   },
   {
     name: "Michael May",
-    image: "/contributors/michael.jpg",
+    image: "/contributors/michael.png",
     role: "Frontend",
     twitter: "https://www.twitter.com/monkelmoo",
     linkedin: "https://www.linkedin.com/in/michael-may-3008a1261",

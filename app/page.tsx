@@ -101,7 +101,7 @@ export default function Home() {
       <div
         className={`fixed top-0 left-0 w-screen h-screen flex items-center justify-center bg-forest-50 dark:bg-forest-900 z-50 ${
           showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
-        } transition-opacity duration-500`}
+        } transition-opacity duration-300`}
         suppressHydrationWarning
       >
         <LoadingAnimation />
@@ -272,9 +272,9 @@ export default function Home() {
               question="Are the dates on this website my regional timezone or UTC?"
               answer={
                 <>
-                  All dates on our website use UTC time. This makes it easier 
-                  for us to aggregate data and we avoid confusion when people 
-                  in different timezones exchange charts.
+                  All dates on our website use UTC time. This makes it easier
+                  for us to aggregate data and we avoid confusion when people in
+                  different timezones exchange charts.
                 </>
               }
             />
