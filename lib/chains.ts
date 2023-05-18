@@ -113,22 +113,22 @@ export const AllChains = [
       dark: ["#FE5468", "#FE5468"], // red-orange
     },
   },
-  // {
-  //   label: "zkSync Era",
-  //   icon: "/icons/optimism.png",
-  //   key: "zksync_era",
-  //   urlKey: "zksync-era",
-  //   chainType: "L2",
-  //   description: "",
-  //   border: {
-  //     light: ["border-[#DD3408]", "border-[#DD3408]"],
-  //     dark: ["border-[#FE5468]", "border-[#FE5468]"],
-  //   },
-  //   colors: {
-  //     light: ["#DD3408", "#DD3408"], // red-orange
-  //     dark: ["#FE5468", "#FE5468"], // red-orange
-  //   },
-  // },
+  {
+    label: "zkSync Era",
+    icon: "/icons/zksync-era.png",
+    key: "zksync_era",
+    urlKey: "zksync-era",
+    chainType: "L2",
+    description: "",
+    border: {
+      light: ["border-[#390094]", "border-[#390094]"],
+      dark: ["border-[#7C32F4]", "border-[#7C32F4]"],
+    },
+    colors: {
+      light: ["#390094", "#390094"], // dark purple
+      dark: ["#7C32F4", "#7C32F4"], // dark purple
+    },
+  },
   {
     label: "Multiple",
     icon: null,

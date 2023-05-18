@@ -288,6 +288,45 @@ export default function LandingMetricsTable({
                           : ".1%"
                       )(data.chains[item.chain.key].user_share)}
                     </div>
+                    {interactable && (
+                      <div className={`absolute  ${"-right-[20px]"}`}>
+                        <div className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            className={`w-6 h-6 ${
+                              selectedChains.includes(item.chain.key)
+                                ? "opacity-0"
+                                : "opacity-100"
+                            }`}
+                          >
+                            <circle
+                              xmlns="http://www.w3.org/2000/svg"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                            />
+                          </svg>
+                        </div>
+                        <div className="p-1 rounded-full bg-forest-50 dark:bg-forest-900">
+                          <Icon
+                            icon="feather:check-circle"
+                            className={`w-6 h-6 ${
+                              selectedChains.includes(item.chain.key)
+                                ? "opacity-100"
+                                : "opacity-0"
+                            }`}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </animated.div>
               );
@@ -334,7 +373,7 @@ export default function LandingMetricsTable({
               .map((item, index) => (
                 <div
                   key={item.chain.key}
-                  className={`flex gap-x-2 lg:gap-x-8 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[11.5px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] ${
+                  className={`flex gap-x-2 lg:gap-x-8 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[11.5px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${
                     selectedChains.includes(item.chain.key)
                       ? " hover:bg-forest-500/10"
                       : "opacity-50 grayscale hover:opacity-70 hover:grayscale-20 transition-all duration-100"
@@ -461,6 +500,45 @@ export default function LandingMetricsTable({
                         : ".1%"
                     )(data.chains[item.chain.key].user_share)}
                   </div>
+                  {interactable && (
+                    <div className={`absolute  ${"-right-[20px]"}`}>
+                      <div className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          className={`w-6 h-6 ${
+                            selectedChains.includes(item.chain.key)
+                              ? "opacity-0"
+                              : "opacity-100"
+                          }`}
+                        >
+                          <circle
+                            xmlns="http://www.w3.org/2000/svg"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                          />
+                        </svg>
+                      </div>
+                      <div className="p-1 rounded-full bg-forest-50 dark:bg-forest-900">
+                        <Icon
+                          icon="feather:check-circle"
+                          className={`w-6 h-6 ${
+                            selectedChains.includes(item.chain.key)
+                              ? "opacity-100"
+                              : "opacity-0"
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
         </div>

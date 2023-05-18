@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, ReactNode } from "react";
+import { useEffect, useState, ReactNode, useMemo } from "react";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import useSWR from "swr";
@@ -60,30 +60,29 @@ export default function SidebarMenuGroup({
 
   // const [first, second] = pathname.slice(1).split("/");
 
-  const [urlParts, setUrlParts] = useState<string[]>(["", ""]);
+  // const [urlParts, setUrlParts] = useState<string[]>(["", ""]);
 
-  useEffect(() => {
-    if (!pathname) return;
+  const urlParts = useMemo(() => {
+    if (!pathname) {
+      return ["", ""];
+    }
 
     const parts = pathname.slice(1).split("/");
     switch (parts.length) {
       case 0:
-        setUrlParts(["", ""]);
-        break;
+        return ["", ""];
       case 1:
-        setUrlParts([parts[0], ""]);
-        break;
+        return [parts[0], ""];
       case 2:
-        setUrlParts([parts[0], parts[1]]);
-        break;
+        return [parts[0], parts[1]];
       default:
-        setUrlParts(parts);
+        return parts;
     }
-  }, [item.name, pathname]);
+  }, [pathname]);
 
   useEffect(() => {
-    setIsOpen((isOpen) =>
-      urlParts[0].toLowerCase() == item.name.toLowerCase() ? true : isOpen
+    setIsOpen(
+      urlParts[0].toLowerCase() == item.name.toLowerCase() ? true : false
     );
   }, [item.name, urlParts]);
 
@@ -225,7 +224,7 @@ export default function SidebarMenuGroup({
       </Tooltip>
 
       <div
-        className={`flex flex-col overflow-hidden mb-8 w-80 ${
+        className={`flex flex-col overflow-hidden mb-8 w-80 transition-height duration-200 ${
           isOpen ? "h-auto mt-4" : "h-0 mt-0"
         }`}
       >

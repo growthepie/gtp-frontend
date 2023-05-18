@@ -429,7 +429,7 @@ export const items: SidebarItems = [
         icon: (
           <Icon
             icon="gtp:polygon-zkevm-logo-monochrome"
-            className="h-5 w-5 mx-auto"
+            className="h-[1.5rem] w-[1.5rem] mx-auto"
           />
         ),
         key: "polygon_zkevm",
@@ -452,21 +452,21 @@ export const items: SidebarItems = [
         rootKey: "chainsOptimism",
         urlKey: "optimism",
       },
-      // {
-      //   label: "zkSync Era",
-      //   page: {
-      //     description: "",
-      //   },
-      //   icon: (
-      //     <Icon
-      //       icon="gtp:optimism-logo-monochrome"
-      //       className="h-5 w-5 mx-auto"
-      //     />
-      //   ),
-      //   key: "zksync_era",
-      //   rootKey: "chainsOptimism",
-      //   urlKey: "zksync-era",
-      // },
+      {
+        label: "zkSync Era",
+        page: {
+          description: "",
+        },
+        icon: (
+          <Icon
+            icon="gtp:zksync-era-logo-monochrome"
+            className="h-5 w-5 mx-auto"
+          />
+        ),
+        key: "zksync_era",
+        rootKey: "chainsOptimism",
+        urlKey: "zksync-era",
+      },
     ],
   },
 
@@ -620,7 +620,7 @@ export default function Sidebar({
           {trigger}
         </div>
       </div> */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-forest-800 scrollbar-track-forest-800/30 relative">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-forest-800/30 scrollbar-track-forest-800/10 relative">
         {items.map((item) => (
           <SidebarMenuGroup
             key={item.name + "_item"}
