@@ -29,6 +29,7 @@ export const ChainURLs = {
   polygon_zkevm: "https://api.growthepie.xyz/v1/chains/polygon_zkevm.json",
   optimism: "https://api.growthepie.xyz/v1/chains/optimism.json",
   imx: "https://api.growthepie.xyz/v1/chains/imx.json",
+  // zksync_era: "https://api.growthepie.xyz/v1/chains/zksync_era.json",
 };
 
 export const LandingURL = "https://api.growthepie.xyz/v1/landing_page.json";

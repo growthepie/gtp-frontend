@@ -53,7 +53,10 @@ const MetricsTable = ({
   const rows = useCallback(() => {
     if (!data || maxVal === null) return [];
     return Object.keys(data)
-      .filter((chain) => chain !== "ethereum")
+      .filter(
+        (chain) =>
+          chain !== "ethereum" && Object.keys(AllChainsByKeys).includes(chain)
+      )
       .map((chain: any) => {
         const lastVal =
           data[chain].daily.data[data[chain].daily.data.length - 1][

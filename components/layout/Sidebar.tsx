@@ -452,6 +452,21 @@ export const items: SidebarItems = [
         rootKey: "chainsOptimism",
         urlKey: "optimism",
       },
+      // {
+      //   label: "zkSync Era",
+      //   page: {
+      //     description: "",
+      //   },
+      //   icon: (
+      //     <Icon
+      //       icon="gtp:optimism-logo-monochrome"
+      //       className="h-5 w-5 mx-auto"
+      //     />
+      //   ),
+      //   key: "zksync_era",
+      //   rootKey: "chainsOptimism",
+      //   urlKey: "zksync-era",
+      // },
     ],
   },
 

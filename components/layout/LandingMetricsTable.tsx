@@ -44,6 +44,7 @@ export default function LandingMetricsTable({
         ...Object.keys(data.chains)
           .filter(
             (chain) =>
+              Object.keys(AllChainsByKeys).includes(chain) &&
               AllChainsByKeys[chain].chainType != null &&
               AllChainsByKeys[chain].chainType != "L1"
           )
@@ -59,6 +60,7 @@ export default function LandingMetricsTable({
   const rows = useCallback(() => {
     if (!data) return [];
     return Object.keys(data.chains)
+      .filter((chain) => Object.keys(AllChainsByKeys).includes(chain))
       .map((chain: any) => {
         return {
           data: data[chain],

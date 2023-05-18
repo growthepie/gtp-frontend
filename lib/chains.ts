@@ -5,7 +5,7 @@ export const AllChains = [
     key: "ethereum",
     urlKey: "ethereum",
     chainType: "L1",
-    description: 
+    description:
       "Ethereum was proposed by Vitalik Buterin in 2013 and launched in 2015. It is arguably the most decentralized smart contract platform to date. The goal is to scale Ethereum through the usage of Layer 2s.",
     border: {
       light: ["border-[#293305]", "border-[#293305]"],
@@ -113,6 +113,22 @@ export const AllChains = [
       dark: ["#FE5468", "#FE5468"], // red-orange
     },
   },
+  // {
+  //   label: "zkSync Era",
+  //   icon: "/icons/optimism.png",
+  //   key: "zksync_era",
+  //   urlKey: "zksync-era",
+  //   chainType: "L2",
+  //   description: "",
+  //   border: {
+  //     light: ["border-[#DD3408]", "border-[#DD3408]"],
+  //     dark: ["border-[#FE5468]", "border-[#FE5468]"],
+  //   },
+  //   colors: {
+  //     light: ["#DD3408", "#DD3408"], // red-orange
+  //     dark: ["#FE5468", "#FE5468"], // red-orange
+  //   },
+  // },
   {
     label: "Multiple",
     icon: null,
