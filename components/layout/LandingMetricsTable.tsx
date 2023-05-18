@@ -51,11 +51,11 @@ export default function LandingMetricsTable({
           .map((chain) => {
             return data.chains[chain].data.data[
               data.chains[chain].data.data.length - 1
-            ][showUsd ? 2 : 1];
+            ][1];
           })
       )
     );
-  }, [data, showUsd]);
+  }, [data, data.chains, showUsd]);
 
   const rows = useCallback(() => {
     if (!data) return [];
@@ -268,7 +268,7 @@ export default function LandingMetricsTable({
                         </div>
                         <div className="absolute -bottom-[6px] right-0 w-full h-1 bg-black/10 rounded-none"></div>
                         <div
-                          className={`absolute -bottom-[6px] right-0 h-1 bg-forest-400 rounded-none`}
+                          className={`absolute -bottom-[6px] right-0 h-1 bg-forest-900 dark:bg-forest-50 rounded-none`}
                           style={{
                             width: `${
                               (data.chains[item.chain.key].data.data[
@@ -480,7 +480,7 @@ export default function LandingMetricsTable({
                       </div>
                       <div className="absolute -bottom-[6px] right-0 w-full h-1 bg-black/10 rounded-none"></div>
                       <div
-                        className={`absolute -bottom-[6px] right-0 h-1 bg-forest-400 rounded-none`}
+                        className={`absolute -bottom-[6px] right-0 h-1 bg-forest-900 dark:bg-forest-50 rounded-none`}
                         style={{
                           width: `${
                             (data.chains[item.chain.key].data.data[

@@ -225,7 +225,7 @@ const MetricsTable = ({
                         <>
                           <div className="absolute left-0 -top-[3px] w-full h-1 bg-black/10"></div>
                           <div
-                            className={`absolute left-0 -top-[3px] h-1 bg-forest-400 rounded-none font-semibold transition-width duration-300 `}
+                            className={`absolute left-0 -top-[3px] h-1 bg-forest-900 dark:bg-forest-50 rounded-none font-semibold transition-width duration-300 `}
                             style={{
                               width: item.barWidth,
                             }}
