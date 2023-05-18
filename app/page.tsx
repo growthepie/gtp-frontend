@@ -70,7 +70,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex w-full mt-[65px]">
+    <div className="flex w-full mt-[30px] sm:mt-[65px]">
       <div className={`flex flex-col flex-1 pl-2 md:pl-6`}>
         {data && (
           <>
