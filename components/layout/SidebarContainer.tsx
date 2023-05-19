@@ -7,7 +7,7 @@ import EthUsdSwitch from "./EthUsdSwitch";
 import { Icon } from "@iconify/react";
 
 export default function SidebarContainer() {
-  const [startSidebarOpen, setStartSidebarOpen] = useState(false);
+  const [startSidebarOpen, setStartSidebarOpen] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // useEffect(() => {

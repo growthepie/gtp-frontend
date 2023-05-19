@@ -1161,7 +1161,7 @@ export default function ComparisonChart({
         {highchartsLoaded ? (
           <>
             <div className="w-full lg:w-1/2 xl:w-7/12 relative">
-              <div className="w-full p-4 py-14">
+              <div className="w-full p-0 py-4 xl:p-4 xl:py-14">
                 <div className="w-full h-[26rem] relative rounded-xl">
                   <div className="absolute w-full h-[24rem] top-4">
                     <HighchartsReact

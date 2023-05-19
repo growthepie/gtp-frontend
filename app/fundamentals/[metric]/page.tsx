@@ -50,11 +50,17 @@ const Chain = ({ params }: { params: any }) => {
     AllChains.map((chain) => chain.key)
   );
 
-  const [selectedTimespan, setSelectedTimespan] = useState("365d");
+  const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
+    "fundamentalsTimespan",
+    "180d"
+  );
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
-  const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
+  const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(
+    "fundamentalsShowEthereumMainnet",
+    false
+  );
 
   const timeIntervalKey = useMemo(() => {
     if (!metricData) return null;
