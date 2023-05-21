@@ -78,17 +78,17 @@ export default function LandingMetricsTable({
   return (
     <>
       <div
-        className={`flex flex-col mt-12 space-y-[5px]  max-w-[90vw] overflow-x-hidden ${
-          interactable ? "pointer-events-auto" : "pointer-events-none"
+        className={`flex flex-col mt-12 pb-[2px] sm:pb-0 space-y-[5px]  max-w-[90vw] overflow-x-scroll sm:overflow-x-auto ${
+          interactable ? "pointer-events-auto" : ""
         }`}
       >
         <div
           className={`flex items-center py-1 pl-2 pr-2 rounded-full gap-x-2 lg:gap-x-8 font-semibold whitespace-nowrap text-xs lg:text-sm `}
         >
           <div className="basis-3/12 pl-14">Chain</div>
-          <div className="basis-2/12 pl-[23%] pr-[100vw] sm:pl-0 sm:pr-0">Age</div>
-          <div className="basis-2/12">Technology</div>
-          <div className="basis-3/12 text-right capitalize">
+          <div className="basis-2/12 pl-[100px] pr-[100px] sm:pl-0 sm:pr-0">Age</div>
+          <div className="basis-2/12 ">Technology</div>
+          <div className="basis-3/12 text-right capitalize pl-[100px] pr-[50px] sm:pl-0 sm:pr-0">
             Daily Active Addresses
           </div>
           <div className="basis-2/12 text-right pr-14">User Share</div>
@@ -129,7 +129,7 @@ export default function LandingMetricsTable({
                 )}
                 <div
                   key={chain.key}
-                  className={`flex gap-x-2 lg:gap-x-8 items-center cursor-pointer p-1.5 lg:p-3 rounded-full sm:w-full font-[400] border-[1px] border-forest-500 whitespace-nowrap text-xs lg:text-[0.95rem] w-[180vw] overflow-x-hidden  ${
+                  className={`flex gap-x-2 lg:gap-x-8 items-center cursor-pointer p-1.5 lg:p-3 rounded-full sm:w-full font-[400] border-[1px] border-forest-500 whitespace-nowrap text-xs lg:text-[0.95rem] w-[800px] pointer-events-none ${
                     i > 0 ? "-mt-[1px]" : ""
                   } ${
                     selectedChains.includes(chain.key)
@@ -186,7 +186,7 @@ export default function LandingMetricsTable({
                         {chain.chainType === "L2" && (
                           <>
                             <span>{master.chains[chain.key].rollup}</span>{" "}
-                            <span className="hidden lg:inline-block">
+                            <span className="inline-block sm:hidden lg:inline-block">
                               {master.chains[chain.key].technology}
                             </span>
                           </>
