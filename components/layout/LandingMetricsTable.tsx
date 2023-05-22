@@ -127,16 +127,16 @@ export default function LandingMetricsTable({
         }`}
       >
         <div
-          className={`flex items-center py-1 pl-2 pr-2 rounded-full gap-x-2 lg:gap-x-8 font-semibold whitespace-nowrap text-xs lg:text-sm`}
+          className={`flex space-x-5 items-center py-1 pl-2 pr-2 rounded-full font-semibold text-xs lg:text-sm min-w-[800px]`}
         >
-          <div className="basis-3/12 pl-14">Chain</div>
-          <div className="basis-1/12">Age</div>
-          <div className="basis-2/12">Purpose</div>
-          <div className="basis-2/12">Technology</div>
-          <div className="basis-2/12 text-right capitalize">
+          <div className="w-2/12 pl-14">Chain</div>
+          <div className="w-1/12">Age</div>
+          <div className="w-1/5">Purpose</div>
+          <div className="w-2/12">Technology</div>
+          <div className="flex-1 text-right capitalize">
             Weekly Active Addresses
           </div>
-          <div className="basis-2/12 text-right pr-14">User Share</div>
+          <div className="w-[10%] text-right pr-14">User Share</div>
         </div>
         <div className="flex flex-col">
           <div className="w-full relative" style={{ height }}>
@@ -148,7 +148,7 @@ export default function LandingMetricsTable({
                 >
                   <div
                     key={item.chain.key}
-                    className={`flex gap-x-2 lg:gap-x-8 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[11.5px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] ${
+                    className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[11.5px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] ${
                       index > 0 ? "-mt-[1px]" : ""
                     } ${
                       selectedChains.includes(item.chain.key)
@@ -165,7 +165,7 @@ export default function LandingMetricsTable({
                       }
                     }}
                   >
-                    <div className="flex basis-3/12 items-center space-x-4">
+                    <div className="flex w-2/12 items-center space-x-4">
                       <div className="relative">
                         <div
                           className={`w-9 h-9 rounded-full border-[5px] ${
@@ -184,7 +184,7 @@ export default function LandingMetricsTable({
                         {item.chain.label}
                       </div>
                     </div>
-                    <div className="basis-1/12">
+                    <div className="w-1/12">
                       {/* format as 1 year 2 months */}
                       {item.chain.chainType === "L2" &&
                         moment
@@ -195,12 +195,12 @@ export default function LandingMetricsTable({
                           )
                           .humanize()}
                     </div>
-                    <div className="basis-2/12 capitalize">
+                    <div className="w-1/5 capitalize">
                       {master && master.chains[item.chain.key].purpose && (
                         <span>{master.chains[item.chain.key].purpose}</span>
                       )}
                     </div>
-                    <div className="basis-2/12 capitalize">
+                    <div className="w-2/12 capitalize">
                       {item.chain.chainType === "L2" &&
                       master &&
                       master.chains[item.chain.key].rollup === "-" ? (
@@ -212,7 +212,7 @@ export default function LandingMetricsTable({
                               <span>
                                 {master.chains[item.chain.key].rollup}
                               </span>{" "}
-                              <span className="hidden lg:inline-block">
+                              <span className="">
                                 {master.chains[item.chain.key].technology}
                               </span>
                             </>
@@ -221,7 +221,7 @@ export default function LandingMetricsTable({
                       )}
                     </div>
 
-                    <div className="basis-2/12 flex justify-end items-center">
+                    <div className="flex-1 flex justify-end items-center">
                       {/* <div className="flex flex-1 align-middle items-center"> */}
                       <div className={`relative w-full`}>
                         <div className="flex w-full justify-end">
@@ -281,7 +281,7 @@ export default function LandingMetricsTable({
                         ></div>
                       </div>
                     </div>
-                    <div className="basis-2/12 text-right pr-14">
+                    <div className="w-[10%] text-right pr-14">
                       {d3.format(
                         data.chains[item.chain.key].user_share > 0.01
                           ? ".1%"
@@ -373,7 +373,7 @@ export default function LandingMetricsTable({
               .map((item, index) => (
                 <div
                   key={item.chain.key}
-                  className={`flex gap-x-2 lg:gap-x-8 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[11.5px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${
+                  className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[11.5px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${
                     selectedChains.includes(item.chain.key)
                       ? " hover:bg-forest-500/10"
                       : "opacity-50 grayscale hover:opacity-70 hover:grayscale-20 transition-all duration-100"
@@ -388,7 +388,7 @@ export default function LandingMetricsTable({
                     }
                   }}
                 >
-                  <div className="flex basis-3/12 items-center space-x-4">
+                  <div className="flex w-2/12 items-center space-x-4">
                     <div className="relative">
                       <div
                         className={`w-9 h-9 rounded-full border-[5px] ${
@@ -407,7 +407,7 @@ export default function LandingMetricsTable({
                       {item.chain.label}
                     </div>
                   </div>
-                  <div className="basis-2/12">
+                  <div className="w-2/12">
                     {/* format as 1 year 2 months */}
                     {item.chain.chainType === "L2" &&
                       moment
@@ -418,7 +418,7 @@ export default function LandingMetricsTable({
                         )
                         .humanize()}
                   </div>
-                  <div className="basis-2/12 capitalize">
+                  <div className="w-1/5 capitalize">
                     {item.chain.chainType === "L2" &&
                     master &&
                     master.chains[item.chain.key].rollup === "-" ? (
@@ -436,7 +436,7 @@ export default function LandingMetricsTable({
                       </>
                     )}
                   </div>
-                  <div className="basis-3/12 flex justify-end items-center">
+                  <div className="flex-1 flex justify-end items-center">
                     {/* <div className="flex flex-1 align-middle items-center"> */}
                     <div className={`relative w-full`}>
                       <div className="flex w-full justify-end">
@@ -493,7 +493,7 @@ export default function LandingMetricsTable({
                       ></div>
                     </div>
                   </div>
-                  <div className="basis-2/12 text-right pr-14">
+                  <div className="w-[10%] text-right pr-14">
                     {d3.format(
                       data.chains[item.chain.key].user_share > 0.01
                         ? ".1%"
