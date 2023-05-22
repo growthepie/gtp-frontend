@@ -6,11 +6,18 @@ import HighchartsReact from "highcharts-react-official";
 import Highcharts, {
   AxisLabelsFormatterContextObject,
 } from "highcharts/highstock";
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+  createRef,
+} from "react";
 import { useSessionStorage } from "usehooks-ts";
 // import { theme as customTheme } from "tailwind.config.js";
 import { useTheme } from "next-themes";
-import { clamp, merge } from "lodash";
+import { clamp, debounce, merge } from "lodash";
 import { Switch } from "../Switch";
 import { AllChainsByKeys } from "@/lib/chains";
 import d3 from "d3";
@@ -18,6 +25,7 @@ import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
 import { Sources } from "@/lib/datasources";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -30,6 +38,20 @@ const COLORS = {
 const isArray = (obj: any) =>
   Object.prototype.toString.call(obj) === "[object Array]";
 const splat = (obj: any) => (isArray(obj) ? obj : [obj]);
+
+// const useRefDimensions = (ref) => {
+//   const [dimensions, setDimensions] = useState({ width: 1, height: 2 });
+//   useEffect(() => {
+//     if (ref.current) {
+//       const { current } = ref;
+//       const boundingRect = current.getBoundingClientRect();
+//       const { width, height } = boundingRect;
+//       setDimensions({ width: Math.round(width), height: Math.round(height) });
+//     }
+//   }, [ref]);
+//   console.log(dimensions);
+//   return dimensions;
+// };
 
 const baseOptions: Highcharts.Options = {
   accessibility: { enabled: false },
@@ -1037,8 +1059,24 @@ export default function LandingChart({
     }
   }, [chartComponent, filteredData]);
 
+  const [squareRef, { width, height }] = useElementSizeObserver();
+
+  useEffect(() => {
+    debounce(() => {
+      if (chartComponent.current) {
+        // chartComponent.current.reflow();
+        const w = chartComponent.current.chartWidth;
+        const h = chartComponent.current.chartHeight;
+
+        chartComponent.current.setSize(width, h, {
+          duration: 66,
+        });
+      }
+    }, 150)();
+  }, [width]);
+
   return (
-    <div className="w-full mb-[6rem] mt-[3rem] relative">
+    <div className="w-full mb-[6rem] mt-[3rem] relative" ref={squareRef}>
       <div className="flex w-full justify-between items-center absolute -top-[3rem] left-0 right-0 text-xs rounded-full bg-forest-50 dark:bg-forest-900 p-0.5">
         <div className="flex justify-center items-center space-x-1">
           <button

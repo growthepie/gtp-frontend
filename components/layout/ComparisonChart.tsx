@@ -13,7 +13,7 @@ import {
   ReactNode,
 } from "react";
 import { useLocalStorage } from "usehooks-ts";
-import { merge } from "lodash";
+import { debounce, merge } from "lodash";
 // import { theme as customTheme } from "tailwind.config.js";
 import { useTheme } from "next-themes";
 import { Switch } from "../Switch";
@@ -24,6 +24,7 @@ import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
 import { Sources } from "@/lib/datasources";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -1085,6 +1086,21 @@ export default function ComparisonChart({
     }
   }, [chartComponent, filteredData]);
 
+  const [squareRef, { width, height }] = useElementSizeObserver();
+
+  useEffect(() => {
+    debounce(() => {
+      if (chartComponent.current) {
+        const w = chartComponent.current.chartWidth;
+        const h = chartComponent.current.chartHeight;
+
+        chartComponent.current.setSize(width, h, {
+          duration: 66,
+        });
+      }
+    }, 150)();
+  }, [width]);
+
   return (
     <div className="w-full flex-col relative">
       <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-forest-900 p-0.5">
@@ -1161,9 +1177,12 @@ export default function ComparisonChart({
         {highchartsLoaded ? (
           <>
             <div className="w-full lg:w-1/2 xl:w-7/12 relative">
-              <div className="w-full p-0 py-4 xl:p-4 xl:py-14">
+              <div className="w-full p-0 py-4 xl:pl-4 xl:py-14">
                 <div className="w-full h-[26rem] relative rounded-xl">
-                  <div className="absolute w-full h-[24rem] top-4">
+                  <div
+                    className="absolute w-full h-[24rem] top-4"
+                    ref={squareRef}
+                  >
                     <HighchartsReact
                       highcharts={Highcharts}
                       options={options}

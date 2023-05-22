@@ -11,13 +11,14 @@ import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
 // import { theme as customTheme } from "tailwind.config.js";
 import { useTheme } from "next-themes";
-import _ from "lodash";
+import _, { debounce } from "lodash";
 import { AllChains } from "@/lib/chains";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import d3 from "d3";
 import { AllChainsByKeys } from "@/lib/chains";
 import { items } from "./Sidebar";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -682,6 +683,21 @@ export default function ChainChart({
     });
   }, [chartComponents]);
 
+  const [squareRef, { width, height }] = useElementSizeObserver();
+
+  useEffect(() => {
+    debounce(() => {
+      chartComponents.current.forEach((chart) => {
+        const w = chart.chartWidth;
+        const h = chart.chartHeight;
+
+        chart.setSize(width, h, {
+          duration: 66,
+        });
+      });
+    }, 300)();
+  }, [width]);
+
   if (!data) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -739,7 +755,10 @@ export default function ChainChart({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-[15px]">
           {Object.keys(data.metrics).map((key, i) => (
             <div key={key} className="w-full">
-              <div className="w-full h-[176px] relative">
+              <div
+                className="w-full h-[176px] relative"
+                ref={i === 0 ? squareRef : null}
+              >
                 <div className="absolute w-full h-full bg-forest-50 dark:bg-forest-900 rounded-[15px]"></div>
                 <div className="absolute w-full h-[142px] top-[49px]">
                   <HighchartsReact
