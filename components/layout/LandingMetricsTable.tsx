@@ -364,7 +364,7 @@ export default function LandingMetricsTable({
           <div className="flex space-x-2 pl-16 pb-0.5">
             <span className="text-xs">
               The following figure, “Multiple”, represents the number of unique
-              addresses interacting with one or multiple L2s in a given week.
+              addresses that were active on multiple Layer 2s in a given week.
             </span>
           </div>
           {rows().length > 0 &&
