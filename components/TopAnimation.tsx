@@ -134,7 +134,7 @@ const TopAnimation = () => {
 
   const RightAnimate = (id) =>
     useSpring({
-      delay: id === 0 ? 6200 : 6250,
+      delay: id === 0 ? 6900 : 6950,
       from: { y: 100 },
       to: { y: 0 },
       config: { tension: 200, friction: 20 },
@@ -142,76 +142,97 @@ const TopAnimation = () => {
 
   return (
     <div>
-      <div className="w-[full] h-[125px] rounded-[99px] bg-[#2A343399] border-[2px] border-[#CDD8D3] flex justify-between items-center text-[#CDD8D3] overflow-hidden">
+      <div
+        className="w-[full] h-[125px] rounded-[99px] bg-[#2A343399] border-[2px] border-[#CDD8D3] lg:flex justify-between items-center text-[#CDD8D3] overflow-hidden
+                      hidden max-w-[1120px]"
+      >
         <div className="ml-12 items-center flex">
-          <animated.div
-            className="flex items-center pr-10"
-            style={LeftAnimate(0)}
-          >
-            <Image
-              src="/eth-ani.png"
-              alt="eth logo"
-              width={58}
-              height={58}
-              className="relative"
-            />
-            <Image
-              src="/eth-ani2.png"
-              alt="eth logo"
-              width={25}
-              height={40}
-              className="relative right-[41px]"
-            />
+          <animated.div className="flex items-center" style={LeftAnimate(0)}>
+            <div className="w-[40px] h-[40px] xl:w-[58px] xl:h-[58px] lg:w-[44px] lg:h-[44px]">
+              <Image
+                src="/eth-ani.png"
+                alt="eth logo"
+                width={58}
+                height={58}
+                className="relative right-[25px]  xl:right-[0px] lg:[40px]"
+              />
+            </div>
+            <div className="w-[18px] h-[30px] xl:w-[25px] xl:h-[40px]">
+              <Image
+                src="/eth-ani2.png"
+                alt="eth logo"
+                width={25}
+                height={40}
+                className="relative top-[0px] right-[55px] xl:right-[41px] lg:right-[56px]"
+              />
+            </div>
           </animated.div>
           <animated.h1
-            className="relative right-[24px] font-bold text-[21px]"
+            className="relative right-[40px] lg:right-[32px] lg:text-[21px] xl:right-[0px] xl:text-[21px] font-bold text-[15px]"
             style={LeftAnimate(1)}
           >
             One Ecosystem
           </animated.h1>
         </div>
-        <div className="flex flex-col gap-y-2">
+        <div className="flex flex-col gap-y-2 lg:pr-0">
           <div className="flex gap-x-4 items-center">
             <animated.div style={TopMiddle(0)}>
-              <Image
-                src="/control-ani.svg"
-                alt="controller"
-                width={75}
-                height={50}
-                loading="eager"
-                className=""
-              />
+              <div className="">
+                <Image
+                  src="/control-ani.svg"
+                  alt="controller"
+                  width={23}
+                  height={26}
+                  loading="eager"
+                  className=""
+                />
+              </div>
             </animated.div>
-            <animated.h1 style={TopMiddle(1)}>different use cases</animated.h1>
+            <animated.h1
+              className="text-xs xl:text-base xl:pr-4"
+              style={TopMiddle(1)}
+            >
+              different use cases
+            </animated.h1>
           </div>
 
           <div className="flex gap-x-4 items-center">
             <animated.div style={CenterMiddle(0)}>
-              <Image
-                src="/chains-ani.svg"
-                alt="chain logos"
-                width={75}
-                height={50}
-                loading="eager"
-                className=""
-              />
+              <div className="">
+                <Image
+                  src="/chains-ani.svg"
+                  alt="chain logos"
+                  width={23}
+                  height={26}
+                  loading="eager"
+                  className=""
+                />
+              </div>
             </animated.div>
-            <animated.h1 style={CenterMiddle(1)}>
+            <animated.h1
+              className="text-xs xl:text-base xl:pr-4"
+              style={CenterMiddle(1)}
+            >
               many chains and layers
             </animated.h1>
           </div>
           <div className="flex gap-x-4 items-center">
             <animated.div style={BottomMiddle(0)}>
-              <Image
-                src="/emoji-ani.svg"
-                alt="user emoji"
-                width={75}
-                height={50}
-                loading="eager"
-                className=""
-              />
+              <div className="">
+                <Image
+                  src="/emoji-ani.svg"
+                  alt="user emoji"
+                  width={23}
+                  height={26}
+                  loading="eager"
+                  className=""
+                />
+              </div>
             </animated.div>
-            <animated.h1 style={BottomMiddle(1)}>
+            <animated.h1
+              className="text-xs xl:text-base xl:pr-4"
+              style={BottomMiddle(1)}
+            >
               all growing the total user base
             </animated.h1>
           </div>
@@ -228,7 +249,7 @@ const TopAnimation = () => {
             />
           </animated.div>
           <animated.h1
-            className="w-[160px] font-bold text-[21px]"
+            className="w-[160px] text-[15px] font-bold lg:text-[21px]"
             style={RightAnimate(1)}
           >
             for a positive sum game.
