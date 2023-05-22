@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Error from "next/error";
 import { MetricsResponse } from "@/types/api/MetricsResponse";
 import Heading from "@/components/layout/Heading";
@@ -14,14 +14,18 @@ import { intersection } from "lodash";
 import { items as sidebarItems } from "@/components/layout/Sidebar";
 import { Icon } from "@iconify/react";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
+import LoadingAnimation from "@/components/layout/LoadingAnimation";
 
 const Chain = ({ params }: { params: any }) => {
   const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
   const [errorCode, setErrorCode] = useState<number | null>(null);
 
-  const { data: metricData, error: metricError } = useSWR<MetricsResponse>(
-    MetricsURLs[params.metric]
-  );
+  const {
+    data: metricData,
+    error: metricError,
+    isLoading: metricLoading,
+    isValidating: metricValidating,
+  } = useSWR<MetricsResponse>(MetricsURLs[params.metric]);
 
   // const data = useMemo(() => {
   //   if (!metricData) return null;
@@ -72,6 +76,21 @@ const Chain = ({ params }: { params: any }) => {
       : selectedTimeInterval;
   }, [metricData, selectedTimeInterval, selectedTimespan]);
 
+  const [showLoading, setShowLoading] = useState(true);
+  const [loadingTimeoutSeconds, setLoadingTimeoutSeconds] = useState(0);
+
+  useEffect(() => {
+    if (metricLoading) {
+      setShowLoading(true);
+      if (!metricValidating) setLoadingTimeoutSeconds(1200);
+    }
+
+    if (metricData)
+      setTimeout(() => {
+        setShowLoading(false);
+      }, loadingTimeoutSeconds);
+  }, [metricLoading, metricValidating, metricData, loadingTimeoutSeconds]);
+
   if (errorCode) {
     return <Error statusCode={errorCode} />;
   }
@@ -79,7 +98,14 @@ const Chain = ({ params }: { params: any }) => {
   return (
     <>
       {/* <h1>Metric: {params.metric}</h1> */}
-
+      <div
+        className={`absolute w-full h-screen right flex -ml-2 -mr-2 md:-ml-6 md:-mr-[50px] -mt-[153px] items-center justify-center bg-forest-50 dark:bg-forest-1000 z-50 ${
+          showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
+        } transition-opacity duration-300`}
+        suppressHydrationWarning
+      >
+        <LoadingAnimation />
+      </div>
       <div className="flex w-full pl-2 md:pl-6 mt-[75px]">
         <div className="flex flex-col w-full">
           <div className="flex justify-between items-start w-full">

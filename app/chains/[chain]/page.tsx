@@ -10,6 +10,7 @@ import Subheading from "@/components/layout/Subheading";
 import { Icon } from "@iconify/react";
 import { ChainResponse } from "@/types/api/ChainResponse";
 import { ChainURLs, MasterURL } from "@/lib/urls";
+import LoadingAnimation from "@/components/layout/LoadingAnimation";
 
 const Chain = ({ params }: { params: any }) => {
   // const params = useSearchParams();
@@ -22,12 +23,19 @@ const Chain = ({ params }: { params: any }) => {
     String(chain).charAt(0).toUpperCase() + String(chain).slice(1)
   );
 
-  const { data: master, error: masterError } =
-    useSWR<MasterResponse>(MasterURL);
+  const {
+    data: master,
+    error: masterError,
+    isLoading: masterLoading,
+    isValidating: masterValidating,
+  } = useSWR<MasterResponse>(MasterURL);
 
-  const { data: ChainResponse, error: ethError } = useSWR<ChainResponse>(
-    chainKey ? ChainURLs[chainKey] : null
-  );
+  const {
+    data: ChainResponse,
+    error: chainError,
+    isValidating: chainValidating,
+    isLoading: chainLoading,
+  } = useSWR<ChainResponse>(chainKey ? ChainURLs[chainKey] : null);
 
   const [chainData, setChainData] = useState<any>(null);
   const [chartData, setChartData] = useState<any>(null);
@@ -48,124 +56,127 @@ const Chain = ({ params }: { params: any }) => {
     }
   }, [master, chainKey]);
 
-  // const chainData = useMemo(() => {
-  //   if (!master) return [];
+  const [showLoading, setShowLoading] = useState(true);
+  const [loadingTimeoutSeconds, setLoadingTimeoutSeconds] = useState(0);
 
-  //   for (let chainName in master.chains) {
-  //     if (chainName === chainKey) {
-  //       return master.chains[chainName];
-  //     }
-  //   }
-  // }, [master, chainKey]);
+  useEffect(() => {
+    if (masterLoading || chainLoading) {
+      setShowLoading(true);
+      if (!masterValidating && !chainValidating) setLoadingTimeoutSeconds(1200);
+    }
 
-  // const chartData = useMemo(() => {
-  //   if (!Arbitrum || !Ethereum || !Optimism || !Polygon || !Imx) return [];
-
-  //   for (let i = 0; i < 5; i++) {
-  //     if (chainArray[i]?.data.chain_id === chainKey) {
-  //       return chainArray[i]?.data;
-  //     }
-  //   }
-  // }, [chainKey, chainArray, Arbitrum, Optimism, Ethereum, Polygon, Imx]);
+    if (!masterLoading && !chainLoading)
+      setTimeout(() => {
+        setShowLoading(false);
+      }, loadingTimeoutSeconds);
+  }, [
+    loadingTimeoutSeconds,
+    masterLoading,
+    chainLoading,
+    masterValidating,
+    chainValidating,
+  ]);
 
   if (!chainKey) {
     return <div>Chain not found</div>;
   }
 
-  if (!master || !ChainResponse || !chainData || !chartData) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        Loading...
-      </div>
-    );
-  }
   // console.log(chainData.name);
 
   return (
     <>
-      {/*Header */}
+      <div
+        className={`absolute w-full h-screen right flex -ml-2 -mr-2 md:-ml-6 md:-mr-[50px] -mt-[118px] items-center justify-center bg-forest-50 dark:bg-forest-1000 z-50 ${
+          showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
+        } transition-opacity duration-300`}
+        suppressHydrationWarning
+      >
+        <LoadingAnimation />
+      </div>
       <div className="flex w-full pl-2 md:pl-6 mt-10">
-        <div className="flex flex-col w-full">
-          <div className="flex justify-between items-start w-full">
-            <div className="flex items-start">
-              <Heading className="text-2xl leading-snug text-[36px] mb-[19px]">
-                {chainData.name}
-              </Heading>
-              <div className="flex items-start space-x-[7px] font-inter uppercase">
-                <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm ml-[19px]">
-                  {chainData.technology}
-                </div>
-                {chainData.purpose.includes("(EVM)") ? (
-                  <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400  bg-forest-400 text-forest-50 dark:border-forest-500 dark:bg-forest-500 dark:text-forest-900 px-[4px] font-bold rounded-sm ml-[7px]">
-                    EVM
+        {chainData && master && (
+          <div className="flex flex-col w-full">
+            <div className="flex justify-between items-start w-full">
+              <div className="flex items-start">
+                <Heading className="text-2xl leading-snug text-[36px] mb-[19px]">
+                  {chainData.name}
+                </Heading>
+                <div className="flex items-start space-x-[7px] font-inter uppercase">
+                  <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm ml-[19px]">
+                    {chainData.technology}
                   </div>
-                ) : (
-                  <>
-                    {chainData.purpose.split(", ").map((purpose: string) => (
-                      <div
-                        key={purpose}
-                        className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 bg-forest-400 text-forest-50 dark:border-forest-500 dark:bg-forest-500 dark:text-forest-900 px-[4px] font-bold rounded-sm ml-[7px]"
-                      >
-                        {purpose}
-                      </div>
-                    ))}
-                  </>
-                )}
+                  {chainData.purpose.includes("(EVM)") ? (
+                    <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400  bg-forest-400 text-forest-50 dark:border-forest-500 dark:bg-forest-500 dark:text-forest-900 px-[4px] font-bold rounded-sm ml-[7px]">
+                      EVM
+                    </div>
+                  ) : (
+                    <>
+                      {chainData.purpose.split(", ").map((purpose: string) => (
+                        <div
+                          key={purpose}
+                          className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 bg-forest-400 text-forest-50 dark:border-forest-500 dark:bg-forest-500 dark:text-forest-900 px-[4px] font-bold rounded-sm ml-[7px]"
+                        >
+                          {purpose}
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="flex space-x-[10px] text-base md:text-sm xl:text-base items-start">
+                <Link
+                  href={chainData.block_explorer}
+                  className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  <Icon icon="feather:copy" className="w-4 h-4" />
+                  <div>Block Explorer</div>
+                </Link>
+                <Link
+                  href={chainData.website}
+                  className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  <Icon icon="feather:external-link" className="w-4 h-4" />
+                  <div>Website</div>
+                </Link>
+                <Link
+                  href={chainData.twitter}
+                  className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  <Icon icon="feather:twitter" className="w-4 h-4" />
+                  <div>
+                    <span className="">@</span>
+                    {chainData.twitter.split("https://twitter.com/")}
+                  </div>
+                </Link>
               </div>
             </div>
-            <div className="flex space-x-[10px] text-base md:text-sm xl:text-base items-start">
-              <Link
-                href={chainData.block_explorer}
-                className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
-                rel="noreferrer"
-                target="_blank"
-              >
-                <Icon icon="feather:copy" className="w-4 h-4" />
-                <div>Block Explorer</div>
-              </Link>
-              <Link
-                href={chainData.website}
-                className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
-                rel="noreferrer"
-                target="_blank"
-              >
-                <Icon icon="feather:external-link" className="w-4 h-4" />
-                <div>Website</div>
-              </Link>
-              <Link
-                href={chainData.twitter}
-                className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
-                rel="noreferrer"
-                target="_blank"
-              >
-                <Icon icon="feather:twitter" className="w-4 h-4" />
-                <div>
-                  <span className="">@</span>
-                  {chainData.twitter.split("https://twitter.com/")}
-                </div>
-              </Link>
-            </div>
+            <Subheading
+              className="text-[16px]"
+              leftIcon={
+                AllChainsByKeys[chainKey].icon && (
+                  <div>
+                    <Icon
+                      icon={`gtp:${AllChainsByKeys[chainKey].urlKey}-logo-monochrome`}
+                      className="w-6 h-6 mr-[12px] ml-[30px]"
+                    />
+                  </div>
+                )
+              }
+              iconContainerClassName="items-center mb-[32px]"
+            >
+              {AllChainsByKeys[chainKey].description
+                ? AllChainsByKeys[chainKey].description
+                : ""}
+            </Subheading>
+            {chartData && <ChainChart chain={chain} data={chartData} />}
           </div>
-          <Subheading
-            className="text-[16px]"
-            leftIcon={
-              AllChainsByKeys[chainKey].icon && (
-                <div>
-                  <Icon
-                    icon={`gtp:${AllChainsByKeys[chainKey].urlKey}-logo-monochrome`}
-                    className="w-6 h-6 mr-[12px] ml-[30px]"
-                  />
-                </div>
-              )
-            }
-            iconContainerClassName="items-center mb-[32px]"
-          >
-            {AllChainsByKeys[chainKey].description
-              ? AllChainsByKeys[chainKey].description
-              : ""}
-          </Subheading>
-          {chartData && <ChainChart chain={chain} data={chartData} />}
-        </div>
+        )}
       </div>
       {/*Time selection */}
     </>

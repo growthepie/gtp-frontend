@@ -98,14 +98,25 @@ export default function Home() {
 
   return (
     <>
-      <div
-        className={`fixed top-0 left-0 w-screen h-screen flex items-center justify-center bg-forest-50 dark:bg-forest-900 z-50 ${
-          showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
-        } transition-opacity duration-300`}
-        suppressHydrationWarning
-      >
-        <LoadingAnimation />
-      </div>
+      {!master && !landing ? (
+        <div
+          className={`fixed top-0 left-0 w-screen h-screen flex items-center justify-center bg-forest-50 dark:bg-forest-1000 z-50 ${
+            showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
+          } transition-opacity duration-300`}
+          suppressHydrationWarning
+        >
+          <LoadingAnimation />
+        </div>
+      ) : (
+        <div
+          className={`absolute w-full h-screen right flex -ml-2 -mr-2 md:-ml-6 md:-mr-[50px] -mt-[118px] items-center justify-center bg-forest-50 dark:bg-forest-1000 z-50 ${
+            showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
+          } transition-opacity duration-300`}
+          suppressHydrationWarning
+        >
+          <LoadingAnimation />
+        </div>
+      )}
       <div className="flex w-full mt-[65px]">
         <div className={`flex flex-col flex-1 pl-2 md:pl-6`}>
           <>
@@ -124,8 +135,8 @@ export default function Home() {
               </Heading>
             </div>
             <Subheading className="text-base leading-snug mb-[15px] px-[45px]">
-              Number of unique addresses interacting with more than one L2 in
-              a given week.
+              Number of unique addresses interacting with more than one L2 in a
+              given week.
             </Subheading>
             {data && landing && master && (
               <>
