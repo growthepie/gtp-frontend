@@ -57,8 +57,8 @@ const baseOptions: Highcharts.Options = {
   accessibility: { enabled: false },
   exporting: { enabled: false },
   chart: {
-    type: "column",
-    animation: true,
+    // type: "column",
+    animation: false,
     backgroundColor: "transparent",
     showAxes: false,
     zooming: {
@@ -144,6 +144,19 @@ const baseOptions: Highcharts.Options = {
     shared: true,
   },
   plotOptions: {
+    area: {
+      stacking: "normal",
+      events: {
+        legendItemClick: function () {
+          return false;
+        },
+      },
+      marker: {
+        radius: 0,
+      },
+      shadow: false,
+      animation: false,
+    },
     column: {
       grouping: true,
       stacking: "normal",
@@ -163,12 +176,10 @@ const baseOptions: Highcharts.Options = {
         },
       },
       marker: {
-        lineColor: "white",
         radius: 0,
-        symbol: "circle",
       },
       shadow: false,
-      animation: false,
+      animation: true,
     },
   },
   credits: {
@@ -549,8 +560,10 @@ export default function LandingChart({
       plotOptions: {
         area: {
           stacking: selectedScale === "percentage" ? "percent" : "normal",
+          animation: true,
         },
         column: {
+          animation: false,
           crisp: true,
         },
       },
@@ -977,81 +990,81 @@ export default function LandingChart({
     tooltipFormatter,
   ]);
 
-  useEffect(() => {
-    if (chartComponent.current) {
-      setZoomed(false);
-      switch (selectedScale) {
-        case "absolute":
-          chartComponent.current?.update({
-            plotOptions: {
-              series: {
-                stacking: "normal",
-              },
-            },
-            yAxis: {
-              type: "linear",
-            },
-            tooltip: {
-              formatter: tooltipFormatter,
-            },
-            series: filteredData.map((series: any) => ({
-              type: getSeriesType(series.name),
-            })),
-          });
-        case "log":
-          chartComponent.current?.update({
-            chart: {
-              type: "column",
-            },
-            plotOptions: {
-              series: {
-                stacking: "normal",
-              },
-            },
-            yAxis: {
-              type: "logarithmic",
-            },
-            tooltip: {
-              formatter: tooltipFormatter,
-            },
-            series: filteredData.map((series: any) => ({
-              type: getSeriesType(series.name),
-            })),
-          });
-        case "percentage":
-          chartComponent.current?.update({
-            chart: {
-              type: "area",
-            },
-            plotOptions: {
-              area: {
-                stacking: "percent",
-                marker: {
-                  enabled: false,
-                },
-              },
-            },
-            yAxis: {
-              type: "linear",
-            },
-            tooltip: {
-              formatter: tooltipFormatter,
-            },
-            series: filteredData.map((series: any) => ({
-              type: getSeriesType(series.name),
-            })),
-          });
-        default:
-          break;
-      }
-    }
-  }, [
-    selectedScale,
-    chartComponent,
-    filteredData,
-    tooltipFormatter,
-    getSeriesType,
-  ]);
+  // useEffect(() => {
+  //   if (chartComponent.current) {
+  //     setZoomed(false);
+  //     switch (selectedScale) {
+  //       case "absolute":
+  //         chartComponent.current?.update({
+  //           plotOptions: {
+  //             series: {
+  //               stacking: "normal",
+  //             },
+  //           },
+  //           yAxis: {
+  //             type: "linear",
+  //           },
+  //           tooltip: {
+  //             formatter: tooltipFormatter,
+  //           },
+  //           series: filteredData.map((series: any) => ({
+  //             type: getSeriesType(series.name),
+  //           })),
+  //         });
+  //       case "log":
+  //         chartComponent.current?.update({
+  //           chart: {
+  //             type: "column",
+  //           },
+  //           plotOptions: {
+  //             series: {
+  //               stacking: "normal",
+  //             },
+  //           },
+  //           yAxis: {
+  //             type: "logarithmic",
+  //           },
+  //           tooltip: {
+  //             formatter: tooltipFormatter,
+  //           },
+  //           series: filteredData.map((series: any) => ({
+  //             type: getSeriesType(series.name),
+  //           })),
+  //         });
+  //       case "percentage":
+  //         chartComponent.current?.update({
+  //           chart: {
+  //             type: "area",
+  //           },
+  //           plotOptions: {
+  //             area: {
+  //               stacking: "percent",
+  //               marker: {
+  //                 enabled: false,
+  //               },
+  //             },
+  //           },
+  //           yAxis: {
+  //             type: "linear",
+  //           },
+  //           tooltip: {
+  //             formatter: tooltipFormatter,
+  //           },
+  //           series: filteredData.map((series: any) => ({
+  //             type: getSeriesType(series.name),
+  //           })),
+  //         });
+  //       default:
+  //         break;
+  //     }
+  //   }
+  // }, [
+  //   selectedScale,
+  //   chartComponent,
+  //   filteredData,
+  //   tooltipFormatter,
+  //   getSeriesType,
+  // ]);
 
   useEffect(() => {
     if (chartComponent.current) {
