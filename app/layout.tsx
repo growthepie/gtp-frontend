@@ -2,15 +2,9 @@ import "./globals.css";
 import { Providers } from "./providers";
 import CookieConsent from "@/components/layout/CookieConsent";
 import { Raleway, Inter } from "next/font/google";
-import type { Metadata } from "next";
 import Header from "@/components/layout/Header";
 import SidebarContainer from "@/components/layout/SidebarContainer";
 import Head from "./head";
-
-// export const metadata: Metadata = {
-//   title: "Home",
-//   description: "Welcome to Next.js",
-// };
 
 // If loading a variable font, you don't need to specify the font weight
 const raleway = Raleway({

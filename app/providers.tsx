@@ -3,6 +3,7 @@ import { ThemeProvider } from "next-themes";
 import { SWRConfig } from "swr";
 import { addCollection } from "@iconify/react";
 import GTPIcons from "@/icons/gtp.json";
+import { UIContextProvider } from "@/contexts/UIContext";
 
 // load icons
 addCollection(GTPIcons);
@@ -17,7 +18,7 @@ export function Providers({ children }) {
           refreshInterval: 1000 * 60 * 60, // 1 hour
         }}
       >
-        {children}
+        <UIContextProvider>{children}</UIContextProvider>
       </SWRConfig>
     </ThemeProvider>
   );

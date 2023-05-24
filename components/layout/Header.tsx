@@ -1,19 +1,14 @@
 "use client";
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Sidebar from "./Sidebar";
 import { Icon } from "@iconify/react";
 import EthUsdSwitch from "./EthUsdSwitch";
 import DarkModeSwitch from "./DarkModeSwitch";
+import { useUIContext } from "@/contexts/UIContext";
 
 export default function Header() {
-  const [startSidebarOpen, setStartSidebarOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  // useEffect(() => {
-  //   setStartSidebarOpen(isLargeScreen);
-  // }, [isLargeScreen]);
+  const { isSidebarOpen, toggleSidebar } = useUIContext();
 
   return (
     <header className="flex justify-between space-x-6 items-center max-w-[1600px] w-full mx-auto px-[50px] pt-[50px]">
@@ -27,9 +22,6 @@ export default function Header() {
                 </button>
               }
               isMobile={true}
-              open={startSidebarOpen}
-              isOpen={isSidebarOpen}
-              setIsOpen={setIsSidebarOpen}
             />
             <Link href="" className="absolute top-2 left-20">
               <div className="h-[32px] w-[32px] absolute">

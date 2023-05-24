@@ -6,17 +6,10 @@ import HighchartsReact from "highcharts-react-official";
 import Highcharts, {
   AxisLabelsFormatterContextObject,
 } from "highcharts/highstock";
-import {
-  useState,
-  useEffect,
-  useMemo,
-  useRef,
-  useCallback,
-  createRef,
-} from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useSessionStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
-import { debounce, merge } from "lodash";
+import { merge } from "lodash";
 import { Switch } from "../Switch";
 import { AllChainsByKeys } from "@/lib/chains";
 import d3 from "d3";
@@ -24,7 +17,7 @@ import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
 import { Sources } from "@/lib/datasources";
-import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import { useUIContext } from "@/contexts/UIContext";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -37,20 +30,6 @@ const COLORS = {
 const isArray = (obj: any) =>
   Object.prototype.toString.call(obj) === "[object Array]";
 const splat = (obj: any) => (isArray(obj) ? obj : [obj]);
-
-// const useRefDimensions = (ref) => {
-//   const [dimensions, setDimensions] = useState({ width: 1, height: 2 });
-//   useEffect(() => {
-//     if (ref.current) {
-//       const { current } = ref;
-//       const boundingRect = current.getBoundingClientRect();
-//       const { width, height } = boundingRect;
-//       setDimensions({ width: Math.round(width), height: Math.round(height) });
-//     }
-//   }, [ref]);
-//   console.log(dimensions);
-//   return dimensions;
-// };
 
 const baseOptions: Highcharts.Options = {
   accessibility: { enabled: false },
@@ -231,6 +210,8 @@ export default function LandingChart({
 
     setHighchartsLoaded(true);
   }, []);
+
+  const { isSidebarOpen } = useUIContext();
 
   const { theme } = useTheme();
 
@@ -989,106 +970,22 @@ export default function LandingChart({
     tooltipFormatter,
   ]);
 
-  // useEffect(() => {
-  //   if (chartComponent.current) {
-  //     setZoomed(false);
-  //     switch (selectedScale) {
-  //       case "absolute":
-  //         chartComponent.current?.update({
-  //           plotOptions: {
-  //             series: {
-  //               stacking: "normal",
-  //             },
-  //           },
-  //           yAxis: {
-  //             type: "linear",
-  //           },
-  //           tooltip: {
-  //             formatter: tooltipFormatter,
-  //           },
-  //           series: filteredData.map((series: any) => ({
-  //             type: getSeriesType(series.name),
-  //           })),
-  //         });
-  //       case "log":
-  //         chartComponent.current?.update({
-  //           chart: {
-  //             type: "column",
-  //           },
-  //           plotOptions: {
-  //             series: {
-  //               stacking: "normal",
-  //             },
-  //           },
-  //           yAxis: {
-  //             type: "logarithmic",
-  //           },
-  //           tooltip: {
-  //             formatter: tooltipFormatter,
-  //           },
-  //           series: filteredData.map((series: any) => ({
-  //             type: getSeriesType(series.name),
-  //           })),
-  //         });
-  //       case "percentage":
-  //         chartComponent.current?.update({
-  //           chart: {
-  //             type: "area",
-  //           },
-  //           plotOptions: {
-  //             area: {
-  //               stacking: "percent",
-  //               marker: {
-  //                 enabled: false,
-  //               },
-  //             },
-  //           },
-  //           yAxis: {
-  //             type: "linear",
-  //           },
-  //           tooltip: {
-  //             formatter: tooltipFormatter,
-  //           },
-  //           series: filteredData.map((series: any) => ({
-  //             type: getSeriesType(series.name),
-  //           })),
-  //         });
-  //       default:
-  //         break;
-  //     }
-  //   }
-  // }, [
-  //   selectedScale,
-  //   chartComponent,
-  //   filteredData,
-  //   tooltipFormatter,
-  //   getSeriesType,
-  // ]);
-
   useEffect(() => {
     if (chartComponent.current) {
       chartComponent.current.reflow();
     }
   }, [chartComponent, filteredData]);
 
-  const [squareRef, { width, height }] = useElementSizeObserver();
-
   useEffect(() => {
-    debounce(() => {
+    setTimeout(() => {
       if (chartComponent.current) {
-        // chartComponent.current.reflow();
-        const w = chartComponent.current.chartWidth;
-        const h = chartComponent.current.chartHeight;
-
-        chartComponent.current.setSize(width, h, {
-          duration: 66,
-        });
+        chartComponent.current.reflow();
       }
-    }, 150)();
-  }, [width]);
+    }, 300);
+  }, [isSidebarOpen]);
 
   return (
-    <div className="w-full mb-[6rem] mt-[3rem] relative" ref={squareRef}>
+    <div className="w-full mb-[6rem] mt-[3rem] relative">
       <div className="flex w-full justify-between items-center absolute -top-[3rem] left-0 right-0 text-xs rounded-full bg-forest-50 dark:bg-forest-900 p-0.5">
         <div className="flex justify-center items-center space-x-1">
           <button

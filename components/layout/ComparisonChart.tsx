@@ -13,7 +13,7 @@ import {
   ReactNode,
 } from "react";
 import { useLocalStorage } from "usehooks-ts";
-import { debounce, merge } from "lodash";
+import { merge } from "lodash";
 // import { theme as customTheme } from "tailwind.config.js";
 import { useTheme } from "next-themes";
 import { Switch } from "../Switch";
@@ -24,7 +24,7 @@ import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
 import { Sources } from "@/lib/datasources";
-import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import { useUIContext } from "@/contexts/UIContext";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -33,9 +33,6 @@ const COLORS = {
   LABEL_HOVER: "#6c7696",
   TOOLTIP_BG: "#1b2135", // mignight-express but lighter
   ANNOTATION_BG: "rgb(215, 223, 222)",
-  // visx
-  // SERIES: ["#0b7285", "#66d9e8", "#fcc419", "#ff8787", "#9c36b5", "#cc5de8", "#a61e4d"],
-  // chart.js
   SERIES: ["#36a2eb", "#ff6384", "#8142ff", "#ff9f40", "#ffcd56", "#4bc0c0"],
 };
 const isArray = (obj: any) =>
@@ -1086,20 +1083,15 @@ export default function ComparisonChart({
     }
   }, [chartComponent, filteredData]);
 
-  const [squareRef, { width, height }] = useElementSizeObserver();
+  const { isSidebarOpen } = useUIContext();
 
   useEffect(() => {
-    debounce(() => {
+    setTimeout(() => {
       if (chartComponent.current) {
-        const w = chartComponent.current.chartWidth;
-        const h = chartComponent.current.chartHeight;
-
-        chartComponent.current.setSize(width, h, {
-          duration: 66,
-        });
+        chartComponent.current.reflow();
       }
-    }, 150)();
-  }, [width]);
+    }, 300);
+  }, [isSidebarOpen]);
 
   return (
     <div className="w-full flex-col relative">
@@ -1179,10 +1171,7 @@ export default function ComparisonChart({
             <div className="w-full lg:w-1/2 xl:w-7/12 relative">
               <div className="w-full p-0 py-4 xl:pl-4 xl:py-14">
                 <div className="w-full h-[26rem] relative rounded-xl">
-                  <div
-                    className="absolute w-full h-[24rem] top-4"
-                    ref={squareRef}
-                  >
+                  <div className="absolute w-full h-[24rem] top-4">
                     <HighchartsReact
                       highcharts={Highcharts}
                       options={options}

@@ -1,18 +1,12 @@
 "use client";
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Sidebar from "./Sidebar";
-import EthUsdSwitch from "./EthUsdSwitch";
 import { Icon } from "@iconify/react";
+import { useUIContext } from "@/contexts/UIContext";
 
 export default function SidebarContainer() {
-  const [startSidebarOpen, setStartSidebarOpen] = useState(true);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  // useEffect(() => {
-  //   setStartSidebarOpen(isLargeScreen);
-  // }, [isLargeScreen]);
+  const { isSidebarOpen, toggleSidebar } = useUIContext();
 
   return (
     <div className="pt-8 pl-0 bg-forest-50 dark:bg-[#1F2726] mix-h-screen max-h-screen sticky top-0 left-0 hidden md:flex flex-col overflow-hidden space-y-6 border-r-0 border-forest-500 dark:border-black/50">
@@ -44,7 +38,7 @@ export default function SidebarContainer() {
                   isSidebarOpen ? "rotate-180" : ""
                 }`}
                 onClick={() => {
-                  setIsSidebarOpen(isSidebarOpen ? false : true);
+                  toggleSidebar();
                 }}
               />
             </div>
@@ -70,7 +64,7 @@ export default function SidebarContainer() {
                 icon="feather:log-out"
                 className={`w-[13px] h-[13px] cursor-pointer mt-2`}
                 onClick={() => {
-                  setIsSidebarOpen(isSidebarOpen ? false : true);
+                  toggleSidebar();
                 }}
               />
             </div>
@@ -84,9 +78,6 @@ export default function SidebarContainer() {
             <Icon icon="feather:menu" className="h-6 w-6" />
           </button>
         }
-        open={startSidebarOpen}
-        isOpen={isSidebarOpen}
-        setIsOpen={setIsSidebarOpen}
       />
     </div>
   );

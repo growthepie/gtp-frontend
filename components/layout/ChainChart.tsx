@@ -5,21 +5,17 @@ import Highcharts from "highcharts";
 import highchartsAnnotations from "highcharts/modules/annotations";
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-// import { Card } from "@/components/Card";
 import { useLocalStorage } from "usehooks-ts";
 import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
-// import { theme as customTheme } from "tailwind.config.js";
 import { useTheme } from "next-themes";
-import _, { debounce } from "lodash";
-import { AllChains } from "@/lib/chains";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import d3 from "d3";
 import { AllChainsByKeys } from "@/lib/chains";
 
-import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import { navigationItems } from "@/lib/navigation";
+import { useUIContext } from "@/contexts/UIContext";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -71,6 +67,7 @@ export default function ChainChart({
   const timespans = useMemo(() => {
     let max = 0;
     let min = Infinity;
+    const now = Date.now();
 
     Object.keys(data.metrics).forEach((key) => {
       max = Math.max(
@@ -88,26 +85,30 @@ export default function ChainChart({
       "90d": {
         label: "90 days",
         value: 90,
-        xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
+        xMin: max - 90 * 24 * 60 * 60 * 1000,
         xMax: max,
+        daysDiff: 90,
       },
       "180d": {
         label: "180 days",
         value: 180,
-        xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
+        xMin: max - 180 * 24 * 60 * 60 * 1000,
         xMax: max,
+        daysDiff: 180,
       },
       "365d": {
         label: "1 year",
         value: 365,
-        xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
+        xMin: max - 365 * 24 * 60 * 60 * 1000,
         xMax: max,
+        daysDiff: 365,
       },
       max: {
         label: "Maximum",
         value: 0,
         xMin: min,
         xMax: max,
+        daysDiff: Math.round((now - min) / (1000 * 60 * 60 * 24)),
       },
     };
   }, [data]);
@@ -395,27 +396,36 @@ export default function ChainChart({
     [chartComponents]
   );
 
-  useEffect(() => {
-    const daysDiff = Math.round(
-      (timespans[selectedTimespan].xMax - timespans[selectedTimespan].xMin) /
-        (1000 * 60 * 60 * 24)
-    );
+  const resetXAxisExtremes = useCallback(() => {
     if (chartComponents.current) {
       chartComponents.current.forEach((chart) => {
         if (!chart) return;
 
-        const pixelsPerDay = chart.plotWidth / daysDiff;
+        const pixelsPerDay =
+          chart.plotWidth / timespans[selectedTimespan].daysDiff;
 
         // 15px padding on each side
         const paddingMilliseconds = (15 / pixelsPerDay) * 24 * 60 * 60 * 1000;
 
         chart.xAxis[0].setExtremes(
-          timespans[selectedTimespan].xMin - paddingMilliseconds,
+          timespans[selectedTimespan].xMin -
+            paddingMilliseconds -
+            24 * 60 * 60 * 1000 * 0.5,
           timespans[selectedTimespan].xMax + paddingMilliseconds
         );
       });
     }
   }, [selectedTimespan, chartComponents, timespans]);
+
+  useEffect(() => {
+    if (chartComponents.current) {
+      chartComponents.current.forEach((chart) => {
+        if (!chart) return;
+
+        resetXAxisExtremes();
+      });
+    }
+  }, [resetXAxisExtremes]);
 
   const options: Highcharts.Options = {
     accessibility: { enabled: false },
@@ -670,24 +680,21 @@ export default function ChainChart({
     chartComponents.current.forEach((chart) => {
       chart.reflow();
     });
-  }, [chartComponents]);
+  }, [chartComponents, selectedTimespan, timespans]);
 
-  const [squareRef, { width, height }] = useElementSizeObserver();
+  const { isSidebarOpen } = useUIContext();
+
+  const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
   useEffect(() => {
-    debounce(() => {
-      chartComponents.current.forEach((chart) => {
-        if (!chart) return;
-
-        const w = chart.chartWidth;
-        const h = chart.chartHeight;
-
-        chart.setSize(width, h, {
-          duration: 66,
+    delay(500).then(() => {
+      chartComponents.current &&
+        chartComponents.current.forEach((chart) => {
+          if (!chart) return;
+          chart.reflow();
         });
-      });
-    }, 300)();
-  }, [width]);
+    });
+  }, [isSidebarOpen]);
 
   if (!data) {
     return (
@@ -747,10 +754,7 @@ export default function ChainChart({
           {Object.keys(data.metrics).map((key, i) => {
             return (
               <div key={key} className="w-full">
-                <div
-                  className="w-full h-[176px] relative"
-                  ref={i === 0 ? squareRef : null}
-                >
+                <div className="w-full h-[176px] relative">
                   <div className="absolute w-full h-full bg-forest-50 dark:bg-forest-900 rounded-[15px]"></div>
                   <div className="absolute w-full h-[142px] top-[49px]">
                     <HighchartsReact
@@ -763,34 +767,35 @@ export default function ChainChart({
                           events: {
                             load: function () {
                               const chart = this;
-                              const lastPoint =
-                                chart.series[0].points[
-                                  chart.series[0].points.length - 1
-                                ];
-                              // draw vertical line from last point's x and y position to the top of the chart
-                              const el = chart.renderer
-                                .path([
-                                  "M",
-                                  lastPoint.plotX,
-                                  lastPoint.plotY,
-                                  "L",
-                                  lastPoint.plotX,
-                                  chart.plotTop,
-                                ])
-                                .attr({
-                                  stroke: hexToRgba(
-                                    AllChainsByKeys[data.chain_id].colors[
-                                      theme ?? "dark"
-                                    ][0] + "11",
-                                    0.5
-                                  ),
-                                  "stroke-width": 1,
-                                  "stroke-dasharray": "4 4 4 4",
-                                  zIndex: 10,
-                                })
-                                .add();
+                              chart.reflow();
+                              // const lastPoint =
+                              //   chart.series[0].points[
+                              //     chart.series[0].points.length - 1
+                              //   ];
+                              // // draw vertical line from last point's x and y position to the top of the chart
+                              // const el = chart.renderer
+                              //   .path([
+                              //     "M",
+                              //     lastPoint.plotX,
+                              //     lastPoint.plotY,
+                              //     "L",
+                              //     lastPoint.plotX,
+                              //     chart.plotTop,
+                              //   ])
+                              //   .attr({
+                              //     stroke: hexToRgba(
+                              //       AllChainsByKeys[data.chain_id].colors[
+                              //         theme ?? "dark"
+                              //       ][0] + "11",
+                              //       0.5
+                              //     ),
+                              //     "stroke-width": 1,
+                              //     "stroke-dasharray": "4 4 4 4",
+                              //     zIndex: 10,
+                              //   })
+                              //   .add();
 
-                              lastPoints[i] = el;
+                              // lastPoints[i] = el;
                             },
                             render: function () {
                               const chart = this;
@@ -825,6 +830,21 @@ export default function ChainChart({
                                 .add();
 
                               lastPoints[i] = el;
+
+                              // const pixelsPerDay =
+                              //   chart.plotWidth /
+                              //   timespans[selectedTimespan].daysDiff;
+
+                              // // 15px padding on each side
+                              // const paddingMilliseconds =
+                              //   (15 / pixelsPerDay) * 24 * 60 * 60 * 1000;
+
+                              // chart.xAxis[0].setExtremes(
+                              //   timespans[selectedTimespan].xMin -
+                              //     paddingMilliseconds,
+                              //   timespans[selectedTimespan].xMax +
+                              //     paddingMilliseconds
+                              // );
                             },
                           },
                         },
@@ -907,24 +927,8 @@ export default function ChainChart({
                   <div>{getIcon(key)}</div>
                 </div>
                 <div className="w-full h-[15px] relative text-[10px] z-30">
-                  <div className="absolute left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end">
-                    {/* {new Date(
-                    timespans[selectedTimespan].xMin
-                  ).toLocaleDateString(undefined, {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })} */}
-                  </div>
-                  <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end">
-                    {/* {new Date(
-                    timespans[selectedTimespan].xMax
-                  ).toLocaleDateString(undefined, {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })} */}
-                  </div>
+                  <div className="absolute left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
+                  <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
                 </div>
                 {(key === "stables_mcap" || key === "fees") && (
                   <div
@@ -936,6 +940,7 @@ export default function ChainChart({
                       {new Date(
                         timespans[selectedTimespan].xMin
                       ).toLocaleDateString(undefined, {
+                        timeZone: "UTC",
                         month: "short",
                         day: "numeric",
                         year: "numeric",
@@ -945,6 +950,7 @@ export default function ChainChart({
                       {new Date(
                         timespans[selectedTimespan].xMax
                       ).toLocaleDateString(undefined, {
+                        timeZone: "UTC",
                         month: "short",
                         day: "numeric",
                         year: "numeric",
