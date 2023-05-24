@@ -118,7 +118,7 @@ export default function Home() {
         </div>
       )}
       <div className="flex w-full mt-[65px]">
-        <div className={`flex flex-col flex-1 pl-2 md:pl-6`}>
+        <div className={`flex flex-col flex-1 pl-2 md:pl-6 w-full`}>
           <>
             <Heading className="text-2xl leading-snug md:text-[36px] mb-[30px]">
               Growing Ethereum’s Ecosystem Together
@@ -135,8 +135,8 @@ export default function Home() {
               </Heading>
             </div>
             <Subheading className="text-base leading-snug mb-[15px] px-[45px]">
-              Number of unique addresses interacting with more than one L2 in a
-              given week.
+              Number of unique addresses interacting with one or multiple Layer 2s 
+              in a given week.
             </Subheading>
             {data && landing && master && (
               <>

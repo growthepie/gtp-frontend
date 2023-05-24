@@ -293,9 +293,9 @@ const MetricsTable = ({
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     className={`w-6 h-6 ${
                       item.chain.key === "ethereum"
                         ? showEthereumMainnet
@@ -329,39 +329,6 @@ const MetricsTable = ({
                   />
                 </div>
               </div>
-              {/* {item.chain.key === "ethereum" ? (
-                <>
-                  {showEthereumMainnet ? (
-                    <div className="absolute -right-[20px]">
-                      <div className="p-1 rounded-full bg-forest-50">
-                        <Icon icon="feather:check-circle " className="w-6 h-6" />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="absolute -right-[20px]">
-                      <div className="p-1 rounded-full bg-forest-50">
-                        <Icon icon="feather:circle" className="w-6 h-6" />
-                      </div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  {selectedChains.includes(item.chain.key) ? (
-                    <div className="absolute -right-[20px]">
-                      <div className="p-1 rounded-full bg-forest-50">
-                        <Icon icon="feather:check-circle" className="w-6 h-6" />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="absolute -right-[20px]">
-                      <div className="p-1 rounded-full bg-forest-50">
-                        <Icon icon="feather:circle" className="w-6 h-6" />
-                      </div>
-                    </div>
-                  )}
-                </>
-              )} */}
             </div>
           </animated.div>
         ))}

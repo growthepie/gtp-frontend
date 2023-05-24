@@ -17,8 +17,9 @@ import { Icon } from "@iconify/react";
 import Image from "next/image";
 import d3 from "d3";
 import { AllChainsByKeys } from "@/lib/chains";
-import { items } from "./Sidebar";
+
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import { navigationItems } from "@/lib/navigation";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -134,8 +135,6 @@ export default function ChainChart({
 
   const formatNumber = useCallback(
     (value: number | string, isAxis = false) => {
-      const prefix = prefixes[0] ?? "";
-
       return isAxis
         ? selectedScale !== "percentage"
           ? d3.format(".2s")(value).replace(/G/, "B")
@@ -152,18 +151,19 @@ export default function ChainChart({
   const prefixes = useMemo(() => {
     if (!data) return [];
 
-    const p: string[] = [];
+    const p: {
+      [key: string]: string;
+    } = {};
 
     Object.keys(data.metrics).forEach((key) => {
       const types = data.metrics[key].daily.types;
       if (types.length > 2) {
-        if (showUsd && types.includes("usd")) p.push("$");
-        else p.push("Ξ");
+        if (showUsd && types.includes("usd")) p[key] = "$";
+        else p[key] = "Ξ";
       } else {
-        p.push("");
+        p[key] = "";
       }
     });
-    console.log("prefixes:", p);
     return p;
   }, [data, showUsd]);
 
@@ -227,11 +227,11 @@ export default function ChainChart({
 
       if (!points || !x) return;
 
-      const chart = points[0].series.chart;
+      const series = points[0].series;
 
       const date = new Date(x);
 
-      const prefix = prefixes[chart.index] ?? "";
+      const prefix = prefixes[series.name] ?? "";
 
       const dateString = date.toLocaleDateString(undefined, {
         timeZone: "UTC",
@@ -330,7 +330,7 @@ export default function ChainChart({
 
       if (chartComponents.current && chartComponents.current.length > 1) {
         chartComponents.current.forEach((chart) => {
-          if (chart.index === hoveredChart.index || !chart) return;
+          if (!chart || chart.index === hoveredChart.index) return;
 
           // set series state
           if (event.type === "mouseOver") {
@@ -357,7 +357,7 @@ export default function ChainChart({
 
       if (chartComponents.current && chartComponents.current.length > 1) {
         chartComponents.current.forEach((chart) => {
-          if (chart.index === hoveredChart.index || !chart) return;
+          if (!chart || chart.index === hoveredChart.index) return;
 
           if (event.type === "mouseOver" || event.type === "mouseMove") {
             if (chart.series[hoveredSeries.index]) {
@@ -402,6 +402,8 @@ export default function ChainChart({
     );
     if (chartComponents.current) {
       chartComponents.current.forEach((chart) => {
+        if (!chart) return;
+
         const pixelsPerDay = chart.plotWidth / daysDiff;
 
         // 15px padding on each side
@@ -607,23 +609,6 @@ export default function ChainChart({
           symbol: "circle",
         },
         states: {
-          // hover: {
-          //   enabled: true,
-          //   // halo: {
-          //   //   size: 5,
-          //   //   opacity: 1,
-          //   //   attributes: {
-          //   //     fill:
-          //   //       AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][0] +
-          //   //       "99",
-          //   //     stroke:
-          //   //       AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][0] +
-          //   //       "66",
-          //   //     "stroke-width": 0,
-          //   //   },
-          //   // },
-          //   // brightness: 0.3,
-          // },
           inactive: {
             enabled: true,
             opacity: 0.6,
@@ -677,6 +662,10 @@ export default function ChainChart({
     }
   };
 
+  const lastPoints = useMemo<{
+    [key: string]: Highcharts.SVGElement;
+  }>(() => ({}), []);
+
   useEffect(() => {
     chartComponents.current.forEach((chart) => {
       chart.reflow();
@@ -688,6 +677,8 @@ export default function ChainChart({
   useEffect(() => {
     debounce(() => {
       chartComponents.current.forEach((chart) => {
+        if (!chart) return;
+
         const w = chart.chartWidth;
         const h = chart.chartHeight;
 
@@ -753,158 +744,217 @@ export default function ChainChart({
 
       {data && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-[15px]">
-          {Object.keys(data.metrics).map((key, i) => (
-            <div key={key} className="w-full">
-              <div
-                className="w-full h-[176px] relative"
-                ref={i === 0 ? squareRef : null}
-              >
-                <div className="absolute w-full h-full bg-forest-50 dark:bg-forest-900 rounded-[15px]"></div>
-                <div className="absolute w-full h-[142px] top-[49px]">
-                  <HighchartsReact
-                    highcharts={Highcharts}
-                    options={{
-                      ...options,
-                      chart: {
-                        index: i,
-                        ...options.chart,
-                      },
-                      yAxis: {
-                        ...options.yAxis,
-                        labels: {
-                          ...(options.yAxis as Highcharts.YAxisOptions).labels,
-                          formatter: function (
-                            t: Highcharts.AxisLabelsFormatterContextObject
-                          ) {
-                            return prefixes[i] + formatNumber(t.value, true);
-                          },
-                        },
-                      },
-
-                      series: [
-                        {
-                          data:
-                            !showUsd &&
-                            data.metrics[key].daily.types.includes("eth")
-                              ? data.metrics[key].daily.data.map((d) => [
-                                  d[0],
-                                  d[
-                                    data.metrics[key].daily.types.indexOf("eth")
-                                  ],
+          {Object.keys(data.metrics).map((key, i) => {
+            return (
+              <div key={key} className="w-full">
+                <div
+                  className="w-full h-[176px] relative"
+                  ref={i === 0 ? squareRef : null}
+                >
+                  <div className="absolute w-full h-full bg-forest-50 dark:bg-forest-900 rounded-[15px]"></div>
+                  <div className="absolute w-full h-[142px] top-[49px]">
+                    <HighchartsReact
+                      highcharts={Highcharts}
+                      options={{
+                        ...options,
+                        chart: {
+                          index: i,
+                          ...options.chart,
+                          events: {
+                            load: function () {
+                              const chart = this;
+                              const lastPoint =
+                                chart.series[0].points[
+                                  chart.series[0].points.length - 1
+                                ];
+                              // draw vertical line from last point's x and y position to the top of the chart
+                              const el = chart.renderer
+                                .path([
+                                  "M",
+                                  lastPoint.plotX,
+                                  lastPoint.plotY,
+                                  "L",
+                                  lastPoint.plotX,
+                                  chart.plotTop,
                                 ])
-                              : data.metrics[key].daily.data,
-                          showInLegend: false,
-                          marker: {
-                            enabled: false,
-                          },
-                          point: {
-                            events: {
-                              mouseOver: pointHover,
-                              mouseOut: pointHover,
+                                .attr({
+                                  stroke: hexToRgba(
+                                    AllChainsByKeys[data.chain_id].colors[
+                                      theme ?? "dark"
+                                    ][0] + "11",
+                                    0.5
+                                  ),
+                                  "stroke-width": 1,
+                                  "stroke-dasharray": "4 4 4 4",
+                                  zIndex: 10,
+                                })
+                                .add();
+
+                              lastPoints[i] = el;
+                            },
+                            render: function () {
+                              const chart = this;
+                              const lastPoint =
+                                chart.series[0].points[
+                                  chart.series[0].points.length - 1
+                                ];
+                              // draw vertical line from last point's x and y position to the top of the chart
+                              if (lastPoints[i]) {
+                                lastPoints[i].destroy();
+                              }
+                              const el = chart.renderer
+                                .path([
+                                  "M",
+                                  lastPoint.plotX,
+                                  lastPoint.plotY,
+                                  "L",
+                                  lastPoint.plotX,
+                                  chart.plotTop,
+                                ])
+                                .attr({
+                                  stroke: hexToRgba(
+                                    AllChainsByKeys[data.chain_id].colors[
+                                      theme ?? "dark"
+                                    ][0] + "11",
+                                    0.5
+                                  ),
+                                  "stroke-width": 1,
+                                  "stroke-dasharray": "4 4 4 4",
+                                  zIndex: 10,
+                                })
+                                .add();
+
+                              lastPoints[i] = el;
                             },
                           },
                         },
-                      ],
-                    }}
-                    ref={(chart) => {
-                      if (chart) {
-                        chartComponents.current[i] = chart.chart;
-                      }
-                    }}
-                  />
-                </div>
-                <div className="absolute top-[14px] w-full flex justify-between items-center px-[26px]">
-                  <div className="text-[20px] leading-snug font-bold">
-                    {items[1].options.find((o) => o.key === key)?.label}
+                        yAxis: {
+                          ...options.yAxis,
+                          labels: {
+                            ...(options.yAxis as Highcharts.YAxisOptions)
+                              .labels,
+                            formatter: function (
+                              t: Highcharts.AxisLabelsFormatterContextObject
+                            ) {
+                              return (
+                                prefixes[key] + formatNumber(t.value, true)
+                              );
+                            },
+                          },
+                        },
+
+                        series: [
+                          {
+                            name: key,
+                            data:
+                              !showUsd &&
+                              data.metrics[key].daily.types.includes("eth")
+                                ? data.metrics[key].daily.data.map((d) => [
+                                    d[0],
+                                    d[2],
+                                  ])
+                                : data.metrics[key].daily.data.map((d) => [
+                                    d[0],
+                                    d[1],
+                                  ]),
+                            showInLegend: false,
+                            marker: {
+                              enabled: false,
+                            },
+                            point: {
+                              events: {
+                                mouseOver: pointHover,
+                                mouseOut: pointHover,
+                              },
+                            },
+                          },
+                        ],
+                      }}
+                      ref={(chart) => {
+                        if (chart) {
+                          chartComponents.current[i] = chart.chart;
+                        }
+                      }}
+                    />
                   </div>
-                  <div className="text-[18px] leading-snug font-medium flex space-x-[2px]">
-                    <div>{prefixes[i]} </div>
-                    {/* {data.metrics[key].daily.data[
-                      data.metrics[key].daily.data.length - 1
-                    ][
-                      !showUsd && data.metrics[key].daily.types.includes("eth")
-                        ? data.metrics[key].daily.types.indexOf("eth")
-                        : 1
-                    ].toLocaleString(
-                      undefined,
-                      data.metrics[key].daily.types.includes("eth")
-                        ? {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }
-                        : {
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 0,
-                          }
-                    )} */}
-                    <div>
-                      {Intl.NumberFormat("en-US", {
-                        notation: "compact",
-                        maximumFractionDigits: 2,
-                      }).format(
-                        data.metrics[key].daily.data[
-                          data.metrics[key].daily.data.length - 1
-                        ][
-                          data.metrics[key].daily.types.includes("eth")
-                            ? !showUsd
-                              ? data.metrics[key].daily.types.indexOf("eth")
-                              : data.metrics[key].daily.types.indexOf("usd")
-                            : 1
-                        ]
-                      )}
+                  <div className="absolute top-[14px] w-full flex justify-between items-center px-[26px]">
+                    <div className="text-[20px] leading-snug font-bold">
+                      {
+                        navigationItems[1].options.find((o) => o.key === key)
+                          ?.label
+                      }
+                    </div>
+                    <div className="text-[18px] leading-snug font-medium flex space-x-[2px]">
+                      <div>{prefixes[key]}</div>
+                      <div>
+                        {Intl.NumberFormat("en-US", {
+                          notation: "compact",
+                          maximumFractionDigits: 2,
+                        }).format(
+                          data.metrics[key].daily.data[
+                            data.metrics[key].daily.data.length - 1
+                          ][
+                            data.metrics[key].daily.types.includes("eth")
+                              ? !showUsd
+                                ? data.metrics[key].daily.types.indexOf("eth")
+                                : data.metrics[key].daily.types.indexOf("usd")
+                              : 1
+                          ]
+                        )}
+                      </div>
                     </div>
                   </div>
+                  <div>{getIcon(key)}</div>
                 </div>
-                <div>{getIcon(key)}</div>
-              </div>
-              <div className="w-full h-[15px] relative text-[10px] z-30">
-                <div className="absolute left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end">
-                  {/* {new Date(
+                <div className="w-full h-[15px] relative text-[10px] z-30">
+                  <div className="absolute left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end">
+                    {/* {new Date(
                     timespans[selectedTimespan].xMin
                   ).toLocaleDateString(undefined, {
                     month: "short",
                     day: "numeric",
                     year: "numeric",
                   })} */}
-                </div>
-                <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end">
-                  {/* {new Date(
+                  </div>
+                  <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end">
+                    {/* {new Date(
                     timespans[selectedTimespan].xMax
                   ).toLocaleDateString(undefined, {
                     month: "short",
                     day: "numeric",
                     year: "numeric",
                   })} */}
+                  </div>
                 </div>
+                {(key === "stables_mcap" || key === "fees") && (
+                  <div
+                    className={`w-full h-[15px] relative text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                      key === "stables_mcap" ? "hidden lg:block" : ""
+                    }`}
+                  >
+                    <div className="absolute left-[15px] align-bottom flex items-end z-30">
+                      {new Date(
+                        timespans[selectedTimespan].xMin
+                      ).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </div>
+                    <div className="absolute right-[15px] align-bottom flex items-end z-30">
+                      {new Date(
+                        timespans[selectedTimespan].xMax
+                      ).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
-              {(key === "stables_mcap" || key === "fees") && (
-                <div
-                  className={`w-full h-[15px] relative text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
-                    key === "stables_mcap" ? "hidden lg:block" : ""
-                  }`}
-                >
-                  <div className="absolute left-[15px] align-bottom flex items-end z-30">
-                    {new Date(
-                      timespans[selectedTimespan].xMin
-                    ).toLocaleDateString(undefined, {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </div>
-                  <div className="absolute right-[15px] align-bottom flex items-end z-30">
-                    {new Date(
-                      timespans[selectedTimespan].xMax
-                    ).toLocaleDateString(undefined, {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

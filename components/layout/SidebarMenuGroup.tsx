@@ -6,36 +6,12 @@ import useSWR from "swr";
 import { usePathname } from "next/navigation";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./Tooltip";
 import { MasterURL } from "@/lib/urls";
-
-export type SidebarItem = {
-  name: string;
-  label: string;
-  key?: string;
-  icon: ReactNode;
-  sidebarIcon: ReactNode;
-  options: {
-    // name?: string;
-    label: string;
-    page?: {
-      title?: string;
-      description: string;
-      why?: string;
-      icon?: string;
-    };
-    icon: ReactNode;
-    key?: string;
-    rootKey?: string;
-    urlKey: string;
-  }[];
-  href?: string;
-};
+import { NavigationItem } from "@/lib/navigation";
 
 type SidebarProps = {
-  item: SidebarItem;
+  item: NavigationItem;
   trigger: ReactNode;
   className?: string;
-  // open?: boolean;
-  onToggle?: () => void;
   onOpen?: () => void;
   onClose?: () => void;
   children?: ReactNode;
@@ -44,12 +20,8 @@ type SidebarProps = {
 
 export default function SidebarMenuGroup({
   item,
-  trigger,
-  className = "",
-  // open = false,
-  onToggle = () => {},
-  onOpen = () => {},
-  onClose = () => {},
+  onOpen,
+  onClose,
   sidebarOpen,
 }: SidebarProps) {
   const { data: master } = useSWR<any>(MasterURL);
@@ -57,10 +29,6 @@ export default function SidebarMenuGroup({
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const pathname = usePathname();
-
-  // const [first, second] = pathname.slice(1).split("/");
-
-  // const [urlParts, setUrlParts] = useState<string[]>(["", ""]);
 
   const urlParts = useMemo(() => {
     if (!pathname) {
@@ -96,12 +64,12 @@ export default function SidebarMenuGroup({
 
   const handleOpen = () => {
     setIsOpen(true);
-    onOpen();
+    onOpen && onOpen();
   };
 
   const handleClose = () => {
     setIsOpen(false);
-    onClose();
+    onClose && onClose();
   };
 
   if (item.name === "Blockspace")
@@ -111,7 +79,9 @@ export default function SidebarMenuGroup({
           <TooltipTrigger className="h-6 mb-8 cursor-default pl-8 overflow-visible">
             <div className="flex items-center justify-items-center opacity-70">
               <div className="w-6 mx-0">
-                <div className="w-6 mx-auto grayscale">{item.sidebarIcon}</div>
+                <div className="w-6 mx-auto grayscale">
+                  <Icon icon={item.icon} className="h-7 w-7 p-0.5 mx-auto" />
+                </div>
               </div>
               <div className="">
                 {sidebarOpen && (
@@ -156,7 +126,9 @@ export default function SidebarMenuGroup({
               }
             >
               <div className="w-6 mx-0">
-                <div className="w-6 mx-auto">{item.sidebarIcon}</div>
+                <div className="w-6 mx-auto">
+                  <Icon icon={item.icon} className="h-7 w-7 p-0.5 mx-auto" />
+                </div>
               </div>
               <div className="">
                 {sidebarOpen && (
@@ -186,7 +158,9 @@ export default function SidebarMenuGroup({
             onClick={handleToggle}
           >
             <div className="w-6 mx-0">
-              <div className="w-6 mx-auto">{item.sidebarIcon}</div>
+              <div className="w-6 mx-auto">
+                <Icon icon={item.icon} className="h-7 w-7 p-0.5 mx-auto" />
+              </div>
             </div>
             {sidebarOpen ? (
               <div className={`flex-1 flex items-start justify-between`}>
@@ -235,8 +209,6 @@ export default function SidebarMenuGroup({
                 return Object.keys(master[item.key]).includes(option.key);
             })
             .map((option) => {
-              // console.log(option.label);
-              // if (!sidebarOpen) {
               return (
                 <Tooltip key={option.label} placement="right">
                   <TooltipTrigger className="px-5 overflow-visible">
@@ -248,7 +220,6 @@ export default function SidebarMenuGroup({
                       }`}
                       href={`/${item.name.toLowerCase()}/${option.urlKey}`}
                     >
-                      {/* <div className="w-6"> */}
                       <div
                         className={`w-6 absolute left-[13px]  ${
                           urlParts[1].trim().localeCompare(option.urlKey) === 0
@@ -257,21 +228,17 @@ export default function SidebarMenuGroup({
                         }`}
                       >
                         {(item.name === "Fundamentals" ||
-                          item.name === "Chains") &&
-                          option.icon}
-                        {/* {item.name === "Chains" && (
-                          <Image
-                            src={
-                              AllChains.find((c) => c.key == option.key)?.icon
+                          item.name === "Chains") && (
+                          <Icon
+                            icon={option.icon}
+                            className={
+                              item.name === "Fundamentals"
+                                ? "h-4 w-4 mx-auto"
+                                : "h-[15px] w-[15px] mx-auto"
                             }
-                            width="16"
-                            height="16"
-                            alt={item.key}
-                            className="ml-0.5 saturate-0 contrast-200 invert"
                           />
-                        )} */}
+                        )}
                       </div>
-                      {/* </div> */}
                       <div
                         className={`text-base py-1 w-48 font-normal break-inside-auto text-left ml-12`}
                       >
@@ -286,40 +253,7 @@ export default function SidebarMenuGroup({
                   )}
                 </Tooltip>
               );
-              // } else {
-              //   return (
-              //     <Link
-              //       key={option.label}
-              //       className={`flex items-center justify-items-center rounded-l-full my-[0.25rem] relative ${
-              //         urlParts[1].trim().localeCompare(option.key) === 0
-              //           ? "bg-forest-900 text-forest-50 hover:bg-forest-700 hover:text-forest-50"
-              //           : "hover:bg-forest-200 hover:text-forest-900 "
-              //       }`}
-              //       href={`/${item.label.toLowerCase()}/${option.key?.toLowerCase()}`}
-              //     >
-              //       {/* <div className="w-6"> */}
-              //       <div className="w-6 absolute top-1.5 left-0">
-              //         {item.name === "Fundamentals" && option.icon}
-              //         {item.name === "Chains" && (
-              //           <Image
-              //             src={AllChains.find((c) => c.key == option.key)?.icon}
-              //             width="16"
-              //             height="16"
-              //             alt={item.key}
-              //             className="ml-0.5 saturate-0 contrast-200 invert"
-              //           />
-              //         )}
-              //       </div>
-              //       {/* </div> */}
-              //       <div className="text-sm py-1 ml-10 w-40 font-normal break-inside-auto">
-              //         {option.label}
-              //       </div>
-              //     </Link>
-              //   );
-              // }
             })}
-
-        {/* <div className="flex items-center justify-center w-6 h-6 rounded-full bg-forest-400 "></div> */}
       </div>
     </div>
   );
