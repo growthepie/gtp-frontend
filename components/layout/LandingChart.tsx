@@ -862,7 +862,7 @@ export default function LandingChart({
                         AllChainsByKeys[series.name].colors[theme][0] + "99",
                       stroke:
                         AllChainsByKeys[series.name].colors[theme][0] + "66",
-                      "stroke-width": 0,
+                      strokeWidth: 0,
                     },
                   },
                   // lineWidth: 4,

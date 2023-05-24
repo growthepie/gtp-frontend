@@ -954,7 +954,7 @@ export default function ComparisonChart({
                         AllChainsByKeys[series.name]?.colors[
                           theme ?? "dark"
                         ][0] + "66",
-                      "stroke-width": 0,
+                      strokeWidth: 0,
                     },
                   },
                   brightness: 0.3,

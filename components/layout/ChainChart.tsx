@@ -164,7 +164,6 @@ export default function ChainChart({
         p[key] = "";
       }
     });
-    console.log("prefixes:", p);
     return p;
   }, [data, showUsd]);
 
@@ -229,8 +228,6 @@ export default function ChainChart({
       if (!points || !x) return;
 
       const series = points[0].series;
-
-      console.log("points:", points);
 
       const date = new Date(x);
 
@@ -612,23 +609,6 @@ export default function ChainChart({
           symbol: "circle",
         },
         states: {
-          // hover: {
-          //   enabled: true,
-          //   // halo: {
-          //   //   size: 5,
-          //   //   opacity: 1,
-          //   //   attributes: {
-          //   //     fill:
-          //   //       AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][0] +
-          //   //       "99",
-          //   //     stroke:
-          //   //       AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][0] +
-          //   //       "66",
-          //   //     "stroke-width": 0,
-          //   //   },
-          //   // },
-          //   // brightness: 0.3,
-          // },
           inactive: {
             enabled: true,
             opacity: 0.6,
@@ -761,7 +741,6 @@ export default function ChainChart({
       {data && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-[15px]">
           {Object.keys(data.metrics).map((key, i) => {
-            console.log("chartIndex", i);
             return (
               <div key={key} className="w-full">
                 <div
@@ -801,13 +780,12 @@ export default function ChainChart({
                               data.metrics[key].daily.types.includes("eth")
                                 ? data.metrics[key].daily.data.map((d) => [
                                     d[0],
-                                    d[
-                                      data.metrics[key].daily.types.indexOf(
-                                        "eth"
-                                      )
-                                    ],
+                                    d[2],
                                   ])
-                                : data.metrics[key].daily.data,
+                                : data.metrics[key].daily.data.map((d) => [
+                                    d[0],
+                                    d[1],
+                                  ]),
                             showInLegend: false,
                             marker: {
                               enabled: false,
@@ -836,25 +814,7 @@ export default function ChainChart({
                       }
                     </div>
                     <div className="text-[18px] leading-snug font-medium flex space-x-[2px]">
-                      <div>{prefixes[i]} </div>
-                      {/* {data.metrics[key].daily.data[
-                      data.metrics[key].daily.data.length - 1
-                    ][
-                      !showUsd && data.metrics[key].daily.types.includes("eth")
-                        ? data.metrics[key].daily.types.indexOf("eth")
-                        : 1
-                    ].toLocaleString(
-                      undefined,
-                      data.metrics[key].daily.types.includes("eth")
-                        ? {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }
-                        : {
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 0,
-                          }
-                    )} */}
+                      <div>{prefixes[key]}</div>
                       <div>
                         {Intl.NumberFormat("en-US", {
                           notation: "compact",

@@ -308,9 +308,9 @@ export default function LandingMetricsTable({
                               viewBox="0 0 24 24"
                               fill="none"
                               stroke="currentColor"
-                              stroke-width="2"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
                               className={`w-6 h-6 ${
                                 selectedChains.includes(item.chain.key)
                                   ? "opacity-0"
@@ -526,9 +526,9 @@ export default function LandingMetricsTable({
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
                             className={`w-6 h-6 ${
                               selectedChains.includes(item.chain.key)
                                 ? "opacity-0"
