@@ -1077,8 +1077,8 @@ export default function LandingChart({
             </div>
           </div>
         </div>
-      <div className="flex flex-col rounded-[15px] py-[1px] px-0 sm:flex sm:flex-row w-full justify-between items-center static sm:absolute -top-32 left-0 right-0 text-xs sm:rounded-full dark:bg-forest-900 bg-forest-50 sm:p-0.5">
-        <div className="flex pb-[10px] md:pb-0 justify-between md:justify-center items-center mx-2 md:mx-0 md:space-x-1">
+      <div className="flex flex-col rounded-[15px] py-[1px] px-0 sm:flex sm:flex-row w-full justify-between items-center static sm:absolute -top-32 left-0 right-0 text-xs sm:rounded-full dark:bg-[#1F2726] bg-forest-50 sm:p-0.5">
+        <div className="flex w-[90%] md:w-auto pb-[10px] md:pb-0 justify-between md:justify-center items-center space-x-0 md:space-x-1">
           <button
             className={`rounded-full font-semibold px-4 py-2 md:px-2 md:py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg md:font-medium ${
               showTotalUsers
@@ -1146,7 +1146,7 @@ export default function LandingChart({
         <div className="block sm:hidden w-[70%] mx-auto ">
             <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
         </div>
-        <div className="flex pb-80px pt-[10px] md:pt-0 justify-between md:justify-center items-center mx-5 md:mx-0 md:space-x-1">
+        <div className="flex pb-80px pt-[10px] md:pt-0 justify-between md:justify-center items-center mx-4 md:mx-0 md:space-x-1">
           {!zoomed ? (
             Object.keys(timespans).map((timespan) => (
               <button
