@@ -135,8 +135,6 @@ export default function ChainChart({
 
   const formatNumber = useCallback(
     (value: number | string, isAxis = false) => {
-      const prefix = prefixes[0] ?? "";
-
       return isAxis
         ? selectedScale !== "percentage"
           ? d3.format(".2s")(value).replace(/G/, "B")
@@ -788,7 +786,9 @@ export default function ChainChart({
                             formatter: function (
                               t: Highcharts.AxisLabelsFormatterContextObject
                             ) {
-                              return prefixes[i] + formatNumber(t.value, true);
+                              return (
+                                prefixes[key] + formatNumber(t.value, true)
+                              );
                             },
                           },
                         },
