@@ -120,7 +120,7 @@ export default function Home() {
       <div className="flex w-full mt-[65px]">
         <div className={`flex flex-col flex-1 pl-2 md:pl-6 w-full`}>
           <>
-            <Heading className="text-2xl leading-snug md:text-[36px] mb-[30px]">
+            <Heading className="font-bold text-[30px] md:font-normal leading-snug md:text-[36px] mb-[28px] lg:mb-[30px]">
               Growing Ethereum’s Ecosystem Together
             </Heading>
             {data && landing && master && <TopAnimation />}
@@ -128,13 +128,13 @@ export default function Home() {
               Compare Ethereum&apos;s Layer-2 solutions and better understand
               the metrics to grow the ecosystem.
             </Subheading> */}
-            <div className="flex mt-[100px] mb-[32px] space-x-2 items-center">
-              <Icon icon="gtp:gtp-pie" className="w-9 h-9" />
-              <Heading className="text-[30px] leading-snug font-bold">
+            <div className="flex mt-0 lg:mt-[100px] mb-[15px] md:mb-[32px] space-x-2 items-center">
+              <Icon icon="gtp:gtp-pie" className="w-[30px] h-[30px] md:w-9 md:h-9" />
+              <Heading className="text-[20px] md:text-[30px] leading-snug font-bold">
                 Layer 2 User Base
               </Heading>
             </div>
-            <Subheading className="text-base leading-snug mb-[15px] px-[45px]">
+            <Subheading className="text-base leading-snug mb-[15px] px-[5px] md:px-[45px]">
               Number of unique addresses interacting with one or multiple Layer 2s 
               in a given week.
             </Subheading>

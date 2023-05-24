@@ -11,33 +11,35 @@ export default function Header() {
   const { isSidebarOpen, toggleSidebar } = useUIContext();
 
   return (
-    <header className="flex justify-between space-x-6 items-center max-w-[1600px] w-full mx-auto px-[50px] pt-[50px]">
+    <header className="flex justify-between space-x-6 items-center max-w-[1600px] pb-[35px] md:pb-0 w-full mx-auto px-[50px] pt-[20px] md:pt-[50px]">
       <div className="flex justify-between items-center">
         <div className="flex space-x-6">
-          <div className="block md:hidden relative">
-            <Sidebar
-              trigger={
-                <button className="flex items-center space-x-2">
-                  <Icon icon="feather:menu" className="h-8 w-8" />
-                </button>
-              }
-              isMobile={true}
-            />
-            <Link href="" className="absolute top-2 left-20">
-              <div className="h-[32px] w-[32px] absolute">
+          <div className="flex items-center md:hidden relative">
+            <Link href="" className="flex absolute right-[6vw]">
+              <div className="h-[36px] w-[154px] absolute">
                 <Image
-                  src="/logo_pie_only.png"
+                  src="/logo_full.png"
                   alt="Forest"
-                  className="mb-6 -ml-[9px] z-10 antialiased hover:scale-105 hover:translate-x-0 transition-transform duration-150 ease-in-out"
+                  className="mb-6 -ml-[2px] z-10 antialiased hover:scale-105 hover:translate-x-0 transition-transform duration-150 ease-in-out"
                   fill={true}
                   quality={100}
                 />
               </div>
             </Link>
+            <div className="flex absolute left-[70vw] top-[1px]">
+              <Sidebar
+                trigger={
+                  <button className="flex items-center space-x-2">
+                    <Icon icon="feather:menu" className="h-8 w-8" />
+                  </button>
+                }
+                isMobile={true}
+              />
+          </div>
           </div>
         </div>
       </div>
-      <div className="flex items-center z-10">
+      <div className="items-center z-10 hidden md:flex">
         <EthUsdSwitch />
         <DarkModeSwitch />
         <Link
@@ -59,3 +61,4 @@ export default function Header() {
     </header>
   );
 }
+

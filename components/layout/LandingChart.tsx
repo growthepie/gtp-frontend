@@ -985,11 +985,102 @@ export default function LandingChart({
   }, [isSidebarOpen]);
 
   return (
-    <div className="w-full mb-[6rem] mt-[3rem] relative">
-      <div className="flex w-full justify-between items-center absolute -top-[3rem] left-0 right-0 text-xs rounded-full bg-forest-50 dark:bg-forest-900 p-0.5">
-        <div className="flex justify-center items-center space-x-1">
+    <div className="w-full  mt-[15px] mb-[4rem] md:mb-[6rem] md:mt-[3rem] relative">
+        <div className="flex sm:hidden justify-center pb-[30px]">
+          <div className="flex dark:bg-[#4B5553] bg-forest-100 rounded-xl w-1/2 px-3 py-1.5 items-center mr-2">
+            <div className="flex flex-col w-1/2">
+              <Icon
+                icon="feather:users"
+                className="w-8 h-8 lg:w-14 lg:h-14 mr-2 relative left-1"
+              />
+              <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
+                Total Users
+              </div>
+            </div>
+              <div className="flex flex-col items-center justify-center">
+                <div className="text-xl lg:text-3xl font-[650]">
+                  {latest_total.toLocaleString()}
+                </div>
+                <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
+                  {latest_total_comparison > 0 ? (
+                    <span
+                      className="text-green-500 dark:text-green-400 font-semibold"
+                      style={{
+                        textShadow:
+                          theme === "dark"
+                            ? "1px 1px 4px #00000066"
+                            : "1px 1px 4px #ffffff99",
+                      }}
+                    >
+                      +{(latest_total_comparison * 100).toFixed(2)}%
+                    </span>
+                  ) : (
+                    <span
+                      className="text-red-500 dark:text-red-400 font-semibold"
+                      style={{
+                        textShadow:
+                          theme === "dark"
+                            ? "1px 1px 4px #00000066"
+                            : "1px 1px 4px #ffffff99",
+                      }}
+                    >
+                      {(latest_total_comparison * 100).toFixed(2)}%
+                    </span>
+                  )}{" "}
+                  in last week
+                </div>
+            </div>
+          </div>
+          <div className="flex dark:bg-[#4B5553] w-1/2 rounded-xl px-3 py-1.5 items-center mr-1.5">
+            <div className="flex flex-col w-1/2">
+              <Icon
+                icon="feather:layers"
+                className="w-8 h-8 lg:w-14 lg:h-14 mr-2 relative left-1"
+              />
+              <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
+                L2 Dominance
+              </div>
+            </div>
+            <div className="flex flex-col items-center justify-center w-7/12">
+
+              <div className="text-xl lg:text-3xl font-[650]  relative right-2">
+                {l2_dominance.toFixed(2)}x
+              </div>
+              <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
+                {l2_dominance_comparison > 0 ? (
+                  <span
+                    className="text-green-500 dark:text-green-400 font-semibold"
+                    style={{
+                      textShadow:
+                        theme === "dark"
+                          ? "1px 1px 4px #00000066"
+                          : "1px 1px 4px #ffffff99",
+                    }}
+                  >
+                    +{l2_dominance_comparison.toFixed(2)}%
+                  </span>
+                ) : (
+                  <span
+                    className="text-green-500 dark:text-green-400 font-semibold"
+                    style={{
+                      textShadow:
+                        theme === "dark"
+                          ? "1px 1px 4px #00000066"
+                          : "1px 1px 4px #ffffff99",
+                    }}
+                  >
+                    {l2_dominance_comparison.toFixed(2)}%
+                  </span>
+                )}{" "}
+                in last week
+              </div>
+            </div>
+          </div>
+        </div>
+      <div className="flex flex-col rounded-[15px] py-[1px] px-0 sm:flex sm:flex-row w-full justify-between items-center static sm:absolute -top-32 left-0 right-0 text-xs sm:rounded-full dark:bg-forest-900 bg-forest-50 sm:p-0.5">
+        <div className="flex pb-[10px] md:pb-0 justify-between md:justify-center items-center mx-2 md:mx-0 md:space-x-1">
           <button
-            className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
+            className={`rounded-full font-semibold px-4 py-2 md:px-2 md:py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg md:font-medium ${
               showTotalUsers
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
@@ -1003,7 +1094,7 @@ export default function LandingChart({
             Total Users
           </button>
           <button
-            className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
+            className={`rounded-full font-semibold px-4 py-2 md:px-2 md:py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg md:font-medium ${
               "absolute" === selectedScale && !showTotalUsers
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
@@ -1018,7 +1109,7 @@ export default function LandingChart({
           </button>
 
           <button
-            className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
+            className={`rounded-full font-semibold px-4 py-2 md:px-2 md:py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg md:font-medium ${
               "percentage" === selectedScale
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
@@ -1052,12 +1143,15 @@ export default function LandingChart({
               </button>
             ))} */}
         </div>
-        <div className="flex justify-center items-center space-x-1">
+        <div className="block sm:hidden w-[70%] mx-auto ">
+            <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
+        </div>
+        <div className="flex pb-80px pt-[10px] md:pt-0 justify-between md:justify-center items-center mx-5 md:mx-0 md:space-x-1">
           {!zoomed ? (
             Object.keys(timespans).map((timespan) => (
               <button
                 key={timespan}
-                className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium ${
+                className={`rounded-full font-semibold px-4 py-2 md:px-2 md:py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg md:font-medium  ${
                   selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
@@ -1107,7 +1201,7 @@ export default function LandingChart({
       {highchartsLoaded && filteredData.length > 0 ? (
         <div className="w-full py-4 rounded-xl">
           <div className="w-full h-[26rem] relative rounded-xl">
-            <div className="absolute w-full h-[24rem] top-4">
+            <div className="absolute w-full h-[24rem] top-12 md:top-4">
               <HighchartsReact
                 highcharts={Highcharts}
                 options={options}
@@ -1152,7 +1246,7 @@ export default function LandingChart({
         {/* toggle ETH */}
 
         <div className="flex justify-center items-center">
-          <div className="flex bg-forest-100 dark:bg-[#4B5553] rounded-xl px-3 py-1.5 items-center mr-5">
+          <div className="hidden md:flex bg-forest-100 dark:bg-[#4B5553] rounded-xl px-3 py-1.5 items-center mr-5">
             <Icon
               icon="feather:users"
               className="w-8 h-8 lg:w-14 lg:h-14 mr-2"
@@ -1194,7 +1288,7 @@ export default function LandingChart({
               </div>
             </div>
           </div>
-          <div className="flex bg-forest-100 dark:bg-[#4B5553] rounded-xl px-3 py-1.5 items-center mr-1.5">
+          <div className="hidden md:flex bg-forest-100 dark:bg-[#4B5553] rounded-xl px-3 py-1.5 items-center mr-1.5">
             <Icon
               icon="feather:layers"
               className="w-8 h-8 lg:w-14 lg:h-14 mr-2"
@@ -1238,7 +1332,7 @@ export default function LandingChart({
           </div>
           <Tooltip placement="left" allowInteract>
             <TooltipTrigger>
-              <div className="p-1.5 z-10 mr-1">
+              <div className="bottom-[28px] right-[8px] p-0 mr-0 md:p-1.5 z-10 md:mr-1 absolute md:static">
                 <Icon icon="feather:info" className="w-6 h-6" />
               </div>
             </TooltipTrigger>
