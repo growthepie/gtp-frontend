@@ -118,7 +118,7 @@ export default function Home() {
         </div>
       )}
       <div className="flex w-full mt-[65px]">
-        <div className={`flex flex-col flex-1 pl-2 md:pl-6`}>
+        <div className={`flex flex-col flex-1 pl-2 md:pl-6 w-full`}>
           <>
             <Heading className="text-2xl leading-snug md:text-[36px] mb-[30px]">
               Growing Ethereum’s Ecosystem Together

@@ -17,8 +17,9 @@ import { Icon } from "@iconify/react";
 import Image from "next/image";
 import d3 from "d3";
 import { AllChainsByKeys } from "@/lib/chains";
-import { items } from "./Sidebar";
+
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import { navigationItems } from "@/lib/navigation";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -815,7 +816,10 @@ export default function ChainChart({
                 </div>
                 <div className="absolute top-[14px] w-full flex justify-between items-center px-[26px]">
                   <div className="text-[20px] leading-snug font-bold">
-                    {items[1].options.find((o) => o.key === key)?.label}
+                    {
+                      navigationItems[1].options.find((o) => o.key === key)
+                        ?.label
+                    }
                   </div>
                   <div className="text-[18px] leading-snug font-medium flex space-x-[2px]">
                     <div>{prefixes[i]} </div>

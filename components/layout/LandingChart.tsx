@@ -15,9 +15,8 @@ import {
   createRef,
 } from "react";
 import { useSessionStorage } from "usehooks-ts";
-// import { theme as customTheme } from "tailwind.config.js";
 import { useTheme } from "next-themes";
-import { clamp, debounce, merge } from "lodash";
+import { debounce, merge } from "lodash";
 import { Switch } from "../Switch";
 import { AllChainsByKeys } from "@/lib/chains";
 import d3 from "d3";

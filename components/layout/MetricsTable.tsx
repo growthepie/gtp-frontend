@@ -329,39 +329,6 @@ const MetricsTable = ({
                   />
                 </div>
               </div>
-              {/* {item.chain.key === "ethereum" ? (
-                <>
-                  {showEthereumMainnet ? (
-                    <div className="absolute -right-[20px]">
-                      <div className="p-1 rounded-full bg-forest-50">
-                        <Icon icon="feather:check-circle " className="w-6 h-6" />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="absolute -right-[20px]">
-                      <div className="p-1 rounded-full bg-forest-50">
-                        <Icon icon="feather:circle" className="w-6 h-6" />
-                      </div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  {selectedChains.includes(item.chain.key) ? (
-                    <div className="absolute -right-[20px]">
-                      <div className="p-1 rounded-full bg-forest-50">
-                        <Icon icon="feather:check-circle" className="w-6 h-6" />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="absolute -right-[20px]">
-                      <div className="p-1 rounded-full bg-forest-50">
-                        <Icon icon="feather:circle" className="w-6 h-6" />
-                      </div>
-                    </div>
-                  )}
-                </>
-              )} */}
             </div>
           </animated.div>
         ))}

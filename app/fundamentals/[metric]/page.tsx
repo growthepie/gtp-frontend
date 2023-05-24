@@ -11,10 +11,10 @@ import MetricsTable from "@/components/layout/MetricsTable";
 import { MetricsURLs } from "@/lib/urls";
 import { AllChains } from "@/lib/chains";
 import { intersection } from "lodash";
-import { items as sidebarItems } from "@/components/layout/Sidebar";
 import { Icon } from "@iconify/react";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import LoadingAnimation from "@/components/layout/LoadingAnimation";
+import { navigationItems } from "@/lib/navigation";
 
 const Chain = ({ params }: { params: any }) => {
   const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
@@ -42,7 +42,7 @@ const Chain = ({ params }: { params: any }) => {
     );
   }, [metricData]);
 
-  const pageData = sidebarItems[1]?.options.find(
+  const pageData = navigationItems[1]?.options.find(
     (item) => item.urlKey === params.metric
   )?.page ?? {
     title: "",

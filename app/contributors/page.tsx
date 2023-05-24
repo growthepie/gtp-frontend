@@ -146,25 +146,6 @@ const Page = () => {
             </div>
           </div>
         ))}
-        {/* <div className="flex flex-col p-3 bg-forest-50 rounded-xl items-stretch">
-          <div className="flex flex-col items-center aspect-square">
-            <Image
-              src="/contributors/tobsch.png"
-              alt="tobsch"
-              className="rounded-md"
-              width={228}
-              height={228}
-            />
-          </div>
-          <div className="text-left mt-2 font-semibold">Tobias Schreier</div>
-          <div className="flex justify-between">
-            <div className="text-sm">Design</div>
-            <div className="flex space-x-2">
-              <Icon icon="feather:linkedin" className="w-6 h-6" />
-              <Icon icon="feather:twitter" className="w-6 h-6" />
-            </div>
-          </div>
-        </div> */}
       </div>
     </div>
   );
