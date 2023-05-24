@@ -153,15 +153,17 @@ export default function ChainChart({
   const prefixes = useMemo(() => {
     if (!data) return [];
 
-    const p: string[] = [];
+    const p: {
+      [key: string]: string;
+    } = {};
 
     Object.keys(data.metrics).forEach((key) => {
       const types = data.metrics[key].daily.types;
       if (types.length > 2) {
-        if (showUsd && types.includes("usd")) p.push("$");
-        else p.push("Ξ");
+        if (showUsd && types.includes("usd")) p[key] = "$";
+        else p[key] = "Ξ";
       } else {
-        p.push("");
+        p[key] = "";
       }
     });
     console.log("prefixes:", p);
@@ -228,11 +230,13 @@ export default function ChainChart({
 
       if (!points || !x) return;
 
-      const chart = points[0].series.chart;
+      const series = points[0].series;
+
+      console.log("points:", points);
 
       const date = new Date(x);
 
-      const prefix = prefixes[chart.index] ?? "";
+      const prefix = prefixes[series.name] ?? "";
 
       const dateString = date.toLocaleDateString(undefined, {
         timeZone: "UTC",
@@ -331,7 +335,7 @@ export default function ChainChart({
 
       if (chartComponents.current && chartComponents.current.length > 1) {
         chartComponents.current.forEach((chart) => {
-          if (chart.index === hoveredChart.index || !chart) return;
+          if (!chart || chart.index === hoveredChart.index) return;
 
           // set series state
           if (event.type === "mouseOver") {
@@ -358,7 +362,7 @@ export default function ChainChart({
 
       if (chartComponents.current && chartComponents.current.length > 1) {
         chartComponents.current.forEach((chart) => {
-          if (chart.index === hoveredChart.index || !chart) return;
+          if (!chart || chart.index === hoveredChart.index) return;
 
           if (event.type === "mouseOver" || event.type === "mouseMove") {
             if (chart.series[hoveredSeries.index]) {
@@ -403,6 +407,8 @@ export default function ChainChart({
     );
     if (chartComponents.current) {
       chartComponents.current.forEach((chart) => {
+        if (!chart) return;
+
         const pixelsPerDay = chart.plotWidth / daysDiff;
 
         // 15px padding on each side
@@ -689,6 +695,8 @@ export default function ChainChart({
   useEffect(() => {
     debounce(() => {
       chartComponents.current.forEach((chart) => {
+        if (!chart) return;
+
         const w = chart.chartWidth;
         const h = chart.chartHeight;
 
@@ -754,76 +762,82 @@ export default function ChainChart({
 
       {data && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-[15px]">
-          {Object.keys(data.metrics).map((key, i) => (
-            <div key={key} className="w-full">
-              <div
-                className="w-full h-[176px] relative"
-                ref={i === 0 ? squareRef : null}
-              >
-                <div className="absolute w-full h-full bg-forest-50 dark:bg-forest-900 rounded-[15px]"></div>
-                <div className="absolute w-full h-[142px] top-[49px]">
-                  <HighchartsReact
-                    highcharts={Highcharts}
-                    options={{
-                      ...options,
-                      chart: {
-                        index: i,
-                        ...options.chart,
-                      },
-                      yAxis: {
-                        ...options.yAxis,
-                        labels: {
-                          ...(options.yAxis as Highcharts.YAxisOptions).labels,
-                          formatter: function (
-                            t: Highcharts.AxisLabelsFormatterContextObject
-                          ) {
-                            return prefixes[i] + formatNumber(t.value, true);
-                          },
+          {Object.keys(data.metrics).map((key, i) => {
+            console.log("chartIndex", i);
+            return (
+              <div key={key} className="w-full">
+                <div
+                  className="w-full h-[176px] relative"
+                  ref={i === 0 ? squareRef : null}
+                >
+                  <div className="absolute w-full h-full bg-forest-50 dark:bg-forest-900 rounded-[15px]"></div>
+                  <div className="absolute w-full h-[142px] top-[49px]">
+                    <HighchartsReact
+                      highcharts={Highcharts}
+                      options={{
+                        ...options,
+                        chart: {
+                          index: i,
+                          ...options.chart,
                         },
-                      },
-
-                      series: [
-                        {
-                          data:
-                            !showUsd &&
-                            data.metrics[key].daily.types.includes("eth")
-                              ? data.metrics[key].daily.data.map((d) => [
-                                  d[0],
-                                  d[
-                                    data.metrics[key].daily.types.indexOf("eth")
-                                  ],
-                                ])
-                              : data.metrics[key].daily.data,
-                          showInLegend: false,
-                          marker: {
-                            enabled: false,
-                          },
-                          point: {
-                            events: {
-                              mouseOver: pointHover,
-                              mouseOut: pointHover,
+                        yAxis: {
+                          ...options.yAxis,
+                          labels: {
+                            ...(options.yAxis as Highcharts.YAxisOptions)
+                              .labels,
+                            formatter: function (
+                              t: Highcharts.AxisLabelsFormatterContextObject
+                            ) {
+                              return prefixes[i] + formatNumber(t.value, true);
                             },
                           },
                         },
-                      ],
-                    }}
-                    ref={(chart) => {
-                      if (chart) {
-                        chartComponents.current[i] = chart.chart;
-                      }
-                    }}
-                  />
-                </div>
-                <div className="absolute top-[14px] w-full flex justify-between items-center px-[26px]">
-                  <div className="text-[20px] leading-snug font-bold">
-                    {
-                      navigationItems[1].options.find((o) => o.key === key)
-                        ?.label
-                    }
+
+                        series: [
+                          {
+                            name: key,
+                            data:
+                              !showUsd &&
+                              data.metrics[key].daily.types.includes("eth")
+                                ? data.metrics[key].daily.data.map((d) => [
+                                    d[0],
+                                    d[
+                                      data.metrics[key].daily.types.indexOf(
+                                        "eth"
+                                      )
+                                    ],
+                                  ])
+                                : data.metrics[key].daily.data,
+                            showInLegend: false,
+                            marker: {
+                              enabled: false,
+                            },
+                            point: {
+                              events: {
+                                mouseOver: pointHover,
+                                mouseOut: pointHover,
+                              },
+                            },
+                          },
+                        ],
+                      }}
+                      ref={(chart) => {
+                        if (chart) {
+                          chartComponents.current[i] = chart.chart;
+                        }
+                      }}
+                    />
                   </div>
-                  <div className="text-[18px] leading-snug font-medium flex space-x-[2px]">
-                    <div>{prefixes[i]} </div>
-                    {/* {data.metrics[key].daily.data[
+                  <div className="absolute top-[14px] w-full flex justify-between items-center px-[26px]">
+                    <div className="text-[20px] leading-snug font-bold">
+                      {
+                        navigationItems[1].options.find((o) => o.key === key)
+                          ?.label
+                      }
+                    </div>
+                    <div className="text-[18px] leading-snug font-medium flex space-x-[2px]">
+                      <div>{prefixes[i]} </div>
+                      {/* {data.metrics[key].daily.data[
                       data.metrics[key].daily.data.length - 1
                     ][
                       !showUsd && data.metrics[key].daily.types.includes("eth")
@@ -841,74 +855,75 @@ export default function ChainChart({
                             maximumFractionDigits: 0,
                           }
                     )} */}
-                    <div>
-                      {Intl.NumberFormat("en-US", {
-                        notation: "compact",
-                        maximumFractionDigits: 2,
-                      }).format(
-                        data.metrics[key].daily.data[
-                          data.metrics[key].daily.data.length - 1
-                        ][
-                          data.metrics[key].daily.types.includes("eth")
-                            ? !showUsd
-                              ? data.metrics[key].daily.types.indexOf("eth")
-                              : data.metrics[key].daily.types.indexOf("usd")
-                            : 1
-                        ]
-                      )}
+                      <div>
+                        {Intl.NumberFormat("en-US", {
+                          notation: "compact",
+                          maximumFractionDigits: 2,
+                        }).format(
+                          data.metrics[key].daily.data[
+                            data.metrics[key].daily.data.length - 1
+                          ][
+                            data.metrics[key].daily.types.includes("eth")
+                              ? !showUsd
+                                ? data.metrics[key].daily.types.indexOf("eth")
+                                : data.metrics[key].daily.types.indexOf("usd")
+                              : 1
+                          ]
+                        )}
+                      </div>
                     </div>
                   </div>
+                  <div>{getIcon(key)}</div>
                 </div>
-                <div>{getIcon(key)}</div>
-              </div>
-              <div className="w-full h-[15px] relative text-[10px] z-30">
-                <div className="absolute left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end">
-                  {/* {new Date(
+                <div className="w-full h-[15px] relative text-[10px] z-30">
+                  <div className="absolute left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end">
+                    {/* {new Date(
                     timespans[selectedTimespan].xMin
                   ).toLocaleDateString(undefined, {
                     month: "short",
                     day: "numeric",
                     year: "numeric",
                   })} */}
-                </div>
-                <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end">
-                  {/* {new Date(
+                  </div>
+                  <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end">
+                    {/* {new Date(
                     timespans[selectedTimespan].xMax
                   ).toLocaleDateString(undefined, {
                     month: "short",
                     day: "numeric",
                     year: "numeric",
                   })} */}
+                  </div>
                 </div>
+                {(key === "stables_mcap" || key === "fees") && (
+                  <div
+                    className={`w-full h-[15px] relative text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                      key === "stables_mcap" ? "hidden lg:block" : ""
+                    }`}
+                  >
+                    <div className="absolute left-[15px] align-bottom flex items-end z-30">
+                      {new Date(
+                        timespans[selectedTimespan].xMin
+                      ).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </div>
+                    <div className="absolute right-[15px] align-bottom flex items-end z-30">
+                      {new Date(
+                        timespans[selectedTimespan].xMax
+                      ).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
-              {(key === "stables_mcap" || key === "fees") && (
-                <div
-                  className={`w-full h-[15px] relative text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
-                    key === "stables_mcap" ? "hidden lg:block" : ""
-                  }`}
-                >
-                  <div className="absolute left-[15px] align-bottom flex items-end z-30">
-                    {new Date(
-                      timespans[selectedTimespan].xMin
-                    ).toLocaleDateString(undefined, {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </div>
-                  <div className="absolute right-[15px] align-bottom flex items-end z-30">
-                    {new Date(
-                      timespans[selectedTimespan].xMax
-                    ).toLocaleDateString(undefined, {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
