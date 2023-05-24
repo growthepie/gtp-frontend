@@ -50,7 +50,8 @@ const Chain = ({ params }: { params: any }) => {
     icon: "",
   };
 
-  const [selectedChains, setSelectedChains] = useState(
+  const [selectedChains, setSelectedChains] = useSessionStorage(
+    "fundamentalsChains",
     AllChains.map((chain) => chain.key)
   );
 
