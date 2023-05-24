@@ -662,6 +662,10 @@ export default function ChainChart({
     }
   };
 
+  const lastPoints = useMemo<{
+    [key: string]: Highcharts.SVGElement;
+  }>(() => ({}), []);
+
   useEffect(() => {
     chartComponents.current.forEach((chart) => {
       chart.reflow();
@@ -756,6 +760,73 @@ export default function ChainChart({
                         chart: {
                           index: i,
                           ...options.chart,
+                          events: {
+                            load: function () {
+                              const chart = this;
+                              const lastPoint =
+                                chart.series[0].points[
+                                  chart.series[0].points.length - 1
+                                ];
+                              // draw vertical line from last point's x and y position to the top of the chart
+                              const el = chart.renderer
+                                .path([
+                                  "M",
+                                  lastPoint.plotX,
+                                  lastPoint.plotY,
+                                  "L",
+                                  lastPoint.plotX,
+                                  chart.plotTop,
+                                ])
+                                .attr({
+                                  stroke: hexToRgba(
+                                    AllChainsByKeys[data.chain_id].colors[
+                                      theme ?? "dark"
+                                    ][0] + "11",
+                                    0.5
+                                  ),
+                                  "stroke-width": 1,
+                                  "stroke-dasharray": "4 4 4 4",
+                                  zIndex: 10,
+                                })
+                                .add();
+
+                              lastPoints[i] = el;
+                            },
+                            render: function () {
+                              const chart = this;
+                              const lastPoint =
+                                chart.series[0].points[
+                                  chart.series[0].points.length - 1
+                                ];
+                              // draw vertical line from last point's x and y position to the top of the chart
+                              if (lastPoints[i]) {
+                                lastPoints[i].destroy();
+                              }
+                              const el = chart.renderer
+                                .path([
+                                  "M",
+                                  lastPoint.plotX,
+                                  lastPoint.plotY,
+                                  "L",
+                                  lastPoint.plotX,
+                                  chart.plotTop,
+                                ])
+                                .attr({
+                                  stroke: hexToRgba(
+                                    AllChainsByKeys[data.chain_id].colors[
+                                      theme ?? "dark"
+                                    ][0] + "11",
+                                    0.5
+                                  ),
+                                  "stroke-width": 1,
+                                  "stroke-dasharray": "4 4 4 4",
+                                  zIndex: 10,
+                                })
+                                .add();
+
+                              lastPoints[i] = el;
+                            },
+                          },
                         },
                         yAxis: {
                           ...options.yAxis,
