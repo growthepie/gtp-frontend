@@ -230,6 +230,18 @@ export default function LandingChart({
 
   const [totalUsersIncrease, setTotalUsersIncrease] = useState(0);
 
+  const isMobile = useMediaQuery("(max-width: 767px)");
+
+  useEffect(() => {
+    if (chartComponent.current) {
+      if (isMobile) {
+        chartComponent.current.setSize(null, 200, false);
+      } else {
+        chartComponent.current.setSize(null, 400, false);
+      }
+    }
+  }, [isMobile]);
+
   const getTickPositions = useCallback(
     (xMin: any, xMax: any): number[] => {
       const tickPositions: number[] = [];
@@ -537,6 +549,10 @@ export default function LandingChart({
             },
           },
         },
+        // events: {
+        //   load: function () {},
+        // },
+        height: isMobile ? 200 : 400,
       },
       plotOptions: {
         area: {
@@ -984,18 +1000,6 @@ export default function LandingChart({
       }
     }, 300);
   }, [isSidebarOpen]);
-
-  const isMobile = useMediaQuery("(max-width: 767px)");
-
-  useEffect(() => {
-    if (chartComponent.current) {
-      if (isMobile) {
-        chartComponent.current.setSize(null, 200, false);
-      } else {
-        chartComponent.current.setSize(null, 400, false);
-      }
-    }
-  }, [isMobile]);
 
   return (
     <div className="w-full mb-[6rem] mt-[3rem] relative">
