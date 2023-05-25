@@ -123,8 +123,8 @@ const MetricsTable = ({
   };
 
   return (
-    <div className="flex flex-col mt-3 md:mt-0 font-semibold space-y-[5px] overflow-x-scroll overflow-y-hidden z-100 w-full transition-all duration-300 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-transparent scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
-      <div className={`min-w-[550px] w-full`}>
+    <div className="flex flex-col mt-3 md:mt-0 font-semibold space-y-[5px] overflow-x-scroll md:overflow-visible overflow-y-hidden z-100 w-full transition-all duration-300 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-transparent scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
+      <div className={`min-w-[550px] w-full md:min-w-min`}>
         <div
           className={`flex items-center py-1 pl-2 pr-4 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm`}
         >
