@@ -549,10 +549,16 @@ export default function LandingChart({
         area: {
           stacking: selectedScale === "percentage" ? "percent" : "normal",
           animation: true,
+          dataGrouping: {
+            enabled: false,
+          },
         },
         column: {
           animation: false,
           crisp: true,
+          dataGrouping: {
+            enabled: false,
+          },
         },
       },
       legend: {
