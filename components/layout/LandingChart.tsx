@@ -1092,10 +1092,10 @@ export default function LandingChart({
           </div>
         </div>
       </div>
-      <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base md:flex md:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 md:rounded-full dark:bg-[#1F2726] bg-forest-50 sm:p-0.5">
-        <div className="flex w-full md:w-auto justify-between md:justify-center items-center space-x-[4px] md:space-x-1">
+      <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 lg:rounded-full dark:bg-[#1F2726] bg-forest-50 sm:p-0.5">
+        <div className="flex w-full lg:w-auto justify-between lg:justify-center items-center space-x-[4px] lg:space-x-1">
           <button
-            className={`rounded-full w-full md:w-auto px-4 py-1.5 md:py-3 font-medium ${
+            className={`rounded-full w-full lg:w-auto px-4 py-1.5 lg:py-3 font-medium ${
               showTotalUsers
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
@@ -1109,7 +1109,7 @@ export default function LandingChart({
             Total Users
           </button>
           <button
-            className={`rounded-full w-full md:w-auto px-4 py-1.5 md:py-3 font-medium ${
+            className={`rounded-full w-full lg:w-auto px-4 py-1.5 lg:py-3 font-medium ${
               "absolute" === selectedScale && !showTotalUsers
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
@@ -1124,7 +1124,7 @@ export default function LandingChart({
           </button>
 
           <button
-            className={`rounded-full w-full md:w-auto px-4 py-1.5 md:py-3 font-medium ${
+            className={`rounded-full w-full lg:w-auto px-4 py-1.5 lg:py-3 font-medium ${
               "percentage" === selectedScale
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
@@ -1137,36 +1137,16 @@ export default function LandingChart({
           >
             Percentage
           </button>
-          {/* {showTimeIntervals &&
-            timeIntervals.map((timeInterval, i) => (
-              <button
-                key={timeInterval}
-                className={`rounded-full px-2 py-1 font-medium capitalize ${
-                  selectedTimeInterval === timeInterval
-                    ? "bg-forest-900 text-forest-50 hover:bg-forest-700"
-                    : "hover:bg-forest-100"
-                }`}
-                onClick={() => {
-                  onTimeIntervalChange(timeInterval);
-                  // chartComponent.current?.xAxis[0].setExtremes(
-                  //   timespans[timespan].xMin,
-                  //   timespans[timespan].xMax
-                  // );
-                }}
-              >
-                {timeInterval}
-              </button>
-            ))} */}
         </div>
-        <div className="block md:hidden w-[70%] mx-auto my-[10px]">
+        <div className="block lg:hidden w-[70%] mx-auto my-[10px]">
           <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
         </div>
-        <div className="flex w-full md:w-auto justify-between md:justify-center items-center mx-4 md:mx-0 space-x-[4px] lg:space-x-1">
+        <div className="flex w-full lg:w-auto justify-between lg:justify-center items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
           {!zoomed ? (
             Object.keys(timespans).map((timespan) => (
               <button
                 key={timespan}
-                className={`rounded-full w-full md:w-auto px-4 py-1.5 md:py-3 font-medium ${
+                className={`rounded-full w-full lg:w-auto px-4 py-1.5 lg:py-3 font-medium ${
                   selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
@@ -1240,20 +1220,25 @@ export default function LandingChart({
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
         {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
         {/* toggle ETH */}
-        <div className="z-10 block lg:hidden">
+        <div className="flex z-10">
           <Switch
             checked={showEthereumMainnet}
             onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
-            rightLabel="ETH"
           />
+          <div className="ml-2 block md:hidden lg:block leading-[1.75]">
+            Show Ethereum
+          </div>
+          <div className="ml-2 hidden md:block lg:hidden leading-[1.75]">
+            ETH
+          </div>
         </div>
-        <div className="z-10 hidden lg:block">
+        {/* <div className="z-10 hidden lg:block">
           <Switch
             checked={showEthereumMainnet}
             onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
             rightLabel="Show Ethereum"
           />
-        </div>
+        </div> */}
       </div>
       <div className="flex justify-end items-center absolute -bottom-[2.5rem] md:-bottom-[6.5rem] left-0 right-0 rounded-full">
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}

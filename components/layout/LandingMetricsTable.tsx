@@ -123,7 +123,7 @@ export default function LandingMetricsTable({
 
   return (
     <>
-      <div className="flex flex-col mt-3 md:mt-12 space-y-[5px] overflow-x-scroll z-100 w-full p-0 py-3 md:p-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-transparent scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
+      <div className="flex flex-col mt-3 md:mt-32 -mr-[20px] md:mr-0 space-y-[5px] overflow-x-scroll z-100 w-full p-0 py-3 md:p-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-transparent scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
         <div
           className={`min-w-[800px] w-full ${
             interactable ? "pointer-events-auto" : "pointer-events-none"
@@ -302,7 +302,7 @@ export default function LandingMetricsTable({
                       </div>
                       {interactable && (
                         <div className={`absolute  ${"-right-[20px]"}`}>
-                          <div className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                          <div className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               width="24"
