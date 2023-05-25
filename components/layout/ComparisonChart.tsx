@@ -25,7 +25,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
 import { Sources } from "@/lib/datasources";
 import { useUIContext } from "@/contexts/UIContext";
-import { useMediaQuery } from 'usehooks-ts'
+import { useMediaQuery } from "usehooks-ts";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -806,6 +806,7 @@ export default function ComparisonChart({
               borderColor:
                 AllChainsByKeys[series.name]?.colors[theme ?? "dark"][0],
               borderWidth: 1,
+              lineWidth: 2,
               ...// @ts-ignore
               (getSeriesType(series.name) !== "column"
                 ? {

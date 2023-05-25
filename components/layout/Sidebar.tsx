@@ -131,7 +131,13 @@ export default function Sidebar({ isMobile }: SidebarProps) {
                   <div className="text-[0.7rem] flex justify-between w-full text-inherit leading-[1] px-2 mt-[30px]">
                     <Link href="/privacy-policy">Privacy Policy</Link>
                     <Link href="/imprint">Imprint</Link>
-                    <Link href="https://discord.gg/fxjJFe7QyN">Feedback</Link>
+                    <Link
+                      rel="noopener"
+                      target="_blank"
+                      href="https://discord.com/channels/1070991734139531294/1095735245678067753"
+                    >
+                      Feedback
+                    </Link>
                   </div>
                 </div>
                 <div className="mt-24 w-full text-center py-6 absolute bottom-0">
@@ -178,13 +184,25 @@ export default function Sidebar({ isMobile }: SidebarProps) {
           <div className="text-[0.7rem] flex justify-between w-48 text-inherit dark:text-forest-400 leading-[1] ml-8">
             <Link href="/privacy-policy">Privacy Policy</Link>
             <Link href="/imprint">Imprint</Link>
-            <Link href="https://discord.gg/fxjJFe7QyN">Feedback</Link>
+            <Link
+              rel="noopener"
+              target="_blank"
+              href="https://discord.com/channels/1070991734139531294/1095735245678067753"
+            >
+              Feedback
+            </Link>
           </div>
         ) : (
           <div className="text-[0.7rem] flex flex-col justify-between w-6 text-inherit dark:text-forest-400 leading-[2] ml-8 items-center">
             <Link href="/privacy-policy">Privacy</Link>
             <Link href="/imprint">Imprint</Link>
-            <Link href="https://discord.gg/fxjJFe7QyN">Feedback</Link>
+            <Link
+              rel="noopener"
+              target="_blank"
+              href="https://discord.com/channels/1070991734139531294/1095735245678067753"
+            >
+              Feedback
+            </Link>
           </div>
         )}
       </div>

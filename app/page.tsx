@@ -212,7 +212,7 @@ export default function Home() {
                 Ethereum ecosystem.
               </div>
             </div>
-            <div className="hidden md:flex-1 relative mt-[5px] lg:mt-[15px] -mb-[10px] lg:-mb-[30px]">
+            <div className="hidden md:flex md:flex-1 relative mt-[5px] lg:mt-[15px] -mb-[10px] lg:-mb-[30px]">
               <Image
                 src="/GTP-Data-Kraken.png"
                 fill={true}

@@ -713,6 +713,7 @@ export default function LandingChart({
               },
               borderColor: AllChainsByKeys[series.name].colors[theme][0],
               borderWidth: 1,
+              lineWidth: 2,
               ...(getSeriesType(series.name) !== "column"
                 ? {
                     shadow: {
