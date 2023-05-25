@@ -18,6 +18,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
 import { Sources } from "@/lib/datasources";
 import { useUIContext } from "@/contexts/UIContext";
+import { useMediaQuery } from "@react-hook/media-query";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -984,6 +985,18 @@ export default function LandingChart({
     }, 300);
   }, [isSidebarOpen]);
 
+  const isMobile = useMediaQuery("(max-width: 767px)");
+
+  useEffect(() => {
+    if (chartComponent.current) {
+      if (isMobile) {
+        chartComponent.current.setSize(null, 200, false);
+      } else {
+        chartComponent.current.setSize(null, 400, false);
+      }
+    }
+  }, [isMobile]);
+
   return (
     <div className="w-full mb-[6rem] mt-[3rem] relative">
       <div className="flex w-full justify-between items-center absolute -top-[3rem] left-0 right-0 text-xs rounded-full bg-forest-50 dark:bg-forest-900 p-0.5">
@@ -1106,8 +1119,8 @@ export default function LandingChart({
       </div>
       {highchartsLoaded && filteredData.length > 0 ? (
         <div className="w-full py-4 rounded-xl">
-          <div className="w-full h-[26rem] relative rounded-xl">
-            <div className="absolute w-full h-[24rem] top-4">
+          <div className="w-full h-52 md:h-[26rem] relative rounded-xl">
+            <div className="absolute w-full h-48 md:h-[24rem] top-4">
               <HighchartsReact
                 highcharts={Highcharts}
                 options={options}
