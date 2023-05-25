@@ -29,7 +29,7 @@ export default function LandingMetricsTable({
 
   const [maxVal, setMaxVal] = useState(0);
 
-  const isMobile = useMediaQuery("(max-width: 767px)");
+  const isMobile = useMediaQuery("(max-width: 1023px)");
 
   const { theme } = useTheme();
 
@@ -100,8 +100,8 @@ export default function LandingMetricsTable({
       .filter((row) => row.chain.key != "multiple")
       .map((data) => ({
         ...data,
-        y: (height += isMobile ? 51 : 66) - (isMobile ? 51 : 66),
-        height: isMobile ? 51 : 66,
+        y: (height += isMobile ? 50 : 66) - (isMobile ? 50 : 66),
+        height: isMobile ? 50 : 66,
       })),
     {
       key: (d) => d.chain.key,
@@ -123,14 +123,14 @@ export default function LandingMetricsTable({
 
   return (
     <>
-      <div className="flex flex-col mt-3 md:mt-32 -mr-[20px] md:mr-0 space-y-[5px] overflow-x-scroll z-100 w-full p-0 py-3 md:p-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-transparent scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
+      <div className="flex flex-col mt-3 md:mt-32 -mr-[20px] md:mr-0 space-y-[5px] overflow-x-scroll lg:overflow-x-hidden z-100 w-full p-0 pt-3 pb-5 md:px-2 md:pt-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
         <div
-          className={`min-w-[800px] w-full ${
+          className={`min-w-[820px] md:min-w-[850px] pr-[20px] md:pr-[50px] w-full ${
             interactable ? "pointer-events-auto" : "pointer-events-none"
           }`}
         >
           <div
-            className={`flex space-x-5 items-center py-1 pl-2 pr-2 rounded-full font-semibold text-xs lg:text-sm`}
+            className={`flex space-x-5 items-center rounded-full font-semibold text-xs lg:text-sm pr-2 py-1 pl-2`}
           >
             <div className="w-2/12 pl-14">Chain</div>
             <div className="w-1/12">Age</div>

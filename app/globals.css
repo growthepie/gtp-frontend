@@ -34,3 +34,17 @@
 .highcharts-column-series rect {
   shape-rendering: crispEdges;
 }
+
+.scroller::-webkit-scrollbar-button:end:increment {
+  width: 50px;
+  display: block;
+  background: transparent;
+}
+
+@media (max-width: 767px) {
+  .scroller::-webkit-scrollbar-button:end:increment {
+    width: 20px;
+    display: block;
+    background: transparent;
+  }
+}

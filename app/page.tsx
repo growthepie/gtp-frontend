@@ -166,7 +166,7 @@ export default function Home() {
               setSelectedMetric={setSelectedMetric}
             />
           </Container>
-          <Container className="!pr-0 lg:!pr-[50px]">
+          <Container className="!pr-0">
             <LandingMetricsTable
               data={data}
               selectedChains={selectedChains}
