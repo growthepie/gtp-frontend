@@ -118,9 +118,11 @@ export default function Home() {
         </div>
       )}
       <div className="flex w-full mt-[65px]">
-        <div className={`flex flex-col flex-1 pl-2 md:pl-6 w-full`}>
+        <div
+          className={`flex flex-col flex-1 pl-[12px] pr-[12px] md:pr-0 md:pl-6 w-full`}
+        >
           <>
-            <Heading className="text-2xl leading-snug md:text-[36px] mb-[30px]">
+            <Heading className="font-bold text-[30px] leading-snug md:text-[36px] mb-[28px] lg:mb-[30px]">
               Growing Ethereum’s Ecosystem Together
             </Heading>
             {data && landing && master && <TopAnimation />}
@@ -128,15 +130,18 @@ export default function Home() {
               Compare Ethereum&apos;s Layer-2 solutions and better understand
               the metrics to grow the ecosystem.
             </Subheading> */}
-            <div className="flex mt-[100px] mb-[32px] space-x-2 items-center">
-              <Icon icon="gtp:gtp-pie" className="w-9 h-9" />
-              <Heading className="text-[30px] leading-snug font-bold">
+            <div className="flex mt-0 lg:mt-[100px] mb-[25px] md:mb-[32px] space-x-2 items-center">
+              <Icon
+                icon="gtp:gtp-pie"
+                className="w-[30px] h-[30px] md:w-9 md:h-9"
+              />
+              <Heading className="text-[20px] md:text-[30px] leading-snug font-bold">
                 Layer 2 User Base
               </Heading>
             </div>
-            <Subheading className="text-base leading-snug mb-[15px] px-[45px]">
-              Number of unique addresses interacting with one or multiple Layer 2s 
-              in a given week.
+            <Subheading className="text-base leading-normal md:leading-snug mb-[15px] px-[5px] md:px-[45px]">
+              Number of unique addresses interacting with one or multiple Layer
+              2s in a given week.
             </Subheading>
             {data && landing && master && (
               <>
@@ -176,15 +181,26 @@ export default function Home() {
             )}
           </>
 
-          <div className="flex gap-x-10 mt-[90px]">
-            <div className="flex flex-col w-1/2 lg:w-2/3">
+          <div className="flex gap-x-0 md:gap-x-12 w-full ml-0 mt-[15px] md:mt-[90px]">
+            <div className="flex flex-col md:w-1/2 lg:w-2/3">
               <div className="flex space-x-2 mb-[30px] items-center">
-                <Icon icon="gtp:gtp-about" className="w-9 h-9" />
-                <Heading className="text-[30px] leading-snug font-bold">
+                <Icon
+                  icon="gtp:gtp-about"
+                  className="w-[30px] h-[30px] md:w-9 md:h-9"
+                />
+                <Heading className="text-[20px] md:text-[30px] leading-snug font-bold">
                   About Grow The Pie
                 </Heading>
               </div>
-              <div className="text-sm lg:text-base">
+              <div className="block md:hidden relative mt-[0px] lg:mt-[15px] mb-[30px] lg:-mb-[30px] h-[190px]">
+                <Image
+                  src="/GTP-Data-Kraken.png"
+                  fill={true}
+                  alt="About Grow The Pie"
+                  className="object-contain"
+                />
+              </div>
+              <div className="text-base md:text-sm lg:text-base text-justify">
                 At GrowThePie, our mission is to provide comprehensive and
                 accurate analytics of layer 2 solutions for the Ethereum
                 ecosystem, acting as a trusted data aggregator from reliable
@@ -196,7 +212,7 @@ export default function Home() {
                 Ethereum ecosystem.
               </div>
             </div>
-            <div className="flex-1 relative mt-[5px] lg:mt-[15px] -mb-[10px] lg:-mb-[30px]">
+            <div className="hidden md:flex-1 relative mt-[5px] lg:mt-[15px] -mb-[10px] lg:-mb-[30px]">
               <Image
                 src="/GTP-Data-Kraken.png"
                 fill={true}
@@ -206,13 +222,16 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="flex mt-[90px] mb-[30px] space-x-2 items-center">
-            <Icon icon="gtp:gtp-faq" className="w-9 h-9" />
-            <Heading className="text-[30px] leading-snug font-bold">
+          <div className="flex mt-[25px] md:mt-[90px] mb-[25px] md:mb-[30px] ml-1.5 md:ml-0 space-x-2 items-center">
+            <Icon
+              icon="gtp:gtp-faq"
+              className="w-[30px] h-[30px] md:w-9 md:h-9"
+            />
+            <Heading className="text-[20px] md:text-[30px] leading-snug font-bold">
               Frequently Asked Questions
             </Heading>
           </div>
-          <div className="flex flex-col space-y-[15px] my-[30px]">
+          <div className="flex flex-col space-y-[15px] my-0 md:my-[30px]">
             <QuestionAnswer
               className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
               question="What's up with the name?"

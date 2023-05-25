@@ -25,6 +25,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
 import { Sources } from "@/lib/datasources";
 import { useUIContext } from "@/contexts/UIContext";
+import { useMediaQuery } from 'usehooks-ts'
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -229,6 +230,8 @@ export default function ComparisonChart({
   const [zoomed, setZoomed] = useState(false);
 
   const [valuePrefix, setValuePrefix] = useState("");
+
+  const isMobile = useMediaQuery("(max-width: 767px)");
 
   const getTickPositions = useCallback(
     (xMin: any, xMax: any): number[] => {
@@ -589,6 +592,7 @@ export default function ComparisonChart({
 
     const dynamicOptions: Highcharts.Options = {
       chart: {
+        height: isMobile ? 275 : 400,
         type: getSeriesType(filteredData[0].name),
         plotBorderColor: "transparent",
         zooming: {
@@ -1115,7 +1119,7 @@ export default function ComparisonChart({
             Object.keys(timespans).map((timespan) => (
               <button
                 key={timespan}
-                className={`rounded-full px-2 py-1.5 text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
+                className={`rounded-full px-2 py-3 text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
                   selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
@@ -1162,16 +1166,16 @@ export default function ComparisonChart({
           )}
         </div>
       </div>
-      <div className="w-full flex flex-col-reverse lg:flex-row">
+      <div className="w-full flex flex-col-reverse lg:flex-row mt-8 md:mt-0 ">
         <div className="hidden lg:block lg:w-1/2 xl:w-5/12 pl-2 pr-[19px] self-center">
           <div className="-mt-7">{children}</div>
         </div>
         {highchartsLoaded ? (
           <>
             <div className="w-full lg:w-1/2 xl:w-7/12 relative">
-              <div className="w-full p-0 py-4 xl:pl-4 xl:py-14">
-                <div className="w-full h-[26rem] relative rounded-xl">
-                  <div className="absolute w-full h-[24rem] top-4">
+              <div className="w-full p-0 py-0 xl:pl-4 xl:py-14">
+                <div className="w-full h-[18rem] md:h-[26rem] relative rounded-xl">
+                  <div className="block md:absolute w-full h-[24rem] top-4">
                     <HighchartsReact
                       highcharts={Highcharts}
                       options={options}
@@ -1184,7 +1188,7 @@ export default function ComparisonChart({
                 </div>
               </div>
               {avg && ["365d", "max"].includes(selectedTimespan) && (
-                <div className="absolute top-[60px] right-[calc(0%+1.75rem)] rounded-full text-xs font-medium capitalize">
+                <div className="hidden md:block absolute top-[60px] right-[calc(0%+1.75rem)] rounded-full text-xs font-medium capitalize">
                   Displaying 7d Rolling Average
                 </div>
               )}
@@ -1202,7 +1206,7 @@ export default function ComparisonChart({
           </div>
         )}
       </div>
-      <div className="flex w-full justify-between items-center text-base rounded-full bg-forest-50 dark:bg-forest-900 p-0.5 px-1">
+      <div className="flex w-full justify-between items-center text-xs md:text-base rounded-full bg-forest-50 dark:bg-forest-900 pr-4 md:pr-0 p-0.5 px-1">
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
         {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
         {/* toggle ETH */}
@@ -1231,10 +1235,10 @@ export default function ComparisonChart({
           {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
           {/* toggle ETH */}
 
-          <div className="flex justify-center items-center">
-            <div className="flex justify-center items-center space-x-1 mr-2.5">
+          <div className="flex justify-center items-center pl-2 md:pl-0">
+            <div className="flex justify-center items-center space-x-0 md:space-x-1 mr-0 md:mr-2.5">
               <button
-                className={`rounded-full px-2 py-1 text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
+                className={`rounded-full z-10 px-1.5 py-1 text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
                   "absolute" === selectedScale
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
@@ -1246,7 +1250,7 @@ export default function ComparisonChart({
                 Absolute
               </button>
               <button
-                className={`rounded-full px-2 py-1 text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
+                className={`rounded-full z-10 px-1.5 py-1 text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
                   "log" === selectedScale
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
@@ -1258,7 +1262,7 @@ export default function ComparisonChart({
                 Stacked
               </button>
               <button
-                className={`rounded-full px-2 py-1 text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
+                className={`rounded-full z-10 px-1.5 py-1 text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
                   "percentage" === selectedScale
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"

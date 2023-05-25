@@ -111,7 +111,7 @@ const Chain = ({ params }: { params: any }) => {
         <div className="flex flex-col w-full">
           <div className="flex justify-between items-start w-full">
             <div className="flex items-start">
-              <Heading className="text-2xl leading-snug md:text-[36px] mb-[30px]">
+              <Heading className="text-[30px] leading-snug md:text-[36px] mb-[30px]">
                 {pageData.title}
               </Heading>
             </div>
@@ -187,7 +187,7 @@ const Chain = ({ params }: { params: any }) => {
               )}
             </div>
           </div>
-          <div className="flex flex-col space-y-[15px] mt-[30px]">
+          <div className="flex flex-col space-y-[15px] mt-[30px] mr-2 md:mr-0">
             <QuestionAnswer
               className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[63px] py-[23px] flex flex-col"
               question={`What does ${pageData.title} tell you?`}

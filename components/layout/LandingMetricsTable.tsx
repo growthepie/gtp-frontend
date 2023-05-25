@@ -1,7 +1,7 @@
 import { AllChainsByKeys } from "@/lib/chains";
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useLocalStorage, useMediaQuery, useSessionStorage } from "usehooks-ts";
+import { useCallback, useEffect, useState } from "react";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import d3 from "d3";
 import moment from "moment";
@@ -29,9 +29,7 @@ export default function LandingMetricsTable({
 
   const [maxVal, setMaxVal] = useState(0);
 
-  // const [chainsLastVal, setChainsLastVal] = useState<
-  //   { chain: any; lastVal: number }[]
-  // >([]);
+  const isMobile = useMediaQuery("(max-width: 767px)");
 
   const { theme } = useTheme();
 
@@ -100,7 +98,11 @@ export default function LandingMetricsTable({
   const transitions = useTransition(
     rows()
       .filter((row) => row.chain.key != "multiple")
-      .map((data) => ({ ...data, y: (height += 66) - 66, height: 66 })),
+      .map((data) => ({
+        ...data,
+        y: (height += isMobile ? 51 : 66) - (isMobile ? 51 : 66),
+        height: isMobile ? 51 : 66,
+      })),
     {
       key: (d) => d.chain.key,
       from: { opacity: 0, height: 0 },
@@ -121,7 +123,7 @@ export default function LandingMetricsTable({
 
   return (
     <>
-      <div className="flex flex-col mt-12 space-y-[5px] overflow-x-scroll z-100 w-full p-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-transparent scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
+      <div className="flex flex-col mt-3 md:mt-12 space-y-[5px] overflow-x-scroll z-100 w-full p-0 py-3 md:p-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-transparent scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
         <div
           className={`min-w-[800px] w-full ${
             interactable ? "pointer-events-auto" : "pointer-events-none"
@@ -368,13 +370,14 @@ export default function LandingMetricsTable({
             );
           })} */}
             </div>
-            <div className="pt-[32px] pb-[32px] w-3/5 mx-auto">
+            <div className="py-[16px] md:py-[32px] w-3/5 mx-auto">
               <hr className="border-dotted border-top-[1px] h-[0.5px] border-black/[16%] dark:border-white/[16%]" />
             </div>
             <div className="flex space-x-2 pl-16 pb-0.5">
               <span className="text-xs">
-                The following figure, “Multiple”, represents the number of unique
-                addresses that were active on multiple Layer 2s in a given week.
+                The following figure, “Multiple”, represents the number of
+                unique addresses that were active on multiple Layer 2s in a
+                given week.
               </span>
             </div>
             {rows().length > 0 &&

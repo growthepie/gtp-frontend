@@ -96,7 +96,39 @@ const Chain = ({ params }: { params: any }) => {
       <div className="flex w-full pl-2 md:pl-6 mt-10">
         {chainData && master && (
           <div className="flex flex-col w-full">
-            <div className="flex justify-between items-start w-full">
+            <div className="flex flex-col md:flex-row justify-between items-start w-full">
+              <div className="flex md:hidden space-x-[10px] text-xs md:text-sm xl:text-base items-start mb-8 mt-1">
+                  <Link
+                    href={chainData.block_explorer}
+                    className="flex w-1/3 h-[40px] items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <Icon icon="feather:copy" className="w-4 h-4" />
+                    <div className="block">Block Explorer</div>
+                  </Link>
+                  <Link
+                    href={chainData.website}
+                    className="flex w-1/3 h-[40px] items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <Icon icon="feather:external-link" className="w-4 h-4" />
+                    <div className="block">Website</div>
+                  </Link>
+                  <Link
+                    href={chainData.twitter}
+                    className="flex w-1/3  h-[40px] items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <Icon icon="feather:twitter" className="w-4 h-4" />
+                    <div className="block">
+                      <span className="">@</span>
+                      {chainData.twitter.split("https://twitter.com/")}
+                    </div>
+                  </Link>
+                </div>
               <div className="flex items-start">
                 <Heading className="text-2xl leading-snug text-[36px] mb-[19px]">
                   {chainData.name}
@@ -123,7 +155,7 @@ const Chain = ({ params }: { params: any }) => {
                   )}
                 </div>
               </div>
-              <div className="flex space-x-[10px] text-base md:text-sm xl:text-base items-start">
+              <div className="hidden md:flex space-x-[10px] text-sm md:text-sm xl:text-base items-start">
                 <Link
                   href={chainData.block_explorer}
                   className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
@@ -157,13 +189,14 @@ const Chain = ({ params }: { params: any }) => {
               </div>
             </div>
             <Subheading
-              className="text-[16px]"
+              className="text-[16px] w-10/12 md:w-auto"
               leftIcon={
                 AllChainsByKeys[chainKey].icon && (
-                  <div>
+                  <div className="h-[92%] md:h-auto">
+
                     <Icon
                       icon={`gtp:${AllChainsByKeys[chainKey].urlKey}-logo-monochrome`}
-                      className="w-6 h-6 mr-[12px] ml-[30px]"
+                      className="w-6 h-6 mr-[10px] ml-[10px] md:ml-[30px]"
                     />
                   </div>
                 )

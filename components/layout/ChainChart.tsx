@@ -734,7 +734,7 @@ export default function ChainChart({
           {Object.keys(timespans).map((timespan) => (
             <button
               key={timespan}
-              className={`rounded-full px-2 py-1.5 text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
+              className={`rounded-full px-2 py-3 font-semibold text-[14px] lg:px-4 lg:py-3 xl:px-6 xl:py-4 md:font-medium ${
                 selectedTimespan === timespan
                   ? "bg-forest-500 dark:bg-forest-1000"
                   : "hover:bg-forest-500/10"
