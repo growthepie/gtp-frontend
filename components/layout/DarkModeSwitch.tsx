@@ -3,7 +3,11 @@ import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
 
-export default function DarkModeSwitch() {
+type DarkModeSwitchProps = {
+  isMobile?: boolean;
+};
+
+export default function DarkModeSwitch({ isMobile }: DarkModeSwitchProps) {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
 
@@ -21,29 +25,34 @@ export default function DarkModeSwitch() {
   }
 
   return (
-    <div className="flex justify-between mr-[34px]">
+    <div className="flex justify-between">
       <div className="flex items-center">
         <input id="toggle" type="checkbox" className="hidden" />
         <label htmlFor="toggle" className="flex items-center cursor-pointer">
-          <div className="mr-3 font-medium" onClick={handleToggle}>
+          <div className="mr-1.5 md:mr-3 font-medium" onClick={handleToggle}>
             {theme === "dark" ? (
-              <Icon icon="feather:moon" className="h-6 w-6" />
+              <Icon
+                icon="feather:moon"
+                className="h-[19px] w-[19px] md:h-6 md:w-6"
+              />
             ) : (
-              <Icon icon="feather:sun" className="h-6 w-6" />
+              <Icon
+                icon="feather:sun"
+                className="h-[19px] w-[19px] md:h-6 md:w-6"
+              />
             )}
           </div>
           <div className="relative" onClick={handleToggle}>
             <div
               className={`block 
-                        w-[3.25rem] h-7
+                        ${isMobile ? "w-[40px] h-[22px]" : "w-[3.25rem] h-7"}
                         rounded-full transition duration-200 ease-in-out bg-forest-500`}
             ></div>
             <div
               className={`dot absolute left-0.5 top-0.5
-                        w-6
-                        h-6
+                        ${isMobile ? "w-[18px] h-[18px]" : "w-6 h-6"}
                         rounded-full transition duration-200 ease-in-out
-                        bg-forest-900 text-forest-500 
+                        bg-[#1F2726] text-forest-500 
                         ${theme === "dark" ? "transform translate-x-full" : ""}
                         rounded-full`}
             ></div>

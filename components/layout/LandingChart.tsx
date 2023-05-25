@@ -18,7 +18,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
 import { Sources } from "@/lib/datasources";
 import { useUIContext } from "@/contexts/UIContext";
-import { useMediaQuery } from 'usehooks-ts'
+import { useMediaQuery } from "usehooks-ts";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -540,6 +540,10 @@ export default function LandingChart({
             },
           },
         },
+        // events: {
+        //   load: function () {},
+        // },
+        // height: isMobile ? 200 : 400,
       },
       plotOptions: {
         area: {
@@ -964,6 +968,7 @@ export default function LandingChart({
     formatNumber,
     getSeriesType,
     getTickPositions,
+    isMobile,
     metric,
     onXAxisSetExtremes,
     selectedScale,
@@ -989,102 +994,101 @@ export default function LandingChart({
   }, [isSidebarOpen]);
 
   return (
-    <div className="w-full  mt-[15px] mb-[4rem] md:mb-[6rem] md:mt-[3rem] relative">
-        <div className="flex sm:hidden justify-center pb-[30px]">
-          <div className="flex dark:bg-[#4B5553] bg-forest-100 rounded-xl w-1/2 px-3 py-1.5 items-center mr-2">
-            <div className="flex flex-col w-1/2">
-              <Icon
-                icon="feather:users"
-                className="w-8 h-8 lg:w-14 lg:h-14 mr-2 relative left-1"
-              />
-              <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
-                Total Users
-              </div>
-            </div>
-              <div className="flex flex-col items-center justify-center">
-                <div className="text-xl lg:text-3xl font-[650]">
-                  {latest_total.toLocaleString()}
-                </div>
-                <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
-                  {latest_total_comparison > 0 ? (
-                    <span
-                      className="text-green-500 dark:text-green-400 font-semibold"
-                      style={{
-                        textShadow:
-                          theme === "dark"
-                            ? "1px 1px 4px #00000066"
-                            : "1px 1px 4px #ffffff99",
-                      }}
-                    >
-                      +{(latest_total_comparison * 100).toFixed(2)}%
-                    </span>
-                  ) : (
-                    <span
-                      className="text-red-500 dark:text-red-400 font-semibold"
-                      style={{
-                        textShadow:
-                          theme === "dark"
-                            ? "1px 1px 4px #00000066"
-                            : "1px 1px 4px #ffffff99",
-                      }}
-                    >
-                      {(latest_total_comparison * 100).toFixed(2)}%
-                    </span>
-                  )}{" "}
-                  in last week
-                </div>
+    <div className="w-full mb-[0rem] md:mb-[6rem] relative">
+      <div className="flex md:hidden justify-center pb-[30px]">
+        <div className="flex dark:bg-forest-500/20 bg-forest-100 rounded-xl w-1/2 px-3 py-1.5 items-center mr-2">
+          <div className="flex flex-col items-center flex-1">
+            <Icon
+              icon="feather:users"
+              className="w-8 h-8 lg:w-14 lg:h-14 mr-2 relative left-1"
+            />
+            <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
+              Total Users
             </div>
           </div>
-          <div className="flex dark:bg-[#4B5553] w-1/2 rounded-xl px-3 py-1.5 items-center mr-1.5">
-            <div className="flex flex-col w-1/2">
-              <Icon
-                icon="feather:layers"
-                className="w-8 h-8 lg:w-14 lg:h-14 mr-2 relative left-1"
-              />
-              <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
-                L2 Dominance
-              </div>
+          <div className="flex flex-col flex-1 items-center justify-center">
+            <div className="text-xl lg:text-3xl font-[650]">
+              {latest_total.toLocaleString()}
             </div>
-            <div className="flex flex-col items-center justify-center w-7/12">
-
-              <div className="text-xl lg:text-3xl font-[650]  relative right-2">
-                {l2_dominance.toFixed(2)}x
-              </div>
-              <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
-                {l2_dominance_comparison > 0 ? (
-                  <span
-                    className="text-green-500 dark:text-green-400 font-semibold"
-                    style={{
-                      textShadow:
-                        theme === "dark"
-                          ? "1px 1px 4px #00000066"
-                          : "1px 1px 4px #ffffff99",
-                    }}
-                  >
-                    +{l2_dominance_comparison.toFixed(2)}%
-                  </span>
-                ) : (
-                  <span
-                    className="text-green-500 dark:text-green-400 font-semibold"
-                    style={{
-                      textShadow:
-                        theme === "dark"
-                          ? "1px 1px 4px #00000066"
-                          : "1px 1px 4px #ffffff99",
-                    }}
-                  >
-                    {l2_dominance_comparison.toFixed(2)}%
-                  </span>
-                )}{" "}
-                in last week
-              </div>
+            <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
+              {latest_total_comparison > 0 ? (
+                <span
+                  className="text-green-500 dark:text-green-400 font-semibold"
+                  style={{
+                    textShadow:
+                      theme === "dark"
+                        ? "1px 1px 4px #00000066"
+                        : "1px 1px 4px #ffffff99",
+                  }}
+                >
+                  +{(latest_total_comparison * 100).toFixed(2)}%
+                </span>
+              ) : (
+                <span
+                  className="text-red-500 dark:text-red-400 font-semibold"
+                  style={{
+                    textShadow:
+                      theme === "dark"
+                        ? "1px 1px 4px #00000066"
+                        : "1px 1px 4px #ffffff99",
+                  }}
+                >
+                  {(latest_total_comparison * 100).toFixed(2)}%
+                </span>
+              )}{" "}
+              in last week
             </div>
           </div>
         </div>
-      <div className="flex flex-col rounded-[15px] py-[1px] px-0 sm:flex sm:flex-row w-full justify-between items-center static -top-32 left-0 right-0 text-xs sm:rounded-full dark:bg-[#1F2726] bg-forest-50 sm:p-0.5">
-        <div className="flex w-[90%] md:w-auto pb-[10px] md:pb-0 justify-between md:justify-center items-center space-x-0 md:space-x-1">
+        <div className="flex dark:bg-forest-500/20 w-1/2 rounded-xl px-3 py-1.5 items-center">
+          <div className="flex flex-col items-center flex-1">
+            <Icon
+              icon="feather:layers"
+              className="w-8 h-8 lg:w-14 lg:h-14 mr-2 relative left-1"
+            />
+            <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
+              L2 Dominance
+            </div>
+          </div>
+          <div className="flex flex-col flex-1 items-center justify-center w-7/12">
+            <div className="text-xl lg:text-3xl font-[650]">
+              {l2_dominance.toFixed(2)}x
+            </div>
+            <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
+              {l2_dominance_comparison > 0 ? (
+                <span
+                  className="text-green-500 dark:text-green-400 font-semibold"
+                  style={{
+                    textShadow:
+                      theme === "dark"
+                        ? "1px 1px 4px #00000066"
+                        : "1px 1px 4px #ffffff99",
+                  }}
+                >
+                  +{l2_dominance_comparison.toFixed(2)}%
+                </span>
+              ) : (
+                <span
+                  className="text-green-500 dark:text-green-400 font-semibold"
+                  style={{
+                    textShadow:
+                      theme === "dark"
+                        ? "1px 1px 4px #00000066"
+                        : "1px 1px 4px #ffffff99",
+                  }}
+                >
+                  {l2_dominance_comparison.toFixed(2)}%
+                </span>
+              )}{" "}
+              in last week
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base md:flex md:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 md:rounded-full dark:bg-[#1F2726] bg-forest-50 sm:p-0.5">
+        <div className="flex w-full md:w-auto justify-between md:justify-center items-center space-x-[4px] md:space-x-1">
           <button
-            className={`rounded-full font-semibold px-4 py-2 md:px-2 md:py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg md:font-medium ${
+            className={`rounded-full w-full md:w-auto px-4 py-1.5 md:py-3 font-medium ${
               showTotalUsers
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
@@ -1098,7 +1102,7 @@ export default function LandingChart({
             Total Users
           </button>
           <button
-            className={`rounded-full font-semibold px-4 py-2 md:px-2 md:py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg md:font-medium ${
+            className={`rounded-full w-full md:w-auto px-4 py-1.5 md:py-3 font-medium ${
               "absolute" === selectedScale && !showTotalUsers
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
@@ -1113,7 +1117,7 @@ export default function LandingChart({
           </button>
 
           <button
-            className={`rounded-full font-semibold px-4 py-2 md:px-2 md:py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg md:font-medium ${
+            className={`rounded-full w-full md:w-auto px-4 py-1.5 md:py-3 font-medium ${
               "percentage" === selectedScale
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
@@ -1147,15 +1151,15 @@ export default function LandingChart({
               </button>
             ))} */}
         </div>
-        <div className="block sm:hidden w-[70%] mx-auto ">
-            <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
+        <div className="block md:hidden w-[70%] mx-auto my-[10px]">
+          <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
         </div>
-        <div className="flex pb-80px pt-[10px] md:pt-0 justify-between md:justify-center items-center mx-4 md:mx-0 md:space-x-1">
+        <div className="flex w-full md:w-auto justify-between md:justify-center items-center mx-4 md:mx-0 space-x-[4px] lg:space-x-1">
           {!zoomed ? (
             Object.keys(timespans).map((timespan) => (
               <button
                 key={timespan}
-                className={`rounded-full font-semibold px-4 py-2 md:px-2 md:py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg md:font-medium  ${
+                className={`rounded-full w-full md:w-auto px-4 py-1.5 md:py-3 font-medium ${
                   selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
@@ -1205,7 +1209,7 @@ export default function LandingChart({
       {highchartsLoaded && filteredData.length > 0 ? (
         <div className="w-full py-4 rounded-xl">
           <div className="w-full h-[16rem] md:h-[26rem] relative rounded-xl">
-            <div className="absolute w-full h-[24rem] top-12 md:top-4">
+            <div className="absolute w-full h-[24rem] top-1 md:top-4">
               <HighchartsReact
                 highcharts={Highcharts}
                 options={options}
@@ -1225,7 +1229,7 @@ export default function LandingChart({
         </div>
       )}
 
-      <div className="flex justify-between items-center absolute -bottom-[5rem] left-0 right-0 rounded-full bg-forest-50 dark:bg-forest-900 p-0.5">
+      <div className="flex justify-between items-center absolute -bottom-[1rem] md:-bottom-[5rem] left-0 right-0 rounded-full bg-forest-50 dark:bg-forest-900 p-0.5">
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
         {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
         {/* toggle ETH */}
@@ -1244,7 +1248,7 @@ export default function LandingChart({
           />
         </div>
       </div>
-      <div className="flex justify-end items-center absolute -bottom-[6.5rem] left-0 right-0 rounded-full">
+      <div className="flex justify-end items-center absolute -bottom-[2.5rem] md:-bottom-[6.5rem] left-0 right-0 rounded-full">
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
         {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
         {/* toggle ETH */}
@@ -1256,13 +1260,13 @@ export default function LandingChart({
               className="w-8 h-8 lg:w-14 lg:h-14 mr-2"
             />
             <div className="flex flex-col items-center justify-center">
-              <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
+              <div className="text-xs font-medium leading-tight">
                 Total Users
               </div>
-              <div className="text-xl lg:text-3xl font-[650]">
+              <div className="text-3xl font-[650]">
                 {latest_total.toLocaleString()}
               </div>
-              <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
+              <div className="text-xs font-medium leading-tight">
                 {latest_total_comparison > 0 ? (
                   <span
                     className="text-[#45AA6F] dark:text-[#4CFF7E] font-semibold"
@@ -1298,13 +1302,13 @@ export default function LandingChart({
               className="w-8 h-8 lg:w-14 lg:h-14 mr-2"
             />
             <div className="flex flex-col items-center justify-center">
-              <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
+              <div className="text-xs font-medium leading-tight">
                 Layer-2 Dominance
               </div>
-              <div className="text-xl lg:text-3xl font-[650]">
+              <div className="text-3xl font-[650]">
                 {l2_dominance.toFixed(2)}x
               </div>
-              <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
+              <div className="text-xs font-medium leading-tight">
                 {l2_dominance_comparison > 0 ? (
                   <span
                     className="text-[#45AA6F] dark:text-[#4CFF7E] font-semibold"
@@ -1340,8 +1344,8 @@ export default function LandingChart({
                 <Icon icon="feather:info" className="w-6 h-6" />
               </div>
             </TooltipTrigger>
-            <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-              <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[435px] h-[80px] flex items-center">
+            <TooltipContent className="-mt-10 pr-10 md:mt-0 z-50 flex items-center justify-center md:pr-[3px]">
+              <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto md:w-[435px] h-[80px] flex items-center">
                 <div className="flex flex-col space-y-1">
                   <div className="font-bold text-sm leading-snug">
                     Data Sources:

@@ -2,7 +2,11 @@
 import { useEffect, useState } from "react";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 
-export default function EthUsdSwitch() {
+type EthUsdSwitchProps = {
+  isMobile?: boolean;
+};
+
+export default function EthUsdSwitch({ isMobile }: EthUsdSwitchProps) {
   const [mounted, setMounted] = useState(false);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
@@ -20,7 +24,7 @@ export default function EthUsdSwitch() {
   }
 
   return (
-    <div className="flex justify-between mr-[34px]">
+    <div className="flex justify-between">
       <div className="flex items-center">
         <input id="toggle" type="checkbox" className="hidden" />
         <label htmlFor="toggle" className="flex items-center cursor-pointer">
@@ -33,22 +37,30 @@ export default function EthUsdSwitch() {
             {showUsd === true ? <>USD</> : <>ETH</>}
           </div> */}
           <div
-            className="relative"
+            className="relative text-sm md:text-base font-medium"
             onClick={() => {
               setShowUsd(showUsd ? false : true);
             }}
           >
             <div
               className={` 
-                        w-[104px] h-7 flex justify-between items-center px-3 text-base font-medium
+                        ${
+                          isMobile
+                            ? "w-[80px] h-[22px] text-[13px]"
+                            : "w-[104px] h-7"
+                        } flex justify-between items-center px-2 md:px-3
                         rounded-full transition duration-200 ease-in-out text-forest-900 bg-forest-500`}
             >
-              <div>ETH</div>
-              <div>USD</div>
+              <div className="leading-[0]">ETH</div>
+              <div className="leading-[0]">USD</div>
             </div>
             <div
-              className={`dot absolute left-0.5 top-0.5 w-[50px] h-6 rounded-full transition-transform duration-200 
-                          ease-in-out text-forest-500 bg-forest-900 text-sm font-medium
+              className={`dot absolute left-[2px] top-[2px] md:left-0.5 md:top-0.5 ${
+                isMobile
+                  ? "w-[38px] h-[18px] leading-[14px] text-[12px]"
+                  : "w-[50px] h-6 text-sm leading-[20px]"
+              } rounded-full transition-transform duration-200
+                          ease-in-out text-forest-500 bg-[#1F2726]
                           py-0.5 px-1.5 text-center
                           ${
                             showUsd ? "transform translate-x-full" : ""

@@ -27,6 +27,8 @@ const MetricsTable = ({
 
   const [maxVal, setMaxVal] = useState<number | null>(null);
 
+  const isMobile = useMediaQuery("(max-width: 767px)");
+
   const { theme } = useTheme();
 
   // set maxVal
@@ -97,7 +99,11 @@ const MetricsTable = ({
 
   let height = 0;
   const transitions = useTransition(
-    rows().map((data) => ({ ...data, y: (height += 66) - 66, height: 66 })),
+    rows().map((data) => ({
+      ...data,
+      y: (height += isMobile ? 51 : 66) - (isMobile ? 51 : 66),
+      height: isMobile ? 51 : 66,
+    })),
     {
       key: (d) => d.chain.key,
       from: { opacity: 0, height: 0 },
@@ -117,221 +123,224 @@ const MetricsTable = ({
   };
 
   return (
-    <div className="flex flex-col font-semibold space-y-[5px] w-full transition-all duration-300">
-      <div
-        className={`flex items-center py-1 pl-2 pr-4 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm`}
-      >
-        <div className="basis-1/3 pl-12">Chain</div>
-        <div className="basis-2/3 flex w-full pr-4">
-          {/* <div className={`basis-1/5 text-right capitalize`}>
+    <div className="flex flex-col mt-3 md:mt-0 font-semibold space-y-[5px] overflow-x-scroll overflow-y-hidden z-100 w-full transition-all duration-300 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-transparent scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
+      <div className={`min-w-[550px] w-full`}>
+        <div
+          className={`flex items-center py-1 pl-2 pr-4 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm`}
+        >
+          <div className="basis-1/3 pl-12">Chain</div>
+          <div className="basis-2/3 flex w-full pr-4">
+            {/* <div className={`basis-1/5 text-right capitalize`}>
               Current
             </div> */}
-          {["1d", "7d", "30d", "365d"].map((timespan) => (
-            <div key={timespan} className="basis-1/4 text-right">
-              {timespanLabels[timespan]}
-            </div>
-          ))}
+            {["1d", "7d", "30d", "365d"].map((timespan) => (
+              <div key={timespan} className="basis-1/4 text-right">
+                {timespanLabels[timespan]}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="w-full relative" style={{ height }}>
-        {transitions((style, item, t, index) => (
-          <animated.div
-            className="absolute w-full"
-            style={{ zIndex: Object.keys(data).length - index, ...style }}
-          >
-            <div
-              key={item.chain.key}
-              className={`flex relative items-center cursor-pointer rounded-full w-full font-[400] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] group
+        <div className="w-full relative" style={{ height }}>
+          {transitions((style, item, t, index) => (
+            <animated.div
+              className="absolute w-full"
+              style={{ zIndex: Object.keys(data).length - index, ...style }}
+            >
+              <div
+                key={item.chain.key}
+                className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[11.5px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] group
               ${
                 item.chain.key === "ethereum"
                   ? showEthereumMainnet
                     ? "hover:border hover:p-1.5 p-[7px] py-[4px] lg:p-[13px] lg:py-[8px] hover:lg:p-3 hover:lg:py-[7px]"
                     : "opacity-40 hover:opacity-80 p-[7px] py-[4px] lg:p-[13px] lg:py-[8px]"
                   : selectedChains.includes(item.chain.key)
-                  ? " hover:bg-forest-50/5 p-1.5 py-[4px] lg:p-3 lg:py-[8px] border"
-                  : "opacity-40 hover:opacity-80 p-1.5 py-[4px] lg:p-3 lg:py-[8px] border"
+                  ? " hover:bg-forest-500/10"
+                  : "opacity-50 grayscale hover:opacity-70 hover:grayscale-20 transition-all duration-100"
               } `}
-              onClick={() => {
-                if (item.chain.key === "ethereum") {
-                  if (showEthereumMainnet) {
-                    setShowEthereumMainnet(false);
+                onClick={() => {
+                  if (item.chain.key === "ethereum") {
+                    if (showEthereumMainnet) {
+                      setShowEthereumMainnet(false);
+                    } else {
+                      setShowEthereumMainnet(true);
+                    }
                   } else {
-                    setShowEthereumMainnet(true);
+                    if (selectedChains.includes(item.chain.key)) {
+                      setSelectedChains(
+                        selectedChains.filter((c) => c !== item.chain.key)
+                      );
+                    } else {
+                      setSelectedChains([...selectedChains, item.chain.key]);
+                    }
                   }
-                } else {
-                  if (selectedChains.includes(item.chain.key)) {
-                    setSelectedChains(
-                      selectedChains.filter((c) => c !== item.chain.key)
-                    );
-                  } else {
-                    setSelectedChains([...selectedChains, item.chain.key]);
-                  }
-                }
-              }}
-            >
-              <div className="flex basis-1/3 items-center space-x-2">
-                <div className="relative">
-                  <div
-                    className={`w-9 h-9 rounded-full border-[5px] ${
-                      item.chain.border[theme ?? "dark"][1]
-                    } ${selectedChains.includes(item.chain.key) ? "" : ""}`}
-                  ></div>
-                  <Icon
-                    icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
-                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5 h-5"
-                    style={{
-                      color: item.chain.colors[theme ?? "dark"][1],
-                    }}
-                  />
-                </div>
-                <div className="w-full break-inside-avoid">
-                  <div className="w-full flex flex-col space-y-0.5">
-                    <div className="flex w-full items-baseline text-sm font-bold pb-0.5">
-                      {item.data.daily.types.includes("usd") && (
-                        <>
-                          {showUsd ? (
-                            <div className="text-[13px] font-normal">$</div>
-                          ) : (
-                            <div className="text-[13px] font-normal">Ξ</div>
-                          )}
-                        </>
-                      )}
-                      {item.data.daily.types.includes("usd")
-                        ? Intl.NumberFormat(undefined, {
-                            notation: "compact",
-                            maximumFractionDigits: 2,
-                            minimumFractionDigits: 2,
-                          }).format(
-                            item.data.daily.data[
-                              item.data.daily.data.length - 1
-                            ][
-                              !showUsd && item.data.daily.types.includes("usd")
-                                ? 2
-                                : 1
-                            ]
-                          )
-                        : Intl.NumberFormat(undefined, {
-                            notation: "compact",
-                            maximumFractionDigits: 2,
-                            minimumFractionDigits: 2,
-                          }).format(
-                            item.data.daily.data[
-                              item.data.daily.data.length - 1
-                            ][1]
-                          )}
-                    </div>
-                    <div className="relative w-full">
-                      {item.chain.key !== "ethereum" && (
-                        <>
-                          <div className="absolute left-0 -top-[3px] w-full h-1 bg-black/10"></div>
-                          <div
-                            className={`absolute left-0 -top-[3px] h-1 bg-forest-900 dark:bg-forest-50 rounded-none font-semibold transition-width duration-300 `}
-                            style={{
-                              width: item.barWidth,
-                            }}
-                          ></div>
-                        </>
-                      )}
-                    </div>
-                    <div className="text-xs font-medium">
-                      {item.chain.label}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="basis-2/3 pr-4 flex w-full font-medium">
-                {["1d", "7d", "30d", "365d"].map((timespan) => (
-                  <div
-                    key={timespan}
-                    className="basis-1/4 text-right text-base"
-                  >
-                    {item.data.changes[timespan][0] === null ? (
-                      <span className="text-gray-500 text-center mx-4 inline-block">
-                        —
-                      </span>
-                    ) : (
-                      <>
-                        {item.data.changes[timespan][0] >= 0 ? (
-                          <span className="text-[#45AA6F] dark:text-[#4CFF7E]">
-                            +
-                            {(
-                              Math.round(
-                                item.data.changes[timespan][0] * 1000
-                              ) / 10
-                            ).toFixed(1)}
-                            %
-                          </span>
-                        ) : (
-                          <span className="text-[#DD3408] dark:text-[#FF3838]">
-                            {(
-                              Math.round(
-                                item.data.changes[timespan][0] * 1000
-                              ) / 10
-                            ).toFixed(1)}
-                            %
-                          </span>
-                        )}
-                      </>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <div
-                className={`absolute  ${
-                  item.chain.key === "ethereum"
-                    ? showEthereumMainnet
-                      ? "-right-[19px] group-hover:-right-[20px]"
-                      : "-right-[19px]"
-                    : "-right-[20px]"
-                }`}
+                }}
               >
-                <div className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className={`w-6 h-6 ${
-                      item.chain.key === "ethereum"
-                        ? showEthereumMainnet
+                <div className="flex basis-1/3 items-center space-x-2">
+                  <div className="relative">
+                    <div
+                      className={`w-9 h-9 rounded-full border-[5px] ${
+                        item.chain.border[theme ?? "dark"][1]
+                      } ${selectedChains.includes(item.chain.key) ? "" : ""}`}
+                    ></div>
+                    <Icon
+                      icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
+                      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5 h-5"
+                      style={{
+                        color: item.chain.colors[theme ?? "dark"][1],
+                      }}
+                    />
+                  </div>
+                  <div className="w-full break-inside-avoid">
+                    <div className="w-full flex flex-col space-y-0.5">
+                      <div className="flex w-full items-baseline text-sm font-bold pb-0.5">
+                        {item.data.daily.types.includes("usd") && (
+                          <>
+                            {showUsd ? (
+                              <div className="text-[13px] font-normal">$</div>
+                            ) : (
+                              <div className="text-[13px] font-normal">Ξ</div>
+                            )}
+                          </>
+                        )}
+                        {item.data.daily.types.includes("usd")
+                          ? Intl.NumberFormat(undefined, {
+                              notation: "compact",
+                              maximumFractionDigits: 2,
+                              minimumFractionDigits: 2,
+                            }).format(
+                              item.data.daily.data[
+                                item.data.daily.data.length - 1
+                              ][
+                                !showUsd &&
+                                item.data.daily.types.includes("usd")
+                                  ? 2
+                                  : 1
+                              ]
+                            )
+                          : Intl.NumberFormat(undefined, {
+                              notation: "compact",
+                              maximumFractionDigits: 2,
+                              minimumFractionDigits: 2,
+                            }).format(
+                              item.data.daily.data[
+                                item.data.daily.data.length - 1
+                              ][1]
+                            )}
+                      </div>
+                      <div className="relative w-full">
+                        {item.chain.key !== "ethereum" && (
+                          <>
+                            <div className="absolute left-0 -top-[3px] w-full h-1 bg-black/10"></div>
+                            <div
+                              className={`absolute left-0 -top-[3px] h-1 bg-forest-900 dark:bg-forest-50 rounded-none font-semibold transition-width duration-300 `}
+                              style={{
+                                width: item.barWidth,
+                              }}
+                            ></div>
+                          </>
+                        )}
+                      </div>
+                      <div className="text-xs font-medium">
+                        {item.chain.label}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="basis-2/3 pr-4 flex w-full font-medium">
+                  {["1d", "7d", "30d", "365d"].map((timespan) => (
+                    <div
+                      key={timespan}
+                      className="basis-1/4 text-right text-base"
+                    >
+                      {item.data.changes[timespan][0] === null ? (
+                        <span className="text-gray-500 text-center mx-4 inline-block">
+                          —
+                        </span>
+                      ) : (
+                        <>
+                          {item.data.changes[timespan][0] >= 0 ? (
+                            <span className="text-[#45AA6F] dark:text-[#4CFF7E]">
+                              +
+                              {(
+                                Math.round(
+                                  item.data.changes[timespan][0] * 1000
+                                ) / 10
+                              ).toFixed(1)}
+                              %
+                            </span>
+                          ) : (
+                            <span className="text-[#DD3408] dark:text-[#FF3838]">
+                              {(
+                                Math.round(
+                                  item.data.changes[timespan][0] * 1000
+                                ) / 10
+                              ).toFixed(1)}
+                              %
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div
+                  className={`absolute  ${
+                    item.chain.key === "ethereum"
+                      ? showEthereumMainnet
+                        ? "-right-[19px] group-hover:-right-[20px]"
+                        : "-right-[19px]"
+                      : "-right-[20px]"
+                  }`}
+                >
+                  <div className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className={`w-6 h-6 ${
+                        item.chain.key === "ethereum"
+                          ? showEthereumMainnet
+                            ? "opacity-0"
+                            : "opacity-100"
+                          : selectedChains.includes(item.chain.key)
                           ? "opacity-0"
                           : "opacity-100"
-                        : selectedChains.includes(item.chain.key)
-                        ? "opacity-0"
-                        : "opacity-100"
-                    }`}
-                  >
-                    <circle
-                      xmlns="http://www.w3.org/2000/svg"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                    />
-                  </svg>
-                </div>
-                <div className="p-1 rounded-full bg-forest-50 dark:bg-forest-900">
-                  <Icon
-                    icon="feather:check-circle"
-                    className={`w-6 h-6 ${
-                      item.chain.key === "ethereum"
-                        ? showEthereumMainnet
+                      }`}
+                    >
+                      <circle
+                        xmlns="http://www.w3.org/2000/svg"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                      />
+                    </svg>
+                  </div>
+                  <div className="p-1 rounded-full bg-forest-50 dark:bg-forest-900">
+                    <Icon
+                      icon="feather:check-circle"
+                      className={`w-6 h-6 ${
+                        item.chain.key === "ethereum"
+                          ? showEthereumMainnet
+                            ? "opacity-100"
+                            : "opacity-0"
+                          : selectedChains.includes(item.chain.key)
                           ? "opacity-100"
                           : "opacity-0"
-                        : selectedChains.includes(item.chain.key)
-                        ? "opacity-100"
-                        : "opacity-0"
-                    }`}
-                  />
+                      }`}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          </animated.div>
-        ))}
+            </animated.div>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -19,18 +19,19 @@ export default function QuestionAnswer({
         className="flex items-center cursor-pointer space-x-[10px]"
         onClick={() => setOpen(!open)}
       >
-        {open ? (
-          <Icon
-            icon="feather:arrow-down-circle"
-            className="w-[13px] h-[13px]"
-          />
-        ) : (
-          <Icon
-            icon="feather:arrow-right-circle"
-            className="w-[13px] h-[13px]"
-          />
-        )}
-
+        <div>
+          {open ? (
+            <Icon
+              icon="feather:arrow-down-circle"
+              className="w-[13px] h-[13px] block"
+            />
+          ) : (
+            <Icon
+              icon="feather:arrow-right-circle"
+              className="w-[13px] h-[13px] block"
+            />
+          )}
+        </div>
         <div className="font-semibold text-sm leading-snug">{question}</div>
       </div>
       <div
