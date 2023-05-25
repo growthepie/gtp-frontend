@@ -18,6 +18,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
 import { Sources } from "@/lib/datasources";
 import { useUIContext } from "@/contexts/UIContext";
+import { useMediaQuery } from 'usehooks-ts'
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -228,6 +229,8 @@ export default function LandingChart({
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
 
   const [totalUsersIncrease, setTotalUsersIncrease] = useState(0);
+
+  const isMobile = useMediaQuery("(max-width: 767px)");
 
   const getTickPositions = useCallback(
     (xMin: any, xMax: any): number[] => {
@@ -509,6 +512,7 @@ export default function LandingChart({
   const options = useMemo((): Highcharts.Options => {
     const dynamicOptions: Highcharts.Options = {
       chart: {
+        height: isMobile ? 250 : 400,
         type: selectedScale === "percentage" ? "area" : "column",
         plotBorderColor: "transparent",
         zooming: {
@@ -1077,7 +1081,7 @@ export default function LandingChart({
             </div>
           </div>
         </div>
-      <div className="flex flex-col rounded-[15px] py-[1px] px-0 sm:flex sm:flex-row w-full justify-between items-center static sm:absolute -top-32 left-0 right-0 text-xs sm:rounded-full dark:bg-[#1F2726] bg-forest-50 sm:p-0.5">
+      <div className="flex flex-col rounded-[15px] py-[1px] px-0 sm:flex sm:flex-row w-full justify-between items-center static -top-32 left-0 right-0 text-xs sm:rounded-full dark:bg-[#1F2726] bg-forest-50 sm:p-0.5">
         <div className="flex w-[90%] md:w-auto pb-[10px] md:pb-0 justify-between md:justify-center items-center space-x-0 md:space-x-1">
           <button
             className={`rounded-full font-semibold px-4 py-2 md:px-2 md:py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg md:font-medium ${
@@ -1200,7 +1204,7 @@ export default function LandingChart({
       </div>
       {highchartsLoaded && filteredData.length > 0 ? (
         <div className="w-full py-4 rounded-xl">
-          <div className="w-full h-[26rem] relative rounded-xl">
+          <div className="w-full h-[16rem] md:h-[26rem] relative rounded-xl">
             <div className="absolute w-full h-[24rem] top-12 md:top-4">
               <HighchartsReact
                 highcharts={Highcharts}

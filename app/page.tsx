@@ -120,7 +120,7 @@ export default function Home() {
       <div className="flex w-full mt-[65px]">
         <div className={`flex flex-col flex-1 pl-2 md:pl-6 w-full`}>
           <>
-            <Heading className="font-bold text-[30px] md:font-normal leading-snug md:text-[36px] mb-[28px] lg:mb-[30px]">
+            <Heading className="font-bold text-[30px] leading-snug md:text-[36px] mb-[28px] lg:mb-[30px]">
               Growing Ethereum’s Ecosystem Together
             </Heading>
             {data && landing && master && <TopAnimation />}
@@ -220,7 +220,7 @@ export default function Home() {
               Frequently Asked Questions
             </Heading>
           </div>
-          <div className="flex flex-col space-y-[15px] my-[30px]">
+          <div className="flex flex-col space-y-[15px] my-[30px] mr-1 md:mr-0">
             <QuestionAnswer
               className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
               question="What's up with the name?"

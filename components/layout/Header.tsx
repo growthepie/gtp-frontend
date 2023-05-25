@@ -30,7 +30,7 @@ export default function Header() {
               <Sidebar
                 trigger={
                   <button className="flex items-center space-x-2">
-                    <Icon icon="feather:menu" className="h-8 w-8" />
+                    <Icon icon="feather:menu" className="h-[32px] w-[32px]" />
                   </button>
                 }
                 isMobile={true}
