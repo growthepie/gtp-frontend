@@ -1000,6 +1000,17 @@ export default function LandingChart({
     }, 300);
   }, [isSidebarOpen]);
 
+  useEffect(() => {
+    if (chartComponent.current) {
+      if (isMobile) {
+        chartComponent.current.setSize(null, 200, false);
+      } else {
+        chartComponent.current.setSize(null, 400, false);
+      }
+    }
+  }, [isMobile]);
+
+
   return (
     <div className="w-full mb-[0rem] md:mb-[6rem] relative">
       <div className="flex md:hidden justify-center pb-[30px]">

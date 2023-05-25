@@ -1080,6 +1080,7 @@ export default function ComparisonChart({
     formatNumber,
     showEthereumMainnet,
     dataGrouping,
+    isMobile
   ]);
 
   useEffect(() => {
@@ -1098,10 +1099,21 @@ export default function ComparisonChart({
     }, 300);
   }, [isSidebarOpen]);
 
+  useEffect(() => {
+    if (chartComponent.current) {
+      if (isMobile) {
+        chartComponent.current.setSize(null, 200, false);
+      } else {
+        chartComponent.current.setSize(null, 400, false);
+      }
+    }
+  }, [isMobile]);
+
+
   return (
     <div className="w-full flex-col relative">
       <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-forest-900 p-0.5">
-        <div className="flex justify-center items-center">
+        <div className="hidden md:flex justify-center items-center">
           <div className="w-7 h-7 lg:w-9 lg:h-9 relative ml-[21px] mr-1.5">
             <Image
               src="/GTP-Chain.png"
@@ -1115,12 +1127,12 @@ export default function ComparisonChart({
             Selected Chains
           </h2>
         </div>
-        <div className="flex justify-center items-center space-x-1">
+        <div className="flex justify-between md:justify-center w-full md:w-auto items-center space-x-1 px-[1px]">
           {!zoomed ? (
             Object.keys(timespans).map((timespan) => (
               <button
                 key={timespan}
-                className={`rounded-full px-2 py-3 text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
+                className={`rounded-full px-[16px] py-[8px] text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
                   selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
@@ -1207,18 +1219,22 @@ export default function ComparisonChart({
           </div>
         )}
       </div>
-      <div className="flex w-full justify-between items-center text-xs md:text-base rounded-full bg-forest-50 dark:bg-forest-900 pr-4 md:pr-0 p-0.5 px-1">
+      <div className="flex flex-col md:flex-row w-full justify-normal md:justify-between items-center text-sm md:text-base rounded-xl md:rounded-full bg-forest-50 dark:bg-forest-900 p-0.5 px-1">
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
         {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
         {/* toggle ETH */}
-        <div>
+        <div className={`justify-between w-full md:w-auto pt-[2px] md:pt-0 h-[35px] md:h-auto ${
+          (data.filter((d) => d.name === "ethereum").length > 0)
+          ? "flex"
+          : "hidden"
+        }`}>
           {data.filter((d) => d.name === "ethereum").length > 0 && (
             <>
               <div className="z-10 block lg:hidden">
                 <Switch
                   checked={showEthereumMainnet}
                   onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
-                  rightLabel="ETH"
+                  rightLabel="Show Ethereum"
                 />
               </div>
               <div className="z-10 hidden lg:block">
@@ -1230,16 +1246,60 @@ export default function ComparisonChart({
               </div>
             </>
           )}
+            <div className="block md:hidden z-10">
+              <Tooltip placement="left" allowInteract>
+                <TooltipTrigger>
+                  <div className="p-1 z-10">
+                    <Icon icon="feather:info" className="w-6 h-6" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
+                  <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
+                    <div className="flex flex-col space-y-1">
+                      <div className="font-bold text-sm leading-snug">
+                        Data Sources:
+                      </div>
+                      <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
+                        {sources
+                          .map<ReactNode>((s) => (
+                            <Link
+                              key={s}
+                              rel="noopener noreferrer"
+                              target="_blank"
+                              href={Sources[s] ?? ""}
+                              className="hover:text-forest-500 dark:hover:text-forest-500 underline"
+                            >
+                              {s}
+                            </Link>
+                          ))
+                          .reduce((prev, curr) => [prev, ", ", curr])}
+                      </div>
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </div>
         </div>
-        <div className="flex justify-end items-center">
+        <div className={`md:hidden w-[70%] mx-auto my-[4px] pb-2 md:pb-0 ${
+          (data.filter((d) => d.name === "ethereum").length > 0)
+          ? "block"
+          : "hidden"
+        }`}>
+          <hr className={`border-dotted border-top-[1px] h-[0.5px] border-forest-400 ${
+          (data.filter((d) => d.name === "ethereum").length > 0)
+          ? "block"
+          : "hidden"
+          }`}/> 
+        </div>
+        <div className="flex justify-normal md:justify-end items-center w-full md:w-auto">
           {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
           {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
           {/* toggle ETH */}
 
-          <div className="flex justify-center items-center pl-2 md:pl-0">
-            <div className="flex justify-center items-center space-x-0 md:space-x-1 mr-0 md:mr-2.5">
+          <div className="flex justify-center items-center pl-2 md:pl-0 w-full md:w-auto">
+            <div className="flex justify-between md:justify-center items-center space-x-0 md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
               <button
-                className={`rounded-full z-10 px-1.5 py-1 text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
+                className={`rounded-full z-10 px-[16px] py-[6px] text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
                   "absolute" === selectedScale
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
@@ -1251,7 +1311,7 @@ export default function ComparisonChart({
                 Absolute
               </button>
               <button
-                className={`rounded-full z-10 px-1.5 py-1 text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
+                className={`rounded-full z-10 px-[16px] py-[6px] text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
                   "log" === selectedScale
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
@@ -1263,7 +1323,7 @@ export default function ComparisonChart({
                 Stacked
               </button>
               <button
-                className={`rounded-full z-10 px-1.5 py-1 text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
+                className={`rounded-full z-10 px-[16px] py-[6px] text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
                   "percentage" === selectedScale
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
@@ -1275,37 +1335,39 @@ export default function ComparisonChart({
                 Percentage
               </button>
             </div>
-            <Tooltip placement="left" allowInteract>
-              <TooltipTrigger>
-                <div className="p-1 z-10">
-                  <Icon icon="feather:info" className="w-6 h-6" />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-                <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
-                  <div className="flex flex-col space-y-1">
-                    <div className="font-bold text-sm leading-snug">
-                      Data Sources:
-                    </div>
-                    <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
-                      {sources
-                        .map<ReactNode>((s) => (
-                          <Link
-                            key={s}
-                            rel="noopener noreferrer"
-                            target="_blank"
-                            href={Sources[s] ?? ""}
-                            className="hover:text-forest-500 dark:hover:text-forest-500 underline"
-                          >
-                            {s}
-                          </Link>
-                        ))
-                        .reduce((prev, curr) => [prev, ", ", curr])}
+            <div className="hidden md:flex">
+              <Tooltip placement="left" allowInteract>
+                <TooltipTrigger>
+                  <div className="p-1 z-10">
+                    <Icon icon="feather:info" className="w-6 h-6" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
+                  <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
+                    <div className="flex flex-col space-y-1">
+                      <div className="font-bold text-sm leading-snug">
+                        Data Sources:
+                      </div>
+                      <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
+                        {sources
+                          .map<ReactNode>((s) => (
+                            <Link
+                              key={s}
+                              rel="noopener noreferrer"
+                              target="_blank"
+                              href={Sources[s] ?? ""}
+                              className="hover:text-forest-500 dark:hover:text-forest-500 underline"
+                            >
+                              {s}
+                            </Link>
+                          ))
+                          .reduce((prev, curr) => [prev, ", ", curr])}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </TooltipContent>
-            </Tooltip>
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </div>
         </div>
       </div>

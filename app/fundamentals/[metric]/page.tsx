@@ -92,6 +92,7 @@ const Chain = ({ params }: { params: any }) => {
       }, loadingTimeoutSeconds);
   }, [metricLoading, metricValidating, metricData, loadingTimeoutSeconds]);
 
+
   if (errorCode) {
     return <Error statusCode={errorCode} />;
   }
