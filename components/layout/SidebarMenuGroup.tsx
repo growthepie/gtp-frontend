@@ -10,12 +10,12 @@ import { NavigationItem } from "@/lib/navigation";
 
 type SidebarProps = {
   item: NavigationItem;
-  trigger: ReactNode;
   className?: string;
   onOpen?: () => void;
   onClose?: () => void;
   children?: ReactNode;
   sidebarOpen?: boolean;
+  isMobile?: boolean;
 };
 
 export default function SidebarMenuGroup({
@@ -23,6 +23,7 @@ export default function SidebarMenuGroup({
   onOpen,
   onClose,
   sidebarOpen,
+  isMobile,
 }: SidebarProps) {
   const { data: master } = useSWR<any>(MasterURL);
 
@@ -76,7 +77,7 @@ export default function SidebarMenuGroup({
     return (
       <div className="group flex flex-col">
         <Tooltip key={item.label} placement="right">
-          <TooltipTrigger className="h-6 mb-8 cursor-default pl-8 overflow-visible">
+          <TooltipTrigger className="h-6 mb-8 cursor-default pl-0 md:pl-8 overflow-visible">
             <div className="flex items-center justify-items-center opacity-70">
               <div className="w-6 mx-0">
                 <div className="w-6 mx-auto grayscale">
@@ -112,7 +113,7 @@ export default function SidebarMenuGroup({
       <div className="group flex flex-col">
         {/* open in new tab */}
         <Tooltip key={item.label} placement="right">
-          <TooltipTrigger className="h-6 mb-8 cursor-default pl-8 overflow-visible">
+          <TooltipTrigger className="h-6 mb-8 cursor-default pl-0 md:pl-8 overflow-visible">
             <Link
               target={
                 !["Home", "Contributors"].includes(item.name) ? "_blank" : ""
@@ -152,7 +153,7 @@ export default function SidebarMenuGroup({
     <div className="flex flex-col">
       <div className="text-xs"></div>
       <Tooltip key={item.label} placement="right">
-        <TooltipTrigger className="h-6 pl-8 overflow-visible">
+        <TooltipTrigger className="h-6 pl-0 md:pl-8 overflow-visible">
           <div
             className="group flex items-center justify-items-start mb-2 cursor-pointer"
             onClick={handleToggle}
@@ -173,7 +174,7 @@ export default function SidebarMenuGroup({
                       ? "feather:arrow-down-circle"
                       : "feather:arrow-left-circle"
                   }
-                  className="w-[13px] h-[13px] mr-5 my-auto"
+                  className="w-[13px] h-[13px] mr-[5px] md:mr-5 my-auto"
                 />
               </div>
             ) : (
@@ -198,7 +199,7 @@ export default function SidebarMenuGroup({
       </Tooltip>
 
       <div
-        className={`flex flex-col overflow-hidden mb-8 w-80 transition-height duration-200 ${
+        className={`flex flex-col overflow-hidden mb-8 w-full md:w-80 transition-height duration-200 ${
           isOpen ? "h-auto mt-4" : "h-0 mt-0"
         }`}
       >
@@ -211,9 +212,9 @@ export default function SidebarMenuGroup({
             .map((option) => {
               return (
                 <Tooltip key={option.label} placement="right">
-                  <TooltipTrigger className="px-5 overflow-visible">
+                  <TooltipTrigger className="px-0 md:px-5 overflow-visible">
                     <Link
-                      className={`group flex items-center justify-items-center rounded-l-full relative ${
+                      className={`group flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
                         urlParts[1].trim().localeCompare(option.urlKey) === 0
                           ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
                           : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"

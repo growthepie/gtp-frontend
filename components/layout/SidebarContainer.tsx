@@ -72,13 +72,7 @@ export default function SidebarContainer() {
         </div>
       )}
 
-      <Sidebar
-        trigger={
-          <button className="flex items-center space-x-2">
-            <Icon icon="feather:menu" className="h-6 w-6" />
-          </button>
-        }
-      />
+      <Sidebar />
     </div>
   );
 }
