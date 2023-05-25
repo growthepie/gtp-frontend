@@ -14,26 +14,11 @@ export const Contributors = [
     linkedin: "https://www.linkedin.com/in/tobsch",
   },
   {
-    name: "Chris Keshian",
-    image: "/contributors/chris.png",
-    role: "Product",
-    twitter: "https://www.twitter.com/chriskeshian",
-    linkedin: "https://www.linkedin.com/in/chriskeshian",
-  },
-
-  {
     name: "Manish Gupta",
-    image: "/contributors/tobias.png",
+    image: "/contributors/manish.png",
     role: "Frontend",
     twitter: "https://www.twitter.com/manishiwa",
     linkedin: "https://www.linkedin.com/in/manishiwa",
-  },
-  {
-    name: "Lorenz Lehmann",
-    image: "/contributors/lorenz.png",
-    role: "Research",
-    twitter: "https://www.twitter.com/LehmannLorenz",
-    linkedin: "https://www.linkedin.com/in/lorenz-lehmann",
   },
   {
     name: "Michael May",
@@ -42,6 +27,22 @@ export const Contributors = [
     twitter: "https://www.twitter.com/monkelmoo",
     linkedin: "https://www.linkedin.com/in/michael-may-3008a1261",
   },
+  {
+    name: "Chris Keshian",
+    image: "/contributors/chris.png",
+    role: "Product",
+    twitter: "https://www.twitter.com/chriskeshian",
+    linkedin: "https://www.linkedin.com/in/chriskeshian",
+  },
+
+  {
+    name: "Lorenz Lehmann",
+    image: "/contributors/lorenz.png",
+    role: "Research",
+    twitter: "https://www.twitter.com/LehmannLorenz",
+    linkedin: "https://www.linkedin.com/in/lorenz-lehmann",
+  },
+
   {
     name: "Ahoura Azarbin",
     image: "/contributors/ahoura.png",
