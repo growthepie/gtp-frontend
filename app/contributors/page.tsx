@@ -6,6 +6,7 @@ import Image from "next/image";
 import React from "react";
 import { Contributors, Supporters } from "@/lib/contributors";
 import Link from "next/link";
+import Container from "@/components/layout/Container";
 
 addCollection({
   prefix: "gtp",
@@ -63,7 +64,7 @@ addCollection({
 
 const Page = () => {
   return (
-    <div className="container mx-auto mt-[25px] px-4 py-8 flex flex-col">
+    <Container className="mx-auto mt-[25px] flex flex-col">
       <Heading className="text-[48px] mb-[30px] leading-snug">
         Contributors
       </Heading>
@@ -79,20 +80,25 @@ const Page = () => {
       </div>
 
       <div className="mb-[90px]">
-        <div className="flex items-center space-x-8 mx-5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 items-center justify-items-center gap-x-[45px] gap-y-[30px] mx-5">
           {Supporters.map((s) => (
             <Link
               key={s.name}
               target="_blank"
               rel="noopener noreferrer"
               href={s.url}
-              className="basis-1/4 flex flex-col "
+              className="relative text-center"
+              // style={{
+              //   width: s.width,
+              //   height: s.height,
+              // }}
             >
               <Image
                 src={s.image}
                 alt={s.name}
                 width={s.width}
                 height={s.height}
+                // fill
               />
             </Link>
           ))}
@@ -104,7 +110,7 @@ const Page = () => {
         <Heading className="text-3xl font-semibold leading-snug">Team</Heading>
       </div>
 
-      <div className="grid grid-cols-3 xl:grid-cols-4 gap-x-2 gap-y-[30px]">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-2 gap-y-2 md:gap-y-[30px]">
         {Contributors.map((c) => (
           <div
             key={c.name}
@@ -120,7 +126,9 @@ const Page = () => {
                 fill
               />
             </div>
-            <div className="text-left text-xl mt-5 font-semibold">{c.name}</div>
+            <div className="text-left text-base sm:text-xl mt-3 md:mt-5 font-semibold">
+              {c.name}
+            </div>
             <div className="flex justify-between mt-1">
               <div className="text-base">{c.role}</div>
               <div className="flex space-x-2">
@@ -147,7 +155,7 @@ const Page = () => {
           </div>
         ))}
       </div>
-    </div>
+    </Container>
   );
 };
 
