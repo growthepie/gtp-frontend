@@ -1156,7 +1156,7 @@ export default function LandingChart({
             Object.keys(timespans).map((timespan) => (
               <button
                 key={timespan}
-                className={`rounded-full w-full lg:w-auto px-4 py-1.5 lg:py-3 font-medium ${
+                className={`rounded-full self-stretch sm:w-full px-4 py-1.5 lg:py-3 font-medium ${
                   selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"

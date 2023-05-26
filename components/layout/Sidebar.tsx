@@ -10,6 +10,7 @@ import EthUsdSwitch from "./EthUsdSwitch";
 import DarkModeSwitch from "./DarkModeSwitch";
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
+import { isIOS } from "react-device-detect";
 
 type SidebarProps = {
   className?: string;
@@ -18,7 +19,7 @@ type SidebarProps = {
 };
 
 export default function Sidebar({ isMobile }: SidebarProps) {
-  const { isSidebarOpen, toggleSidebar, clientOS } = useUIContext();
+  const { isSidebarOpen, toggleSidebar } = useUIContext();
 
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -42,7 +43,7 @@ export default function Sidebar({ isMobile }: SidebarProps) {
               }}
               className="fixed inset-0 z-20 mouse-events-none overflow-hidden w-full h-full bg-white dark:bg-[#1F2726]"
             ></div>
-            {clientOS !== "iOS" && (
+            {!isIOS && (
               <div
                 style={{
                   mixBlendMode: "screen",

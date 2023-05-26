@@ -24,6 +24,7 @@ import { debounce } from "lodash";
 
 import { navigationItems } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
+import { isMobile } from "react-device-detect";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -57,7 +58,7 @@ export default function ChainChart({
   const [selectedScale, setSelectedScale] = useState("log");
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
-  const { isSidebarOpen, clientOS } = useUIContext();
+  const { isSidebarOpen } = useUIContext();
   const { width, height } = useWindowSize();
   /*const chartStyle = useMemo(() => {
     if (!AllChains || !data) return [];
@@ -506,7 +507,7 @@ export default function ChainChart({
       stickOnContact: false,
       useHTML: true,
       shared: true,
-      outside: ["iOS", "Android"].includes(clientOS ?? "") ? false : true,
+      outside: isMobile ? false : true,
       formatter: tooltipFormatter,
       positioner: function (this: any, width: any, height: any, point: any) {
         const chart = this.chart;
