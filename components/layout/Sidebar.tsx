@@ -10,7 +10,6 @@ import EthUsdSwitch from "./EthUsdSwitch";
 import DarkModeSwitch from "./DarkModeSwitch";
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
-import { isIOS } from "react-device-detect";
 import Backgrounds from "./Backgrounds";
 
 type SidebarProps = {

@@ -1,4 +1,4 @@
-import { isIOS } from "react-device-detect";
+import { isMobile } from "react-device-detect";
 
 type BackgroundsProps = {
   isMobileMenu?: boolean;
@@ -15,7 +15,7 @@ export default function Backgrounds({ isMobileMenu }: BackgroundsProps) {
           }}
           className="fixed inset-0 z-20 mouse-events-none overflow-hidden w-full h-full bg-white dark:bg-[#1F2726]"
         ></div>
-        {!isIOS && (
+        {!isMobile && (
           <div
             style={{
               mixBlendMode: "screen",
@@ -62,7 +62,7 @@ export default function Backgrounds({ isMobileMenu }: BackgroundsProps) {
         }}
         className="absolute z-0 mouse-events-none overflow-hidden w-full h-full hidden dark:block dark:bg-forest-1000"
       ></div>
-      {!isIOS && (
+      {!isMobile && (
         <div
           style={{
             mixBlendMode: "overlay",
