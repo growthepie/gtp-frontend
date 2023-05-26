@@ -1261,7 +1261,7 @@ export default function ComparisonChart({
                   </div>
                 </TooltipTrigger>
                 <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-                  <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
+                  <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto md:w-[420px] h-[80px] flex items-center">
                     <div className="flex flex-col space-y-1">
                       <div className="font-bold text-sm leading-snug">
                         Data Sources:
