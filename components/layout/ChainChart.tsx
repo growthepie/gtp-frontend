@@ -809,11 +809,17 @@ export default function ChainChart({
                                 .path(
                                   chart.renderer.crispLine(
                                     [
+                                      //@ts-ignore
                                       "M",
+                                      //@ts-ignore
                                       chart.chartWidth * (1 - fraction),
+                                      //@ts-ignore
                                       lastPoint.plotY + chart.plotTop,
+                                      //@ts-ignore
                                       "L",
+                                      //@ts-ignore
                                       chart.chartWidth * (1 - fraction),
+                                      //@ts-ignore
                                       chart.plotTop,
                                     ],
                                     1
