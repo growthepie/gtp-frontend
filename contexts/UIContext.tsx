@@ -37,6 +37,8 @@ export const UIContextProvider = ({ children }) => {
 };
 
 function getOS() {
+  if (typeof window === "undefined") return "";
+
   var userAgent = window.navigator.userAgent,
     platform =
       //@ts-ignore
