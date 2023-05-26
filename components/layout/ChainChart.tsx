@@ -20,6 +20,7 @@ import { Icon } from "@iconify/react";
 import Image from "next/image";
 import d3 from "d3";
 import { AllChainsByKeys } from "@/lib/chains";
+import { debounce } from "lodash";
 
 import { navigationItems } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
@@ -404,37 +405,6 @@ export default function ChainChart({
     [chartComponents]
   );
 
-  const resetXAxisExtremes = useCallback(() => {
-    if (chartComponents.current) {
-      chartComponents.current.forEach((chart) => {
-        if (!chart) return;
-
-        const pixelsPerDay =
-          chart.plotWidth / timespans[selectedTimespan].daysDiff;
-
-        // 15px padding on each side
-        const paddingMilliseconds = (15 / pixelsPerDay) * 24 * 60 * 60 * 1000;
-
-        chart.xAxis[0].setExtremes(
-          timespans[selectedTimespan].xMin -
-            paddingMilliseconds -
-            24 * 60 * 60 * 1000 * 0.5,
-          timespans[selectedTimespan].xMax + paddingMilliseconds
-        );
-      });
-    }
-  }, [selectedTimespan, chartComponents, timespans]);
-
-  useEffect(() => {
-    if (chartComponents.current) {
-      chartComponents.current.forEach((chart) => {
-        if (!chart) return;
-
-        resetXAxisExtremes();
-      });
-    }
-  }, [resetXAxisExtremes, , width, height]);
-
   const options: Highcharts.Options = {
     accessibility: { enabled: false },
     exporting: { enabled: false },
@@ -680,39 +650,69 @@ export default function ChainChart({
     }
   };
 
-  const lastPoints = useMemo<{
+  const lastPointLines = useMemo<{
     [key: string]: Highcharts.SVGElement;
   }>(() => ({}), []);
 
-  useEffect(() => {
-    delay(1000).then(() => {
+  const lastPointCircles = useMemo<{
+    [key: string]: Highcharts.SVGElement;
+  }>(() => ({}), []);
+
+  const resetXAxisExtremes = useCallback(() => {
+    if (chartComponents.current) {
       chartComponents.current.forEach((chart) => {
-        chart.reflow();
+        if (!chart) return;
+
+        const pixelsPerDay =
+          chart.plotWidth / timespans[selectedTimespan].daysDiff;
+
+        // 15px padding on each side
+        const paddingMilliseconds = (15 / pixelsPerDay) * 24 * 60 * 60 * 1000;
+
+        chart.xAxis[0].setExtremes(
+          timespans[selectedTimespan].xMin -
+            paddingMilliseconds -
+            24 * 60 * 60 * 1000 * 0.5,
+          timespans[selectedTimespan].xMax + paddingMilliseconds,
+          true
+        );
       });
-    });
-  }, [chartComponents, selectedTimespan, timespans, width, height]);
+    }
+  }, [selectedTimespan, timespans]);
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
-  useEffect(() => {
-    delay(1000).then(() => {
-      chartComponents.current &&
-        chartComponents.current.forEach((chart) => {
-          if (!chart) return;
-          chart.reflow();
-        });
-    });
-  }, [isSidebarOpen]);
+  const resituateChart = debounce(() => {
+    if (chartComponents.current) {
+      chartComponents.current.forEach((chart) => {
+        if (!chart) return;
 
-  // useLayoutEffect(() => {
-  //   delay(500).then(() => {
-  //     chartComponents.current &&
-  //       chartComponents.current.forEach((chart) => {
-  //         if (!chart) return;
-  //         chart.reflow();
-  //       });
-  //   });
-  // });
+        delay(50)
+          .then(() => {
+            chart.setSize(null, null, true);
+            // chart.reflow();
+          })
+          .then(() => {
+            delay(50).then(() => chart.reflow());
+          })
+          .then(() => {
+            delay(50).then(() => resetXAxisExtremes());
+          });
+      });
+    }
+  }, 150);
+
+  useEffect(() => {
+    resituateChart();
+  }, [
+    chartComponents,
+    selectedTimespan,
+    timespans,
+    width,
+    height,
+    isSidebarOpen,
+    resituateChart,
+  ]);
 
   if (!data) {
     return (
@@ -783,41 +783,66 @@ export default function ChainChart({
                           index: i,
                           ...options.chart,
                           events: {
-                            // load: function () {
-                            //   const chart = this;
-                            //   chart.reflow();
-                            // },
-                            // render: function () {
-                            //   const chart = this;
-                            //   const lastPoint =
-                            //     chart.series[0].points[
-                            //       chart.series[0].points.length - 1
-                            //     ];
-                            //   // draw vertical line from last point's x and y position to the top of the chart
-                            //   if (lastPoints[i]) {
-                            //     lastPoints[i].destroy();
-                            //   }
-                            //   const el = chart.renderer
-                            //     .path([
-                            //       "M",
-                            //       lastPoint.plotX,
-                            //       lastPoint.plotY,
-                            //       "L",
-                            //       lastPoint.plotX,
-                            //       chart.plotTop,
-                            //     ])
-                            //     .attr({
-                            //       stroke:
-                            //         AllChainsByKeys[data.chain_id].colors[
-                            //           theme ?? "dark"
-                            //         ][0] + "cc",
-                            //       "stroke-width": 1,
-                            //       "stroke-dasharray": "2 2",
-                            //       zIndex: 10,
-                            //     })
-                            //     .add();
-                            //   lastPoints[i] = el;
-                            // },
+                            load: function () {
+                              const chart = this;
+                              // chart.reflow();
+                            },
+                            render: function () {
+                              const chart: Highcharts.Chart = this;
+                              const lastPoint: Highcharts.Point =
+                                chart.series[0].points[
+                                  chart.series[0].points.length - 1
+                                ];
+
+                              if (lastPointLines[i]) {
+                                lastPointLines[i].destroy();
+                              }
+
+                              if (lastPointCircles[i]) {
+                                lastPointCircles[i].destroy();
+                              }
+                              // calculate the fraction that 15px is in relation to the pixel width of the chart
+                              const fraction = 15 / chart.chartWidth;
+
+                              // create a bordered line from the last point to the top of the chart's container
+                              lastPointLines[i] = chart.renderer
+                                .path(
+                                  chart.renderer.crispLine(
+                                    [
+                                      "M",
+                                      chart.chartWidth * (1 - fraction),
+                                      lastPoint.plotY + chart.plotTop,
+                                      "L",
+                                      chart.chartWidth * (1 - fraction),
+                                      chart.plotTop,
+                                    ],
+                                    1
+                                  )
+                                )
+                                .attr({
+                                  stroke: "#4B5563",
+                                  "stroke-width": 1,
+                                })
+                                .add();
+
+                              // lastPointCircles[i] = chart.renderer
+                              //   .circle(
+                              //     chart.chartWidth * (1 - fraction),
+                              //     lastPoint.plotY + chart.plotTop,
+                              //     3
+                              //   )
+                              //   .attr({
+                              //     fill:
+                              //       // AllChainsByKeys[data.chain_id].colors[
+                              //       //   theme ?? "dark"
+                              //       // ][0]
+                              //       "#ffffff" + "80",
+
+                              //     r: 2,
+                              //     zIndex: 9999,
+                              //   })
+                              //   .add();
+                            },
                           },
                         },
                         yAxis: {
@@ -912,26 +937,13 @@ export default function ChainChart({
                       </div>
                     </div>
                     <div
-                      className={`absolute -bottom-[12px] top-1/2 right-[15px] w-[5px] border-r border-t border-dashed`}
+                      className={`absolute -bottom-[12px] top-1/2 right-[15px] w-[5px] rounded-sm border-r border-t`}
                       style={{
-                        borderColor:
-                          AllChainsByKeys[data.chain_id].colors[
-                            theme ?? "dark"
-                          ][0] + "cc",
+                        borderColor: "#4B5563",
                       }}
                     ></div>
                     <div
-                      className={`absolute top-[calc(50% - 4px)] right-[18px] w-[6px] h-[6px] rounded-full ${
-                        AllChainsByKeys[data.chain_id].border[
-                          theme ?? "dark"
-                        ][0] + "cc"
-                      }`}
-                      style={{
-                        backgroundColor:
-                          AllChainsByKeys[data.chain_id].colors[
-                            theme ?? "dark"
-                          ][0] + "cc",
-                      }}
+                      className={`absolute top-[calc(50% - 0.5px)] right-[20px] w-[4px] h-[4px] rounded-full bg-forest-900 dark:bg-forest-50`}
                     ></div>
                   </div>
                   <div>{getIcon(key)}</div>
