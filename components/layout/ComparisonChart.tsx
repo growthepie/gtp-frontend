@@ -26,6 +26,7 @@ import Link from "next/link";
 import { Sources } from "@/lib/datasources";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
+import Container from "./Container";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -1080,7 +1081,7 @@ export default function ComparisonChart({
     formatNumber,
     showEthereumMainnet,
     dataGrouping,
-    isMobile
+    isMobile,
   ]);
 
   useEffect(() => {
@@ -1102,243 +1103,160 @@ export default function ComparisonChart({
   useEffect(() => {
     if (chartComponent.current) {
       if (isMobile) {
-        chartComponent.current.setSize(null, 200, false);
+        chartComponent.current.setSize(null, 275, false);
       } else {
         chartComponent.current.setSize(null, 400, false);
       }
     }
   }, [isMobile]);
 
-
   return (
     <div className="w-full flex-col relative">
-      <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-forest-900 p-0.5">
-        <div className="hidden md:flex justify-center items-center">
-          <div className="w-7 h-7 lg:w-9 lg:h-9 relative ml-[21px] mr-1.5">
-            <Image
-              src="/GTP-Chain.png"
-              alt="GTP Chain"
-              className="object-contain"
-              fill
-            />
-          </div>
-          {/* <Icon icon="gtp:chain" className="w-7 h-7 lg:w-9 lg:h-9" /> */}
-          <h2 className="text-[24px] xl:text-[30px] leading-snug font-bold hidden lg:block my-[10px]">
-            Selected Chains
-          </h2>
-        </div>
-        <div className="flex justify-between md:justify-center w-full md:w-auto items-center space-x-1 px-[1px]">
-          {!zoomed ? (
-            Object.keys(timespans).map((timespan) => (
-              <button
-                key={timespan}
-                className={`rounded-full px-[16px] py-[8px] text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
-                  selectedTimespan === timespan
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
-                onClick={() => {
-                  setSelectedTimespan(timespan);
-                  // setXAxis();
-                  chartComponent?.current?.xAxis[0].update({
-                    min: timespans[selectedTimespan].xMin,
-                    max: timespans[selectedTimespan].xMax,
-                    // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
-                    tickPositions: getTickPositions(
-                      timespans.max.xMin,
-                      timespans.max.xMax
-                    ),
-                  });
-                  setZoomed(false);
-                }}
-              >
-                {timespans[timespan].label}
-              </button>
-            ))
-          ) : (
-            <>
-              <button
-                className={`rounded-full flex items-center space-x-3 px-2 py-[5px] text-base lg:px-4 lg:py-[11px] xl:px-4 xl:py-[11px] font-medium border-[0.5px] border-forest-400`}
-                onClick={() => {
-                  chartComponent?.current?.xAxis[0].setExtremes(
-                    timespans[selectedTimespan].xMin,
-                    timespans[selectedTimespan].xMax
-                  );
-                  setZoomed(false);
-                }}
-              >
-                <Icon icon="feather:zoom-out" className="w-6 h-6" />
-                <div>Reset Zoom</div>
-              </button>
-              <button
-                className={`rounded-full px-2 py-1.5 text-base lg:px-4 lg:py-3 xl:px-4 xl:py-3 font-medium bg-forest-100 dark:bg-forest-1000`}
-              >
-                {intervalShown?.label}
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-      <div className="w-full flex flex-col-reverse lg:flex-row mt-8 md:mt-0 ">
-        <div className="hidden lg:block lg:w-1/2 xl:w-5/12 pl-2 pr-[19px] self-center">
-          <div className="-mt-7">{children}</div>
-        </div>
-        {highchartsLoaded ? (
-          <>
-            <div className="w-full lg:w-1/2 xl:w-7/12 relative">
-              <div className="w-full p-0 py-0 xl:pl-4 xl:py-14">
-                <div className="w-full h-[18rem] md:h-[26rem] relative rounded-xl">
-                  <div className="block md:absolute w-full h-[24rem] top-4">
-                    <HighchartsReact
-                      highcharts={Highcharts}
-                      options={options}
-                      ref={(chart) => {
-                        chartComponent.current = chart?.chart;
-                      }}
-                      constructorType={"stockChart"}
-                    />
-                  </div>
-                </div>
-              </div>
-              {avg && ["365d", "max"].includes(selectedTimespan) && (
-                <div className="hidden md:block absolute top-[60px] right-[calc(0%+1.75rem)] rounded-full text-xs font-medium capitalize">
-                  Displaying 7d Rolling Average
-                </div>
-              )}
-              <div className="absolute top-3 left-[calc(0%-1.75rem)] rounded-full text-xs font-medium"></div>
-            </div>
-          </>
-        ) : (
-          <div className="w-full lg:w-1/2 xl:w-7/12 h-[26rem] my-4 flex justify-center items-center">
-            <div className="w-10 h-10 animate-spin">
-              <Icon
-                icon="feather:loader"
-                className="w-10 h-10 text-forest-500"
+      <Container className="">
+        <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5">
+          <div className="hidden md:flex justify-center items-center">
+            <div className="w-7 h-7 lg:w-9 lg:h-9 relative ml-[21px] mr-1.5">
+              <Image
+                src="/GTP-Chain.png"
+                alt="GTP Chain"
+                className="object-contain"
+                fill
               />
             </div>
+            {/* <Icon icon="gtp:chain" className="w-7 h-7 lg:w-9 lg:h-9" /> */}
+            <h2 className="text-[24px] xl:text-[30px] leading-snug font-bold hidden lg:block my-[10px]">
+              Selected Chains
+            </h2>
           </div>
-        )}
-      </div>
-      <div className="flex flex-col md:flex-row w-full justify-normal md:justify-between items-center text-sm md:text-base rounded-xl md:rounded-full bg-forest-50 dark:bg-forest-900 p-0.5 px-1">
-        {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
-        {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
-        {/* toggle ETH */}
-        <div className={`justify-between w-full md:w-auto pt-[2px] md:pt-0 h-[35px] md:h-auto ${
-          (data.filter((d) => d.name === "ethereum").length > 0)
-          ? "flex"
-          : "hidden"
-        }`}>
-          {data.filter((d) => d.name === "ethereum").length > 0 && (
+          <div className="flex justify-between md:justify-center w-full md:w-auto items-center space-x-1 px-[1px]">
+            {!zoomed ? (
+              Object.keys(timespans).map((timespan) => (
+                <button
+                  key={timespan}
+                  className={`rounded-full px-[16px] py-[8px] text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
+                    selectedTimespan === timespan
+                      ? "bg-forest-500 dark:bg-forest-1000"
+                      : "hover:bg-forest-500/10"
+                  }`}
+                  onClick={() => {
+                    setSelectedTimespan(timespan);
+                    // setXAxis();
+                    chartComponent?.current?.xAxis[0].update({
+                      min: timespans[selectedTimespan].xMin,
+                      max: timespans[selectedTimespan].xMax,
+                      // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
+                      tickPositions: getTickPositions(
+                        timespans.max.xMin,
+                        timespans.max.xMax
+                      ),
+                    });
+                    setZoomed(false);
+                  }}
+                >
+                  {timespans[timespan].label}
+                </button>
+              ))
+            ) : (
+              <>
+                <button
+                  className={`rounded-full flex items-center space-x-3 px-2 py-[5px] text-base lg:px-4 lg:py-[11px] xl:px-4 xl:py-[11px] font-medium border-[0.5px] border-forest-400`}
+                  onClick={() => {
+                    chartComponent?.current?.xAxis[0].setExtremes(
+                      timespans[selectedTimespan].xMin,
+                      timespans[selectedTimespan].xMax
+                    );
+                    setZoomed(false);
+                  }}
+                >
+                  <Icon icon="feather:zoom-out" className="w-6 h-6" />
+                  <div>Reset Zoom</div>
+                </button>
+                <button
+                  className={`rounded-full px-2 py-1.5 text-base lg:px-4 lg:py-3 xl:px-4 xl:py-3 font-medium bg-forest-100 dark:bg-forest-1000`}
+                >
+                  {intervalShown?.label}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="w-full flex flex-col-reverse lg:flex-row mt-8 md:mt-0">
+          <div className="hidden lg:block lg:w-1/2 xl:w-5/12 pl-2 pr-[19px] self-center">
+            <div className="-mt-7">{children}</div>
+          </div>
+          {highchartsLoaded ? (
             <>
-              <div className="z-10 block lg:hidden">
-                <Switch
-                  checked={showEthereumMainnet}
-                  onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
-                  rightLabel="Show Ethereum"
-                />
-              </div>
-              <div className="z-10 hidden lg:block">
-                <Switch
-                  checked={showEthereumMainnet}
-                  onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
-                  rightLabel="Show Ethereum"
-                />
-              </div>
-            </>
-          )}
-            <div className="block md:hidden z-10">
-              <Tooltip placement="left" allowInteract>
-                <TooltipTrigger>
-                  <div className="p-1 z-10">
-                    <Icon icon="feather:info" className="w-6 h-6" />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-                  <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
-                    <div className="flex flex-col space-y-1">
-                      <div className="font-bold text-sm leading-snug">
-                        Data Sources:
-                      </div>
-                      <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
-                        {sources
-                          .map<ReactNode>((s) => (
-                            <Link
-                              key={s}
-                              rel="noopener noreferrer"
-                              target="_blank"
-                              href={Sources[s] ?? ""}
-                              className="hover:text-forest-500 dark:hover:text-forest-500 underline"
-                            >
-                              {s}
-                            </Link>
-                          ))
-                          .reduce((prev, curr) => [prev, ", ", curr])}
-                      </div>
+              <div className="w-full lg:w-1/2 xl:w-7/12 relative">
+                <div className="w-full p-0 py-0 xl:pl-4 xl:py-14">
+                  <div className="w-full h-[17rem] md:h-[26rem] relative rounded-xl">
+                    <div className="block absolute w-full h-[275px] md:h-[24rem] top-0 md:top-4">
+                      <HighchartsReact
+                        highcharts={Highcharts}
+                        options={options}
+                        ref={(chart) => {
+                          chartComponent.current = chart?.chart;
+                        }}
+                        constructorType={"stockChart"}
+                      />
                     </div>
                   </div>
-                </TooltipContent>
-              </Tooltip>
+                </div>
+                {avg && ["365d", "max"].includes(selectedTimespan) && (
+                  <div className="absolute -top-[10px] right-3 sm:-top-[7px] md:top-[5px] md:right-3 lg:top-[5px] xl:top-[60px] xl:right-[calc(0%+1.75rem)] rounded-full text-xs font-medium capitalize">
+                    Displaying 7d Rolling Average
+                  </div>
+                )}
+                <div className="absolute top-3 left-[calc(0%-1.75rem)] rounded-full text-xs font-medium"></div>
+              </div>
+            </>
+          ) : (
+            <div className="w-full lg:w-1/2 xl:w-7/12 h-[26rem] my-4 flex justify-center items-center">
+              <div className="w-10 h-10 animate-spin">
+                <Icon
+                  icon="feather:loader"
+                  className="w-10 h-10 text-forest-500"
+                />
+              </div>
             </div>
+          )}
         </div>
-        <div className={`md:hidden w-[70%] mx-auto my-[4px] pb-2 md:pb-0 ${
-          (data.filter((d) => d.name === "ethereum").length > 0)
-          ? "block"
-          : "hidden"
-        }`}>
-          <hr className={`border-dotted border-top-[1px] h-[0.5px] border-forest-400 ${
-          (data.filter((d) => d.name === "ethereum").length > 0)
-          ? "block"
-          : "hidden"
-          }`}/> 
-        </div>
-        <div className="flex justify-normal md:justify-end items-center w-full md:w-auto">
+        <div className="flex flex-col md:flex-row w-full justify-normal md:justify-between items-center text-sm md:text-base rounded-2xl md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1">
           {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
           {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
           {/* toggle ETH */}
-
-          <div className="flex justify-center items-center pl-2 md:pl-0 w-full md:w-auto">
-            <div className="flex justify-between md:justify-center items-center space-x-0 md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
-              <button
-                className={`rounded-full z-10 px-[16px] py-[6px] text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
-                  "absolute" === selectedScale
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
-                onClick={() => {
-                  setSelectedScale("absolute");
-                }}
-              >
-                Absolute
-              </button>
-              <button
-                className={`rounded-full z-10 px-[16px] py-[6px] text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
-                  "log" === selectedScale
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
-                onClick={() => {
-                  setSelectedScale("log");
-                }}
-              >
-                Stacked
-              </button>
-              <button
-                className={`rounded-full z-10 px-[16px] py-[6px] text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
-                  "percentage" === selectedScale
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
-                onClick={() => {
-                  setSelectedScale("percentage");
-                }}
-              >
-                Percentage
-              </button>
-            </div>
-            <div className="hidden md:flex">
+          <div
+            className={`justify-between w-full md:w-auto pt-0 md:pt-0 h-[35px] md:h-auto ${
+              data.filter((d) => d.name === "ethereum").length > 0
+                ? "flex"
+                : "hidden"
+            }`}
+          >
+            {data.filter((d) => d.name === "ethereum").length > 0 && (
+              <>
+                <div className="z-10 block lg:hidden">
+                  <Switch
+                    checked={showEthereumMainnet}
+                    onChange={() =>
+                      setShowEthereumMainnet(!showEthereumMainnet)
+                    }
+                    rightLabel="Show Ethereum"
+                  />
+                </div>
+                <div className="z-10 hidden lg:block">
+                  <Switch
+                    checked={showEthereumMainnet}
+                    onChange={() =>
+                      setShowEthereumMainnet(!showEthereumMainnet)
+                    }
+                    rightLabel="Show Ethereum"
+                  />
+                </div>
+              </>
+            )}
+            <div className="block md:hidden z-10">
               <Tooltip placement="left" allowInteract>
                 <TooltipTrigger>
-                  <div className="p-1 z-10">
+                  <div className="p-1 z-10 mr-0 md:-mr-0.5">
                     <Icon icon="feather:info" className="w-6 h-6" />
                   </div>
                 </TooltipTrigger>
@@ -1369,9 +1287,105 @@ export default function ComparisonChart({
               </Tooltip>
             </div>
           </div>
+          <div
+            className={`md:hidden w-[70%] mx-auto my-[4px] pb-2 md:pb-0 ${
+              data.filter((d) => d.name === "ethereum").length > 0
+                ? "block"
+                : "hidden"
+            }`}
+          >
+            <hr
+              className={`border-dotted border-top-[1px] h-[0.5px] border-forest-400 ${
+                data.filter((d) => d.name === "ethereum").length > 0
+                  ? "block"
+                  : "hidden"
+              }`}
+            />
+          </div>
+          <div className="flex justify-normal md:justify-end items-center w-full md:w-auto">
+            {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
+            {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
+            {/* toggle ETH */}
+
+            <div className="flex justify-center items-center pl-0 md:pl-0 w-full md:w-auto">
+              <div className="flex justify-between md:justify-center items-center  space-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
+                <button
+                  className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
+                    "absolute" === selectedScale
+                      ? "bg-forest-500 dark:bg-forest-1000"
+                      : "hover:bg-forest-500/10"
+                  }`}
+                  onClick={() => {
+                    setSelectedScale("absolute");
+                  }}
+                >
+                  Absolute
+                </button>
+                <button
+                  className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
+                    "log" === selectedScale
+                      ? "bg-forest-500 dark:bg-forest-1000"
+                      : "hover:bg-forest-500/10"
+                  }`}
+                  onClick={() => {
+                    setSelectedScale("log");
+                  }}
+                >
+                  Stacked
+                </button>
+                <button
+                  className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
+                    "percentage" === selectedScale
+                      ? "bg-forest-500 dark:bg-forest-1000"
+                      : "hover:bg-forest-500/10"
+                  }`}
+                  onClick={() => {
+                    setSelectedScale("percentage");
+                  }}
+                >
+                  Percentage
+                </button>
+              </div>
+              <div className="hidden md:flex">
+                <Tooltip placement="left" allowInteract>
+                  <TooltipTrigger>
+                    <div className="p-1 z-10">
+                      <Icon icon="feather:info" className="w-6 h-6" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
+                    <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
+                      <div className="flex flex-col space-y-1">
+                        <div className="font-bold text-sm leading-snug">
+                          Data Sources:
+                        </div>
+                        <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
+                          {sources
+                            .map<ReactNode>((s) => (
+                              <Link
+                                key={s}
+                                rel="noopener noreferrer"
+                                target="_blank"
+                                href={Sources[s] ?? ""}
+                                className="hover:text-forest-500 dark:hover:text-forest-500 underline"
+                              >
+                                {s}
+                              </Link>
+                            ))
+                            .reduce((prev, curr) => [prev, ", ", curr])}
+                        </div>
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div className="block mt-6 lg:hidden w-full">{children}</div>
+      </Container>
+      <Container className="block mt-6 lg:hidden w-full !pr-0">
+        {children}
+      </Container>
     </div>
   );
 }

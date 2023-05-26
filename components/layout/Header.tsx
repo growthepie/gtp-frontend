@@ -13,7 +13,7 @@ export default function Header() {
       <div className="flex justify-between items-center w-full">
         <div className="flex space-x-6 w-full">
           <div className="flex justify-between items-end md:hidden relative w-full">
-            <Link href="" className="">
+            <Link href="/" className="">
               <div className="h-[36px] w-[154.05px] relative">
                 <Image
                   src="/logo_full.png"

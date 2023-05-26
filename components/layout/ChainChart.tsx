@@ -4,8 +4,15 @@ import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts";
 import highchartsAnnotations from "highcharts/modules/annotations";
 
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { useLocalStorage } from "usehooks-ts";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+  useLayoutEffect,
+} from "react";
+import { useLocalStorage, useWindowSize } from "usehooks-ts";
 import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
 import { useTheme } from "next-themes";
@@ -49,7 +56,8 @@ export default function ChainChart({
   const [selectedScale, setSelectedScale] = useState("log");
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
-
+  const { isSidebarOpen, clientOS } = useUIContext();
+  const { width, height } = useWindowSize();
   /*const chartStyle = useMemo(() => {
     if (!AllChains || !data) return [];
 
@@ -425,7 +433,7 @@ export default function ChainChart({
         resetXAxisExtremes();
       });
     }
-  }, [resetXAxisExtremes]);
+  }, [resetXAxisExtremes, , width, height]);
 
   const options: Highcharts.Options = {
     accessibility: { enabled: false },
@@ -528,7 +536,7 @@ export default function ChainChart({
       stickOnContact: false,
       useHTML: true,
       shared: true,
-      outside: true,
+      outside: ["iOS", "Android"].includes(clientOS ?? "") ? false : true,
       formatter: tooltipFormatter,
       positioner: function (this: any, width: any, height: any, point: any) {
         const chart = this.chart;
@@ -677,17 +685,17 @@ export default function ChainChart({
   }>(() => ({}), []);
 
   useEffect(() => {
-    chartComponents.current.forEach((chart) => {
-      chart.reflow();
+    delay(1000).then(() => {
+      chartComponents.current.forEach((chart) => {
+        chart.reflow();
+      });
     });
-  }, [chartComponents, selectedTimespan, timespans]);
-
-  const { isSidebarOpen } = useUIContext();
+  }, [chartComponents, selectedTimespan, timespans, width, height]);
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
   useEffect(() => {
-    delay(500).then(() => {
+    delay(1000).then(() => {
       chartComponents.current &&
         chartComponents.current.forEach((chart) => {
           if (!chart) return;
@@ -695,6 +703,16 @@ export default function ChainChart({
         });
     });
   }, [isSidebarOpen]);
+
+  // useLayoutEffect(() => {
+  //   delay(500).then(() => {
+  //     chartComponents.current &&
+  //       chartComponents.current.forEach((chart) => {
+  //         if (!chart) return;
+  //         chart.reflow();
+  //       });
+  //   });
+  // });
 
   if (!data) {
     return (
@@ -715,7 +733,7 @@ export default function ChainChart({
           stroke-width: 0px !important;
         `}
       </style>
-      <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-forest-900 p-0.5 mb-[32px]">
+      <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 mb-[32px]">
         <div className="flex justify-center items-center">
           <div className="flex justify-center items-center space-x-[8px]">
             <Image
@@ -755,7 +773,7 @@ export default function ChainChart({
             return (
               <div key={key} className="w-full">
                 <div className="w-full h-[176px] relative">
-                  <div className="absolute w-full h-full bg-forest-50 dark:bg-forest-900 rounded-[15px]"></div>
+                  <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] rounded-[15px]"></div>
                   <div className="absolute w-full h-[142px] top-[49px]">
                     <HighchartsReact
                       highcharts={Highcharts}
@@ -765,87 +783,41 @@ export default function ChainChart({
                           index: i,
                           ...options.chart,
                           events: {
-                            load: function () {
-                              const chart = this;
-                              chart.reflow();
-                              // const lastPoint =
-                              //   chart.series[0].points[
-                              //     chart.series[0].points.length - 1
-                              //   ];
-                              // // draw vertical line from last point's x and y position to the top of the chart
-                              // const el = chart.renderer
-                              //   .path([
-                              //     "M",
-                              //     lastPoint.plotX,
-                              //     lastPoint.plotY,
-                              //     "L",
-                              //     lastPoint.plotX,
-                              //     chart.plotTop,
-                              //   ])
-                              //   .attr({
-                              //     stroke: hexToRgba(
-                              //       AllChainsByKeys[data.chain_id].colors[
-                              //         theme ?? "dark"
-                              //       ][0] + "11",
-                              //       0.5
-                              //     ),
-                              //     "stroke-width": 1,
-                              //     "stroke-dasharray": "4 4 4 4",
-                              //     zIndex: 10,
-                              //   })
-                              //   .add();
-
-                              // lastPoints[i] = el;
-                            },
-                            render: function () {
-                              const chart = this;
-                              const lastPoint =
-                                chart.series[0].points[
-                                  chart.series[0].points.length - 1
-                                ];
-                              // draw vertical line from last point's x and y position to the top of the chart
-                              if (lastPoints[i]) {
-                                lastPoints[i].destroy();
-                              }
-                              const el = chart.renderer
-                                .path([
-                                  "M",
-                                  lastPoint.plotX,
-                                  lastPoint.plotY,
-                                  "L",
-                                  lastPoint.plotX,
-                                  chart.plotTop,
-                                ])
-                                .attr({
-                                  stroke: hexToRgba(
-                                    AllChainsByKeys[data.chain_id].colors[
-                                      theme ?? "dark"
-                                    ][0] + "11",
-                                    0.5
-                                  ),
-                                  "stroke-width": 1,
-                                  "stroke-dasharray": "4 4 4 4",
-                                  zIndex: 10,
-                                })
-                                .add();
-
-                              lastPoints[i] = el;
-
-                              // const pixelsPerDay =
-                              //   chart.plotWidth /
-                              //   timespans[selectedTimespan].daysDiff;
-
-                              // // 15px padding on each side
-                              // const paddingMilliseconds =
-                              //   (15 / pixelsPerDay) * 24 * 60 * 60 * 1000;
-
-                              // chart.xAxis[0].setExtremes(
-                              //   timespans[selectedTimespan].xMin -
-                              //     paddingMilliseconds,
-                              //   timespans[selectedTimespan].xMax +
-                              //     paddingMilliseconds
-                              // );
-                            },
+                            // load: function () {
+                            //   const chart = this;
+                            //   chart.reflow();
+                            // },
+                            // render: function () {
+                            //   const chart = this;
+                            //   const lastPoint =
+                            //     chart.series[0].points[
+                            //       chart.series[0].points.length - 1
+                            //     ];
+                            //   // draw vertical line from last point's x and y position to the top of the chart
+                            //   if (lastPoints[i]) {
+                            //     lastPoints[i].destroy();
+                            //   }
+                            //   const el = chart.renderer
+                            //     .path([
+                            //       "M",
+                            //       lastPoint.plotX,
+                            //       lastPoint.plotY,
+                            //       "L",
+                            //       lastPoint.plotX,
+                            //       chart.plotTop,
+                            //     ])
+                            //     .attr({
+                            //       stroke:
+                            //         AllChainsByKeys[data.chain_id].colors[
+                            //           theme ?? "dark"
+                            //         ][0] + "cc",
+                            //       "stroke-width": 1,
+                            //       "stroke-dasharray": "2 2",
+                            //       zIndex: 10,
+                            //     })
+                            //     .add();
+                            //   lastPoints[i] = el;
+                            // },
                           },
                         },
                         yAxis: {
@@ -866,6 +838,7 @@ export default function ChainChart({
                         series: [
                           {
                             name: key,
+                            crisp: false,
                             data:
                               !showUsd &&
                               data.metrics[key].daily.types.includes("eth")
@@ -898,6 +871,21 @@ export default function ChainChart({
                     />
                   </div>
                   <div className="absolute top-[14px] w-full flex justify-between items-center px-[26px]">
+                    {/* <div
+                      className={`absolute -bottom-1.5 -right-1 text-[10px] text-right cursor-vertical-text`}
+                    >
+                      <div
+                        className="rotate-90 font-inter"
+                        style={{
+                          color:
+                            AllChainsByKeys[data.chain_id].colors[
+                              theme ?? "dark"
+                            ][0] + "cc",
+                        }}
+                      >
+                        LAST
+                      </div>
+                    </div> */}
                     <div className="text-[20px] leading-snug font-bold">
                       {
                         navigationItems[1].options.find((o) => o.key === key)
@@ -923,6 +911,28 @@ export default function ChainChart({
                         )}
                       </div>
                     </div>
+                    <div
+                      className={`absolute -bottom-[12px] top-1/2 right-[15px] w-[5px] border-r border-t border-dashed`}
+                      style={{
+                        borderColor:
+                          AllChainsByKeys[data.chain_id].colors[
+                            theme ?? "dark"
+                          ][0] + "cc",
+                      }}
+                    ></div>
+                    <div
+                      className={`absolute top-[calc(50% - 4px)] right-[18px] w-[6px] h-[6px] rounded-full ${
+                        AllChainsByKeys[data.chain_id].border[
+                          theme ?? "dark"
+                        ][0] + "cc"
+                      }`}
+                      style={{
+                        backgroundColor:
+                          AllChainsByKeys[data.chain_id].colors[
+                            theme ?? "dark"
+                          ][0] + "cc",
+                      }}
+                    ></div>
                   </div>
                   <div>{getIcon(key)}</div>
                 </div>

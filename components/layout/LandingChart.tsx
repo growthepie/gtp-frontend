@@ -1010,7 +1010,6 @@ export default function LandingChart({
     }
   }, [isMobile]);
 
-
   return (
     <div className="w-full mb-[0rem] md:mb-[6rem] relative">
       <div className="flex md:hidden justify-center pb-[30px]">
@@ -1227,7 +1226,7 @@ export default function LandingChart({
         </div>
       )}
 
-      <div className="flex justify-between items-center absolute -bottom-[1rem] md:-bottom-[5rem] left-0 right-0 rounded-full bg-forest-50 dark:bg-forest-900 p-0.5">
+      <div className="flex justify-between items-center absolute -bottom-[1rem] md:-bottom-[5rem] left-0 right-0 rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5">
         {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
         {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
         {/* toggle ETH */}
@@ -1343,7 +1342,7 @@ export default function LandingChart({
           </div>
           <Tooltip placement="left" allowInteract>
             <TooltipTrigger>
-              <div className="bottom-[28px] right-[8px] p-0 mr-0 md:p-1.5 z-10 md:mr-1 absolute md:static">
+              <div className="bottom-[28px] right-[8px] p-0 -mr-0.5 md:p-1.5 z-10 md:mr-0 absolute md:static md:mb-0.5">
                 <Icon icon="feather:info" className="w-6 h-6" />
               </div>
             </TooltipTrigger>

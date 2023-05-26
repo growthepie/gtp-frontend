@@ -15,6 +15,7 @@ import { Icon } from "@iconify/react";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import LoadingAnimation from "@/components/layout/LoadingAnimation";
 import { navigationItems } from "@/lib/navigation";
+import Container from "@/components/layout/Container";
 
 const Chain = ({ params }: { params: any }) => {
   const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
@@ -92,7 +93,6 @@ const Chain = ({ params }: { params: any }) => {
       }, loadingTimeoutSeconds);
   }, [metricLoading, metricValidating, metricData, loadingTimeoutSeconds]);
 
-
   if (errorCode) {
     return <Error statusCode={errorCode} />;
   }
@@ -108,95 +108,78 @@ const Chain = ({ params }: { params: any }) => {
       >
         <LoadingAnimation />
       </div>
-      <div className="flex w-full pl-2 md:pl-6 mt-[75px]">
-        <div className="flex flex-col w-full">
-          <div className="flex justify-between items-start w-full">
-            <div className="flex items-start">
-              <Heading className="text-[30px] leading-snug md:text-[36px] mb-[30px]">
-                {pageData.title}
-              </Heading>
-            </div>
-          </div>
-          <Subheading
-            className="text-[16px] leading-snug"
-            leftIcon={
-              pageData.icon && (
-                <div>
-                  <Icon
-                    icon={pageData.icon}
-                    className="w-6 h-6 mr-[12px] ml-[28px] -mt-0.5"
-                  />
-                </div>
-              )
-            }
-            iconContainerClassName="items-start mb-[30px]"
-          >
-            {pageData.description}
-          </Subheading>
-          {/* <Subheading
-              className="text-[20px] mb-[30px]"
-              leftIcon={
-                <div>
-                  <Icon icon="feather:gift" className="w-6 h-6 mr-[16px]" />
-                </div>
-              }
-            >
-              {pageData.why}
-            </Subheading> */}
-
-          <div className="flex flex-col-reverse xl:flex-row space-x-0 xl:space-x-8">
-            <div className="flex-1">
-              {metricData && (
-                <ComparisonChart
-                  data={Object.keys(metricData.data.chains)
-                    .filter((chain) => selectedChains.includes(chain))
-                    .map((chain) => {
-                      return {
-                        name: chain,
-                        // type: 'spline',
-                        types:
-                          metricData.data.chains[chain][timeIntervalKey].types,
-                        data: metricData.data.chains[chain][timeIntervalKey]
-                          .data,
-                      };
-                    })}
-                  timeIntervals={intersection(
-                    Object.keys(metricData.data.chains.arbitrum),
-                    ["daily", "weekly", "monthly"]
-                  )}
-                  onTimeIntervalChange={(timeInterval) =>
-                    setSelectedTimeInterval(timeInterval)
-                  }
-                  showTimeIntervals={true}
-                  sources={metricData.data.source}
-                  avg={metricData.data.avg}
-                  showEthereumMainnet={showEthereumMainnet}
-                  setShowEthereumMainnet={setShowEthereumMainnet}
-                  selectedTimespan={selectedTimespan}
-                  setSelectedTimespan={setSelectedTimespan}
-                >
-                  <MetricsTable
-                    data={metricData.data.chains}
-                    selectedChains={selectedChains}
-                    setSelectedChains={setSelectedChains}
-                    chains={chains}
-                    metric={metricData.data.metric_id}
-                    showEthereumMainnet={showEthereumMainnet}
-                    setShowEthereumMainnet={setShowEthereumMainnet}
-                  />
-                </ComparisonChart>
-              )}
-            </div>
-          </div>
-          <div className="flex flex-col space-y-[15px] mt-[30px] mr-2 md:mr-0">
-            <QuestionAnswer
-              className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[63px] py-[23px] flex flex-col"
-              question={`What does ${pageData.title} tell you?`}
-              answer={pageData.why}
-            />
+      <Container className="flex flex-col w-full mt-[75px]">
+        <div className="flex justify-between items-start w-full">
+          <div className="flex items-start">
+            <Heading className="text-[30px] leading-snug md:text-[36px] mb-[30px]">
+              {pageData.title}
+            </Heading>
           </div>
         </div>
+        <Subheading
+          className="text-[16px] leading-snug"
+          leftIcon={
+            pageData.icon && (
+              <div>
+                <Icon
+                  icon={pageData.icon}
+                  className="w-6 h-6 mr-[12px] ml-[28px] -mt-0.5"
+                />
+              </div>
+            )
+          }
+          iconContainerClassName="items-start mb-[30px]"
+        >
+          {pageData.description}
+        </Subheading>
+      </Container>
+      <div className="flex flex-col-reverse xl:flex-row space-x-0 xl:space-x-8">
+        {metricData && (
+          <ComparisonChart
+            data={Object.keys(metricData.data.chains)
+              .filter((chain) => selectedChains.includes(chain))
+              .map((chain) => {
+                return {
+                  name: chain,
+                  // type: 'spline',
+                  types: metricData.data.chains[chain][timeIntervalKey].types,
+                  data: metricData.data.chains[chain][timeIntervalKey].data,
+                };
+              })}
+            timeIntervals={intersection(
+              Object.keys(metricData.data.chains.arbitrum),
+              ["daily", "weekly", "monthly"]
+            )}
+            onTimeIntervalChange={(timeInterval) =>
+              setSelectedTimeInterval(timeInterval)
+            }
+            showTimeIntervals={true}
+            sources={metricData.data.source}
+            avg={metricData.data.avg}
+            showEthereumMainnet={showEthereumMainnet}
+            setShowEthereumMainnet={setShowEthereumMainnet}
+            selectedTimespan={selectedTimespan}
+            setSelectedTimespan={setSelectedTimespan}
+          >
+            <MetricsTable
+              data={metricData.data.chains}
+              selectedChains={selectedChains}
+              setSelectedChains={setSelectedChains}
+              chains={chains}
+              metric={metricData.data.metric_id}
+              showEthereumMainnet={showEthereumMainnet}
+              setShowEthereumMainnet={setShowEthereumMainnet}
+            />
+          </ComparisonChart>
+        )}
       </div>
+      <Container className="flex flex-col space-y-[15px] mt-[30px]">
+        <QuestionAnswer
+          className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[63px] py-[23px] flex flex-col"
+          question={`What does ${pageData.title} tell you?`}
+          answer={pageData.why}
+        />
+      </Container>
     </>
   );
 };
