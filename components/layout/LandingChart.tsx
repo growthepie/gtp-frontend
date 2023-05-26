@@ -1019,11 +1019,11 @@ export default function LandingChart({
               icon="feather:users"
               className="w-8 h-8 lg:w-14 lg:h-14 mr-2 relative left-1"
             />
-            <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
+            <div className="text-[0.60rem] sm:text-[0.65rem] lg:text-xs font-medium leading-tight">
               Total Users
             </div>
           </div>
-          <div className="flex flex-col flex-1 items-center justify-center">
+          <div className="flex flex-col items-center justify-center w-7/12">
             <div className="text-xl lg:text-3xl font-[650]">
               {latest_total.toLocaleString()}
             </div>
@@ -1057,17 +1057,17 @@ export default function LandingChart({
             </div>
           </div>
         </div>
-        <div className="flex dark:bg-forest-500/20 w-1/2 rounded-xl px-3 py-1.5 items-center">
+        <div className="flex dark:bg-forest-500/20 bg-forest-100 w-1/2 rounded-xl px-3 py-1.5 items-center">
           <div className="flex flex-col items-center flex-1">
             <Icon
               icon="feather:layers"
               className="w-8 h-8 lg:w-14 lg:h-14 mr-2 relative left-1"
             />
-            <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
+            <div className="text-[0.60rem] sm:text-[0.65rem] lg:text-xs font-medium leading-tight">
               L2 Dominance
             </div>
           </div>
-          <div className="flex flex-col flex-1 items-center justify-center w-7/12">
+          <div className="flex flex-col items-center justify-center w-7/12">
             <div className="text-xl lg:text-3xl font-[650]">
               {l2_dominance.toFixed(2)}x
             </div>

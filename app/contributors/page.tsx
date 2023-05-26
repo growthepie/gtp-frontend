@@ -98,6 +98,7 @@ const Page = () => {
                 alt={s.name}
                 width={s.width}
                 height={s.height}
+                className="brightness-0 grayscale-100 dark:brightness-100 grayscale-0"
                 // fill
               />
             </Link>
