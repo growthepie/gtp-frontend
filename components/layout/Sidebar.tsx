@@ -48,8 +48,8 @@ export default function Sidebar({ isMobile }: SidebarProps) {
                     quality={100}
                   />
                 </Link>
-                <div className="flex flex-1 justify-between items-end space-x-[20px]">
-                  <div className="z-10 flex space-x-[20px] mb-0.5">
+                <div className="flex flex-1 justify-between items-end space-x-[16px]">
+                  <div className="z-10 flex space-x-[16px] mb-0.5">
                     <Link
                       href="https://twitter.com/growthepie_eth"
                       target="_blank"

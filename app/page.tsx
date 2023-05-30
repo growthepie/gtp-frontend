@@ -199,7 +199,7 @@ export default function Home() {
                 className="object-contain"
               />
             </div>
-            <div className="text-base md:text-sm lg:text-base text-justify">
+            <div className="text-base md:text-sm lg:text-base">
               At GrowThePie, our mission is to provide comprehensive and
               accurate analytics of layer 2 solutions for the Ethereum
               ecosystem, acting as a trusted data aggregator from reliable
