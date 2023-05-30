@@ -1227,8 +1227,6 @@ export default function LandingChart({
       )}
 
       <div className="flex justify-between items-center absolute -bottom-[1rem] md:-bottom-[5rem] left-0 right-0 rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5">
-        {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
-        {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
         {/* toggle ETH */}
         <div className="flex z-10">
           <Switch
@@ -1242,19 +1240,8 @@ export default function LandingChart({
             ETH
           </div>
         </div>
-        {/* <div className="z-10 hidden lg:block">
-          <Switch
-            checked={showEthereumMainnet}
-            onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
-            rightLabel="Show Ethereum"
-          />
-        </div> */}
       </div>
       <div className="flex justify-end items-center absolute -bottom-[2.5rem] md:-bottom-[6.5rem] left-0 right-0 rounded-full">
-        {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
-        {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
-        {/* toggle ETH */}
-
         <div className="flex justify-center items-center">
           <div className="hidden md:flex bg-forest-100 dark:bg-[#4B5553] rounded-xl px-3 py-1.5 items-center mr-5">
             <Icon

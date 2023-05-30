@@ -1228,12 +1228,17 @@ export default function ComparisonChart({
             <div
               className={`flex justify-between w-full md:w-auto pt-0 md:pt-0 h-[35px] md:h-auto`}
             >
-              <div className="z-10 hidden lg:flex">
+              <div className="flex z-10">
                 <Switch
                   checked={showEthereumMainnet}
                   onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
-                  rightLabel="Show Ethereum"
                 />
+                <div className="ml-2 block md:hidden lg:block leading-[2.5]">
+                  Show Ethereum
+                </div>
+                <div className="ml-2 hidden md:block lg:hidden leading-[2.5]">
+                  ETH
+                </div>
               </div>
               <div className="block md:hidden z-10">
                 <Tooltip placement="left" allowInteract>
