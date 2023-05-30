@@ -318,7 +318,7 @@ export default function LandingChart({
         )}
       </div>`;
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-60 text-xs font-raleway"><div class="w-full flex justify-between font-bold text-[1rem] items-end pl-6 pr-1 mb-2">${dateString}</div>`;
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-48 md:w-60 text-xs font-raleway"><div class="w-full flex justify-between font-bold text-[13px] md:text-[1rem] items-end pl-6 pr-1 mb-2">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
       let pointsSum = 0;
@@ -391,6 +391,45 @@ export default function LandingChart({
     },
     [formatNumber, selectedScale, theme]
   );
+
+  const tooltipPositioner =
+    useCallback<Highcharts.TooltipPositionerCallbackFunction>(
+      function (this, width, height, point) {
+        const chart = this.chart;
+        const { plotLeft, plotTop, plotWidth, plotHeight } = chart;
+        const tooltipWidth = width;
+        const tooltipHeight = height;
+
+        const distance = 20;
+        const pointX = point.plotX + plotLeft;
+        const pointY = point.plotY + plotTop;
+        let tooltipX =
+          pointX - distance - tooltipWidth < plotLeft
+            ? pointX + distance
+            : pointX - tooltipWidth - distance;
+
+        const tooltipY =
+          pointY - tooltipHeight / 2 < plotTop
+            ? pointY + distance
+            : pointY - tooltipHeight / 2;
+
+        if (isMobile) {
+          if (tooltipX + tooltipWidth > plotLeft + plotWidth) {
+            tooltipX = plotLeft + plotWidth - tooltipWidth;
+          }
+          return {
+            x: tooltipX,
+            y: 0,
+          };
+        }
+
+        return {
+          x: tooltipX,
+          y: tooltipY,
+        };
+      },
+      [isMobile]
+    );
 
   const [showTotalUsers, setShowTotalUsers] = useState(true);
 
@@ -603,27 +642,7 @@ export default function LandingChart({
       },
       tooltip: {
         formatter: tooltipFormatter,
-        positioner: function (this: any, width: any, height: any, point: any) {
-          const chart = this.chart;
-          const { plotLeft, plotTop, plotWidth, plotHeight } = chart;
-          const tooltipWidth = width;
-          const tooltipHeight = height;
-          const distance = 20;
-          const pointX = point.plotX + plotLeft;
-          const pointY = point.plotY + plotTop;
-          const tooltipX =
-            pointX - distance - tooltipWidth < plotLeft
-              ? pointX + distance
-              : pointX - tooltipWidth - distance;
-          const tooltipY =
-            pointY - tooltipHeight / 2 < plotTop
-              ? pointY + distance
-              : pointY - tooltipHeight / 2;
-          return {
-            x: tooltipX,
-            y: tooltipY,
-          };
-        },
+        positioner: tooltipPositioner,
         split: false,
         followPointer: true,
         followTouchMove: true,

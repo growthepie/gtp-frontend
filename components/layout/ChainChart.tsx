@@ -24,7 +24,7 @@ import { debounce } from "lodash";
 
 import { navigationItems } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
-import { isMobile } from "react-device-detect";
+import { useMediaQuery } from "usehooks-ts";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -60,6 +60,7 @@ export default function ChainChart({
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
   const { isSidebarOpen } = useUIContext();
   const { width, height } = useWindowSize();
+  const isMobile = useMediaQuery("(max-width: 767px)");
   /*const chartStyle = useMemo(() => {
     if (!AllChains || !data) return [];
 
@@ -251,7 +252,7 @@ export default function ChainChart({
         year: "numeric",
       });
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-36 text-xs font-raleway"><div class="w-full font-bold text-[1rem] ml-6 mb-2">${dateString}</div>`;
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-36 text-xs font-raleway"><div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
       let pointsSum = 0;
@@ -327,6 +328,41 @@ export default function ChainChart({
     },
     [data, formatNumber, prefixes, selectedScale, theme]
   );
+
+  const tooltipPositioner =
+    useCallback<Highcharts.TooltipPositionerCallbackFunction>(
+      function (this, width, height, point) {
+        const chart = this.chart;
+        const { plotLeft, plotTop, plotWidth, plotHeight } = chart;
+        const tooltipWidth = width;
+        const tooltipHeight = height;
+        const distance = 20;
+        const pointX = point.plotX + plotLeft;
+        const pointY = point.plotY + plotTop;
+        let tooltipX =
+          pointX - distance - tooltipWidth < plotLeft - 120
+            ? pointX + distance
+            : pointX - tooltipWidth - distance;
+
+        const tooltipY = pointY - tooltipHeight / 2;
+
+        if (isMobile) {
+          if (tooltipX < plotLeft) {
+            tooltipX = pointX + distance;
+          }
+          return {
+            x: tooltipX,
+            y: 0,
+          };
+        }
+
+        return {
+          x: tooltipX,
+          y: tooltipY,
+        };
+      },
+      [isMobile]
+    );
 
   const seriesHover = useCallback<
     | Highcharts.SeriesMouseOverCallbackFunction
@@ -509,24 +545,7 @@ export default function ChainChart({
       shared: true,
       outside: isMobile ? false : true,
       formatter: tooltipFormatter,
-      positioner: function (this: any, width: any, height: any, point: any) {
-        const chart = this.chart;
-        const { plotLeft, plotTop, plotWidth, plotHeight } = chart;
-        const tooltipWidth = width;
-        const tooltipHeight = height;
-        const distance = 20;
-        const pointX = point.plotX + plotLeft;
-        const pointY = point.plotY + plotTop;
-        const tooltipX =
-          pointX - distance - tooltipWidth < plotLeft - 120
-            ? pointX + distance
-            : pointX - tooltipWidth - distance;
-        const tooltipY = pointY - tooltipHeight / 2;
-        return {
-          x: tooltipX,
-          y: tooltipY,
-        };
-      },
+      positioner: tooltipPositioner,
       split: false,
       followPointer: true,
       followTouchMove: true,
