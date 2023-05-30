@@ -12,6 +12,7 @@
     "@floating-ui/react": "^0.22.3",
     "@react-hook/media-query": "^1.1.1",
     "@react-spring/web": "^9.7.2",
+    "@vercel/analytics": "^1.0.1",
     "cookies-next": "^2.1.1",
     "framer-motion": "^10.3.2",
     "highcharts": "^10.3.3",

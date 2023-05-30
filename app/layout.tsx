@@ -1,4 +1,5 @@
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/react";
 import { Providers } from "./providers";
 import CookieConsent from "@/components/layout/CookieConsent";
 import { Raleway, Inter } from "next/font/google";
@@ -62,6 +63,7 @@ export default function RootLayout({
           </div>
           <CookieConsent />
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
