@@ -7,10 +7,7 @@ type Props = {
   params: { chain: string };
 };
 
-export async function generateMetadata(
-  { params }: Props,
-  parent?: ResolvingMetadata
-): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const key = AllChains.find((c) => c.urlKey === params.chain)?.key;
 
   // fetch data from API

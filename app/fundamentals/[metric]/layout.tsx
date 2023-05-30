@@ -9,10 +9,7 @@ type Props = {
   params: { metric: string };
 };
 
-export async function generateMetadata(
-  { params }: Props,
-  parent?: ResolvingMetadata
-): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const option = navigationItems
     .find((item) => item.label === "Fundamentals")
     ?.options.find((item) => item.urlKey === params.metric);
