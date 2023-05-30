@@ -1032,7 +1032,7 @@ export default function LandingChart({
   return (
     <div className="w-full mb-[0rem] md:mb-[6rem] relative">
       <div className="flex md:hidden justify-center pb-[30px]">
-        <div className="flex dark:bg-forest-500/20 bg-forest-100 rounded-xl w-1/2 px-3 py-1.5 items-center mr-2">
+        <div className="flex bg-forest-100 dark:bg-[#4B5553] rounded-xl w-1/2 px-3 py-1.5 items-center mr-2">
           <div className="flex flex-col items-center flex-1">
             <Icon
               icon="feather:users"
@@ -1076,7 +1076,7 @@ export default function LandingChart({
             </div>
           </div>
         </div>
-        <div className="flex dark:bg-forest-500/20 bg-forest-100 w-1/2 rounded-xl px-3 py-1.5 items-center">
+        <div className="flex bg-forest-100 dark:bg-[#4B5553] w-1/2 rounded-xl px-3 py-1.5 items-center">
           <div className="flex flex-col items-center flex-1">
             <Icon
               icon="feather:layers"
@@ -1277,25 +1277,25 @@ export default function LandingChart({
               <div className="text-xs font-medium leading-tight">
                 {latest_total_comparison > 0 ? (
                   <span
-                    className="text-[#45AA6F] dark:text-[#4CFF7E] font-semibold"
-                    // style={{
-                    //   textShadow:
-                    //     theme === "dark"
-                    //       ? "1px 1px 4px #00000066"
-                    //       : "1px 1px 4px #ffffff99",
-                    // }}
+                    className="text-green-500 dark:text-green-400 font-semibold"
+                    style={{
+                      textShadow:
+                        theme === "dark"
+                          ? "1px 1px 4px #00000066"
+                          : "1px 1px 4px #ffffff99",
+                    }}
                   >
                     +{(latest_total_comparison * 100).toFixed(2)}%
                   </span>
                 ) : (
                   <span
-                    className="text-[#DD3408] dark:text-[#FF3838] font-semibold"
-                    // style={{
-                    //   textShadow:
-                    //     theme === "dark"
-                    //       ? "1px 1px 4px #00000066"
-                    //       : "1px 1px 4px #ffffff99",
-                    // }}
+                    className="text-red-500 dark:text-red-400 font-semibold"
+                    style={{
+                      textShadow:
+                        theme === "dark"
+                          ? "1px 1px 4px #00000066"
+                          : "1px 1px 4px #ffffff99",
+                    }}
                   >
                     {(latest_total_comparison * 100).toFixed(2)}%
                   </span>
@@ -1319,25 +1319,25 @@ export default function LandingChart({
               <div className="text-xs font-medium leading-tight">
                 {l2_dominance_comparison > 0 ? (
                   <span
-                    className="text-[#45AA6F] dark:text-[#4CFF7E] font-semibold"
-                    // style={{
-                    //   textShadow:
-                    //     theme === "dark"
-                    //       ? "1px 1px 4px #00000066"
-                    //       : "1px 1px 4px #ffffff99",
-                    // }}
+                    className="text-green-500 dark:text-green-400 font-semibold"
+                    style={{
+                      textShadow:
+                        theme === "dark"
+                          ? "1px 1px 4px #00000066"
+                          : "1px 1px 4px #ffffff99",
+                    }}
                   >
                     +{l2_dominance_comparison.toFixed(2)}%
                   </span>
                 ) : (
                   <span
-                    className="text-[#DD3408] dark:text-[#FF3838] font-semibold"
-                    // style={{
-                    //   textShadow:
-                    //     theme === "dark"
-                    //       ? "1px 1px 4px #00000066"
-                    //       : "1px 1px 4px #ffffff99",
-                    // }}
+                    className="text-red-500 dark:text-red-400 font-semibold"
+                    style={{
+                      textShadow:
+                        theme === "dark"
+                          ? "1px 1px 4px #00000066"
+                          : "1px 1px 4px #ffffff99",
+                    }}
                   >
                     {l2_dominance_comparison.toFixed(2)}%
                   </span>
