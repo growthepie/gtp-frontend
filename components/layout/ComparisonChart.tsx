@@ -1128,12 +1128,12 @@ export default function ComparisonChart({
               Selected Chains
             </h2>
           </div>
-          <div className="flex justify-between md:justify-center w-full md:w-auto items-center space-x-[4px] md:space-x-1 px-[1px]">
+          <div className="flex justify-between md:justify-center w-full md:w-auto items-center space-x-[0] md:space-x-1">
             {!zoomed ? (
               Object.keys(timespans).map((timespan) => (
                 <button
                   key={timespan}
-                  className={`rounded-full px-[16px] py-[8px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
+                  className={`rounded-full px-[16px] py-4 w-full md:w-auto text-[12px] md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
                     selectedTimespan === timespan
                       ? "bg-forest-500 dark:bg-forest-1000"
                       : "hover:bg-forest-500/10"
@@ -1228,7 +1228,7 @@ export default function ComparisonChart({
             <div
               className={`flex justify-between w-full md:w-auto pt-0 md:pt-0 h-[35px] md:h-auto`}
             >
-              <div className="z-10 block lg:hidden">
+              <div className="z-10 hidden lg:flex">
                 <Switch
                   checked={showEthereumMainnet}
                   onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
