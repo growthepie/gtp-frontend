@@ -13,16 +13,14 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const key = AllChains.find((c) => c.urlKey === params.chain)?.key;
 
-  if (key) {
-    // fetch data from API
-    const res: MasterResponse = await fetch(MasterURL).then((r) => r.json());
+  // fetch data from API
+  const res: MasterResponse = await fetch(MasterURL).then((r) => r.json());
 
-    if (res && res.chains[key]) {
-      return {
-        title: res.chains[key].name,
-        description: res.chains[key].description,
-      };
-    }
+  if (res && key && res.chains[key]) {
+    return {
+      title: res.chains[key].name,
+      description: res.chains[key].description,
+    };
   }
 
   return {
