@@ -117,18 +117,15 @@ const Chain = ({ params }: { params: any }) => {
           </div>
         </div>
         <Subheading
-          className="text-[16px] leading-snug"
+          className="text-[16px]"
           leftIcon={
             pageData.icon && (
-              <div>
-                <Icon
-                  icon={pageData.icon}
-                  className="w-6 h-6 mr-[12px] ml-[28px] -mt-0.5"
-                />
+              <div className="self-start md:self-center pr-[7px] pl-[0px] pt-0.5 md:pt-0 md:pr-[10px] md:pl-[30px]">
+                <Icon icon={pageData.icon} className="w-5 h-5 md:w-6 md:h-6" />
               </div>
             )
           }
-          iconContainerClassName="items-start mb-[30px]"
+          iconContainerClassName="items-center mb-[22px] md:mb-[32px]"
         >
           {pageData.description}
         </Subheading>

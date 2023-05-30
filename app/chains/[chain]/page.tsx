@@ -98,11 +98,11 @@ const Chain = ({ params }: { params: any }) => {
         {chainData && master && (
           <div className="flex flex-col w-full">
             <div className="flex flex-col md:flex-row justify-between items-start w-full">
-              <div className="flex items-start">
-                <Heading className="text-2xl leading-snug text-[36px] mb-[19px]">
+              <div className="flex flex-col md:flex-row mb-[19px] items-start">
+                <Heading className="text-2xl leading-snug text-[36px] break-inside-avoid">
                   {chainData.name}
                 </Heading>
-                <div className="flex items-start space-x-[7px] font-inter uppercase">
+                <div className="hidden md:flex items-start space-x-[7px] font-inter uppercase">
                   <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm ml-[19px]">
                     {chainData.technology}
                   </div>
@@ -161,20 +161,41 @@ const Chain = ({ params }: { params: any }) => {
               className="text-[16px] w-10/12 md:w-auto"
               leftIcon={
                 AllChainsByKeys[chainKey].icon && (
-                  <div className="h-[92%] md:h-auto">
+                  <div className="self-start md:self-center pr-[7px] pl-[0px] pt-0.5 md:pt-0 md:pr-[10px] md:pl-[30px]">
                     <Icon
                       icon={`gtp:${AllChainsByKeys[chainKey].urlKey}-logo-monochrome`}
-                      className="w-6 h-6 mr-[10px] ml-[10px] md:ml-[30px]"
+                      className="w-5 h-5 md:w-6 md:h-6"
                     />
                   </div>
                 )
               }
-              iconContainerClassName="items-center mb-[32px]"
+              iconContainerClassName="items-center mb-[15px] md:mb-[32px]"
             >
               {AllChainsByKeys[chainKey].description
                 ? AllChainsByKeys[chainKey].description
                 : ""}
             </Subheading>
+            <div className="flex md:hidden items-start space-x-[7px] font-inter uppercase px-[7px] mb-[21px]">
+              <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm ml-[19px]">
+                {chainData.technology}
+              </div>
+              {chainData.purpose.includes("(EVM)") ? (
+                <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400  bg-forest-400 text-forest-50 dark:border-forest-500 dark:bg-forest-500 dark:text-forest-900 px-[4px] font-bold rounded-sm ml-[7px]">
+                  EVM
+                </div>
+              ) : (
+                <>
+                  {chainData.purpose.split(", ").map((purpose: string) => (
+                    <div
+                      key={purpose}
+                      className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 bg-forest-400 text-forest-50 dark:border-forest-500 dark:bg-forest-500 dark:text-forest-900 px-[4px] font-bold rounded-sm ml-[7px]"
+                    >
+                      {purpose}
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
             {chartData && <ChainChart chain={chain} data={chartData} />}
             <div className="flex lg:hidden justify-between text-base items-start mb-8 mt-[15px]">
               <Link

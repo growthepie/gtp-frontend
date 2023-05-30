@@ -1087,20 +1087,21 @@ export default function ComparisonChart({
     return merge({}, baseOptions, dynamicOptions);
   }, [
     filteredData,
+    isMobile,
     getSeriesType,
     scaleToPlotOptions,
-    selectedScale,
     theme,
     getTickPositions,
     timespans,
     onXAxisSetExtremes,
     selectedTimespan,
     tooltipFormatter,
+    tooltipPositioner,
     showUsd,
     formatNumber,
+    selectedScale,
     showEthereumMainnet,
     dataGrouping,
-    isMobile,
   ]);
 
   useEffect(() => {
@@ -1134,7 +1135,7 @@ export default function ComparisonChart({
       <Container className="">
         <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5">
           <div className="hidden md:flex justify-center items-center">
-            <div className="w-7 h-7 lg:w-9 lg:h-9 relative ml-[21px] mr-1.5">
+            <div className="w-7 h-7 md:w-9 md:h-9 relative ml-[21px] mr-1.5">
               <Image
                 src="/GTP-Chain.png"
                 alt="GTP Chain"
@@ -1147,12 +1148,12 @@ export default function ComparisonChart({
               Selected Chains
             </h2>
           </div>
-          <div className="flex justify-between md:justify-center w-full md:w-auto items-center space-x-[0] md:space-x-1">
+          <div className="flex w-full md:w-auto justify-between md:justify-center items-center space-x-[4px] md:space-x-1">
             {!zoomed ? (
               Object.keys(timespans).map((timespan) => (
                 <button
                   key={timespan}
-                  className={`rounded-full px-[16px] py-4 w-full md:w-auto text-[12px] md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
+                  className={`rounded-full px-[16px] py-[8px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
                     selectedTimespan === timespan
                       ? "bg-forest-500 dark:bg-forest-1000"
                       : "hover:bg-forest-500/10"

@@ -755,7 +755,7 @@ export default function ChainChart({
       </style>
       <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 mb-[32px]">
         <div className="flex justify-center items-center">
-          <div className="flex justify-center items-center space-x-[8px]">
+          <div className="hidden md:flex justify-center items-center space-x-[8px]">
             <Image
               src="/GTP-Metrics.png"
               alt="pie slice"
@@ -768,11 +768,11 @@ export default function ChainChart({
             </h2>
           </div>
         </div>
-        <div className="flex justify-center items-center space-x-1">
+        <div className="flex w-full md:w-auto justify-between md:justify-center items-center space-x-[4px] md:space-x-1">
           {Object.keys(timespans).map((timespan) => (
             <button
               key={timespan}
-              className={`rounded-full px-[16px] py-[8px] text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
+              className={`rounded-full w-full md:w-auto px-[16px] py-[8px] text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
                 selectedTimespan === timespan
                   ? "bg-forest-500 dark:bg-forest-1000"
                   : "hover:bg-forest-500/10"

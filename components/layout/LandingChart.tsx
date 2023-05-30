@@ -1170,12 +1170,13 @@ export default function LandingChart({
         <div className="block lg:hidden w-[70%] mx-auto my-[10px]">
           <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
         </div>
-        <div className="flex w-full lg:w-1/3 justify-between lg:justify-center items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
+        <div className="flex w-full lg:w-auto justify-between lg:justify-center items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
           {!zoomed ? (
             Object.keys(timespans).map((timespan) => (
               <button
                 key={timespan}
-                className={`rounded-full self-stretch sm:w-full px-4 py-1.5 lg:py-4 font-medium ${
+                //rounded-full sm:w-full px-4 py-1.5 lg:py-4 font-medium
+                className={`rounded-full w-full lg:w-auto px-4 py-1.5 lg:py-4 font-medium ${
                   selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
@@ -1201,7 +1202,7 @@ export default function LandingChart({
           ) : (
             <>
               <button
-                className={`rounded-full flex items-center space-x-3 px-2 py-[5px] text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium border-[1px] border-forest-800`}
+                className={`rounded-full flex items-center justify-center space-x-3 px-4 py-1.5 lg:py-4 text-md w-full lg:w-auto lg:px-4 lg:text-md font-medium border-[1px] border-forest-800`}
                 onClick={() => {
                   chartComponent?.current?.xAxis[0].setExtremes(
                     timespans[selectedTimespan].xMin,
@@ -1210,11 +1211,14 @@ export default function LandingChart({
                   setZoomed(false);
                 }}
               >
-                <Icon icon="feather:zoom-out" className="w-6 h-6" />
+                <Icon
+                  icon="feather:zoom-out"
+                  className="h-4 w-4 lg:w-6 lg:h-6"
+                />
                 <div>Reset Zoom</div>
               </button>
               <button
-                className={`rounded-full px-2 py-1.5 text-md lg:px-4 lg:py-3 lg:text-md xl:px-4 xl:py-3 xl:text-lg font-medium bg-forest-100 dark:bg-forest-1000`}
+                className={`rounded-full text-md w-full lg:w-auto px-4 py-1.5 lg:py-4 xl:px-4 font-medium bg-forest-100 dark:bg-forest-1000`}
               >
                 {intervalShown?.label}
               </button>
