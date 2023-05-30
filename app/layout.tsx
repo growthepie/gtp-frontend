@@ -7,6 +7,7 @@ import Header from "@/components/layout/Header";
 import SidebarContainer from "@/components/layout/SidebarContainer";
 import Backgrounds from "@/components/layout/Backgrounds";
 import { Metadata } from "next";
+import Head from "./head";
 
 export const metadata: Metadata = {
   title: {
@@ -80,7 +81,7 @@ export default function RootLayout({
       className={`${raleway.variable} ${inter.variable}`}
       suppressHydrationWarning
     >
-      <head />
+      <Head />
       <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway overflow-x-hidden overflow-y-auto">
         <Providers>
           <div className="flex h-fit w-full justify-center">

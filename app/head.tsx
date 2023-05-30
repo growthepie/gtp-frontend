@@ -6,14 +6,7 @@ export default function Head() {
 
   return (
     <>
-      <title>
-        Grow The Pie - Growing Ethereum’s Ecosystem Together - Layer 2 User Base
-      </title>
       <meta content="width=device-width, initial-scale=1" name="viewport" />
-      <meta
-        name="description"
-        content="At GrowThePie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics."
-      />
       <link
         rel="apple-touch-icon"
         sizes="180x180"
