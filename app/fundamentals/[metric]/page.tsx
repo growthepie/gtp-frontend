@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import Error from "next/error";
 import { MetricsResponse } from "@/types/api/MetricsResponse";
 import Heading from "@/components/layout/Heading";
@@ -13,9 +13,9 @@ import { AllChains } from "@/lib/chains";
 import { intersection } from "lodash";
 import { Icon } from "@iconify/react";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
-import LoadingAnimation from "@/components/layout/LoadingAnimation";
 import { navigationItems } from "@/lib/navigation";
 import Container from "@/components/layout/Container";
+import ShowLoading from "@/components/layout/ShowLoading";
 
 const Chain = ({ params }: { params: any }) => {
   const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
@@ -27,11 +27,6 @@ const Chain = ({ params }: { params: any }) => {
     isLoading: metricLoading,
     isValidating: metricValidating,
   } = useSWR<MetricsResponse>(MetricsURLs[params.metric]);
-
-  // const data = useMemo(() => {
-  //   if (!metricData) return null;
-  //   return _.omit(metricData.data.chains, "ethereum");
-  // }, [metricData]);
 
   const chains = useMemo(() => {
     if (!metricData) return AllChains;
@@ -78,40 +73,20 @@ const Chain = ({ params }: { params: any }) => {
       : selectedTimeInterval;
   }, [metricData, selectedTimeInterval, selectedTimespan]);
 
-  const [showLoading, setShowLoading] = useState(true);
-  const [loadingTimeoutSeconds, setLoadingTimeoutSeconds] = useState(0);
-
-  useEffect(() => {
-    if (metricLoading) {
-      setShowLoading(true);
-      if (!metricValidating) setLoadingTimeoutSeconds(1200);
-    }
-
-    if (metricData)
-      setTimeout(() => {
-        setShowLoading(false);
-      }, loadingTimeoutSeconds);
-  }, [metricLoading, metricValidating, metricData, loadingTimeoutSeconds]);
-
   if (errorCode) {
     return <Error statusCode={errorCode} />;
   }
 
   return (
     <>
-      {/* <h1>Metric: {params.metric}</h1> */}
-      <div
-        className={`absolute w-full h-screen right flex -ml-2 -mr-2 md:-ml-6 md:-mr-[50px] -mt-[153px] items-center justify-center bg-forest-50 dark:bg-forest-1000 z-50 ${
-          showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
-        } transition-opacity duration-300`}
-        suppressHydrationWarning
-      >
-        <LoadingAnimation />
-      </div>
-      <Container className="flex flex-col w-full mt-[75px]">
+      <ShowLoading
+        dataLoading={[metricLoading]}
+        dataValidating={[metricValidating]}
+      />
+      <Container className="flex flex-col w-full mt-[65px] md:mt-[75px]">
         <div className="flex justify-between items-start w-full">
           <div className="flex items-start">
-            <Heading className="text-[30px] leading-snug md:text-[36px] mb-[30px]">
+            <Heading className="text-[30px] leading-snug md:text-[36px] mb-[15px] md:mb-[30px]">
               {pageData.title}
             </Heading>
           </div>

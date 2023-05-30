@@ -1,7 +1,7 @@
 "use client";
 import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
-import { addCollection, Icon } from "@iconify/react";
+import { Icon, addCollection } from "@iconify/react";
 import Image from "next/image";
 import React from "react";
 import { Contributors, Supporters } from "@/lib/contributors";
@@ -62,7 +62,7 @@ addCollection({
   height: 36,
 });
 
-const Page = () => {
+export default function ContributorsPage() {
   return (
     <Container className="mx-auto mt-[25px] flex flex-col">
       <Heading className="text-[48px] mb-[30px] leading-snug">
@@ -158,6 +158,4 @@ const Page = () => {
       </div>
     </Container>
   );
-};
-
-export default Page;
+}

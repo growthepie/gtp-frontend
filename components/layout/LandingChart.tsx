@@ -1122,9 +1122,9 @@ export default function LandingChart({
         </div>
       </div>
       <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 lg:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
-        <div className="flex w-full lg:w-auto justify-between lg:justify-center items-center space-x-[4px] lg:space-x-1">
+        <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center space-x-[4px] lg:space-x-1">
           <button
-            className={`rounded-full w-full lg:w-auto px-4 py-1.5 lg:py-4 font-medium ${
+            className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
               showTotalUsers
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
@@ -1138,7 +1138,7 @@ export default function LandingChart({
             Total Users
           </button>
           <button
-            className={`rounded-full w-full lg:w-auto px-4 py-1.5 lg:py-4 font-medium ${
+            className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
               "absolute" === selectedScale && !showTotalUsers
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
@@ -1153,7 +1153,7 @@ export default function LandingChart({
           </button>
 
           <button
-            className={`rounded-full w-full lg:w-auto px-4 py-1.5 lg:py-4 font-medium ${
+            className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
               "percentage" === selectedScale
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
@@ -1170,13 +1170,13 @@ export default function LandingChart({
         <div className="block lg:hidden w-[70%] mx-auto my-[10px]">
           <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
         </div>
-        <div className="flex w-full lg:w-auto justify-between lg:justify-center items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
+        <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
           {!zoomed ? (
             Object.keys(timespans).map((timespan) => (
               <button
                 key={timespan}
                 //rounded-full sm:w-full px-4 py-1.5 lg:py-4 font-medium
-                className={`rounded-full w-full lg:w-auto px-4 py-1.5 lg:py-4 font-medium ${
+                className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
                   selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"

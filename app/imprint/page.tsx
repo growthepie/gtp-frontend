@@ -1,9 +1,11 @@
+import Container from "@/components/layout/Container";
+import Heading from "@/components/layout/Heading";
 import React from "react";
 
 const Imprint = () => {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-4">Imprint</h1>
+    <Container className="mt-[65px]">
+      <Heading className="text-[48px] mb-[30px] leading-snug">Imprint</Heading>
       <div className="text-lg mb-6">
         Information in accordance with Section 5 TMG:
       </div>
@@ -70,7 +72,7 @@ const Imprint = () => {
           <p className="mb-4">Source: Englisch-Übersetzung translate-24h.de</p>
         </div>
       </div>
-    </div>
+    </Container>
   );
 };
 

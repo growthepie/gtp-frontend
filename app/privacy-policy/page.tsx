@@ -1,11 +1,13 @@
+import Container from "@/components/layout/Container";
+import Heading from "@/components/layout/Heading";
 import React from "react";
 
 const Imprint = () => {
   return (
-    <div className="py-8 px-4">
-      <h2 className="text-xl font-bold mb-4">
+    <Container className="mt-[65px]">
+      <Heading className="text-[48px] mb-[30px] leading-snug">
         Privacy Policy &amp; Data Protection
-      </h2>
+      </Heading>
       <p className="mb-4">
         We want you to be aware of our privacy policy and how your data is used,
         shared and protected. We use and share as little information about you
@@ -707,7 +709,7 @@ const Imprint = () => {
         of the German Association for Data Protection that was developed in
         cooperation with Privacy Lawyers from WILDE BEUGER SOLMECKE, Cologne.
       </p>
-    </div>
+    </Container>
   );
 };
 

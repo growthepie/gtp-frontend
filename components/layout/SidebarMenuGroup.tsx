@@ -14,8 +14,7 @@ type SidebarProps = {
   onOpen?: () => void;
   onClose?: () => void;
   children?: ReactNode;
-  sidebarOpen?: boolean;
-  isMobile?: boolean;
+  sidebarOpen: boolean;
 };
 
 export default function SidebarMenuGroup({
@@ -23,7 +22,6 @@ export default function SidebarMenuGroup({
   onOpen,
   onClose,
   sidebarOpen,
-  isMobile,
 }: SidebarProps) {
   const { data: master } = useSWR<any>(MasterURL);
 
@@ -150,7 +148,7 @@ export default function SidebarMenuGroup({
     );
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col" suppressHydrationWarning>
       <div className="text-xs"></div>
       <Tooltip key={item.label} placement="right">
         <TooltipTrigger className="h-6 pl-0 md:pl-8 overflow-visible">

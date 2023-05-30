@@ -18,6 +18,7 @@ import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import LoadingAnimation from "@/components/layout/LoadingAnimation";
 import { useSessionStorage } from "usehooks-ts";
 import Container from "@/components/layout/Container";
+import ShowLoading from "@/components/layout/ShowLoading";
 
 export default function Home() {
   const isLargeScreen = useMediaQuery("(min-width: 768px)");
@@ -99,25 +100,22 @@ export default function Home() {
 
   return (
     <>
-      {!master && !landing ? (
+      {/* {!master && !landing ? (
         <div
-          className={`fixed top-0 left-0 w-screen h-screen flex items-center justify-center bg-forest-50 dark:bg-forest-1000 z-50 ${
+          className={`fixed top-0 left-0 w-screen h-screen flex items-center justify-center bg-white dark:bg-forest-1000 z-50 ${
             showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
           } transition-opacity duration-300`}
           suppressHydrationWarning
         >
           <LoadingAnimation />
         </div>
-      ) : (
-        <div
-          className={`absolute w-full h-screen right flex -ml-2 -mr-2 md:-ml-6 md:-mr-[50px] -mt-[118px] items-center justify-center bg-forest-50 dark:bg-forest-1000 z-50 ${
-            showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
-          } transition-opacity duration-300`}
-          suppressHydrationWarning
-        >
-          <LoadingAnimation />
-        </div>
-      )}
+      ) : ( */}
+      <ShowLoading
+        dataLoading={[masterLoading, landingLoading]}
+        dataValidating={[masterValidating, landingValidating]}
+        fullScreen={!master && !landing}
+      />
+      {/* )} */}
       <Container className="flex flex-col flex-1 w-full mt-[65px]">
         <Heading className="font-bold text-[30px] leading-snug md:text-[36px] mb-[28px] lg:mb-[30px]">
           Growing Ethereum’s Ecosystem Together

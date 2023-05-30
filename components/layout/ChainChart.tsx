@@ -705,18 +705,16 @@ export default function ChainChart({
   const resituateChart = debounce(() => {
     if (chartComponents.current) {
       chartComponents.current.forEach((chart) => {
-        if (!chart) return;
-
         delay(50)
           .then(() => {
-            chart.setSize(null, null, true);
+            chart && chart.setSize(null, null, true);
             // chart.reflow();
           })
           .then(() => {
-            delay(50).then(() => chart.reflow());
+            delay(50).then(() => chart && chart.reflow());
           })
           .then(() => {
-            delay(50).then(() => resetXAxisExtremes());
+            delay(50).then(() => chart && resetXAxisExtremes());
           });
       });
     }
@@ -724,6 +722,11 @@ export default function ChainChart({
 
   useEffect(() => {
     resituateChart();
+
+    // cancel the debounced function on component unmount
+    return () => {
+      resituateChart.cancel();
+    };
   }, [
     chartComponents,
     selectedTimespan,
@@ -768,11 +771,11 @@ export default function ChainChart({
             </h2>
           </div>
         </div>
-        <div className="flex w-full md:w-auto justify-between md:justify-center items-center space-x-[4px] md:space-x-1">
+        <div className="flex w-full md:w-auto justify-between md:justify-center items-stretch md:items-center space-x-[4px] md:space-x-1">
           {Object.keys(timespans).map((timespan) => (
             <button
               key={timespan}
-              className={`rounded-full w-full md:w-auto px-[16px] py-[8px] text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
+              className={`rounded-full grow px-[16px] py-[8px] text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
                 selectedTimespan === timespan
                   ? "bg-forest-500 dark:bg-forest-1000"
                   : "hover:bg-forest-500/10"

@@ -18,24 +18,29 @@ type SidebarProps = {
   isMobile?: boolean;
 };
 
-export default function Sidebar({ isMobile }: SidebarProps) {
-  const { isSidebarOpen, toggleSidebar } = useUIContext();
+export default function Sidebar({ isMobile = false }: SidebarProps) {
+  const {
+    isSidebarOpen,
+    toggleSidebar,
+    isMobileSidebarOpen,
+    toggleMobileSidebar,
+  } = useUIContext();
 
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   // detect if we are changing routes on mobile
   useEffect(() => {
-    if (isMobile && isSidebarOpen) {
-      toggleSidebar();
+    if (isMobile && isMobileSidebarOpen) {
+      toggleMobileSidebar();
     }
-  }, [pathname, searchParams]);
+  }, [isMobile, pathname, searchParams]);
 
   if (isMobile)
     return (
       <>
-        {isSidebarOpen && (
-          <>
+        {isMobileSidebarOpen && (
+          <div suppressHydrationWarning>
             <Backgrounds isMobileMenu />
             <div className="fixed inset-0 p-[20px] z-50 flex flex-col justify-items-start select-none overflow-hidden">
               <div className="flex justify-between space-x-[20px] items-end w-full">
@@ -70,7 +75,10 @@ export default function Sidebar({ isMobile }: SidebarProps) {
                     <EthUsdSwitch isMobile />
                   </div>
                 </div>
-                <button className="!-mb-1  !-mr-1" onClick={toggleSidebar}>
+                <button
+                  className="!-mb-1  !-mr-1"
+                  onClick={toggleMobileSidebar}
+                >
                   <Icon icon="feather:x" className="h-8 w-8" />
                 </button>
               </div>
@@ -80,7 +88,7 @@ export default function Sidebar({ isMobile }: SidebarProps) {
                     <SidebarMenuGroup
                       key={item.name + "_item"}
                       item={item}
-                      sidebarOpen={isSidebarOpen}
+                      sidebarOpen={isMobileSidebarOpen}
                     />
                   ))}
                 </div>
@@ -88,7 +96,7 @@ export default function Sidebar({ isMobile }: SidebarProps) {
                   <SidebarMenuGroup
                     key={contributorsItem.name + "_item"}
                     item={contributorsItem}
-                    sidebarOpen={isSidebarOpen}
+                    sidebarOpen={isMobileSidebarOpen}
                   />
                   <div className="text-[0.7rem] flex justify-between w-full text-inherit leading-[1] px-2 mt-[30px]">
                     <Link href="/privacy-policy">Privacy Policy</Link>
@@ -109,9 +117,9 @@ export default function Sidebar({ isMobile }: SidebarProps) {
                 </div>
               </div>
             </div>
-          </>
+          </div>
         )}
-        <button className="-mb-1 -mr-1" onClick={toggleSidebar}>
+        <button className="-mb-1 -mr-1" onClick={toggleMobileSidebar}>
           <Icon icon="feather:menu" className="h-8 w-8" />
         </button>
       </>
@@ -119,7 +127,9 @@ export default function Sidebar({ isMobile }: SidebarProps) {
 
   return (
     <motion.div
-      className={`flex-1 flex flex-col justify-items-start select-none overflow-hidden`}
+      className={`flex-1 flex flex-col justify-items-start select-none overflow-hidden ${
+        isSidebarOpen ? "w-[18rem]" : "w-[5.5rem]"
+      }`}
       animate={{
         width: isSidebarOpen ? "18rem" : "5.5rem",
       }}

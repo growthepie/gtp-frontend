@@ -10,7 +10,11 @@ addCollection(GTPIcons);
 
 export function Providers({ children }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark">
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="dark"
+      disableTransitionOnChange
+    >
       <SWRConfig
         value={{
           fetcher: (url) => fetch(url).then((r) => r.json()),

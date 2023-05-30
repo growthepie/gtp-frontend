@@ -21,6 +21,8 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "next": "^13.4.1",
+    "next-seo": "^6.0.0",
+    "next-sitemap": "^4.1.3",
     "next-themes": "^0.2.1",
     "nightwind": "^1.1.13",
     "react": "^18.2.0",

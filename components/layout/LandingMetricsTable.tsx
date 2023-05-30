@@ -132,7 +132,7 @@ export default function LandingMetricsTable({
           <div
             className={`flex space-x-5 items-center rounded-full font-semibold text-xs lg:text-sm pr-2 py-1 pl-2`}
           >
-            <div className="w-2/12 pl-14">Chain</div>
+            <div className="w-[22.5%] pl-14">Chain</div>
             <div className="w-1/12">Age</div>
             <div className="w-1/5">Purpose</div>
             <div className="w-2/12">Technology</div>
@@ -174,7 +174,7 @@ export default function LandingMetricsTable({
                         }
                       }}
                     >
-                      <div className="flex w-2/12 items-center space-x-4">
+                      <div className="flex w-[22.5%] items-center space-x-4">
                         <div className="relative">
                           <div
                             className={`w-9 h-9 rounded-full border-[5px] ${
@@ -401,7 +401,7 @@ export default function LandingMetricsTable({
                       }
                     }}
                   >
-                    <div className="flex w-2/12 items-center space-x-4">
+                    <div className="flex w-[22.5%] items-center space-x-4">
                       <div className="relative">
                         <div
                           className={`w-9 h-9 rounded-full border-[5px] ${
