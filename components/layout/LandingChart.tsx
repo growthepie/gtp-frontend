@@ -1032,13 +1032,13 @@ export default function LandingChart({
   return (
     <div className="w-full mb-[0rem] md:mb-[6rem] relative">
       <div className="flex md:hidden justify-center pb-[30px]">
-        <div className="flex bg-forest-100 dark:bg-[#4B5553] rounded-xl w-1/2 px-3 py-1.5 items-center mr-2">
+        <div className="flex bg-forest-100 dark:bg-[#4B5553] rounded-xl w-1/2 px-1.5 py-1.5 items-center mr-2">
           <div className="flex flex-col items-center flex-1">
             <Icon
               icon="feather:users"
               className="w-8 h-8 lg:w-14 lg:h-14 mr-2 relative left-1"
             />
-            <div className="text-[0.60rem] sm:text-[0.65rem] lg:text-xs font-medium leading-tight">
+            <div className="text-[0.6rem] sm:text-[0.65rem] lg:text-xs font-medium leading-tight">
               Total Users
             </div>
           </div>
@@ -1046,7 +1046,7 @@ export default function LandingChart({
             <div className="text-xl lg:text-3xl font-[650]">
               {latest_total.toLocaleString()}
             </div>
-            <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
+            <div className="text-[0.6rem] lg:text-xs font-medium leading-tight">
               {latest_total_comparison > 0 ? (
                 <span
                   className="text-green-500 dark:text-green-400 font-semibold"
@@ -1076,13 +1076,13 @@ export default function LandingChart({
             </div>
           </div>
         </div>
-        <div className="flex bg-forest-100 dark:bg-[#4B5553] w-1/2 rounded-xl px-3 py-1.5 items-center">
+        <div className="flex bg-forest-100 dark:bg-[#4B5553] w-1/2 rounded-xl px-1.5 py-1.5 items-center">
           <div className="flex flex-col items-center flex-1">
             <Icon
               icon="feather:layers"
               className="w-8 h-8 lg:w-14 lg:h-14 mr-2 relative left-1"
             />
-            <div className="text-[0.60rem] sm:text-[0.65rem] lg:text-xs font-medium leading-tight">
+            <div className="text-[0.58rem] sm:text-[0.65rem] lg:text-xs font-medium leading-tight">
               L2 Dominance
             </div>
           </div>
@@ -1090,7 +1090,7 @@ export default function LandingChart({
             <div className="text-xl lg:text-3xl font-[650]">
               {l2_dominance.toFixed(2)}x
             </div>
-            <div className="text-[0.65rem] lg:text-xs font-medium leading-tight">
+            <div className="text-[0.6rem] lg:text-xs font-medium leading-tight">
               {l2_dominance_comparison > 0 ? (
                 <span
                   className="text-green-500 dark:text-green-400 font-semibold"
