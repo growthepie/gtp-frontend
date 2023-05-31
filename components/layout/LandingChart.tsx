@@ -1030,23 +1030,26 @@ export default function LandingChart({
   }, [isMobile]);
 
   return (
-    <div className="w-full mb-[0rem] md:mb-[6rem] relative">
-      <div className="flex md:hidden justify-center pb-[30px]">
-        <div className="flex bg-forest-100 dark:bg-[#4B5553] rounded-xl w-1/2 px-1.5 py-1.5 items-center mr-2">
+    <div className="w-full mb-[0rem] lg:mb-[6rem] relative">
+      <div className="flex lg:hidden justify-center pb-[30px]">
+        <div className="flex bg-forest-100 dark:bg-[#4B5553] rounded-xl w-1/2 px-1.5 py-1.5 md:px-3 md:py-1.5 items-center mr-2">
           <div className="flex flex-col items-center flex-1">
             <Icon
               icon="feather:users"
-              className="w-8 h-8 lg:w-14 lg:h-14 mr-2 relative left-1"
+              className="w-8 h-8 md:w-14 md:h-14 mr-2 relative left-1"
             />
-            <div className="text-[0.6rem] sm:text-[0.65rem] lg:text-xs font-medium leading-tight">
+            <div className="block md:hidden text-[0.6rem] sm:text-[0.65rem] lg:text-xs font-medium leading-tight">
               Total Users
             </div>
           </div>
           <div className="flex flex-col items-center justify-center w-7/12">
-            <div className="text-xl lg:text-3xl font-[650]">
+            <div className="hidden md:block text-xs font-medium leading-tight">
+              Total Users
+            </div>
+            <div className="text-xl md:text-3xl font-[650]">
               {latest_total.toLocaleString()}
             </div>
-            <div className="text-[0.6rem] lg:text-xs font-medium leading-tight">
+            <div className="text-[0.6rem] md:text-xs font-medium leading-tight">
               {latest_total_comparison > 0 ? (
                 <span
                   className="text-green-500 dark:text-green-400 font-semibold"
@@ -1076,21 +1079,24 @@ export default function LandingChart({
             </div>
           </div>
         </div>
-        <div className="flex bg-forest-100 dark:bg-[#4B5553] w-1/2 rounded-xl px-1.5 py-1.5 items-center">
+        <div className="flex bg-forest-100 dark:bg-[#4B5553] w-1/2 rounded-xl px-1.5 py-1.5 md:px-3 md:py-1.5 items-center">
           <div className="flex flex-col items-center flex-1">
             <Icon
               icon="feather:layers"
-              className="w-8 h-8 lg:w-14 lg:h-14 mr-2 relative left-1"
+              className="w-8 h-8 md:w-14 md:h-14 mr-2 relative left-1"
             />
-            <div className="text-[0.58rem] sm:text-[0.65rem] lg:text-xs font-medium leading-tight">
+            <div className="block md:hidden text-[0.58rem] sm:text-[0.65rem] lg:text-xs font-medium leading-tight">
               L2 Dominance
             </div>
           </div>
           <div className="flex flex-col items-center justify-center w-7/12">
-            <div className="text-xl lg:text-3xl font-[650]">
+            <div className="hidden md:block text-xs font-medium leading-tight">
+              L2 Dominance
+            </div>
+            <div className="text-xl md:text-3xl font-[650]">
               {l2_dominance.toFixed(2)}x
             </div>
-            <div className="text-[0.6rem] lg:text-xs font-medium leading-tight">
+            <div className="text-[0.6rem] md:text-xs font-medium leading-tight">
               {l2_dominance_comparison > 0 ? (
                 <span
                   className="text-green-500 dark:text-green-400 font-semibold"
@@ -1121,10 +1127,10 @@ export default function LandingChart({
           </div>
         </div>
       </div>
-      <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 lg:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
-        <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center space-x-[4px] lg:space-x-1">
+      <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs xl:text-base xl:flex xl:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 xl:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
+        <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center space-x-[4px] xl:space-x-1">
           <button
-            className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
+            className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
               showTotalUsers
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
@@ -1138,7 +1144,7 @@ export default function LandingChart({
             Total Users
           </button>
           <button
-            className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
+            className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
               "absolute" === selectedScale && !showTotalUsers
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
@@ -1153,7 +1159,7 @@ export default function LandingChart({
           </button>
 
           <button
-            className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
+            className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
               "percentage" === selectedScale
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
@@ -1167,16 +1173,16 @@ export default function LandingChart({
             Percentage
           </button>
         </div>
-        <div className="block lg:hidden w-[70%] mx-auto my-[10px]">
+        <div className="block xl:hidden w-[70%] mx-auto my-[10px]">
           <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
         </div>
-        <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
+        <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
           {!zoomed ? (
             Object.keys(timespans).map((timespan) => (
               <button
                 key={timespan}
-                //rounded-full sm:w-full px-4 py-1.5 lg:py-4 font-medium
-                className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
+                //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
+                className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
                   selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
@@ -1202,7 +1208,7 @@ export default function LandingChart({
           ) : (
             <>
               <button
-                className={`rounded-full flex items-center justify-center space-x-3 px-4 py-1.5 lg:py-4 text-md w-full lg:w-auto lg:px-4 lg:text-md font-medium border-[1px] border-forest-800`}
+                className={`rounded-full flex items-center justify-center space-x-3 px-4 py-1.5 xl:py-4 text-md w-full xl:w-auto xl:px-4 xl:text-md font-medium border-[1px] border-forest-800`}
                 onClick={() => {
                   chartComponent?.current?.xAxis[0].setExtremes(
                     timespans[selectedTimespan].xMin,
@@ -1213,12 +1219,12 @@ export default function LandingChart({
               >
                 <Icon
                   icon="feather:zoom-out"
-                  className="h-4 w-4 lg:w-6 lg:h-6"
+                  className="h-4 w-4 xl:w-6 xl:h-6"
                 />
                 <div>Reset Zoom</div>
               </button>
               <button
-                className={`rounded-full text-md w-full lg:w-auto px-4 py-1.5 lg:py-4 xl:px-4 font-medium bg-forest-100 dark:bg-forest-1000`}
+                className={`rounded-full text-md w-full xl:w-auto px-4 py-1.5 xl:py-4 xl:px-4 font-medium bg-forest-100 dark:bg-forest-1000`}
               >
                 {intervalShown?.label}
               </button>
@@ -1249,24 +1255,24 @@ export default function LandingChart({
         </div>
       )}
 
-      <div className="flex justify-between items-center absolute -bottom-[1rem] md:-bottom-[5rem] left-0 right-0 rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5">
+      <div className="flex justify-between items-center absolute -bottom-[1rem] lg:-bottom-[5rem] left-0 right-0 rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5">
         {/* toggle ETH */}
         <div className="flex z-10">
           <Switch
             checked={showEthereumMainnet}
             onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
           />
-          <div className="ml-2 block md:hidden lg:block leading-[1.75]">
+          <div className="ml-2 block md:hidden xl:block leading-[1.75]">
             Show Ethereum
           </div>
-          <div className="ml-2 hidden md:block lg:hidden leading-[1.75]">
-            ETH
+          <div className="ml-2 hidden md:block xl:hidden leading-[1.75]">
+            Show ETH
           </div>
         </div>
       </div>
-      <div className="flex justify-end items-center absolute -bottom-[2.5rem] md:-bottom-[6.5rem] left-0 right-0 rounded-full">
+      <div className="flex justify-end items-center absolute -bottom-[2.5rem] lg:-bottom-[6.5rem] left-0 right-0 rounded-full">
         <div className="flex justify-center items-center">
-          <div className="hidden md:flex bg-forest-100 dark:bg-[#4B5553] rounded-xl px-3 py-1.5 items-center mr-5">
+          <div className="hidden lg:flex bg-forest-100 dark:bg-[#4B5553] rounded-xl px-3 py-1.5 items-center mr-5">
             <Icon
               icon="feather:users"
               className="w-8 h-8 lg:w-14 lg:h-14 mr-2"
@@ -1308,7 +1314,7 @@ export default function LandingChart({
               </div>
             </div>
           </div>
-          <div className="hidden md:flex bg-forest-100 dark:bg-[#4B5553] rounded-xl px-3 py-1.5 items-center mr-1.5">
+          <div className="hidden lg:flex bg-forest-100 dark:bg-[#4B5553] rounded-xl px-3 py-1.5 items-center mr-1.5">
             <Icon
               icon="feather:layers"
               className="w-8 h-8 lg:w-14 lg:h-14 mr-2"
@@ -1352,11 +1358,11 @@ export default function LandingChart({
           </div>
           <Tooltip placement="left" allowInteract>
             <TooltipTrigger>
-              <div className="bottom-[28px] right-[8px] p-0 -mr-0.5 md:p-1.5 z-10 md:mr-0 absolute md:static md:mb-0.5">
+              <div className="bottom-[28px] right-[8px] p-0 -mr-0.5 lg:p-1.5 z-10 lg:mr-0 absolute lg:static lg:mb-0.5">
                 <Icon icon="feather:info" className="w-6 h-6" />
               </div>
             </TooltipTrigger>
-            <TooltipContent className="-mt-10 pr-10 md:mt-0 z-50 flex items-center justify-center md:pr-[3px]">
+            <TooltipContent className="-mt-10 pr-10 lg:mt-0 z-50 flex items-center justify-center lg:pr-[3px]">
               <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto md:w-[435px] h-[80px] flex items-center">
                 <div className="flex flex-col space-y-1">
                   <div className="font-bold text-sm leading-snug">
