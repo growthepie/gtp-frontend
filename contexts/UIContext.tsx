@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useMemo } from "react";
-import { useMediaQuery } from "usehooks-ts";
 
 type UIContextState = {
   isSidebarOpen: boolean;
@@ -18,10 +17,8 @@ const UIContext = createContext<UIContextState>({
 export const useUIContext = () => useContext(UIContext);
 
 export const UIContextProvider = ({ children }) => {
-  const isWidthForSidebarStartingOpen = useMediaQuery("(min-width: 1023px)");
-
   const [state, setState] = useState<UIContextState>({
-    isSidebarOpen: isWidthForSidebarStartingOpen,
+    isSidebarOpen: true,
     isMobileSidebarOpen: false,
     toggleSidebar: () => {},
     toggleMobileSidebar: () => {},

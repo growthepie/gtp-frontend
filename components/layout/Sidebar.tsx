@@ -19,12 +19,8 @@ type SidebarProps = {
 };
 
 export default function Sidebar({ isMobile = false }: SidebarProps) {
-  const {
-    isSidebarOpen,
-    toggleSidebar,
-    isMobileSidebarOpen,
-    toggleMobileSidebar,
-  } = useUIContext();
+  const { isSidebarOpen, isMobileSidebarOpen, toggleMobileSidebar } =
+    useUIContext();
 
   const pathname = usePathname();
   const searchParams = useSearchParams();

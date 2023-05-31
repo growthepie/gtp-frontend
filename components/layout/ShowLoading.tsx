@@ -27,6 +27,7 @@ export default function ShowLoading({
         setShowLoading(false);
       }, loadingTimeoutSeconds);
   }, [dataLoading, dataValidating, loadingTimeoutSeconds]);
+
   if (fullScreen)
     return (
       <div

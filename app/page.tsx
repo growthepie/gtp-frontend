@@ -74,46 +74,12 @@ export default function Home() {
     AllChains.map((chain) => chain.key)
   );
 
-  const [showLoading, setShowLoading] = useState(true);
-  const [loadingTimeoutSeconds, setLoadingTimeoutSeconds] = useState(0);
-
-  useEffect(() => {
-    if (masterLoading || landingLoading) {
-      setShowLoading(true);
-      if (!landingValidating || !masterValidating)
-        setLoadingTimeoutSeconds(1200);
-    }
-
-    if (master && landing)
-      setTimeout(() => {
-        setShowLoading(false);
-      }, loadingTimeoutSeconds);
-  }, [
-    landing,
-    landingLoading,
-    landingValidating,
-    loadingTimeoutSeconds,
-    master,
-    masterLoading,
-    masterValidating,
-  ]);
-
   return (
     <>
-      {/* {!master && !landing ? (
-        <div
-          className={`fixed top-0 left-0 w-screen h-screen flex items-center justify-center bg-white dark:bg-forest-1000 z-50 ${
-            showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
-          } transition-opacity duration-300`}
-          suppressHydrationWarning
-        >
-          <LoadingAnimation />
-        </div>
-      ) : ( */}
       <ShowLoading
         dataLoading={[masterLoading, landingLoading]}
         dataValidating={[masterValidating, landingValidating]}
-        fullScreen={!master && !landing}
+        fullScreen={true}
       />
       {/* )} */}
       <Container className="flex flex-col flex-1 w-full mt-[65px]">
