@@ -461,7 +461,8 @@ export default function ComparisonChart({
       );
     }
 
-    const maxPlusBuffer = maxDate.valueOf() + 3.5 * 24 * 60 * 60 * 1000;
+    const buffer = 0.5 * 24 * 60 * 60 * 1000;
+    const maxPlusBuffer = maxDate.valueOf() + buffer;
 
     return {
       // "30d": {
@@ -473,19 +474,19 @@ export default function ComparisonChart({
       "90d": {
         label: "90 days",
         value: 90,
-        xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
+        xMin: maxDate.valueOf() - 90 * 24 * 60 * 60 * 1000 - buffer,
         xMax: maxPlusBuffer,
       },
       "180d": {
         label: "180 days",
         value: 180,
-        xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
+        xMin: maxDate.valueOf() - 180 * 24 * 60 * 60 * 1000 - buffer,
         xMax: maxPlusBuffer,
       },
       "365d": {
         label: "1 year",
         value: 365,
-        xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
+        xMin: maxDate.valueOf() - 365 * 24 * 60 * 60 * 1000 - buffer,
         xMax: maxPlusBuffer,
       },
       max: {
@@ -497,12 +498,12 @@ export default function ComparisonChart({
             : filteredData.reduce(
                 (min, d) => Math.min(min, d.data[0][0]),
                 Infinity
-              ),
+              ) - buffer,
 
         xMax: maxPlusBuffer,
       },
     };
-  }, [filteredData]);
+  }, [filteredData, selectedScale]);
 
   useEffect(() => {
     if (chartComponent.current) {

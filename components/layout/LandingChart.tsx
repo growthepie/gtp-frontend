@@ -67,7 +67,7 @@ const baseOptions: Highcharts.Options = {
       },
     },
     panning: {
-      enabled: true,
+      enabled: false,
     },
     panKey: "shift",
   },
@@ -459,8 +459,9 @@ export default function LandingChart({
         ? filteredData[0].data[filteredData[0].data.length - 1][0]
         : 0
     );
-
-    const maxPlusBuffer = maxDate.valueOf() + 3.5 * 24 * 60 * 60 * 1000;
+    const buffer =
+      selectedScale === "percentage" ? 0 : 3.5 * 24 * 60 * 60 * 1000;
+    const maxPlusBuffer = maxDate.valueOf() + buffer;
 
     return {
       // "30d": {
@@ -472,19 +473,19 @@ export default function LandingChart({
       "90d": {
         label: "90 days",
         value: 90,
-        xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
+        xMin: maxDate.valueOf() - 90 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "180d": {
         label: "180 days",
         value: 180,
-        xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
+        xMin: maxDate.valueOf() - 180 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "365d": {
         label: "1 year",
         value: 365,
-        xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
+        xMin: maxDate.valueOf() - 365 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       max: {
@@ -498,7 +499,7 @@ export default function LandingChart({
         xMax: maxPlusBuffer,
       },
     };
-  }, [filteredData]);
+  }, [filteredData, selectedScale]);
 
   useEffect(() => {
     if (chartComponent.current) {
