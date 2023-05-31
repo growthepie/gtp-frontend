@@ -797,7 +797,7 @@ export default function ComparisonChart({
               ...pointsSettings,
               type: getSeriesType(series.name),
               // fill if series name is ethereum
-              clip: false,
+              clip: true,
               dataGrouping: dataGrouping,
               borderRadiusTopLeft: borderRadius,
               borderRadiusTopRight: borderRadius,

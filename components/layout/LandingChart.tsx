@@ -713,7 +713,7 @@ export default function LandingChart({
               step: "center",
               data: series.data.map((d: any) => [d[0], d[1]]),
               ...pointsSettings,
-              clip: false,
+              clip: true,
               borderRadiusTopLeft: borderRadius,
               borderRadiusTopRight: borderRadius,
               type: getSeriesType(series.name),
@@ -1003,6 +1003,7 @@ export default function LandingChart({
     timespans.max.xMax,
     timespans.max.xMin,
     tooltipFormatter,
+    tooltipPositioner,
   ]);
 
   useEffect(() => {
