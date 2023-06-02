@@ -1,6 +1,6 @@
 import { AllChainsByKeys } from "@/lib/chains";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import d3 from "d3";
@@ -121,6 +121,17 @@ export default function LandingMetricsTable({
     "365d": "1 year",
   };
 
+  const monthsSinceLaunch = useMemo(() => {
+    let result = {};
+    for (const chain of Object.keys(master.chains)) {
+      const diff = moment.duration(
+        moment().diff(moment(master.chains[chain].launch_date))
+      );
+      result[chain] = [diff.years(), diff.months()];
+    }
+    return result;
+  }, [master]);
+
   return (
     <>
       <div className="flex flex-col mt-3 lg:mt-32 space-y-[5px] overflow-x-scroll lg:overflow-x-hidden z-100 w-full p-0 pt-3 pb-5 md:px-2 md:pt-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
@@ -193,18 +204,45 @@ export default function LandingMetricsTable({
                           {item.chain.label}
                         </div>
                       </div>
-                      <div className="w-1/12">
+                      <div className="w-1/12 flex">
                         {/* format as 1 year 2 months */}
-                        {item.chain.chainType === "L2" &&
-                          moment
-                            .duration(
-                              moment().diff(
-                                moment(
-                                  master.chains[item.chain.key].launch_date
-                                )
-                              )
-                            )
-                            .humanize()}
+
+                        {item.chain.chainType === "L2" && (
+                          <>
+                            <div className="mr-1">
+                              {/* {monthsSinceLaunch[item.chain.key][0] > 0 && (
+                                <> */}
+                              {monthsSinceLaunch[item.chain.key][0] > 0 ? (
+                                monthsSinceLaunch[item.chain.key][0]
+                              ) : (
+                                <>&nbsp;</>
+                              )}
+                              <span className="text-forest-500 text-[9px] md:text-[11px] inline-block pl-0.5">
+                                {monthsSinceLaunch[item.chain.key][0] > 0 ? (
+                                  monthsSinceLaunch[item.chain.key][0] > 1 ? (
+                                    <>Years</>
+                                  ) : (
+                                    <>Year&nbsp;</>
+                                  )
+                                ) : (
+                                  <span className="opacity-0">Years</span>
+                                )}
+                              </span>
+                              {/* </>
+                              )}{" "} */}
+                            </div>
+                            <div className="">
+                              {monthsSinceLaunch[item.chain.key][1] > 0 && (
+                                <>
+                                  {monthsSinceLaunch[item.chain.key][1]}
+                                  <span className="text-forest-500 text-[9px] md:text-[11px] inline-block pl-0.5">
+                                    mo.
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </>
+                        )}
                       </div>
                       <div className="w-1/5 capitalize">
                         {master && master.chains[item.chain.key].purpose && (
