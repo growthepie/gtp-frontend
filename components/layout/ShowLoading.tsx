@@ -42,7 +42,7 @@ export default function ShowLoading({
 
   return (
     <div
-      className={`absolute w-full h-screen right flex -ml-2 -mr-2 md:-ml-6 md:-mr-[50px] -mt-[118px] items-center justify-center bg-white dark:bg-forest-1000 z-50 ${
+      className={`absolute inset-0 flex items-center justify-center bg-white dark:bg-forest-1000 z-50 ${
         showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
       } transition-opacity duration-300`}
       suppressHydrationWarning

@@ -98,7 +98,7 @@ export default function RootLayout({
                   ></div> */}
                   <Backgrounds />
                   <Header />
-                  <main className="flex-1 w-full mx-auto relative z-10 mb-[165px]">
+                  <main className="flex-1 w-full mx-auto z-10 mb-[165px]">
                     {children}
                   </main>
                   <div className="mt-24 w-full text-center py-6 absolute bottom-0">

@@ -52,7 +52,7 @@ export default function Backgrounds({ isMobileMenu }: BackgroundsProps) {
     );
 
   return (
-    <>
+    <div className="absolute min-w-full min-h-full -z-10">
       <div
         style={{
           pointerEvents: "none",
@@ -95,6 +95,6 @@ export default function Backgrounds({ isMobileMenu }: BackgroundsProps) {
         ></div>
       </div>
       {/* )} */}
-    </>
+    </div>
   );
 }
