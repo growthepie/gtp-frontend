@@ -217,12 +217,14 @@ export default function LandingMetricsTable({
                               ) : (
                                 <>&nbsp;</>
                               )}
-                              <span className="text-forest-500 text-[9px] md:text-[11px] inline-block pl-0.5">
+                              <span className="font-[350] text-[9px] md:text-[11px] inline-block pl-0.5">
                                 {monthsSinceLaunch[item.chain.key][0] > 0 ? (
                                   monthsSinceLaunch[item.chain.key][0] > 1 ? (
                                     <>Years</>
                                   ) : (
-                                    <>Year&nbsp;</>
+                                    <>
+                                      Year<span className="opacity-0">s</span>
+                                    </>
                                   )
                                 ) : (
                                   <span className="opacity-0">Years</span>
@@ -235,7 +237,7 @@ export default function LandingMetricsTable({
                               {monthsSinceLaunch[item.chain.key][1] > 0 && (
                                 <>
                                   {monthsSinceLaunch[item.chain.key][1]}
-                                  <span className="text-forest-500 text-[9px] md:text-[11px] inline-block pl-0.5">
+                                  <span className="font-[350] text-[9px] md:text-[11px] inline-block pl-0.5">
                                     mo.
                                   </span>
                                 </>
