@@ -7,22 +7,6 @@ export const MetricsURLs = {
   "transaction-count": "https://api.growthepie.xyz/v1/metrics/txcount.json",
 };
 
-// const { data: Arbitrum, error: arbError } = useSWR<ArbitrumChainResponse>(
-//   "https://api.growthepie.xyz/v1/chains/arbitrum.json"
-// );
-
-// const { data: Optimism, error: optError } = useSWR<ArbitrumChainResponse>(
-//   "https://api.growthepie.xyz/v1/chains/optimism.json"
-// );
-
-// const { data: Polygon, error: polyError } = useSWR<ArbitrumChainResponse>(
-//   "https://api.growthepie.xyz/v1/chains/polygon_zkevm.json"
-// );
-
-// const { data: Imx, error: imxError } = useSWR<ArbitrumChainResponse>(
-//   "https://api.growthepie.xyz/v1/chains/imx.json"
-// );
-
 export const ChainURLs = {
   ethereum: "https://api.growthepie.xyz/v1/chains/ethereum.json",
   arbitrum: "https://api.growthepie.xyz/v1/chains/arbitrum.json",
