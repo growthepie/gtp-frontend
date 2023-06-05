@@ -8,12 +8,6 @@ module.exports = {
         userAgent: "*",
         allow: "/",
       },
-      {
-        userAgent: "Googlebot",
-        allow: "/",
-        follow: "/",
-        index: "/",
-      },
     ],
     exclude: ["/server-sitemap.xml"],
     additionalSitemaps: ["https://www.growthepie.xyz/server-sitemap.xml"],
