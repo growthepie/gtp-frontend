@@ -52,6 +52,67 @@ export const Contributors = [
   },
 ];
 
+
+export const Datasources = [
+
+  {
+    name: "Zetta Block",
+    image: "/contributors/zettablock-logo.png",
+    width: 228,
+    height: 33,
+    url: "https://www.zettablock.com",
+  },
+  {
+    name: "Dune",
+    image: "/contributors/dune-logo.png",
+    width: 164,
+    height: 40,
+    url: "https://dune.com/home",
+  },
+  {
+    name: "Coin Gecko",
+    image: "/contributors/coin-gecko-logo.png",
+    width: 218,
+    height: 58,
+    url: "https://www.coingecko.com/",
+  },
+  {
+    name: "L2 Beat",
+    image: "/contributors/l2-beat-logo.png",
+    width: 169,
+    height: 51,
+    url: "https://www.immutable.com/",
+  },
+  {
+    name: "Chainbase",
+    image: "/contributors/chainbase-logo.png",
+    width: 222,
+    height: 32,
+    url: "https://chainbase.com/",
+  },
+  {
+    name: "DefiLlama",
+    image: "/contributors/defi-llama-logo.png",
+    width: 184,
+    height: 60,
+    url: "https://defillama.com/",
+  },
+  {
+    name: "Immutable",
+    image: "/contributors/immutable-logo.png",
+    width: 206,
+    height: 52,
+    url: "https://www.immutable.com/",
+  },
+  {
+    name: "Flipside Crypto",
+    image: "/contributors/flipside-logo.png",
+    width: 200,
+    height: 30,
+    url: "https://flipsidecrypto.xyz",
+  },
+];
+
 export const Supporters = [
   {
     name: "Ethereum Foundation",
@@ -66,19 +127,5 @@ export const Supporters = [
     width: 204,
     height: 30,
     url: "https://fjlabs.com",
-  },
-  {
-    name: "Flipside Crypto",
-    image: "/contributors/flipside-logo.png",
-    width: 200,
-    height: 30,
-    url: "https://flipsidecrypto.xyz",
-  },
-  {
-    name: "Zetta Block",
-    image: "/contributors/zettablock-logo.png",
-    width: 228,
-    height: 33,
-    url: "https://www.zettablock.com",
   },
 ];

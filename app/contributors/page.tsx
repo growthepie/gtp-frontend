@@ -4,7 +4,7 @@ import Subheading from "@/components/layout/Subheading";
 import { Icon, addCollection } from "@iconify/react";
 import Image from "next/image";
 import React from "react";
-import { Contributors, Supporters } from "@/lib/contributors";
+import { Contributors, Supporters, Datasources } from "@/lib/contributors";
 import Link from "next/link";
 import Container from "@/components/layout/Container";
 
@@ -32,6 +32,30 @@ addCollection({
       </defs>
       `,
     },
+    "data-sources": {
+      body: `<path fill-rule="evenodd" clip-rule="evenodd" d="M18.8682 28.5C13.9032 28.5 9.86816 27.15 9.86816 25.5V22.5C9.86816 22.245 10.0032 21.99 10.1832 21.75C11.1882 23.04 14.6832 24 18.8682 24C23.0532 24 26.5482 23.04 27.5532 21.75C27.7482 21.99 27.8682 22.245 27.8682 22.5V25.5C27.8682 27.15 23.8332 28.5 18.8682 28.5ZM18.8682 21.5C13.9032 21.5 9.86816 20.15 9.86816 18.5V15.5C9.86816 15.335 9.92816 15.185 10.0032 15.035C10.0482 14.945 10.1082 14.84 10.1832 14.75C11.1882 16.04 14.6832 17 18.8682 17C23.0532 17 26.5482 16.04 27.5532 14.75C27.6282 14.84 27.6882 14.945 27.7332 15.035C27.8082 15.185 27.8682 15.35 27.8682 15.5V18.5C27.8682 20.15 23.8332 21.5 18.8682 21.5ZM18.8682 14.5C13.9032 14.5 9.86816 13.15 9.86816 11.5V8.5C9.86816 6.85 13.9032 5.5 18.8682 5.5C23.8332 5.5 27.8682 6.85 27.8682 8.5V11.5C27.8682 13.15 23.8332 14.5 18.8682 14.5ZM18.8682 7C15.5532 7 12.8682 7.675 12.8682 8.5C12.8682 9.325 15.5532 10 18.8682 10C22.1832 10 24.8682 9.325 24.8682 8.5C24.8682 7.675 22.1832 7 18.8682 7Z" stroke="url(#paint0_linear_2011_12573)" stroke-width="1.25"/>
+      <circle cx="12.8682" cy="12" r="1" fill="url(#paint1_linear_2011_12573)"/>
+      <circle cx="12.8682" cy="19" r="1" fill="url(#paint2_linear_2011_12573)"/>
+      <circle cx="12.8682" cy="26" r="1" fill="url(#paint3_linear_2011_12573)"/>
+      <defs>
+      <linearGradient id="paint0_linear_2011_12573" x1="18.8682" y1="5.5" x2="18.8682" y2="28.5" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10808C"/>
+      <stop offset="1" stop-color="#1DF7EF"/>
+      </linearGradient>
+      <linearGradient id="paint1_linear_2011_12573" x1="12.8682" y1="11" x2="12.8682" y2="13" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FE5468"/>
+      <stop offset="1" stop-color="#FFDF27"/>
+      </linearGradient>
+      <linearGradient id="paint2_linear_2011_12573" x1="12.8682" y1="18" x2="12.8682" y2="20" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FE5468"/>
+      <stop offset="1" stop-color="#FFDF27"/>
+      </linearGradient>
+      <linearGradient id="paint3_linear_2011_12573" x1="12.8682" y1="25" x2="12.8682" y2="27" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FE5468"/>
+      <stop offset="1" stop-color="#FFDF27"/>
+      </linearGradient>
+      </defs>`
+    },
     team: {
       body: `<path fill-rule="evenodd" clip-rule="evenodd" d="M6.57756 22.08C7.46166 21.1959 8.66076 20.6992 9.91106 20.6992H17.4539C18.7042 20.6992 19.9033 21.1959 20.7874 22.08C21.6715 22.9641 22.1682 24.1632 22.1682 25.4135V27.2992C22.1682 27.8199 21.7461 28.2421 21.2253 28.2421C20.7046 28.2421 20.2825 27.8199 20.2825 27.2992V25.4135C20.2825 24.6633 19.9845 23.9439 19.454 23.4134C18.9236 22.8829 18.2041 22.5849 17.4539 22.5849H9.91106C9.16088 22.5849 8.44142 22.8829 7.91096 23.4134C7.3805 23.9439 7.08249 24.6633 7.08249 25.4135V27.2992C7.08249 27.8199 6.66036 28.2421 6.13963 28.2421C5.61891 28.2421 5.19678 27.8199 5.19678 27.2992V25.4135C5.19678 24.1632 5.69346 22.9641 6.57756 22.08Z" fill="url(#paint0_linear_998_12415)"/>
       <path fill-rule="evenodd" clip-rule="evenodd" d="M13.6821 11.2705C12.1199 11.2705 10.8535 12.5369 10.8535 14.0991C10.8535 15.6612 12.1199 16.9276 13.6821 16.9276C15.2442 16.9276 16.5106 15.6612 16.5106 14.0991C16.5106 12.5369 15.2442 11.2705 13.6821 11.2705ZM8.96777 14.0991C8.96777 11.4954 11.0784 9.38477 13.6821 9.38477C16.2857 9.38477 18.3963 11.4954 18.3963 14.0991C18.3963 16.7027 16.2857 18.8133 13.6821 18.8133C11.0784 18.8133 8.96777 16.7027 8.96777 14.0991Z" fill="url(#paint1_linear_998_12415)"/>
@@ -57,6 +81,7 @@ addCollection({
       </defs>
       `,
     },
+
   },
   width: 36,
   height: 36,
@@ -105,6 +130,42 @@ export default function ContributorsPage() {
           ))}
         </div>
       </div>
+
+      <div className="bg-forest-50 dark:bg-forest-900 rounded-full px-5 py-3 flex space-x-2 mb-[45px]">
+        <Icon icon="gtp:data-sources" className="w-9 h-9" />
+        <Heading className="text-3xl font-semibold leading-snug">
+            Data Sources
+        </Heading>
+      </div>
+
+      <div className="mb-[90px]">
+        <div className="grid grid-cols-2 lg:grid-cols-4 items-center justify-items-center gap-x-[45px] gap-y-[30px] mx-5">
+          {Datasources.map((s) => (
+            <Link
+              key={s.name}
+              target="_blank"
+              rel="noopener noreferrer"
+              href={s.url}
+              className="relative text-center"
+              // style={{
+              //   width: s.width,
+              //   height: s.height,
+              // }}
+            >
+              <Image
+                src={s.image}
+                alt={s.name}
+                width={s.width}
+                height={s.height}
+                className="brightness-0 grayscale-100 dark:brightness-100 grayscale-0"
+                // fill
+              />
+            </Link>
+          ))}
+        </div>
+      </div>
+
+
 
       <div className="mb-[30px] bg-forest-50 dark:bg-forest-900 rounded-full px-5 py-3 flex space-x-2">
         <Icon icon="gtp:team" className="w-9 h-9" />
