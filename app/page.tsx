@@ -160,7 +160,7 @@ export default function Home() {
                 src="/GTP-Data-Kraken.png"
                 fill={true}
                 alt="About Grow The Pie"
-                className="object-contain"
+                className="object-contain brightness-[.55] dark:brightness-[1.0]"
               />
             </div>
             <div className="text-base md:text-sm lg:text-base">
@@ -180,7 +180,7 @@ export default function Home() {
               src="/GTP-Data-Kraken.png"
               fill={true}
               alt="About Grow The Pie"
-              className="object-contain"
+              className="object-contain  brightness-[.55] dark:brightness-[1.0]"
             />
           </div>
         </div>

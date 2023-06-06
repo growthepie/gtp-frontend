@@ -81,7 +81,7 @@ export const Datasources = [
     image: "/contributors/l2-beat-logo.png",
     width: 169,
     height: 51,
-    url: "https://www.immutable.com/",
+    url: "https://l2beat.com/scaling/tvl",
   },
   {
     name: "Chainbase",
