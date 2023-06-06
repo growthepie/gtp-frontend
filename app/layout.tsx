@@ -12,17 +12,17 @@ import Head from "./head";
 export const metadata: Metadata = {
   title: {
     absolute:
-      "Grow The Pie - Growing Ethereum’s Ecosystem Together - Layer 2 User Base",
-    template: "%s - Grow The Pie",
+      "growthepie - Growing Ethereum’s Ecosystem Together - Layer 2 User Base",
+    template: "%s - growthepie",
   },
   description:
-    "At GrowThePie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
+    "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "white" },
     { media: "(prefers-color-scheme: dark)", color: "black" },
   ],
   openGraph: {
-    title: "Grow The Pie",
+    title: "growthepie",
     description: "Growing Ethereum’s Ecosystem Together",
     url: "https://www.growthepie.com",
     images: [
@@ -30,13 +30,13 @@ export const metadata: Metadata = {
         url: "/logo_full.png",
         width: 772,
         height: 181,
-        alt: "Grow The Pie",
+        alt: "growthepie",
       },
       {
         url: "/logo_pie_only.png",
         width: 168,
         height: 181,
-        alt: "Grow The Pie",
+        alt: "growthepie",
       },
     ],
     locale: "en_US",
@@ -103,7 +103,7 @@ export default function RootLayout({
                   </main>
                   <div className="mt-24 w-full text-center py-6 absolute bottom-0">
                     <div className="text-[0.7rem] text-inherit dark:text-forest-400 leading-[2] ml-8 z-20">
-                      © 2023 Grow The Pie 🥧
+                      © 2023 growthepie 🥧
                     </div>
                   </div>
                 </div>

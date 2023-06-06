@@ -152,19 +152,19 @@ export default function Home() {
                 className="w-[30px] h-[30px] md:w-9 md:h-9"
               />
               <Heading className="text-[20px] md:text-[30px] leading-snug font-bold">
-                About Grow The Pie
+                About growthepie
               </Heading>
             </div>
             <div className="block md:hidden relative mt-[0px] lg:mt-[15px] mb-[30px] lg:-mb-[30px] h-[190px]">
               <Image
                 src="/GTP-Data-Kraken.png"
                 fill={true}
-                alt="About Grow The Pie"
+                alt="About growthepie"
                 className="object-contain"
               />
             </div>
             <div className="text-base md:text-sm lg:text-base">
-              At GrowThePie, our mission is to provide comprehensive and
+              At growthepie, our mission is to provide comprehensive and
               accurate analytics of layer 2 solutions for the Ethereum
               ecosystem, acting as a trusted data aggregator from reliable
               sources such as L2Beat and DefiLlama, while also developing our
@@ -179,7 +179,7 @@ export default function Home() {
             <Image
               src="/GTP-Data-Kraken.png"
               fill={true}
-              alt="About Grow The Pie"
+              alt="About growthepie"
               className="object-contain"
             />
           </div>
