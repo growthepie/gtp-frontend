@@ -64,14 +64,14 @@ export const Datasources = [
   },
   {
     name: "Dune",
-    image: "/contributors/dune-logo.png",
+    image: "/contributors/dune-logo.svg",
     width: 164,
     height: 40,
     url: "https://dune.com/home",
   },
   {
     name: "Coin Gecko",
-    image: "/contributors/coin-gecko-logo.png",
+    image: "/contributors/coin-gecko-logo.svg",
     width: 218,
     height: 58,
     url: "https://www.coingecko.com/",
@@ -92,14 +92,14 @@ export const Datasources = [
   },
   {
     name: "DefiLlama",
-    image: "/contributors/defi-llama-logo.png",
+    image: "/contributors/defi-llama-logo.svg",
     width: 184,
     height: 60,
     url: "https://defillama.com/",
   },
   {
     name: "Immutable",
-    image: "/contributors/immutable-logo.png",
+    image: "/contributors/immutable-logo.svg",
     width: 206,
     height: 52,
     url: "https://www.immutable.com/",
