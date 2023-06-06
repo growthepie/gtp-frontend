@@ -4,4 +4,6 @@ export const Sources = {
   ZettaBlock: "https://zettablock.com/",
   L2Beat: "https://l2beat.com/",
   DefiLlama: "https://defillama.com/",
+  Dune: "https://dune.com/",
+  Chainbase: "https://chainbase.com/",
 };
