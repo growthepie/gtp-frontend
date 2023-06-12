@@ -237,18 +237,18 @@ export default function LandingChart({
       const tickPositions: number[] = [];
       const xMinDate = new Date(xMin);
       const xMaxDate = new Date(xMax);
-      const xMinMonth = xMinDate.getMonth();
-      const xMaxMonth = xMaxDate.getMonth();
+      const xMinMonth = xMinDate.getUTCMonth();
+      const xMaxMonth = xMaxDate.getUTCMonth();
 
-      const xMinYear = xMinDate.getFullYear();
-      const xMaxYear = xMaxDate.getFullYear();
+      const xMinYear = xMinDate.getUTCFullYear();
+      const xMaxYear = xMaxDate.getUTCFullYear();
 
       if (selectedTimespan === "max") {
         for (let year = xMinYear; year <= xMaxYear; year++) {
           for (let month = 0; month < 12; month = month + 4) {
             if (year === xMinYear && month < xMinMonth) continue;
             if (year === xMaxYear && month > xMaxMonth) continue;
-            tickPositions.push(new Date(year, month, 1).getTime());
+            tickPositions.push(Date.UTC(year, month, 1).valueOf());
           }
         }
         return tickPositions;
@@ -258,7 +258,7 @@ export default function LandingChart({
         for (let month = 0; month < 12; month++) {
           if (year === xMinYear && month < xMinMonth) continue;
           if (year === xMaxYear && month > xMaxMonth) continue;
-          tickPositions.push(new Date(year, month, 1).getTime());
+          tickPositions.push(Date.UTC(year, month, 1).valueOf());
         }
       }
 
