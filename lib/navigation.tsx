@@ -79,21 +79,6 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "metricsTvl",
         urlKey: "total-value-locked",
       },
-
-      {
-        label: "24h Contract Usage",
-        page: {
-          title: "24h Contract Usage",
-          description:
-            "The number of contracts created in the last 24 hours. Methodology and data is derived from L2Beat.com.",
-          why: "",
-          icon: "ion:time-outline",
-        },
-        icon: "ion:time-outline",
-        key: "24hcontractusage",
-        rootKey: "metrics24hContractUsage",
-        urlKey: "24h-contract-usage",
-      },
       {
         label: "Fees Paid by Users",
         page: {
@@ -121,28 +106,42 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "metricsStablesMcap",
         urlKey: "stablecoin-market-cap",
       },
-      {
-        label: "Transactions/Second",
-        icon: "ant-design:transaction-outlined",
-        key: "txpersecond",
-        rootKey: "metricsTransactionsPerSecond",
-        urlKey: "transactions-per-second",
-      },
+      // {
+      //   label: "24h Contract Usage",
+      //   page: {
+      //     title: "24h Contract Usage",
+      //     description:
+      //       "The number of contracts created in the last 24 hours. Methodology and data is derived from L2Beat.com.",
+      //     why: "",
+      //     icon: "ion:time-outline",
+      //   },
+      //   icon: "ion:time-outline",
+      //   key: "24hcontractusage",
+      //   rootKey: "metrics24hContractUsage",
+      //   urlKey: "24h-contract-usage",
+      // },
+      // {
+      //   label: "Transactions/Second",
+      //   icon: "ant-design:transaction-outlined",
+      //   key: "txpersecond",
+      //   rootKey: "metricsTransactionsPerSecond",
+      //   urlKey: "transactions-per-second",
+      // },
 
-      {
-        label: "New Addresses",
-        icon: "bx:bx-user-plus",
-        key: "newaddresses",
-        rootKey: "metricsNewAddresses",
-        urlKey: "new-addresses",
-      },
-      {
-        label: "Total Addresses",
-        icon: "ph:address-book",
-        key: "totaladdresses",
-        rootKey: "metricsTotalAddresses",
-        urlKey: "total-addresses",
-      },
+      // {
+      //   label: "New Addresses",
+      //   icon: "bx:bx-user-plus",
+      //   key: "newaddresses",
+      //   rootKey: "metricsNewAddresses",
+      //   urlKey: "new-addresses",
+      // },
+      // {
+      //   label: "Total Addresses",
+      //   icon: "ph:address-book",
+      //   key: "totaladdresses",
+      //   rootKey: "metricsTotalAddresses",
+      //   urlKey: "total-addresses",
+      // },
     ],
   },
   {
@@ -181,16 +180,6 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "arbitrum",
       },
       {
-        label: "Aztec V2",
-        page: {
-          description: "",
-        },
-        icon: "gtp:immutable-x-logo-monochrome",
-        key: "aztecv2",
-        rootKey: "chainsAztecV2",
-        urlKey: "aztec-v2",
-      },
-      {
         label: "Immutable X",
         page: {
           description:
@@ -200,16 +189,6 @@ export const navigationItems: NavigationItem[] = [
         key: "imx",
         rootKey: "chainsImmutableX",
         urlKey: "immutable-x",
-      },
-      {
-        label: "Loopring",
-        page: {
-          description: "",
-        },
-        icon: "gtp:loopring-logo-monochrome",
-        key: "loopring",
-        rootKey: "chainsLoopring",
-        urlKey: "loopring",
       },
       {
         label: "Polygon zkEVM",
@@ -243,6 +222,26 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "chainsOptimism",
         urlKey: "zksync-era",
       },
+      // {
+      //   label: "Loopring",
+      //   page: {
+      //     description: "",
+      //   },
+      //   icon: "gtp:loopring-logo-monochrome",
+      //   key: "loopring",
+      //   rootKey: "chainsLoopring",
+      //   urlKey: "loopring",
+      // },
+      // {
+      //   label: "Aztec V2",
+      //   page: {
+      //     description: "",
+      //   },
+      //   icon: "gtp:immutable-x-logo-monochrome",
+      //   key: "aztecv2",
+      //   rootKey: "chainsAztecV2",
+      //   urlKey: "aztec-v2",
+      // },
     ],
   },
 
