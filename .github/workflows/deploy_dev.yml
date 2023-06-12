@@ -1,0 +1,12 @@
+name: Deploy on mokelgit push
+on:
+  push:
+    branches:
+    - dev
+    
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger rebuild on vercel
+        run: curl -X POST ${{ secrets.DEV_DEPLOY_HOOK }}
