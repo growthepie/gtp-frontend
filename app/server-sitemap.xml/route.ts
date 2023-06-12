@@ -1,16 +1,38 @@
 // @ts-ignore
-import { getServerSideSitemap } from "next-sitemap";
-import { MetricsURLs, ChainURLs } from "@/lib/urls";
+import { ISitemapField, getServerSideSitemap } from "next-sitemap";
+import { navigationItems } from "@/lib/navigation";
 
 export async function GET(request: Request) {
+  const fundamentals = navigationItems[1];
+  const chains = navigationItems[3];
+
+  const pages = [
+    ...fundamentals.options.map(
+      (option) => `https://www.growthepie.xyz/fundamentals/${option.urlKey}`
+    ),
+    ...chains.options.map(
+      (option) => `https://www.growthepie.xyz/chains/${option.urlKey}`
+    ),
+  ];
+
+  const getDate = () => {
+    const date = new Date();
+    // if it is before 8:00 am UTC, set last mod to yesterday at 8:00 am UTC
+    if (date.getUTCHours() < 8) {
+      date.setDate(date.getDate() - 1);
+    }
+    return date.toISOString().slice(0, 10) + "T08:00:00.000Z";
+  };
+
   return getServerSideSitemap([
-    ...Object.keys(MetricsURLs).map((metric) => ({
-      loc: `https://www.growthepie.xyz/fundamentals/${metric}`,
-      lastmod: new Date().toISOString(),
-    })),
-    ...Object.keys(ChainURLs).map((chain) => ({
-      loc: `https://www.growthepie.xyz/chains/${chain}`,
-      lastmod: new Date().toISOString(),
-    })),
+    ...pages.map(
+      (page): ISitemapField => ({
+        loc: page,
+        // set last mod to todays date at 8:00 am UTC
+        lastmod: getDate(),
+        changefreq: "daily",
+        priority: 0.9,
+      })
+    ),
   ]);
 }
