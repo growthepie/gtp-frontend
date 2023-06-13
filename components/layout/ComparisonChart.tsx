@@ -1249,17 +1249,15 @@ export default function ComparisonChart({
             <div
               className={`flex justify-between w-full md:w-auto pt-0 md:pt-0 h-[35px] md:h-auto`}
             >
-              <div className="flex z-10">
+              <div className="flex z-10 items-center">
                 <Switch
                   checked={showEthereumMainnet}
                   onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
                 />
-                <div className="ml-2 block md:hidden lg:block leading-[2.5]">
+                <div className="ml-2 block md:hidden lg:block">
                   Show Ethereum
                 </div>
-                <div className="ml-2 hidden md:block lg:hidden leading-[2.5]">
-                  ETH
-                </div>
+                <div className="ml-2 hidden md:block lg:hidden">ETH</div>
               </div>
               <div className="block md:hidden z-10">
                 <Tooltip placement="left" allowInteract>
@@ -1381,12 +1379,12 @@ export default function ComparisonChart({
             </div>
           </div>
         ) : (
-          <div className="flex flex-col md:flex-row w-full justify-normal md:justify-between items-center text-sm md:text-base rounded-2xl md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1">
+          <div className="flex flex-col md:flex-row w-full justify-end md:justify-end items-center text-sm md:text-base rounded-2xl md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1">
             {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
             {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
             {/* toggle ETH */}
 
-            <div className="flex justify-normal items-center w-full md:w-auto">
+            <div className="flex justify-end items-center w-full md:w-auto">
               {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
               {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
               {/* toggle ETH */}
