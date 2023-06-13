@@ -19,6 +19,7 @@ import Link from "next/link";
 import { Sources } from "@/lib/datasources";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
+import ChartWatermark from "./ChartWatermark";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -651,6 +652,7 @@ export default function LandingChart({
         borderRadius: 17,
         borderWidth: 0,
         padding: 0,
+        outside: true,
         shadow: {
           color: "black",
           opacity: 0.015,
@@ -1246,6 +1248,9 @@ export default function LandingChart({
                   chartComponent.current = chart?.chart;
                 }}
               />
+            </div>
+            <div className="absolute bottom-[20%] right-[5%] md:bottom-14 md:right-10 opacity-20 pointer-events-none z-0">
+              <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px]" />
             </div>
           </div>
         </div>

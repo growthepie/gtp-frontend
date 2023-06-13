@@ -25,6 +25,7 @@ import { debounce } from "lodash";
 import { navigationItems } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
+import ChartWatermark from "./ChartWatermark";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -923,6 +924,9 @@ export default function ChainChart({
                         }
                       }}
                     />
+                    <div className="absolute bottom-[15%] right-[20px] md:bottom-[15%] md:right-[20px] opacity-20 pointer-events-none z-0">
+                      <ChartWatermark className="w-[128.67px] h-[30.67px]" />
+                    </div>
                   </div>
                   <div className="absolute top-[14px] w-full flex justify-between items-center px-[26px]">
                     {/* <div
