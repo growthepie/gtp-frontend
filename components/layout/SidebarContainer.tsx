@@ -4,9 +4,19 @@ import Link from "next/link";
 import Sidebar from "./Sidebar";
 import { Icon } from "@iconify/react";
 import { useUIContext } from "@/contexts/UIContext";
+import { useMediaQuery } from "usehooks-ts";
+import { useEffect } from "react";
 
 export default function SidebarContainer() {
   const { isSidebarOpen, toggleSidebar } = useUIContext();
+
+  const isLargeScreen = useMediaQuery("(min-width: 1024px)");
+
+  useEffect(() => {
+    if (!isLargeScreen && isSidebarOpen) {
+      toggleSidebar();
+    }
+  }, [isLargeScreen]);
 
   return (
     <div className="pt-8 pl-0 bg-forest-50 dark:bg-[#1F2726] mix-h-screen max-h-screen sticky top-0 left-0 hidden md:flex flex-col overflow-hidden space-y-6 border-r-0 border-forest-500 dark:border-black/50">
