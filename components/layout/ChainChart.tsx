@@ -184,11 +184,11 @@ export default function ChainChart({
       const tickPositions: number[] = [];
       const xMinDate = new Date(xMin);
       const xMaxDate = new Date(xMax);
-      const xMinMonth = xMinDate.getMonth();
-      const xMaxMonth = xMaxDate.getMonth();
+      const xMinMonth = xMinDate.getUTCMonth();
+      const xMaxMonth = xMaxDate.getUTCMonth();
 
-      const xMinYear = xMinDate.getFullYear();
-      const xMaxYear = xMaxDate.getFullYear();
+      const xMinYear = xMinDate.getUTCFullYear();
+      const xMaxYear = xMaxDate.getUTCFullYear();
 
       // // find first day of month greater than or equal to xMin
       // if (xMinDate.getDate() !== 1) {
