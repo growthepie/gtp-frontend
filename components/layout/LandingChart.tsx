@@ -1249,7 +1249,7 @@ export default function LandingChart({
                 }}
               />
             </div>
-            <div className="absolute bottom-[20%] right-[5%] md:bottom-14 md:right-10 opacity-20 pointer-events-none z-0">
+            <div className="absolute bottom-[20%] right-[5%] md:bottom-14 md:right-10 pointer-events-none z-0 opacity-50 mix-blend-lighten">
               <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px]" />
             </div>
           </div>

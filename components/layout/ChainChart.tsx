@@ -924,7 +924,7 @@ export default function ChainChart({
                         }
                       }}
                     />
-                    <div className="absolute bottom-[15%] right-[20px] md:bottom-[15%] md:right-[20px] opacity-20 pointer-events-none z-0">
+                    <div className="absolute bottom-[15%] right-[20px] md:bottom-[15%] md:right-[20px]pointer-events-none z-0 opacity-40 mix-blend-lighten">
                       <ChartWatermark className="w-[128.67px] h-[30.67px]" />
                     </div>
                   </div>
