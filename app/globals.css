@@ -48,3 +48,9 @@
     background: transparent;
   }
 }
+.highcharts-tooltip-container {
+  z-index: 999 !important;
+}
+.highcharts-tooltip {
+  z-index: 999 !important;
+}

@@ -6,12 +6,14 @@ export default function QuestionAnswer({
   question,
   answer,
   className = "",
+  startOpen = false,
 }: {
   question: string | React.ReactNode;
   answer: string | React.ReactNode;
   className?: string;
+  startOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(startOpen);
 
   return (
     <div className={className ?? ""}>

@@ -150,6 +150,7 @@ const Chain = ({ params }: { params: any }) => {
           className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[63px] py-[23px] flex flex-col"
           question={`What does ${pageData.title} tell you?`}
           answer={pageData.why}
+          startOpen
         />
       </Container>
     </>

@@ -25,6 +25,7 @@ import { debounce } from "lodash";
 import { navigationItems } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
+import ChartWatermark from "./ChartWatermark";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -83,12 +84,12 @@ export default function ChainChart({
     Object.keys(data.metrics).forEach((key) => {
       max = Math.max(
         max,
-        ...data.metrics[key].daily.data.map((d: any) => d[0])
+        ...data.metrics[key].daily.data.map((d: any) => d[0]),
       );
 
       min = Math.min(
         min,
-        ...data.metrics[key].daily.data.map((d: any) => d[0])
+        ...data.metrics[key].daily.data.map((d: any) => d[0]),
       );
     });
 
@@ -153,7 +154,7 @@ export default function ChainChart({
           : d3.format(".2~s")(value).replace(/G/, "B") + "%"
         : d3.format(",.2~s")(value).replace(/G/, "B");
     },
-    [selectedScale]
+    [selectedScale],
   );
 
   const chartComponents = useRef<Highcharts.Chart[]>([]);
@@ -184,11 +185,11 @@ export default function ChainChart({
       const tickPositions: number[] = [];
       const xMinDate = new Date(xMin);
       const xMaxDate = new Date(xMax);
-      const xMinMonth = xMinDate.getMonth();
-      const xMaxMonth = xMaxDate.getMonth();
+      const xMinMonth = xMinDate.getUTCMonth();
+      const xMaxMonth = xMaxDate.getUTCMonth();
 
-      const xMinYear = xMinDate.getFullYear();
-      const xMaxYear = xMaxDate.getFullYear();
+      const xMinYear = xMinDate.getUTCFullYear();
+      const xMaxYear = xMaxDate.getUTCFullYear();
 
       // // find first day of month greater than or equal to xMin
       // if (xMinDate.getDate() !== 1) {
@@ -230,7 +231,7 @@ export default function ChainChart({
 
       return tickPositions;
     },
-    [selectedTimespan]
+    [selectedTimespan],
   );
 
   const tooltipFormatter = useCallback(
@@ -280,7 +281,7 @@ export default function ChainChart({
                 -->
                 <div class="flex-1 text-right font-inter">${prefix}${Highcharts.numberFormat(
               percentage,
-              2
+              2,
             )}%</div>
               </div>
               <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
@@ -288,7 +289,7 @@ export default function ChainChart({
 
                 <div class="h-[2px] rounded-full absolute left-0 top-0" style="width: ${Highcharts.numberFormat(
                   percentage,
-                  2
+                  2,
                 )}%; background-color: ${
               AllChainsByKeys[data.chain_id].colors[theme][0]
             };"> </div>
@@ -307,7 +308,7 @@ export default function ChainChart({
             -->
             <div class="flex-1 text-left justify-start font-inter">
               <div class="mr-1 inline-block">${prefix}${parseFloat(
-            y
+            y,
           ).toLocaleString(undefined, {
             minimumFractionDigits: 0,
           })}</div>
@@ -317,7 +318,7 @@ export default function ChainChart({
             <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
 
             <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
-              (y / pointsSum) * 100
+              (y / pointsSum) * 100,
             )}%; background-color: ${
             AllChainsByKeys[data.chain_id].colors[theme][0]
           }33;"></div>
@@ -326,7 +327,7 @@ export default function ChainChart({
         .join("");
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [data, formatNumber, prefixes, selectedScale, theme]
+    [data, formatNumber, prefixes, selectedScale, theme],
   );
 
   const tooltipPositioner =
@@ -361,7 +362,7 @@ export default function ChainChart({
           y: tooltipY,
         };
       },
-      [isMobile]
+      [isMobile],
     );
 
   const seriesHover = useCallback<
@@ -391,7 +392,7 @@ export default function ChainChart({
       }
     },
 
-    [chartComponents]
+    [chartComponents],
   );
 
   const pointHover = useCallback<
@@ -416,7 +417,7 @@ export default function ChainChart({
                     (p) =>
                       p.x ===
                       (event.target as unknown as Highcharts.PointerEventObject)
-                        .x
+                        .x,
                   ) || null;
                 if (point !== null) {
                   const simulatedPointerEvent: any = {
@@ -439,7 +440,7 @@ export default function ChainChart({
       }
     },
 
-    [chartComponents]
+    [chartComponents],
   );
 
   const options: Highcharts.Options = {
@@ -502,7 +503,7 @@ export default function ChainChart({
       max: timespans[selectedTimespan].xMax + 1000 * 60 * 60 * 24 * 7,
       tickPositions: getTickPositions(
         timespans[selectedTimespan].xMin,
-        timespans[selectedTimespan].xMax
+        timespans[selectedTimespan].xMax,
       ),
       tickmarkPlacement: "on",
       tickWidth: 1,
@@ -694,7 +695,7 @@ export default function ChainChart({
             paddingMilliseconds -
             24 * 60 * 60 * 1000 * 0.5,
           timespans[selectedTimespan].xMax + paddingMilliseconds,
-          true
+          true,
         );
       });
     }
@@ -845,8 +846,8 @@ export default function ChainChart({
                                       //@ts-ignore
                                       chart.plotTop,
                                     ],
-                                    1
-                                  )
+                                    1,
+                                  ),
                                 )
                                 .attr({
                                   stroke: "#4B5563",
@@ -880,7 +881,7 @@ export default function ChainChart({
                             ...(options.yAxis as Highcharts.YAxisOptions)
                               .labels,
                             formatter: function (
-                              t: Highcharts.AxisLabelsFormatterContextObject
+                              t: Highcharts.AxisLabelsFormatterContextObject,
                             ) {
                               return (
                                 prefixes[key] + formatNumber(t.value, true)
@@ -923,6 +924,9 @@ export default function ChainChart({
                         }
                       }}
                     />
+                    <div className="absolute bottom-[22px] right-[22px] md:bottom-[22px] md:right-[22px]pointer-events-none z-0 opacity-40 mix-blend-lighten">
+                      <ChartWatermark className="w-[102.936px] h-[24.536px]" />
+                    </div>
                   </div>
                   <div className="absolute top-[14px] w-full flex justify-between items-center px-[26px]">
                     {/* <div
@@ -961,7 +965,7 @@ export default function ChainChart({
                                 ? data.metrics[key].daily.types.indexOf("eth")
                                 : data.metrics[key].daily.types.indexOf("usd")
                               : 1
-                          ]
+                          ],
                         )}
                       </div>
                     </div>
@@ -989,7 +993,7 @@ export default function ChainChart({
                   >
                     <div className="absolute left-[15px] align-bottom flex items-end z-30">
                       {new Date(
-                        timespans[selectedTimespan].xMin
+                        timespans[selectedTimespan].xMin,
                       ).toLocaleDateString(undefined, {
                         timeZone: "UTC",
                         month: "short",
@@ -999,7 +1003,7 @@ export default function ChainChart({
                     </div>
                     <div className="absolute right-[15px] align-bottom flex items-end z-30">
                       {new Date(
-                        timespans[selectedTimespan].xMax
+                        timespans[selectedTimespan].xMax,
                       ).toLocaleDateString(undefined, {
                         timeZone: "UTC",
                         month: "short",

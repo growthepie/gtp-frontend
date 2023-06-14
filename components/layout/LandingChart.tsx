@@ -19,6 +19,7 @@ import Link from "next/link";
 import { Sources } from "@/lib/datasources";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
+import ChartWatermark from "./ChartWatermark";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -237,18 +238,18 @@ export default function LandingChart({
       const tickPositions: number[] = [];
       const xMinDate = new Date(xMin);
       const xMaxDate = new Date(xMax);
-      const xMinMonth = xMinDate.getMonth();
-      const xMaxMonth = xMaxDate.getMonth();
+      const xMinMonth = xMinDate.getUTCMonth();
+      const xMaxMonth = xMaxDate.getUTCMonth();
 
-      const xMinYear = xMinDate.getFullYear();
-      const xMaxYear = xMaxDate.getFullYear();
+      const xMinYear = xMinDate.getUTCFullYear();
+      const xMaxYear = xMaxDate.getUTCFullYear();
 
       if (selectedTimespan === "max") {
         for (let year = xMinYear; year <= xMaxYear; year++) {
           for (let month = 0; month < 12; month = month + 4) {
             if (year === xMinYear && month < xMinMonth) continue;
             if (year === xMaxYear && month > xMaxMonth) continue;
-            tickPositions.push(new Date(year, month, 1).getTime());
+            tickPositions.push(Date.UTC(year, month, 1).valueOf());
           }
         }
         return tickPositions;
@@ -258,7 +259,7 @@ export default function LandingChart({
         for (let month = 0; month < 12; month++) {
           if (year === xMinYear && month < xMinMonth) continue;
           if (year === xMaxYear && month > xMaxMonth) continue;
-          tickPositions.push(new Date(year, month, 1).getTime());
+          tickPositions.push(Date.UTC(year, month, 1).valueOf());
         }
       }
 
@@ -651,6 +652,7 @@ export default function LandingChart({
         borderRadius: 17,
         borderWidth: 0,
         padding: 0,
+        outside: true,
         shadow: {
           color: "black",
           opacity: 0.015,
@@ -1246,6 +1248,9 @@ export default function LandingChart({
                   chartComponent.current = chart?.chart;
                 }}
               />
+            </div>
+            <div className="absolute bottom-[20%] right-[5%] md:bottom-14 md:right-10 pointer-events-none z-0 opacity-50 mix-blend-lighten">
+              <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px]" />
             </div>
           </div>
         </div>

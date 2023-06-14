@@ -27,6 +27,7 @@ import { Sources } from "@/lib/datasources";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import Container from "./Container";
+import ChartWatermark from "./ChartWatermark";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -239,18 +240,18 @@ export default function ComparisonChart({
       const tickPositions: number[] = [];
       const xMinDate = new Date(xMin);
       const xMaxDate = new Date(xMax);
-      const xMinMonth = xMinDate.getMonth();
-      const xMaxMonth = xMaxDate.getMonth();
+      const xMinMonth = xMinDate.getUTCMonth();
+      const xMaxMonth = xMaxDate.getUTCMonth();
 
-      const xMinYear = xMinDate.getFullYear();
-      const xMaxYear = xMaxDate.getFullYear();
+      const xMinYear = xMinDate.getUTCFullYear();
+      const xMaxYear = xMaxDate.getUTCFullYear();
 
       if (selectedTimespan === "max") {
         for (let year = xMinYear; year <= xMaxYear; year++) {
           for (let month = 0; month < 12; month = month + 4) {
             if (year === xMinYear && month < xMinMonth) continue;
             if (year === xMaxYear && month > xMaxMonth) continue;
-            tickPositions.push(new Date(year, month, 1).getTime());
+            tickPositions.push(Date.UTC(year, month, 1).valueOf());
           }
         }
         return tickPositions;
@@ -260,13 +261,13 @@ export default function ComparisonChart({
         for (let month = 0; month < 12; month++) {
           if (year === xMinYear && month < xMinMonth) continue;
           if (year === xMaxYear && month > xMaxMonth) continue;
-          tickPositions.push(new Date(year, month, 1).getTime());
+          tickPositions.push(Date.UTC(year, month, 1).valueOf());
         }
       }
 
       return tickPositions;
     },
-    [selectedTimespan]
+    [selectedTimespan],
   );
 
   const getSeriesType = useCallback(
@@ -277,7 +278,7 @@ export default function ComparisonChart({
 
       return "line";
     },
-    [selectedScale]
+    [selectedScale],
   );
 
   // const getChartType = useCallback(() => {
@@ -299,7 +300,7 @@ export default function ComparisonChart({
           : d3.format(".2~s")(value).replace(/G/, "B") + "%"
         : d3.format(",.2~s")(value).replace(/G/, "B");
     },
-    [valuePrefix, selectedScale]
+    [valuePrefix, selectedScale],
   );
 
   const tooltipFormatter = useCallback(
@@ -339,7 +340,7 @@ export default function ComparisonChart({
                 }</div>
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
                   percentage,
-                  2
+                  2,
                 )}%</div>
               </div>
               <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
@@ -347,7 +348,7 @@ export default function ComparisonChart({
 
                 <div class="h-[2px] rounded-full absolute left-0 top-0" style="width: ${Highcharts.numberFormat(
                   percentage,
-                  2
+                  2,
                 )}%; background-color: ${
               AllChainsByKeys[name].colors[theme][0]
             };"> </div>
@@ -364,7 +365,7 @@ export default function ComparisonChart({
             }</div>
             <div class="flex-1 text-right justify-end font-inter">
               <div class="mr-1 inline-block"><span class="opacity-70 inline-block mr-[1px]">${valuePrefix}</span>${parseFloat(
-            y
+            y,
           ).toLocaleString(undefined, {
             minimumFractionDigits: valuePrefix ? 2 : 0,
             maximumFractionDigits: valuePrefix ? 2 : 0,
@@ -375,7 +376,7 @@ export default function ComparisonChart({
             <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
 
             <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
-              (y / pointsSum) * 100
+              (y / pointsSum) * 100,
             )}%; background-color: ${
             AllChainsByKeys[name].colors[theme][0]
           }33;"></div>
@@ -384,7 +385,7 @@ export default function ComparisonChart({
         .join("");
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [formatNumber, selectedScale, theme, valuePrefix]
+    [formatNumber, selectedScale, theme, valuePrefix],
   );
 
   const tooltipPositioner =
@@ -423,7 +424,7 @@ export default function ComparisonChart({
           y: tooltipY,
         };
       },
-      [isMobile]
+      [isMobile],
     );
 
   const filteredData = useMemo<any[]>(() => {
@@ -457,7 +458,7 @@ export default function ComparisonChart({
       maxDate = new Date(
         filteredData.length > 0
           ? filteredData[0].data[filteredData[0].data.length - 1][0]
-          : 0
+          : 0,
       );
     }
 
@@ -497,7 +498,7 @@ export default function ComparisonChart({
             ? Date.now() - 365 * 24 * 60 * 60 * 1000
             : filteredData.reduce(
                 (min, d) => Math.min(min, d.data[0][0]),
-                Infinity
+                Infinity,
               ) - buffer,
 
         xMax: maxPlusBuffer,
@@ -509,7 +510,7 @@ export default function ComparisonChart({
     if (chartComponent.current) {
       chartComponent.current.xAxis[0].setExtremes(
         timespans[selectedTimespan].xMin,
-        timespans[selectedTimespan].xMax
+        timespans[selectedTimespan].xMax,
       );
     }
   }, [selectedTimespan, timespans]);
@@ -550,7 +551,7 @@ export default function ComparisonChart({
           }
         }
       },
-      [selectedTimespan, timespans]
+      [selectedTimespan, timespans],
     );
 
   const dataGrouping = useMemo(() => {
@@ -719,6 +720,7 @@ export default function ComparisonChart({
         borderRadius: 17,
         borderWidth: 0,
         padding: 0,
+        outside: true,
         shadow: {
           color: "black",
           opacity: 0.015,
@@ -1168,7 +1170,7 @@ export default function ComparisonChart({
                       // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
                       tickPositions: getTickPositions(
                         timespans.max.xMin,
-                        timespans.max.xMax
+                        timespans.max.xMax,
                       ),
                     });
                     setZoomed(false);
@@ -1184,7 +1186,7 @@ export default function ComparisonChart({
                   onClick={() => {
                     chartComponent?.current?.xAxis[0].setExtremes(
                       timespans[selectedTimespan].xMin,
-                      timespans[selectedTimespan].xMax
+                      timespans[selectedTimespan].xMax,
                     );
                     setZoomed(false);
                   }}
@@ -1220,6 +1222,9 @@ export default function ComparisonChart({
                         constructorType={"stockChart"}
                       />
                     </div>
+                    <div className="absolute bottom-[20%] right-[5%] md:bottom-14 md:right-8 pointer-events-none z-0 opacity-40 mix-blend-lighten">
+                      <ChartWatermark className="w-[128.67px] h-[30.67px]" />
+                    </div>
                   </div>
                 </div>
                 {avg && ["365d", "max"].includes(selectedTimespan) && (
@@ -1249,17 +1254,15 @@ export default function ComparisonChart({
             <div
               className={`flex justify-between w-full md:w-auto pt-0 md:pt-0 h-[35px] md:h-auto`}
             >
-              <div className="flex z-10">
+              <div className="flex z-10 items-center">
                 <Switch
                   checked={showEthereumMainnet}
                   onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
                 />
-                <div className="ml-2 block md:hidden lg:block leading-[2.5]">
+                <div className="ml-2 block md:hidden lg:block">
                   Show Ethereum
                 </div>
-                <div className="ml-2 hidden md:block lg:hidden leading-[2.5]">
-                  ETH
-                </div>
+                <div className="ml-2 hidden md:block lg:hidden">ETH</div>
               </div>
               <div className="block md:hidden z-10">
                 <Tooltip placement="left" allowInteract>
@@ -1381,12 +1384,12 @@ export default function ComparisonChart({
             </div>
           </div>
         ) : (
-          <div className="flex flex-col md:flex-row w-full justify-normal md:justify-between items-center text-sm md:text-base rounded-2xl md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1">
+          <div className="flex flex-col md:flex-row w-full justify-end md:justify-end items-center text-sm md:text-base rounded-2xl md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1">
             {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
             {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
             {/* toggle ETH */}
 
-            <div className="flex justify-normal items-center w-full md:w-auto">
+            <div className="flex justify-end items-center w-full md:w-auto">
               {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
               {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
               {/* toggle ETH */}
