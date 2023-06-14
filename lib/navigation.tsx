@@ -148,8 +148,33 @@ export const navigationItems: NavigationItem[] = [
     name: "Blockspace",
     label: "Blockspace",
     icon: "gtp:package",
-    options: [],
-    href: "",
+    options: [
+      {
+        label: "Chain Overview",
+        page: {
+          title: "Chain Overview",
+          description:
+            "An overview of chains' high-level blockspace usage. All expressed in shares of a chain's total blockspace.",
+        },
+        icon: "gtp:blockspace-chain-overview",
+        key: "chain-overview",
+        rootKey: "chainOverview",
+        urlKey: "chain-overview",
+      },
+      {
+        label: "Category Comparison",
+        page: {
+          title: "Category Comparison",
+          description:
+            "How are certain blockspace categories used on different chains?",
+        },
+        icon: "gtp:blockspace-category-comparison",
+        key: "category-comparison",
+        rootKey: "categoryComparison",
+        urlKey: "category-comparison",
+      },
+    ],
+    // href: "",
   },
   {
     name: "Chains",

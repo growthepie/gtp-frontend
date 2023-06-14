@@ -15,6 +15,10 @@ export const AllChains = [
       light: ["#293305", "#293305"], // text color
       dark: ["#C1C1C1", "#C1C1C1"], // text color
     }, // yellow-orange
+    backgrounds: {
+      light: ["bg-[#293305]", "bg-[#293305]"],
+      dark: ["bg-[#C1C1C1]", "bg-[#C1C1C1]"],
+    },
   },
   {
     label: "Arbitrum",
@@ -32,6 +36,10 @@ export const AllChains = [
       light: ["#2ECEE8", "#2ECEE8"], // tropical sea
       dark: ["#1DF7EF", "#1DF7EF"], // tropical sea
     },
+    backgrounds: {
+      light: ["bg-[#2ECEE8]", "bg-[#2ECEE8]"],
+      dark: ["bg-[#1DF7EF]", "bg-[#1DF7EF]"],
+    },
   },
   {
     label: "Aztec V2",
@@ -45,7 +53,12 @@ export const AllChains = [
       dark: ["border-[#000000]", "border-[#000000]"],
     },
     colors: { light: ["#000000", "#000000"], dark: ["#000000", "#000000"] },
+    backgrounds: {
+      light: ["bg-[#000000]", "bg-[#000000]"],
+      dark: ["bg-[#000000]", "bg-[#000000]"],
+    },
   },
+
   {
     label: "Immutable X",
     icon: "/icons/immutablex.png",
@@ -61,6 +74,10 @@ export const AllChains = [
     colors: {
       light: ["#08373C", "#08373C"], // dark sea
       dark: ["#3AFCC9", "#3AFCC9"], // dark sea
+    },
+    backgrounds: {
+      light: ["bg-[#08373C]", "bg-[#08373C]"],
+      dark: ["bg-[#3AFCC9]", "bg-[#3AFCC9]"],
     },
   },
   {
@@ -79,6 +96,10 @@ export const AllChains = [
       light: ["#800094", "#800094"], // purple
       dark: ["#AD0DC5", "#AD0DC5"], // purple
     },
+    backgrounds: {
+      light: ["bg-[#800094]", "bg-[#800094]"],
+      dark: ["bg-[#AD0DC5]", "bg-[#AD0DC5]"],
+    },
   },
   {
     label: "Loopring",
@@ -94,6 +115,10 @@ export const AllChains = [
     colors: {
       light: ["#000000", "#000000"], // black
       dark: ["#000000", "#000000"], // black
+    },
+    backgrounds: {
+      light: ["bg-[#000000]", "bg-[#000000]"],
+      dark: ["bg-[#000000]", "bg-[#000000]"],
     },
   },
   {
@@ -112,6 +137,10 @@ export const AllChains = [
       light: ["#DD3408", "#DD3408"], // red-orange
       dark: ["#FE5468", "#FE5468"], // red-orange
     },
+    backgrounds: {
+      light: ["bg-[#DD3408]", "bg-[#DD3408]"],
+      dark: ["bg-[#FE5468]", "bg-[#FE5468]"],
+    },
   },
   {
     label: "zkSync Era",
@@ -119,7 +148,7 @@ export const AllChains = [
     key: "zksync_era",
     urlKey: "zksync-era",
     chainType: "L2",
-    description: 
+    description:
       "zkSync Era is a Layer-2 protocol that scales Ethereum with cutting-edge ZK tech. Their mission isn't to merely increase Ethereum's throughput, but to fully preserve its foundational values – freedom, self-sovereignty, decentralization – at scale.",
     border: {
       light: ["border-[#390094]", "border-[#390094]"],
@@ -128,6 +157,10 @@ export const AllChains = [
     colors: {
       light: ["#390094", "#390094"], // dark purple
       dark: ["#7C32F4", "#7C32F4"], // dark purple
+    },
+    backgrounds: {
+      light: ["bg-[#390094]", "bg-[#390094]"],
+      dark: ["bg-[#7C32F4]", "bg-[#7C32F4]"],
     },
   },
   {
@@ -147,6 +180,10 @@ export const AllChains = [
       light: ["#cdd8d3", "#cdd8d3"], // soft green
       dark: ["#cdd8d3", "#cdd8d3"], // soft green
     },
+    backgrounds: {
+      light: ["bg-[#cdd8d3]", "bg-[#cdd8d3]"],
+      dark: ["bg-[#cdd8d3]", "bg-[#cdd8d3]"],
+    },
   },
   {
     label: "All L2s",
@@ -160,8 +197,12 @@ export const AllChains = [
       dark: ["border-[#FFDF27]", "border-[#FE5468]"],
     },
     colors: {
-      light: ["#FFDF27", "#FE5468"], // light green
-      dark: ["#FFDF27", "#FE5468"], // light green
+      light: ["#FFDF27", "#FE5468"], // yellow
+      dark: ["#FFDF27", "#FE5468"], // yellow
+    },
+    backgrounds: {
+      light: ["bg-[#FFDF27]", "bg-[#FE5468]"],
+      dark: ["bg-[#FFDF27]", "bg-[#FE5468]"],
     },
   },
 ];

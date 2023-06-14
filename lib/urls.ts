@@ -16,6 +16,12 @@ export const ChainURLs = {
   zksync_era: "https://api.growthepie.xyz/v1/chains/zksync_era.json",
 };
 
+export const BlockspaceURLs = {
+  "chain-overview": "https://api.growthepie.xyz/v1/blockspace/overview.json",
+  "chain-comparison":
+    "https://api.growthepie.xyz/v1/blockspace/comparison.json",
+};
+
 export const LandingURL = "https://api.growthepie.xyz/v1/landing_page.json";
 
 export const MasterURL = "https://api.growthepie.xyz/v1/master.json";
