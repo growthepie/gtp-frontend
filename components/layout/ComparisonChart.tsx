@@ -267,7 +267,7 @@ export default function ComparisonChart({
 
       return tickPositions;
     },
-    [selectedTimespan]
+    [selectedTimespan],
   );
 
   const getSeriesType = useCallback(
@@ -278,7 +278,7 @@ export default function ComparisonChart({
 
       return "line";
     },
-    [selectedScale]
+    [selectedScale],
   );
 
   // const getChartType = useCallback(() => {
@@ -300,7 +300,7 @@ export default function ComparisonChart({
           : d3.format(".2~s")(value).replace(/G/, "B") + "%"
         : d3.format(",.2~s")(value).replace(/G/, "B");
     },
-    [valuePrefix, selectedScale]
+    [valuePrefix, selectedScale],
   );
 
   const tooltipFormatter = useCallback(
@@ -340,7 +340,7 @@ export default function ComparisonChart({
                 }</div>
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
                   percentage,
-                  2
+                  2,
                 )}%</div>
               </div>
               <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
@@ -348,7 +348,7 @@ export default function ComparisonChart({
 
                 <div class="h-[2px] rounded-full absolute left-0 top-0" style="width: ${Highcharts.numberFormat(
                   percentage,
-                  2
+                  2,
                 )}%; background-color: ${
               AllChainsByKeys[name].colors[theme][0]
             };"> </div>
@@ -365,7 +365,7 @@ export default function ComparisonChart({
             }</div>
             <div class="flex-1 text-right justify-end font-inter">
               <div class="mr-1 inline-block"><span class="opacity-70 inline-block mr-[1px]">${valuePrefix}</span>${parseFloat(
-            y
+            y,
           ).toLocaleString(undefined, {
             minimumFractionDigits: valuePrefix ? 2 : 0,
             maximumFractionDigits: valuePrefix ? 2 : 0,
@@ -376,7 +376,7 @@ export default function ComparisonChart({
             <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
 
             <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
-              (y / pointsSum) * 100
+              (y / pointsSum) * 100,
             )}%; background-color: ${
             AllChainsByKeys[name].colors[theme][0]
           }33;"></div>
@@ -385,7 +385,7 @@ export default function ComparisonChart({
         .join("");
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [formatNumber, selectedScale, theme, valuePrefix]
+    [formatNumber, selectedScale, theme, valuePrefix],
   );
 
   const tooltipPositioner =
@@ -424,7 +424,7 @@ export default function ComparisonChart({
           y: tooltipY,
         };
       },
-      [isMobile]
+      [isMobile],
     );
 
   const filteredData = useMemo<any[]>(() => {
@@ -458,7 +458,7 @@ export default function ComparisonChart({
       maxDate = new Date(
         filteredData.length > 0
           ? filteredData[0].data[filteredData[0].data.length - 1][0]
-          : 0
+          : 0,
       );
     }
 
@@ -498,7 +498,7 @@ export default function ComparisonChart({
             ? Date.now() - 365 * 24 * 60 * 60 * 1000
             : filteredData.reduce(
                 (min, d) => Math.min(min, d.data[0][0]),
-                Infinity
+                Infinity,
               ) - buffer,
 
         xMax: maxPlusBuffer,
@@ -510,7 +510,7 @@ export default function ComparisonChart({
     if (chartComponent.current) {
       chartComponent.current.xAxis[0].setExtremes(
         timespans[selectedTimespan].xMin,
-        timespans[selectedTimespan].xMax
+        timespans[selectedTimespan].xMax,
       );
     }
   }, [selectedTimespan, timespans]);
@@ -551,7 +551,7 @@ export default function ComparisonChart({
           }
         }
       },
-      [selectedTimespan, timespans]
+      [selectedTimespan, timespans],
     );
 
   const dataGrouping = useMemo(() => {
@@ -1170,7 +1170,7 @@ export default function ComparisonChart({
                       // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
                       tickPositions: getTickPositions(
                         timespans.max.xMin,
-                        timespans.max.xMax
+                        timespans.max.xMax,
                       ),
                     });
                     setZoomed(false);
@@ -1186,7 +1186,7 @@ export default function ComparisonChart({
                   onClick={() => {
                     chartComponent?.current?.xAxis[0].setExtremes(
                       timespans[selectedTimespan].xMin,
-                      timespans[selectedTimespan].xMax
+                      timespans[selectedTimespan].xMax,
                     );
                     setZoomed(false);
                   }}
@@ -1222,7 +1222,7 @@ export default function ComparisonChart({
                         constructorType={"stockChart"}
                       />
                     </div>
-                    <div className="absolute bottom-[20%] right-[5%] md:bottom-14 md:right-10 pointer-events-none z-0 opacity-40 mix-blend-lighten">
+                    <div className="absolute bottom-[20%] right-[5%] md:bottom-14 md:right-8 pointer-events-none z-0 opacity-40 mix-blend-lighten">
                       <ChartWatermark className="w-[128.67px] h-[30.67px]" />
                     </div>
                   </div>

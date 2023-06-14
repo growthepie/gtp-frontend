@@ -1,4 +1,4 @@
-import { Metadata, ResolvingMetadata } from "next";
+import { Metadata } from "next";
 import { MasterURL } from "@/lib/urls";
 import { AllChains } from "@/lib/chains";
 import { MasterResponse } from "@/types/api/MasterResponse";
