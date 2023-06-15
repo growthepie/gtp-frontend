@@ -84,9 +84,17 @@ export default function OverviewMetrics({
     };
   }, []);
 
+  console.log(data["optimism"].overview.types.indexOf(
+    "gas_fees_share",
+  ))
+
   return (
     <>
-      <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 z-10">
+      <div className={`flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 z-10
+        ${nativeTransfer
+            ? "mb-0"
+            : "mb-8"
+        }`}>
         <div className="hidden md:flex justify-center items-center ml-0.5">
           {/* <Icon icon="gtp:chain" className="w-7 h-7 lg:w-9 lg:h-9" /> */}
           <button
@@ -98,6 +106,7 @@ export default function OverviewMetrics({
                 } `}
             onClick={() => {
               setNativeTransfer(!nativeTransfer);
+
             }}
           >
             <div className="flex items-center space-x-1">
@@ -141,25 +150,32 @@ export default function OverviewMetrics({
         </div>
       </div>
       <div
-        className={`relative bottom-[14px] w-[97.5%] h-[65px] m-auto border-x-[1px] border-b-[1px] rounded-xl border-forest-400 dark:border-forest-800 bg-forest-1000 overflow-hidden 
+        className={`relative bottom-1 w-[97.5%] h-[60px] m-auto border-x-[1px] border-b-[1px] rounded-bl-xl rounded-br-xl border-forest-400 dark:border-forest-800 bg-forest-1000 pt-[5px] mb-8 overflow-hidden
         ${nativeTransfer ? "flex" : "hidden"}`}
       >
         <div className="flex w-full h-full text-[12px]">
           {Object.keys(categories).map((category, i) => (
             <div
-              className="relative flex flex-grow h-full pt-2 justify-center items-center"
+              className={`relative flex flex-grow h-full justify-center items-center ${
+                selectedCategory === category
+                  ? "borden-hidden rounded-[5px]"
+                  : "h-full" 
+              }`}
               key={category}
               style={{
-                backgroundColor: `rgba(0, 0, 0, ${
+                backgroundColor: 
+                selectedCategory === category
+                ? "#5A6462"
+                : `rgba(0, 0, 0, ${
                   0.06 + (i / Object.keys(categories).length) * 0.94
                 })`,
               }}
             >
               <button
                 key={category}
-                className={`flex flex-col flex-grow h-full justify-center items-center border-x border-transparent ${
+                className={`flex flex-col flex-grow h-full justify-center items-center border-x border-transparent overflow-hidden ${
                   selectedCategory === category
-                    ? "hover:bg-white/5 hover:border-white/30"
+                    ? ""
                     : "hover:bg-white/5 hover:border-white/30"
                 }`}
                 onClick={() => {
@@ -178,100 +194,11 @@ export default function OverviewMetrics({
               </button>
             </div>
           ))}
-          {/* <div className="flex flex-col flex-grow h-full pt-2 justify-center bg-[#0000000f] items-center">
-            Native Transfer
-            <Image
-              src="/FiSmile.svg"
-              alt="Smiley Face"
-              className="object-contain"
-              width={10}
-              height={10}
-            />
-          </div>
-          <div className="flex flex-col flex-grow h-full pt-2 justify-center bg-[#00000014] items-center">
-            DeFi - DEX
-            <Image
-              src="/FiSmile.svg"
-              alt="Smiley Face"
-              className="object-contain"
-              width={10}
-              height={10}
-            />
-          </div>
-          <div className="flex flex-col flex-grow h-full pt-2 justify-center bg-[#00000029] items-center">
-            DeFi - Other
-            <Image
-              src="/FiSmile.svg"
-              alt="Smiley Face"
-              className="object-contain"
-              width={10}
-              height={10}
-            />
-          </div>
-          <div className="flex flex-col flex-grow h-full pt-2 justify-center bg-[#0000003d] items-center">
-            Stablecoin
-            <Image
-              src="/FiSmile.svg"
-              alt="Smiley Face"
-              className="object-contain"
-              width={10}
-              height={10}
-            />
-          </div>
-          <div className="flex flex-col flex-grow h-full pt-2 justify-center bg-[#0000005c] items-center">
-            ERC-20
-            <Image
-              src="/FiSmile.svg"
-              alt="Smiley Face"
-              className="object-contain"
-              width={10}
-              height={10}
-            />
-          </div>
-          <div className="flex flex-col flex-grow h-full pt-2 justify-center bg-[#0000007a] items-center">
-            NFT-20
-            <Image
-              src="/FiSmile.svg"
-              alt="Smiley Face"
-              className="object-contain"
-              width={10}
-              height={10}
-            />
-          </div>
-          <div className="flex flex-col flex-grow h-full pt-2 justify-center bg-[#000000a3] items-center">
-            L2 Rent
-            <Image
-              src="/FiSmile.svg"
-              alt="Smiley Face"
-              className="object-contain"
-              width={10}
-              height={10}
-            />
-          </div>
-          <div className="flex flex-col flex-grow h-full pt-2 justify-center bg-[#000000cc] items-center">
-            Bridge
-            <Image
-              src="/FiSmile.svg"
-              alt="Smiley Face"
-              className="object-contain"
-              width={10}
-              height={10}
-            />
-          </div>
-          <div className="flex flex-col flex-grow h-full pt-2 justify-center bg-[#000000eb] items-center">
-            Arbitrage
-            <Image
-              src="/FiSmile.svg"
-              alt="Smiley Face"
-              className="object-contain"
-              width={10}
-              height={10}
-            />
-          </div> */}
+         
         </div>
       </div>
       {/* <colorful rows> */}
-      <div className="flex flex-col space-y-[8px]">
+      <div className="flex flex-col space-y-[10px]">
         {
           //chain name is key
           Object.keys(data)
@@ -297,14 +224,14 @@ export default function OverviewMetrics({
                       {AllChainsByKeys[chainKey].label}
                     </div>
                   </div>
-                  <div className="flex w-full pr-[2px] py-[2px]">
+                  <div className="flex w-full pr-[2px] py-[2px] ">
                     {Object.keys(categories).map((categoryKey, i) => {
                       return (
                         <div
                           key={categoryKey}
-                          className={`flex flex-col h-[41px] justify-center items-center border-x  ${
+                          className={`flex flex-col h-[41px] justify-center items-center border-x px-4 py-5 ${
                             selectedCategory === categoryKey
-                              ? "border-white"
+                              ? `py-[25px] -my-[5px] z-10 rounded-[10px] border-transparent shadow-lg ${AllChainsByKeys[chainKey].backgrounds["light"][1]} `
                               : "border-transparent"
                           } ${
                             i ===
@@ -312,15 +239,37 @@ export default function OverviewMetrics({
                               data[chainKey].overview[selectedTimespan],
                             ).length -
                               1
-                              ? "rounded-r-full"
+                              ? selectedCategory === categoryKey
+                                ? ""
+                                : "rounded-r-full"
                               : ""
                           }`}
                           style={{
-                            backgroundColor: `rgba(0, 0, 0, ${
+                            
+                            backgroundColor: 
+                            selectedCategory === categoryKey
+                            ? ""
+                            : `rgba(0, 0, 0, ${
                               0.06 + (i / Object.keys(categories).length) * 0.94
                             })`,
                             width: `${
-                              data[chainKey].overview[selectedTimespan][
+                              selectedCategory === categoryKey
+                              ?
+                                0.08 >= data[chainKey].overview[selectedTimespan][
+                                  categoryKey
+                                ][
+                                  data[chainKey].overview.types.indexOf(
+                                    "gas_fees_share",
+                                  )
+                                ] ? 8
+                                  : data[chainKey].overview[selectedTimespan][
+                                    categoryKey
+                                  ][
+                                    data[chainKey].overview.types.indexOf(
+                                      "gas_fees_share",
+                                    )
+                                  ] * 100.0 * 1.2
+                              : data[chainKey].overview[selectedTimespan][
                                 categoryKey
                               ][
                                 data[chainKey].overview.types.indexOf(
@@ -339,7 +288,12 @@ export default function OverviewMetrics({
                                 : i > 5
                                 ? "text-white/60"
                                 : "text-white/80"
-                            } mix-blend-luminosity text-xs font-medium`}
+                            } mix-blend-luminosity font-medium 
+                            ${
+                              selectedCategory === categoryKey
+                                ? "text-lg"
+                                : "text-xs"
+                            }`}
                           >
                             {(
                               data[chainKey].overview[selectedTimespan][
