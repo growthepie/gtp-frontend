@@ -49,6 +49,12 @@ export default function OverviewMetrics({
   }, []);
 
   const [selectedCategory, setSelectedCategory] = useState("native_transfers");
+  const [relativePercentage, setRelativePercentage] = useState(
+    100 -
+      (Object.keys(data["arbitrum"].overview[selectedTimespan]).length - 1) * 2,
+    // For right now determine the amount of categories  based on gasfees length
+    // In the future if different categories have different amount of value will refactor.
+  );
 
   const { theme } = useTheme();
   const timespans = useMemo(() => {
@@ -85,7 +91,7 @@ export default function OverviewMetrics({
   }, []);
 
   console.log(data["optimism"].overview.types.indexOf("gas_fees_share"));
-
+  console.log(relativePercentage);
   return (
     <>
       <div
@@ -251,39 +257,24 @@ export default function OverviewMetrics({
                                     })`,
                               width: `${
                                 selectedCategory === categoryKey
-                                  ? 0.08 >=
-                                    data[chainKey].overview[selectedTimespan][
+                                  ? data[chainKey].overview[selectedTimespan][
                                       categoryKey
                                     ][
                                       data[chainKey].overview.types.indexOf(
                                         "gas_fees_share",
                                       )
-                                    ]
-                                    ? 8 +
-                                      30 *
-                                        data[chainKey].overview[
-                                          selectedTimespan
-                                        ][categoryKey][
-                                          data[chainKey].overview.types.indexOf(
-                                            "gas_fees_share",
-                                          )
-                                        ]
-                                    : data[chainKey].overview[selectedTimespan][
-                                        categoryKey
-                                      ][
-                                        data[chainKey].overview.types.indexOf(
-                                          "gas_fees_share",
-                                        )
-                                      ] *
-                                      100.0 *
-                                      1.2
+                                    ] *
+                                      relativePercentage +
+                                    4
                                   : data[chainKey].overview[selectedTimespan][
                                       categoryKey
                                     ][
                                       data[chainKey].overview.types.indexOf(
                                         "gas_fees_share",
                                       )
-                                    ] * 100.0
+                                    ] *
+                                      relativePercentage +
+                                    2
                               }%`,
                             }}
                           >
@@ -384,60 +375,24 @@ export default function OverviewMetrics({
                                     })`,
                               width: `${
                                 selectedCategory === categoryKey
-                                  ? 0.08 >=
-                                    data[chainKey].overview[selectedTimespan][
+                                  ? data[chainKey].overview[selectedTimespan][
                                       categoryKey
                                     ][
                                       data[chainKey].overview.types.indexOf(
-                                        "txcount_share",
+                                        "gas_fees_share",
                                       )
-                                    ]
-                                    ? 0.05 >=
-                                      data[chainKey].overview[selectedTimespan][
-                                        categoryKey
-                                      ][
-                                        data[chainKey].overview.types.indexOf(
-                                          "txcount_share",
-                                        )
-                                      ]
-                                      ? 5 +
-                                        50 *
-                                          data[chainKey].overview[
-                                            selectedTimespan
-                                          ][categoryKey][
-                                            data[
-                                              chainKey
-                                            ].overview.types.indexOf(
-                                              "txcount_share",
-                                            )
-                                          ]
-                                      : 7 +
-                                        15 *
-                                          data[chainKey].overview[
-                                            selectedTimespan
-                                          ][categoryKey][
-                                            data[
-                                              chainKey
-                                            ].overview.types.indexOf(
-                                              "txcount_share",
-                                            )
-                                          ]
-                                    : data[chainKey].overview[selectedTimespan][
-                                        categoryKey
-                                      ][
-                                        data[chainKey].overview.types.indexOf(
-                                          "txcount_share",
-                                        )
-                                      ] *
-                                      100.0 *
-                                      1.2
+                                    ] *
+                                      relativePercentage +
+                                    4
                                   : data[chainKey].overview[selectedTimespan][
                                       categoryKey
                                     ][
                                       data[chainKey].overview.types.indexOf(
-                                        "txcount_share",
+                                        "gas_fees_share",
                                       )
-                                    ] * 100.0
+                                    ] *
+                                      relativePercentage +
+                                    2
                               }%`,
                             }}
                           >
