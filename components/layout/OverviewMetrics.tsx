@@ -84,17 +84,14 @@ export default function OverviewMetrics({
     };
   }, []);
 
-  console.log(data["optimism"].overview.types.indexOf(
-    "gas_fees_share",
-  ))
+  console.log(data["optimism"].overview.types.indexOf("gas_fees_share"));
 
   return (
     <>
-      <div className={`flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 z-10
-        ${nativeTransfer
-            ? "mb-0"
-            : "mb-8"
-        }`}>
+      <div
+        className={`flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 z-10
+        ${nativeTransfer ? "mb-0" : "mb-8"}`}
+      >
         <div className="hidden md:flex justify-center items-center ml-0.5">
           {/* <Icon icon="gtp:chain" className="w-7 h-7 lg:w-9 lg:h-9" /> */}
           <button
@@ -106,7 +103,6 @@ export default function OverviewMetrics({
                 } `}
             onClick={() => {
               setNativeTransfer(!nativeTransfer);
-
             }}
           >
             <div className="flex items-center space-x-1">
@@ -159,16 +155,16 @@ export default function OverviewMetrics({
               className={`relative flex flex-grow h-full justify-center items-center ${
                 selectedCategory === category
                   ? "borden-hidden rounded-[5px]"
-                  : "h-full" 
+                  : "h-full"
               }`}
               key={category}
               style={{
-                backgroundColor: 
-                selectedCategory === category
-                ? "#5A6462"
-                : `rgba(0, 0, 0, ${
-                  0.06 + (i / Object.keys(categories).length) * 0.94
-                })`,
+                backgroundColor:
+                  selectedCategory === category
+                    ? "#5A6462"
+                    : `rgba(0, 0, 0, ${
+                        0.06 + (i / Object.keys(categories).length) * 0.94
+                      })`,
               }}
             >
               <button
@@ -194,128 +190,297 @@ export default function OverviewMetrics({
               </button>
             </div>
           ))}
-         
         </div>
       </div>
       {/* <colorful rows> */}
-      <div className="flex flex-col space-y-[10px]">
-        {
-          //chain name is key
-          Object.keys(data)
-            .filter((c) => c !== "all_l2s")
-            .map((chainKey, index) => {
-              return (
-                <div
-                  key={index}
-                  className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${
-                    ["arbitrum", "imx", "all_l2s"].includes(chainKey)
-                      ? "text-black"
-                      : "text-white"
-                  } ${AllChainsByKeys[chainKey].backgrounds["light"][1]}`}
-                >
-                  <div className="flex items-center h-[45px] pl-[20px] w-[150px]">
-                    <div className="flex justify-center items-center w-[30px]">
-                      <Icon
-                        icon={`gtp:${chainKey}-logo-monochrome`}
-                        className="w-[15px] h-[15px]"
-                      />
+      {selectedScale === "gasfees" ? (
+        <div className="flex flex-col space-y-[10px]">
+          {
+            //chain name is key
+            Object.keys(data)
+              .filter((c) => c !== "all_l2s")
+              .map((chainKey, index) => {
+                return (
+                  <div
+                    key={index}
+                    className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${
+                      ["arbitrum", "imx", "all_l2s"].includes(chainKey)
+                        ? "text-black"
+                        : "text-white"
+                    } ${AllChainsByKeys[chainKey].backgrounds["light"][1]}`}
+                  >
+                    <div className="flex items-center h-[45px] pl-[20px] w-[150px]">
+                      <div className="flex justify-center items-center w-[30px]">
+                        <Icon
+                          icon={`gtp:${chainKey}-logo-monochrome`}
+                          className="w-[15px] h-[15px]"
+                        />
+                      </div>
+                      <div className="-mb-0.5">
+                        {AllChainsByKeys[chainKey].label}
+                      </div>
                     </div>
-                    <div className="-mb-0.5">
-                      {AllChainsByKeys[chainKey].label}
-                    </div>
-                  </div>
-                  <div className="flex w-full pr-[2px] py-[2px] ">
-                    {Object.keys(categories).map((categoryKey, i) => {
-                      return (
-                        <div
-                          key={categoryKey}
-                          className={`flex flex-col h-[41px] justify-center items-center border-x px-4 py-5 ${
-                            selectedCategory === categoryKey
-                              ? `py-[25px] -my-[5px] z-10 rounded-[10px] border-transparent shadow-lg ${AllChainsByKeys[chainKey].backgrounds["light"][1]} `
-                              : "border-transparent"
-                          } ${
-                            i ===
-                            Object.keys(
-                              data[chainKey].overview[selectedTimespan],
-                            ).length -
-                              1
-                              ? selectedCategory === categoryKey
-                                ? ""
-                                : "rounded-r-full"
-                              : ""
-                          }`}
-                          style={{
-                            
-                            backgroundColor: 
-                            selectedCategory === categoryKey
-                            ? ""
-                            : `rgba(0, 0, 0, ${
-                              0.06 + (i / Object.keys(categories).length) * 0.94
-                            })`,
-                            width: `${
-                              selectedCategory === categoryKey
-                              ?
-                                0.08 >= data[chainKey].overview[selectedTimespan][
-                                  categoryKey
-                                ][
-                                  data[chainKey].overview.types.indexOf(
-                                    "gas_fees_share",
-                                  )
-                                ] ? 8
-                                  : data[chainKey].overview[selectedTimespan][
-                                    categoryKey
-                                  ][
-                                    data[chainKey].overview.types.indexOf(
-                                      "gas_fees_share",
-                                    )
-                                  ] * 100.0 * 1.2
-                              : data[chainKey].overview[selectedTimespan][
-                                categoryKey
-                              ][
-                                data[chainKey].overview.types.indexOf(
-                                  "gas_fees_share",
-                                )
-                              ] * 100.0
-                            }%`,
-                          }}
-                        >
+                    <div className="flex w-full pr-[2px] py-[2px] ">
+                      {Object.keys(categories).map((categoryKey, i) => {
+                        return (
                           <div
-                            className={`${
-                              ["arbitrum", "imx", "all_l2s"].includes(chainKey)
-                                ? i > 5
+                            key={categoryKey}
+                            className={`flex flex-col h-[41px] justify-center items-center border-x px-4 py-5 ${
+                              selectedCategory === categoryKey
+                                ? `py-[25px] -my-[5px] z-10 rounded-[10px] border-transparent shadow-lg ${AllChainsByKeys[chainKey].backgrounds["light"][1]} `
+                                : "border-transparent"
+                            } ${
+                              i ===
+                              Object.keys(
+                                data[chainKey].overview[selectedTimespan],
+                              ).length -
+                                1
+                                ? selectedCategory === categoryKey
+                                  ? ""
+                                  : "rounded-r-full"
+                                : ""
+                            }`}
+                            style={{
+                              backgroundColor:
+                                selectedCategory === categoryKey
+                                  ? ""
+                                  : `rgba(0, 0, 0, ${
+                                      0.06 +
+                                      (i / Object.keys(categories).length) *
+                                        0.94
+                                    })`,
+                              width: `${
+                                selectedCategory === categoryKey
+                                  ? 0.08 >=
+                                    data[chainKey].overview[selectedTimespan][
+                                      categoryKey
+                                    ][
+                                      data[chainKey].overview.types.indexOf(
+                                        "gas_fees_share",
+                                      )
+                                    ]
+                                    ? 8 +
+                                      30 *
+                                        data[chainKey].overview[
+                                          selectedTimespan
+                                        ][categoryKey][
+                                          data[chainKey].overview.types.indexOf(
+                                            "gas_fees_share",
+                                          )
+                                        ]
+                                    : data[chainKey].overview[selectedTimespan][
+                                        categoryKey
+                                      ][
+                                        data[chainKey].overview.types.indexOf(
+                                          "gas_fees_share",
+                                        )
+                                      ] *
+                                      100.0 *
+                                      1.2
+                                  : data[chainKey].overview[selectedTimespan][
+                                      categoryKey
+                                    ][
+                                      data[chainKey].overview.types.indexOf(
+                                        "gas_fees_share",
+                                      )
+                                    ] * 100.0
+                              }%`,
+                            }}
+                          >
+                            <div
+                              className={`${
+                                ["arbitrum", "imx", "all_l2s"].includes(
+                                  chainKey,
+                                )
+                                  ? i > 5
+                                    ? "text-white/60"
+                                    : "text-black"
+                                  : i > 5
                                   ? "text-white/60"
-                                  : "text-black"
-                                : i > 5
-                                ? "text-white/60"
-                                : "text-white/80"
-                            } mix-blend-luminosity font-medium 
+                                  : "text-white/80"
+                              } mix-blend-luminosity font-medium 
                             ${
                               selectedCategory === categoryKey
                                 ? "text-lg"
                                 : "text-xs"
                             }`}
-                          >
-                            {(
-                              data[chainKey].overview[selectedTimespan][
-                                categoryKey
-                              ][
-                                data[chainKey].overview.types.indexOf(
-                                  "gas_fees_share",
-                                )
-                              ] * 100.0
-                            ).toFixed(2)}
-                            %
+                            >
+                              {(
+                                data[chainKey].overview[selectedTimespan][
+                                  categoryKey
+                                ][
+                                  data[chainKey].overview.types.indexOf(
+                                    "gas_fees_share",
+                                  )
+                                ] * 100.0
+                              ).toFixed(2)}
+                              %
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                    {/* <div className="flex flex-col w-10 h-[41px] bg-black/10"></div> */}
+                        );
+                      })}
+                      {/* <div className="flex flex-col w-10 h-[41px] bg-black/10"></div> */}
+                    </div>
                   </div>
-                </div>
-              );
-            })
-        }
-      </div>
+                );
+              })
+          }
+        </div>
+      ) : (
+        <div className="flex flex-col space-y-[10px]">
+          {
+            //chain name is key
+            Object.keys(data)
+              .filter((c) => c !== "all_l2s")
+              .map((chainKey, index) => {
+                return (
+                  <div
+                    key={index}
+                    className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${
+                      ["arbitrum", "imx", "all_l2s"].includes(chainKey)
+                        ? "text-black"
+                        : "text-white"
+                    } ${AllChainsByKeys[chainKey].backgrounds["light"][1]}`}
+                  >
+                    <div className="flex items-center h-[45px] pl-[20px] w-[150px]">
+                      <div className="flex justify-center items-center w-[30px]">
+                        <Icon
+                          icon={`gtp:${chainKey}-logo-monochrome`}
+                          className="w-[15px] h-[15px]"
+                        />
+                      </div>
+                      <div className="-mb-0.5">
+                        {AllChainsByKeys[chainKey].label}
+                      </div>
+                    </div>
+                    <div className="flex w-full pr-[2px] py-[2px] ">
+                      {Object.keys(categories).map((categoryKey, i) => {
+                        return (
+                          <div
+                            key={categoryKey}
+                            className={`flex flex-col h-[41px] justify-center items-center border-x px-4 py-5 ${
+                              selectedCategory === categoryKey
+                                ? `py-[25px] -my-[5px] z-10 rounded-[10px] border-transparent shadow-lg ${AllChainsByKeys[chainKey].backgrounds["light"][1]} `
+                                : "border-transparent"
+                            } ${
+                              i ===
+                              Object.keys(
+                                data[chainKey].overview[selectedTimespan],
+                              ).length -
+                                1
+                                ? selectedCategory === categoryKey
+                                  ? ""
+                                  : "rounded-r-full"
+                                : ""
+                            }`}
+                            style={{
+                              backgroundColor:
+                                selectedCategory === categoryKey
+                                  ? ""
+                                  : `rgba(0, 0, 0, ${
+                                      0.06 +
+                                      (i / Object.keys(categories).length) *
+                                        0.94
+                                    })`,
+                              width: `${
+                                selectedCategory === categoryKey
+                                  ? 0.08 >=
+                                    data[chainKey].overview[selectedTimespan][
+                                      categoryKey
+                                    ][
+                                      data[chainKey].overview.types.indexOf(
+                                        "txcount_share",
+                                      )
+                                    ]
+                                    ? 0.05 >=
+                                      data[chainKey].overview[selectedTimespan][
+                                        categoryKey
+                                      ][
+                                        data[chainKey].overview.types.indexOf(
+                                          "txcount_share",
+                                        )
+                                      ]
+                                      ? 5 +
+                                        50 *
+                                          data[chainKey].overview[
+                                            selectedTimespan
+                                          ][categoryKey][
+                                            data[
+                                              chainKey
+                                            ].overview.types.indexOf(
+                                              "txcount_share",
+                                            )
+                                          ]
+                                      : 7 +
+                                        15 *
+                                          data[chainKey].overview[
+                                            selectedTimespan
+                                          ][categoryKey][
+                                            data[
+                                              chainKey
+                                            ].overview.types.indexOf(
+                                              "txcount_share",
+                                            )
+                                          ]
+                                    : data[chainKey].overview[selectedTimespan][
+                                        categoryKey
+                                      ][
+                                        data[chainKey].overview.types.indexOf(
+                                          "txcount_share",
+                                        )
+                                      ] *
+                                      100.0 *
+                                      1.2
+                                  : data[chainKey].overview[selectedTimespan][
+                                      categoryKey
+                                    ][
+                                      data[chainKey].overview.types.indexOf(
+                                        "txcount_share",
+                                      )
+                                    ] * 100.0
+                              }%`,
+                            }}
+                          >
+                            <div
+                              className={`${
+                                ["arbitrum", "imx", "all_l2s"].includes(
+                                  chainKey,
+                                )
+                                  ? i > 5
+                                    ? "text-white/60"
+                                    : "text-black"
+                                  : i > 5
+                                  ? "text-white/60"
+                                  : "text-white/80"
+                              } mix-blend-luminosity font-medium 
+                            ${
+                              selectedCategory === categoryKey
+                                ? "text-lg"
+                                : "text-xs"
+                            }`}
+                            >
+                              {(
+                                data[chainKey].overview[selectedTimespan][
+                                  categoryKey
+                                ][
+                                  data[chainKey].overview.types.indexOf(
+                                    "txcount_share",
+                                  )
+                                ] * 100.0
+                              ).toFixed(2)}
+                              %
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {/* <div className="flex flex-col w-10 h-[41px] bg-black/10"></div> */}
+                    </div>
+                  </div>
+                );
+              })
+          }
+        </div>
+      )}
       {/* </colorful rows> */}
       <div className="flex w-full justify-between md:w-auto bg-forest-50 dark:bg-[#1F2726] rounded-full p-0.5 mt-8">
         <div className="flex justify-normal md:justify-start">
