@@ -379,7 +379,7 @@ export default function OverviewMetrics({
                                       categoryKey
                                     ][
                                       data[chainKey].overview.types.indexOf(
-                                        "gas_fees_share",
+                                        "txcount_share",
                                       )
                                     ] *
                                       relativePercentage +
@@ -388,7 +388,7 @@ export default function OverviewMetrics({
                                       categoryKey
                                     ][
                                       data[chainKey].overview.types.indexOf(
-                                        "gas_fees_share",
+                                        "txcount_share",
                                       )
                                     ] *
                                       relativePercentage +
