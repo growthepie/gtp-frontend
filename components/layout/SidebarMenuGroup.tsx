@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./Tooltip";
 import { MasterURL } from "@/lib/urls";
 import { NavigationItem } from "@/lib/navigation";
+import { IS_PREVIEW } from "@/lib/helpers";
 
 type SidebarProps = {
   item: NavigationItem;
@@ -72,7 +73,7 @@ export default function SidebarMenuGroup({
   };
 
   // disable Blockspace menu item in production
-  if (item.name === "Blockspace" && process.env.VERCEL_ENV === "production")
+  if (item.name === "Blockspace" && !IS_PREVIEW)
     return (
       <div className="group flex flex-col">
         <Tooltip key={item.label} placement="right">

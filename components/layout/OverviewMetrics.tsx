@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
@@ -8,6 +8,7 @@ import { useTheme } from "next-themes";
 import { Chains } from "@/types/api/ChainOverviewResponse";
 import { AllChainsByKeys } from "@/lib/chains";
 import { color } from "highcharts";
+import { useHover } from "usehooks-ts";
 
 export default function OverviewMetrics({
   data,
@@ -25,16 +26,6 @@ export default function OverviewMetrics({
   const [selectedScale, setSelectedScale] = useState("gas_fees_share");
   const [nativeTransfer, setNativeTransfer] = useState(true);
 
-  /*
-  utility: number[];
-  scaling: number[];
-  defi: number[];
-  native_transfers: number[];
-  gaming: number[];
-  token_transfers: number[];
-  nft_fi: number[];
-  cefi: number[];
-  */
   const categories = useMemo<{ [key: string]: string }>(() => {
     return {
       native_transfers: "Native Transfer",
@@ -47,6 +38,19 @@ export default function OverviewMetrics({
       gaming: "Gaming",
     };
   }, []);
+
+  const [isCategoryHovered, setIsCategoryHovered] = useState<{
+    [key: string]: boolean;
+  }>({
+    native_transfers: false,
+    token_transfers: false,
+    nft_fi: false,
+    defi: false,
+    cefi: false,
+    utility: false,
+    scaling: false,
+    gaming: false,
+  });
 
   const [selectedCategory, setSelectedCategory] = useState("native_transfers");
 
@@ -170,140 +174,169 @@ export default function OverviewMetrics({
           ))}
         </div>
       </div>
-      <div
-        className={`relative bottom-1 w-[97.5%] h-[60px] m-auto border-x-[1px] border-b-[1px] rounded-bl-xl rounded-br-xl text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-forest-900 dark:bg-forest-1000 pt-[5px] mb-8 overflow-hidden
+      <div className="overflow-x-scroll lg:overflow-x-visible z-100 w-full scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
+        <div
+          className={`relative min-w-[820px] md:min-w-[850px]  bottom-1 w-[97.5%] h-[60px] m-auto border-x-[1px] border-b-[1px] rounded-bl-xl rounded-br-xl text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-forest-900 dark:bg-forest-1000 pt-[5px] mb-8 overflow-hidden
         ${nativeTransfer ? "flex" : "hidden"}`}
-      >
-        <div className="flex w-full h-full text-[12px]">
-          {Object.keys(categories).map((category, i) => (
-            <div
-              className={`relative flex flex-grow h-full justify-center items-center ${
-                selectedCategory === category
-                  ? "borden-hidden rounded-[5px]"
-                  : "h-full"
-              }`}
-              key={category}
-              style={{
-                backgroundColor:
-                  selectedCategory === category
-                    ? "#5A6462"
-                    : `rgba(0, 0, 0, ${
-                        0.06 + (i / Object.keys(categories).length) * 0.94
-                      })`,
-              }}
-            >
-              <button
+        >
+          <div className="flex w-full h-full text-[12px]">
+            {Object.keys(categories).map((category, i) => (
+              <div
                 key={category}
-                className={`flex flex-col flex-grow h-full justify-center items-center border-x border-transparent overflow-hidden ${
+                className={`relative flex flex-grow h-full justify-center items-center ${
                   selectedCategory === category
-                    ? ""
-                    : "hover:bg-white/5 hover:border-white/30"
+                    ? "borden-hidden rounded-b-[5px]"
+                    : "h-full"
                 }`}
-                onClick={() => {
-                  setSelectedCategory(category);
-                  setSelectedChain(null);
+                onMouseEnter={() => {
+                  setIsCategoryHovered((prev) => ({
+                    ...prev,
+                    [category]: true,
+                  }));
+                }}
+                onMouseLeave={() => {
+                  setIsCategoryHovered((prev) => ({
+                    ...prev,
+                    [category]: false,
+                  }));
+                }}
+                style={{
+                  backgroundColor:
+                    selectedCategory === category
+                      ? "#5A6462"
+                      : `rgba(0, 0, 0, ${
+                          0.06 + (i / Object.keys(categories).length) * 0.94
+                        })`,
                 }}
               >
-                {categories[category]}
-                <Icon
-                  icon="gtp:smiley"
-                  className={`w-[10px] h-[10px] ${
-                    selectedCategory === category
-                      ? "text-white"
-                      : "text-white/40"
-                  }`}
-                />
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-      {/* <colorful rows> */}
-      {/* {selectedScale === "gasfees" ? ( */}
-      <div className="flex flex-col space-y-[10px] mb-8">
-        {
-          //chain name is key
-          Object.keys(data)
-            .filter((c) => c !== "all_l2s")
-            .map((chainKey, index) => {
-              return (
-                <div
-                  key={index}
-                  className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${
-                    ["arbitrum", "imx", "all_l2s"].includes(chainKey)
-                      ? "text-white dark:text-black"
-                      : "text-white"
-                  } ${AllChainsByKeys[chainKey].backgrounds[theme][1]} ${
-                    chainKey === "imx" && selectedScale === "gas_fees_share"
-                      ? "grayscale opacity-20"
-                      : ""
-                  }`}
+                <button
+                  key={category}
+                  className={`flex flex-col flex-grow h-full justify-center items-center border-x border-transparent overflow-hidden ${
+                    selectedCategory === category ? "" : "hover:bg-white/5"
+                  } 
+                ${isCategoryHovered[category] ? "underline" : ""}
+                `}
+                  onClick={() => {
+                    setSelectedCategory(category);
+                    setSelectedChain(null);
+                  }}
                 >
-                  <div className="flex items-center h-[45px] pl-[20px] w-[150px]">
-                    <div className="flex justify-center items-center w-[30px]">
-                      <Icon
-                        icon={`gtp:${chainKey}-logo-monochrome`}
-                        className="w-[15px] h-[15px]"
-                      />
+                  {categories[category]}
+                  <Icon
+                    icon="gtp:smiley"
+                    className={`w-[10px] h-[10px] ${
+                      selectedCategory === category
+                        ? "text-white"
+                        : "text-white/40"
+                    }`}
+                  />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* <colorful rows> */}
+        {/* {selectedScale === "gasfees" ? ( */}
+        <div className="flex flex-col space-y-[10px] min-w-[820px] md:min-w-[850px] mb-8">
+          {
+            //chain name is key
+            Object.keys(data)
+              .filter((c) => c !== "all_l2s")
+              .map((chainKey, index) => {
+                return (
+                  <div
+                    key={index}
+                    className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${
+                      ["arbitrum", "imx", "all_l2s"].includes(chainKey)
+                        ? "text-white dark:text-black"
+                        : "text-white"
+                    } ${AllChainsByKeys[chainKey].backgrounds[theme][1]} ${
+                      chainKey === "imx" && selectedScale === "gas_fees_share"
+                        ? "grayscale opacity-30"
+                        : ""
+                    }`}
+                  >
+                    <div className="flex items-center h-[45px] pl-[20px] w-[150px] min-w-[150px]">
+                      <div className="flex justify-center items-center w-[30px]">
+                        <Icon
+                          icon={`gtp:${chainKey}-logo-monochrome`}
+                          className="w-[15px] h-[15px]"
+                        />
+                      </div>
+                      <div className="-mb-0.5">
+                        {AllChainsByKeys[chainKey].label}
+                      </div>
                     </div>
-                    <div className="-mb-0.5">
-                      {AllChainsByKeys[chainKey].label}
-                    </div>
-                  </div>
-                  <div className="flex w-full pr-[2px] py-[2px] relative">
-                    {chainKey === "imx" &&
-                      selectedScale === "gas_fees_share" && (
-                        <div className="flex flex-col w-full h-[41px] justify-center items-center px-4 py-5 ">
-                          <div className="flex flex-row w-full justify-center items-center text-sm">
-                            No Gas Fees{" "}
-                            <Tooltip placement="bottom" allowInteract>
-                              <TooltipTrigger>
-                                <div className="p-1 z-10 mr-0 md:-mr-0.5">
-                                  <Icon
-                                    icon="feather:info"
-                                    className="w-4 h-4"
-                                  />
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-                                <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
-                                  IMX does not charge gas fees.
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
+                    <div className="flex w-full pr-[2px] py-[2px] relative">
+                      {chainKey === "imx" &&
+                        selectedScale === "gas_fees_share" && (
+                          <div className="flex flex-col w-full h-[41px] justify-center items-center px-4 py-5 ">
+                            <div className="flex flex-row w-full justify-center items-center text-sm">
+                              No Gas Fees{" "}
+                              <Tooltip placement="bottom" allowInteract>
+                                <TooltipTrigger>
+                                  <div className="p-1 z-10 mr-0 md:-mr-0.5">
+                                    <Icon
+                                      icon="feather:info"
+                                      className="w-4 h-4"
+                                    />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
+                                  <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
+                                    IMX does not charge gas fees.
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    {(selectedScale !== "gas_fees_share" ||
-                      chainKey !== "imx") &&
-                      Object.keys(categories).map((categoryKey, i) => {
-                        if (
-                          !(
-                            categoryKey in
-                            data[chainKey].overview[selectedTimespan]
+                        )}
+                      {(selectedScale !== "gas_fees_share" ||
+                        chainKey !== "imx") &&
+                        Object.keys(categories).map((categoryKey, i) => {
+                          if (
+                            !(
+                              categoryKey in
+                              data[chainKey].overview[selectedTimespan]
+                            )
                           )
-                        )
-                          return null;
+                            return null;
 
-                        const rawChainCategories = Object.keys(
-                          data[chainKey].overview[selectedTimespan],
-                        );
+                          const rawChainCategories = Object.keys(
+                            data[chainKey].overview[selectedTimespan],
+                          );
 
-                        const chainCategories = Object.keys(categories).filter(
-                          (x) => rawChainCategories.includes(x),
-                        );
+                          const chainCategories = Object.keys(
+                            categories,
+                          ).filter((x) => rawChainCategories.includes(x));
 
-                        const categoryIndex =
-                          chainCategories.indexOf(categoryKey);
+                          const categoryIndex =
+                            chainCategories.indexOf(categoryKey);
 
-                        return (
-                          <div
-                            key={categoryKey}
-                            onClick={() => {
-                              setSelectedCategory(categoryKey);
-                              setSelectedChain(chainKey);
-                            }}
-                            className={`flex flex-col h-[41px] justify-center items-center border-x px-4 py-5 cursor-pointer ${
+                          return (
+                            <div
+                              key={categoryKey}
+                              onClick={() => {
+                                setSelectedCategory(categoryKey);
+                                if (selectedChain !== chainKey)
+                                  setSelectedChain(chainKey);
+                                else setSelectedChain(null);
+                              }}
+                              onMouseEnter={() => {
+                                setIsCategoryHovered((prev) => ({
+                                  ...prev,
+                                  [categoryKey]: true,
+                                }));
+                              }}
+                              onMouseLeave={() => {
+                                setIsCategoryHovered((prev) => ({
+                                  ...prev,
+                                  [categoryKey]: false,
+                                }));
+                              }}
+                              className={`flex flex-col h-[39px] justify-center items-center border px-4 py-5 cursor-pointer 
+                            
+                            ${
                               selectedCategory === categoryKey &&
                               (selectedChain === chainKey ||
                                 selectedChain === null)
@@ -312,7 +345,7 @@ export default function OverviewMetrics({
                                     // categoryIndex ===
                                     // Object.keys(
                                     //   data[chainKey].overview[
-                                    //     selectedTimespan
+                                    //     selectedTimespans
                                     //   ],
                                     // ).length -
                                     //   1
@@ -323,80 +356,86 @@ export default function OverviewMetrics({
                                       theme
                                     ][1]
                                   } `
-                                : "border-transparent"
+                                : isCategoryHovered[categoryKey]
+                                ? "border-transparent outline outline-2 outline-offset-[-2px] outline-white/50 dark:outline-white/50"
+                                : "border-transparent "
                             } ${
-                              categoryIndex ===
-                              Object.keys(
-                                data[chainKey].overview[selectedTimespan],
-                              ).length -
-                                1
-                                ? selectedCategory === categoryKey &&
+                                categoryIndex ===
+                                Object.keys(
+                                  data[chainKey].overview[selectedTimespan],
+                                ).length -
+                                  1
+                                  ? selectedCategory === categoryKey &&
+                                    (selectedChain === chainKey ||
+                                      selectedChain === null)
+                                    ? ""
+                                    : "rounded-r-full"
+                                  : ""
+                              }`}
+                              style={{
+                                backgroundColor:
+                                  selectedCategory === categoryKey &&
                                   (selectedChain === chainKey ||
                                     selectedChain === null)
-                                  ? ""
-                                  : "rounded-r-full"
-                                : ""
-                            }`}
-                            style={{
-                              backgroundColor:
-                                selectedCategory === categoryKey &&
-                                (selectedChain === chainKey ||
-                                  selectedChain === null)
-                                  ? ""
-                                  : `rgba(0, 0, 0, ${
-                                      0.06 +
-                                      (i / Object.keys(categories).length) *
-                                        0.94
-                                    })`,
-                              width: `${
-                                selectedCategory === categoryKey &&
-                                (selectedChain === chainKey ||
-                                  selectedChain === null)
-                                  ? data[chainKey].overview[selectedTimespan][
-                                      categoryKey
-                                    ][
-                                      data[chainKey].overview.types.indexOf(
-                                        selectedScale,
-                                      )
-                                    ] *
-                                      relativePercentageByChain[chainKey] +
-                                    4
-                                  : data[chainKey].overview[selectedTimespan][
-                                      categoryKey
-                                    ][
-                                      data[chainKey].overview.types.indexOf(
-                                        selectedScale,
-                                      )
-                                    ] *
-                                      relativePercentageByChain[chainKey] +
-                                    2
-                              }%`,
-                              borderRadius: `${
-                                selectedCategory === categoryKey &&
-                                (selectedChain === chainKey ||
-                                  selectedChain === null)
-                                  ? categoryIndex ===
-                                    Object.keys(
-                                      data[chainKey].overview[selectedTimespan],
-                                    ).length -
-                                      1
-                                    ? "20000px 99999px 99999px 20000px"
-                                    : "10px"
-                                  : categoryIndex ===
-                                    Object.keys(
-                                      data[chainKey].overview[selectedTimespan],
-                                    ).length -
-                                      1
-                                  ? "0px 99999px 99999px 0px"
-                                  : "0px"
-                              }`,
+                                    ? ""
+                                    : `rgba(0, 0, 0, ${
+                                        0.06 +
+                                        (i / Object.keys(categories).length) *
+                                          0.94
+                                      })`,
+                                width: `${
+                                  selectedCategory === categoryKey &&
+                                  (selectedChain === chainKey ||
+                                    selectedChain === null)
+                                    ? data[chainKey].overview[selectedTimespan][
+                                        categoryKey
+                                      ][
+                                        data[chainKey].overview.types.indexOf(
+                                          selectedScale,
+                                        )
+                                      ] *
+                                        relativePercentageByChain[chainKey] +
+                                      4
+                                    : data[chainKey].overview[selectedTimespan][
+                                        categoryKey
+                                      ][
+                                        data[chainKey].overview.types.indexOf(
+                                          selectedScale,
+                                        )
+                                      ] *
+                                        relativePercentageByChain[chainKey] +
+                                      2
+                                }%`,
+                                borderRadius: `${
+                                  selectedCategory === categoryKey &&
+                                  (selectedChain === chainKey ||
+                                    selectedChain === null)
+                                    ? categoryIndex ===
+                                      Object.keys(
+                                        data[chainKey].overview[
+                                          selectedTimespan
+                                        ],
+                                      ).length -
+                                        1
+                                      ? "30000px 99999px 99999px 30000px"
+                                      : "10px"
+                                    : categoryIndex ===
+                                      Object.keys(
+                                        data[chainKey].overview[
+                                          selectedTimespan
+                                        ],
+                                      ).length -
+                                        1
+                                    ? "0px 99999px 99999px 0px"
+                                    : "0px"
+                                }`,
 
-                              // borderR: `${
-                              //   selectedCategory === categoryKey ? 0 : "10px"
-                            }}
-                          >
-                            <div
-                              className={`mix-blend-luminosity font-medium 
+                                // borderR: `${
+                                //   selectedCategory === categoryKey ? 0 : "10px"
+                              }}
+                            >
+                              <div
+                                className={`mix-blend-luminosity font-medium 
                             ${
                               selectedCategory === categoryKey &&
                               (selectedChain === chainKey ||
@@ -420,52 +459,54 @@ export default function OverviewMetrics({
                             }
                             
                             `}
-                            >
-                              {(
-                                data[chainKey].overview[selectedTimespan][
-                                  categoryKey
-                                ][
-                                  data[chainKey].overview.types.indexOf(
-                                    selectedScale,
-                                  )
-                                ] * 100.0
-                              ).toFixed(2)}
-                              %
+                              >
+                                {(
+                                  data[chainKey].overview[selectedTimespan][
+                                    categoryKey
+                                  ][
+                                    data[chainKey].overview.types.indexOf(
+                                      selectedScale,
+                                    )
+                                  ] * 100.0
+                                ).toFixed(2)}
+                                %
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
-                    {index ===
-                      Object.keys(data).filter((c) => c !== "all_l2s").length -
-                        1 && (
-                      <div className="absolute flex flex-1 justify-between w-full h-[15px] -bottom-[15px] left-0">
-                        {[0, 20, 40, 60, 80, 100].map((x, i) => (
-                          <div key={x} className="relative">
-                            <div className="h-[15px] border-r border-forest-900 dark:border-forest-500"></div>
-                            {x === 0 && (
-                              <div className="text-forest-900 dark:text-forest-500 absolute top-[100%] left-0">
-                                {x}%
-                              </div>
-                            )}
-                            {x === 100 && (
-                              <div className="text-forest-900 dark:text-forest-500 absolute top-[100%] right-0">
-                                {x}%
-                              </div>
-                            )}
-                            {x !== 0 && x !== 100 && (
-                              <div className="text-forest-900 dark:text-forest-500 absolute w-8 top-[100%] -left-3">
-                                {x}%
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                          );
+                        })}
+                      {index ===
+                        Object.keys(data).filter((c) => c !== "all_l2s")
+                          .length -
+                          1 && (
+                        <div className="absolute flex flex-1 justify-between w-full h-[15px] -bottom-[15px] left-0">
+                          {[0, 20, 40, 60, 80, 100].map((x, i) => (
+                            <div key={x} className="relative">
+                              <div className="h-[15px] border-r border-forest-900 dark:border-forest-500"></div>
+                              {x === 0 && (
+                                <div className="text-forest-900 dark:text-forest-500 absolute top-[100%] left-0">
+                                  {x}%
+                                </div>
+                              )}
+                              {x === 100 && (
+                                <div className="text-forest-900 dark:text-forest-500 absolute top-[100%] right-0">
+                                  {x}%
+                                </div>
+                              )}
+                              {x !== 0 && x !== 100 && (
+                                <div className="text-forest-900 dark:text-forest-500 absolute w-8 top-[100%] -left-3">
+                                  {x}%
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })
-        }
+                );
+              })
+          }
+        </div>
       </div>
 
       {/* </colorful rows> */}
