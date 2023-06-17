@@ -1,3 +1,5 @@
+import { IS_PREVIEW } from "./helpers";
+
 export type NavigationItem = {
   name: string;
   label: string;
@@ -107,7 +109,7 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "stablecoin-market-cap",
       },
       // put navigation items that we want to hide in production here
-      ...(process.env.VERCEL_ENV !== "production"
+      ...(IS_PREVIEW
         ? [
             {
               label: "Transaction Costs",
@@ -226,7 +228,7 @@ export const navigationItems: NavigationItem[] = [
         label: "Immutable X",
         page: {
           description:
-            "Immutable X is an optimized game-specif zk rollup. It is designed to mint, transfer, and trade tokens and NFTs at higher volumes and zero gas fees. It is not EVM compatible but its easy-to-use APIs and SDKs aim to make development for game devs as easy as possible. It launched in April 2021.",
+            "Immutable X is an optimized game-specific zk rollup. It is designed to mint, transfer, and trade tokens and NFTs at higher volumes and zero gas fees. It is not EVM compatible but its easy-to-use APIs and SDKs aim to make development for game devs as easy as possible. It launched in April 2021.",
         },
         icon: "gtp:immutable-x-logo-monochrome",
         key: "imx",

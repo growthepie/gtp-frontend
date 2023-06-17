@@ -31,6 +31,8 @@ const MetricsTable = ({
 
   const { theme } = useTheme();
 
+  const metric_ids_reverse_performance = ["txcosts"];
+
   // set maxVal
   useEffect(() => {
     if (!data) return;
@@ -47,8 +49,8 @@ const MetricsTable = ({
                   : data[chain].daily.types.indexOf("eth")
                 : 1
             ];
-          })
-      )
+          }),
+      ),
     );
   }, [data, showUsd]);
 
@@ -57,7 +59,7 @@ const MetricsTable = ({
     return Object.keys(data)
       .filter(
         (chain) =>
-          chain !== "ethereum" && Object.keys(AllChainsByKeys).includes(chain)
+          chain !== "ethereum" && Object.keys(AllChainsByKeys).includes(chain),
       )
       .map((chain: any) => {
         const lastVal =
@@ -112,7 +114,7 @@ const MetricsTable = ({
       update: ({ y, height }) => ({ y, height }),
       config: { mass: 5, tension: 500, friction: 100 },
       trail: 25,
-    }
+    },
   );
 
   const timespanLabels = {
@@ -168,12 +170,13 @@ const MetricsTable = ({
                   } else {
                     if (selectedChains.includes(item.chain.key)) {
                       setSelectedChains(
-                        selectedChains.filter((c) => c !== item.chain.key)
+                        selectedChains.filter((c) => c !== item.chain.key),
                       );
                     } else {
                       setSelectedChains([...selectedChains, item.chain.key]);
                     }
                   }
+                  console.log(item);
                 }}
               >
                 <div className="flex basis-1/3 items-center space-x-2">
@@ -216,7 +219,7 @@ const MetricsTable = ({
                                 item.data.daily.types.includes("usd")
                                   ? 2
                                   : 1
-                              ]
+                              ],
                             )
                           : Intl.NumberFormat(undefined, {
                               notation: "compact",
@@ -225,7 +228,7 @@ const MetricsTable = ({
                             }).format(
                               item.data.daily.data[
                                 item.data.daily.data.length - 1
-                              ][1]
+                              ][1],
                             )}
                       </div>
                       <div className="relative w-full">
@@ -259,12 +262,16 @@ const MetricsTable = ({
                         </span>
                       ) : (
                         <>
-                          {item.data.changes[timespan][0] >= 0 ? (
+                          {(metric_ids_reverse_performance.includes(metric)
+                            ? -1.0
+                            : 1.0) *
+                            item.data.changes[timespan][0] >=
+                          0 ? (
                             <span className="text-[#45AA6F] dark:text-[#4CFF7E]">
                               +
                               {(
                                 Math.round(
-                                  item.data.changes[timespan][0] * 1000
+                                  item.data.changes[timespan][0] * 1000,
                                 ) / 10
                               ).toFixed(1)}
                               %
@@ -273,7 +280,7 @@ const MetricsTable = ({
                             <span className="text-[#DD3408] dark:text-[#FF3838]">
                               {(
                                 Math.round(
-                                  item.data.changes[timespan][0] * 1000
+                                  item.data.changes[timespan][0] * 1000,
                                 ) / 10
                               ).toFixed(1)}
                               %
