@@ -49,7 +49,7 @@ export default function SidebarMenuGroup({
 
   useEffect(() => {
     setIsOpen(
-      urlParts[0].toLowerCase() == item.name.toLowerCase() ? true : false
+      urlParts[0].toLowerCase() == item.name.toLowerCase() ? true : false,
     );
   }, [item.name, urlParts]);
 
@@ -71,7 +71,8 @@ export default function SidebarMenuGroup({
     onClose && onClose();
   };
 
-  if (item.name === "Blockspace")
+  // disable Blockspace menu item in production
+  if (item.name === "Blockspace" && process.env.VERCEL_ENV === "production")
     return (
       <div className="group flex flex-col">
         <Tooltip key={item.label} placement="right">
@@ -201,58 +202,53 @@ export default function SidebarMenuGroup({
           isOpen ? "h-auto mt-4" : "h-0 mt-0"
         }`}
       >
-        {master &&
-          item.options
-            .filter((option) => {
-              if (item.key && option.key)
-                return Object.keys(master[item.key]).includes(option.key);
-            })
-            .map((option) => {
-              return (
-                <Tooltip key={option.label} placement="right">
-                  <TooltipTrigger className="px-0 md:px-5 overflow-visible">
-                    <Link
-                      className={`group flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
-                        urlParts[1].trim().localeCompare(option.urlKey) === 0
-                          ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
-                          : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
-                      }`}
-                      href={`/${item.name.toLowerCase()}/${option.urlKey}`}
-                    >
-                      <div
-                        className={`w-6 absolute left-[13px]  ${
-                          urlParts[1].trim().localeCompare(option.urlKey) === 0
-                            ? "text-inherit"
-                            : "text-[#5A6462] group-hover:text-inherit"
-                        }`}
-                      >
-                        {(item.name === "Fundamentals" ||
-                          item.name === "Chains") && (
-                          <Icon
-                            icon={option.icon}
-                            className={
-                              item.name === "Fundamentals"
-                                ? "h-4 w-4 mx-auto"
-                                : "h-[15px] w-[15px] mx-auto"
-                            }
-                          />
-                        )}
-                      </div>
-                      <div
-                        className={`text-base py-1 w-48 font-normal break-inside-auto text-left ml-12`}
-                      >
-                        {sidebarOpen ? option.label : <span>&nbsp;</span>}
-                      </div>
-                    </Link>
-                  </TooltipTrigger>
-                  {!sidebarOpen && (
-                    <TooltipContent className="bg-forest-900 text-forest-50 dark:bg-forest-50 dark:text-forest-900 rounded-md p-2 text-xs font-medium break-inside-auto -ml-56 shadow-md z-50">
-                      {option.label}
-                    </TooltipContent>
-                  )}
-                </Tooltip>
-              );
-            })}
+        {item.options.map((option) => {
+          return (
+            <Tooltip key={option.label} placement="right">
+              <TooltipTrigger className="px-0 md:px-5 overflow-visible">
+                <Link
+                  className={`group flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
+                    urlParts[1].trim().localeCompare(option.urlKey) === 0
+                      ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                      : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                  }`}
+                  href={`/${item.name.toLowerCase()}/${option.urlKey}`}
+                >
+                  <div
+                    className={`w-6 absolute left-[13px]  ${
+                      urlParts[1].trim().localeCompare(option.urlKey) === 0
+                        ? "text-inherit"
+                        : "text-[#5A6462] group-hover:text-inherit"
+                    }`}
+                  >
+                    {["Fundamentals", "Chains", "Blockspace"].includes(
+                      item.name,
+                    ) && (
+                      <Icon
+                        icon={option.icon}
+                        className={
+                          item.name === "Fundamentals"
+                            ? "h-4 w-4 mx-auto"
+                            : "h-[15px] w-[15px] mx-auto"
+                        }
+                      />
+                    )}
+                  </div>
+                  <div
+                    className={`text-base py-1 w-48 font-normal break-inside-auto text-left ml-12`}
+                  >
+                    {sidebarOpen ? option.label : <span>&nbsp;</span>}
+                  </div>
+                </Link>
+              </TooltipTrigger>
+              {!sidebarOpen && (
+                <TooltipContent className="bg-forest-900 text-forest-50 dark:bg-forest-50 dark:text-forest-900 rounded-md p-2 text-xs font-medium break-inside-auto -ml-56 shadow-md z-50">
+                  {option.label}
+                </TooltipContent>
+              )}
+            </Tooltip>
+          );
+        })}
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ export const MetricsURLs = {
     "https://api.growthepie.xyz/v1/metrics/stables_mcap.json",
   "total-value-locked": "https://api.growthepie.xyz/v1/metrics/tvl.json",
   "transaction-count": "https://api.growthepie.xyz/v1/metrics/txcount.json",
+  "transaction-costs": "https://api.growthepie.xyz/v1/metrics/txcosts.json",
 };
 
 export const ChainURLs = {
@@ -14,6 +15,12 @@ export const ChainURLs = {
   optimism: "https://api.growthepie.xyz/v1/chains/optimism.json",
   imx: "https://api.growthepie.xyz/v1/chains/imx.json",
   zksync_era: "https://api.growthepie.xyz/v1/chains/zksync_era.json",
+};
+
+export const BlockspaceURLs = {
+  "chain-overview": "https://api.growthepie.xyz/v1/blockspace/overview.json",
+  "chain-comparison":
+    "https://api.growthepie.xyz/v1/blockspace/comparison.json",
 };
 
 export const LandingURL = "https://api.growthepie.xyz/v1/landing_page.json";

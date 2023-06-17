@@ -106,6 +106,24 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "metricsStablesMcap",
         urlKey: "stablecoin-market-cap",
       },
+      // put navigation items that we want to hide in production here
+      ...(process.env.VERCEL_ENV !== "production"
+        ? [
+            {
+              label: "Transaction Costs",
+              page: {
+                title: "Transaction Costs",
+                description: "The median amount that is paid per transaction.",
+                why: "This is the amount that users pay per transaction. On EVM chains, transaction costs depend on the complexity of the transaction (which is measured in gas). A simple transaction, e.g. a native ETH transfer, uses less gas than a more complex transaction, e.g. an ERC20 swap. Hence, we calculated this metric by looking at the median transaction costs. IMX doesn't charge transaction costs.",
+                icon: "feather:clock",
+              },
+              icon: "feather:download",
+              key: "txcosts",
+              rootKey: "metricsTxCosts",
+              urlKey: "transaction-costs",
+            },
+          ]
+        : []),
       // {
       //   label: "24h Contract Usage",
       //   page: {
@@ -148,8 +166,33 @@ export const navigationItems: NavigationItem[] = [
     name: "Blockspace",
     label: "Blockspace",
     icon: "gtp:package",
-    options: [],
-    href: "",
+    options: [
+      {
+        label: "Chain Overview",
+        page: {
+          title: "Chain Overview",
+          description:
+            "An overview of chains' high-level blockspace usage. All expressed in shares of a chain's total blockspace.",
+        },
+        icon: "gtp:blockspace-chain-overview",
+        key: "chain-overview",
+        rootKey: "chainOverview",
+        urlKey: "chain-overview",
+      },
+      {
+        label: "Category Comparison",
+        page: {
+          title: "Category Comparison",
+          description:
+            "How are certain blockspace categories used on different chains?",
+        },
+        icon: "gtp:blockspace-category-comparison",
+        key: "category-comparison",
+        rootKey: "categoryComparison",
+        urlKey: "category-comparison",
+      },
+    ],
+    // href: "",
   },
   {
     name: "Chains",

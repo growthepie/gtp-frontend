@@ -738,6 +738,10 @@ export default function ChainChart({
     resituateChart,
   ]);
 
+  const enabledFundamentalsKeys = useMemo(() => {
+    return navigationItems[1].options.map((option) => option.key);
+  }, []);
+
   if (!data) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -793,143 +797,145 @@ export default function ChainChart({
 
       {data && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-[15px]">
-          {Object.keys(data.metrics).map((key, i) => {
-            return (
-              <div key={key} className="w-full">
-                <div className="w-full h-[176px] relative">
-                  <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] rounded-[15px]"></div>
-                  <div className="absolute w-full h-[142px] top-[49px]">
-                    <HighchartsReact
-                      highcharts={Highcharts}
-                      options={{
-                        ...options,
-                        chart: {
-                          index: i,
-                          ...options.chart,
-                          events: {
-                            load: function () {
-                              const chart = this;
-                              // chart.reflow();
-                            },
-                            render: function () {
-                              const chart: Highcharts.Chart = this;
-                              const lastPoint: Highcharts.Point =
-                                chart.series[0].points[
-                                  chart.series[0].points.length - 1
-                                ];
+          {Object.keys(data.metrics)
+            .filter((key) => enabledFundamentalsKeys.includes(key))
+            .map((key, i) => {
+              return (
+                <div key={key} className="w-full">
+                  <div className="w-full h-[176px] relative">
+                    <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] rounded-[15px]"></div>
+                    <div className="absolute w-full h-[142px] top-[49px]">
+                      <HighchartsReact
+                        highcharts={Highcharts}
+                        options={{
+                          ...options,
+                          chart: {
+                            index: i,
+                            ...options.chart,
+                            events: {
+                              load: function () {
+                                const chart = this;
+                                // chart.reflow();
+                              },
+                              render: function () {
+                                const chart: Highcharts.Chart = this;
+                                const lastPoint: Highcharts.Point =
+                                  chart.series[0].points[
+                                    chart.series[0].points.length - 1
+                                  ];
 
-                              if (lastPointLines[i]) {
-                                lastPointLines[i].destroy();
-                              }
+                                if (lastPointLines[i]) {
+                                  lastPointLines[i].destroy();
+                                }
 
-                              if (lastPointCircles[i]) {
-                                lastPointCircles[i].destroy();
-                              }
-                              // calculate the fraction that 15px is in relation to the pixel width of the chart
-                              const fraction = 15 / chart.chartWidth;
+                                if (lastPointCircles[i]) {
+                                  lastPointCircles[i].destroy();
+                                }
+                                // calculate the fraction that 15px is in relation to the pixel width of the chart
+                                const fraction = 15 / chart.chartWidth;
 
-                              // create a bordered line from the last point to the top of the chart's container
-                              lastPointLines[i] = chart.renderer
-                                .path(
-                                  chart.renderer.crispLine(
-                                    [
-                                      //@ts-ignore
-                                      "M",
-                                      //@ts-ignore
-                                      chart.chartWidth * (1 - fraction),
-                                      //@ts-ignore
-                                      lastPoint.plotY + chart.plotTop,
-                                      //@ts-ignore
-                                      "L",
-                                      //@ts-ignore
-                                      chart.chartWidth * (1 - fraction),
-                                      //@ts-ignore
-                                      chart.plotTop,
-                                    ],
-                                    1,
-                                  ),
-                                )
-                                .attr({
-                                  stroke: "#4B5563",
-                                  "stroke-width": 1,
-                                })
-                                .add();
+                                // create a bordered line from the last point to the top of the chart's container
+                                lastPointLines[i] = chart.renderer
+                                  .path(
+                                    chart.renderer.crispLine(
+                                      [
+                                        //@ts-ignore
+                                        "M",
+                                        //@ts-ignore
+                                        chart.chartWidth * (1 - fraction),
+                                        //@ts-ignore
+                                        lastPoint.plotY + chart.plotTop,
+                                        //@ts-ignore
+                                        "L",
+                                        //@ts-ignore
+                                        chart.chartWidth * (1 - fraction),
+                                        //@ts-ignore
+                                        chart.plotTop,
+                                      ],
+                                      1,
+                                    ),
+                                  )
+                                  .attr({
+                                    stroke: "#4B5563",
+                                    "stroke-width": 1,
+                                  })
+                                  .add();
 
-                              // lastPointCircles[i] = chart.renderer
-                              //   .circle(
-                              //     chart.chartWidth * (1 - fraction),
-                              //     lastPoint.plotY + chart.plotTop,
-                              //     3
-                              //   )
-                              //   .attr({
-                              //     fill:
-                              //       // AllChainsByKeys[data.chain_id].colors[
-                              //       //   theme ?? "dark"
-                              //       // ][0]
-                              //       "#ffffff" + "80",
+                                // lastPointCircles[i] = chart.renderer
+                                //   .circle(
+                                //     chart.chartWidth * (1 - fraction),
+                                //     lastPoint.plotY + chart.plotTop,
+                                //     3
+                                //   )
+                                //   .attr({
+                                //     fill:
+                                //       // AllChainsByKeys[data.chain_id].colors[
+                                //       //   theme ?? "dark"
+                                //       // ][0]
+                                //       "#ffffff" + "80",
 
-                              //     r: 2,
-                              //     zIndex: 9999,
-                              //   })
-                              //   .add();
-                            },
-                          },
-                        },
-                        yAxis: {
-                          ...options.yAxis,
-                          labels: {
-                            ...(options.yAxis as Highcharts.YAxisOptions)
-                              .labels,
-                            formatter: function (
-                              t: Highcharts.AxisLabelsFormatterContextObject,
-                            ) {
-                              return (
-                                prefixes[key] + formatNumber(t.value, true)
-                              );
-                            },
-                          },
-                        },
-
-                        series: [
-                          {
-                            name: key,
-                            crisp: false,
-                            data:
-                              !showUsd &&
-                              data.metrics[key].daily.types.includes("eth")
-                                ? data.metrics[key].daily.data.map((d) => [
-                                    d[0],
-                                    d[2],
-                                  ])
-                                : data.metrics[key].daily.data.map((d) => [
-                                    d[0],
-                                    d[1],
-                                  ]),
-                            showInLegend: false,
-                            marker: {
-                              enabled: false,
-                            },
-                            point: {
-                              events: {
-                                mouseOver: pointHover,
-                                mouseOut: pointHover,
+                                //     r: 2,
+                                //     zIndex: 9999,
+                                //   })
+                                //   .add();
                               },
                             },
                           },
-                        ],
-                      }}
-                      ref={(chart) => {
-                        if (chart) {
-                          chartComponents.current[i] = chart.chart;
-                        }
-                      }}
-                    />
-                    <div className="absolute bottom-[22px] right-[22px] md:bottom-[22px] md:right-[22px]pointer-events-none z-0 opacity-40 mix-blend-lighten">
-                      <ChartWatermark className="w-[102.936px] h-[24.536px]" />
+                          yAxis: {
+                            ...options.yAxis,
+                            labels: {
+                              ...(options.yAxis as Highcharts.YAxisOptions)
+                                .labels,
+                              formatter: function (
+                                t: Highcharts.AxisLabelsFormatterContextObject,
+                              ) {
+                                return (
+                                  prefixes[key] + formatNumber(t.value, true)
+                                );
+                              },
+                            },
+                          },
+
+                          series: [
+                            {
+                              name: key,
+                              crisp: false,
+                              data:
+                                !showUsd &&
+                                data.metrics[key].daily.types.includes("eth")
+                                  ? data.metrics[key].daily.data.map((d) => [
+                                      d[0],
+                                      d[2],
+                                    ])
+                                  : data.metrics[key].daily.data.map((d) => [
+                                      d[0],
+                                      d[1],
+                                    ]),
+                              showInLegend: false,
+                              marker: {
+                                enabled: false,
+                              },
+                              point: {
+                                events: {
+                                  mouseOver: pointHover,
+                                  mouseOut: pointHover,
+                                },
+                              },
+                            },
+                          ],
+                        }}
+                        ref={(chart) => {
+                          if (chart) {
+                            chartComponents.current[i] = chart.chart;
+                          }
+                        }}
+                      />
+                      <div className="absolute bottom-[22px] right-[22px] md:bottom-[22px] md:right-[22px]pointer-events-none z-0 opacity-40 mix-blend-lighten">
+                        <ChartWatermark className="w-[102.936px] h-[24.536px]" />
+                      </div>
                     </div>
-                  </div>
-                  <div className="absolute top-[14px] w-full flex justify-between items-center px-[26px]">
-                    {/* <div
+                    <div className="absolute top-[14px] w-full flex justify-between items-center px-[26px]">
+                      {/* <div
                       className={`absolute -bottom-1.5 -right-1 text-[10px] text-right cursor-vertical-text`}
                     >
                       <div
@@ -944,78 +950,86 @@ export default function ChainChart({
                         LAST
                       </div>
                     </div> */}
-                    <div className="text-[20px] leading-snug font-bold">
-                      {
-                        navigationItems[1].options.find((o) => o.key === key)
-                          ?.label
-                      }
+                      <div className="text-[20px] leading-snug font-bold">
+                        {
+                          navigationItems[1].options.find((o) => o.key === key)
+                            ?.label
+                        }
+                      </div>
+                      <div className="text-[18px] leading-snug font-medium flex space-x-[2px]">
+                        <div>{prefixes[key]}</div>
+                        <div>
+                          {Intl.NumberFormat("en-US", {
+                            notation: "compact",
+                            maximumFractionDigits: 2,
+                          }).format(
+                            data.metrics[key].daily.data[
+                              data.metrics[key].daily.data.length - 1
+                            ][
+                              data.metrics[key].daily.types.includes("eth")
+                                ? !showUsd
+                                  ? data.metrics[key].daily.types.indexOf("eth")
+                                  : data.metrics[key].daily.types.indexOf("usd")
+                                : 1
+                            ],
+                          )}
+                        </div>
+                      </div>
+                      <div
+                        className={`absolute -bottom-[12px] top-1/2 right-[15px] w-[5px] rounded-sm border-r border-t`}
+                        style={{
+                          borderColor: "#4B5563",
+                        }}
+                      ></div>
+                      <div
+                        className={`absolute top-[calc(50% - 0.5px)] right-[20px] w-[4px] h-[4px] rounded-full bg-forest-900 dark:bg-forest-50`}
+                      ></div>
                     </div>
-                    <div className="text-[18px] leading-snug font-medium flex space-x-[2px]">
-                      <div>{prefixes[key]}</div>
-                      <div>
-                        {Intl.NumberFormat("en-US", {
-                          notation: "compact",
-                          maximumFractionDigits: 2,
-                        }).format(
-                          data.metrics[key].daily.data[
-                            data.metrics[key].daily.data.length - 1
-                          ][
-                            data.metrics[key].daily.types.includes("eth")
-                              ? !showUsd
-                                ? data.metrics[key].daily.types.indexOf("eth")
-                                : data.metrics[key].daily.types.indexOf("usd")
-                              : 1
-                          ],
-                        )}
+                    <div>
+                      <Icon
+                        icon={
+                          navigationItems[1].options.find((o) => o.key === key)
+                            ?.icon ?? ""
+                        }
+                        className="absolute h-[64px] w-[64px] top-[55px] right-[26px] dark:text-[#CDD8D3] opacity-5 pointer-events-none"
+                      />
+                    </div>
+                  </div>
+                  <div className="w-full h-[15px] relative text-[10px] z-30">
+                    <div className="absolute left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
+                    <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
+                  </div>
+                  {(key === "stables_mcap" || key === "fees") && (
+                    <div
+                      className={`w-full h-[15px] relative text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                        key === "stables_mcap" ? "hidden lg:block" : ""
+                      }`}
+                    >
+                      <div className="absolute left-[15px] align-bottom flex items-end z-30">
+                        {new Date(
+                          timespans[selectedTimespan].xMin,
+                        ).toLocaleDateString(undefined, {
+                          timeZone: "UTC",
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </div>
+                      <div className="absolute right-[15px] align-bottom flex items-end z-30">
+                        {new Date(
+                          timespans[selectedTimespan].xMax,
+                        ).toLocaleDateString(undefined, {
+                          timeZone: "UTC",
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
                       </div>
                     </div>
-                    <div
-                      className={`absolute -bottom-[12px] top-1/2 right-[15px] w-[5px] rounded-sm border-r border-t`}
-                      style={{
-                        borderColor: "#4B5563",
-                      }}
-                    ></div>
-                    <div
-                      className={`absolute top-[calc(50% - 0.5px)] right-[20px] w-[4px] h-[4px] rounded-full bg-forest-900 dark:bg-forest-50`}
-                    ></div>
-                  </div>
-                  <div>{getIcon(key)}</div>
+                  )}
                 </div>
-                <div className="w-full h-[15px] relative text-[10px] z-30">
-                  <div className="absolute left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
-                  <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
-                </div>
-                {(key === "stables_mcap" || key === "fees") && (
-                  <div
-                    className={`w-full h-[15px] relative text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
-                      key === "stables_mcap" ? "hidden lg:block" : ""
-                    }`}
-                  >
-                    <div className="absolute left-[15px] align-bottom flex items-end z-30">
-                      {new Date(
-                        timespans[selectedTimespan].xMin,
-                      ).toLocaleDateString(undefined, {
-                        timeZone: "UTC",
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </div>
-                    <div className="absolute right-[15px] align-bottom flex items-end z-30">
-                      {new Date(
-                        timespans[selectedTimespan].xMax,
-                      ).toLocaleDateString(undefined, {
-                        timeZone: "UTC",
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       )}
     </div>
