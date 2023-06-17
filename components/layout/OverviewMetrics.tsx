@@ -24,7 +24,7 @@ export default function OverviewMetrics({
   setSelectedTimespan: (timespan: string) => void;
 }) {
   const [selectedScale, setSelectedScale] = useState("gas_fees_share");
-  const [nativeTransfer, setNativeTransfer] = useState(true);
+  const [isCategoryMenuExpanded, setIsCategoryMenuExpanded] = useState(true);
 
   const categories = useMemo<{ [key: string]: string }>(() => {
     return {
@@ -119,19 +119,19 @@ export default function OverviewMetrics({
     <>
       <div
         className={`flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 z-10
-        ${nativeTransfer ? "mb-0" : "mb-8"}`}
+        ${isCategoryMenuExpanded ? "mb-0" : "mb-0 md:mb-8"}`}
       >
         <div className="hidden md:flex justify-center items-center ml-0.5">
           {/* <Icon icon="gtp:chain" className="w-7 h-7 lg:w-9 lg:h-9" /> */}
           <button
             className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium 
                 ${
-                  nativeTransfer
+                  isCategoryMenuExpanded
                     ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
+                    : "hover:bg-forest-500/10 dark:bg-forest-1000"
                 } `}
             onClick={() => {
-              setNativeTransfer(!nativeTransfer);
+              setIsCategoryMenuExpanded(!isCategoryMenuExpanded);
             }}
           >
             <div className="flex items-center space-x-1">
@@ -139,7 +139,7 @@ export default function OverviewMetrics({
                 <h1>{categories[selectedCategory]}</h1>
               </div>
               <div className="pt-1">
-                {nativeTransfer ? (
+                {isCategoryMenuExpanded ? (
                   <Icon
                     icon="feather:chevron-down"
                     className="w-[13px] h-[13px] block"
@@ -177,7 +177,7 @@ export default function OverviewMetrics({
       <div className="overflow-x-scroll lg:overflow-x-visible z-100 w-full scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
         <div
           className={`relative min-w-[820px] md:min-w-[850px]  bottom-1 w-[97.5%] h-[60px] m-auto border-x-[1px] border-b-[1px] rounded-bl-xl rounded-br-xl text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-forest-900 dark:bg-forest-1000 pt-[5px] mb-8 overflow-hidden
-        ${nativeTransfer ? "flex" : "hidden"}`}
+        ${isCategoryMenuExpanded ? "flex" : "flex md:hidden"}`}
         >
           <div className="flex w-full h-full text-[12px]">
             {Object.keys(categories).map((category, i) => (
@@ -214,7 +214,7 @@ export default function OverviewMetrics({
                   className={`flex flex-col flex-grow h-full justify-center items-center border-x border-transparent overflow-hidden ${
                     selectedCategory === category ? "" : "hover:bg-white/5"
                   } 
-                ${isCategoryHovered[category] ? "underline" : ""}
+                ${isCategoryHovered[category] ? "bg-white/5" : ""}
                 `}
                   onClick={() => {
                     setSelectedCategory(category);
@@ -334,31 +334,13 @@ export default function OverviewMetrics({
                                   [categoryKey]: false,
                                 }));
                               }}
-                              className={`flex flex-col h-[39px] justify-center items-center border px-4 py-5 cursor-pointer 
-                            
+                              className={`flex flex-col h-[41px] justify-center items-center px-4 py-5 cursor-pointer relative
                             ${
                               selectedCategory === categoryKey &&
                               (selectedChain === chainKey ||
                                 selectedChain === null)
-                                ? `py-[25px] -my-[5px] px-[25px] -mx-[5px] z-10 ${
-                                    null
-                                    // categoryIndex ===
-                                    // Object.keys(
-                                    //   data[chainKey].overview[
-                                    //     selectedTimespans
-                                    //   ],
-                                    // ).length -
-                                    //   1
-                                    //   ? " rounded-tl-[10px] rounded-bl-[10px] rounded-tr-full rounded-br-full "
-                                    //   : "rounded-[10px]"
-                                  } border-transparent shadow-lg ${
-                                    AllChainsByKeys[chainKey].backgrounds[
-                                      theme
-                                    ][1]
-                                  } `
-                                : isCategoryHovered[categoryKey]
-                                ? "border-transparent outline outline-2 outline-offset-[-2px] outline-white/50 dark:outline-white/50"
-                                : "border-transparent "
+                                ? `py-[25px] -my-[5px] px-[25px] -mx-[5px] z-10 shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
+                                : ""
                             } ${
                                 categoryIndex ===
                                 Object.keys(
@@ -417,8 +399,8 @@ export default function OverviewMetrics({
                                         ],
                                       ).length -
                                         1
-                                      ? "30000px 99999px 99999px 30000px"
-                                      : "10px"
+                                      ? "20000px 99999px 99999px 20000px"
+                                      : "5px"
                                     : categoryIndex ===
                                       Object.keys(
                                         data[chainKey].overview[
@@ -434,6 +416,41 @@ export default function OverviewMetrics({
                                 //   selectedCategory === categoryKey ? 0 : "10px"
                               }}
                             >
+                              {/* highlight on hover div */}
+                              {isCategoryHovered[categoryKey] &&
+                                !(
+                                  selectedCategory === categoryKey &&
+                                  selectedChain === null
+                                ) && (
+                                  <div
+                                    className={`absolute inset-0 bg-white/30 mix-blend-hard-light`}
+                                    style={{
+                                      borderRadius: `${
+                                        selectedCategory === categoryKey &&
+                                        (selectedChain === chainKey ||
+                                          selectedChain === null)
+                                          ? categoryIndex ===
+                                            Object.keys(
+                                              data[chainKey].overview[
+                                                selectedTimespan
+                                              ],
+                                            ).length -
+                                              1
+                                            ? "20000px 99999px 99999px 20000px"
+                                            : "5px"
+                                          : categoryIndex ===
+                                            Object.keys(
+                                              data[chainKey].overview[
+                                                selectedTimespan
+                                              ],
+                                            ).length -
+                                              1
+                                          ? "0px 99999px 99999px 0px"
+                                          : "0px"
+                                      }`,
+                                    }}
+                                  />
+                                )}
                               <div
                                 className={`mix-blend-luminosity font-medium 
                             ${
@@ -450,10 +467,10 @@ export default function OverviewMetrics({
                                 : ["arbitrum", "imx", "all_l2s"].includes(
                                     chainKey,
                                   )
-                                ? i > 5
+                                ? i > 4
                                   ? "text-white/60 text-xs"
                                   : "text-black text-xs"
-                                : i > 5
+                                : i > 4
                                 ? "text-white/60 text-xs"
                                 : "text-white/80 text-xs"
                             }
