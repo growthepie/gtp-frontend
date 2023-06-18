@@ -9,6 +9,7 @@ import { Chains } from "@/types/api/ChainOverviewResponse";
 import { AllChainsByKeys } from "@/lib/chains";
 import { color } from "highcharts";
 import { useHover } from "usehooks-ts";
+import { Chart } from "../charts/chart";
 
 export default function OverviewMetrics({
   data,
@@ -23,7 +24,7 @@ export default function OverviewMetrics({
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
 }) {
-  const [selectedScale, setSelectedScale] = useState("gas_fees_share");
+  const [selectedScale, setSelectedScale] = useState("txcount_share");
   const [isCategoryMenuExpanded, setIsCategoryMenuExpanded] = useState(true);
 
   const categories = useMemo<{ [key: string]: string }>(() => {
@@ -113,10 +114,34 @@ export default function OverviewMetrics({
     };
   }, []);
 
+  const chartSeries = useMemo(() => {
+    if (selectedChain)
+      return [
+        {
+          chain: "all_l2s",
+          unixKey: "unix",
+          dataKey: selectedScale,
+        },
+        {
+          chain: selectedChain,
+          unixKey: "unix",
+          dataKey: selectedScale,
+        },
+      ];
+    return [
+      {
+        chain: "all_l2s",
+        unixKey: "unix",
+        dataKey: selectedScale,
+      },
+    ];
+  }, [selectedScale, selectedChain]);
+
   console.log(data["optimism"].overview.types.indexOf("gas_fees_share"));
   console.log(relativePercentage);
   return (
     <>
+      {/* <div>{selectedScale}</div> */}
       <div
         className={`flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 z-10
         ${isCategoryMenuExpanded ? "mb-0" : "mb-0 md:mb-8"}`}
@@ -317,10 +342,18 @@ export default function OverviewMetrics({
                             <div
                               key={categoryKey}
                               onClick={() => {
-                                setSelectedCategory(categoryKey);
-                                if (selectedChain !== chainKey)
-                                  setSelectedChain(chainKey);
-                                else setSelectedChain(null);
+                                if (selectedCategory !== categoryKey) {
+                                  setSelectedCategory(categoryKey);
+                                  setSelectedChain(null);
+                                } else {
+                                  if (selectedChain !== chainKey)
+                                    setSelectedChain(chainKey);
+                                  else setSelectedChain(null);
+                                }
+
+                                // if (selectedChain !== chainKey)
+
+                                // else setSelectedChain(null);
                               }}
                               onMouseEnter={() => {
                                 setIsCategoryHovered((prev) => ({
@@ -615,6 +648,27 @@ export default function OverviewMetrics({
           </div>
         </div>
       </div>
+      {/* {data.arbitrum.daily.native_transfers.data} */}
+      <Chart
+        data={Object.keys(data)
+          .filter((chain) =>
+            Object.keys(data[chain].daily).includes(selectedCategory),
+          )
+          .map((chain) => [chain, data[chain].daily[selectedCategory].data])
+          // return object with key as chain name and value as data for that chain
+          .reduce((obj, item) => {
+            obj[item[0]] = item[1];
+            return obj;
+          }, {})}
+        types={
+          selectedChain === null
+            ? data.all_l2s.daily.types
+            : data[selectedChain].daily.types
+        }
+        timespan={selectedTimespan}
+        series={chartSeries}
+        yScale="percentage"
+      />
     </>
   );
 }
