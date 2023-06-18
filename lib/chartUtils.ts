@@ -148,7 +148,7 @@ export const baseOptions: Highcharts.Options = {
       //@ts-ignore
       const { x, y, color, name } = points[0];
 
-      const date = new Date(x);
+      const date = x ? new Date(x) : new Date();
       const dateString = date.toLocaleDateString(undefined, {
         timeZone: "UTC",
         month: "short",
@@ -156,8 +156,7 @@ export const baseOptions: Highcharts.Options = {
         year: "numeric",
       });
 
-      //@ts-ignore
-      const value = formatNumber(y, false, true);
+      const value = y ? formatNumber(y, false, true) : 0;
 
       const tooltip = `
       <div class="mt-3 mr-3 mb-3 w-48 md:w-60 text-xs font-raleway">
