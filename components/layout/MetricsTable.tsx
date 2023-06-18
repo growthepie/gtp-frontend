@@ -268,20 +268,25 @@ const MetricsTable = ({
                             item.data.changes[timespan][0] >=
                           0 ? (
                             <span className="text-[#45AA6F] dark:text-[#4CFF7E]">
-                              +
-                              {(
+                              {metric_ids_reverse_performance.includes(metric)
+                                ? "-"
+                                : "+"}
+                              {Math.abs(
                                 Math.round(
                                   item.data.changes[timespan][0] * 1000,
-                                ) / 10
+                                ) / 10,
                               ).toFixed(1)}
                               %
                             </span>
                           ) : (
                             <span className="text-[#DD3408] dark:text-[#FF3838]">
-                              {(
+                              {metric_ids_reverse_performance.includes(metric)
+                                ? "+"
+                                : "-"}
+                              {Math.abs(
                                 Math.round(
                                   item.data.changes[timespan][0] * 1000,
-                                ) / 10
+                                ) / 10,
                               ).toFixed(1)}
                               %
                             </span>
