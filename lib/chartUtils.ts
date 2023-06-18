@@ -145,7 +145,7 @@ export const baseOptions: Highcharts.Options = {
       if (!points || points.length < 1) {
         return "";
       }
-
+      //@ts-ignore
       const { x, y, color, name } = points[0];
 
       const date = new Date(x);
@@ -156,6 +156,7 @@ export const baseOptions: Highcharts.Options = {
         year: "numeric",
       });
 
+      //@ts-ignore
       const value = formatNumber(y, false, true);
 
       const tooltip = `
