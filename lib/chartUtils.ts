@@ -1,4 +1,6 @@
 import * as d3 from "d3";
+import { AllChainsByKeys } from "./chains";
+import Highcharts from "highcharts";
 
 export const ChartColors = {
   GRID: "rgb(215, 223, 222)",
@@ -7,6 +9,76 @@ export const ChartColors = {
   LABEL_HOVER: "#6c7696",
   TOOLTIP_BG: "#1b2135",
   ANNOTATION_BG: "rgb(215, 223, 222)",
+};
+
+export const decimalToPercent = (decimal: number | string, decimals = 2) => {
+  return `${((decimal as number) * 100.0).toFixed(decimals)}%`;
+};
+
+const tooltipFormatter = (
+  shared = true,
+  percentage = true,
+  valueFormatter: (value: any) => string = (value) => value,
+) => {
+  const percentageFormatter = function (
+    this: Highcharts.TooltipFormatterContextObject,
+  ) {
+    // shared tooltip
+    const { points } = this;
+    if (!points || points.length < 1) {
+      return "";
+    }
+    const { x } = points[0];
+
+    const date = x ? new Date(x) : new Date();
+    const dateString = date.toLocaleDateString(undefined, {
+      timeZone: "UTC",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+
+    let tooltip = `
+      <div class="mt-3 mr-3 mb-3 w-48 md:w-60 text-xs font-raleway">
+        <div class="w-full flex justify-between font-bold text-[13px] md:text-[1rem] items-end pl-6 pr-1 mb-2">${dateString}</div>
+        <div className="flex flex-col">
+          `;
+    points.forEach((point: any) => {
+      const { y, color, series, percentage } = point;
+      const name = series.name;
+
+      const date = x ? new Date(x) : new Date();
+      const dateString = date.toLocaleDateString(undefined, {
+        timeZone: "UTC",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+
+      let value = y ? formatNumber(y, false, true) : 0;
+
+      if (valueFormatter) {
+        value = valueFormatter(value);
+      } else {
+        value = Highcharts.numberFormat(percentage, 2);
+      }
+
+      tooltip += `
+        <div class="flex w-full space-x-2 items-center font-medium mb-1">
+        <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors["dark"][0]}"></div>
+        <div class="tooltip-point-name">${AllChainsByKeys[name].label}</div>
+        <div class="flex-1 text-right font-inter">${value}</div>
+      </div>`;
+    });
+    tooltip += `
+        </div>
+      </div>`;
+    return tooltip;
+  };
+  if (shared && percentage) {
+    return percentageFormatter;
+  }
+  return undefined;
 };
 
 export const tooltipPositioner = function (this, width, height, point) {
@@ -139,39 +211,7 @@ export const baseOptions: Highcharts.Options = {
   tooltip: {
     // formatter: tooltipFormatter,
     positioner: tooltipPositioner,
-    formatter: function (this: Highcharts.TooltipFormatterContextObject) {
-      // shared tooltip
-      const { points } = this;
-      if (!points || points.length < 1) {
-        return "";
-      }
-      //@ts-ignore
-      const { x, y, color, name } = points[0];
-
-      const date = x ? new Date(x) : new Date();
-      const dateString = date.toLocaleDateString(undefined, {
-        timeZone: "UTC",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-
-      const value = y ? formatNumber(y, false, true) : 0;
-
-      const tooltip = `
-      <div class="mt-3 mr-3 mb-3 w-48 md:w-60 text-xs font-raleway">
-        <div class="w-full flex justify-between font-bold text-[13px] md:text-[1rem] items-end pl-6 pr-1 mb-2">${dateString}</div>
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <div style="display: flex; align-items: center;">
-            <div style="width: 8px; height: 8px; border-radius: 4px; background-color: ${color}; margin-right: 8px;"></div>
-            <div>${name}</div>
-          </div>
-          <div style="font-size: 14px; font-weight: 600;">${value}</div>
-        </div>
-      </div>`;
-
-      return tooltip;
-    },
+    formatter: tooltipFormatter(true, true, decimalToPercent),
     useHTML: true,
     shared: true,
     split: false,

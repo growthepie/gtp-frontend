@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import highchartsAnnotations from "highcharts/modules/annotations";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
 import HighchartsReact from "highcharts-react-official";
@@ -14,28 +14,39 @@ import {
   getTimespans,
   getTickPositions,
   getXAxisLabels,
+  decimalToPercent,
 } from "@/lib/chartUtils";
 import ChartWatermark from "../layout/ChartWatermark";
 import { Icon } from "@iconify/react";
 import { AllChainsByKeys } from "@/lib/chains";
+import { debounce } from "lodash";
 
 export const Chart = ({
-  data,
+  // data,
   types,
   timespan,
   series,
   yScale = "linear",
 }: {
-  data: { [chain: string]: number[][] };
+  // data: { [chain: string]: number[][] };
   types: string[];
   timespan: string;
-  series: { chain: string; unixKey: string; dataKey: string }[];
+  series: {
+    id: string;
+    name: string;
+    unixKey: string;
+    dataKey: string;
+    data: number[][];
+  }[];
   yScale?: "linear" | "logarithmic" | "percentage";
 }) => {
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
-  const timespans = useMemo(() => getTimespans(Object.values(data)[0]), [data]);
+  const timespans = useMemo(
+    () => getTimespans(Object.values(series)[0].data),
+    [series],
+  );
   const tickPositions = useMemo(
     () =>
       getTickPositions(
@@ -60,9 +71,161 @@ export const Chart = ({
     setHighchartsLoaded(true);
   }, []);
 
+  useEffect(() => {
+    if (chartComponent.current) {
+      const currentSeries = chartComponent.current.series;
+
+      // remove all series
+      for (var i = chartComponent.current.series.length - 1; i >= 0; i--) {
+        chartComponent.current.series[i].remove(false);
+      }
+
+      // add new series
+      series.forEach((s) => {
+        chartComponent.current?.addSeries(
+          {
+            name: s.name,
+            data: s.data.map((d) => [
+              d[types.indexOf(s.unixKey)],
+              d[types.indexOf(s.dataKey)],
+            ]),
+            type: "area",
+            borderColor: "transparent",
+            shadow: {
+              color: "#CDD8D3" + "FF",
+              offsetX: 0,
+              offsetY: 0,
+              width: 2,
+            },
+            color: {
+              linearGradient: {
+                x1: 0,
+                y1: 0,
+                x2: 0,
+                y2: 1,
+              },
+              stops: [
+                [0, AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] + "FF"],
+                [
+                  0.349,
+                  AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] + "88",
+                ],
+                [1, AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] + "00"],
+              ],
+            },
+          },
+          false,
+        );
+      });
+      chartComponent.current?.redraw();
+    }
+
+    return () => {
+      // if (chartComponent.current) {
+      //   const currentSeries = chartComponent.current.series;
+      //   const currentSeriesNames = currentSeries.map((s) => s.name);
+      //   const removedSeries = currentSeriesNames.filter(
+      //     (s) => !series.map((s) => s.name).includes(s),
+      //   );
+      //   removedSeries.forEach((s) => {
+      //     chartComponent.current?.get(s)?.remove();
+      //   });
+      // }
+    };
+
+    // series.map((s, i) => ({
+    //   name: s.chain,
+    //   data: data[s.chain].map((d) => [
+    //     d[types.indexOf(s.unixKey)],
+    //     d[types.indexOf(s.dataKey)],
+    //   ]),
+    //   type: "area",
+    //   borderColor: "transparent",
+    //   shadow: {
+    //     color: "#CDD8D3" + "FF",
+    //     offsetX: 0,
+    //     offsetY: 0,
+    //     width: 2,
+    //   },
+    //   color: {
+    //     linearGradient: {
+    //       x1: 0,
+    //       y1: 0,
+    //       x2: 0,
+    //       y2: 1,
+    //     },
+    //     stops: [
+    //       [
+    //         0,
+    //         AllChainsByKeys[s.chain]?.colors[theme ?? "dark"][0] +
+    //           "FF",
+    //       ],
+    //       [
+    //         0.349,
+    //         AllChainsByKeys[s.chain]?.colors[theme ?? "dark"][0] +
+    //           "88",
+    //       ],
+    //       [
+    //         1,
+    //         AllChainsByKeys[s.chain]?.colors[theme ?? "dark"][0] +
+    //           "00",
+    //       ],
+    //     ],
+    //   },
+    // })),
+  }, [chartComponent, series, theme, types]);
+
+  const resetXAxisExtremes = useCallback(() => {
+    if (chartComponent.current) {
+      // const pixelsPerDay =
+      // chartComponent.current.plotWidth / timespans[timespan].daysDiff;
+
+      // // 15px padding on each side
+      // const paddingMilliseconds = (15 / pixelsPerDay) * 24 * 60 * 60 * 1000;
+
+      chartComponent.current.xAxis[0].setExtremes(
+        timespans[timespan].xMin,
+        timespans[timespan].xMax,
+        true,
+      );
+    }
+  }, [timespan, timespans]);
+
+  const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
+  const resituateChart = debounce(() => {
+    if (chartComponent.current) {
+      delay(50)
+        .then(() => {
+          chartComponent.current &&
+            chartComponent.current.setSize(null, null, true);
+          // chart.reflow();
+        })
+        .then(() => {
+          delay(50).then(
+            () => chartComponent.current && chartComponent.current.reflow(),
+          );
+        })
+        .then(() => {
+          delay(50).then(() => chartComponent.current && resetXAxisExtremes());
+        });
+    }
+  }, 150);
+
+  useEffect(() => {
+    resituateChart();
+
+    // cancel the debounced function on component unmount
+    return () => {
+      resituateChart.cancel();
+    };
+  }, [chartComponent, timespan, timespans, resituateChart]);
+
   return (
     <>
-      {Object.values(data)[0].length > 0 && timespans && highchartsLoaded ? (
+      {Object.values(series)[0].data.length > 0 &&
+      timespans &&
+      highchartsLoaded ? (
         <div className="w-full py-4 rounded-xl">
           {/* <div>{JSON.stringify(timespans[timespan])}</div>
           <div>
@@ -82,46 +245,46 @@ export const Chart = ({
                 highcharts={Highcharts}
                 options={{
                   ...baseOptions,
-                  series: series.map((s, i) => ({
-                    name: s.chain,
-                    data: data[s.chain].map((d) => [
-                      d[types.indexOf(s.unixKey)],
-                      d[types.indexOf(s.dataKey)],
-                    ]),
-                    type: "area",
-                    borderColor: "transparent",
-                    shadow: {
-                      color: "#CDD8D3" + "FF",
-                      offsetX: 0,
-                      offsetY: 0,
-                      width: 2,
-                    },
-                    color: {
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 0,
-                        y2: 1,
-                      },
-                      stops: [
-                        [
-                          0,
-                          AllChainsByKeys[s.chain]?.colors[theme ?? "dark"][0] +
-                            "FF",
-                        ],
-                        [
-                          0.349,
-                          AllChainsByKeys[s.chain]?.colors[theme ?? "dark"][0] +
-                            "88",
-                        ],
-                        [
-                          1,
-                          AllChainsByKeys[s.chain]?.colors[theme ?? "dark"][0] +
-                            "00",
-                        ],
-                      ],
-                    },
-                  })),
+                  // series: series.map((s, i) => ({
+                  //   name: s.chain,
+                  //   data: data[s.chain].map((d) => [
+                  //     d[types.indexOf(s.unixKey)],
+                  //     d[types.indexOf(s.dataKey)],
+                  //   ]),
+                  //   type: "area",
+                  //   borderColor: "transparent",
+                  //   shadow: {
+                  //     color: "#CDD8D3" + "FF",
+                  //     offsetX: 0,
+                  //     offsetY: 0,
+                  //     width: 2,
+                  //   },
+                  //   color: {
+                  //     linearGradient: {
+                  //       x1: 0,
+                  //       y1: 0,
+                  //       x2: 0,
+                  //       y2: 1,
+                  //     },
+                  //     stops: [
+                  //       [
+                  //         0,
+                  //         AllChainsByKeys[s.chain]?.colors[theme ?? "dark"][0] +
+                  //           "FF",
+                  //       ],
+                  //       [
+                  //         0.349,
+                  //         AllChainsByKeys[s.chain]?.colors[theme ?? "dark"][0] +
+                  //           "88",
+                  //       ],
+                  //       [
+                  //         1,
+                  //         AllChainsByKeys[s.chain]?.colors[theme ?? "dark"][0] +
+                  //           "00",
+                  //       ],
+                  //     ],
+                  //   },
+                  // })),
                   xAxis: {
                     ...baseOptions.xAxis,
                     min: timespans[timespan].xMin,
@@ -146,7 +309,7 @@ export const Chart = ({
                         this: AxisLabelsFormatterContextObject,
                       ) {
                         const { value } = this;
-                        return `${((value as number) * 100).toFixed(0)}%`;
+                        return decimalToPercent(value);
                       },
                     },
                   },

@@ -118,24 +118,30 @@ export default function OverviewMetrics({
     if (selectedChain)
       return [
         {
-          chain: "all_l2s",
+          id: ["all_l2s", selectedCategory, selectedScale].join("_"),
+          name: "all_l2s",
           unixKey: "unix",
           dataKey: selectedScale,
+          data: data.all_l2s.daily[selectedCategory].data,
         },
         {
-          chain: selectedChain,
+          id: [selectedChain, selectedCategory, selectedScale].join("_"),
+          name: selectedChain,
           unixKey: "unix",
           dataKey: selectedScale,
+          data: data[selectedChain].daily[selectedCategory].data,
         },
       ];
     return [
       {
-        chain: "all_l2s",
+        id: ["all_l2s", selectedCategory, selectedScale].join("_"),
+        name: "all_l2s",
         unixKey: "unix",
         dataKey: selectedScale,
+        data: data.all_l2s.daily[selectedCategory].data,
       },
     ];
-  }, [selectedScale, selectedChain]);
+  }, [selectedChain, selectedCategory, selectedScale, data]);
 
   console.log(data["optimism"].overview.types.indexOf("gas_fees_share"));
   console.log(relativePercentage);
@@ -201,16 +207,16 @@ export default function OverviewMetrics({
       </div>
       <div className="overflow-x-scroll lg:overflow-x-visible z-100 w-full scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
         <div
-          className={`relative min-w-[820px] md:min-w-[850px]  bottom-1 w-[97.5%] h-[60px] m-auto border-x-[1px] border-b-[1px] rounded-bl-xl rounded-br-xl text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-forest-900 dark:bg-forest-1000 pt-[5px] mb-8 overflow-hidden
+          className={`relative min-w-[820px] md:min-w-[850px] bottom-1 w-[97.5%] h-[60px] m-auto border-x-[1px] border-b-[1px] rounded-b-[15px] text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-forest-900 dark:bg-forest-1000 pt-[5px] mb-8 overflow-hidden
         ${isCategoryMenuExpanded ? "flex" : "flex md:hidden"}`}
         >
           <div className="flex w-full h-full text-[12px]">
             {Object.keys(categories).map((category, i) => (
               <div
                 key={category}
-                className={`relative flex flex-grow h-full justify-center items-center ${
+                className={`relative flex w-full h-full justify-center items-center ${
                   selectedCategory === category
-                    ? "borden-hidden rounded-b-[5px]"
+                    ? "borden-hidden rounded-[5px]"
                     : "h-full"
                 }`}
                 onMouseEnter={() => {
@@ -236,7 +242,7 @@ export default function OverviewMetrics({
               >
                 <button
                   key={category}
-                  className={`flex flex-col flex-grow h-full justify-center items-center border-x border-transparent overflow-hidden ${
+                  className={`flex flex-col flex-1 h-full justify-center items-center border-x border-transparent overflow-hidden ${
                     selectedCategory === category ? "" : "hover:bg-white/5"
                   } 
                 ${isCategoryHovered[category] ? "bg-white/5" : ""}
@@ -246,7 +252,17 @@ export default function OverviewMetrics({
                     setSelectedChain(null);
                   }}
                 >
-                  {categories[category]}
+                  <div
+                    className={`${
+                      selectedCategory === category
+                        ? "text-sm font-bold"
+                        : "text-xs font-medium hover:bg-white/5"
+                    } 
+                
+                `}
+                  >
+                    {categories[category]}
+                  </div>
                   <Icon
                     icon="gtp:smiley"
                     className={`w-[10px] h-[10px] ${
@@ -650,16 +666,16 @@ export default function OverviewMetrics({
       </div>
       {/* {data.arbitrum.daily.native_transfers.data} */}
       <Chart
-        data={Object.keys(data)
-          .filter((chain) =>
-            Object.keys(data[chain].daily).includes(selectedCategory),
-          )
-          .map((chain) => [chain, data[chain].daily[selectedCategory].data])
-          // return object with key as chain name and value as data for that chain
-          .reduce((obj, item) => {
-            obj[item[0]] = item[1];
-            return obj;
-          }, {})}
+        // data={Object.keys(data)
+        //   .filter((chain) =>
+        //     Object.keys(data[chain].daily).includes(selectedCategory),
+        //   )
+        //   .map((chain) => [chain, data[chain].daily[selectedCategory].data])
+        //   // return object with key as chain name and value as data for that chain
+        //   .reduce((obj, item) => {
+        //     obj[item[0]] = item[1];
+        //     return obj;
+        //   }, {})}
         types={
           selectedChain === null
             ? data.all_l2s.daily.types
