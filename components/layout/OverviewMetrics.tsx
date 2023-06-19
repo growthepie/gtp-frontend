@@ -358,13 +358,19 @@ export default function OverviewMetrics({
                             <div
                               key={categoryKey}
                               onClick={() => {
-                                if (selectedCategory !== categoryKey) {
+                                if (
+                                  selectedCategory === categoryKey &&
+                                  selectedChain === chainKey
+                                ) {
                                   setSelectedCategory(categoryKey);
                                   setSelectedChain(null);
                                 } else {
-                                  if (selectedChain !== chainKey)
-                                    setSelectedChain(chainKey);
-                                  else setSelectedChain(null);
+                                  // if (selectedChain !== chainKey)
+                                  //   setSelectedChain(chainKey);
+                                  // else
+                                  // setSelectedChain(null);
+                                  setSelectedCategory(categoryKey);
+                                  setSelectedChain(chainKey);
                                 }
 
                                 // if (selectedChain !== chainKey)
@@ -574,8 +580,16 @@ export default function OverviewMetrics({
           }
         </div>
       </div>
-
-      {/* </colorful rows> */}
+      <Chart
+        types={
+          selectedChain === null
+            ? data.all_l2s.daily.types
+            : data[selectedChain].daily.types
+        }
+        timespan={selectedTimespan}
+        series={chartSeries}
+        yScale="percentage"
+      />
       <div className="flex w-full justify-between md:w-auto bg-forest-50 dark:bg-[#1F2726] rounded-full p-0.5 mt-8">
         <div className="flex justify-normal md:justify-start">
           {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
@@ -664,27 +678,6 @@ export default function OverviewMetrics({
           </div>
         </div>
       </div>
-      {/* {data.arbitrum.daily.native_transfers.data} */}
-      <Chart
-        // data={Object.keys(data)
-        //   .filter((chain) =>
-        //     Object.keys(data[chain].daily).includes(selectedCategory),
-        //   )
-        //   .map((chain) => [chain, data[chain].daily[selectedCategory].data])
-        //   // return object with key as chain name and value as data for that chain
-        //   .reduce((obj, item) => {
-        //     obj[item[0]] = item[1];
-        //     return obj;
-        //   }, {})}
-        types={
-          selectedChain === null
-            ? data.all_l2s.daily.types
-            : data[selectedChain].daily.types
-        }
-        timespan={selectedTimespan}
-        series={chartSeries}
-        yScale="percentage"
-      />
     </>
   );
 }

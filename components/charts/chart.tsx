@@ -71,7 +71,7 @@ export const Chart = ({
     setHighchartsLoaded(true);
   }, []);
 
-  useEffect(() => {
+  const drawChartSeries = useCallback(() => {
     if (chartComponent.current) {
       const currentSeries = chartComponent.current.series;
 
@@ -119,61 +119,11 @@ export const Chart = ({
       });
       chartComponent.current?.redraw();
     }
-
-    return () => {
-      // if (chartComponent.current) {
-      //   const currentSeries = chartComponent.current.series;
-      //   const currentSeriesNames = currentSeries.map((s) => s.name);
-      //   const removedSeries = currentSeriesNames.filter(
-      //     (s) => !series.map((s) => s.name).includes(s),
-      //   );
-      //   removedSeries.forEach((s) => {
-      //     chartComponent.current?.get(s)?.remove();
-      //   });
-      // }
-    };
-
-    // series.map((s, i) => ({
-    //   name: s.chain,
-    //   data: data[s.chain].map((d) => [
-    //     d[types.indexOf(s.unixKey)],
-    //     d[types.indexOf(s.dataKey)],
-    //   ]),
-    //   type: "area",
-    //   borderColor: "transparent",
-    //   shadow: {
-    //     color: "#CDD8D3" + "FF",
-    //     offsetX: 0,
-    //     offsetY: 0,
-    //     width: 2,
-    //   },
-    //   color: {
-    //     linearGradient: {
-    //       x1: 0,
-    //       y1: 0,
-    //       x2: 0,
-    //       y2: 1,
-    //     },
-    //     stops: [
-    //       [
-    //         0,
-    //         AllChainsByKeys[s.chain]?.colors[theme ?? "dark"][0] +
-    //           "FF",
-    //       ],
-    //       [
-    //         0.349,
-    //         AllChainsByKeys[s.chain]?.colors[theme ?? "dark"][0] +
-    //           "88",
-    //       ],
-    //       [
-    //         1,
-    //         AllChainsByKeys[s.chain]?.colors[theme ?? "dark"][0] +
-    //           "00",
-    //       ],
-    //     ],
-    //   },
-    // })),
   }, [chartComponent, series, theme, types]);
+
+  useEffect(() => {
+    drawChartSeries();
+  }, [drawChartSeries, series, types]);
 
   const resetXAxisExtremes = useCallback(() => {
     if (chartComponent.current) {
@@ -245,46 +195,15 @@ export const Chart = ({
                 highcharts={Highcharts}
                 options={{
                   ...baseOptions,
-                  // series: series.map((s, i) => ({
-                  //   name: s.chain,
-                  //   data: data[s.chain].map((d) => [
-                  //     d[types.indexOf(s.unixKey)],
-                  //     d[types.indexOf(s.dataKey)],
-                  //   ]),
-                  //   type: "area",
-                  //   borderColor: "transparent",
-                  //   shadow: {
-                  //     color: "#CDD8D3" + "FF",
-                  //     offsetX: 0,
-                  //     offsetY: 0,
-                  //     width: 2,
-                  //   },
-                  //   color: {
-                  //     linearGradient: {
-                  //       x1: 0,
-                  //       y1: 0,
-                  //       x2: 0,
-                  //       y2: 1,
-                  //     },
-                  //     stops: [
-                  //       [
-                  //         0,
-                  //         AllChainsByKeys[s.chain]?.colors[theme ?? "dark"][0] +
-                  //           "FF",
-                  //       ],
-                  //       [
-                  //         0.349,
-                  //         AllChainsByKeys[s.chain]?.colors[theme ?? "dark"][0] +
-                  //           "88",
-                  //       ],
-                  //       [
-                  //         1,
-                  //         AllChainsByKeys[s.chain]?.colors[theme ?? "dark"][0] +
-                  //           "00",
-                  //       ],
-                  //     ],
-                  //   },
-                  // })),
+                  chart: {
+                    ...baseOptions.chart,
+                    events: {
+                      load: function () {
+                        chartComponent.current = this;
+                        drawChartSeries();
+                      },
+                    },
+                  },
                   xAxis: {
                     ...baseOptions.xAxis,
                     min: timespans[timespan].xMin,
