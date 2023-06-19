@@ -49,34 +49,20 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                     quality={100}
                   />
                 </Link>
-                <div className="flex flex-1 justify-between items-end space-x-[16px]">
-                  <div className="z-10 flex space-x-[16px] mb-0.5">
-                    <Link
-                      href="https://twitter.com/growthepie_eth"
-                      target="_blank"
-                      rel="noopener"
-                    >
-                      <Icon icon="cib:twitter" className="h-[19px] w-[19px]" />
-                    </Link>
-                    <Link
-                      href="https://discord.gg/fxjJFe7QyN"
-                      target="_blank"
-                      rel="noopener"
-                    >
-                      <Icon icon="cib:discord" className="h-[19px] w-[19px]" />
-                    </Link>
+                <div className="flex space-x-[20px] items-end">
+                  <div className="flex flex-1 justify-between items-end space-x-[16px]">
+                    <div className="items-end z-10 flex space-x-[15px] mb-[1px]">
+                      <DarkModeSwitch isMobile />
+                      <EthUsdSwitch isMobile />
+                    </div>
                   </div>
-                  <div className="items-end z-10 flex space-x-[15px] mb-[1px]">
-                    <DarkModeSwitch isMobile />
-                    <EthUsdSwitch isMobile />
-                  </div>
+                  <button
+                    className="!-mb-1  !-mr-1"
+                    onClick={toggleMobileSidebar}
+                  >
+                    <Icon icon="feather:x" className="h-8 w-8" />
+                  </button>
                 </div>
-                <button
-                  className="!-mb-1  !-mr-1"
-                  onClick={toggleMobileSidebar}
-                >
-                  <Icon icon="feather:x" className="h-8 w-8" />
-                </button>
               </div>
               <div className="z-20 mt-[30px] h-[calc(100vh-100px)] w-full flex flex-col justify-between overflow-hidden">
                 <div className="flex-1 w-full overflow-x-hidden relative overflow-y-scroll scrollbar-none">
@@ -94,6 +80,29 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                     item={contributorsItem}
                     sidebarOpen={isMobileSidebarOpen}
                   />
+                  <div className="z-10 flex space-x-[16px] mb-0.5 w-full px-2">
+                    <Link
+                      href="https://twitter.com/growthepie_eth"
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      <Icon icon="cib:twitter" className="h-[19px] w-[19px]" />
+                    </Link>
+                    <Link
+                      href="https://discord.gg/fxjJFe7QyN"
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      <Icon icon="cib:discord" className="h-[19px] w-[19px]" />
+                    </Link>
+                    <Link
+                      href="https://www.github.com/growthepie"
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      <Icon icon="cib:github" className="h-[19px] w-[19px]" />
+                    </Link>
+                  </div>
                   <div className="text-[0.7rem] flex justify-between w-full text-inherit leading-[1] px-2 mt-[30px]">
                     <Link href="/privacy-policy">Privacy Policy</Link>
                     <Link href="/imprint">Imprint</Link>

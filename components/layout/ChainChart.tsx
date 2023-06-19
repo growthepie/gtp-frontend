@@ -1027,6 +1027,7 @@ export default function ChainChart({
                           {Intl.NumberFormat("en-US", {
                             notation: "compact",
                             maximumFractionDigits: 2,
+                            minimumFractionDigits: 2,
                           }).format(
                             data.metrics[key].daily.data[
                               data.metrics[key].daily.data.length - 1

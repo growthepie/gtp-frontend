@@ -101,7 +101,7 @@ const Chain = ({ params }: { params: any }) => {
                   <div>
                     <span className="">@</span>
                     {master.chains[chainKey].twitter.split(
-                      "https://twitter.com/"
+                      "https://twitter.com/",
                     )}
                   </div>
                 </Link>
@@ -149,7 +149,7 @@ const Chain = ({ params }: { params: any }) => {
               )}
             </div>
             {chainData && <ChainChart chain={chain} data={chainData.data} />}
-            <div className="flex lg:hidden justify-between text-base items-start mb-8 mt-[15px]">
+            <div className="flex lg:hidden justify-between text-base items-start mb-8 mt-[30px] lg:mt-[15px]">
               <Link
                 href={master.chains[chainKey].block_explorer}
                 className="flex h-[40px] items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
@@ -179,7 +179,7 @@ const Chain = ({ params }: { params: any }) => {
                   <div className="hidden md:block">
                     <span className="">@</span>
                     {master.chains[chainKey].twitter.split(
-                      "https://twitter.com/"
+                      "https://twitter.com/",
                     )}
                   </div>
                 </Link>
