@@ -631,46 +631,6 @@ export default function ChainChart({
     },
   };
 
-  const getIcon = (key) => {
-    switch (key) {
-      case "tvl":
-        return (
-          <Icon
-            icon="feather:star"
-            className="absolute h-[64px] w-[64px] top-[55px] right-[26px] dark:text-[#CDD8D3] opacity-5 pointer-events-none"
-          />
-        );
-      case "txcount":
-        return (
-          <Icon
-            icon="feather:clock"
-            className="absolute h-[64px] w-[64px] top-[55px] right-[26px] dark:text-[#CDD8D3] opacity-5 pointer-events-none"
-          />
-        );
-      case "stables_mcap":
-        return (
-          <Icon
-            icon="feather:dollar-sign"
-            className="absolute h-[64px] w-[64px] top-[55px] right-[26px] dark:text-[#CDD8D3] opacity-5 pointer-events-none"
-          />
-        );
-      case "fees":
-        return (
-          <Icon
-            icon="feather:credit-card"
-            className="absolute h-[64px] w-[64px] top-[55px] right-[26px] dark:text-[#CDD8D3] opacity-5 pointer-events-none"
-          />
-        );
-      default:
-        return (
-          <Icon
-            icon="feather:sunrise"
-            className="absolute h-[64px] w-[64px] top-[55px] right-[26px] dark:text-[#CDD8D3] opacity-5 pointer-events-none"
-          />
-        );
-    }
-  };
-
   const lastPointLines = useMemo<{
     [key: string]: Highcharts.SVGElement;
   }>(() => ({}), []);
@@ -738,8 +698,8 @@ export default function ChainChart({
     resituateChart,
   ]);
 
-  const enabledFundamentalsKeys = useMemo(() => {
-    return navigationItems[1].options.map((option) => option.key);
+  const enabledFundamentalsKeys = useMemo<string[]>(() => {
+    return navigationItems[1].options.map((option) => option.key ?? "");
   }, []);
 
   if (!data) {
@@ -796,12 +756,132 @@ export default function ChainChart({
       </div>
 
       {data && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-[15px]">
-          {Object.keys(data.metrics)
-            .filter((key) => enabledFundamentalsKeys.includes(key))
+        <div
+          className="grid grid-rows-8 lg:grid-rows-3 lg:grid-cols-2 lg:grid-flow-col gap-y-0 gap-x-[15px]"
+          // style={{
+          //   gridRow: `span ${Math.ceil(enabledFundamentalsKeys.length / 2)}`,
+          // }}
+        >
+          {enabledFundamentalsKeys
+            // .filter((key) => enabledFundamentalsKeys.includes(key))
             .map((key, i) => {
+              if (!Object.keys(data.metrics).includes(key)) {
+                return (
+                  <div key={key} className="w-full relative">
+                    <div className="w-full h-[60px] lg:h-[176px] relative  pointer-events-none">
+                      <div className="w-full absolute top-0 -bottom-[15px] text-[10px] opacity-10 z-0">
+                        <div className="absolute left-[15px] h-full border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
+                        <div className="absolute right-[15px] h-full border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
+                      </div>
+                      <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] text-forest-50 rounded-[15px] opacity-30 z-30"></div>
+                      <div className="absolute w-full h-[142px] top-[49px]"></div>
+                      <div className="absolute top-[14px] w-full flex justify-between items-center space-x-4 px-[26px] opacity-30">
+                        <div className="text-[20px] leading-snug font-bold break-inside-avoid">
+                          {
+                            navigationItems[1].options.find(
+                              (o) => o.key === key,
+                            )?.page?.title
+                          }
+                        </div>
+                        <div className="lg:hidden text-xs flex-1 text-right leading-snug">
+                          {data.chain_id === "ethereum" && (
+                            <>
+                              {key === "tvl" && (
+                                <>
+                                  TVL On-Chain data is not available for
+                                  Ethereum
+                                </>
+                              )}
+                            </>
+                          )}
+                          {data.chain_id === "imx" && (
+                            <>
+                              {key === "txcosts" && (
+                                <>IMX does not charge Transaction Costs</>
+                              )}
+                            </>
+                          )}
+                        </div>
+                        {/* <div className="text-[18px] leading-snug flex space-x-[2px]">
+                          Unavailable
+                        </div> */}
+                        {/* <div
+                          className={`absolute -bottom-[12px] top-1/2 right-[15px] w-[5px] rounded-sm border-r border-t`}
+                          style={{
+                            borderColor: "#4B5563",
+                          }}
+                        ></div>
+                        <div
+                          className={`absolute top-[calc(50% - 0.5px)] right-[20px] w-[4px] h-[4px] rounded-full bg-forest-900 dark:bg-forest-50`}
+                        ></div> */}
+                      </div>
+                      <div>
+                        <div className="absolute inset-0 hidden lg:flex font-medium opacity-30 select-none justify-center items-center text-xs lg:text-sm">
+                          {data.chain_id === "ethereum" && (
+                            <>
+                              {key === "tvl" && (
+                                <>
+                                  TVL On-Chain data is not available for
+                                  Ethereum
+                                </>
+                              )}
+                            </>
+                          )}
+                          {data.chain_id === "imx" && (
+                            <>
+                              {key === "txcosts" && (
+                                <>IMX does not charge Transaction Costs</>
+                              )}
+                            </>
+                          )}
+                        </div>
+                        <Icon
+                          icon={
+                            navigationItems[1].options.find(
+                              (o) => o.key === key,
+                            )?.icon ?? ""
+                          }
+                          className="absolute h-[64px] w-[64px] top-[55px] right-[26px] dark:text-[#CDD8D3] opacity-5 pointer-events-none"
+                        />
+                      </div>
+                    </div>
+                    <div className="w-full h-[15px] relative text-[10px]">
+                      <div className="absolute left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
+                      <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
+                    </div>
+                    {(key === "stables_mcap" || key === "txcosts") && (
+                      <div
+                        className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                          key === "txcosts" ? "hidden lg:block" : ""
+                        }`}
+                      >
+                        <div className="absolute left-[15px] align-bottom flex items-end z-30">
+                          {new Date(
+                            timespans[selectedTimespan].xMin,
+                          ).toLocaleDateString(undefined, {
+                            timeZone: "UTC",
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </div>
+                        <div className="absolute right-[15px] align-bottom flex items-end z-30">
+                          {new Date(
+                            timespans[selectedTimespan].xMax,
+                          ).toLocaleDateString(undefined, {
+                            timeZone: "UTC",
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
               return (
-                <div key={key} className="w-full">
+                <div key={key} className="w-full h-fit relative">
                   <div className="w-full h-[176px] relative">
                     <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] rounded-[15px]"></div>
                     <div className="absolute w-full h-[142px] top-[49px]">
@@ -935,25 +1015,10 @@ export default function ChainChart({
                       </div>
                     </div>
                     <div className="absolute top-[14px] w-full flex justify-between items-center px-[26px]">
-                      {/* <div
-                      className={`absolute -bottom-1.5 -right-1 text-[10px] text-right cursor-vertical-text`}
-                    >
-                      <div
-                        className="rotate-90 font-inter"
-                        style={{
-                          color:
-                            AllChainsByKeys[data.chain_id].colors[
-                              theme ?? "dark"
-                            ][0] + "cc",
-                        }}
-                      >
-                        LAST
-                      </div>
-                    </div> */}
                       <div className="text-[20px] leading-snug font-bold">
                         {
                           navigationItems[1].options.find((o) => o.key === key)
-                            ?.label
+                            ?.page?.title
                         }
                       </div>
                       <div className="text-[18px] leading-snug font-medium flex space-x-[2px]">
@@ -999,10 +1064,10 @@ export default function ChainChart({
                     <div className="absolute left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
                     <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
                   </div>
-                  {(key === "stables_mcap" || key === "fees") && (
+                  {(key === "stables_mcap" || key === "txcosts") && (
                     <div
-                      className={`w-full h-[15px] relative text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
-                        key === "stables_mcap" ? "hidden lg:block" : ""
+                      className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                        key === "txcosts" ? "hidden lg:block" : ""
                       }`}
                     >
                       <div className="absolute left-[15px] align-bottom flex items-end z-30">

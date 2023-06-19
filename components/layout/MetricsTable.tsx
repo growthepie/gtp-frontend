@@ -83,17 +83,33 @@ const MetricsTable = ({
         if (b.chain.key === "ethereum") return -1;
 
         // sort by last value in daily data array and keep unselected chains at the bottom in descending order
-        if (selectedChains.includes(a.chain.key)) {
-          if (selectedChains.includes(b.chain.key)) {
-            return b.lastVal - a.lastVal;
+        if (metric_ids_reverse_performance.includes(metric)) {
+          if (selectedChains.includes(a.chain.key)) {
+            if (selectedChains.includes(b.chain.key)) {
+              return a.lastVal - b.lastVal;
+            } else {
+              return -1;
+            }
           } else {
-            return -1;
+            if (selectedChains.includes(b.chain.key)) {
+              return 1;
+            } else {
+              return a.lastVal - b.lastVal;
+            }
           }
         } else {
-          if (selectedChains.includes(b.chain.key)) {
-            return 1;
+          if (selectedChains.includes(a.chain.key)) {
+            if (selectedChains.includes(b.chain.key)) {
+              return b.lastVal - a.lastVal;
+            } else {
+              return -1;
+            }
           } else {
-            return b.lastVal - a.lastVal;
+            if (selectedChains.includes(b.chain.key)) {
+              return 1;
+            } else {
+              return b.lastVal - a.lastVal;
+            }
           }
         }
       });

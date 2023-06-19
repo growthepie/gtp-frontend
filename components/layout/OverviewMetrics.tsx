@@ -118,13 +118,6 @@ export default function OverviewMetrics({
     if (selectedChain)
       return [
         {
-          id: ["all_l2s", selectedCategory, selectedScale].join("_"),
-          name: "all_l2s",
-          unixKey: "unix",
-          dataKey: selectedScale,
-          data: data.all_l2s.daily[selectedCategory].data,
-        },
-        {
           id: [selectedChain, selectedCategory, selectedScale].join("_"),
           name: selectedChain,
           unixKey: "unix",
@@ -165,7 +158,7 @@ export default function OverviewMetrics({
               setIsCategoryMenuExpanded(!isCategoryMenuExpanded);
             }}
           >
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-2">
               <div>
                 <h1>{categories[selectedCategory]}</h1>
               </div>
@@ -177,7 +170,7 @@ export default function OverviewMetrics({
                   />
                 ) : (
                   <Icon
-                    icon="feather:chevron-left"
+                    icon="feather:chevron-right"
                     className="w-[13px] h-[13px] block"
                   />
                 )}
@@ -216,7 +209,7 @@ export default function OverviewMetrics({
                 key={category}
                 className={`relative flex w-full h-full justify-center items-center ${
                   selectedCategory === category
-                    ? "borden-hidden rounded-[5px]"
+                    ? "borden-hidden rounded-[0px]"
                     : "h-full"
                 }`}
                 onMouseEnter={() => {
@@ -293,7 +286,7 @@ export default function OverviewMetrics({
                         : "text-white"
                     } ${AllChainsByKeys[chainKey].backgrounds[theme][1]} ${
                       chainKey === "imx" && selectedScale === "gas_fees_share"
-                        ? "grayscale opacity-30"
+                        ? "saturation-0 grayscale"
                         : ""
                     }`}
                   >
@@ -314,7 +307,7 @@ export default function OverviewMetrics({
                           <div className="flex flex-col w-full h-[41px] justify-center items-center px-4 py-5 ">
                             <div className="flex flex-row w-full justify-center items-center text-sm">
                               No Gas Fees{" "}
-                              <Tooltip placement="bottom" allowInteract>
+                              <Tooltip placement="right" allowInteract>
                                 <TooltipTrigger>
                                   <div className="p-1 z-10 mr-0 md:-mr-0.5">
                                     <Icon

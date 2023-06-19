@@ -44,14 +44,14 @@ export default function LandingMetricsTable({
             (chain) =>
               Object.keys(AllChainsByKeys).includes(chain) &&
               AllChainsByKeys[chain].chainType != null &&
-              AllChainsByKeys[chain].chainType != "L1"
+              AllChainsByKeys[chain].chainType != "L1",
           )
           .map((chain) => {
             return data.chains[chain].data.data[
               data.chains[chain].data.data.length - 1
             ][1];
-          })
-      )
+          }),
+      ),
     );
   }, [data, data.chains, showUsd]);
 
@@ -70,7 +70,7 @@ export default function LandingMetricsTable({
         };
       })
       .filter(
-        (row) => row.chain.chainType != null && row.chain.chainType != "L1"
+        (row) => row.chain.chainType != null && row.chain.chainType != "L1",
       )
       .sort((a, b) => {
         // always show multiple at the bottom
@@ -111,7 +111,7 @@ export default function LandingMetricsTable({
       update: ({ y, height }) => ({ y, height }),
       config: { mass: 5, tension: 500, friction: 100 },
       trail: 25,
-    }
+    },
   );
 
   const timespanLabels = {
@@ -125,7 +125,7 @@ export default function LandingMetricsTable({
     let result = {};
     for (const chain of Object.keys(master.chains)) {
       const diff = moment.duration(
-        moment().diff(moment(master.chains[chain].launch_date))
+        moment().diff(moment(master.chains[chain].launch_date)),
       );
       result[chain] = [diff.years(), diff.months()];
     }
@@ -175,7 +175,7 @@ export default function LandingMetricsTable({
                       onClick={() => {
                         if (selectedChains.includes(item.chain.key)) {
                           setSelectedChains(
-                            selectedChains.filter((c) => c !== item.chain.key)
+                            selectedChains.filter((c) => c !== item.chain.key),
                           );
                         } else {
                           setSelectedChains([
@@ -277,7 +277,7 @@ export default function LandingMetricsTable({
                         <div className={`relative w-full`}>
                           <div className="flex w-full justify-end">
                             {data.chains[item.chain.key].data.types.includes(
-                              "usd"
+                              "usd",
                             ) && (
                               <>
                                 {showUsd ? (
@@ -288,7 +288,7 @@ export default function LandingMetricsTable({
                               </>
                             )}
                             {data.chains[item.chain.key].data.types.includes(
-                              "usd"
+                              "usd",
                             )
                               ? Intl.NumberFormat(undefined, {
                                   notation: "compact",
@@ -304,7 +304,7 @@ export default function LandingMetricsTable({
                                     ].data.types.includes("usd")
                                       ? 2
                                       : 1
-                                  ]
+                                  ],
                                 )
                               : Intl.NumberFormat(undefined, {
                                   notation: "compact",
@@ -314,7 +314,7 @@ export default function LandingMetricsTable({
                                   data.chains[item.chain.key].data.data[
                                     data.chains[item.chain.key].data.data
                                       .length - 1
-                                  ][1]
+                                  ][1],
                                 )}
                           </div>
                           <div className="absolute -bottom-[6px] right-0 w-full h-1 bg-black/10 rounded-none"></div>
@@ -337,7 +337,7 @@ export default function LandingMetricsTable({
                         {d3.format(
                           data.chains[item.chain.key].user_share > 0.01
                             ? ".1%"
-                            : ".1%"
+                            : ".1%",
                         )(data.chains[item.chain.key].user_share)}
                       </div>
                       {interactable && (
@@ -434,7 +434,7 @@ export default function LandingMetricsTable({
                     onClick={() => {
                       if (selectedChains.includes(item.chain.key)) {
                         setSelectedChains(
-                          selectedChains.filter((c) => c !== item.chain.key)
+                          selectedChains.filter((c) => c !== item.chain.key),
                         );
                       } else {
                         setSelectedChains([...selectedChains, item.chain.key]);
@@ -466,8 +466,8 @@ export default function LandingMetricsTable({
                         moment
                           .duration(
                             moment().diff(
-                              moment(master.chains[item.chain.key].launch_date)
-                            )
+                              moment(master.chains[item.chain.key].launch_date),
+                            ),
                           )
                           .humanize()}
                     </div>
@@ -496,7 +496,7 @@ export default function LandingMetricsTable({
                       <div className={`relative w-full`}>
                         <div className="flex w-full justify-end">
                           {data.chains[item.chain.key].data.types.includes(
-                            "usd"
+                            "usd",
                           ) && (
                             <>
                               {showUsd ? (
@@ -507,7 +507,7 @@ export default function LandingMetricsTable({
                             </>
                           )}
                           {data.chains[item.chain.key].data.types.includes(
-                            "usd"
+                            "usd",
                           )
                             ? Intl.NumberFormat(undefined, {
                                 notation: "compact",
@@ -523,7 +523,7 @@ export default function LandingMetricsTable({
                                   ].data.types.includes("usd")
                                     ? 2
                                     : 1
-                                ]
+                                ],
                               )
                             : Intl.NumberFormat(undefined, {
                                 notation: "compact",
@@ -533,7 +533,7 @@ export default function LandingMetricsTable({
                                 data.chains[item.chain.key].data.data[
                                   data.chains[item.chain.key].data.data.length -
                                     1
-                                ][1]
+                                ][1],
                               )}
                         </div>
                         <div className="absolute -bottom-[6px] right-0 w-full h-1 bg-black/10 rounded-none"></div>
@@ -555,7 +555,7 @@ export default function LandingMetricsTable({
                       {d3.format(
                         data.chains[item.chain.key].user_share > 0.01
                           ? ".1%"
-                          : ".1%"
+                          : ".1%",
                       )(data.chains[item.chain.key].user_share)}
                     </div>
                     {interactable && (
