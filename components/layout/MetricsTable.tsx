@@ -5,6 +5,7 @@ import { useLocalStorage, useMediaQuery, useSessionStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
 import { useTransition, animated } from "@react-spring/web";
+import { useUIContext } from "@/contexts/UIContext";
 
 const MetricsTable = ({
   data,
@@ -32,6 +33,8 @@ const MetricsTable = ({
   const { theme } = useTheme();
 
   const metric_ids_reverse_performance = ["txcosts"];
+
+  const { isSidebarOpen } = useUIContext();
 
   // set maxVal
   useEffect(() => {
@@ -144,15 +147,35 @@ const MetricsTable = ({
     <div className="flex flex-col mt-3 md:mt-0 font-semibold space-y-[5px] overflow-x-scroll md:overflow-x-visible z-100 w-full py-5 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
       <div className="min-w-[570px] md:min-w-[600px] lg:min-w-full pr-[20px] md:pr-[50px] lg:pr-0 w-full">
         <div
-          className={`flex items-center py-1 pl-2 pr-4 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm`}
+          className={`flex space-x-5 items-center py-1 pl-2 pr-4 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm`}
         >
-          <div className="basis-1/3 pl-12">Chain</div>
-          <div className="basis-2/3 flex w-full pr-4">
+          <div
+            className={`${
+              isSidebarOpen ? "w-1/4 2xl:basis-1/3" : "basis-1/3"
+            } pl-12`}
+          >
+            Chain
+          </div>
+          <div
+            className={`${
+              isSidebarOpen ? "w-3/4 2xl:basis-2/3" : "basis-2/3"
+            } flex pr-4`}
+          >
             {/* <div className={`basis-1/5 text-right capitalize`}>
               Current
             </div> */}
             {["1d", "7d", "30d", "365d"].map((timespan) => (
-              <div key={timespan} className="basis-1/4 text-right">
+              <div
+                key={timespan}
+                className={`text-right ${
+                  isSidebarOpen ? "w-1/3 2xl:basis-1/4" : "basis-1/4"
+                }
+                ${
+                  isSidebarOpen && timespan === "7d"
+                    ? "hidden 2xl:block"
+                    : "block"
+                }`}
+              >
                 {timespanLabels[timespan]}
               </div>
             ))}
@@ -195,7 +218,11 @@ const MetricsTable = ({
                   console.log(item);
                 }}
               >
-                <div className="flex basis-1/3 items-center space-x-2">
+                <div
+                  className={`flex ${
+                    isSidebarOpen ? "w-1/4 2xl:basis-1/3" : "basis-1/3"
+                  } items-center space-x-2`}
+                >
                   <div className="relative">
                     <div
                       className={`w-9 h-9 rounded-full border-[5px] ${
@@ -260,17 +287,35 @@ const MetricsTable = ({
                           </>
                         )}
                       </div>
-                      <div className="text-xs font-medium">
+                      <div
+                        className={`font-medium ${
+                          isSidebarOpen ? "text-[10px] 2xl:text-xs" : "text-xs"
+                        }`}
+                      >
                         {item.chain.label}
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="basis-2/3 pr-4 flex w-full font-medium">
+                <div
+                  className={`${
+                    isSidebarOpen ? "w-3/4 2xl:basis-2/3" : "basis-2/3"
+                  } pr-4 flex font-medium`}
+                >
                   {["1d", "7d", "30d", "365d"].map((timespan) => (
                     <div
                       key={timespan}
-                      className="basis-1/4 text-right text-base"
+                      className={`text-right  
+                      ${
+                        isSidebarOpen
+                          ? "basis-1/3 text-sm 2xl:text-base 2xl:basis-1/4"
+                          : "basis-1/4 text-base"
+                      }
+                      ${
+                        isSidebarOpen && timespan === "7d"
+                          ? "hidden 2xl:block"
+                          : "block"
+                      }`}
                     >
                       {item.data.changes[timespan][0] === null ? (
                         <span className="text-gray-500 text-center mx-4 inline-block">

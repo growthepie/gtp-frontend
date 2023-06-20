@@ -1204,12 +1204,14 @@ export default function ComparisonChart({
           </div>
         </div>
         <div className="w-full flex flex-col-reverse lg:flex-row mt-8 md:mt-0">
-          <div className="hidden lg:block lg:w-1/2 xl:w-5/12 pl-2 pr-[19px] self-center">
+          <div
+            className={`hidden lg:block lg:w-7/12 xl:w-5/12 pl-2 pr-[19px] self-center`}
+          >
             <div className="-mt-7">{children}</div>
           </div>
           {highchartsLoaded ? (
             <>
-              <div className="w-full lg:w-1/2 xl:w-7/12 relative">
+              <div className={`w-full lg:w-5/12 xl:w-7/12 relative`}>
                 <div className="w-full p-0 py-0 xl:pl-4 xl:py-14">
                   <div className="w-full h-[17rem] md:h-[26rem] relative rounded-xl">
                     <div className="block absolute w-full h-[275px] md:h-[24rem] top-0 md:top-4">
