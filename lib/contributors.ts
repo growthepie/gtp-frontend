@@ -3,7 +3,7 @@ export const Contributors = [
     name: "Matthias Seidl",
     image: "/contributors/matthias.png",
     role: "Data",
-    twitter: "https://www.twitter.com/mseidl_",
+    twitter: "https://www.twitter.com/web3_data",
     linkedin: "https://www.linkedin.com/in/seidlmatthias",
   },
   {
