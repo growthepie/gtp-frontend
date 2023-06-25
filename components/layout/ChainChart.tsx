@@ -20,7 +20,7 @@ import { Icon } from "@iconify/react";
 import Image from "next/image";
 import d3 from "d3";
 import { AllChainsByKeys } from "@/lib/chains";
-import { debounce } from "lodash";
+import { debounce, forEach } from "lodash";
 
 import { navigationItems } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
@@ -59,6 +59,9 @@ export default function ChainChart({
   const [selectedScale, setSelectedScale] = useState("log");
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
+  const [zoomed, setZoomed] = useState(false);
+  const [zoomMin, setZoomMin] = useState<number | null>(null);
+  const [zoomMax, setZoomMax] = useState<number | null>(null);
   const { isSidebarOpen } = useUIContext();
   const { width, height } = useWindowSize();
   const isMobile = useMediaQuery("(max-width: 767px)");
@@ -233,6 +236,49 @@ export default function ChainChart({
     },
     [selectedTimespan],
   );
+
+  const [intervalShown, setIntervalShown] = useState<{
+    min: number;
+    max: number;
+    num: number;
+    label: string;
+  } | null>(null);
+
+  const onXAxisSetExtremes =
+    useCallback<Highcharts.AxisSetExtremesEventCallbackFunction>(
+      function (e) {
+        if (e.trigger === "pan") return;
+        const { min, max } = e;
+        const numDays = (max - min) / (24 * 60 * 60 * 1000);
+
+        setIntervalShown({
+          min,
+          max,
+          num: numDays,
+          label: `${Math.round(numDays)} day${numDays > 1 ? "s" : ""}`,
+        });
+
+        if (
+          e.trigger === "zoom" ||
+          // e.trigger === "pan" ||
+          e.trigger === "navigator" ||
+          e.trigger === "rangeSelectorButton"
+        ) {
+          if (!zoomed) {
+            setZoomed(true);
+            setZoomMin(min);
+            setZoomMax(max);
+            chartComponents.current.forEach((chart) => {
+              if (chart) {
+                const xAxis = chart.xAxis[0];
+                xAxis.setExtremes(min, max);
+              }
+            });
+          }
+        }
+      },
+      [chartComponents, zoomed],
+    );
 
   const tooltipFormatter = useCallback(
     function (this: Highcharts.TooltipFormatterContextObject) {
@@ -452,6 +498,34 @@ export default function ChainChart({
       backgroundColor: undefined,
       margin: [1, 0, 0, 0],
       spacingBottom: 0,
+      panning: { enabled: true },
+      panKey: "shift",
+      zooming: {
+        type: "x",
+        resetButton: {
+          theme: {
+            zIndex: -10,
+            fill: "transparent",
+            stroke: "transparent",
+            style: {
+              color: "transparent",
+              height: 0,
+              width: 0,
+            },
+            states: {
+              hover: {
+                fill: "transparent",
+                stroke: "transparent",
+                style: {
+                  color: "transparent",
+                  height: 0,
+                  width: 0,
+                },
+              },
+            },
+          },
+        },
+      },
 
       style: {
         //@ts-ignore
@@ -492,6 +566,9 @@ export default function ChainChart({
       //     : "rgba(41, 51, 50, 0.33)",
     },
     xAxis: {
+      events: {
+        afterSetExtremes: onXAxisSetExtremes,
+      },
       type: "datetime",
       lineWidth: 0,
       crosshair: {
@@ -499,8 +576,12 @@ export default function ChainChart({
         color: COLORS.PLOT_LINE,
         snap: false,
       },
-      min: timespans[selectedTimespan].xMin - 1000 * 60 * 60 * 24 * 7,
-      max: timespans[selectedTimespan].xMax + 1000 * 60 * 60 * 24 * 7,
+      min: zoomed
+        ? zoomMin
+        : timespans[selectedTimespan].xMin - 1000 * 60 * 60 * 24 * 7,
+      max: zoomed
+        ? zoomMax
+        : timespans[selectedTimespan].xMax + 1000 * 60 * 60 * 24 * 7,
       tickPositions: getTickPositions(
         timespans[selectedTimespan].xMin,
         timespans[selectedTimespan].xMax,
@@ -640,7 +721,7 @@ export default function ChainChart({
   }>(() => ({}), []);
 
   const resetXAxisExtremes = useCallback(() => {
-    if (chartComponents.current) {
+    if (chartComponents.current && !zoomed) {
       chartComponents.current.forEach((chart) => {
         if (!chart) return;
 
@@ -659,12 +740,12 @@ export default function ChainChart({
         );
       });
     }
-  }, [selectedTimespan, timespans]);
+  }, [selectedTimespan, timespans, zoomed]);
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
   const resituateChart = debounce(() => {
-    if (chartComponents.current) {
+    if (chartComponents.current && !zoomed) {
       chartComponents.current.forEach((chart) => {
         delay(50)
           .then(() => {
@@ -737,21 +818,44 @@ export default function ChainChart({
           </div>
         </div>
         <div className="flex w-full md:w-auto justify-between md:justify-center items-stretch md:items-center space-x-[4px] md:space-x-1">
-          {Object.keys(timespans).map((timespan) => (
-            <button
-              key={timespan}
-              className={`rounded-full grow px-[16px] py-[8px] text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
-                selectedTimespan === timespan
-                  ? "bg-forest-500 dark:bg-forest-1000"
-                  : "hover:bg-forest-500/10"
-              }`}
-              onClick={() => {
-                setSelectedTimespan(timespan);
-              }}
-            >
-              {timespans[timespan].label}
-            </button>
-          ))}
+          {!zoomed ? (
+            Object.keys(timespans).map((timespan) => (
+              <button
+                key={timespan}
+                className={`rounded-full grow px-[16px] py-[8px] text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
+                  selectedTimespan === timespan
+                    ? "bg-forest-500 dark:bg-forest-1000"
+                    : "hover:bg-forest-500/10"
+                }`}
+                onClick={() => {
+                  setSelectedTimespan(timespan);
+                }}
+              >
+                {timespans[timespan].label}
+              </button>
+            ))
+          ) : (
+            <div className="flex">
+              <button
+                className={`rounded-full flex items-center space-x-3 px-[15px] py-[7px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium border-[0.5px] border-forest-400`}
+                onClick={() => {
+                  //chartComponent?.current?.xAxis[0].setExtremes(
+                  //timespans[selectedTimespan].xMin,
+                  //</div>timespans[selectedTimespan].xMax,
+                  //);
+                  setZoomed(false);
+                }}
+              >
+                <Icon icon="feather:zoom-out" className="w-6 h-6" />
+                <div>Reset Zoom</div>
+              </button>
+              <button
+                className={`rounded-full px-[16px] py-[8px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4  bg-forest-100 dark:bg-forest-1000`}
+              >
+                {intervalShown?.label}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -770,7 +874,9 @@ export default function ChainChart({
                   <div key={key} className="w-full relative">
                     <div className="w-full h-[60px] lg:h-[176px] relative  pointer-events-none">
                       <div className="w-full absolute top-0 -bottom-[15px] text-[10px] opacity-10 z-0">
-                        <div className="absolute left-[15px] h-full border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
+                        <div className="absolute left-[15px] h-full border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end">
+                          {zoomed ? <p>Yoooo</p> : <p></p>}
+                        </div>
                         <div className="absolute right-[15px] h-full border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
                       </div>
                       <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] text-forest-50 rounded-[15px] opacity-30 z-30"></div>
