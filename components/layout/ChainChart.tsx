@@ -264,17 +264,15 @@ export default function ChainChart({
           e.trigger === "navigator" ||
           e.trigger === "rangeSelectorButton"
         ) {
-          if (!zoomed) {
-            setZoomed(true);
-            setZoomMin(min);
-            setZoomMax(max);
-            chartComponents.current.forEach((chart) => {
-              if (chart) {
-                const xAxis = chart.xAxis[0];
-                xAxis.setExtremes(min, max);
-              }
-            });
-          }
+          setZoomed(true);
+          setZoomMin(min);
+          setZoomMax(max);
+          chartComponents.current.forEach((chart) => {
+            if (chart) {
+              const xAxis = chart.xAxis[0];
+              xAxis.setExtremes(min, max);
+            }
+          });
         }
       },
       [chartComponents, zoomed],
@@ -874,9 +872,7 @@ export default function ChainChart({
                   <div key={key} className="w-full relative">
                     <div className="w-full h-[60px] lg:h-[176px] relative  pointer-events-none">
                       <div className="w-full absolute top-0 -bottom-[15px] text-[10px] opacity-10 z-0">
-                        <div className="absolute left-[15px] h-full border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end">
-                          {zoomed ? <p>Yoooo</p> : <p></p>}
-                        </div>
+                        <div className="absolute left-[15px] h-full border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
                         <div className="absolute right-[15px] h-full border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
                       </div>
                       <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] text-forest-50 rounded-[15px] opacity-30 z-30"></div>
@@ -1171,34 +1167,66 @@ export default function ChainChart({
                     <div className="absolute left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
                     <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
                   </div>
-                  {(key === "stables_mcap" || key === "txcosts") && (
-                    <div
-                      className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
-                        key === "txcosts" ? "hidden lg:block" : ""
-                      }`}
-                    >
-                      <div className="absolute left-[15px] align-bottom flex items-end z-30">
-                        {new Date(
-                          timespans[selectedTimespan].xMin,
-                        ).toLocaleDateString(undefined, {
-                          timeZone: "UTC",
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </div>
-                      <div className="absolute right-[15px] align-bottom flex items-end z-30">
-                        {new Date(
-                          timespans[selectedTimespan].xMax,
-                        ).toLocaleDateString(undefined, {
-                          timeZone: "UTC",
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </div>
-                    </div>
-                  )}
+                  {!zoomed
+                    ? (key === "stables_mcap" || key === "txcosts") && (
+                        <div
+                          className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                            key === "txcosts" ? "hidden lg:block" : ""
+                          }`}
+                        >
+                          <div className="absolute left-[15px] align-bottom flex items-end z-30">
+                            {new Date(
+                              timespans[selectedTimespan].xMin,
+                            ).toLocaleDateString(undefined, {
+                              timeZone: "UTC",
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
+                          </div>
+                          <div className="absolute right-[15px] align-bottom flex items-end z-30">
+                            {new Date(
+                              timespans[selectedTimespan].xMax,
+                            ).toLocaleDateString(undefined, {
+                              timeZone: "UTC",
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
+                          </div>
+                        </div>
+                      )
+                    : (key === "stables_mcap" || key === "txcosts") &&
+                      intervalShown && (
+                        <div
+                          className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                            key === "txcosts" ? "hidden lg:block" : ""
+                          }`}
+                        >
+                          <div className="absolute left-[15px] align-bottom flex items-end z-30 ">
+                            {new Date(intervalShown.min).toLocaleDateString(
+                              undefined,
+                              {
+                                timeZone: "UTC",
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              },
+                            )}
+                          </div>
+                          <div className="absolute right-[15px] align-bottom flex items-end z-30">
+                            {new Date(intervalShown.max).toLocaleDateString(
+                              undefined,
+                              {
+                                timeZone: "UTC",
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              },
+                            )}
+                          </div>
+                        </div>
+                      )}
                 </div>
               );
             })}
