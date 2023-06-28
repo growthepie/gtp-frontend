@@ -383,11 +383,9 @@ export default function ChainChart({
 
       const series = points[0].series;
 
-      const name = series.name;
-
       const date = new Date(x);
 
-      const prefix = prefixes[series.name] ?? "";
+      // const prefix = prefixes[series.name] ?? "";
 
       const dateString = date.toLocaleDateString(undefined, {
         timeZone: "UTC",
@@ -422,10 +420,10 @@ export default function ChainChart({
                   AllChainsByKeys[data.chain_id].label
                 }</div>
                 -->
-                <div class="flex-1 text-right font-inter">${prefix}${Highcharts.numberFormat(
-              percentage,
-              2,
-            )}%</div>
+                <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
+                  percentage,
+                  2,
+                )}%</div>
               </div>
               <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
                 <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
@@ -438,7 +436,20 @@ export default function ChainChart({
             };"> </div>
               </div> -->`;
 
-          const value = formatNumber(name, y);
+          let prefix = displayValues[series.name].prefix;
+          let suffix = displayValues[series.name].suffix;
+          let value = y;
+
+          if (
+            !showUsd &&
+            data.metrics[series.name].daily.types.includes("eth")
+          ) {
+            if (showGwei(series.name)) {
+              prefix = "";
+              suffix = " Gwei";
+            }
+          }
+
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-1">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
@@ -449,12 +460,17 @@ export default function ChainChart({
               AllChainsByKeys[data.chain_id].label
             }</div>
             -->
-            <div class="flex-1 text-left justify-start font-inter">
-              <div class="mr-1 inline-block">${prefix}${parseFloat(
-            y,
-          ).toLocaleString(undefined, {
-            minimumFractionDigits: 0,
-          })}</div>
+            <div class="flex-1 text-left justify-start font-inter flex">
+                <div class="opacity-70 mr-0.5 ${
+                  !prefix && "hidden"
+                }">${prefix}</div>
+                ${parseFloat(value).toLocaleString(undefined, {
+                  minimumFractionDigits: prefix ? 2 : 0,
+                  maximumFractionDigits: prefix ? 2 : 0,
+                })}
+                <div class="opacity-70 ml-0.5 ${
+                  !suffix && "hidden"
+                }">${suffix}</div>
             </div>
           </div>
           <!-- <div class="flex ml-4 w-[calc(100% - 1rem)] relative mb-1">

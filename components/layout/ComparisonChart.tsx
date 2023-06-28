@@ -292,13 +292,6 @@ export default function ComparisonChart({
     [selectedScale],
   );
 
-  // const getChartType = useCallback(() => {
-  //   if (selectedScale === "percentage") return "area";
-  //   if (selectedScale === "log") return "column";
-
-  //   return "line";
-  // }, [selectedScale]);
-
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
 
   const filteredData = useMemo<any[]>(() => {
