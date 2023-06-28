@@ -6,13 +6,14 @@ import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
 import { useTransition, animated } from "@react-spring/web";
 import { useUIContext } from "@/contexts/UIContext";
+import { navigationItems } from "@/lib/navigation";
 
 const MetricsTable = ({
   data,
   chains,
   selectedChains,
   setSelectedChains,
-  metric,
+  metric_id,
   showEthereumMainnet,
   setShowEthereumMainnet,
 }: {
@@ -20,7 +21,7 @@ const MetricsTable = ({
   chains: any;
   selectedChains: any;
   setSelectedChains: any;
-  metric: string;
+  metric_id: string;
   showEthereumMainnet: boolean;
   setShowEthereumMainnet: (show: boolean) => void;
 }) => {
@@ -32,7 +33,17 @@ const MetricsTable = ({
 
   const { theme } = useTheme();
 
-  const metric_ids_reverse_performance = ["txcosts"];
+  const metric_ids_reverse_performance = useMemo(() => {
+    return ["txcosts"];
+  }, []);
+
+  const showGwei = useMemo(() => {
+    const item = navigationItems[1].options.find(
+      (item) => item.key === metric_id,
+    );
+
+    return item?.page?.showGwei;
+  }, [metric_id]);
 
   const { isSidebarOpen } = useUIContext();
 
@@ -86,7 +97,7 @@ const MetricsTable = ({
         if (b.chain.key === "ethereum") return -1;
 
         // sort by last value in daily data array and keep unselected chains at the bottom in descending order
-        if (metric_ids_reverse_performance.includes(metric)) {
+        if (metric_ids_reverse_performance.includes(metric_id)) {
           if (selectedChains.includes(a.chain.key)) {
             if (selectedChains.includes(b.chain.key)) {
               return a.lastVal - b.lastVal;
@@ -116,7 +127,14 @@ const MetricsTable = ({
           }
         }
       });
-  }, [data, selectedChains, showUsd, maxVal]);
+  }, [
+    data,
+    maxVal,
+    showUsd,
+    metric_ids_reverse_performance,
+    metric_id,
+    selectedChains,
+  ]);
 
   let height = 0;
   const transitions = useTransition(
@@ -134,6 +152,65 @@ const MetricsTable = ({
       config: { mass: 5, tension: 500, friction: 100 },
       trail: 25,
     },
+  );
+
+  const getDisplayValue = useCallback(
+    (item: any) => {
+      let prefix = "";
+      let suffix = "";
+      let value = Intl.NumberFormat(undefined, {
+        notation: "compact",
+        maximumFractionDigits: 2,
+        minimumFractionDigits: 2,
+      }).format(item.data.daily.data[item.data.daily.data.length - 1][1]);
+
+      if (item.data.daily.types.includes("eth")) {
+        if (!showUsd) {
+          prefix = "Ξ";
+
+          value = Intl.NumberFormat(undefined, {
+            notation: "compact",
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 2,
+          }).format(
+            item.data.daily.data[item.data.daily.data.length - 1][
+              item.data.daily.types.indexOf("eth")
+            ],
+          );
+
+          let navItem = navigationItems[1].options.find(
+            (item) => item.key === metric_id,
+          );
+
+          if (navItem && navItem.page?.showGwei) {
+            prefix = "";
+            suffix = " Gwei";
+            value = Intl.NumberFormat(undefined, {
+              notation: "compact",
+              maximumFractionDigits: 2,
+              minimumFractionDigits: 2,
+            }).format(
+              item.data.daily.data[item.data.daily.data.length - 1][
+                item.data.daily.types.indexOf("eth")
+              ] * 1000000000,
+            );
+          }
+        } else {
+          prefix = "$";
+          value = Intl.NumberFormat(undefined, {
+            notation: "compact",
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 2,
+          }).format(
+            item.data.daily.data[item.data.daily.data.length - 1][
+              item.data.daily.types.indexOf("usd")
+            ],
+          );
+        }
+      }
+      return { value, prefix, suffix };
+    },
+    [metric_id, showUsd],
   );
 
   const timespanLabels = {
@@ -240,16 +317,21 @@ const MetricsTable = ({
                   <div className="w-full break-inside-avoid">
                     <div className="w-full flex flex-col space-y-0.5">
                       <div className="flex w-full items-baseline text-sm font-bold pb-0.5">
-                        {item.data.daily.types.includes("usd") && (
-                          <>
-                            {showUsd ? (
+                        {/* {item.data.daily.types.includes("usd") && (
+                          <> */}
+                        {/* {showUsd ? (
                               <div className="text-[13px] font-normal">$</div>
                             ) : (
                               <div className="text-[13px] font-normal">Ξ</div>
-                            )}
-                          </>
+                            )} */}
+                        {getDisplayValue(item).prefix && (
+                          <div className="text-[13px] font-normal mr-[1px]">
+                            {getDisplayValue(item).prefix}
+                          </div>
                         )}
-                        {item.data.daily.types.includes("usd")
+                        {/* </> */}
+                        {/* )} */}
+                        {/* {item.data.daily.types.includes("usd")
                           ? Intl.NumberFormat(undefined, {
                               notation: "compact",
                               maximumFractionDigits: 2,
@@ -272,7 +354,13 @@ const MetricsTable = ({
                               item.data.daily.data[
                                 item.data.daily.data.length - 1
                               ][1],
-                            )}
+                            )} */}
+                        {getDisplayValue(item).value}
+                        {getDisplayValue(item).suffix && (
+                          <div className="text-[13px] font-normal ml-0.5">
+                            {getDisplayValue(item).suffix}
+                          </div>
+                        )}
                       </div>
                       <div className="relative w-full">
                         {item.chain.key !== "ethereum" && (
@@ -323,13 +411,15 @@ const MetricsTable = ({
                         </span>
                       ) : (
                         <>
-                          {(metric_ids_reverse_performance.includes(metric)
+                          {(metric_ids_reverse_performance.includes(metric_id)
                             ? -1.0
                             : 1.0) *
                             item.data.changes[timespan][0] >=
                           0 ? (
                             <span className="text-[#45AA6F] dark:text-[#4CFF7E]">
-                              {metric_ids_reverse_performance.includes(metric)
+                              {metric_ids_reverse_performance.includes(
+                                metric_id,
+                              )
                                 ? "-"
                                 : "+"}
                               {Math.abs(
@@ -341,7 +431,9 @@ const MetricsTable = ({
                             </span>
                           ) : (
                             <span className="text-[#DD3408] dark:text-[#FF3838]">
-                              {metric_ids_reverse_performance.includes(metric)
+                              {metric_ids_reverse_performance.includes(
+                                metric_id,
+                              )
                                 ? "+"
                                 : "-"}
                               {Math.abs(

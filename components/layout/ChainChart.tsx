@@ -65,19 +65,6 @@ export default function ChainChart({
   const { isSidebarOpen } = useUIContext();
   const { width, height } = useWindowSize();
   const isMobile = useMediaQuery("(max-width: 767px)");
-  /*const chartStyle = useMemo(() => {
-    if (!AllChains || !data) return [];
-
-    let result: any = null;
-
-    AllChains.forEach((chain) => {
-      if (chain.key === data.chain_id) {
-        result = chain;
-      }
-    });
-
-    return result;
-  }, [data]);*/
 
   const timespans = useMemo(() => {
     let max = 0;
@@ -149,18 +136,15 @@ export default function ChainChart({
     return formattedDateStr;
   }
 
-  const formatNumber = useCallback(
-    (value: number | string, isAxis = false) => {
-      return isAxis
-        ? selectedScale !== "percentage"
-          ? d3.format(".2s")(value).replace(/G/, "B")
-          : d3.format(".2~s")(value).replace(/G/, "B") + "%"
-        : d3.format(",.2~s")(value).replace(/G/, "B");
-    },
-    [selectedScale],
-  );
-
   const chartComponents = useRef<Highcharts.Chart[]>([]);
+
+  const showGwei = useCallback((metric_id: string) => {
+    const item = navigationItems[1].options.find(
+      (item) => item.key === metric_id,
+    );
+
+    return item?.page?.showGwei;
+  }, []);
 
   //const [prefixes, setPrefixes] = useState<string[]>([]);
 
@@ -182,6 +166,119 @@ export default function ChainChart({
     });
     return p;
   }, [data, showUsd]);
+
+  const displayValues = useMemo(() => {
+    const p: {
+      [key: string]: {
+        value: string;
+        prefix: string;
+        suffix: string;
+      };
+    } = {};
+    Object.keys(data.metrics).forEach((key) => {
+      let prefix = "";
+      let suffix = "";
+      let value = Intl.NumberFormat(undefined, {
+        notation: "compact",
+        maximumFractionDigits: 2,
+        minimumFractionDigits: 2,
+      }).format(
+        data.metrics[key].daily.data[
+          data.metrics[key].daily.data.length - 1
+        ][1],
+      );
+
+      if (data.metrics[key].daily.types.includes("eth")) {
+        if (!showUsd) {
+          prefix = "Ξ";
+
+          value = Intl.NumberFormat(undefined, {
+            notation: "compact",
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 2,
+          }).format(
+            data.metrics[key].daily.data[
+              data.metrics[key].daily.data.length - 1
+            ][data.metrics[key].daily.types.indexOf("eth")],
+          );
+
+          let navItem = navigationItems[1].options.find((ni) => ni.key === key);
+
+          if (navItem && navItem.page?.showGwei) {
+            prefix = "";
+            suffix = " Gwei";
+            value = Intl.NumberFormat(undefined, {
+              notation: "compact",
+              maximumFractionDigits: 2,
+              minimumFractionDigits: 2,
+            }).format(
+              data.metrics[key].daily.data[
+                data.metrics[key].daily.data.length - 1
+              ][data.metrics[key].daily.types.indexOf("eth")] * 1000000000,
+            );
+          }
+        } else {
+          prefix = "$";
+          value = Intl.NumberFormat(undefined, {
+            notation: "compact",
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 2,
+          }).format(
+            data.metrics[key].daily.data[
+              data.metrics[key].daily.data.length - 1
+            ][data.metrics[key].daily.types.indexOf("usd")],
+          );
+        }
+      }
+      p[key] = { value, prefix, suffix };
+    });
+    return p;
+  }, [data.metrics, showUsd]);
+
+  const formatNumber = useCallback(
+    (key: string, value: number | string, isAxis = false) => {
+      let prefix = prefixes[key];
+      let suffix = "";
+      let val = parseFloat(value as string);
+
+      if (
+        !showUsd &&
+        data.metrics[key].daily.types.includes("eth") &&
+        selectedScale !== "percentage"
+      ) {
+        if (showGwei(key)) {
+          prefix = "";
+          suffix = " Gwei";
+        }
+      }
+
+      let number = d3.format(`.2~s`)(val).replace(/G/, "B");
+
+      if (isAxis) {
+        if (selectedScale === "percentage") {
+          number = d3.format(".2~s")(val).replace(/G/, "B") + "%";
+        } else {
+          if (showGwei(key) && showUsd) {
+            // for small USD amounts, show 2 decimals
+            if (val < 10)
+              number =
+                prefix + d3.format(".3s")(val).replace(/G/, "B") + suffix;
+            else if (val < 100)
+              number =
+                prefix + d3.format(".4s")(val).replace(/G/, "B") + suffix;
+            else
+              number =
+                prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+          } else {
+            number = prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+          }
+        }
+      }
+
+      return number;
+    },
+    [data.metrics, prefixes, selectedScale, showGwei, showUsd],
+  );
 
   const getTickPositions = useCallback(
     (xMin: any, xMax: any): number[] => {
@@ -286,6 +383,8 @@ export default function ChainChart({
 
       const series = points[0].series;
 
+      const name = series.name;
+
       const date = new Date(x);
 
       const prefix = prefixes[series.name] ?? "";
@@ -339,7 +438,7 @@ export default function ChainChart({
             };"> </div>
               </div> -->`;
 
-          const value = formatNumber(y);
+          const value = formatNumber(name, y);
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-1">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
@@ -362,6 +461,7 @@ export default function ChainChart({
             <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
 
             <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
+              name,
               (y / pointsSum) * 100,
             )}%; background-color: ${
             AllChainsByKeys[data.chain_id].colors[theme][0]
@@ -1071,9 +1171,7 @@ export default function ChainChart({
                               formatter: function (
                                 t: Highcharts.AxisLabelsFormatterContextObject,
                               ) {
-                                return (
-                                  prefixes[key] + formatNumber(t.value, true)
-                                );
+                                return formatNumber(key, t.value, true);
                               },
                             },
                           },
@@ -1082,17 +1180,36 @@ export default function ChainChart({
                             {
                               name: key,
                               crisp: false,
-                              data:
-                                !showUsd &&
-                                data.metrics[key].daily.types.includes("eth")
+                              data: data.metrics[key].daily.types.includes(
+                                "eth",
+                              )
+                                ? showUsd
                                   ? data.metrics[key].daily.data.map((d) => [
                                       d[0],
-                                      d[2],
+                                      d[
+                                        data.metrics[key].daily.types.indexOf(
+                                          "usd",
+                                        )
+                                      ],
                                     ])
                                   : data.metrics[key].daily.data.map((d) => [
                                       d[0],
-                                      d[1],
-                                    ]),
+                                      showGwei(key)
+                                        ? d[
+                                            data.metrics[
+                                              key
+                                            ].daily.types.indexOf("eth")
+                                          ] * 1000000000
+                                        : d[
+                                            data.metrics[
+                                              key
+                                            ].daily.types.indexOf("eth")
+                                          ],
+                                    ])
+                                : data.metrics[key].daily.data.map((d) => [
+                                    d[0],
+                                    d[1],
+                                  ]),
                               showInLegend: false,
                               marker: {
                                 enabled: false,
@@ -1124,23 +1241,10 @@ export default function ChainChart({
                         }
                       </div>
                       <div className="text-[18px] leading-snug font-medium flex space-x-[2px]">
-                        <div>{prefixes[key]}</div>
-                        <div>
-                          {Intl.NumberFormat("en-US", {
-                            notation: "compact",
-                            maximumFractionDigits: 2,
-                            minimumFractionDigits: 2,
-                          }).format(
-                            data.metrics[key].daily.data[
-                              data.metrics[key].daily.data.length - 1
-                            ][
-                              data.metrics[key].daily.types.includes("eth")
-                                ? !showUsd
-                                  ? data.metrics[key].daily.types.indexOf("eth")
-                                  : data.metrics[key].daily.types.indexOf("usd")
-                                : 1
-                            ],
-                          )}
+                        <div>{displayValues[key].prefix}</div>
+                        <div>{displayValues[key].value}</div>
+                        <div className="text-base pl-0.5">
+                          {displayValues[key].suffix}
                         </div>
                       </div>
                       <div

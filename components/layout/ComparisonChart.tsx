@@ -28,6 +28,7 @@ import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import Container from "./Container";
 import ChartWatermark from "./ChartWatermark";
+import { navigationItems } from "@/lib/navigation";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -191,6 +192,7 @@ export default function ComparisonChart({
   setShowEthereumMainnet,
   selectedTimespan,
   setSelectedTimespan,
+  metric_id,
 }: {
   data: any;
   timeIntervals: string[];
@@ -203,6 +205,7 @@ export default function ComparisonChart({
   setShowEthereumMainnet: (show: boolean) => void;
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
+  metric_id: string;
 }) {
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
@@ -222,6 +225,14 @@ export default function ComparisonChart({
   const { theme } = useTheme();
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+
+  const showGwei = useMemo(() => {
+    const item = navigationItems[1].options.find(
+      (item) => item.key === metric_id,
+    );
+
+    return item?.page?.showGwei;
+  }, [metric_id]);
 
   // const [selectedTimespan, setSelectedTimespan] = useState("365d");
 
@@ -290,17 +301,74 @@ export default function ComparisonChart({
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
 
+  const filteredData = useMemo<any[]>(() => {
+    if (!data)
+      return [
+        {
+          name: "",
+          data: [],
+          types: [],
+        },
+      ];
+
+    const d: any[] = showEthereumMainnet
+      ? data
+      : data.filter((d) => d.name !== "ethereum");
+
+    if (d.length === 0)
+      return [
+        {
+          name: "",
+          data: [],
+          types: [],
+        },
+      ];
+    return d;
+  }, [data, showEthereumMainnet]);
+
   const formatNumber = useCallback(
     (value: number | string, isAxis = false) => {
-      const prefix = valuePrefix;
+      let prefix = valuePrefix;
+      let suffix = "";
+      let val = parseFloat(value as string);
 
-      return isAxis
-        ? selectedScale !== "percentage"
-          ? prefix + d3.format(".2s")(value).replace(/G/, "B")
-          : d3.format(".2~s")(value).replace(/G/, "B") + "%"
-        : d3.format(",.2~s")(value).replace(/G/, "B");
+      if (
+        !showUsd &&
+        filteredData[0].types.includes("eth") &&
+        selectedScale !== "percentage"
+      ) {
+        if (showGwei) {
+          prefix = "";
+          suffix = " Gwei";
+        }
+      }
+
+      let number = d3.format(`.2~s`)(val).replace(/G/, "B");
+
+      if (isAxis) {
+        if (selectedScale === "percentage") {
+          number = d3.format(".2~s")(val).replace(/G/, "B") + "%";
+        } else {
+          if (showGwei && showUsd) {
+            // for small USD amounts, show 2 decimals
+            if (val < 10)
+              number =
+                prefix + d3.format(".3s")(val).replace(/G/, "B") + suffix;
+            else if (val < 100)
+              number =
+                prefix + d3.format(".4s")(val).replace(/G/, "B") + suffix;
+            else
+              number =
+                prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+          } else {
+            number = prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+          }
+        }
+      }
+
+      return number;
     },
-    [valuePrefix, selectedScale],
+    [valuePrefix, showUsd, filteredData, selectedScale, showGwei],
   );
 
   const tooltipFormatter = useCallback(
@@ -354,7 +422,17 @@ export default function ComparisonChart({
             };"> </div>
               </div> -->`;
 
-          const value = formatNumber(y);
+          let prefix = valuePrefix;
+          let suffix = "";
+          let value = y;
+
+          if (!showUsd && filteredData[0].types.includes("eth")) {
+            if (showGwei) {
+              prefix = "";
+              suffix = " Gwei";
+            }
+          }
+
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-1">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
@@ -363,13 +441,17 @@ export default function ComparisonChart({
             <div class="tooltip-point-name text-md">${
               AllChainsByKeys[name].label
             }</div>
-            <div class="flex-1 text-right justify-end font-inter">
-              <div class="mr-1 inline-block"><span class="opacity-70 inline-block mr-[1px]">${valuePrefix}</span>${parseFloat(
-            y,
-          ).toLocaleString(undefined, {
-            minimumFractionDigits: valuePrefix ? 2 : 0,
-            maximumFractionDigits: valuePrefix ? 2 : 0,
-          })}</div>
+            <div class="flex-1 text-right justify-end font-inter flex">
+                <div class="opacity-70 mr-0.5 ${
+                  !prefix && "hidden"
+                }">${prefix}</div>
+                ${parseFloat(value).toLocaleString(undefined, {
+                  minimumFractionDigits: valuePrefix ? 2 : 0,
+                  maximumFractionDigits: valuePrefix ? 2 : 0,
+                })}
+                <div class="opacity-70 ml-0.5 ${
+                  !suffix && "hidden"
+                }">${suffix}</div>
             </div>
           </div>
           <!-- <div class="flex ml-4 w-[calc(100% - 1rem)] relative mb-1">
@@ -385,7 +467,15 @@ export default function ComparisonChart({
         .join("");
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [formatNumber, selectedScale, theme, valuePrefix],
+    [
+      filteredData,
+      formatNumber,
+      selectedScale,
+      showGwei,
+      showUsd,
+      theme,
+      valuePrefix,
+    ],
   );
 
   const tooltipPositioner =
@@ -426,31 +516,6 @@ export default function ComparisonChart({
       },
       [isMobile],
     );
-
-  const filteredData = useMemo<any[]>(() => {
-    if (!data)
-      return [
-        {
-          name: "",
-          data: [],
-          types: [],
-        },
-      ];
-
-    const d: any[] = showEthereumMainnet
-      ? data
-      : data.filter((d) => d.name !== "ethereum");
-
-    if (d.length === 0)
-      return [
-        {
-          name: "",
-          data: [],
-          types: [],
-        },
-      ];
-    return d;
-  }, [data, showEthereumMainnet]);
 
   const timespans = useMemo(() => {
     let maxDate = new Date();
@@ -504,7 +569,7 @@ export default function ComparisonChart({
         xMax: maxPlusBuffer,
       },
     };
-  }, [filteredData, selectedScale]);
+  }, [filteredData]);
 
   useEffect(() => {
     if (chartComponent.current) {
@@ -675,6 +740,8 @@ export default function ComparisonChart({
         // ["absolute", "percentage"].includes(selectedScale)
         //   ? "linear"
         //   : "logarithmic",
+        min: 0,
+        max: selectedScale === "percentage" ? 100 : undefined,
         labels: {
           y: 5,
           style: {
@@ -793,10 +860,19 @@ export default function ComparisonChart({
                 //   ? "center"
                 //   :
                 undefined,
-              data:
-                !showUsd && series.types.includes("usd")
-                  ? series.data.map((d: any) => [d[0], d[2]])
-                  : series.data.map((d: any) => [d[0], d[1]]),
+              data: series.types.includes("usd")
+                ? showUsd
+                  ? series.data.map((d: any) => [
+                      d[0],
+                      d[series.types.indexOf("usd")],
+                    ])
+                  : series.data.map((d: any) => [
+                      d[0],
+                      showGwei
+                        ? d[series.types.indexOf("eth")] * 1000000000
+                        : d[series.types.indexOf("eth")],
+                    ])
+                : series.data.map((d: any) => [d[0], d[1]]),
               ...pointsSettings,
               type: getSeriesType(series.name),
               // fill if series name is ethereum
