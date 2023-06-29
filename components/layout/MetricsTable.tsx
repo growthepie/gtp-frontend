@@ -33,16 +33,12 @@ const MetricsTable = ({
 
   const { theme } = useTheme();
 
-  const metric_ids_reverse_performance = useMemo(() => {
-    return ["txcosts"];
-  }, []);
-
-  const showGwei = useMemo(() => {
+  const [showGwei, reversePerformer] = useMemo(() => {
     const item = navigationItems[1].options.find(
       (item) => item.key === metric_id,
     );
 
-    return item?.page?.showGwei;
+    return [item?.page?.showGwei, item?.page?.reversePerformer];
   }, [metric_id]);
 
   const { isSidebarOpen } = useUIContext();
@@ -97,7 +93,7 @@ const MetricsTable = ({
         if (b.chain.key === "ethereum") return -1;
 
         // sort by last value in daily data array and keep unselected chains at the bottom in descending order
-        if (metric_ids_reverse_performance.includes(metric_id)) {
+        if (reversePerformer) {
           if (selectedChains.includes(a.chain.key)) {
             if (selectedChains.includes(b.chain.key)) {
               return a.lastVal - b.lastVal;
@@ -127,14 +123,7 @@ const MetricsTable = ({
           }
         }
       });
-  }, [
-    data,
-    maxVal,
-    showUsd,
-    metric_ids_reverse_performance,
-    metric_id,
-    selectedChains,
-  ]);
+  }, [data, maxVal, showUsd, reversePerformer, selectedChains]);
 
   let height = 0;
   const transitions = useTransition(
@@ -411,17 +400,11 @@ const MetricsTable = ({
                         </span>
                       ) : (
                         <>
-                          {(metric_ids_reverse_performance.includes(metric_id)
-                            ? -1.0
-                            : 1.0) *
+                          {(reversePerformer ? -1.0 : 1.0) *
                             item.data.changes[timespan][0] >=
                           0 ? (
                             <span className="text-[#45AA6F] dark:text-[#4CFF7E]">
-                              {metric_ids_reverse_performance.includes(
-                                metric_id,
-                              )
-                                ? "-"
-                                : "+"}
+                              {reversePerformer ? "-" : "+"}
                               {Math.abs(
                                 Math.round(
                                   item.data.changes[timespan][0] * 1000,
@@ -431,11 +414,7 @@ const MetricsTable = ({
                             </span>
                           ) : (
                             <span className="text-[#DD3408] dark:text-[#FF3838]">
-                              {metric_ids_reverse_performance.includes(
-                                metric_id,
-                              )
-                                ? "+"
-                                : "-"}
+                              {reversePerformer ? "+" : "-"}
                               {Math.abs(
                                 Math.round(
                                   item.data.changes[timespan][0] * 1000,

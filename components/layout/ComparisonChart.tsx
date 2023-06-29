@@ -226,12 +226,12 @@ export default function ComparisonChart({
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
-  const showGwei = useMemo(() => {
+  const [showGwei, reversePerformer] = useMemo(() => {
     const item = navigationItems[1].options.find(
       (item) => item.key === metric_id,
     );
 
-    return item?.page?.showGwei;
+    return [item?.page?.showGwei, item?.page?.reversePerformer];
   }, [metric_id]);
 
   // const [selectedTimespan, setSelectedTimespan] = useState("365d");
@@ -386,7 +386,11 @@ export default function ComparisonChart({
         }, 0);
 
       const tooltipPoints = points
-        .sort((a: any, b: any) => b.y - a.y)
+        .sort((a: any, b: any) => {
+          if (reversePerformer) return a.y - b.y;
+
+          return b.y - a.y;
+        })
         .map((point: any) => {
           const { series, y, percentage } = point;
           const { name } = series;
@@ -463,6 +467,7 @@ export default function ComparisonChart({
     [
       filteredData,
       formatNumber,
+      reversePerformer,
       selectedScale,
       showGwei,
       showUsd,
@@ -733,6 +738,7 @@ export default function ComparisonChart({
         // ["absolute", "percentage"].includes(selectedScale)
         //   ? "linear"
         //   : "logarithmic",
+        // reversed: reversePerformer ?? false,
         min: 0,
         max: selectedScale === "percentage" ? 100 : undefined,
         labels: {
@@ -1162,6 +1168,8 @@ export default function ComparisonChart({
     isMobile,
     getSeriesType,
     scaleToPlotOptions,
+    reversePerformer,
+    selectedScale,
     theme,
     getTickPositions,
     timespans,
@@ -1171,9 +1179,9 @@ export default function ComparisonChart({
     tooltipPositioner,
     showUsd,
     formatNumber,
-    selectedScale,
     showEthereumMainnet,
     dataGrouping,
+    showGwei,
   ]);
 
   useEffect(() => {

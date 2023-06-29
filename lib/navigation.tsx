@@ -17,6 +17,7 @@ export type NavigationItem = {
       why?: string;
       icon?: string;
       showGwei?: boolean;
+      reversePerformer?: boolean;
     };
     icon: string;
     key?: string;
@@ -79,6 +80,7 @@ export const navigationItems: NavigationItem[] = [
                 why: "This is the amount that users pay per transaction. On EVM chains, transaction costs depend on the complexity of the transaction (which is measured in gas). A simple transaction, e.g. a native ETH transfer, uses less gas than a more complex transaction, e.g. an ERC20 swap. Hence, we calculated this metric by looking at the median transaction costs. IMX doesn't charge transaction costs.",
                 icon: "gtp:transaction-costs",
                 showGwei: true,
+                reversePerformer: true,
               },
               icon: "gtp:transaction-costs",
               key: "txcosts",
