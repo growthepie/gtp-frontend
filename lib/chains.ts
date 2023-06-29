@@ -128,7 +128,7 @@ export const AllChains = [
     urlKey: "optimism",
     chainType: "L2",
     description:
-      "OP Mainnet (formerly Optimism) uses an optimistic rollup approach, where transactions are assumed to be valid unless proven otherwise, and only invalid transactions are rolled back. Optimism's mainnet launched in August 2021, making it one of the first rollups. It is fully compatible with the Ethereum Virtual Machine (EVM), making it easy for developers to migrate their applications to the Optimism network.",
+      "OP Mainnet (formerly Optimism) uses an optimistic rollup approach, where transactions are assumed to be valid unless proven otherwise, and only invalid transactions are rolled back. OP Mainnet launched in August 2021, making it one of the first rollups. It is fully compatible with the Ethereum Virtual Machine (EVM), making it easy for developers to migrate their applications to the Optimism network.",
     border: {
       light: ["border-[#DD3408]", "border-[#DD3408]"],
       dark: ["border-[#FE5468]", "border-[#FE5468]"],
