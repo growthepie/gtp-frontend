@@ -20,6 +20,7 @@ import { Sources } from "@/lib/datasources";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import ChartWatermark from "./ChartWatermark";
+import { IS_PREVIEW } from "@/lib/helpers";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -265,7 +266,7 @@ export default function LandingChart({
 
       return tickPositions;
     },
-    [selectedTimespan]
+    [selectedTimespan],
   );
 
   const getSeriesType = useCallback(
@@ -276,7 +277,7 @@ export default function LandingChart({
 
       return "column";
     },
-    [selectedScale]
+    [selectedScale],
   );
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
@@ -289,7 +290,7 @@ export default function LandingChart({
           : d3.format(".2s")(value) + "%"
         : d3.format(",.2~s")(value);
     },
-    [selectedScale]
+    [selectedScale],
   );
 
   const tooltipFormatter = useCallback(
@@ -315,19 +316,17 @@ export default function LandingChart({
             month: "short",
             day: "numeric",
             year: "numeric",
-          }
+          },
         )}
       </div>`;
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-48 md:w-60 text-xs font-raleway"><div class="w-full flex justify-between font-bold text-[13px] md:text-[1rem] items-end pl-6 pr-1 mb-2">${dateString}</div>`;
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway"><div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-6 mb-2 flex justify-between">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
-      let pointsSum = 0;
-      if (selectedScale !== "percentage")
-        pointsSum = points.reduce((acc: number, point: any) => {
-          acc += point.y;
-          return pointsSum;
-        }, 0);
+      let pointsSum = points.reduce((acc: number, point: any) => {
+        acc += point.y;
+        return acc;
+      }, 0);
 
       const tooltipPoints = points
         .sort((a: any, b: any) => b.y - a.y)
@@ -336,7 +335,7 @@ export default function LandingChart({
           const { name } = series;
           if (selectedScale === "percentage")
             return `
-              <div class="flex w-full space-x-2 items-center font-medium mb-1">
+              <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
                 <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
                   AllChainsByKeys[name].colors[theme][0]
                 }"></div>
@@ -345,52 +344,61 @@ export default function LandingChart({
                 }</div>
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
                   percentage,
-                  2
+                  2,
                 )}%</div>
               </div>
-              <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
-                <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
-
-                <div class="h-[2px] rounded-full absolute left-0 top-0" style="width: ${Highcharts.numberFormat(
-                  percentage,
-                  2
-                )}%; background-color: ${
-              AllChainsByKeys[name].colors[theme][0]
-            };"> </div>
-              </div> -->`;
+              ${
+                IS_PREVIEW
+                  ? `
+              <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+                <div class="h-[2px] rounded-none absolute right-0 -top-[1px] w-full bg-white/0"></div>
+    
+                <div class="h-[2px] rounded-none absolute right-0 -top-[1px] bg-forest-900 dark:bg-forest-50" 
+                style="
+                  width: ${percentage}%;
+                  background-color: ${AllChainsByKeys[name].colors[theme][0]}99;
+                "></div>
+              </div>`
+                  : ""
+              }`;
 
           const value = formatNumber(y);
           return `
-          <div class="flex w-full space-x-2 items-center font-medium mb-1">
+          <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
               AllChainsByKeys[name].colors[theme][0]
             }"></div>
             <div class="tooltip-point-name text-md">${
               AllChainsByKeys[name].label
             }</div>
-            <div class="flex-1 text-right justify-end font-inter">
-              <div class="mr-1 inline-block">${parseFloat(y).toLocaleString(
+            <div class="flex-1 text-right justify-end font-inter flex">
+              <div class="inline-block">${parseFloat(y).toLocaleString(
                 undefined,
                 {
                   minimumFractionDigits: 0,
-                }
+                },
               )}</div>
             </div>
           </div>
-          <!-- <div class="flex ml-4 w-[calc(100% - 1rem)] relative mb-1">
-            <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
+          ${
+            IS_PREVIEW
+              ? `
+          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+            <div class="h-[2px] rounded-none absolute right-0 -top-[1px] w-full bg-white/0"></div>
 
-            <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
-              (y / pointsSum) * 100
-            )}%; background-color: ${
-            AllChainsByKeys[name].colors[theme][0]
-          }33;"></div>
-          </div> -->`;
+            <div class="h-[2px] rounded-none absolute right-0 -top-[1px] bg-forest-900 dark:bg-forest-50" 
+            style="
+              width: ${(y / pointsSum) * 100}%;
+              background-color: ${AllChainsByKeys[name].colors[theme][0]}99;
+            "></div>
+          </div>`
+              : ""
+          }`;
         })
         .join("");
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [formatNumber, selectedScale, theme]
+    [formatNumber, selectedScale, theme],
   );
 
   const tooltipPositioner =
@@ -429,7 +437,7 @@ export default function LandingChart({
           y: tooltipY,
         };
       },
-      [isMobile]
+      [isMobile],
     );
 
   const [showTotalUsers, setShowTotalUsers] = useState(true);
@@ -441,7 +449,7 @@ export default function LandingChart({
 
     setTotalUsersIncrease(
       (l2s.data[l2s.data.length - 1][1] - l2s.data[l2s.data.length - 2][1]) /
-        l2s.data[l2s.data.length - 2][1]
+        l2s.data[l2s.data.length - 2][1],
     );
 
     if (showTotalUsers)
@@ -458,7 +466,7 @@ export default function LandingChart({
     const maxDate = new Date(
       filteredData.length > 0
         ? filteredData[0].data[filteredData[0].data.length - 1][0]
-        : 0
+        : 0,
     );
     const buffer =
       selectedScale === "percentage" ? 0 : 3.5 * 24 * 60 * 60 * 1000;
@@ -494,7 +502,7 @@ export default function LandingChart({
         value: 0,
         xMin: filteredData.reduce(
           (min, d) => Math.min(min, d.data[0][0]),
-          Infinity
+          Infinity,
         ),
 
         xMax: maxPlusBuffer,
@@ -506,7 +514,7 @@ export default function LandingChart({
     if (chartComponent.current) {
       chartComponent.current.xAxis[0].setExtremes(
         timespans[selectedTimespan].xMin,
-        timespans[selectedTimespan].xMax
+        timespans[selectedTimespan].xMax,
       );
     }
   }, [selectedTimespan, timespans]);
@@ -547,7 +555,7 @@ export default function LandingChart({
           }
         }
       },
-      [selectedTimespan, timespans]
+      [selectedTimespan, timespans],
     );
 
   const options = useMemo((): Highcharts.Options => {
@@ -1200,7 +1208,7 @@ export default function LandingChart({
                     // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
                     tickPositions: getTickPositions(
                       timespans.max.xMin,
-                      timespans.max.xMax
+                      timespans.max.xMax,
                     ),
                   });
                   setZoomed(false);
@@ -1216,7 +1224,7 @@ export default function LandingChart({
                 onClick={() => {
                   chartComponent?.current?.xAxis[0].setExtremes(
                     timespans[selectedTimespan].xMin,
-                    timespans[selectedTimespan].xMax
+                    timespans[selectedTimespan].xMax,
                   );
                   setZoomed(false);
                 }}

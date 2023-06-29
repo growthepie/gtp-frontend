@@ -29,6 +29,7 @@ import { useMediaQuery } from "usehooks-ts";
 import Container from "./Container";
 import ChartWatermark from "./ChartWatermark";
 import { navigationItems } from "@/lib/navigation";
+import { IS_PREVIEW } from "@/lib/helpers";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -378,12 +379,12 @@ export default function ComparisonChart({
       const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway"><div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
-      let pointsSum = 0;
-      if (selectedScale !== "percentage")
-        pointsSum = points.reduce((acc: number, point: any) => {
-          acc += point.y;
-          return pointsSum;
-        }, 0);
+      // let pointsSum = 0;
+      // if (selectedScale !== "percentage")
+      let pointsSum = points.reduce((acc: number, point: any) => {
+        acc += point.y;
+        return acc;
+      }, 0);
 
       const tooltipPoints = points
         .sort((a: any, b: any) => {
@@ -396,7 +397,7 @@ export default function ComparisonChart({
           const { name } = series;
           if (selectedScale === "percentage")
             return `
-              <div class="flex w-full space-x-2 items-center font-medium mb-1">
+              <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
                 <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
                   AllChainsByKeys[name].colors[theme][0]
                 }"></div>
@@ -408,16 +409,20 @@ export default function ComparisonChart({
                   2,
                 )}%</div>
               </div>
-              <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
-                <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
-
-                <div class="h-[2px] rounded-full absolute left-0 top-0" style="width: ${Highcharts.numberFormat(
-                  percentage,
-                  2,
-                )}%; background-color: ${
-              AllChainsByKeys[name].colors[theme][0]
-            };"> </div>
-              </div> -->`;
+              ${
+                IS_PREVIEW
+                  ? `
+              <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+                <div class="h-[2px] rounded-none absolute right-0 -top-[1px] w-full bg-white/0"></div>
+    
+                <div class="h-[2px] rounded-none absolute right-0 -top-[1px] bg-forest-900 dark:bg-forest-50" 
+                style="
+                  width: ${percentage}%;
+                  background-color: ${AllChainsByKeys[name].colors[theme][0]}99;
+                "></div>
+              </div>`
+                  : ""
+              }`;
 
           let prefix = valuePrefix;
           let suffix = "";
@@ -431,7 +436,7 @@ export default function ComparisonChart({
           }
 
           return `
-          <div class="flex w-full space-x-2 items-center font-medium mb-1">
+          <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
               AllChainsByKeys[name].colors[theme][0]
             }"></div>
@@ -451,15 +456,20 @@ export default function ComparisonChart({
                 }">${suffix}</div>
             </div>
           </div>
-          <!-- <div class="flex ml-4 w-[calc(100% - 1rem)] relative mb-1">
-            <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
+          ${
+            IS_PREVIEW
+              ? `
+          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+            <div class="h-[2px] rounded-none absolute right-0 -top-[1px] w-full bg-white/0"></div>
 
-            <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
-              (y / pointsSum) * 100,
-            )}%; background-color: ${
-            AllChainsByKeys[name].colors[theme][0]
-          }33;"></div>
-          </div> -->`;
+            <div class="h-[2px] rounded-none absolute right-0 -top-[1px] bg-forest-900 dark:bg-forest-50" 
+            style="
+              width: ${(value / pointsSum) * 100}%;
+              background-color: ${AllChainsByKeys[name].colors[theme][0]}99;
+            "></div>
+          </div>`
+              : ""
+          }`;
         })
         .join("");
       return tooltip + tooltipPoints + tooltipEnd;
