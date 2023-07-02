@@ -242,6 +242,8 @@ export default function ComparisonChart({
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
   const [zoomed, setZoomed] = useState(false);
+  const [zoomMin, setZoomMin] = useState(0);
+  const [zoomMax, setZoomMax] = useState(0);
 
   const [valuePrefix, setValuePrefix] = useState("");
 
@@ -476,7 +478,6 @@ export default function ComparisonChart({
     },
     [
       filteredData,
-      formatNumber,
       reversePerformer,
       selectedScale,
       showGwei,
@@ -577,7 +578,7 @@ export default function ComparisonChart({
         xMax: maxPlusBuffer,
       },
     };
-  }, [filteredData]);
+  }, []);
 
   useEffect(() => {
     if (chartComponent.current) {
@@ -622,6 +623,8 @@ export default function ComparisonChart({
           } else {
             setZoomed(true);
           }
+          setZoomMin(min);
+          setZoomMax(max);
         }
       },
       [selectedTimespan, timespans],
@@ -783,8 +786,8 @@ export default function ComparisonChart({
           afterSetExtremes: onXAxisSetExtremes,
         },
         // ...xAxisMinMax,
-        min: timespans[selectedTimespan].xMin,
-        max: timespans[selectedTimespan].xMax,
+        min: zoomed ? zoomMin : timespans[selectedTimespan].xMin,
+        max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
       },
       tooltip: {
         formatter: tooltipFormatter,
@@ -1083,66 +1086,6 @@ export default function ComparisonChart({
       ],
       navigator: {
         enabled: false,
-        outlineWidth: 0,
-        outlineColor: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
-        maskFill:
-          theme === "dark"
-            ? "rgba(215, 223, 222, 0.08)"
-            : "rgba(41, 51, 50, 0.08)",
-        maskInside: true,
-
-        series: {
-          // type: "column",
-          // color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
-          opacity: 0.5,
-          fillOpacity: 0.3,
-          lineWidth: 1,
-          dataGrouping: {
-            enabled: false,
-          },
-          height: 30,
-        },
-        xAxis: {
-          labels: {
-            enabled: true,
-            style: {
-              color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
-              fontSize: "8px",
-              fontWeight: "400",
-              // textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              lineHeight: "1.5em",
-              textShadow: "none",
-              textOutline: "none",
-              cursor: "default",
-              pointerEvents: "none",
-              userSelect: "none",
-              opacity: 0.5,
-            },
-            formatter: function () {
-              return new Date(this.value).toLocaleDateString(undefined, {
-                timeZone: "UTC",
-                month: "short",
-                //day: "numeric",
-                year: "numeric",
-              });
-            },
-          },
-          tickLength: 0,
-          lineWidth: 0,
-          gridLineWidth: 0,
-        },
-        handles: {
-          backgroundColor:
-            theme === "dark"
-              ? "rgba(215, 223, 222, 0.3)"
-              : "rgba(41, 51, 50, 0.3)",
-          borderColor:
-            theme === "dark" ? "rgba(215, 223, 222, 0)" : "rgba(41, 51, 50, 0)",
-          width: 8,
-          height: 20,
-          symbols: ["doublearrow", "doublearrow"],
-        },
       },
       rangeSelector: {
         enabled: false,
@@ -1154,21 +1097,6 @@ export default function ComparisonChart({
       },
       scrollbar: {
         enabled: false,
-        height: 1,
-        barBackgroundColor:
-          theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41, 51, 50)",
-        barBorderRadius: 7,
-        barBorderWidth: 0,
-        rifleColor: "transparent",
-        buttonBackgroundColor:
-          theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41, 51, 50)",
-        buttonBorderWidth: 0,
-        buttonBorderRadius: 7,
-        trackBackgroundColor: "none",
-        trackBorderWidth: 1,
-        trackBorderRadius: 8,
-        trackBorderColor:
-          theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41, 51, 50)",
       },
     };
 
@@ -1178,13 +1106,15 @@ export default function ComparisonChart({
     isMobile,
     getSeriesType,
     scaleToPlotOptions,
-    reversePerformer,
     selectedScale,
     theme,
     getTickPositions,
     timespans,
     onXAxisSetExtremes,
+    zoomed,
+    zoomMin,
     selectedTimespan,
+    zoomMax,
     tooltipFormatter,
     tooltipPositioner,
     showUsd,
