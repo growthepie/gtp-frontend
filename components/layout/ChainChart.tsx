@@ -26,6 +26,7 @@ import { navigationItems } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import ChartWatermark from "./ChartWatermark";
+import { ChainsData } from "@/types/api/ChainResponse";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -40,7 +41,7 @@ export default function ChainChart({
   data,
   chain,
 }: {
-  data: any;
+  data: ChainsData;
   chain: string;
 }) {
   useEffect(() => {
@@ -62,9 +63,13 @@ export default function ChainChart({
   const [zoomed, setZoomed] = useState(false);
   const [zoomMin, setZoomMin] = useState<number | null>(null);
   const [zoomMax, setZoomMax] = useState<number | null>(null);
+
   const { isSidebarOpen } = useUIContext();
   const { width, height } = useWindowSize();
   const isMobile = useMediaQuery("(max-width: 767px)");
+
+  const zoomedMargin = [1, 15, 0, 0];
+  const defaultMargin = [1, 15, 0, 0];
 
   const timespans = useMemo(() => {
     let max = 0;
@@ -113,6 +118,26 @@ export default function ChainChart({
         daysDiff: Math.round((now - min) / (1000 * 60 * 60 * 24)),
       },
     };
+  }, [data]);
+
+  const minUnixAll = useMemo(() => {
+    const minUnixtimes: number[] = [];
+    Object.keys(data.metrics).forEach((key) => {
+      minUnixtimes.push(data.metrics[key].daily.data[0][0]);
+    });
+    return Math.min(...minUnixtimes);
+  }, [data]);
+
+  const maxUnixAll = useMemo(() => {
+    const maxUnixtimes: number[] = [];
+    Object.keys(data.metrics).forEach((key) => {
+      maxUnixtimes.push(
+        data.metrics[key].daily.data[
+          data.metrics[key].daily.data.length - 1
+        ][0],
+      );
+    });
+    return Math.max(...maxUnixtimes);
   }, [data]);
 
   function hexToRgba(hex, alpha) {
@@ -166,74 +191,6 @@ export default function ChainChart({
     });
     return p;
   }, [data, showUsd]);
-
-  const displayValues = useMemo(() => {
-    const p: {
-      [key: string]: {
-        value: string;
-        prefix: string;
-        suffix: string;
-      };
-    } = {};
-    Object.keys(data.metrics).forEach((key) => {
-      let prefix = "";
-      let suffix = "";
-      let value = Intl.NumberFormat(undefined, {
-        notation: "compact",
-        maximumFractionDigits: 2,
-        minimumFractionDigits: 2,
-      }).format(
-        data.metrics[key].daily.data[
-          data.metrics[key].daily.data.length - 1
-        ][1],
-      );
-
-      if (data.metrics[key].daily.types.includes("eth")) {
-        if (!showUsd) {
-          prefix = "Ξ";
-
-          value = Intl.NumberFormat(undefined, {
-            notation: "compact",
-            maximumFractionDigits: 2,
-            minimumFractionDigits: 2,
-          }).format(
-            data.metrics[key].daily.data[
-              data.metrics[key].daily.data.length - 1
-            ][data.metrics[key].daily.types.indexOf("eth")],
-          );
-
-          let navItem = navigationItems[1].options.find((ni) => ni.key === key);
-
-          if (navItem && navItem.page?.showGwei) {
-            prefix = "";
-            suffix = " Gwei";
-            value = Intl.NumberFormat(undefined, {
-              notation: "compact",
-              maximumFractionDigits: 2,
-              minimumFractionDigits: 2,
-            }).format(
-              data.metrics[key].daily.data[
-                data.metrics[key].daily.data.length - 1
-              ][data.metrics[key].daily.types.indexOf("eth")] * 1000000000,
-            );
-          }
-        } else {
-          prefix = "$";
-          value = Intl.NumberFormat(undefined, {
-            notation: "compact",
-            maximumFractionDigits: 2,
-            minimumFractionDigits: 2,
-          }).format(
-            data.metrics[key].daily.data[
-              data.metrics[key].daily.data.length - 1
-            ][data.metrics[key].daily.types.indexOf("usd")],
-          );
-        }
-      }
-      p[key] = { value, prefix, suffix };
-    });
-    return p;
-  }, [data.metrics, showUsd]);
 
   const formatNumber = useCallback(
     (key: string, value: number | string, isAxis = false) => {
@@ -343,37 +300,137 @@ export default function ChainChart({
 
   const onXAxisSetExtremes =
     useCallback<Highcharts.AxisSetExtremesEventCallbackFunction>(
-      function (e) {
-        if (e.trigger === "pan") return;
+      function (e: Highcharts.AxisSetExtremesEventObject) {
+        // if (e.trigger === "pan") return;
+
         const { min, max } = e;
-        const numDays = (max - min) / (24 * 60 * 60 * 1000);
 
-        setIntervalShown({
-          min,
-          max,
-          num: numDays,
-          label: `${Math.round(numDays)} day${numDays > 1 ? "s" : ""}`,
-        });
+        // set to nearest day at 08:00 UTC
+        let minDay = new Date(min);
+        let maxDay = new Date(max);
 
-        if (
-          e.trigger === "zoom" ||
-          // e.trigger === "pan" ||
-          e.trigger === "navigator" ||
-          e.trigger === "rangeSelectorButton"
-        ) {
+        console.log("minDay", minDay);
+        console.log("maxDay", maxDay);
+
+        minDay.setUTCHours(0, 0, 0, 0);
+
+        maxDay.setUTCHours(0, 0, 0, 0);
+
+        let minStartOfDay = minDay.getTime();
+        let maxStartOfDay = maxDay.getTime();
+
+        let numMilliseconds = maxStartOfDay - minStartOfDay;
+
+        let paddingMilliseconds = 0;
+        if (e.trigger === "zoom" || e.trigger === "pan") {
+          if (minStartOfDay < minUnixAll) minStartOfDay = minUnixAll;
+
+          if (maxStartOfDay > maxUnixAll) maxStartOfDay = maxUnixAll;
+
+          numMilliseconds = maxStartOfDay - minStartOfDay;
+
           setZoomed(true);
-          setZoomMin(min);
-          setZoomMax(max);
+          setZoomMin(minStartOfDay);
+          setZoomMax(maxStartOfDay);
           chartComponents.current.forEach((chart) => {
             if (chart) {
               const xAxis = chart.xAxis[0];
-              xAxis.setExtremes(min, max);
+              const pixelsPerMillisecond = chart.plotWidth / numMilliseconds;
+
+              // 15px padding on left side
+              paddingMilliseconds = 15 / pixelsPerMillisecond;
+
+              xAxis.setExtremes(
+                minStartOfDay - paddingMilliseconds,
+                maxStartOfDay,
+              );
             }
           });
         }
+
+        const numDays = numMilliseconds / (24 * 60 * 60 * 1000);
+
+        setIntervalShown({
+          min: minStartOfDay,
+          max: maxStartOfDay,
+          num: numDays,
+          label: `${Math.round(numDays)} day${numDays > 1 ? "s" : ""}`,
+        });
       },
-      [chartComponents, zoomed],
+      [maxUnixAll, minUnixAll],
     );
+
+  const displayValues = useMemo(() => {
+    const p: {
+      [key: string]: {
+        value: string;
+        prefix: string;
+        suffix: string;
+      };
+    } = {};
+    Object.keys(data.metrics).forEach((key) => {
+      let prefix = "";
+      let suffix = "";
+      let valueIndex = 1;
+      let valueMultiplier = 1;
+
+      let valueFormat = Intl.NumberFormat(undefined, {
+        notation: "compact",
+        maximumFractionDigits: 2,
+        minimumFractionDigits: 2,
+      });
+
+      let navItem = navigationItems[1].options.find((ni) => ni.key === key);
+
+      if (data.metrics[key].daily.types.includes("eth")) {
+        if (!showUsd) {
+          prefix = "Ξ";
+          valueIndex = data.metrics[key].daily.types.indexOf("eth");
+          if (navItem && navItem.page?.showGwei) {
+            prefix = "";
+            suffix = " Gwei";
+            valueMultiplier = 1000000000;
+          }
+        } else {
+          prefix = "$";
+
+          valueIndex = data.metrics[key].daily.types.indexOf("usd");
+        }
+      } else {
+      }
+
+      if (intervalShown && data.metrics[key].daily.data[intervalShown.max])
+        console.log(
+          intervalShown.max,
+          valueFormat.format(
+            data.metrics[key].daily.data[intervalShown.max][valueIndex],
+          ),
+        );
+
+      let dateIndex = data.metrics[key].daily.data.length - 1;
+
+      const latestUnix =
+        data.metrics[key].daily.data[data.metrics[key].daily.data.length - 1];
+
+      if (intervalShown) console.log("intervalShown.max", intervalShown.max);
+      console.log("latestUnix", latestUnix);
+
+      if (intervalShown) {
+        const intervalMaxIndex = data.metrics[key].daily.data.findIndex(
+          (d) => d[0] >= intervalShown?.max,
+        );
+        if (intervalMaxIndex !== -1) dateIndex = intervalMaxIndex;
+        console.log("intervalMaxIndex", intervalMaxIndex);
+      }
+
+      let value = valueFormat.format(
+        data.metrics[key].daily.data[dateIndex][valueIndex] * valueMultiplier,
+      );
+
+      p[key] = { value, prefix, suffix };
+    });
+    return p;
+  }, [data.metrics, showUsd, intervalShown]);
 
   const tooltipFormatter = useCallback(
     function (this: Highcharts.TooltipFormatterContextObject) {
@@ -693,9 +750,7 @@ export default function ChainChart({
       min: zoomed
         ? zoomMin
         : timespans[selectedTimespan].xMin - 1000 * 60 * 60 * 24 * 7,
-      max: zoomed
-        ? zoomMax
-        : timespans[selectedTimespan].xMax + 1000 * 60 * 60 * 24 * 7,
+      max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
       tickPositions: getTickPositions(
         timespans[selectedTimespan].xMin,
         timespans[selectedTimespan].xMax,
@@ -842,14 +897,22 @@ export default function ChainChart({
         const pixelsPerDay =
           chart.plotWidth / timespans[selectedTimespan].daysDiff;
 
+        console.log("chart.chartWidth", chart.chartWidth);
+        console.log("chart.plotWidth", chart.plotWidth);
+        console.log(
+          "timespans[selectedTimespan].daysDiff",
+          timespans[selectedTimespan].daysDiff,
+        );
+        console.log("pixelsPerDay", pixelsPerDay);
+
         // 15px padding on each side
         const paddingMilliseconds = (15 / pixelsPerDay) * 24 * 60 * 60 * 1000;
 
+        console.log("paddingMilliseconds", paddingMilliseconds);
+
         chart.xAxis[0].setExtremes(
-          timespans[selectedTimespan].xMin -
-            paddingMilliseconds -
-            24 * 60 * 60 * 1000 * 0.5,
-          timespans[selectedTimespan].xMax + paddingMilliseconds,
+          timespans[selectedTimespan].xMin - paddingMilliseconds,
+          timespans[selectedTimespan].xMax,
           true,
         );
       });
@@ -874,7 +937,7 @@ export default function ChainChart({
           });
       });
     }
-  }, 150);
+  }, 50);
 
   useEffect(() => {
     resituateChart();
@@ -1108,8 +1171,9 @@ export default function ChainChart({
                         options={{
                           ...options,
                           chart: {
-                            index: i,
                             ...options.chart,
+                            index: i,
+                            margin: zoomed ? zoomedMargin : defaultMargin,
                             events: {
                               load: function () {
                                 const chart = this;

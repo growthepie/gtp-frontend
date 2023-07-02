@@ -1,7 +1,7 @@
 ﻿export interface ChainResponse {
-  data: Data;
+  data: ChainsData;
 }
-export interface Data {
+export interface ChainsData {
   chain_id: string;
   chain_name: string;
   description: string;
@@ -11,18 +11,22 @@ export interface Data {
   metrics: Metrics;
 }
 export interface Metrics {
-  tvl: TvlOrTxcountOrDaa;
-  txcount: TvlOrTxcountOrDaa;
-  daa: TvlOrTxcountOrDaa;
+  [key: string]: MetricData;
 }
-export interface TvlOrTxcountOrDaa {
+export interface MetricData {
   metric_name: string;
   unit: string;
   source: string;
   changes: Changes;
-  daily?: (number[] | null)[] | null;
+  daily: Daily;
   avg: boolean;
 }
+
+export interface Daily {
+  types: string[];
+  data: [number, number][];
+}
+
 export interface Changes {
   "1d": number;
   "7d": number;
