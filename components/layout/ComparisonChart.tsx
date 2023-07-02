@@ -420,7 +420,7 @@ export default function ComparisonChart({
                 <div class="h-[2px] rounded-none absolute right-0 -top-[1px] bg-forest-900 dark:bg-forest-50" 
                 style="
                   width: ${percentage}%;
-                  background-color: ${AllChainsByKeys[name].colors[theme][0]}99;
+                  background-color: ${AllChainsByKeys[name].colors[theme][0]};
                 "></div>
               </div>`
                   : ""
@@ -467,7 +467,7 @@ export default function ComparisonChart({
             <div class="h-[2px] rounded-none absolute right-0 -top-[1px] bg-forest-900 dark:bg-forest-50" 
             style="
               width: ${(value / pointsSum) * 100}%;
-              background-color: ${AllChainsByKeys[name].colors[theme][0]}99;
+              background-color: ${AllChainsByKeys[name].colors[theme][0]};
             "></div>
           </div>`
               : ""

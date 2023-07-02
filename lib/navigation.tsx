@@ -76,7 +76,8 @@ export const navigationItems: NavigationItem[] = [
               label: "Transaction Costs",
               page: {
                 title: "Transaction Costs",
-                description: "The median amount that is paid per transaction.",
+                description:
+                  "The median amount that is paid per transaction. 1 Billion Gwei equals 1 ETH.",
                 why: "This is the amount that users pay per transaction. On EVM chains, transaction costs depend on the complexity of the transaction (which is measured in gas). A simple transaction, e.g. a native ETH transfer, uses less gas than a more complex transaction, e.g. an ERC20 swap. Hence, we calculated this metric by looking at the median transaction costs. IMX doesn't charge transaction costs.",
                 icon: "gtp:transaction-costs",
                 showGwei: true,
