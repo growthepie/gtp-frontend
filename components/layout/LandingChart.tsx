@@ -351,9 +351,9 @@ export default function LandingChart({
                 IS_PREVIEW
                   ? `
               <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-                <div class="h-[2px] rounded-none absolute right-0 -top-[1px] w-full bg-white/0"></div>
+                <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
     
-                <div class="h-[2px] rounded-none absolute right-0 -top-[1px] bg-forest-900 dark:bg-forest-50" 
+                <div class="h-[2px] rounded-none absolute right-0 -top-[3px] bg-forest-900 dark:bg-forest-50" 
                 style="
                   width: ${percentage}%;
                   background-color: ${AllChainsByKeys[name].colors[theme][0]};
@@ -384,9 +384,9 @@ export default function LandingChart({
             IS_PREVIEW
               ? `
           <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-            <div class="h-[2px] rounded-none absolute right-0 -top-[1px] w-full bg-white/0"></div>
+            <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
 
-            <div class="h-[2px] rounded-none absolute right-0 -top-[1px] bg-forest-900 dark:bg-forest-50" 
+            <div class="h-[2px] rounded-none absolute right-0 -top-[3px] bg-forest-900 dark:bg-forest-50" 
             style="
               width: ${(y / pointsSum) * 100}%;
               background-color: ${AllChainsByKeys[name].colors[theme][0]};
