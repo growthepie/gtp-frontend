@@ -16,6 +16,8 @@
     "@vercel/analytics": "^1.0.1",
     "cookies-next": "^2.1.1",
     "framer-motion": "^10.3.2",
+    "graphql": "^16.7.1",
+    "graphql-request": "^6.1.0",
     "highcharts": "^10.3.3",
     "highcharts-react-official": "^3.1.0",
     "highcharts-rounded-corners": "https://github.com/highcharts/rounded-corners/",
@@ -32,6 +34,8 @@
     "react-dom": "^18.2.0",
     "react-json-view": "^1.21.3",
     "react-spring": "^9.7.1",
+    "remark": "^14.0.3",
+    "remark-html": "^15.0.2",
     "swr": "^2.1.1",
     "usehooks-ts": "^2.9.1"
   },
