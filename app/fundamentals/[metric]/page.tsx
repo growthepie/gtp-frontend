@@ -100,9 +100,17 @@ const Chain = ({ params }: { params: any }) => {
               </div>
             )
           }
-          iconContainerClassName="items-center mb-[22px] md:mb-[32px]"
+          iconContainerClassName="items-center mb-[22px] md:mb-[32px] relative"
         >
           {pageData.description}
+          {pageData.note && (
+            <div className="absolute text-xs">
+              <span className="font-semibold text-forest-200 dark:text-forest-400">
+                Note:{" "}
+              </span>
+              {pageData.note}
+            </div>
+          )}
         </Subheading>
       </Container>
       <div className="flex flex-col-reverse xl:flex-row space-x-0 xl:space-x-8">

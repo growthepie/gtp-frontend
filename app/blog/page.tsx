@@ -95,22 +95,17 @@ export default function Blog() {
     fetcher,
   );
 
-  const UniqueOriginalContentDigestTags = useMemo<
-    {
-      name: string;
-      value: string;
-    }[]
-  >(() => {
+  const UniqueOriginalContentDigestTags = useMemo<string[]>(() => {
     if (!data) return [];
-    const tags = data.transactions.edges
-      .map((edge) => {
-        return edge.node.tags.find(
-          (tag) => tag.name === "Original-Content-Digest",
-        );
-      })
-      .filter((tag) => tag !== undefined);
+    const tags = data.transactions.edges.map((edge) => {
+      return edge.node.tags.find(
+        (tag) => tag.name === "Original-Content-Digest",
+      );
+    });
 
-    return _.uniqBy(tags, "value");
+    return _.uniq(
+      tags.map((t) => (t && t.value ? t.value : "")).filter((t) => t !== ""),
+    );
   }, [data]);
 
   return (
@@ -126,10 +121,8 @@ export default function Blog() {
         </div>
         {/* <pre className="w-full">{JSON.stringify(data, null, 2)}</pre> */}
         {data &&
-          UniqueOriginalContentDigestTags.map((tag) => {
-            return (
-              <Digest key={tag.value} orgininalContentDigest={tag.value} />
-            );
+          UniqueOriginalContentDigestTags.map((value) => {
+            return <Digest key={value} orgininalContentDigest={value} />;
           })}
       </Container>
     </>
