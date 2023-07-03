@@ -12,7 +12,7 @@ import {
   useCallback,
   useLayoutEffect,
 } from "react";
-import { useLocalStorage, useWindowSize } from "usehooks-ts";
+import { useLocalStorage, useWindowSize, useIsMounted } from "usehooks-ts";
 import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
 import { useTheme } from "next-themes";
@@ -44,6 +44,9 @@ export default function ChainChart({
   data: ChainsData;
   chain: string;
 }) {
+  // Keep track of the mounted state
+  const isMounted = useIsMounted();
+
   useEffect(() => {
     Highcharts.setOptions({
       lang: {
@@ -309,12 +312,17 @@ export default function ChainChart({
         let minDay = new Date(min);
         let maxDay = new Date(max);
 
-        console.log("minDay", minDay);
-        console.log("maxDay", maxDay);
+        let minHours = minDay.getUTCHours();
+        let maxHours = maxDay.getUTCHours();
 
         minDay.setUTCHours(0, 0, 0, 0);
 
-        maxDay.setUTCHours(0, 0, 0, 0);
+        if (maxHours > 12) {
+          maxDay.setDate(maxDay.getDate() + 1);
+          maxDay.setUTCHours(0, 0, 0, 0);
+        } else {
+          maxDay.setUTCHours(0, 0, 0, 0);
+        }
 
         let minStartOfDay = minDay.getTime();
         let maxStartOfDay = maxDay.getTime();
@@ -399,28 +407,16 @@ export default function ChainChart({
       } else {
       }
 
-      if (intervalShown && data.metrics[key].daily.data[intervalShown.max])
-        console.log(
-          intervalShown.max,
-          valueFormat.format(
-            data.metrics[key].daily.data[intervalShown.max][valueIndex],
-          ),
-        );
-
       let dateIndex = data.metrics[key].daily.data.length - 1;
 
       const latestUnix =
         data.metrics[key].daily.data[data.metrics[key].daily.data.length - 1];
-
-      if (intervalShown) console.log("intervalShown.max", intervalShown.max);
-      console.log("latestUnix", latestUnix);
 
       if (intervalShown) {
         const intervalMaxIndex = data.metrics[key].daily.data.findIndex(
           (d) => d[0] >= intervalShown?.max,
         );
         if (intervalMaxIndex !== -1) dateIndex = intervalMaxIndex;
-        console.log("intervalMaxIndex", intervalMaxIndex);
       }
 
       let value = valueFormat.format(
@@ -544,7 +540,16 @@ export default function ChainChart({
         .join("");
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [data, formatNumber, prefixes, selectedScale, theme],
+    [
+      data.chain_id,
+      data.metrics,
+      displayValues,
+      formatNumber,
+      selectedScale,
+      showGwei,
+      showUsd,
+      theme,
+    ],
   );
 
   const tooltipPositioner =
@@ -897,18 +902,8 @@ export default function ChainChart({
         const pixelsPerDay =
           chart.plotWidth / timespans[selectedTimespan].daysDiff;
 
-        console.log("chart.chartWidth", chart.chartWidth);
-        console.log("chart.plotWidth", chart.plotWidth);
-        console.log(
-          "timespans[selectedTimespan].daysDiff",
-          timespans[selectedTimespan].daysDiff,
-        );
-        console.log("pixelsPerDay", pixelsPerDay);
-
         // 15px padding on each side
         const paddingMilliseconds = (15 / pixelsPerDay) * 24 * 60 * 60 * 1000;
-
-        console.log("paddingMilliseconds", paddingMilliseconds);
 
         chart.xAxis[0].setExtremes(
           timespans[selectedTimespan].xMin - paddingMilliseconds,
@@ -921,19 +916,21 @@ export default function ChainChart({
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
+  const delayPromises = [];
+
   const resituateChart = debounce(() => {
     if (chartComponents.current && !zoomed) {
       chartComponents.current.forEach((chart) => {
         delay(50)
           .then(() => {
-            chart && chart.setSize(null, null, true);
+            isMounted() && chart && chart.setSize(null, null, true);
             // chart.reflow();
           })
           .then(() => {
-            delay(50).then(() => chart && chart.reflow());
+            delay(50).then(() => isMounted() && chart && chart.reflow());
           })
           .then(() => {
-            delay(50).then(() => chart && resetXAxisExtremes());
+            delay(50).then(() => isMounted() && chart && resetXAxisExtremes());
           });
       });
     }
@@ -1130,34 +1127,37 @@ export default function ChainChart({
                       <div className="absolute left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
                       <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
                     </div>
-                    {(key === "stables_mcap" || key === "txcosts") && (
-                      <div
-                        className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
-                          key === "txcosts" ? "hidden lg:block" : ""
-                        }`}
-                      >
-                        <div className="absolute left-[15px] align-bottom flex items-end z-30">
-                          {new Date(
-                            timespans[selectedTimespan].xMin,
-                          ).toLocaleDateString(undefined, {
-                            timeZone: "UTC",
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
+                    {(key === "stables_mcap" || key === "txcosts") &&
+                      intervalShown && (
+                        <div
+                          className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                            key === "txcosts" ? "hidden lg:block" : ""
+                          }`}
+                        >
+                          <div className="absolute left-[15px] align-bottom flex items-end z-30 ">
+                            {new Date(intervalShown.min).toLocaleDateString(
+                              undefined,
+                              {
+                                timeZone: "UTC",
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              },
+                            )}
+                          </div>
+                          <div className="absolute right-[15px] align-bottom flex items-end z-30">
+                            {new Date(intervalShown.max).toLocaleDateString(
+                              undefined,
+                              {
+                                timeZone: "UTC",
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              },
+                            )}
+                          </div>
                         </div>
-                        <div className="absolute right-[15px] align-bottom flex items-end z-30">
-                          {new Date(
-                            timespans[selectedTimespan].xMax,
-                          ).toLocaleDateString(undefined, {
-                            timeZone: "UTC",
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </div>
-                      </div>
-                    )}
+                      )}
                   </div>
                 );
               }
