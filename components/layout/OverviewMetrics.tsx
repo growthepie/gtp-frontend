@@ -29,6 +29,7 @@ export default function OverviewMetrics({
 
   const categories = useMemo<{ [key: string]: string }>(() => {
     return {
+      chains: "Chains",
       native_transfers: "Native Transfer",
       token_transfers: "Token Transfer",
       nft_fi: "NFT",
@@ -142,41 +143,38 @@ export default function OverviewMetrics({
     <>
       {/* <div>{selectedScale}</div> */}
       <div
-        className={`flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 z-10
-        ${isCategoryMenuExpanded ? "mb-0" : "mb-0 md:mb-8"}`}
+        className={
+          "flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 z-10"
+        }
       >
         <div className="hidden md:flex justify-center items-center ml-0.5">
           {/* <Icon icon="gtp:chain" className="w-7 h-7 lg:w-9 lg:h-9" /> */}
-          <button
-            className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium 
-                ${
-                  isCategoryMenuExpanded
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10 dark:bg-forest-1000"
-                } `}
-            onClick={() => {
-              setIsCategoryMenuExpanded(!isCategoryMenuExpanded);
-            }}
-          >
-            <div className="flex items-center space-x-2">
-              <div>
-                <h1>{categories[selectedCategory]}</h1>
-              </div>
-              <div className="pt-1">
-                {isCategoryMenuExpanded ? (
-                  <Icon
-                    icon="feather:chevron-down"
-                    className="w-[13px] h-[13px] block"
-                  />
-                ) : (
-                  <Icon
-                    icon="feather:chevron-right"
-                    className="w-[13px] h-[13px] block"
-                  />
-                )}
-              </div>
-            </div>
-          </button>
+          <div className="flex justify-between md:justify-center items-center  space-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
+            <button
+              className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium   ${
+                "gas_fees_share" === selectedScale
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
+              }`}
+              onClick={() => {
+                setSelectedScale("gas_fees_share");
+              }}
+            >
+              Gas Fees
+            </button>
+            <button
+              className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium   ${
+                "txcount_share" === selectedScale
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
+              }`}
+              onClick={() => {
+                setSelectedScale("txcount_share");
+              }}
+            >
+              Transaction Count
+            </button>
+          </div>
         </div>
 
         <div className="flex w-full md:w-auto justify-between md:justify-center items-stretch md:items-center space-x-[4px] md:space-x-1">
@@ -200,73 +198,118 @@ export default function OverviewMetrics({
       </div>
       <div className="overflow-x-scroll lg:overflow-x-visible z-100 w-full scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
         <div
-          className={`relative min-w-[820px] md:min-w-[850px] bottom-1 w-[97.5%] h-[60px] m-auto border-x-[1px] border-b-[1px] rounded-b-[15px] text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-forest-900 dark:bg-forest-1000 pt-[5px] mb-8 overflow-hidden
-        ${isCategoryMenuExpanded ? "flex" : "flex md:hidden"}`}
+          className={
+            "relative min-w-[820px] md:min-w-[850px] w-[97.5%] h-[60px] m-auto border-x-[1px] border-t-[1px] rounded-t-[15px] text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-forest-900 dark:bg-forest-1000 mt-8 overflow-hidden"
+          }
         >
           <div className="flex w-full h-full text-[12px]">
-            {Object.keys(categories).map((category, i) => (
-              <div
-                key={category}
-                className={`relative flex w-full h-full justify-center items-center ${
-                  selectedCategory === category
-                    ? "borden-hidden rounded-[0px]"
-                    : "h-full"
-                }`}
-                onMouseEnter={() => {
-                  setIsCategoryHovered((prev) => ({
-                    ...prev,
-                    [category]: true,
-                  }));
-                }}
-                onMouseLeave={() => {
-                  setIsCategoryHovered((prev) => ({
-                    ...prev,
-                    [category]: false,
-                  }));
-                }}
-                style={{
-                  backgroundColor:
-                    selectedCategory === category
-                      ? "#5A6462"
-                      : `rgba(0, 0, 0, ${
-                          0.06 + (i / Object.keys(categories).length) * 0.94
-                        })`,
-                }}
-              >
-                <button
+            {Object.keys(categories).map((category, i) =>
+              categories[category] !== "Chains" ? (
+                <div
                   key={category}
-                  className={`flex flex-col flex-1 h-full justify-center items-center border-x border-transparent overflow-hidden ${
-                    selectedCategory === category ? "" : "hover:bg-white/5"
-                  } 
-                ${isCategoryHovered[category] ? "bg-white/5" : ""}
-                `}
-                  onClick={() => {
-                    setSelectedCategory(category);
-                    setSelectedChain(null);
+                  className={`relative flex w-full h-full justify-center items-center ${
+                    selectedCategory === category
+                      ? "borden-hidden rounded-[0px]"
+                      : "h-full"
+                  }`}
+                  onMouseEnter={() => {
+                    setIsCategoryHovered((prev) => ({
+                      ...prev,
+                      [category]: true,
+                    }));
+                  }}
+                  onMouseLeave={() => {
+                    setIsCategoryHovered((prev) => ({
+                      ...prev,
+                      [category]: false,
+                    }));
+                  }}
+                  style={{
+                    backgroundColor:
+                      selectedCategory === category
+                        ? "#5A6462"
+                        : `rgba(0, 0, 0, ${
+                            0.06 + (i / Object.keys(categories).length) * 0.94
+                          })`,
                   }}
                 >
-                  <div
-                    className={`${
-                      selectedCategory === category
-                        ? "text-sm font-bold"
-                        : "text-xs font-medium hover:bg-white/5"
+                  <button
+                    key={category}
+                    className={`flex flex-col flex-1 h-full justify-center items-center border-x border-transparent overflow-hidden ${
+                      selectedCategory === category ? "" : "hover:bg-white/5"
                     } 
-                
-                `}
+                    ${isCategoryHovered[category] ? "bg-white/5" : ""}
+                    `}
+                    onClick={() => {
+                      setSelectedCategory(category);
+                      setSelectedChain(null);
+                    }}
                   >
-                    {categories[category]}
-                  </div>
-                  <Icon
-                    icon="gtp:smiley"
-                    className={`w-[10px] h-[10px] ${
-                      selectedCategory === category
-                        ? "text-white"
-                        : "text-white/40"
-                    }`}
-                  />
-                </button>
-              </div>
-            ))}
+                    <div
+                      className={`${
+                        selectedCategory === category
+                          ? "text-sm font-bold"
+                          : "text-xs font-medium hover:bg-white/5"
+                      }`}
+                    >
+                      {categories[category]}
+                    </div>
+                  </button>
+                </div>
+              ) : (
+                // Different response for "Chains" category
+                <div
+                  key={category}
+                  className={`relative flex w-full h-full justify-center items-center ${
+                    selectedCategory === category
+                      ? "borden-hidden rounded-[0px]"
+                      : "h-full"
+                  }`}
+                >
+                  <button
+                    key={category}
+                    className="flex flex-col flex-1 h-full justify-center items-center border-x border-transparent overflow-hidden"
+                  >
+                    <div
+                      className={`relative right-[30px] top-[17px] ${
+                        selectedCategory === category
+                          ? "text-sm font-bold"
+                          : "text-xs font-medium hover:bg-white/5"
+                      }`}
+                    >
+                      {categories[category]}
+                    </div>
+                    <div
+                      className={`relative left-[30px] bottom-[20px] ${
+                        selectedCategory === category
+                          ? "text-sm font-bold"
+                          : "text-xs font-medium hover:bg-white/5"
+                      }`}
+                    >
+                      Categories
+                    </div>
+                  </button>
+                  <svg
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                    }}
+                  >
+                    <line
+                      strokeDasharray="2, 2"
+                      x1="0"
+                      y1="0"
+                      x2="100%"
+                      y2="100%"
+                      style={{ stroke: "white", strokeWidth: 1 }}
+                    />
+                  </svg>
+                </div>
+              ),
+            )}
           </div>
         </div>
         {/* <colorful rows> */}
@@ -583,94 +626,6 @@ export default function OverviewMetrics({
         series={chartSeries}
         yScale="percentage"
       />
-      <div className="flex w-full justify-between md:w-auto bg-forest-50 dark:bg-[#1F2726] rounded-full p-0.5 mt-8">
-        <div className="flex justify-normal md:justify-start">
-          {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
-          {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
-          {/* toggle ETH */}
-
-          <div className="flex justify-center items-center pl-0 md:pl-0 w-full md:w-auto ">
-            <div className="flex justify-between md:justify-center items-center  space-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
-              <button
-                className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
-                  "gas_fees_share" === selectedScale
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
-                onClick={() => {
-                  setSelectedScale("gas_fees_share");
-                }}
-              >
-                Gas Fees
-              </button>
-              <button
-                className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
-                  "txcount_share" === selectedScale
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
-                onClick={() => {
-                  setSelectedScale("txcount_share");
-                }}
-              >
-                Transaction Count
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="flex -my-7 -mx-3  rounded-xl px-1.5 py-1.5 md:px-3 md:py-1.5 items-center">
-          <div className="flex bg-forest-100 dark:bg-[#4B5553] rounded-xl px-3 py-1.5 items-center mr-5">
-            <Icon
-              icon="feather:users"
-              className="w-8 h-8 lg:w-14 lg:h-14 mr-2"
-            />
-            <div className="flex flex-col items-center justify-center">
-              <div className="text-xs font-medium leading-tight">Total Eth</div>
-              <div className="text-3xl font-[650]">X</div>
-              <div className="text-xs font-medium leading-tight">
-                <span
-                  className="text-green-500 dark:text-green-400 font-semibold"
-                  style={{
-                    textShadow:
-                      theme === "dark"
-                        ? "1px 1px 4px #00000066"
-                        : "1px 1px 4px #ffffff99",
-                  }}
-                >
-                  +%
-                </span>
-                % in last week
-              </div>
-            </div>
-          </div>
-          <div className="flex bg-forest-100 dark:bg-[#4B5553] rounded-xl px-3 py-1.5 items-center mr-5">
-            <Icon
-              icon="feather:layers"
-              className="w-8 h-8 lg:w-14 lg:h-14 mr-2"
-            />
-            <div className="flex flex-col items-center justify-center">
-              <div className="text-xs font-medium leading-tight">
-                Average Share
-              </div>
-              <div className="text-3xl font-[650]">x</div>
-              <div className="text-xs font-medium leading-tight">
-                <span
-                  className="text-green-500 dark:text-green-400 font-semibold"
-                  style={{
-                    textShadow:
-                      theme === "dark"
-                        ? "1px 1px 4px #00000066"
-                        : "1px 1px 4px #ffffff99",
-                  }}
-                >
-                  +%
-                </span>
-                in last week
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </>
   );
 }
