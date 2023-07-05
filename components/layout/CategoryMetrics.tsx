@@ -29,7 +29,6 @@ export default function CategoryMetrics({
   const [selectedCategory, setSelectedCategory] = useState("native_transfers");
   const [selectedChain, setSelectedChain] = useState<string | null>(null);
   const [openSub, setOpenSub] = useState(false);
-  const [everOpened, setEverOpened] = useState(false);
   // Assuming `data` and `categories` objects are defined correctly
 
   const timespans = useMemo(() => {
@@ -248,9 +247,9 @@ export default function CategoryMetrics({
                           })`,
                   }}
                 >
-                  <button
+                  <div
                     key={category}
-                    className={`w-full h-full flex flex-col items-center first-letter justify-center ${
+                    className={`w-full h-full flex flex-col items-center first-letter justify-center hover:cursor-pointer ${
                       selectedCategory === category ? "" : "hover:bg-white/5"
                     }`}
                     onClick={() => {
@@ -279,7 +278,7 @@ export default function CategoryMetrics({
                         className="w-full h-full"
                       />
                     </button>
-                  </button>
+                  </div>
                 </div>
               ) : (
                 // Different response for "Chains" category
@@ -337,9 +336,9 @@ export default function CategoryMetrics({
                           })`,
                   }}
                 >
-                  <button
+                  <div
                     key={category}
-                    className={`h-full flex flex-col items-center first-letter justify-between ${
+                    className={`h-full flex flex-col items-center first-letter justify-between hover:cursor-pointer  ${
                       selectedCategory === category
                         ? "w-[220px]"
                         : "hover:bg-white/5 w-full"
@@ -458,7 +457,7 @@ export default function CategoryMetrics({
                         className="w-full h-full"
                       />
                     </button>
-                  </button>
+                  </div>
                 </div>
               ) : (
                 // Different response for "Chains" category
