@@ -347,7 +347,8 @@ export default function ComparisonChart({
         } else {
           if (showGwei && showUsd) {
             // for small USD amounts, show 2 decimals
-            if (val < 10)
+            if (val < 1) number = prefix + val.toFixed(2) + suffix;
+            else if (val < 10)
               number =
                 prefix + d3.format(".3s")(val).replace(/G/, "B") + suffix;
             else if (val < 100)
@@ -411,9 +412,7 @@ export default function ComparisonChart({
                   2,
                 )}%</div>
               </div>
-              ${
-                IS_PREVIEW
-                  ? `
+              
               <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
                 <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
     
@@ -422,9 +421,7 @@ export default function ComparisonChart({
                   width: ${percentage}%;
                   background-color: ${AllChainsByKeys[name].colors[theme][0]};
                 "></div>
-              </div>`
-                  : ""
-              }`;
+              </div>`;
 
           let prefix = valuePrefix;
           let suffix = "";
@@ -458,9 +455,6 @@ export default function ComparisonChart({
                 }">${suffix}</div>
             </div>
           </div>
-          ${
-            IS_PREVIEW
-              ? `
           <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
             <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
 
@@ -469,9 +463,7 @@ export default function ComparisonChart({
               width: ${(value / pointsSum) * 100}%;
               background-color: ${AllChainsByKeys[name].colors[theme][0]};
             "></div>
-          </div>`
-              : ""
-          }`;
+          </div>`;
         })
         .join("");
       return tooltip + tooltipPoints + tooltipEnd;
