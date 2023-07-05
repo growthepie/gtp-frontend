@@ -46,7 +46,7 @@ const Chain = ({ params }: { params: any }) => {
             <div className="flex flex-col md:flex-row justify-between items-start w-full">
               <div className="flex flex-col md:flex-row mb-[15px] md:mb-[19px] items-start">
                 <Heading className="text-2xl leading-snug text-[36px] break-inside-avoid">
-                  {master.chains[chainKey].name}
+                  {AllChainsByKeys[chainKey].label}
                 </Heading>
                 <div className="hidden md:flex items-start space-x-[7px] font-inter uppercase">
                   <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm ml-[19px]">
@@ -101,7 +101,7 @@ const Chain = ({ params }: { params: any }) => {
                   <div>
                     <span className="">@</span>
                     {master.chains[chainKey].twitter.split(
-                      "https://twitter.com/"
+                      "https://twitter.com/",
                     )}
                   </div>
                 </Link>
@@ -149,7 +149,7 @@ const Chain = ({ params }: { params: any }) => {
               )}
             </div>
             {chainData && <ChainChart chain={chain} data={chainData.data} />}
-            <div className="flex lg:hidden justify-between text-base items-start mb-8 mt-[15px]">
+            <div className="flex lg:hidden justify-between text-base items-start mb-8 mt-[30px] lg:mt-[15px]">
               <Link
                 href={master.chains[chainKey].block_explorer}
                 className="flex h-[40px] items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
@@ -179,7 +179,7 @@ const Chain = ({ params }: { params: any }) => {
                   <div className="hidden md:block">
                     <span className="">@</span>
                     {master.chains[chainKey].twitter.split(
-                      "https://twitter.com/"
+                      "https://twitter.com/",
                     )}
                   </div>
                 </Link>

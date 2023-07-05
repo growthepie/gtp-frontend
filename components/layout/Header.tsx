@@ -46,12 +46,20 @@ export default function Header() {
           >
             <Icon icon="cib:twitter" className="h-6 w-6" />
           </Link>
+
           <Link
             href="https://discord.gg/fxjJFe7QyN"
             target="_blank"
             rel="noopener"
           >
             <Icon icon="cib:discord" className="h-6 w-6" />
+          </Link>
+          <Link
+            href="https://www.github.com/growthepie"
+            target="_blank"
+            rel="noopener"
+          >
+            <Icon icon="cib:github" className="h-6 w-6" />
           </Link>
         </div>
       </div>

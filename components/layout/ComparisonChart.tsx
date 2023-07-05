@@ -28,6 +28,8 @@ import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import Container from "./Container";
 import ChartWatermark from "./ChartWatermark";
+import { navigationItems } from "@/lib/navigation";
+import { IS_PREVIEW } from "@/lib/helpers";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -191,6 +193,7 @@ export default function ComparisonChart({
   setShowEthereumMainnet,
   selectedTimespan,
   setSelectedTimespan,
+  metric_id,
 }: {
   data: any;
   timeIntervals: string[];
@@ -203,6 +206,7 @@ export default function ComparisonChart({
   setShowEthereumMainnet: (show: boolean) => void;
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
+  metric_id: string;
 }) {
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
@@ -223,6 +227,14 @@ export default function ComparisonChart({
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
+  const [showGwei, reversePerformer] = useMemo(() => {
+    const item = navigationItems[1].options.find(
+      (item) => item.key === metric_id,
+    );
+
+    return [item?.page?.showGwei, item?.page?.reversePerformer];
+  }, [metric_id]);
+
   // const [selectedTimespan, setSelectedTimespan] = useState("365d");
 
   const [selectedScale, setSelectedScale] = useState("absolute");
@@ -230,6 +242,8 @@ export default function ComparisonChart({
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
   const [zoomed, setZoomed] = useState(false);
+  const [zoomMin, setZoomMin] = useState(0);
+  const [zoomMax, setZoomMax] = useState(0);
 
   const [valuePrefix, setValuePrefix] = useState("");
 
@@ -281,26 +295,76 @@ export default function ComparisonChart({
     [selectedScale],
   );
 
-  // const getChartType = useCallback(() => {
-  //   if (selectedScale === "percentage") return "area";
-  //   if (selectedScale === "log") return "column";
-
-  //   return "line";
-  // }, [selectedScale]);
-
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
+
+  const filteredData = useMemo<any[]>(() => {
+    if (!data)
+      return [
+        {
+          name: "",
+          data: [],
+          types: [],
+        },
+      ];
+
+    const d: any[] = showEthereumMainnet
+      ? data
+      : data.filter((d) => d.name !== "ethereum");
+
+    if (d.length === 0)
+      return [
+        {
+          name: "",
+          data: [],
+          types: [],
+        },
+      ];
+    return d;
+  }, [data, showEthereumMainnet]);
 
   const formatNumber = useCallback(
     (value: number | string, isAxis = false) => {
-      const prefix = valuePrefix;
+      let prefix = valuePrefix;
+      let suffix = "";
+      let val = parseFloat(value as string);
 
-      return isAxis
-        ? selectedScale !== "percentage"
-          ? prefix + d3.format(".2s")(value).replace(/G/, "B")
-          : d3.format(".2~s")(value).replace(/G/, "B") + "%"
-        : d3.format(",.2~s")(value).replace(/G/, "B");
+      if (
+        !showUsd &&
+        filteredData[0].types.includes("eth") &&
+        selectedScale !== "percentage"
+      ) {
+        if (showGwei) {
+          prefix = "";
+          suffix = " Gwei";
+        }
+      }
+
+      let number = d3.format(`.2~s`)(val).replace(/G/, "B");
+
+      if (isAxis) {
+        if (selectedScale === "percentage") {
+          number = d3.format(".2~s")(val).replace(/G/, "B") + "%";
+        } else {
+          if (showGwei && showUsd) {
+            // for small USD amounts, show 2 decimals
+            if (val < 10)
+              number =
+                prefix + d3.format(".3s")(val).replace(/G/, "B") + suffix;
+            else if (val < 100)
+              number =
+                prefix + d3.format(".4s")(val).replace(/G/, "B") + suffix;
+            else
+              number =
+                prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+          } else {
+            number = prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+          }
+        }
+      }
+
+      return number;
     },
-    [valuePrefix, selectedScale],
+    [valuePrefix, showUsd, filteredData, selectedScale, showGwei],
   );
 
   const tooltipFormatter = useCallback(
@@ -317,21 +381,25 @@ export default function ComparisonChart({
       const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway"><div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
-      let pointsSum = 0;
-      if (selectedScale !== "percentage")
-        pointsSum = points.reduce((acc: number, point: any) => {
-          acc += point.y;
-          return pointsSum;
-        }, 0);
+      // let pointsSum = 0;
+      // if (selectedScale !== "percentage")
+      let pointsSum = points.reduce((acc: number, point: any) => {
+        acc += point.y;
+        return acc;
+      }, 0);
 
       const tooltipPoints = points
-        .sort((a: any, b: any) => b.y - a.y)
+        .sort((a: any, b: any) => {
+          if (reversePerformer) return a.y - b.y;
+
+          return b.y - a.y;
+        })
         .map((point: any) => {
           const { series, y, percentage } = point;
           const { name } = series;
           if (selectedScale === "percentage")
             return `
-              <div class="flex w-full space-x-2 items-center font-medium mb-1">
+              <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
                 <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
                   AllChainsByKeys[name].colors[theme][0]
                 }"></div>
@@ -343,49 +411,80 @@ export default function ComparisonChart({
                   2,
                 )}%</div>
               </div>
-              <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
-                <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
+              ${
+                IS_PREVIEW
+                  ? `
+              <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+                <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
+    
+                <div class="h-[2px] rounded-none absolute right-0 -top-[3px] bg-forest-900 dark:bg-forest-50" 
+                style="
+                  width: ${percentage}%;
+                  background-color: ${AllChainsByKeys[name].colors[theme][0]};
+                "></div>
+              </div>`
+                  : ""
+              }`;
 
-                <div class="h-[2px] rounded-full absolute left-0 top-0" style="width: ${Highcharts.numberFormat(
-                  percentage,
-                  2,
-                )}%; background-color: ${
-              AllChainsByKeys[name].colors[theme][0]
-            };"> </div>
-              </div> -->`;
+          let prefix = valuePrefix;
+          let suffix = "";
+          let value = y;
 
-          const value = formatNumber(y);
+          if (!showUsd && filteredData[0].types.includes("eth")) {
+            if (showGwei) {
+              prefix = "";
+              suffix = " Gwei";
+            }
+          }
+
           return `
-          <div class="flex w-full space-x-2 items-center font-medium mb-1">
+          <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
               AllChainsByKeys[name].colors[theme][0]
             }"></div>
             <div class="tooltip-point-name text-md">${
               AllChainsByKeys[name].label
             }</div>
-            <div class="flex-1 text-right justify-end font-inter">
-              <div class="mr-1 inline-block"><span class="opacity-70 inline-block mr-[1px]">${valuePrefix}</span>${parseFloat(
-            y,
-          ).toLocaleString(undefined, {
-            minimumFractionDigits: valuePrefix ? 2 : 0,
-            maximumFractionDigits: valuePrefix ? 2 : 0,
-          })}</div>
+            <div class="flex-1 text-right justify-end font-inter flex">
+                <div class="opacity-70 mr-0.5 ${
+                  !prefix && "hidden"
+                }">${prefix}</div>
+                ${parseFloat(value).toLocaleString(undefined, {
+                  minimumFractionDigits: valuePrefix ? 2 : 0,
+                  maximumFractionDigits: valuePrefix ? 2 : 0,
+                })}
+                <div class="opacity-70 ml-0.5 ${
+                  !suffix && "hidden"
+                }">${suffix}</div>
             </div>
           </div>
-          <!-- <div class="flex ml-4 w-[calc(100% - 1rem)] relative mb-1">
-            <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
+          ${
+            IS_PREVIEW
+              ? `
+          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+            <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
 
-            <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
-              (y / pointsSum) * 100,
-            )}%; background-color: ${
-            AllChainsByKeys[name].colors[theme][0]
-          }33;"></div>
-          </div> -->`;
+            <div class="h-[2px] rounded-none absolute right-0 -top-[3px] bg-forest-900 dark:bg-forest-50" 
+            style="
+              width: ${(value / pointsSum) * 100}%;
+              background-color: ${AllChainsByKeys[name].colors[theme][0]};
+            "></div>
+          </div>`
+              : ""
+          }`;
         })
         .join("");
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [formatNumber, selectedScale, theme, valuePrefix],
+    [
+      filteredData,
+      reversePerformer,
+      selectedScale,
+      showGwei,
+      showUsd,
+      theme,
+      valuePrefix,
+    ],
   );
 
   const tooltipPositioner =
@@ -426,31 +525,6 @@ export default function ComparisonChart({
       },
       [isMobile],
     );
-
-  const filteredData = useMemo<any[]>(() => {
-    if (!data)
-      return [
-        {
-          name: "",
-          data: [],
-          types: [],
-        },
-      ];
-
-    const d: any[] = showEthereumMainnet
-      ? data
-      : data.filter((d) => d.name !== "ethereum");
-
-    if (d.length === 0)
-      return [
-        {
-          name: "",
-          data: [],
-          types: [],
-        },
-      ];
-    return d;
-  }, [data, showEthereumMainnet]);
 
   const timespans = useMemo(() => {
     let maxDate = new Date();
@@ -504,7 +578,7 @@ export default function ComparisonChart({
         xMax: maxPlusBuffer,
       },
     };
-  }, [filteredData, selectedScale]);
+  }, []);
 
   useEffect(() => {
     if (chartComponent.current) {
@@ -549,6 +623,8 @@ export default function ComparisonChart({
           } else {
             setZoomed(true);
           }
+          setZoomMin(min);
+          setZoomMax(max);
         }
       },
       [selectedTimespan, timespans],
@@ -675,6 +751,9 @@ export default function ComparisonChart({
         // ["absolute", "percentage"].includes(selectedScale)
         //   ? "linear"
         //   : "logarithmic",
+        // reversed: reversePerformer ?? false,
+        min: 0,
+        max: selectedScale === "percentage" ? 100 : undefined,
         labels: {
           y: 5,
           style: {
@@ -707,8 +786,8 @@ export default function ComparisonChart({
           afterSetExtremes: onXAxisSetExtremes,
         },
         // ...xAxisMinMax,
-        min: timespans[selectedTimespan].xMin,
-        max: timespans[selectedTimespan].xMax,
+        min: zoomed ? zoomMin : timespans[selectedTimespan].xMin,
+        max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
       },
       tooltip: {
         formatter: tooltipFormatter,
@@ -793,10 +872,19 @@ export default function ComparisonChart({
                 //   ? "center"
                 //   :
                 undefined,
-              data:
-                !showUsd && series.types.includes("usd")
-                  ? series.data.map((d: any) => [d[0], d[2]])
-                  : series.data.map((d: any) => [d[0], d[1]]),
+              data: series.types.includes("usd")
+                ? showUsd
+                  ? series.data.map((d: any) => [
+                      d[0],
+                      d[series.types.indexOf("usd")],
+                    ])
+                  : series.data.map((d: any) => [
+                      d[0],
+                      showGwei
+                        ? d[series.types.indexOf("eth")] * 1000000000
+                        : d[series.types.indexOf("eth")],
+                    ])
+                : series.data.map((d: any) => [d[0], d[1]]),
               ...pointsSettings,
               type: getSeriesType(series.name),
               // fill if series name is ethereum
@@ -998,66 +1086,6 @@ export default function ComparisonChart({
       ],
       navigator: {
         enabled: false,
-        outlineWidth: 0,
-        outlineColor: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
-        maskFill:
-          theme === "dark"
-            ? "rgba(215, 223, 222, 0.08)"
-            : "rgba(41, 51, 50, 0.08)",
-        maskInside: true,
-
-        series: {
-          // type: "column",
-          // color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
-          opacity: 0.5,
-          fillOpacity: 0.3,
-          lineWidth: 1,
-          dataGrouping: {
-            enabled: false,
-          },
-          height: 30,
-        },
-        xAxis: {
-          labels: {
-            enabled: true,
-            style: {
-              color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
-              fontSize: "8px",
-              fontWeight: "400",
-              // textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              lineHeight: "1.5em",
-              textShadow: "none",
-              textOutline: "none",
-              cursor: "default",
-              pointerEvents: "none",
-              userSelect: "none",
-              opacity: 0.5,
-            },
-            formatter: function () {
-              return new Date(this.value).toLocaleDateString(undefined, {
-                timeZone: "UTC",
-                month: "short",
-                //day: "numeric",
-                year: "numeric",
-              });
-            },
-          },
-          tickLength: 0,
-          lineWidth: 0,
-          gridLineWidth: 0,
-        },
-        handles: {
-          backgroundColor:
-            theme === "dark"
-              ? "rgba(215, 223, 222, 0.3)"
-              : "rgba(41, 51, 50, 0.3)",
-          borderColor:
-            theme === "dark" ? "rgba(215, 223, 222, 0)" : "rgba(41, 51, 50, 0)",
-          width: 8,
-          height: 20,
-          symbols: ["doublearrow", "doublearrow"],
-        },
       },
       rangeSelector: {
         enabled: false,
@@ -1069,21 +1097,6 @@ export default function ComparisonChart({
       },
       scrollbar: {
         enabled: false,
-        height: 1,
-        barBackgroundColor:
-          theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41, 51, 50)",
-        barBorderRadius: 7,
-        barBorderWidth: 0,
-        rifleColor: "transparent",
-        buttonBackgroundColor:
-          theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41, 51, 50)",
-        buttonBorderWidth: 0,
-        buttonBorderRadius: 7,
-        trackBackgroundColor: "none",
-        trackBorderWidth: 1,
-        trackBorderRadius: 8,
-        trackBorderColor:
-          theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41, 51, 50)",
       },
     };
 
@@ -1093,18 +1106,22 @@ export default function ComparisonChart({
     isMobile,
     getSeriesType,
     scaleToPlotOptions,
+    selectedScale,
     theme,
     getTickPositions,
     timespans,
     onXAxisSetExtremes,
+    zoomed,
+    zoomMin,
     selectedTimespan,
+    zoomMax,
     tooltipFormatter,
     tooltipPositioner,
     showUsd,
     formatNumber,
-    selectedScale,
     showEthereumMainnet,
     dataGrouping,
+    showGwei,
   ]);
 
   useEffect(() => {
@@ -1204,12 +1221,14 @@ export default function ComparisonChart({
           </div>
         </div>
         <div className="w-full flex flex-col-reverse lg:flex-row mt-8 md:mt-0">
-          <div className="hidden lg:block lg:w-1/2 xl:w-5/12 pl-2 pr-[19px] self-center">
+          <div
+            className={`hidden lg:block lg:w-7/12 xl:w-5/12 pl-2 pr-[19px] self-center`}
+          >
             <div className="-mt-7">{children}</div>
           </div>
           {highchartsLoaded ? (
             <>
-              <div className="w-full lg:w-1/2 xl:w-7/12 relative">
+              <div className={`w-full lg:w-5/12 xl:w-7/12 relative`}>
                 <div className="w-full p-0 py-0 xl:pl-4 xl:py-14">
                   <div className="w-full h-[17rem] md:h-[26rem] relative rounded-xl">
                     <div className="block absolute w-full h-[275px] md:h-[24rem] top-0 md:top-4">

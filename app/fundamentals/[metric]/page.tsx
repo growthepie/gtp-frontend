@@ -34,12 +34,12 @@ const Chain = ({ params }: { params: any }) => {
     return AllChains.filter(
       (chain) =>
         Object.keys(metricData.data.chains).includes(chain.key) &&
-        chain.key != "ethereum"
+        chain.key != "ethereum",
     );
   }, [metricData]);
 
   const pageData = navigationItems[1]?.options.find(
-    (item) => item.urlKey === params.metric
+    (item) => item.urlKey === params.metric,
   )?.page ?? {
     title: "",
     description: "",
@@ -48,19 +48,19 @@ const Chain = ({ params }: { params: any }) => {
 
   const [selectedChains, setSelectedChains] = useSessionStorage(
     "fundamentalsChains",
-    AllChains.map((chain) => chain.key)
+    AllChains.map((chain) => chain.key),
   );
 
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "fundamentalsTimespan",
-    "180d"
+    "180d",
   );
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(
     "fundamentalsShowEthereumMainnet",
-    false
+    false,
   );
 
   const timeIntervalKey = useMemo(() => {
@@ -100,9 +100,17 @@ const Chain = ({ params }: { params: any }) => {
               </div>
             )
           }
-          iconContainerClassName="items-center mb-[22px] md:mb-[32px]"
+          iconContainerClassName="items-center mb-[22px] md:mb-[32px] relative"
         >
           {pageData.description}
+          {pageData.note && (
+            <div className="absolute text-xs">
+              <span className="font-semibold text-forest-200 dark:text-forest-400">
+                Note:{" "}
+              </span>
+              {pageData.note}
+            </div>
+          )}
         </Subheading>
       </Container>
       <div className="flex flex-col-reverse xl:flex-row space-x-0 xl:space-x-8">
@@ -118,9 +126,10 @@ const Chain = ({ params }: { params: any }) => {
                   data: metricData.data.chains[chain][timeIntervalKey].data,
                 };
               })}
+            metric_id={metricData.data.metric_id}
             timeIntervals={intersection(
               Object.keys(metricData.data.chains.arbitrum),
-              ["daily", "weekly", "monthly"]
+              ["daily", "weekly", "monthly"],
             )}
             onTimeIntervalChange={(timeInterval) =>
               setSelectedTimeInterval(timeInterval)
@@ -138,7 +147,7 @@ const Chain = ({ params }: { params: any }) => {
               selectedChains={selectedChains}
               setSelectedChains={setSelectedChains}
               chains={chains}
-              metric={metricData.data.metric_id}
+              metric_id={metricData.data.metric_id}
               showEthereumMainnet={showEthereumMainnet}
               setShowEthereumMainnet={setShowEthereumMainnet}
             />

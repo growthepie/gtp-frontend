@@ -14,8 +14,11 @@ export type NavigationItem = {
     page?: {
       title?: string;
       description: string;
+      note?: string | React.ReactNode;
       why?: string;
       icon?: string;
+      showGwei?: boolean;
+      reversePerformer?: boolean;
     };
     icon: string;
     key?: string;
@@ -67,6 +70,32 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "metricsDailyActiveAddresses",
         urlKey: "daily-active-addresses",
       },
+      // put navigation items that we want to hide in production here
+      ...(IS_PREVIEW
+        ? [
+            {
+              label: "Transaction Costs",
+              page: {
+                title: "Transaction Costs",
+                description: "The median amount that is paid per transaction.",
+                note: (
+                  <>
+                    1 Billion <b className="font-semibold">Gwei</b> equals 1{" "}
+                    <b className="font-semibold">ETH</b>.
+                  </>
+                ),
+                why: "This is the amount that users pay per transaction. On EVM chains, transaction costs depend on the complexity of the transaction (which is measured in gas). A simple transaction, e.g. a native ETH transfer, uses less gas than a more complex transaction, e.g. an ERC20 swap. Hence, we calculated this metric by looking at the median transaction costs. IMX doesn't charge transaction costs.",
+                icon: "gtp:transaction-costs",
+                showGwei: true,
+                reversePerformer: true,
+              },
+              icon: "gtp:transaction-costs",
+              key: "txcosts",
+              rootKey: "metricsTxCosts",
+              urlKey: "transaction-costs",
+            },
+          ]
+        : []),
       {
         label: "Total Value Locked",
         page: {
@@ -108,24 +137,7 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "metricsStablesMcap",
         urlKey: "stablecoin-market-cap",
       },
-      // put navigation items that we want to hide in production here
-      ...(IS_PREVIEW
-        ? [
-            {
-              label: "Transaction Costs",
-              page: {
-                title: "Transaction Costs",
-                description: "The median amount that is paid per transaction.",
-                why: "This is the amount that users pay per transaction. On EVM chains, transaction costs depend on the complexity of the transaction (which is measured in gas). A simple transaction, e.g. a native ETH transfer, uses less gas than a more complex transaction, e.g. an ERC20 swap. Hence, we calculated this metric by looking at the median transaction costs. IMX doesn't charge transaction costs.",
-                icon: "feather:clock",
-              },
-              icon: "feather:download",
-              key: "txcosts",
-              rootKey: "metricsTxCosts",
-              urlKey: "transaction-costs",
-            },
-          ]
-        : []),
+
       // {
       //   label: "24h Contract Usage",
       //   page: {
@@ -247,10 +259,10 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "polygon-zkevm",
       },
       {
-        label: "Optimism",
+        label: "OP Mainnet",
         page: {
           description:
-            "Optimism uses an optimistic rollup approach, where transactions are assumed to be valid unless proven otherwise, and only invalid transactions are rolled back. Optimism's mainnet launched in August 2021, making it one of the first rollups. It is fully compatible with the Ethereum Virtual Machine (EVM), making it easy for developers to migrate their applications to the Optimism network.",
+            "OP Mainnet (formerly Optimism) uses an optimistic rollup approach, where transactions are assumed to be valid unless proven otherwise, and only invalid transactions are rolled back. OP Mainnet launched in August 2021, making it one of the first rollups. It is fully compatible with the Ethereum Virtual Machine (EVM), making it easy for developers to migrate their applications to the OP Mainnet network.",
         },
         icon: "gtp:optimism-logo-monochrome",
         key: "optimism",

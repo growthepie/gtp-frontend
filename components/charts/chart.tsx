@@ -1,369 +1,256 @@
 "use client";
 
-import { useRef, useState } from "react";
-import Highcharts from "highcharts";
-// import HighchartsExporting from "highcharts/modules/exporting";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import highchartsAnnotations from "highcharts/modules/annotations";
+import highchartsRoundedCorners from "highcharts-rounded-corners";
 import HighchartsReact from "highcharts-react-official";
+import Highcharts, {
+  AxisLabelsFormatterContextObject,
+} from "highcharts/highstock";
 
-import styles from "./chart.module.scss";
-import { useActiveBreakpoint } from "@/utils/use-active-breakpoint";
-// import { merge } from "lodash";
+import { useTheme } from "next-themes";
+import {
+  baseOptions,
+  getTimespans,
+  getTickPositions,
+  getXAxisLabels,
+  decimalToPercent,
+} from "@/lib/chartUtils";
+import ChartWatermark from "../layout/ChartWatermark";
+import { Icon } from "@iconify/react";
+import { AllChainsByKeys } from "@/lib/chains";
+import { debounce } from "lodash";
 
-const colors = {
-  blue400: "#60a5fa",
-  cloudyblue: "#aaaad2",
-  /** @deprecated use blue400 instead. */
-  drop: "#5dadec",
-  fireHighlight: "#ffcc4d",
-  /** @deprecated use orange400 instead. */
-  fireOrange: "#f4900c",
-  orange400: "#fb923c",
-  slateus100: "#dee2f1",
-  slateus200: "#b5bddb",
-  slateus400: "#8991ad",
-  slateus450: "#8888af",
-  slateus500: "#464b6f",
-  slateus800: "#131827",
-  slateus600: "#2d344a",
-  slateus700: "#1b2236",
-  white: "#ffffff",
-};
+export const Chart = ({
+  // data,
+  types,
+  timespan,
+  series,
+  yScale = "linear",
+}: {
+  // data: { [chain: string]: number[][] };
+  types: string[];
+  timespan: string;
+  series: {
+    id: string;
+    name: string;
+    unixKey: string;
+    dataKey: string;
+    data: number[][];
+  }[];
+  yScale?: "linear" | "logarithmic" | "percentage";
+}) => {
+  const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
+  const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
-const COLORS = {
-  GRID: "#262e48",
-  PLOT_LINE: "#6675a3",
-  LABEL: "#8490b5",
-  LABEL_HOVER: "#6c7696",
-  TOOLTIP_BG: "#1b2135", // mignight-express but lighter
-  ANNOTATION_BG: "#293350",
-  // visx
-  // SERIES: ["#0b7285", "#66d9e8", "#fcc419", "#ff8787", "#9c36b5", "#cc5de8", "#a61e4d"],
-  // chart.js
-  SERIES: ["#36a2eb", "#ff6384", "#8142ff", "#ff9f40", "#ffcd56", "#4bc0c0"],
-};
+  const timespans = useMemo(
+    () => getTimespans(Object.values(series)[0].data),
+    [series],
+  );
+  const tickPositions = useMemo(
+    () =>
+      getTickPositions(
+        timespans.max.xMin,
+        timespans.max.xMax,
+        timespan === "max",
+      ),
+    [timespan, timespans.max.xMax, timespans.max.xMin],
+  );
 
-// The wrapper exports only a default component that at the same time is a
-// namespace for the related Props interface (HighchartsReact.Props) and
-// RefObject interface (HighchartsReact.RefObject). All other interfaces
-// like Options come from the Highcharts module itself.
+  const { theme } = useTheme();
 
-const baseOptions: Highcharts.Options = {
-  accessibility: { enabled: false },
-  chart: {
-    animation: false,
-    backgroundColor: "rgba(0, 0, 0, 0)",
-    style: {
-      fontFamily: "Roboto Mono, monospace",
-    },
-    showAxes: true,
-  },
-  legend: {
-    itemStyle: {
-      color: COLORS.LABEL,
-    },
-    itemHoverStyle: {
-      color: COLORS.LABEL_HOVER,
-    },
-  },
-  title: undefined,
-  xAxis: {
-    lineWidth: 0,
-    labels: { enabled: false },
-    tickWidth: 0,
-  },
-
-  yAxis: {
-    gridLineWidth: 0,
-    title: { text: undefined },
-    labels: { enabled: false },
-    plotLines: [
-      {
-        color: colors.slateus200,
-        label: {
-          style: { color: colors.slateus200 },
-          y: 5,
-          x: 20,
-        },
+  useEffect(() => {
+    Highcharts.setOptions({
+      lang: {
+        numericSymbols: ["K", " M", "B", "T", "P", "E"],
       },
-      {
-        color: colors.slateus200,
-        label: {
-          style: { color: colors.slateus200 },
-          y: 18,
-          x: 1,
-        },
-        width: 2,
-        zIndex: 10,
-      },
-    ],
-  },
-  tooltip: {
-    backgroundColor: "transparent",
-    xDateFormat: "%Y-%m-%d",
-    useHTML: true,
-    borderWidth: 0,
-    shadow: false,
-  },
-  credits: { enabled: false },
-  plotOptions: {
-    series: {
-      color: {
-        linearGradient: {
-          x1: 0,
-          y1: 0,
-          x2: 1,
-          y2: 0,
-        },
-        stops: [
-          [0, "#4B90DB"],
-          [1, "#50E3C2"],
-        ],
-      },
-      shadow: {
-        color: "#4B90DB05",
-        width: 15,
-      },
-      marker: {
-        lineColor: "transparent",
-        fillColor: "#4B90DB",
-        radius: 0,
-        symbol: "circle",
-        states: {
-          hover: {
-            radius: 5,
-            fillColor: "#4B90DB",
-            lineColor: "transparent",
-          },
-        },
-      },
-    },
-  },
-};
+    });
+    highchartsRoundedCorners(Highcharts);
+    highchartsAnnotations(Highcharts);
 
-// React supports function components as a simple way to write components that
-// only contain a render method without any state (the App component in this
-// example).
+    setHighchartsLoaded(true);
+  }, []);
 
-export const Chart = ({ inputData }: { inputData: any }) => {
-  const isRendering = useRef(true);
-  const { lg, md, xl, xl2 } = useActiveBreakpoint();
-  const width = xl2 ? 650 : xl ? 530 : lg ? 400 : md ? 570 : 280;
-  const height = lg ? 320 : 200;
+  const drawChartSeries = useCallback(() => {
+    if (chartComponent.current) {
+      const currentSeries = chartComponent.current.series;
 
-  console.log("inputData", inputData);
+      // remove all series
+      for (var i = chartComponent.current.series.length - 1; i >= 0; i--) {
+        chartComponent.current.series[i].remove(false);
+      }
 
-  const [options, setOptions] = useState<Highcharts.Options>({
-    accessibility: { enabled: false },
-    chart: {
-      animation: false,
-      backgroundColor: "rgba(0, 0, 0, 0)",
-      style: {
-        fontFamily: "Roboto Mono, monospace",
-      },
-      showAxes: false,
-    },
-    legend: {
-      itemStyle: {
-        color: COLORS.LABEL,
-      },
-      itemHoverStyle: {
-        color: COLORS.LABEL_HOVER,
-      },
-    },
-    title: undefined,
-    series: [
-      {
-        type: "line",
-        data: inputData,
-      },
-    ],
-    // xAxis: {
-    // 	min: inputData.length > 0 ? Math.min(...inputData[0]) : 0,
-    // 	max: inputData.length > 0 ? Math.max(...inputData[0]) : 0,
-    // 	type: 'datetime',
-    // 	// categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-    // },
-    // yAxis: {
-    // 	min: inputData.length > 0 ? Math.min(...inputData[1]) : 0,
-    // 	max: inputData.length > 0 ? Math.max(...inputData[1]) : 0,
-    // 	plotLines: [
-    // 		{
-    // 			value: 0,
-    // 			width: 2,
-    // 			color: colors.slateus200,
-    // 			zIndex: 10,
-    // 		},
-    // 	],
-    // },
-    xAxis: {
-      // min: inputData.length > 0 ? Math.min(...inputData[0]) : 0,
-      // max: inputData.length > 0 ? Math.max(...inputData[0]) : 0,
-      lineWidth: 0,
-      labels: { enabled: false },
-      tickWidth: 0,
-      type: "datetime",
-    },
-
-    yAxis: {
-      // min: inputData.length > 0 ? Math.min(...inputData[1]) : 0,
-      // max: inputData.length > 0 ? Math.max(...inputData[1]) : 0,
-      gridLineWidth: 0,
-      title: { text: undefined },
-      labels: { enabled: false },
-      plotLines: [
-        {
-          color: colors.slateus200,
-          label: {
-            style: { color: colors.slateus200 },
-            y: 5,
-            x: 20,
-          },
-        },
-        {
-          color: colors.slateus200,
-          label: {
-            style: { color: colors.slateus200 },
-            y: 18,
-            x: 1,
-          },
-          width: 2,
-          zIndex: 10,
-        },
-      ],
-    },
-    tooltip: {
-      backgroundColor: "transparent",
-      xDateFormat: "%Y-%m-%d",
-      useHTML: true,
-      borderWidth: 0,
-      shadow: false,
-    },
-    credits: { enabled: false },
-    plotOptions: {
-      series: {
-        color: {
-          linearGradient: {
-            x1: 0,
-            y1: 0,
-            x2: 1,
-            y2: 0,
-          },
-          stops: [
-            [0, "#4B90DB"],
-            [1, "#50E3C2"],
-          ],
-        },
-        shadow: {
-          color: "#4B90DB05",
-          width: 15,
-        },
-        marker: {
-          lineColor: "transparent",
-          fillColor: "#4B90DB",
-          radius: 0,
-          symbol: "circle",
-          states: {
-            hover: {
-              radius: 5,
-              fillColor: "#4B90DB",
-              lineColor: "transparent",
+      // add new series
+      series.forEach((s) => {
+        chartComponent.current?.addSeries(
+          {
+            name: s.name,
+            data: s.data.map((d) => [
+              d[types.indexOf(s.unixKey)],
+              d[types.indexOf(s.dataKey)],
+            ]),
+            type: "area",
+            borderColor: "transparent",
+            shadow: {
+              color: "#CDD8D3" + "FF",
+              offsetX: 0,
+              offsetY: 0,
+              width: 2,
+            },
+            color: {
+              linearGradient: {
+                x1: 0,
+                y1: 0,
+                x2: 0,
+                y2: 1,
+              },
+              stops: [
+                [0, AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] + "FF"],
+                [
+                  0.349,
+                  AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] + "88",
+                ],
+                [1, AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] + "00"],
+              ],
             },
           },
-        },
-      },
-    },
-    // chart: {
-    // 	events: {
-    // 		render: function () {
-    // 			isRendering.current = false;
-    // 		},
-    // 	},
-    // },
-  });
+          false,
+        );
+      });
+      chartComponent.current?.redraw();
+    }
+  }, [chartComponent, series, theme, types]);
 
-  // const chartComponentRef = useRef<HighchartsReact.RefObject>(null);
+  useEffect(() => {
+    drawChartSeries();
+  }, [drawChartSeries, series, types]);
 
-  // useEffect(() => {
-  // 	console.log('inputData', JSON.stringify(inputData));
-  // 	if (!Array.isArray(inputData) || inputData.length === 0) return;
-  // 	const nextOptions: Highcharts.Options = {
-  // 		// chart: {
-  // 		// 	events: {
-  // 		// 		redraw: function () {
-  // 		// 			const yAxis0 = this.yAxis[0] as Highcharts.Axis & {
-  // 		// 				plotLinesAndBands: { svgElem: { element: SVGElement } }[];
-  // 		// 			};
+  const resetXAxisExtremes = useCallback(() => {
+    if (chartComponent.current) {
+      // const pixelsPerDay =
+      // chartComponent.current.plotWidth / timespans[timespan].daysDiff;
 
-  // 		// 			yAxis0.plotLinesAndBands.forEach(function (lineOrBand) {
-  // 		// 				const svg = lineOrBand.svgElem.element;
-  // 		// 				const d = svg.getAttribute('d');
-  // 		// 				if (d === null) {
-  // 		// 					return;
-  // 		// 				}
-  // 		// 				const dArr = d.split(' ');
-  // 		// 				const widthReductionLeft = xl2
-  // 		// 					? 500
-  // 		// 					: xl
-  // 		// 					? 380
-  // 		// 					: lg
-  // 		// 					? 250
-  // 		// 					: md
-  // 		// 					? 420
-  // 		// 					: 230;
-  // 		// 				const widthReductionRight = md ? 90 : 15;
+      // // 15px padding on each side
+      // const paddingMilliseconds = (15 / pixelsPerDay) * 24 * 60 * 60 * 1000;
 
-  // 		// 				const newStartX = Number(dArr[1]) + widthReductionLeft;
-  // 		// 				const newStopX = Number(dArr[4]) - widthReductionRight;
-  // 		// 				dArr[1] = String(newStartX);
-  // 		// 				dArr[4] = String(newStopX);
+      chartComponent.current.xAxis[0].setExtremes(
+        timespans[timespan].xMin,
+        timespans[timespan].xMax,
+        true,
+      );
+    }
+  }, [timespan, timespans]);
 
-  // 		// 				svg.setAttribute('d', dArr.join(' '));
-  // 		// 			});
-  // 		// 		},
-  // 		// 	},
-  // 		// 	width: width,
-  // 		// 	height: height,
-  // 		// },
-  // 		// xAxis: {
-  // 		// 	max: Math.max(inputData[inputData.length - 1][0], 0),
-  // 		// 	min: 0,
-  // 		// 	minPadding: 0.03,
-  // 		// },
-  // 		// yAxis: {
-  // 		// 	max: Math.max(inputData[inputData.length - 1][1], 0),
-  // 		// 	min: 0,
-  // 		// },
-  // 		series: [
-  // 			{
-  // 				type: 'line',
-  // 				data: inputData,
-  // 			},
-  // 		],
-  // 		plotOptions: {
-  // 			series: {
-  // 				marker: {
-  // 					enabled: false,
-  // 				},
-  // 			},
-  // 		},
-  // 	};
-  // 	if (!isRendering.current) {
-  // 		isRendering.current = true;
-  // 		setOptions((currentOptions) => merge({}, currentOptions, nextOptions));
-  // 	}
-  // }, [height, inputData, width]);
+  const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
-  // useEffect(() => {
-  // 	console.log('inputData', JSON.stringify(inputData));
-  // }, [inputData]);
+  const resituateChart = debounce(() => {
+    if (chartComponent.current) {
+      delay(50)
+        .then(() => {
+          chartComponent.current &&
+            chartComponent.current.setSize(null, null, true);
+          // chart.reflow();
+        })
+        .then(() => {
+          delay(50).then(
+            () => chartComponent.current && chartComponent.current.reflow(),
+          );
+        })
+        .then(() => {
+          delay(50).then(() => chartComponent.current && resetXAxisExtremes());
+        });
+    }
+  }, 150);
+
+  useEffect(() => {
+    resituateChart();
+
+    // cancel the debounced function on component unmount
+    return () => {
+      resituateChart.cancel();
+    };
+  }, [chartComponent, timespan, timespans, resituateChart]);
 
   return (
-    <div className={`flex select-none justify-center ${styles.chart}`}>
-      <HighchartsReact
-        highcharts={Highcharts}
-        options={options}
-        // ref={chartComponentRef}
-      />
-    </div>
+    <>
+      {Object.values(series)[0].data.length > 0 &&
+      timespans &&
+      highchartsLoaded ? (
+        <div className="w-full py-4 rounded-xl">
+          {/* <div>{JSON.stringify(timespans[timespan])}</div>
+          <div>
+            {JSON.stringify(
+              Object.keys(data).map((chain) => ({
+                chain,
+                unixKey: series[0].unixKey,
+                dataKey: series[0].dataKey,
+                dataFirst: data[chain][0],
+                dataLast: data[chain][data[chain].length - 1],
+              })),
+            )}
+          </div> */}
+          <div className="w-full h-[16rem] md:h-[26rem] relative rounded-xl">
+            <div className="absolute w-full h-[24rem] top-1 md:top-4">
+              <HighchartsReact
+                highcharts={Highcharts}
+                options={{
+                  ...baseOptions,
+                  chart: {
+                    ...baseOptions.chart,
+                    events: {
+                      load: function () {
+                        chartComponent.current = this;
+                        drawChartSeries();
+                      },
+                    },
+                  },
+                  xAxis: {
+                    ...baseOptions.xAxis,
+                    min: timespans[timespan].xMin,
+                    max: timespans[timespan].xMax,
+                    minorTicks: true,
+                    minorTickLength: 2,
+                    minorTickWidth: 2,
+                    minorGridLineWidth: 0,
+                    minorTickInterval: ["7d", "30d"].includes(timespan)
+                      ? 1000 * 60 * 60 * 24 * 1
+                      : 1000 * 60 * 60 * 24 * 7,
+                    tickPositions: tickPositions,
+                    labels: getXAxisLabels(),
+                  },
+                  yAxis: {
+                    ...baseOptions.yAxis,
+                    type: yScale,
+                    min: 0,
+                    max: 1,
+                    labels: {
+                      formatter: function (
+                        this: AxisLabelsFormatterContextObject,
+                      ) {
+                        const { value } = this;
+                        return decimalToPercent(value);
+                      },
+                    },
+                  },
+                }}
+                constructorType={"stockChart"}
+                ref={(chart) => {
+                  chartComponent.current = chart?.chart;
+                }}
+              />
+            </div>
+            <div className="absolute bottom-[20%] right-[5%] md:bottom-14 md:right-10 pointer-events-none z-0 opacity-50 mix-blend-lighten">
+              <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px]" />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="w-full h-[26rem] my-4 flex justify-center items-center">
+          <div className="w-10 h-10 animate-spin">
+            <Icon icon="feather:loader" className="w-10 h-10 text-forest-500" />
+          </div>
+        </div>
+      )}
+    </>
   );
 };

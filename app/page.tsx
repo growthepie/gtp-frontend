@@ -66,12 +66,12 @@ export default function Home() {
 
     return AllChains.filter(
       (chain) =>
-        Object.keys(data.chains).includes(chain.key) && chain.key != "ethereum"
+        Object.keys(data.chains).includes(chain.key) && chain.key != "ethereum",
     );
   }, [data]);
 
   const [selectedChains, setSelectedChains] = useState(
-    AllChains.map((chain) => chain.key)
+    AllChains.map((chain) => chain.key),
   );
 
   return (
@@ -220,9 +220,9 @@ export default function Home() {
                 The &quot;multiple&quot; category denotes addresses that were
                 active on multiple Layer 2 (L2) networks within a given week.
                 This implies that if an address was active on different L2
-                networks, such as Arbitrum and Optimism, in the same week, it
+                networks, such as Arbitrum and OP Mainnet, in the same week, it
                 would be included in the &quot;multiple&quot; category, but not
-                attributed to either Arbitrum or Optimism. For a more detailed
+                attributed to either Arbitrum or OP Mainnet. For a more detailed
                 breakdown of active addresses on each individual chain, please
                 refer to the{" "}
                 <Link
