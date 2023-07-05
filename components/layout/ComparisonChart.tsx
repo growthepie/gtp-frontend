@@ -411,9 +411,7 @@ export default function ComparisonChart({
                   2,
                 )}%</div>
               </div>
-              ${
-                IS_PREVIEW
-                  ? `
+              
               <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
                 <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
     
@@ -422,9 +420,7 @@ export default function ComparisonChart({
                   width: ${percentage}%;
                   background-color: ${AllChainsByKeys[name].colors[theme][0]};
                 "></div>
-              </div>`
-                  : ""
-              }`;
+              </div>`;
 
           let prefix = valuePrefix;
           let suffix = "";
@@ -458,9 +454,6 @@ export default function ComparisonChart({
                 }">${suffix}</div>
             </div>
           </div>
-          ${
-            IS_PREVIEW
-              ? `
           <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
             <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
 
@@ -469,9 +462,7 @@ export default function ComparisonChart({
               width: ${(value / pointsSum) * 100}%;
               background-color: ${AllChainsByKeys[name].colors[theme][0]};
             "></div>
-          </div>`
-              : ""
-          }`;
+          </div>`;
         })
         .join("");
       return tooltip + tooltipPoints + tooltipEnd;

@@ -70,32 +70,33 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "metricsDailyActiveAddresses",
         urlKey: "daily-active-addresses",
       },
-      // put navigation items that we want to hide in production here
-      ...(IS_PREVIEW
-        ? [
-            {
-              label: "Transaction Costs",
-              page: {
-                title: "Transaction Costs",
-                description: "The median amount that is paid per transaction.",
-                note: (
-                  <>
-                    1 Billion <b className="font-semibold">Gwei</b> equals 1{" "}
-                    <b className="font-semibold">ETH</b>.
-                  </>
-                ),
-                why: "This is the amount that users pay per transaction. On EVM chains, transaction costs depend on the complexity of the transaction (which is measured in gas). A simple transaction, e.g. a native ETH transfer, uses less gas than a more complex transaction, e.g. an ERC20 swap. Hence, we calculated this metric by looking at the median transaction costs. IMX doesn't charge transaction costs.",
-                icon: "gtp:transaction-costs",
-                showGwei: true,
-                reversePerformer: true,
-              },
-              icon: "gtp:transaction-costs",
-              key: "txcosts",
-              rootKey: "metricsTxCosts",
-              urlKey: "transaction-costs",
-            },
-          ]
-        : []),
+      {
+        label: "Transaction Costs",
+        page: {
+          title: "Transaction Costs",
+          description: "The median amount that is paid per transaction.",
+          note: (
+            <>
+              1 Billion <b className="font-semibold">Gwei</b> equals 1{" "}
+              <b className="font-semibold">ETH</b>.
+            </>
+          ),
+          why: "This is the amount that users pay per transaction. On EVM chains, transaction costs depend on the complexity of the transaction (which is measured in gas). A simple transaction, e.g. a native ETH transfer, uses less gas than a more complex transaction, e.g. an ERC20 swap. Hence, we calculated this metric by looking at the median transaction costs. IMX doesn't charge transaction costs.",
+          icon: "gtp:transaction-costs",
+          showGwei: true,
+          reversePerformer: true,
+        },
+        icon: "gtp:transaction-costs",
+        key: "txcosts",
+        rootKey: "metricsTxCosts",
+        urlKey: "transaction-costs",
+      },
+      // // put navigation items that we want to hide in production here
+      // ...(IS_PREVIEW
+      //   ? [
+
+      //     ]
+      //   : []),
       {
         label: "Total Value Locked",
         page: {
