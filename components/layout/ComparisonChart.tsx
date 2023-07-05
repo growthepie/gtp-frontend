@@ -347,7 +347,8 @@ export default function ComparisonChart({
         } else {
           if (showGwei && showUsd) {
             // for small USD amounts, show 2 decimals
-            if (val < 10)
+            if (val < 1) number = prefix + val.toFixed(2) + suffix;
+            else if (val < 10)
               number =
                 prefix + d3.format(".3s")(val).replace(/G/, "B") + suffix;
             else if (val < 100)
