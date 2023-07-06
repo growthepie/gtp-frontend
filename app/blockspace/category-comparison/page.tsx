@@ -6,8 +6,8 @@ import Image from "next/image";
 import { useSessionStorage } from "usehooks-ts";
 import CategoryMetrics from "@/components/layout/CategoryMetrics";
 import { BlockspaceURLs } from "@/lib/urls";
-import { ChainOverviewResponse } from "@/types/api/ChainOverviewResponse";
 import useSWR from "swr";
+import { CategoryComparisonResponse } from "@/types/api/CategoryComparisonResponse";
 
 const CategoryComparison = () => {
   const {
@@ -15,7 +15,7 @@ const CategoryComparison = () => {
     error: usageError,
     isLoading: usageLoading,
     isValidating: usageValidating,
-  } = useSWR<ChainOverviewResponse>(BlockspaceURLs["chain-comparison"]);
+  } = useSWR<CategoryComparisonResponse>(BlockspaceURLs["chain-comparison"]);
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(
     "blockspaceShowEthereumMainnet",
@@ -45,17 +45,16 @@ const CategoryComparison = () => {
             share of chain usage.
           </h1>
         </div>
-
-        {usageData && (
-          <CategoryMetrics
-            showEthereumMainnet={showEthereumMainnet}
-            setShowEthereumMainnet={setShowEthereumMainnet}
-            selectedTimespan={selectedTimespan}
-            setSelectedTimespan={setSelectedTimespan}
-            data={usageData.data}
-          />
-        )}
       </Container>
+      {usageData && (
+        <CategoryMetrics
+          showEthereumMainnet={showEthereumMainnet}
+          setShowEthereumMainnet={setShowEthereumMainnet}
+          selectedTimespan={selectedTimespan}
+          setSelectedTimespan={setSelectedTimespan}
+          data={usageData.data}
+        />
+      )}
     </>
   );
 };
