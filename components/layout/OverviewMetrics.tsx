@@ -1,6 +1,13 @@
 "use client";
 import Image from "next/image";
-import { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import {
+  useMemo,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  CSSProperties,
+} from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
@@ -11,6 +18,7 @@ import { color } from "highcharts";
 import { useHover } from "usehooks-ts";
 import { Chart } from "../charts/chart";
 import Container from "./Container";
+import Colors from "tailwindcss/colors";
 
 const DisabledStates: {
   [mode: string]: {
@@ -46,7 +54,7 @@ export default function OverviewMetrics({
 
   const categories = useMemo<{ [key: string]: string }>(() => {
     return {
-      chains: "Chains",
+      // chains: "Chains",
       native_transfers: "Native Transfer",
       token_transfers: "Token Transfer",
       nft_fi: "NFT",
@@ -55,6 +63,7 @@ export default function OverviewMetrics({
       utility: "Utility",
       scaling: "Scaling",
       gaming: "Gaming",
+      unlabeled: "?",
     };
   }, []);
 
@@ -156,6 +165,111 @@ export default function OverviewMetrics({
 
   console.log(data["optimism"].overview.types.indexOf("gas_fees_share"));
   console.log(relativePercentage);
+
+  const getBarSectionStyle = useCallback(
+    (
+      chainKey: string,
+      categoryKey: string, // dataIndex: number,
+    ) => {
+      const style: CSSProperties = {
+        backgroundColor: "white",
+        // width: "0px",
+        borderRadius: "0px",
+      };
+
+      const categoriesKey = Object.keys(categories).indexOf(categoryKey);
+      const dataKeys = Object.keys(data[chainKey].overview[selectedTimespan]);
+      const dataKeysInterectCategoriesKeys = Object.keys(categories).filter(
+        (key) => dataKeys.includes(key),
+      );
+      const dataIndex = dataKeysInterectCategoriesKeys.indexOf(categoryKey);
+
+      const categoryData =
+        data[chainKey].overview[selectedTimespan][categoryKey];
+
+      const isLastCategory =
+        dataIndex === dataKeysInterectCategoriesKeys.length - 1;
+
+      const dataTypes = data[chainKey].overview.types;
+
+      const isSelectedCategory = selectedCategory === categoryKey;
+
+      const isSelectedChainOrNoSelectedChain =
+        selectedChain === chainKey || !selectedChain;
+
+      style.transition = "all 0.165s ease-in-out";
+
+      if (
+        (isSelectedCategory && isSelectedChainOrNoSelectedChain) ||
+        isCategoryHovered[categoryKey]
+      ) {
+        if (isLastCategory) {
+          style.borderRadius = "20000px 99999px 99999px 20000px";
+        } else {
+          style.borderRadius = "5px";
+        }
+
+        style.width =
+          categoryData[dataTypes.indexOf(selectedMode)] *
+            relativePercentageByChain[chainKey] +
+          4 +
+          "%";
+        // if()
+        style.transform =
+          isCategoryHovered[categoryKey] && !isSelectedCategory
+            ? "scale(1.04)"
+            : "scale(1.05)";
+
+        style.zIndex = isCategoryHovered[categoryKey] ? 1 : 5;
+
+        style.backgroundColor = "";
+      } else {
+        style.width =
+          categoryData[dataTypes.indexOf(selectedMode)] *
+            relativePercentageByChain[chainKey] +
+          4 +
+          "%";
+        // if(isCategoryHovered[categoryKey])
+        // style.transform =
+        //   isCategoryHovered[categoryKey] && !isSelectedCategory
+        //     ? "scale(1)"
+        //     : "scale(1.05)";
+
+        if (isLastCategory) {
+          style.borderRadius = "0px 99999px 99999px 0px";
+        } else {
+          style.borderRadius = "0px";
+        }
+
+        if (categoryKey === "unlabeled") {
+          // style.backgroundColor = "rgba(88, 88, 88, 0.55)";
+          style.background =
+            "linear-gradient(-45deg, rgba(0, 0, 0, .88) 25%, rgba(0, 0, 0, .99) 25%, rgba(0, 0, 0, .99) 50%, rgba(0, 0, 0, .88) 50%, rgba(0, 0, 0, .88) 75%, rgba(0, 0, 0, .99) 75%, rgba(0, 0, 0, .99))";
+          // style.background = undefined;
+          //   "linear-gradient(to right, #e5405e 0%, #ffdb3a 45%, #3fffa2 100%)";
+          // style.backgroundPosition = "75% 0%";
+          // style.backgroundRepeat = "repeat";
+          style.animation = "unlabeled-gradient 20s linear infinite";
+          style.backgroundSize = "10px 10px";
+        } else {
+          style.backgroundColor = `rgba(0, 0, 0, ${
+            0.06 + (dataIndex / (Object.keys(categories).length - 1)) * 0.94
+          })`;
+        }
+      }
+      return style;
+    },
+    [
+      selectedCategory,
+      selectedMode,
+      selectedChain,
+      data,
+      relativePercentageByChain,
+      isCategoryHovered,
+      categories,
+      selectedTimespan,
+    ],
+  );
 
   return (
     <div className="w-full flex-col relative">
@@ -276,7 +390,9 @@ export default function OverviewMetrics({
                       categories[category] !== "Chains" && (
                         <div
                           key={category}
-                          className={`relative flex w-full h-full justify-center items-center ${
+                          className={`relative flex h-full justify-center items-center 
+                          ${category === "unlabeled" ? "w-[40px]" : "flex-1"}
+                          ${
                             selectedCategory === category
                               ? "borden-hidden rounded-[0px]"
                               : "h-full"
@@ -499,12 +615,16 @@ export default function OverviewMetrics({
                                       [categoryKey]: false,
                                     }));
                                   }}
-                                  className={`flex flex-col h-[41px] justify-center items-center px-4 py-5 cursor-pointer relative
+                                  className={`flex flex-col h-[41px] justify-center items-center px-4 py-5 cursor-pointer relative transition-all duration-200 ease-in-out
                                     ${
-                                      selectedCategory === categoryKey &&
-                                      (selectedChain === chainKey ||
-                                        selectedChain === null)
-                                        ? `py-[25px] -my-[5px] px-[25px] -mx-[5px] z-10 shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
+                                      (selectedCategory === categoryKey &&
+                                        (selectedChain === chainKey ||
+                                          selectedChain === null)) ||
+                                      isCategoryHovered[categoryKey]
+                                        ? isCategoryHovered[categoryKey] &&
+                                          selectedCategory !== categoryKey
+                                          ? `py-[23px] -my-[0px] z-10 shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
+                                          : `py-[25px] -my-[5px] z-10 shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
                                         : ""
                                     } 
                                     ${
@@ -522,79 +642,13 @@ export default function OverviewMetrics({
                                           : "rounded-r-full"
                                         : ""
                                     }`}
-                                  style={{
-                                    backgroundColor:
-                                      selectedCategory === categoryKey &&
-                                      (selectedChain === chainKey ||
-                                        selectedChain === null)
-                                        ? ""
-                                        : `rgba(0, 0, 0, ${
-                                            0.06 +
-                                            (i /
-                                              Object.keys(categories).length) *
-                                              0.94
-                                          })`,
-                                    width: `${
-                                      selectedCategory === categoryKey &&
-                                      (selectedChain === chainKey ||
-                                        selectedChain === null)
-                                        ? data[chainKey].overview[
-                                            selectedTimespan
-                                          ][categoryKey][
-                                            data[
-                                              chainKey
-                                            ].overview.types.indexOf(
-                                              selectedMode,
-                                            )
-                                          ] *
-                                            relativePercentageByChain[
-                                              chainKey
-                                            ] +
-                                          4
-                                        : data[chainKey].overview[
-                                            selectedTimespan
-                                          ][categoryKey][
-                                            data[
-                                              chainKey
-                                            ].overview.types.indexOf(
-                                              selectedMode,
-                                            )
-                                          ] *
-                                            relativePercentageByChain[
-                                              chainKey
-                                            ] +
-                                          2
-                                    }%`,
-                                    borderRadius: `${
-                                      selectedCategory === categoryKey &&
-                                      (selectedChain === chainKey ||
-                                        selectedChain === null)
-                                        ? categoryIndex ===
-                                          Object.keys(
-                                            data[chainKey].overview[
-                                              selectedTimespan
-                                            ],
-                                          ).length -
-                                            1
-                                          ? "20000px 99999px 99999px 20000px"
-                                          : "5px"
-                                        : categoryIndex ===
-                                          Object.keys(
-                                            data[chainKey].overview[
-                                              selectedTimespan
-                                            ],
-                                          ).length -
-                                            1
-                                        ? "0px 99999px 99999px 0px"
-                                        : "0px"
-                                    }`,
-
-                                    // borderR: `${
-                                    //   selectedCategory === categoryKey ? 0 : "10px"
-                                  }}
+                                  style={getBarSectionStyle(
+                                    chainKey,
+                                    categoryKey,
+                                  )}
                                 >
                                   {/* highlight on hover div */}
-                                  {isCategoryHovered[categoryKey] &&
+                                  {/* {isCategoryHovered[categoryKey] &&
                                     !(
                                       selectedCategory === categoryKey &&
                                       selectedChain === null
@@ -603,9 +657,10 @@ export default function OverviewMetrics({
                                         className={`absolute inset-0 bg-white/30 mix-blend-hard-light`}
                                         style={{
                                           borderRadius: `${
-                                            selectedCategory === categoryKey &&
-                                            (selectedChain === chainKey ||
-                                              selectedChain === null)
+                                            (selectedCategory === categoryKey &&
+                                              (selectedChain === chainKey ||
+                                                selectedChain === null)) ||
+                                            isCategoryHovered[categoryKey]
                                               ? categoryIndex ===
                                                 Object.keys(
                                                   data[chainKey].overview[
@@ -627,13 +682,19 @@ export default function OverviewMetrics({
                                           }`,
                                         }}
                                       />
-                                    )}
+                                    )} */}
                                   <div
-                                    className={`mix-blend-luminosity font-medium ${
-                                      selectedCategory === categoryKey &&
-                                      (selectedChain === chainKey ||
-                                        selectedChain === null)
-                                        ? `text-lg ${
+                                    className={`mix-blend-luminosity font-medium w-full absolute inset-0 flex items-center justify-center ${
+                                      (selectedCategory === categoryKey &&
+                                        (selectedChain === chainKey ||
+                                          selectedChain === null)) ||
+                                      isCategoryHovered[categoryKey]
+                                        ? `${
+                                            isCategoryHovered[categoryKey] &&
+                                            selectedCategory !== categoryKey
+                                              ? "text-xs"
+                                              : "text-sm font-semibold"
+                                          } ${
                                             [
                                               "arbitrum",
                                               "imx",
