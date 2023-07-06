@@ -1,16 +1,11 @@
 "use client";
 import Image from "next/image";
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef, ReactNode } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
-import { useTheme } from "next-themes";
-import { Chains } from "@/types/api/ChainOverviewResponse";
-import { AllChainsByKeys } from "@/lib/chains";
-import { color } from "highcharts";
-import { useHover } from "usehooks-ts";
-import { Chart } from "../charts/chart";
-import { capitalize } from "lodash";
+import { Switch } from "../Switch";
+import { Sources } from "@/lib/datasources";
 
 export default function CategoryMetrics({
   data,
@@ -25,11 +20,11 @@ export default function CategoryMetrics({
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
 }) {
-  const [selectedScale, setSelectedScale] = useState("gas_fees_share");
+  const [selectedValue, setSelectedValue] = useState("gas_fees_share");
   const [selectedCategory, setSelectedCategory] = useState("native_transfers");
   const [selectedChain, setSelectedChain] = useState<string | null>(null);
   const [openSub, setOpenSub] = useState(false);
-  // Assuming `data` and `categories` objects are defined correctly
+  const [selectedScale, setSelectedScale] = useState("absolute");
 
   const timespans = useMemo(() => {
     return {
@@ -163,24 +158,24 @@ export default function CategoryMetrics({
           <div className="flex justify-between md:justify-center items-center  space-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
             <button
               className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium   ${
-                "gas_fees_share" === selectedScale
+                "gas_fees_share" === selectedValue
                   ? "bg-forest-500 dark:bg-forest-1000"
                   : "hover:bg-forest-500/10"
               }`}
               onClick={() => {
-                setSelectedScale("gas_fees_share");
+                setSelectedValue("gas_fees_share");
               }}
             >
               Gas Fees
             </button>
             <button
               className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium   ${
-                "txcount_share" === selectedScale
+                "txcount_share" === selectedValue
                   ? "bg-forest-500 dark:bg-forest-1000"
                   : "hover:bg-forest-500/10"
               }`}
               onClick={() => {
-                setSelectedScale("txcount_share");
+                setSelectedValue("txcount_share");
               }}
             >
               Transaction Count
@@ -268,6 +263,7 @@ export default function CategoryMetrics({
                     </div>
 
                     <button
+                      key={i}
                       className="relative top-[8px] h-[24px] w-[24px] hover:bg-white/5"
                       onClick={() => {
                         setOpenSub(!openSub);
@@ -368,8 +364,9 @@ export default function CategoryMetrics({
                       } // Add right padding for the scrollbar width
                     >
                       {selectedCategory === category ? (
-                        <>
+                        <div key={data[category].subcategories}>
                           <div
+                            key={categories[category]}
                             className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 items-center mx-auto w-[190px] hover:bg-white/5"
                             onClick={() => {
                               handleDeselectAllSubcategories(category);
@@ -409,9 +406,7 @@ export default function CategoryMetrics({
                                     />
                                   </div>
                                 </button>
-                              ) : (
-                                <></>
-                              ),
+                              ) : null,
                           )}
                           {data[category].subcategories.list.map(
                             (subcategory) =>
@@ -440,10 +435,8 @@ export default function CategoryMetrics({
                                 <></>
                               ),
                           )}
-                        </>
-                      ) : (
-                        <div></div>
-                      )}
+                        </div>
+                      ) : null}
                     </div>
 
                     <button
@@ -497,6 +490,65 @@ export default function CategoryMetrics({
           {/*Chains Here */}
         </div>
         <div>Chart{/*Chart Here */}</div>
+      </div>
+      <div className="flex flex-col md:flex-row w-full justify-normal md:justify-end items-center text-sm md:text-base rounded-2xl md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
+        {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
+        {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
+        {/* toggle ETH */}
+
+        <button
+          className={`rounded-full text-sm md:text-base py-1 lg:px-4 xl:px-6 font-medium  ${
+            selectedScale === "absolute"
+              ? "bg-forest-500 dark:bg-forest-1000"
+              : "hover:bg-forest-500/10"
+          }`}
+          onClick={() => {
+            setSelectedScale("absolute");
+          }}
+        >
+          Absolute
+        </button>
+        <button
+          className={`rounded-full text-sm md:text-base py-1 lg:px-4 xl:px-6 font-medium  ${
+            selectedScale === "absolute_log"
+              ? "bg-forest-500 dark:bg-forest-1000"
+              : "hover:bg-forest-500/10"
+          }`}
+          onClick={() => {
+            setSelectedScale("absolute_log");
+          }}
+        >
+          Absolute Log
+        </button>
+        <button
+          className={`rounded-full text-sm md:text-base py-1 lg:px-4 xl:px-6 font-medium ${
+            selectedScale === "chain_share"
+              ? "bg-forest-500 dark:bg-forest-1000"
+              : "hover:bg-forest-500/10"
+          }`}
+          onClick={() => {
+            setSelectedScale("chain_share");
+          }}
+        >
+          Share of Chain Usage
+        </button>
+        <Tooltip placement="left" allowInteract>
+          <TooltipTrigger>
+            <div className="p-1 z-10">
+              <Icon icon="feather:info" className="w-6 h-6" />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
+            <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
+              <div className="flex flex-col space-y-1">
+                <div className="font-bold text-sm leading-snug">
+                  Data Sources:
+                </div>
+                <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug"></div>
+              </div>
+            </div>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </>
   );
