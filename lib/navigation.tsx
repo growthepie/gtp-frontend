@@ -188,6 +188,7 @@ export const navigationItems: NavigationItem[] = [
           title: "Chain Overview",
           description:
             "An overview of chains' high-level blockspace usage. All expressed in shares of a chain's total blockspace.",
+          icon: "gtp:blockspace-chain-overview",
         },
         icon: "gtp:blockspace-chain-overview",
         key: "chain-overview",
