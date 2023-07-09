@@ -3,6 +3,9 @@ const nextConfig = {
   experimental: {
     appDir: true,
   },
-}
+  images: {
+    domains: ["ipfs.io"],
+  },
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

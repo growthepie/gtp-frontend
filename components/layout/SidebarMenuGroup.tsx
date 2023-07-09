@@ -108,7 +108,11 @@ export default function SidebarMenuGroup({
       </div>
     );
 
-  if (["API Documentation", "Wiki", "Contributors", "Home"].includes(item.name))
+  if (
+    ["API Documentation", "Wiki", "Contributors", "Home", "Blog"].includes(
+      item.name,
+    )
+  )
     return (
       <div className="group flex flex-col">
         {/* open in new tab */}
@@ -116,12 +120,14 @@ export default function SidebarMenuGroup({
           <TooltipTrigger className="h-6 mb-8 cursor-default pl-0 md:pl-8 overflow-visible">
             <Link
               target={
-                !["Home", "Contributors"].includes(item.name) ? "_blank" : ""
+                ["API Documentation", "Wiki"].includes(item.name)
+                  ? "_blank"
+                  : ""
               }
               className="flex items-center justify-items-center mb-8"
               href={item.href ?? ""}
               rel={
-                !["Home", "Contributors"].includes(item.name)
+                ["API Documentation", "Wiki"].includes(item.name)
                   ? "noopener noreferrer"
                   : ""
               }

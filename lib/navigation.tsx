@@ -188,6 +188,7 @@ export const navigationItems: NavigationItem[] = [
           title: "Chain Overview",
           description:
             "An overview of chains' high-level blockspace usage. All expressed in shares of a chain's total blockspace.",
+          icon: "gtp:blockspace-chain-overview",
         },
         icon: "gtp:blockspace-chain-overview",
         key: "chain-overview",
@@ -317,6 +318,18 @@ export const navigationItems: NavigationItem[] = [
     options: [],
     href: "https://docs.growthepie.xyz/api",
   },
+  // // put navigation items that we want to hide in production here
+  ...(IS_PREVIEW
+    ? [
+        {
+          name: "Blog",
+          label: "Blog",
+          icon: "gtp:book-open",
+          options: [],
+          href: "/blog",
+        },
+      ]
+    : []),
 ];
 
 export const contributorsItem: NavigationItem = {
