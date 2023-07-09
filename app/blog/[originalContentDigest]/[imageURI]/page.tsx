@@ -3,7 +3,7 @@ import { request, gql } from "graphql-request";
 import ReactJson from "react-json-view";
 import useSWR from "swr";
 // import { remark } from "remark";
-import remarkParse from "remark-parse";
+// import remarkParse from "remark-parse";
 // import html from "remark-html";
 import { useEffect, useMemo, useState } from "react";
 import moment from "moment";
@@ -13,7 +13,7 @@ import Heading from "@/components/layout/Heading";
 import _ from "lodash";
 import Image from "next/image";
 import Link from "next/link";
-import { ReactMarkdown } from "react-markdown/lib/react-markdown";
+import ReactMarkdown from "react-markdown";
 import { Digest } from "@/components/layout/Blog";
 
 const fetcher: any = (query: string) =>
@@ -42,7 +42,6 @@ type FetchResponse = {
 
 // alana: 0x26f35e0F8F3030907044aC0a43e72c1A17284137
 // gtp: 0x9438b8B447179740cD97869997a2FCc9b4AA63a2
-// 0x315262bb380255baCa17460EfcaA4C194E696127
 
 const TRANSACTIONS_QUERY = gql`
   query Transactions {
@@ -98,7 +97,7 @@ const TRANSACTIONS_QUERY = gql`
   }
 `;
 
-export default function Blog() {
+export default function BlogEntry({ params }: { params: any }) {
   const { data, error, isLoading, isValidating } = useSWR<FetchResponse>(
     TRANSACTIONS_QUERY,
     fetcher,
@@ -152,28 +151,32 @@ export default function Blog() {
           </div>
         </div>
         {/* <pre className="w-full">{JSON.stringify(data, null, 2)}</pre> */}
-        <div className="grid grid-cols-1 gap-8">
+        <div className="grid grid-cols-1 gap-8 mx-auto max-w-3xl">
           {data && (
             <Digest
-              tags={TagsByUniqueOriginalContentDigest[0]}
-              type="preview"
+              tags={{
+                originalContentDigest: params.originalContentDigest,
+                contentDigest: params.contentDigest,
+              }}
+              type="full"
             />
           )}
-          <div className="flex justify-center items-center w-full dark:text-gray-400 text-gray-600 text-[14px] my-[15px]">
-            More Posts
-          </div>
-          <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
-            {data &&
-              TagsByUniqueOriginalContentDigest.map((value) => {
-                return (
-                  <Digest
-                    key={value.originalContentDigest}
-                    tags={value}
-                    type="card"
-                  />
-                );
-              })}
-          </div>
+        </div>
+
+        <div className="flex justify-center items-center w-full dark:text-gray-400 text-gray-600 text-[14px] my-[15px]">
+          More Posts
+        </div>
+        <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
+          {data &&
+            TagsByUniqueOriginalContentDigest.map((value) => {
+              return (
+                <Digest
+                  key={value.originalContentDigest}
+                  tags={value}
+                  type="card"
+                />
+              );
+            })}
         </div>
       </Container>
     </>

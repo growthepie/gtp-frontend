@@ -10,6 +10,7 @@ import { Metadata } from "next";
 import Head from "./head";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.growthepie.xyz"),
   title: {
     absolute:
       "growthepie - Growing Ethereum’s Ecosystem Together - Layer 2 User Base",
@@ -24,16 +25,22 @@ export const metadata: Metadata = {
   openGraph: {
     title: "growthepie",
     description: "Growing Ethereum’s Ecosystem Together",
-    url: "https://www.growthepie.com",
+    url: "https://www.growthepie.xyz",
     images: [
       {
-        url: "/logo_full.png",
-        width: 772,
-        height: 181,
-        alt: "growthepie",
+        url: "https://www.growthepie.xyz/gtp_og.png",
+        width: 1200,
+        height: 627,
+        alt: "growthepie.xyz",
       },
       {
-        url: "/logo_pie_only.png",
+        url: "https://www.growthepie.xyz/logo_full.png",
+        width: 772,
+        height: 181,
+        alt: "growthepie.xyz",
+      },
+      {
+        url: "https://www.growthepie.xyz/logo_pie_only.png",
         width: 168,
         height: 181,
         alt: "growthepie",
