@@ -10,7 +10,5 @@ coverImage: '/images/gtp_og-c1Mj.png'
 publishedAt: '2023-07-09T23:51:47.567Z'
 ---
 
-This is an update.
-
-
+This is an update. Another update.
 
