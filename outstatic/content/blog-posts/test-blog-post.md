@@ -1,5 +1,5 @@
 ---
-title: 'Test Blog post'
+title: 'Test Blog post - updated'
 status: 'draft'
 author:
   name: 'Manish Gupta'
@@ -10,5 +10,7 @@ coverImage: '/images/gtp_og-c1Mj.png'
 publishedAt: '2023-07-09T23:51:47.567Z'
 ---
 
-asdasdsadad
+This is an update.
+
+
 
