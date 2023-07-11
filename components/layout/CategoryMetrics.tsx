@@ -142,10 +142,24 @@ export default function CategoryMetrics({
     return selectedSubcategories[category].includes(subcategory);
   }
 
-  function handleDeselectAllSubcategories(category) {
-    setSelectedSubcategories((prevSelectedSubcategories) => {
-      return { ...prevSelectedSubcategories, [category]: [] };
+  function handleSelectAllSubcategories(category) {
+    data[category].subcategories.list.forEach((subcategory) => {
+      if (!selectedSubcategories[category].includes(subcategory)) {
+        setSelectedSubcategories((prevSelectedSubcategories) => ({
+          ...prevSelectedSubcategories,
+          [category]: [...prevSelectedSubcategories[category], subcategory],
+        }));
+      }
     });
+  }
+
+  function checkAllSelected(category) {
+    if (data[category].subcategories.list) {
+      return data[category].subcategories.list.every((subcategory) =>
+        selectedSubcategories[category].includes(subcategory),
+      );
+    }
+    return false;
   }
 
   function RenderSubcategory({ category, subcategory, selection }) {
@@ -429,19 +443,25 @@ export default function CategoryMetrics({
                             <div key={data[category].subcategories}>
                               <div
                                 key={categories[category]}
-                                className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 items-center mx-auto w-[190px] hover:bg-white/5 z-10"
+                                className={`flex border-forest-500 justify-between rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 items-center mx-auto w-[190px] hover:bg-white/5 z-10    ${
+                                  checkAllSelected(category)
+                                    ? "opacity-100"
+                                    : "opacity-30"
+                                }`}
                                 onClick={(e) => {
-                                  handleDeselectAllSubcategories(category);
+                                  handleSelectAllSubcategories(category);
                                   e.stopPropagation();
                                 }}
                               >
-                                <div className="pr-[5px]">
-                                  Deselect All Subcategories
-                                </div>
-                                <div className="rounded-full bg-forest-50 dark:bg-forest-900">
+                                <div className="">Select All Subcategories</div>
+                                <div className="rounded-full bg-forest-50 dark:bg-forest-900 mr-[1px]">
                                   <Icon
                                     icon="feather:check-circle"
-                                    className="w-[14px] h-[14px]"
+                                    className={`w-[14px] h-[14px] ${
+                                      checkAllSelected(category)
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    }`}
                                   />
                                 </div>
                               </div>
