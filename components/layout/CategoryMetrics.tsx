@@ -8,6 +8,7 @@ import { Switch } from "../Switch";
 import { Sources } from "@/lib/datasources";
 import Container from "./Container";
 import { CategoryComparisonResponseData } from "@/types/api/CategoryComparisonResponse";
+import { animated } from "@react-spring/web";
 
 export default function CategoryMetrics({
   data,
@@ -150,7 +151,7 @@ export default function CategoryMetrics({
   function RenderSubcategory({ category, subcategory, selection }) {
     return selection ? (
       checkSubcategory(category, subcategory) ? (
-        <button
+        <animated.button
           key={subcategory}
           className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 justify-between items-center mx-auto w-[130px] hover:bg-white/5 z-10"
           onClick={(e) => {
@@ -165,10 +166,10 @@ export default function CategoryMetrics({
               className="w-[14px] h-[14px] opacity-100"
             />
           </div>
-        </button>
+        </animated.button>
       ) : null
     ) : !checkSubcategory(category, subcategory) ? (
-      <button
+      <animated.button
         key={subcategory}
         className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 justify-between items-center mx-auto w-[130px] hover:bg-white/5 z-10 opacity-30"
         onClick={(e) => {
@@ -183,37 +184,8 @@ export default function CategoryMetrics({
             className="w-[14px] h-[14px] opacity-0"
           />
         </div>
-      </button>
+      </animated.button>
     ) : null;
-  }
-
-  {
-    /*                              {data[category].subcategories.list.map(
-                                (subcategory) =>
-                                  checkSubcategory(category, subcategory) ? (
-                                    <button
-                                      key={subcategory}
-                                      className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 justify-between items-center mx-auto w-[130px] hover:bg-white/5 z-10"
-                                      onClick={(e) => {
-                                        handleToggleSubcategory(
-                                          category,
-                                          subcategory,
-                                        );
-                                        e.stopPropagation();
-                                      }}
-                                    >
-                                      <div className="pr-[5px]">
-                                        {formatSubcategories(subcategory)}
-                                      </div>
-                                      <div className="rounded-full bg-forest-50 dark:bg-forest-900">
-                                        <Icon
-                                          icon="feather:check-circle"
-                                          className="w-[14px] h-[14px] opacity-100"
-                                        />
-                                      </div>
-                                    </button>
-                                  ) : null,
-                              )} */
   }
 
   return (
@@ -458,8 +430,9 @@ export default function CategoryMetrics({
                               <div
                                 key={categories[category]}
                                 className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 items-center mx-auto w-[190px] hover:bg-white/5 z-10"
-                                onClick={() => {
+                                onClick={(e) => {
                                   handleDeselectAllSubcategories(category);
+                                  e.stopPropagation();
                                 }}
                               >
                                 <div className="pr-[5px]">
