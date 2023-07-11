@@ -10,6 +10,8 @@ import Container from "./Container";
 import { CategoryComparisonResponseData } from "@/types/api/CategoryComparisonResponse";
 import { animated } from "@react-spring/web";
 import { Chart } from "../charts/chart";
+import { AllChainsByKeys } from "@/lib/chains";
+import { useTheme } from "next-themes";
 
 export default function CategoryMetrics({
   data,
@@ -29,11 +31,19 @@ export default function CategoryMetrics({
   const [selectedChain, setSelectedChain] = useState<string | null>(null);
   const [openSub, setOpenSub] = useState(false);
   const [selectedValue, setSelectedValue] = useState("absolute");
+  const [aggregatedTotal, setAggregatedTotal] = useState<number | null>(null);
+  const [chainValues, setChainValues] = useState<[] | null>(null);
+  const { theme } = useTheme();
 
   useEffect(() => {
     setSelectedChain("arbitrum");
   }, []);
 
+  useEffect(() => {
+    setAggregatedTotal(handleAggregate(null, null, null));
+  }, []);
+
+  const sortedChainValues = chainValues?.sort((a, b) => b[1] - a[1]);
   const chartSeries = useMemo(() => {
     if (selectedChain && data)
       return [
@@ -229,6 +239,47 @@ export default function CategoryMetrics({
     ) : null;
   }
 
+  function handleAggregate(category, mode, timespan) {
+    category = category || selectedCategory;
+    mode = mode || selectedMode;
+    timespan = timespan || selectedTimespan;
+
+    let total = 0;
+    let dataArray = Object.entries(
+      data[category].aggregated[timespan].data,
+    ).reduce((arr, [key, value]) => {
+      arr.push({ key, value });
+      return arr;
+    }, []);
+
+    dataArray.forEach((element) => {
+      if (element.key !== "types") {
+        const index =
+          data[category].aggregated[timespan].data["types"].indexOf(mode);
+        if (index !== -1) {
+          setChainValues((prevChainValues) => {
+            if (prevChainValues === null) {
+              return [[element.key, element.value[index]]];
+            } else {
+              const updatedValues = prevChainValues.map(([key, value]) =>
+                key === element.key
+                  ? [key, element.value[index]]
+                  : [key, value],
+              );
+              return prevChainValues.some(([key]) => key === element.key)
+                ? updatedValues
+                : [...prevChainValues, [element.key, element.value[index]]];
+            }
+          });
+          total += element.value[index];
+        }
+      }
+    });
+
+    return total;
+  }
+  console.log(aggregatedTotal);
+  console.log(chainValues);
   return (
     <div className="w-full flex-col relative">
       <Container>
@@ -242,6 +293,9 @@ export default function CategoryMetrics({
               }`}
               onClick={() => {
                 setSelectedMode("gas_fees_share");
+                setAggregatedTotal(
+                  handleAggregate(null, "gas_fees_share", null),
+                );
               }}
             >
               Gas Fees
@@ -254,6 +308,9 @@ export default function CategoryMetrics({
               }`}
               onClick={() => {
                 setSelectedMode("txcount_share");
+                setAggregatedTotal(
+                  handleAggregate(null, "txcount_share", null),
+                );
               }}
             >
               Transaction Count
@@ -274,6 +331,7 @@ export default function CategoryMetrics({
                 }`}
                 onClick={() => {
                   setSelectedTimespan(timespan);
+                  setAggregatedTotal(handleAggregate(null, null, timespan));
                   // setXAxis();
                   // chartComponent?.current?.xAxis[0].update({
                   //   min: timespans[selectedTimespan].xMin,
@@ -346,6 +404,10 @@ export default function CategoryMetrics({
                           }
 
                           setSelectedCategory(category);
+                          setAggregatedTotal(
+                            handleAggregate(category, null, null),
+                          );
+
                           setSelectedChain(null);
                         }}
                       >
@@ -568,10 +630,53 @@ export default function CategoryMetrics({
                 </div>
               ))}
             </div>
-            <div></div>
+            <div className="flex flex-col gap-y-2 mt-4">
+              {sortedChainValues &&
+                sortedChainValues.map(([item, value], index) =>
+                  item !== "types" ? (
+                    <div
+                      key={item}
+                      className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${
+                        ["arbitrum", "imx", "zkSync Era", "all_l2s"].includes(
+                          item,
+                        )
+                          ? "text-white dark:text-black"
+                          : "text-white"
+                      } ${AllChainsByKeys[item].backgrounds[theme][1]}`}
+                      style={{
+                        width: `max(${
+                          (value / sortedChainValues[0][1]) * 95
+                        }%, 150px)`,
+                      }}
+                    >
+                      <div className="flex items-center h-[45px] pl-[20px] min-w-[155px] w-full">
+                        <div className="flex w-[155px]">
+                          <div className="flex items-center w-[30px]">
+                            <Icon
+                              icon={`gtp:${
+                                item === "zksync_era" ? "zksync-era" : item
+                              }-logo-monochrome`}
+                              className="w-[15px] h-[15px]"
+                            />
+                          </div>
+                          <div className="-mb-0.5">
+                            {AllChainsByKeys[item].label}
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end flex-grow pr-4">
+                          <div className="text-base">
+                            {Math.round(value * 100)}%
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null,
+                )}
+            </div>
             {/*Chains Here */}
           </div>
-          <div className="w-1/2">
+          <div className="w-1/2 relative bottom-2">
             <Chart
               types={
                 selectedCategory === null
