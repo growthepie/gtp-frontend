@@ -237,6 +237,10 @@ export const Chart = ({
                     type: yScale,
                     min: 0,
                     max: 1,
+                    gridLineColor:
+                      theme === "dark"
+                        ? "rgba(215, 223, 222, 0.11)"
+                        : "rgba(41, 51, 50, 0.11)",
                     labels: {
                       formatter: function (
                         this: AxisLabelsFormatterContextObject,
