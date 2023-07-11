@@ -619,8 +619,8 @@ export default function LandingChart({
         },
         gridLineColor:
           theme === "dark"
-            ? "rgba(215, 223, 222, 0.33)"
-            : "rgba(41, 51, 50, 0.33)",
+            ? "rgba(215, 223, 222, 0.11)"
+            : "rgba(41, 51, 50, 0.11)",
       },
       xAxis: {
         ordinal: false,
