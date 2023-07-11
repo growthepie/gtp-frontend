@@ -253,7 +253,7 @@ export const Chart = ({
                 }}
               />
             </div>
-            <div className="absolute bottom-[20%] right-[5%] md:bottom-14 md:right-10 pointer-events-none z-0 opacity-50 mix-blend-lighten">
+            <div className="absolute bottom-[47.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50 mix-blend-lighten">
               <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px]" />
             </div>
           </div>
