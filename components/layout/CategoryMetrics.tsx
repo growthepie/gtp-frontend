@@ -9,6 +9,7 @@ import { Sources } from "@/lib/datasources";
 import Container from "./Container";
 import { CategoryComparisonResponseData } from "@/types/api/CategoryComparisonResponse";
 import { animated } from "@react-spring/web";
+import { Chart } from "../charts/chart";
 
 export default function CategoryMetrics({
   data,
@@ -23,11 +24,37 @@ export default function CategoryMetrics({
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
 }) {
-  const [selectedValue, setSelectedValue] = useState("gas_fees_share");
+  const [selectedMode, setSelectedMode] = useState("gas_fees_share");
   const [selectedCategory, setSelectedCategory] = useState("native_transfers");
   const [selectedChain, setSelectedChain] = useState<string | null>(null);
   const [openSub, setOpenSub] = useState(false);
-  const [selectedMode, setSelectedMode] = useState("absolute");
+  const [selectedValue, setSelectedValue] = useState("absolute");
+
+  useEffect(() => {
+    setSelectedChain("arbitrum");
+  }, []);
+
+  const chartSeries = useMemo(() => {
+    if (selectedChain && data)
+      return [
+        {
+          id: [selectedChain, selectedCategory, selectedMode].join("_"),
+          name: selectedChain,
+          unixKey: "unix",
+          dataKey: selectedMode,
+          data: data[selectedCategory].daily[selectedChain],
+        },
+      ];
+    return [
+      {
+        id: ["arbitrum", selectedCategory, selectedMode].join("_"),
+        name: "arbitrum",
+        unixKey: "unix",
+        dataKey: selectedMode,
+        data: data[selectedCategory].daily["arbitrum"],
+      },
+    ];
+  }, [selectedChain, selectedCategory, selectedMode, data]);
 
   const timespans = useMemo(() => {
     return {
@@ -541,9 +568,23 @@ export default function CategoryMetrics({
                 </div>
               ))}
             </div>
+            <div></div>
             {/*Chains Here */}
           </div>
-          <div>Chart{/*Chart Here */}</div>
+          <div className="w-1/2">
+            <Chart
+              types={
+                selectedCategory === null
+                  ? data["native_transfers"].daily.types
+                  : data[selectedCategory].daily.types
+              }
+              timespan={selectedTimespan}
+              series={chartSeries}
+              yScale="percentage"
+              chartHeight="400px"
+              chartWidth="100%"
+            />
+          </div>
         </div>
         <div className="flex flex-col md:flex-row w-full justify-normal md:justify-end items-center text-sm md:text-base rounded-2xl md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
           {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
@@ -552,36 +593,36 @@ export default function CategoryMetrics({
 
           <button
             className={`rounded-full text-sm md:text-base py-1 lg:px-4 xl:px-6 font-medium  ${
-              selectedMode === "absolute"
+              selectedValue === "absolute"
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
             }`}
             onClick={() => {
-              setSelectedMode("absolute");
+              setSelectedValue("absolute");
             }}
           >
             Absolute
           </button>
           <button
             className={`rounded-full text-sm md:text-base py-1 lg:px-4 xl:px-6 font-medium  ${
-              selectedMode === "absolute_log"
+              selectedValue === "absolute_log"
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
             }`}
             onClick={() => {
-              setSelectedMode("absolute_log");
+              setSelectedValue("absolute_log");
             }}
           >
             Absolute Log
           </button>
           <button
             className={`rounded-full text-sm md:text-base py-1 lg:px-4 xl:px-6 font-medium ${
-              selectedMode === "chain_share"
+              selectedValue === "chain_share"
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
             }`}
             onClick={() => {
-              setSelectedMode("chain_share");
+              setSelectedValue("chain_share");
             }}
           >
             Share of Chain Usage
