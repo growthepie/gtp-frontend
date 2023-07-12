@@ -319,17 +319,17 @@ export const navigationItems: NavigationItem[] = [
     href: "https://docs.growthepie.xyz/api",
   },
   // // put navigation items that we want to hide in production here
-  ...(IS_PREVIEW
-    ? [
-        {
-          name: "Blog",
-          label: "Blog",
-          icon: "gtp:book-open",
-          options: [],
-          href: "/blog",
-        },
-      ]
-    : []),
+  // ...(IS_PREVIEW
+  //   ? [
+  {
+    name: "Blog",
+    label: "Blog",
+    icon: "gtp:blog",
+    options: [],
+    href: "https://mirror.xyz/blog.growthepie.eth",
+  },
+  //   ]
+  // : []),
 ];
 
 export const contributorsItem: NavigationItem = {

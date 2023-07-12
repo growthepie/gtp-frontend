@@ -120,14 +120,14 @@ export default function SidebarMenuGroup({
           <TooltipTrigger className="h-6 mb-8 cursor-default pl-0 md:pl-8 overflow-visible">
             <Link
               target={
-                ["API Documentation", "Wiki"].includes(item.name)
+                ["API Documentation", "Wiki", "Blog"].includes(item.name)
                   ? "_blank"
                   : ""
               }
               className="flex items-center justify-items-center mb-8"
               href={item.href ?? ""}
               rel={
-                ["API Documentation", "Wiki"].includes(item.name)
+                ["API Documentation", "Wiki", "Blog"].includes(item.name)
                   ? "noopener noreferrer"
                   : ""
               }
