@@ -32,7 +32,7 @@ export default function CategoryMetrics({
   const [openSub, setOpenSub] = useState(false);
   const [selectedValue, setSelectedValue] = useState("absolute");
   const [aggregatedTotal, setAggregatedTotal] = useState<number | null>(null);
-  const [chainValues, setChainValues] = useState<[] | null>(null);
+  const [chainValues, setChainValues] = useState<any[][] | null>(null);
   const { theme } = useTheme();
 
   useEffect(() => {
@@ -245,33 +245,37 @@ export default function CategoryMetrics({
     timespan = timespan || selectedTimespan;
 
     let total = 0;
-    let dataArray = Object.entries(
-      data[category].aggregated[timespan].data,
-    ).reduce((arr, [key, value]) => {
-      arr.push({ key, value });
-      return arr;
-    }, []);
+    let dataArray: { [key: string]: number[] } = {};
 
-    dataArray.forEach((element) => {
-      if (element.key !== "types") {
+    Object.entries(data[category].aggregated[timespan].data).forEach(
+      ([key, value]) => {
+        if (Array.isArray(value)) {
+          dataArray[key] = value;
+        }
+      },
+    );
+
+    Object.keys(dataArray).forEach((key) => {
+      if (key !== "types") {
         const index =
           data[category].aggregated[timespan].data["types"].indexOf(mode);
         if (index !== -1) {
           setChainValues((prevChainValues) => {
             if (prevChainValues === null) {
-              return [[element.key, element.value[index]]];
+              return [[key, dataArray[key][index]]];
             } else {
-              const updatedValues = prevChainValues.map(([key, value]) =>
-                key === element.key
-                  ? [key, element.value[index]]
-                  : [key, value],
+              const updatedValues = prevChainValues.map(
+                ([chainKey, chainValue]) =>
+                  chainKey === key
+                    ? [chainKey, dataArray[key][index]]
+                    : [chainKey, chainValue],
               );
-              return prevChainValues.some(([key]) => key === element.key)
+              return prevChainValues.some(([chainKey]) => chainKey === key)
                 ? updatedValues
-                : [...prevChainValues, [element.key, element.value[index]]];
+                : [...prevChainValues, [key, dataArray[key][index]]];
             }
           });
-          total += element.value[index];
+          total += dataArray[key][index];
         }
       }
     });
@@ -279,6 +283,7 @@ export default function CategoryMetrics({
     return total;
   }
 
+  console.log(data["native_transfers"].aggregated["7d"]);
   return (
     <div className="w-full flex-col relative">
       <Container>
