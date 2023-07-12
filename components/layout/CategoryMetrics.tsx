@@ -278,8 +278,7 @@ export default function CategoryMetrics({
 
     return total;
   }
-  console.log(aggregatedTotal);
-  console.log(chainValues);
+
   return (
     <div className="w-full flex-col relative">
       <Container>
@@ -649,9 +648,18 @@ export default function CategoryMetrics({
                         }%, 150px)`,
                       }}
                     >
-                      <div className="flex items-center h-[45px] pl-[20px] min-w-[155px] w-full">
-                        <div className="flex w-[155px]">
-                          <div className="flex items-center w-[30px]">
+                      <div
+                        key={item + " " + value}
+                        className="flex items-center h-[45px] pl-[20px] min-w-[155px] w-full"
+                      >
+                        <div
+                          key={item + " " + index + value}
+                          className="flex w-[155px]"
+                        >
+                          <div
+                            key={item + " " + index}
+                            className="flex items-center w-[30px]"
+                          >
                             <Icon
                               icon={`gtp:${
                                 item === "zksync_era" ? "zksync-era" : item
@@ -664,8 +672,11 @@ export default function CategoryMetrics({
                           </div>
                         </div>
 
-                        <div className="flex justify-end flex-grow pr-4">
-                          <div className="text-base">
+                        <div
+                          key={value + " " + index}
+                          className="flex justify-end flex-grow pr-4"
+                        >
+                          <div key={index} className="text-base">
                             {Math.round(value * 100)}%
                           </div>
                         </div>
