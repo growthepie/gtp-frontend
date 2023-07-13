@@ -54,8 +54,8 @@ export const Contributors = [
     name: "Nader Bennour",
     image: "/contributors/nader.png",
     role: "Data",
-    twitter: "https://www.linkedin.com/in/naderfyi/",
-    linkedin: "https://twitter.com/naderfyi",
+    twitter: "https://twitter.com/naderfyi",
+    linkedin: "https://www.linkedin.com/in/naderfyi/",
   },
 ];
 
