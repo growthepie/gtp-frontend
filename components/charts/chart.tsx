@@ -27,6 +27,8 @@ export const Chart = ({
   timespan,
   series,
   yScale = "linear",
+  chartHeight,
+  chartWidth,
 }: {
   // data: { [chain: string]: number[][] };
   types: string[];
@@ -39,6 +41,8 @@ export const Chart = ({
     data: number[][];
   }[];
   yScale?: "linear" | "logarithmic" | "percentage";
+  chartHeight: string;
+  chartWidth: string;
 }) => {
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
@@ -189,14 +193,24 @@ export const Chart = ({
               })),
             )}
           </div> */}
-          <div className="w-full h-[16rem] md:h-[26rem] relative rounded-xl">
-            <div className="absolute w-full h-[24rem] top-1 md:top-4">
+          <div
+            className="relative"
+            style={{ height: chartHeight, width: chartWidth }}
+          >
+            <div
+              className="absolute top-0"
+              style={{
+                height: chartHeight,
+                width: chartWidth,
+              }}
+            >
               <HighchartsReact
                 highcharts={Highcharts}
                 options={{
                   ...baseOptions,
                   chart: {
                     ...baseOptions.chart,
+                    height: parseFloat(chartHeight),
                     events: {
                       load: function () {
                         chartComponent.current = this;

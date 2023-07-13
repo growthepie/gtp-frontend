@@ -9,6 +9,9 @@ import { ChainOverviewResponse } from "@/types/api/ChainOverviewResponse";
 import { BlockspaceURLs } from "@/lib/urls";
 import ReactJson from "react-json-view";
 import useSWR from "swr";
+import { Icon } from "@iconify/react";
+import { navigationItems } from "@/lib/navigation";
+import Subheading from "@/components/layout/Subheading";
 
 const ChainOverview = () => {
   const {
@@ -30,36 +33,52 @@ const ChainOverview = () => {
 
   console.log("usageData", usageData);
 
+  const pageData = navigationItems[2]?.options.find(
+    (item) => item.urlKey === "chain-overview",
+  )?.page ?? {
+    title: "",
+    description: "",
+    icon: "",
+  };
+
   return (
     <>
       <Container className="flex flex-col w-full mt-[65px] md:mt-[75px]">
         <Heading className="text-[30px] leading-snug md:text-[36px] mb-[15px] md:mb-[30px]">
           Chain Overview
         </Heading>
-        <div className="flex items-center mb-[30px]">
-          <Image
-            src="/GTP-Package.svg"
-            alt="GTP Chain"
-            className="object-contain mr-[17px]"
-            height={32}
-            width={32}
-          />
-          <h1 className="text-[16px]">
-            An overview of chains high-level blockspace usage. All expressed in
-            share of chain usage.
-          </h1>
-        </div>
-
-        {usageData && (
-          <OverviewMetrics
-            showEthereumMainnet={showEthereumMainnet}
-            setShowEthereumMainnet={setShowEthereumMainnet}
-            selectedTimespan={selectedTimespan}
-            setSelectedTimespan={setSelectedTimespan}
-            data={usageData.data.chains}
-          />
-        )}
+        <Subheading
+          className="text-[16px]"
+          leftIcon={
+            pageData.icon && (
+              <div className="self-start md:self-center pr-[7px] pl-[0px] pt-0.5 md:pt-0 md:pr-[10px] md:pl-[0px]">
+                <Icon icon={pageData.icon} className="w-5 h-5 md:w-6 md:h-6" />
+              </div>
+            )
+          }
+          iconContainerClassName="items-center mb-[22px] md:mb-[32px] relative"
+        >
+          {pageData.description}
+          {pageData.note && (
+            <div className="absolute text-xs">
+              <span className="font-semibold text-forest-200 dark:text-forest-400">
+                Note:{" "}
+              </span>
+              {pageData.note}
+            </div>
+          )}
+        </Subheading>
       </Container>
+
+      {usageData && (
+        <OverviewMetrics
+          showEthereumMainnet={showEthereumMainnet}
+          setShowEthereumMainnet={setShowEthereumMainnet}
+          selectedTimespan={selectedTimespan}
+          setSelectedTimespan={setSelectedTimespan}
+          data={usageData.data.chains}
+        />
+      )}
     </>
   );
 };

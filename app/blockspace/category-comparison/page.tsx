@@ -2,19 +2,28 @@
 import { useMemo, useState } from "react";
 import Heading from "@/components/layout/Heading";
 import Container from "@/components/layout/Container";
-import OverviewMetrics from "@/components/layout/OverviewMetrics";
 import Image from "next/image";
 import { useSessionStorage } from "usehooks-ts";
+import CategoryMetrics from "@/components/layout/CategoryMetrics";
+import { BlockspaceURLs } from "@/lib/urls";
+import useSWR from "swr";
+import { CategoryComparisonResponse } from "@/types/api/CategoryComparisonResponse";
 
 const CategoryComparison = () => {
-  const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
-    "blockspaceTimespan",
-    "180d",
-  );
+  const {
+    data: usageData,
+    error: usageError,
+    isLoading: usageLoading,
+    isValidating: usageValidating,
+  } = useSWR<CategoryComparisonResponse>(BlockspaceURLs["chain-comparison"]);
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(
     "blockspaceShowEthereumMainnet",
     false,
+  );
+  const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
+    "blockspaceTimespan",
+    "7d",
   );
 
   return (
@@ -36,14 +45,16 @@ const CategoryComparison = () => {
             share of chain usage.
           </h1>
         </div>
-
-        {/* <OverviewMetrics
+      </Container>
+      {usageData && (
+        <CategoryMetrics
           showEthereumMainnet={showEthereumMainnet}
           setShowEthereumMainnet={setShowEthereumMainnet}
           selectedTimespan={selectedTimespan}
           setSelectedTimespan={setSelectedTimespan}
-        /> */}
-      </Container>
+          data={usageData.data}
+        />
+      )}
     </>
   );
 };

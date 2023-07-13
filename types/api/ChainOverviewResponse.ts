@@ -34,6 +34,7 @@ export interface Daily {
   token_transfers: CategoryData;
   nft_fi: CategoryData;
   cefi: CategoryData;
+  unlabeled: CategoryData;
 }
 
 export interface CategoryData {
