@@ -688,7 +688,7 @@ export default function CategoryMetrics({
             </div>
             <div className="flex flex-col gap-y-2 mt-4">
               {}
-              {/*sortedChainValues &&
+              {sortedChainValues &&
                 sortedChainValues.map(([item, value], index) =>
                   item !== "types" ? (
                     <div
@@ -735,13 +735,15 @@ export default function CategoryMetrics({
                           className="flex justify-end flex-grow pr-4"
                         >
                           <div key={index} className="text-base">
-                            {Math.round(value * 100)}%
+                            {selectedValue === "share"
+                              ? Math.round(value * 100) + `%`
+                              : value + `$`}
                           </div>
                         </div>
                       </div>
                     </div>
                   ) : null,
-                            )*/}
+                )}
             </div>
             {/*Chains Here */}
           </div>
