@@ -150,6 +150,13 @@ export default function CategoryMetrics({
     setChainValues,
   });
 
+  const runType = HandleType({
+    selectedMode,
+    selectedValue,
+    setSelectedType,
+    showUsd,
+  });
+
   function formatSubcategories(str) {
     const title = str.replace(/_/g, " ");
     const words = title.split(" ");
@@ -247,24 +254,31 @@ export default function CategoryMetrics({
     ) : null;
   }
 
-  function handleType(mode, value) {
-    let retValue;
+  function HandleType({
+    selectedMode,
+    selectedValue,
+    setSelectedType,
+    showUsd,
+  }) {
+    useEffect(() => {
+      if (selectedValue === "share" || selectedMode === "txcount_") {
+        setSelectedType(selectedMode + selectedValue);
+      } else if (showUsd) {
+        if (selectedValue === "absolute_log") {
+          setSelectedType(selectedMode + "absolute" + "_usd");
+        } else {
+          setSelectedType(selectedMode + selectedValue + "_usd");
+        }
+      } else {
+        if (selectedValue === "absolute_log") {
+          setSelectedType(selectedMode + "absolute" + "_eth");
+        } else {
+          setSelectedType(selectedMode + selectedValue + "_eth");
+        }
+      }
+    }, [selectedMode, selectedValue, setSelectedType, showUsd]);
 
-    if (value === "absolute_log") {
-      value = "absolute";
-    }
-
-    if (value === "share" || mode === "txcount_") {
-      retValue = mode + value;
-    } else if (showUsd) {
-      retValue = mode + value + "_usd";
-    } else {
-      retValue = mode + value + "_eth";
-    }
-
-    return retValue;
-
-    //Calculate type to hand off to chart and find index value for data
+    //Calculate type to hand off to chart and find index selectedValue for data
   }
 
   function HandleAggregate({
@@ -339,6 +353,7 @@ export default function CategoryMetrics({
   }
   console.log(chainValues);
   console.log(data);
+  console.log(selectedType);
   return (
     <div className="w-full flex-col relative">
       <Container>
@@ -351,10 +366,7 @@ export default function CategoryMetrics({
                   : "hover:bg-forest-500/10"
               }`}
               onClick={() => {
-                let type = handleType("gas_fees_", selectedValue);
                 setSelectedMode("gas_fees_");
-
-                setSelectedType(type);
               }}
             >
               Gas Fees
@@ -366,10 +378,7 @@ export default function CategoryMetrics({
                   : "hover:bg-forest-500/10"
               }`}
               onClick={() => {
-                let type = handleType("txcount_", selectedValue);
                 setSelectedMode("txcount_");
-
-                setSelectedType(type);
               }}
             >
               Transaction Count
@@ -703,7 +712,7 @@ export default function CategoryMetrics({
                       style={{
                         width: `max(${
                           (value / sortedChainValues[0][1]) * 95
-                        }%, 150px)`,
+                        }%, 200px)`,
                       }}
                     >
                       <div
@@ -737,7 +746,8 @@ export default function CategoryMetrics({
                           <div key={index} className="text-base">
                             {selectedValue === "share"
                               ? Math.round(value * 100) + `%`
-                              : value + `$`}
+                              : Math.round(value * 100) / 100 +
+                                (showUsd ? `$` : ``)}
                           </div>
                         </div>
                       </div>
@@ -774,10 +784,7 @@ export default function CategoryMetrics({
                 : "hover:bg-forest-500/10"
             }`}
             onClick={() => {
-              let type = handleType(selectedMode, "absolute");
               setSelectedValue("absolute");
-
-              setSelectedType(type);
             }}
           >
             Absolute
@@ -789,10 +796,7 @@ export default function CategoryMetrics({
                 : "hover:bg-forest-500/10"
             }`}
             onClick={() => {
-              let type = handleType(selectedMode, "absolute_log");
               setSelectedValue("absolute_log");
-
-              setSelectedType(type);
             }}
           >
             Absolute Log
@@ -804,10 +808,7 @@ export default function CategoryMetrics({
                 : "hover:bg-forest-500/10"
             }`}
             onClick={() => {
-              let type = handleType(selectedMode, "share");
               setSelectedValue("share");
-
-              setSelectedType(type);
             }}
           >
             Share of Chain Usage
