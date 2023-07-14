@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { useMemo, useState, useEffect, useRef, ReactNode } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
+import { useLocalStorage } from "usehooks-ts";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
 import { Switch } from "../Switch";
@@ -26,21 +27,19 @@ export default function CategoryMetrics({
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
 }) {
-  const [selectedMode, setSelectedMode] = useState("gas_fees_share");
+  const [selectedMode, setSelectedMode] = useState("gas_fees_");
   const [selectedCategory, setSelectedCategory] = useState("native_transfers");
   const [selectedChain, setSelectedChain] = useState<string | null>(null);
   const [openSub, setOpenSub] = useState(false);
   const [selectedValue, setSelectedValue] = useState("absolute");
-  const [aggregatedTotal, setAggregatedTotal] = useState<number | null>(null);
+
   const [chainValues, setChainValues] = useState<any[][] | null>(null);
+  const [selectedType, setSelectedType] = useState("gas_fees_absolute_usd");
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { theme } = useTheme();
 
   useEffect(() => {
     setSelectedChain("arbitrum");
-  }, []);
-
-  useEffect(() => {
-    setAggregatedTotal(handleAggregate(null, null, null));
   }, []);
 
   const sortedChainValues = chainValues?.sort((a, b) => b[1] - a[1]);
@@ -142,6 +141,15 @@ export default function CategoryMetrics({
     return initialSelectedSubcategories;
   });
 
+  const result = HandleAggregate({
+    selectedCategory,
+    selectedType,
+    selectedTimespan,
+    selectedSubcategories,
+    data,
+    setChainValues,
+  });
+
   function formatSubcategories(str) {
     const title = str.replace(/_/g, " ");
     const words = title.split(" ");
@@ -239,51 +247,98 @@ export default function CategoryMetrics({
     ) : null;
   }
 
-  function handleAggregate(category, mode, timespan) {
-    category = category || selectedCategory;
-    mode = mode || selectedMode;
-    timespan = timespan || selectedTimespan;
+  function handleType(mode, value) {
+    let retValue;
 
-    let total = 0;
-    let dataArray: { [key: string]: number[] } = {};
+    if (value === "absolute_log") {
+      value = "absolute";
+    }
 
-    Object.entries(data[category].aggregated[timespan].data).forEach(
-      ([key, value]) => {
-        if (Array.isArray(value)) {
-          dataArray[key] = value;
-        }
-      },
-    );
+    if (value === "share" || mode === "txcount_") {
+      retValue = mode + value;
+    } else if (showUsd) {
+      retValue = mode + value + "_usd";
+    } else {
+      retValue = mode + value + "_eth";
+    }
 
-    Object.keys(dataArray).forEach((key) => {
-      if (key !== "types") {
-        const index =
-          data[category].aggregated[timespan].data["types"].indexOf(mode);
-        if (index !== -1) {
-          setChainValues((prevChainValues) => {
-            if (prevChainValues === null) {
-              return [[key, dataArray[key][index]]];
-            } else {
-              const updatedValues = prevChainValues.map(
-                ([chainKey, chainValue]) =>
-                  chainKey === key
-                    ? [chainKey, dataArray[key][index]]
-                    : [chainKey, chainValue],
-              );
-              return prevChainValues.some(([chainKey]) => chainKey === key)
-                ? updatedValues
-                : [...prevChainValues, [key, dataArray[key][index]]];
-            }
-          });
-          total += dataArray[key][index];
-        }
-      }
-    });
+    return retValue;
 
-    return total;
+    //Calculate type to hand off to chart and find index value for data
   }
 
-  console.log(data["native_transfers"].aggregated["7d"]);
+  function HandleAggregate({
+    selectedCategory,
+    selectedType,
+    selectedTimespan,
+    selectedSubcategories,
+    data,
+    setChainValues,
+  }) {
+    const category = selectedCategory;
+    const timespan = selectedTimespan;
+    const type = selectedType;
+
+    useEffect(() => {
+      setChainValues(null);
+      let total = 0;
+
+      Object.keys(selectedSubcategories[category]).forEach((subcategory) => {
+        const subcategoryData =
+          data[category].subcategories[
+            selectedSubcategories[category][subcategory]
+          ];
+
+        const subcategoryChains = subcategoryData.aggregated[timespan].data;
+
+        const index =
+          subcategoryData.aggregated[timespan].data["types"].indexOf(type);
+
+        Object.keys(subcategoryChains).forEach((chain) => {
+          if (chain !== "types") {
+            const chainValue =
+              subcategoryData.aggregated[timespan].data[chain][index];
+
+            setChainValues((prevChainValues) => {
+              if (prevChainValues === null) {
+                return [[chain, chainValue]];
+              } else {
+                const updatedValues = prevChainValues.map(
+                  ([prevChain, prevValue]) =>
+                    prevChain === chain
+                      ? [prevChain, prevValue + chainValue]
+                      : [prevChain, prevValue],
+                );
+
+                const existingChain = prevChainValues.find(
+                  ([prevChain]) => prevChain === chain,
+                );
+                if (existingChain) {
+                  return updatedValues;
+                } else {
+                  return [...prevChainValues, [chain, chainValue]];
+                }
+              }
+            });
+          }
+        });
+      });
+    }, [category, type, timespan, selectedSubcategories, data, setChainValues]);
+  }
+
+  function calculateSubcategory(category) {
+    const selectedSubcategoryList = selectedSubcategories[category];
+    let total = 0;
+    // Iterate through the selected subcategories
+    selectedSubcategoryList.forEach((subcategory) => {
+      // Perform any operations or access subcategory properties as needed
+      console.log(
+        data[category].subcategories[subcategory].aggregated[selectedTimespan],
+      );
+    });
+  }
+  console.log(chainValues);
+  console.log(data);
   return (
     <div className="w-full flex-col relative">
       <Container>
@@ -291,30 +346,30 @@ export default function CategoryMetrics({
           <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
             <button
               className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                "gas_fees_share" === selectedMode
+                "gas_fees_" === selectedMode
                   ? "bg-forest-500 dark:bg-forest-1000"
                   : "hover:bg-forest-500/10"
               }`}
               onClick={() => {
-                setSelectedMode("gas_fees_share");
-                setAggregatedTotal(
-                  handleAggregate(null, "gas_fees_share", null),
-                );
+                let type = handleType("gas_fees_", selectedValue);
+                setSelectedMode("gas_fees_");
+
+                setSelectedType(type);
               }}
             >
               Gas Fees
             </button>
             <button
               className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                "txcount_share" === selectedMode
+                "txcount_" === selectedMode
                   ? "bg-forest-500 dark:bg-forest-1000"
                   : "hover:bg-forest-500/10"
               }`}
               onClick={() => {
-                setSelectedMode("txcount_share");
-                setAggregatedTotal(
-                  handleAggregate(null, "txcount_share", null),
-                );
+                let type = handleType("txcount_", selectedValue);
+                setSelectedMode("txcount_");
+
+                setSelectedType(type);
               }}
             >
               Transaction Count
@@ -335,7 +390,7 @@ export default function CategoryMetrics({
                 }`}
                 onClick={() => {
                   setSelectedTimespan(timespan);
-                  setAggregatedTotal(handleAggregate(null, null, timespan));
+
                   // setXAxis();
                   // chartComponent?.current?.xAxis[0].update({
                   //   min: timespans[selectedTimespan].xMin,
@@ -408,9 +463,6 @@ export default function CategoryMetrics({
                           }
 
                           setSelectedCategory(category);
-                          setAggregatedTotal(
-                            handleAggregate(category, null, null),
-                          );
 
                           setSelectedChain(null);
                         }}
@@ -635,7 +687,8 @@ export default function CategoryMetrics({
               ))}
             </div>
             <div className="flex flex-col gap-y-2 mt-4">
-              {sortedChainValues &&
+              {}
+              {/*sortedChainValues &&
                 sortedChainValues.map(([item, value], index) =>
                   item !== "types" ? (
                     <div
@@ -688,12 +741,12 @@ export default function CategoryMetrics({
                       </div>
                     </div>
                   ) : null,
-                )}
+                            )*/}
             </div>
             {/*Chains Here */}
           </div>
           <div className="w-1/2 relative bottom-2">
-            <Chart
+            {/*<Chart
               types={
                 selectedCategory === null
                   ? data["native_transfers"].daily.types
@@ -704,7 +757,7 @@ export default function CategoryMetrics({
               yScale="percentage"
               chartHeight="400px"
               chartWidth="100%"
-            />
+            /> */}
           </div>
         </div>
         <div className="flex flex-col md:flex-row w-full justify-normal md:justify-end items-center text-sm md:text-base rounded-2xl md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
@@ -719,7 +772,10 @@ export default function CategoryMetrics({
                 : "hover:bg-forest-500/10"
             }`}
             onClick={() => {
+              let type = handleType(selectedMode, "absolute");
               setSelectedValue("absolute");
+
+              setSelectedType(type);
             }}
           >
             Absolute
@@ -731,19 +787,25 @@ export default function CategoryMetrics({
                 : "hover:bg-forest-500/10"
             }`}
             onClick={() => {
+              let type = handleType(selectedMode, "absolute_log");
               setSelectedValue("absolute_log");
+
+              setSelectedType(type);
             }}
           >
             Absolute Log
           </button>
           <button
             className={`rounded-full text-sm md:text-base py-1 lg:px-4 xl:px-6 font-medium ${
-              selectedValue === "chain_share"
+              selectedValue === "share"
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
             }`}
             onClick={() => {
-              setSelectedValue("chain_share");
+              let type = handleType(selectedMode, "share");
+              setSelectedValue("share");
+
+              setSelectedType(type);
             }}
           >
             Share of Chain Usage
