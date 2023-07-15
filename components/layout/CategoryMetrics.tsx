@@ -44,26 +44,54 @@ export default function CategoryMetrics({
 
   const sortedChainValues = chainValues?.sort((a, b) => b[1] - a[1]);
   const chartSeries = useMemo(() => {
-    if (selectedChain && data)
+    if (selectedCategory && data)
       return [
         {
-          id: [selectedChain, selectedCategory, selectedMode].join("_"),
-          name: selectedChain,
+          id: ["arbitrum", selectedCategory, selectedType].join("_"),
+          name: "arbitrum",
           unixKey: "unix",
-          dataKey: selectedMode,
-          data: data[selectedCategory].daily[selectedChain],
+          dataKey: selectedType,
+          data: data[selectedCategory].daily["arbitrum"],
+        },
+        {
+          id: ["optimism", selectedCategory, selectedType].join("_"),
+          name: "optimism",
+          unixKey: "unix",
+          dataKey: selectedType,
+          data: data[selectedCategory].daily["optimism"],
+        },
+        {
+          id: ["zksync_era", selectedCategory, selectedType].join("_"),
+          name: "zksync_era",
+          unixKey: "unix",
+          dataKey: selectedType,
+          data: data[selectedCategory].daily["zksync_era"],
         },
       ];
     return [
       {
-        id: ["arbitrum", selectedCategory, selectedMode].join("_"),
-        name: "arbitrum",
+        id: ["arbitrum", "native_transfers", selectedType].join("_"),
+        name: selectedChain,
         unixKey: "unix",
-        dataKey: selectedMode,
-        data: data[selectedCategory].daily["arbitrum"],
+        dataKey: selectedType,
+        data: data["native_transfers"].daily["arbitrum"],
+      },
+      {
+        id: ["optimism", "native_transfers", selectedType].join("_"),
+        name: selectedChain,
+        unixKey: "unix",
+        dataKey: selectedType,
+        data: data["native_transfers"].daily["optimism"],
+      },
+      {
+        id: ["zksync_era", "native_transfers", selectedType].join("_"),
+        name: selectedChain,
+        unixKey: "unix",
+        dataKey: selectedType,
+        data: data["native_transfers"].daily["zksync_era"],
       },
     ];
-  }, [selectedChain, selectedCategory, selectedMode, data]);
+  }, [selectedChain, selectedCategory, selectedType, data]);
 
   const timespans = useMemo(() => {
     return {
@@ -340,20 +368,6 @@ export default function CategoryMetrics({
     }, [category, type, timespan, selectedSubcategories, data, setChainValues]);
   }
 
-  function calculateSubcategory(category) {
-    const selectedSubcategoryList = selectedSubcategories[category];
-    let total = 0;
-    // Iterate through the selected subcategories
-    selectedSubcategoryList.forEach((subcategory) => {
-      // Perform any operations or access subcategory properties as needed
-      console.log(
-        data[category].subcategories[subcategory].aggregated[selectedTimespan],
-      );
-    });
-  }
-  console.log(chainValues);
-  console.log(data);
-  console.log(selectedType);
   return (
     <div className="w-full flex-col relative">
       <Container>
@@ -758,18 +772,24 @@ export default function CategoryMetrics({
             {/*Chains Here */}
           </div>
           <div className="w-1/2 relative bottom-2">
-            {/*<Chart
-              types={
-                selectedCategory === null
-                  ? data["native_transfers"].daily.types
-                  : data[selectedCategory].daily.types
-              }
-              timespan={selectedTimespan}
-              series={chartSeries}
-              yScale="percentage"
-              chartHeight="400px"
-              chartWidth="100%"
-            /> */}
+            {
+              <Chart
+                types={
+                  selectedCategory === null
+                    ? data["native_transfers"].daily["types"]
+                    : data[selectedCategory].daily["types"]
+                }
+                timespan={selectedTimespan}
+                series={chartSeries}
+                yScale={
+                  selectedValue === "absolute" || "absolute_log"
+                    ? "linear"
+                    : "percentage"
+                }
+                chartHeight="400px"
+                chartWidth="100%"
+              />
+            }
           </div>
         </div>
         <div className="flex flex-col md:flex-row w-full justify-normal md:justify-end items-center text-sm md:text-base rounded-2xl md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
