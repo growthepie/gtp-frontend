@@ -71,27 +71,27 @@ export default function CategoryMetrics({
     return [
       {
         id: ["arbitrum", "native_transfers", selectedType].join("_"),
-        name: selectedChain,
+        name: "arbitrum",
         unixKey: "unix",
         dataKey: selectedType,
         data: data["native_transfers"].daily["arbitrum"],
       },
       {
         id: ["optimism", "native_transfers", selectedType].join("_"),
-        name: selectedChain,
+        name: "optimism",
         unixKey: "unix",
         dataKey: selectedType,
         data: data["native_transfers"].daily["optimism"],
       },
       {
         id: ["zksync_era", "native_transfers", selectedType].join("_"),
-        name: selectedChain,
+        name: "zksync_era",
         unixKey: "unix",
         dataKey: selectedType,
         data: data["native_transfers"].daily["zksync_era"],
       },
     ];
-  }, [selectedChain, selectedCategory, selectedType, data]);
+  }, [selectedCategory, selectedType, data]);
 
   const timespans = useMemo(() => {
     return {
@@ -781,11 +781,7 @@ export default function CategoryMetrics({
                 }
                 timespan={selectedTimespan}
                 series={chartSeries}
-                yScale={
-                  selectedValue === "absolute" || "absolute_log"
-                    ? "linear"
-                    : "percentage"
-                }
+                yScale={selectedValue === "share" ? "percentage" : "linear"}
                 chartHeight="400px"
                 chartWidth="100%"
               />
