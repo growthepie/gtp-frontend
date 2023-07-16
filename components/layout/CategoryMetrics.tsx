@@ -242,46 +242,6 @@ export default function CategoryMetrics({
     return false;
   }
 
-  function RenderSubcategory({ category, subcategory, selection }) {
-    return selection ? (
-      checkSubcategory(category, subcategory) ? (
-        <animated.button
-          key={subcategory}
-          className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 justify-between items-center mx-auto w-[130px] hover:bg-white/5 z-10"
-          onClick={(e) => {
-            handleToggleSubcategory(category, subcategory);
-            e.stopPropagation();
-          }}
-        >
-          <div className="pr-[5px]">{formatSubcategories(subcategory)}</div>
-          <div className="rounded-full bg-forest-50 dark:bg-forest-900">
-            <Icon
-              icon="feather:check-circle"
-              className="w-[14px] h-[14px] opacity-100"
-            />
-          </div>
-        </animated.button>
-      ) : null
-    ) : !checkSubcategory(category, subcategory) ? (
-      <animated.button
-        key={subcategory}
-        className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 justify-between items-center mx-auto w-[130px] hover:bg-white/5 z-10 opacity-30"
-        onClick={(e) => {
-          handleToggleSubcategory(category, subcategory);
-          e.stopPropagation();
-        }}
-      >
-        <div className="pr-[5px]">{formatSubcategories(subcategory)}</div>
-        <div className="rounded-full bg-forest-50 dark:bg-forest-900">
-          <Icon
-            icon="feather:check-circle"
-            className="w-[14px] h-[14px] opacity-0"
-          />
-        </div>
-      </animated.button>
-    ) : null;
-  }
-
   function HandleType({
     selectedMode,
     selectedValue,
@@ -635,25 +595,57 @@ export default function CategoryMetrics({
                               </div>
 
                               {data[category].subcategories.list.map(
-                                (subcategory) => (
-                                  <RenderSubcategory
-                                    key={subcategory}
-                                    subcategory={subcategory}
-                                    category={category}
-                                    selection={true}
-                                  />
-                                ),
+                                (subcategory) =>
+                                  checkSubcategory(category, subcategory) ? (
+                                    <button
+                                      key={subcategory}
+                                      className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 justify-between items-center mx-auto w-[130px] hover:bg-white/5 z-10"
+                                      onClick={(e) => {
+                                        handleToggleSubcategory(
+                                          category,
+                                          subcategory,
+                                        );
+                                        e.stopPropagation();
+                                      }}
+                                    >
+                                      <div className="pr-[5px]">
+                                        {formatSubcategories(subcategory)}
+                                      </div>
+                                      <div className="rounded-full bg-forest-50 dark:bg-forest-900">
+                                        <Icon
+                                          icon="feather:check-circle"
+                                          className="w-[14px] h-[14px] opacity-100"
+                                        />
+                                      </div>
+                                    </button>
+                                  ) : null,
                               )}
 
                               {data[category].subcategories.list.map(
-                                (subcategory) => (
-                                  <RenderSubcategory
-                                    key={subcategory}
-                                    subcategory={subcategory}
-                                    category={category}
-                                    selection={false}
-                                  />
-                                ),
+                                (subcategory) =>
+                                  !checkSubcategory(category, subcategory) ? (
+                                    <button
+                                      key={subcategory}
+                                      className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 justify-between items-center mx-auto w-[130px] hover:bg-white/5 z-10 opacity-30"
+                                      onClick={(e) => {
+                                        handleToggleSubcategory(
+                                          category,
+                                          subcategory,
+                                        );
+                                        e.stopPropagation();
+                                      }}
+                                    >
+                                      <div className="pr-[5px]">
+                                        {formatSubcategories(subcategory)}
+                                      </div>
+                                      <div className="rounded-full bg-forest-50 dark:bg-forest-900">
+                                        <Icon
+                                          icon="feather:check-circle"
+                                          className="w-[14px] h-[14px] opacity-0"
+                                        />
+                                      </div>
+                                    </button>
+                                  ) : null,
                               )}
                             </div>
                           ) : null}
