@@ -533,9 +533,9 @@ export default function CategoryMetrics({
                     >
                       <div
                         key={category}
-                        className={`h-full flex flex-col items-center first-letter justify-between hover:cursor-pointer  ${
+                        className={`h-full flex flex-col first-letter justify-between hover:cursor-pointer  ${
                           selectedCategory === category
-                            ? "w-[220px]"
+                            ? "w-[490px]"
                             : "hover:bg-white/5 w-full"
                         }`}
                         onClick={() => {
@@ -549,7 +549,7 @@ export default function CategoryMetrics({
                         }}
                       >
                         <div
-                          className={`pt-2 ${
+                          className={`self-center ${
                             selectedCategory === category
                               ? "text-sm font-bold"
                               : "text-xs font-medium"
@@ -559,8 +559,8 @@ export default function CategoryMetrics({
                         </div>
 
                         <div
-                          className="flex flex-col gap-x-1 overflow-x-hidden overflow-y-auto scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 
-                                    pl-1 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller"
+                          className="flex flex-col gap-x-1 overflow-hidden h-full
+                                    pl-1 mx-2 "
                           style={
                             categories[category] === "Token Transfer"
                               ? { paddingRight: "20px" }
@@ -593,60 +593,61 @@ export default function CategoryMetrics({
                                   />
                                 </div>
                               </div>
+                              <div className="flex flex-wrap gap-x-4 justify-evenly ">
+                                {data[category].subcategories.list.map(
+                                  (subcategory) =>
+                                    checkSubcategory(category, subcategory) ? (
+                                      <button
+                                        key={subcategory}
+                                        className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-[2px] justify-between items-center max-h-[28px] min-w-[90px] hover:bg-white/5 z-10"
+                                        onClick={(e) => {
+                                          handleToggleSubcategory(
+                                            category,
+                                            subcategory,
+                                          );
+                                          e.stopPropagation();
+                                        }}
+                                      >
+                                        <div className="pr-[5px]">
+                                          {formatSubcategories(subcategory)}
+                                        </div>
+                                        <div className="rounded-full bg-forest-50 dark:bg-forest-900">
+                                          <Icon
+                                            icon="feather:check-circle"
+                                            className="w-[14px] h-[14px] opacity-100"
+                                          />
+                                        </div>
+                                      </button>
+                                    ) : null,
+                                )}
 
-                              {data[category].subcategories.list.map(
-                                (subcategory) =>
-                                  checkSubcategory(category, subcategory) ? (
-                                    <button
-                                      key={subcategory}
-                                      className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 justify-between items-center mx-auto w-[130px] hover:bg-white/5 z-10"
-                                      onClick={(e) => {
-                                        handleToggleSubcategory(
-                                          category,
-                                          subcategory,
-                                        );
-                                        e.stopPropagation();
-                                      }}
-                                    >
-                                      <div className="pr-[5px]">
-                                        {formatSubcategories(subcategory)}
-                                      </div>
-                                      <div className="rounded-full bg-forest-50 dark:bg-forest-900">
-                                        <Icon
-                                          icon="feather:check-circle"
-                                          className="w-[14px] h-[14px] opacity-100"
-                                        />
-                                      </div>
-                                    </button>
-                                  ) : null,
-                              )}
-
-                              {data[category].subcategories.list.map(
-                                (subcategory) =>
-                                  !checkSubcategory(category, subcategory) ? (
-                                    <button
-                                      key={subcategory}
-                                      className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 justify-between items-center mx-auto w-[130px] hover:bg-white/5 z-10 opacity-30"
-                                      onClick={(e) => {
-                                        handleToggleSubcategory(
-                                          category,
-                                          subcategory,
-                                        );
-                                        e.stopPropagation();
-                                      }}
-                                    >
-                                      <div className="pr-[5px]">
-                                        {formatSubcategories(subcategory)}
-                                      </div>
-                                      <div className="rounded-full bg-forest-50 dark:bg-forest-900">
-                                        <Icon
-                                          icon="feather:check-circle"
-                                          className="w-[14px] h-[14px] opacity-0"
-                                        />
-                                      </div>
-                                    </button>
-                                  ) : null,
-                              )}
+                                {data[category].subcategories.list.map(
+                                  (subcategory) =>
+                                    !checkSubcategory(category, subcategory) ? (
+                                      <button
+                                        key={subcategory}
+                                        className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 justify-between items-center min-w-[90px] max-h-[28px] hover:bg-white/5 z-10 opacity-30"
+                                        onClick={(e) => {
+                                          handleToggleSubcategory(
+                                            category,
+                                            subcategory,
+                                          );
+                                          e.stopPropagation();
+                                        }}
+                                      >
+                                        <div className="pr-[5px]">
+                                          {formatSubcategories(subcategory)}
+                                        </div>
+                                        <div className="rounded-full bg-forest-50 dark:bg-forest-900">
+                                          <Icon
+                                            icon="feather:check-circle"
+                                            className="w-[14px] h-[14px] opacity-0"
+                                          />
+                                        </div>
+                                      </button>
+                                    ) : null,
+                                )}
+                              </div>
                             </div>
                           ) : null}
                         </div>
