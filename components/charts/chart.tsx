@@ -15,6 +15,7 @@ import {
   getTickPositions,
   getXAxisLabels,
   decimalToPercent,
+  tooltipFormatter,
 } from "@/lib/chartUtils";
 import ChartWatermark from "../layout/ChartWatermark";
 import { Icon } from "@iconify/react";
@@ -58,7 +59,7 @@ export const Chart = ({
         timespans.max.xMax,
         timespan === "max",
       ),
-    [timespan, timespans.max.xMax, timespans.max.xMin],
+    [series, timespan, timespans.max.xMax, timespans.max.xMin],
   );
 
   const { theme } = useTheme();
@@ -218,6 +219,18 @@ export const Chart = ({
                       },
                     },
                   },
+                  tooltip: {
+                    ...baseOptions.tooltip,
+                    formatter:
+                      yScale === "percentage"
+                        ? tooltipFormatter(true, true, decimalToPercent)
+                        : tooltipFormatter(true, false, (x) => {
+                            return x.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            });
+                          }),
+                  },
                   xAxis: {
                     ...baseOptions.xAxis,
                     min: timespans[timespan].xMin,
@@ -235,8 +248,8 @@ export const Chart = ({
                   yAxis: {
                     ...baseOptions.yAxis,
                     type: yScale,
-                    min: 0,
-                    max: 1,
+                    min: yScale === "percentage" ? 0 : undefined,
+                    max: yScale === "percentage" ? 1 : undefined,
                     gridLineColor:
                       theme === "dark"
                         ? "rgba(215, 223, 222, 0.11)"
@@ -246,7 +259,11 @@ export const Chart = ({
                         this: AxisLabelsFormatterContextObject,
                       ) {
                         const { value } = this;
-                        return decimalToPercent(value);
+                        if (yScale === "percentage") {
+                          return decimalToPercent(value);
+                        } else {
+                          return value;
+                        }
                       },
                     },
                   },

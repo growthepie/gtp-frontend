@@ -750,11 +750,35 @@ export default function CategoryMetrics({
                           key={value + " " + index}
                           className="flex justify-end flex-grow pr-4"
                         >
-                          <div key={index} className="text-base">
+                          <div key={index} className="text-base flex">
+                            {/* <div>
                             {selectedValue === "share"
-                              ? Math.round(value * 100) + `%`
-                              : Math.round(value * 100) / 100 +
-                                (showUsd ? `$` : ``)}
+                              ? Math.round(value * 100)
+                              : (showUsd ? `$` : ``)+(
+                                  Math.round(value * 100) / 100,
+                                ).toLocaleString(undefined, {
+                                  minimumFractionDigits: 0,
+                                  maximumFractionDigits: 0,
+                                })}
+                                </div> */}
+                            {selectedValue === "share" ? (
+                              <div>{Math.round(value * 100)}%</div>
+                            ) : (
+                              <div>
+                                {/*usd or eth symbol */}
+                                {(selectedMode === "gas_fees_"
+                                  ? showUsd
+                                    ? `$`
+                                    : `Ξ`
+                                  : "") +
+                                  (
+                                    Math.round(value * 100) / 100
+                                  ).toLocaleString(undefined, {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0,
+                                  })}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -768,13 +792,20 @@ export default function CategoryMetrics({
             {
               <Chart
                 types={
-                  selectedCategory === null
-                    ? data["native_transfers"].daily["types"]
-                    : data[selectedCategory].daily["types"]
+                  selectedCategory === null || selectedCategory === "Chains"
+                    ? data.native_transfers.daily.types
+                    : data[selectedCategory].daily.types
                 }
                 timespan={selectedTimespan}
                 series={chartSeries}
-                yScale={selectedValue === "share" ? "percentage" : "linear"}
+                yScale={
+                  selectedValue === "share"
+                    ? "percentage"
+                    : selectedValue === "absolute_log"
+                    ? "logarithmic"
+                    : "linear"
+                }
+                // yScale="linear"
                 chartHeight="400px"
                 chartWidth="100%"
               />
