@@ -335,8 +335,6 @@ export default function CategoryMetrics({
     }, [category, type, timespan, selectedSubcategories, data, setChainValues]);
   }
 
-  console.log(selectedCategory);
-
   return (
     <div className="w-full flex-col relative">
       <Container>
@@ -513,9 +511,19 @@ export default function CategoryMetrics({
                       key={category}
                       className={`relative flex w-full h-full ${
                         selectedCategory === category
-                          ? "borden-hidden rounded-[0px] w-[650px]"
-                          : "h-full w-full max-w-[60px] hover:max-w-[180px]"
+                          ? `border-hidden rounded-[0px] ${
+                              Object.keys(data[category].subcategories).length >
+                              8
+                                ? "w-[650px]"
+                                : Object.keys(data[category].subcategories)
+                                    .length > 5
+                                ? "w-[500px]"
+                                : "w-[400px]"
+                            }`
+                          : "h-full w-full min-w-[60px] hover:max-w-[180px]"
                       }
+
+
                 ${isCategoryHovered[category] ? "bg-white/5" : ""}
                 `}
                       onMouseEnter={() => {
@@ -537,19 +545,30 @@ export default function CategoryMetrics({
                           "0.5px dotted var(--dark-active-text, #CDD8D3)",
                         background:
                           selectedCategory === category
-                            ? "#5A6462" // Background color when selected
-                            : `linear-gradient(90deg, #101413 0%, #101413 15.10%, rgba(0, 0, 0, ${
-                                0.1 +
-                                (i / (Object.keys(categories).length - 1)) * 0.5
-                              }) 48.96%, #101413 86.98%, #101413 100%)`,
+                            ? "#5A6462"
+                            : `linear-gradient(90deg, rgba(16, 20, 19, ${
+                                0.4 -
+                                (i / (Object.keys(categories).length - 1)) * 0.4
+                              }) 0%, #101413 15.10%, rgba(16, 20, 19, 0.00) 48.96%, #101413 86.98%, rgba(16, 20, 19, ${
+                                0.4 -
+                                (i / (Object.keys(categories).length - 1)) * 0.4
+                              }) 100%)`,
                       }}
                     >
                       <div
                         key={category}
                         className={`h-full flex flex-col first-letter justify-center  hover:cursor-pointer overflow-hidden ${
                           selectedCategory === category
-                            ? "w-[650px]"
-                            : "hover:bg-white/5 w-full max-w-[60px] hover:max-w-[180px] "
+                            ? `border-hidden rounded-[0px] ${
+                                Object.keys(data[category].subcategories)
+                                  .length > 8
+                                  ? "w-[650px]"
+                                  : Object.keys(data[category].subcategories)
+                                      .length > 5
+                                  ? "w-[500px]"
+                                  : "w-[400px]"
+                              }`
+                            : "hover:bg-white/5 w-full min-w-[60px] hover:max-w-[180px] "
                         }`}
                         onClick={() => {
                           if (selectedCategory === category) {
@@ -563,7 +582,7 @@ export default function CategoryMetrics({
                       >
                         <div
                           key={"label" + category}
-                          className={`flex self-center justify-center mx-auto pb-8 pt-2  h-[30px] ${
+                          className={`flex self-center justify-center mx-auto pb-8 pt-2 h-[30px] ${
                             selectedCategory === category
                               ? "text-base font-bold "
                               : `text-base font-medium truncate hover:text-ellipsis ${
@@ -574,10 +593,44 @@ export default function CategoryMetrics({
                                       : "w-full pl-0"
                                     : category === "native_transfers" ||
                                       category === "token_transfers"
-                                    ? "w-1/2 pl-2 "
-                                    : "w-1/2 pl-0"
+                                    ? "w-full "
+                                    : "w-full pl-0"
                                 }`
                           }`}
+                          style={{
+                            background:
+                              selectedCategory === category
+                                ? "#5A6462"
+                                : "none",
+                            backgroundClip:
+                              selectedCategory === category
+                                ? "initial"
+                                : "text",
+                            WebkitBackgroundClip:
+                              selectedCategory === category
+                                ? "initial"
+                                : "text",
+                            textFillColor:
+                              selectedCategory === category
+                                ? "inherit"
+                                : "transparent",
+                            WebkitTextFillColor:
+                              selectedCategory === category
+                                ? "inherit"
+                                : "transparent",
+                            backgroundImage:
+                              selectedCategory === category
+                                ? "none"
+                                : `radial-gradient(ellipse at center, rgba(255, 255, 255, 1) 0%, rgba(0, 0, 0, 1) 100%), linear-gradient(90deg, rgba(16, 20, 19, ${
+                                    0.4 +
+                                    (i / (Object.keys(categories).length - 1)) *
+                                      0.4
+                                  }) 0%, #101413 15.10%, rgba(16, 20, 19, 0.00) 48.96%, #101413 86.98%, rgba(16, 20, 19, ${
+                                    0.4 +
+                                    (i / (Object.keys(categories).length - 1)) *
+                                      0.4
+                                  }) 100%)`,
+                          }}
                         >
                           {categories[category]}
                         </div>
@@ -694,7 +747,7 @@ export default function CategoryMetrics({
                     <div
                       key={category}
                       className={
-                        "relative flex flex-col w-full h-full justify-start pl-[16px] pt-2"
+                        "relative flex flex-col min-w-[150px] h-full justify-start pl-[16px] pt-2"
                       }
                     >
                       <div className="text-sm font-bold pb-[10px]">
