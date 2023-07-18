@@ -546,13 +546,25 @@ export default function CategoryMetrics({
                         background:
                           selectedCategory === category
                             ? "#5A6462"
-                            : `linear-gradient(90deg, rgba(16, 20, 19, ${
-                                0.4 -
-                                (i / (Object.keys(categories).length - 1)) * 0.4
-                              }) 0%, #101413 15.10%, rgba(16, 20, 19, 0.00) 48.96%, #101413 86.98%, rgba(16, 20, 19, ${
-                                0.4 -
-                                (i / (Object.keys(categories).length - 1)) * 0.4
-                              }) 100%)`,
+                            : `linear-gradient(
+                                90deg,
+                                rgba(16, 20, 19, ${
+                                  0.3 -
+                                  (i / (Object.keys(categories).length - 1)) *
+                                    0.2
+                                }) 0%,
+                                #101413 15.10%,
+                                rgba(16, 20, 19, ${
+                                  0.06 +
+                                  (i / Object.keys(categories).length) * 0.94
+                                }) 48.96%,
+                                #101413 86.98%,
+                                rgba(16, 20, 19, ${
+                                  0.3 -
+                                  (i / (Object.keys(categories).length - 1)) *
+                                    0.2
+                                }) 100%
+                              )`,
                       }}
                     >
                       <div
@@ -564,7 +576,7 @@ export default function CategoryMetrics({
                                   .length > 8
                                   ? "w-[650px]"
                                   : Object.keys(data[category].subcategories)
-                                      .length > 5
+                                      .length > 4
                                   ? "w-[500px]"
                                   : "w-[400px]"
                               }`
@@ -643,7 +655,7 @@ export default function CategoryMetrics({
                               >
                                 <div
                                   key={categories[category]}
-                                  className={`flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[28px] min-w-[90px] hover:bg-white/5 z-10    ${
+                                  className={`flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[35px] min-w-[90px] hover:bg-white/5 z-10    ${
                                     checkAllSelected(category)
                                       ? "opacity-100"
                                       : "opacity-30"
@@ -672,7 +684,7 @@ export default function CategoryMetrics({
                                     checkSubcategory(category, subcategory) ? (
                                       <button
                                         key={subcategory}
-                                        className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[28px] min-w-[90px] hover:bg-white/5 z-10"
+                                        className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[35px] min-w-[90px] hover:bg-white/5 z-10"
                                         onClick={(e) => {
                                           handleToggleSubcategory(
                                             category,
@@ -681,7 +693,7 @@ export default function CategoryMetrics({
                                           e.stopPropagation();
                                         }}
                                       >
-                                        <div className="pr-[5px]">
+                                        <div className="mr-2">
                                           {formatSubcategories(subcategory)}
                                         </div>
                                         <div className="rounded-full bg-forest-50 dark:bg-forest-900">
@@ -699,7 +711,8 @@ export default function CategoryMetrics({
                                     !checkSubcategory(category, subcategory) ? (
                                       <button
                                         key={subcategory}
-                                        className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center min-w-[90px] max-h-[30px] hover:bg-white/5 z-10 opacity-30 "
+                                        className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] 
+                                          justify-between items-center min-w-[90px] max-h-[35px] hover:bg-white/5 z-10 opacity-30 "
                                         onClick={(e) => {
                                           handleToggleSubcategory(
                                             category,
@@ -708,7 +721,7 @@ export default function CategoryMetrics({
                                           e.stopPropagation();
                                         }}
                                       >
-                                        <div className="pr-[5px]">
+                                        <div className="mr-2">
                                           {formatSubcategories(subcategory)}
                                         </div>
                                         <div className="rounded-full bg-forest-50 dark:bg-forest-900">
@@ -838,19 +851,27 @@ export default function CategoryMetrics({
                             {selectedValue === "share" ? (
                               <div>{Math.round(value * 100)}%</div>
                             ) : (
-                              <div>
-                                {/*usd or eth symbol */}
-                                {(selectedMode === "gas_fees_"
-                                  ? showUsd
-                                    ? `$`
-                                    : `Ξ`
-                                  : "") +
-                                  (
+                              <div className="flex gap-x-1">
+                                <div>
+                                  {/*usd or eth symbol */}
+                                  {(
                                     Math.round(value * 100) / 100
                                   ).toLocaleString(undefined, {
                                     minimumFractionDigits: 0,
                                     maximumFractionDigits: 0,
                                   })}
+                                </div>
+                                <div
+                                  className={` ${
+                                    showUsd ? "static" : "relative top-[1px]"
+                                  }`}
+                                >
+                                  {selectedMode === "gas_fees_"
+                                    ? showUsd
+                                      ? `$`
+                                      : `Ξ`
+                                    : ""}
+                                </div>
                               </div>
                             )}
                           </div>
