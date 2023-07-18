@@ -335,6 +335,8 @@ export default function CategoryMetrics({
     }, [category, type, timespan, selectedSubcategories, data, setChainValues]);
   }
 
+  console.log(selectedCategory);
+
   return (
     <div className="w-full flex-col relative">
       <Container>
@@ -486,7 +488,7 @@ export default function CategoryMetrics({
                     <div
                       key={category}
                       className={
-                        "relative flex flex-col w-full h-full justify-center pl-[14px]"
+                        "relative flex flex-col min-w-[200] w-full h-full justify-center pl-[14px]"
                       }
                     >
                       <div className="text-sm font-bold pb-[10px]">
@@ -511,8 +513,8 @@ export default function CategoryMetrics({
                       key={category}
                       className={`relative flex w-full h-full ${
                         selectedCategory === category
-                          ? "borden-hidden rounded-[0px]"
-                          : "h-full"
+                          ? "borden-hidden rounded-[0px] w-[650px]"
+                          : "h-full w-full max-w-[60px] hover:max-w-[180px]"
                       }
                 ${isCategoryHovered[category] ? "bg-white/5" : ""}
                 `}
@@ -540,10 +542,10 @@ export default function CategoryMetrics({
                     >
                       <div
                         key={category}
-                        className={`h-full flex flex-col first-letter justify-between hover:cursor-pointer  ${
+                        className={`h-full flex flex-col first-letter justify-center  hover:cursor-pointer overflow-hidden ${
                           selectedCategory === category
-                            ? "w-[585px]"
-                            : "hover:bg-white/5 w-full"
+                            ? "w-[650px]"
+                            : "hover:bg-white/5 w-full max-w-[60px] hover:max-w-[180px] "
                         }`}
                         onClick={() => {
                           if (selectedCategory === category) {
@@ -556,10 +558,20 @@ export default function CategoryMetrics({
                         }}
                       >
                         <div
-                          className={`self-center justify-self-center mx-auto px-4  ${
+                          key={"label" + category}
+                          className={`flex self-center justify-center mx-auto pb-2  h-[30px] ${
                             selectedCategory === category
-                              ? "text-sm font-bold"
-                              : "text-xs font-medium"
+                              ? "text-base font-bold "
+                              : `text-sm font-medium truncate hover:text-ellipsis ${
+                                  category === "native_transfers" ||
+                                  category === "token_transfers"
+                                    ? ` ${
+                                        isCategoryHovered[category] === true
+                                          ? "pl-0 w-full"
+                                          : "pl-[50px] w-3/4"
+                                      } `
+                                    : "pl-0"
+                                }`
                           }`}
                         >
                           {categories[category]}
