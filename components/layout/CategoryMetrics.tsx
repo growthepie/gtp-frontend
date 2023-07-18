@@ -531,13 +531,17 @@ export default function CategoryMetrics({
                         }));
                       }}
                       style={{
-                        backgroundColor:
+                        borderRight:
+                          "0.5px dotted var(--dark-active-text, #CDD8D3)",
+                        borderLeft:
+                          "0.5px dotted var(--dark-active-text, #CDD8D3)",
+                        background:
                           selectedCategory === category
-                            ? "#5A6462"
-                            : `rgba(0, 0, 0, ${
-                                0.06 +
-                                (i / Object.keys(categories).length) * 0.94
-                              })`,
+                            ? "#5A6462" // Background color when selected
+                            : `linear-gradient(90deg, #101413 0%, #101413 15.10%, rgba(0, 0, 0, ${
+                                0.1 +
+                                (i / (Object.keys(categories).length - 1)) * 0.5
+                              }) 48.96%, #101413 86.98%, #101413 100%)`,
                       }}
                     >
                       <div
@@ -559,18 +563,19 @@ export default function CategoryMetrics({
                       >
                         <div
                           key={"label" + category}
-                          className={`flex self-center justify-center mx-auto pb-2  h-[30px] ${
+                          className={`flex self-center justify-center mx-auto pb-8 pt-2  h-[30px] ${
                             selectedCategory === category
                               ? "text-base font-bold "
-                              : `text-sm font-medium truncate hover:text-ellipsis ${
-                                  category === "native_transfers" ||
-                                  category === "token_transfers"
-                                    ? ` ${
-                                        isCategoryHovered[category] === true
-                                          ? "pl-0 w-full"
-                                          : "pl-[50px] w-3/4"
-                                      } `
-                                    : "pl-0"
+                              : `text-base font-medium truncate hover:text-ellipsis ${
+                                  isCategoryHovered[category]
+                                    ? category === "native_transfers" ||
+                                      category === "token_transfers"
+                                      ? "pl-[0px] w-full"
+                                      : "w-full pl-0"
+                                    : category === "native_transfers" ||
+                                      category === "token_transfers"
+                                    ? "w-1/2 pl-2 "
+                                    : "w-1/2 pl-0"
                                 }`
                           }`}
                         >
