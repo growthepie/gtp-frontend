@@ -610,10 +610,6 @@ export default function CategoryMetrics({
                               selectedCategory === category
                                 ? "initial"
                                 : "text",
-                            textFillColor:
-                              selectedCategory === category
-                                ? "inherit"
-                                : "transparent",
                             WebkitTextFillColor:
                               selectedCategory === category
                                 ? "inherit"
