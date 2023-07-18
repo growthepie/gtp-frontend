@@ -200,7 +200,14 @@ export default function CategoryMetrics({
       const categorySubcategories = prevSelectedSubcategories[category];
       const index = categorySubcategories.indexOf(subcategory);
 
+      // Check if the subcategory exists in the list
       if (index !== -1) {
+        // Check if it's the last subcategory in the list
+        if (categorySubcategories.length === 1) {
+          // If it's the last subcategory, don't remove it
+          return prevSelectedSubcategories;
+        }
+
         // Value exists, remove it
         const updatedSubcategories = [...categorySubcategories];
         updatedSubcategories.splice(index, 1);
@@ -479,7 +486,7 @@ export default function CategoryMetrics({
                     <div
                       key={category}
                       className={
-                        "relative flex flex-col w-full h-full justify-center pl-[16px]"
+                        "relative flex flex-col w-full h-full justify-center pl-[14px]"
                       }
                     >
                       <div className="text-sm font-bold pb-[10px]">
@@ -535,7 +542,7 @@ export default function CategoryMetrics({
                         key={category}
                         className={`h-full flex flex-col first-letter justify-between hover:cursor-pointer  ${
                           selectedCategory === category
-                            ? "w-[490px]"
+                            ? "w-[585px]"
                             : "hover:bg-white/5 w-full"
                         }`}
                         onClick={() => {
@@ -549,7 +556,7 @@ export default function CategoryMetrics({
                         }}
                       >
                         <div
-                          className={`self-center ${
+                          className={`self-center justify-self-center mx-auto px-4  ${
                             selectedCategory === category
                               ? "text-sm font-bold"
                               : "text-xs font-medium"
@@ -559,47 +566,47 @@ export default function CategoryMetrics({
                         </div>
 
                         <div
-                          className="flex flex-col gap-x-1 overflow-hidden h-full
-                                    pl-1 mx-2 "
-                          style={
-                            categories[category] === "Token Transfer"
-                              ? { paddingRight: "20px" }
-                              : { paddingRight: "4px" }
-                          } // Add right padding for the scrollbar width
+                          className="flex flex-col gap-x-1 overflow-hidden h-full 
+                                    mx-4 "
                         >
                           {selectedCategory === category ? (
-                            <div key={data[category].subcategories}>
+                            <div className="flex h-full">
                               <div
-                                key={categories[category]}
-                                className={`flex border-forest-500 justify-between rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 items-center mx-auto w-[190px] hover:bg-white/5 z-10    ${
-                                  checkAllSelected(category)
-                                    ? "opacity-100"
-                                    : "opacity-30"
-                                }`}
-                                onClick={(e) => {
-                                  handleSelectAllSubcategories(category);
-                                  e.stopPropagation();
-                                }}
+                                key={data[category].subcategories}
+                                className="flex flex-wrap w-full gap-x-2 gap-y-2 justify-center self-center items-center "
                               >
-                                <div className="">Select All Subcategories</div>
-                                <div className="rounded-full bg-forest-50 dark:bg-forest-900 mr-[1px]">
-                                  <Icon
-                                    icon="feather:check-circle"
-                                    className={`w-[14px] h-[14px] ${
-                                      checkAllSelected(category)
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    }`}
-                                  />
+                                <div
+                                  key={categories[category]}
+                                  className={`flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[28px] min-w-[90px] hover:bg-white/5 z-10    ${
+                                    checkAllSelected(category)
+                                      ? "opacity-100"
+                                      : "opacity-30"
+                                  }`}
+                                  onClick={(e) => {
+                                    handleSelectAllSubcategories(category);
+                                    e.stopPropagation();
+                                  }}
+                                >
+                                  <div className="mr-2">
+                                    Select All Subcategories
+                                  </div>
+                                  <div className="rounded-full bg-forest-50 dark:bg-forest-900 mr-[1px]">
+                                    <Icon
+                                      icon="feather:check-circle"
+                                      className={`w-[14px] h-[14px] ${
+                                        checkAllSelected(category)
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      }`}
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="flex flex-wrap gap-x-4 justify-evenly ">
                                 {data[category].subcategories.list.map(
                                   (subcategory) =>
                                     checkSubcategory(category, subcategory) ? (
                                       <button
                                         key={subcategory}
-                                        className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-[2px] justify-between items-center max-h-[28px] min-w-[90px] hover:bg-white/5 z-10"
+                                        className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[28px] min-w-[90px] hover:bg-white/5 z-10"
                                         onClick={(e) => {
                                           handleToggleSubcategory(
                                             category,
@@ -626,7 +633,7 @@ export default function CategoryMetrics({
                                     !checkSubcategory(category, subcategory) ? (
                                       <button
                                         key={subcategory}
-                                        className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 justify-between items-center min-w-[90px] max-h-[28px] hover:bg-white/5 z-10 opacity-30"
+                                        className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center min-w-[90px] max-h-[30px] hover:bg-white/5 z-10 opacity-30 "
                                         onClick={(e) => {
                                           handleToggleSubcategory(
                                             category,
@@ -685,6 +692,7 @@ export default function CategoryMetrics({
           )}
         </div>
       </Container>
+
       <Container>
         <div className="flex w-[95%] m-auto mt-[30px]">
           <div className="w-1/2 ">
@@ -728,7 +736,7 @@ export default function CategoryMetrics({
                       >
                         <div
                           key={item + " " + index + value}
-                          className="flex w-[155px]"
+                          className="flex w-[155px] items-center"
                         >
                           <div
                             key={item + " " + index}
