@@ -1238,9 +1238,16 @@ export default function ComparisonChart({
                     </div>
                   </div>
                 </div>
+
                 {avg && ["365d", "max"].includes(selectedTimespan) && (
                   <div className="absolute -top-[10px] right-3 sm:-top-[7px] md:top-[5px] md:right-3 lg:top-[5px] xl:top-[60px] xl:right-[calc(0%+1.75rem)] rounded-full text-xs font-medium capitalize">
                     Displaying 7d Rolling Average
+                  </div>
+                )}
+                {filteredData.length === 1 && filteredData[0].name === "" && (
+                  <div className="absolute top-[calc(50%+1.5rem)] left-[0px] text-xs font-medium flex justify-center w-full text-forest-500/60">
+                    No chain(s) selected for comparison. Please select at least
+                    one.
                   </div>
                 )}
                 <div className="absolute top-3 left-[calc(0%-1.75rem)] rounded-full text-xs font-medium"></div>
