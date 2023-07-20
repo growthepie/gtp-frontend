@@ -720,8 +720,8 @@ export default function ChainChart({
       gridLineWidth: 1,
       gridLineColor:
         theme === "dark"
-          ? "rgba(215, 223, 222, 0.33)"
-          : "rgba(41, 51, 50, 0.33)",
+          ? "rgba(215, 223, 222, 0.11)"
+          : "rgba(41, 51, 50, 0.11)",
 
       type: "linear",
       min: 0,
@@ -1339,7 +1339,7 @@ export default function ChainChart({
                           }
                         }}
                       />
-                      <div className="absolute bottom-[22px] right-[22px] md:bottom-[22px] md:right-[22px]pointer-events-none z-0 opacity-40 mix-blend-lighten">
+                      <div className="absolute bottom-[48.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-40 mix-blend-lighten">
                         <ChartWatermark className="w-[102.936px] h-[24.536px]" />
                       </div>
                     </div>

@@ -2,12 +2,17 @@
 import Image from "next/image";
 import { useMemo, useState, useEffect, useRef, ReactNode } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
+import { useLocalStorage } from "usehooks-ts";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
 import { Switch } from "../Switch";
 import { Sources } from "@/lib/datasources";
 import Container from "./Container";
 import { CategoryComparisonResponseData } from "@/types/api/CategoryComparisonResponse";
+import { animated } from "@react-spring/web";
+import { Chart } from "../charts/chart";
+import { AllChainsByKeys } from "@/lib/chains";
+import { useTheme } from "next-themes";
 
 export default function CategoryMetrics({
   data,
@@ -22,11 +27,71 @@ export default function CategoryMetrics({
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
 }) {
-  const [selectedValue, setSelectedValue] = useState("gas_fees_share");
+  const [selectedMode, setSelectedMode] = useState("gas_fees_");
   const [selectedCategory, setSelectedCategory] = useState("native_transfers");
   const [selectedChain, setSelectedChain] = useState<string | null>(null);
   const [openSub, setOpenSub] = useState(false);
-  const [selectedMode, setSelectedMode] = useState("absolute");
+  const [selectedValue, setSelectedValue] = useState("absolute");
+
+  const [chainValues, setChainValues] = useState<any[][] | null>(null);
+  const [selectedType, setSelectedType] = useState("gas_fees_absolute_usd");
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const { theme } = useTheme();
+
+  useEffect(() => {
+    setSelectedChain("arbitrum");
+  }, []);
+
+  const sortedChainValues = chainValues?.sort((a, b) => b[1] - a[1]);
+  const chartSeries = useMemo(() => {
+    if (selectedCategory && data)
+      return [
+        {
+          id: ["arbitrum", selectedCategory, selectedType].join("_"),
+          name: "arbitrum",
+          unixKey: "unix",
+          dataKey: selectedType,
+          data: data[selectedCategory].daily["arbitrum"],
+        },
+        {
+          id: ["optimism", selectedCategory, selectedType].join("_"),
+          name: "optimism",
+          unixKey: "unix",
+          dataKey: selectedType,
+          data: data[selectedCategory].daily["optimism"],
+        },
+        {
+          id: ["zksync_era", selectedCategory, selectedType].join("_"),
+          name: "zksync_era",
+          unixKey: "unix",
+          dataKey: selectedType,
+          data: data[selectedCategory].daily["zksync_era"],
+        },
+      ];
+    return [
+      {
+        id: ["arbitrum", "native_transfers", selectedType].join("_"),
+        name: "arbitrum",
+        unixKey: "unix",
+        dataKey: selectedType,
+        data: data["native_transfers"].daily["arbitrum"],
+      },
+      {
+        id: ["optimism", "native_transfers", selectedType].join("_"),
+        name: "optimism",
+        unixKey: "unix",
+        dataKey: selectedType,
+        data: data["native_transfers"].daily["optimism"],
+      },
+      {
+        id: ["zksync_era", "native_transfers", selectedType].join("_"),
+        name: "zksync_era",
+        unixKey: "unix",
+        dataKey: selectedType,
+        data: data["native_transfers"].daily["zksync_era"],
+      },
+    ];
+  }, [selectedCategory, selectedType, data]);
 
   const timespans = useMemo(() => {
     return {
@@ -104,6 +169,22 @@ export default function CategoryMetrics({
     return initialSelectedSubcategories;
   });
 
+  const result = HandleAggregate({
+    selectedCategory,
+    selectedType,
+    selectedTimespan,
+    selectedSubcategories,
+    data,
+    setChainValues,
+  });
+
+  const runType = HandleType({
+    selectedMode,
+    selectedValue,
+    setSelectedType,
+    showUsd,
+  });
+
   function formatSubcategories(str) {
     const title = str.replace(/_/g, " ");
     const words = title.split(" ");
@@ -119,7 +200,14 @@ export default function CategoryMetrics({
       const categorySubcategories = prevSelectedSubcategories[category];
       const index = categorySubcategories.indexOf(subcategory);
 
+      // Check if the subcategory exists in the list
       if (index !== -1) {
+        // Check if it's the last subcategory in the list
+        if (categorySubcategories.length === 1) {
+          // If it's the last subcategory, don't remove it
+          return prevSelectedSubcategories;
+        }
+
         // Value exists, remove it
         const updatedSubcategories = [...categorySubcategories];
         updatedSubcategories.splice(index, 1);
@@ -141,79 +229,110 @@ export default function CategoryMetrics({
     return selectedSubcategories[category].includes(subcategory);
   }
 
-  function handleDeselectAllSubcategories(category) {
-    setSelectedSubcategories((prevSelectedSubcategories) => {
-      return { ...prevSelectedSubcategories, [category]: [] };
+  function handleSelectAllSubcategories(category) {
+    data[category].subcategories.list.forEach((subcategory) => {
+      if (!selectedSubcategories[category].includes(subcategory)) {
+        setSelectedSubcategories((prevSelectedSubcategories) => ({
+          ...prevSelectedSubcategories,
+          [category]: [...prevSelectedSubcategories[category], subcategory],
+        }));
+      }
     });
   }
 
-  function RenderSubcategory({ category, subcategory, selection }) {
-    return selection ? (
-      checkSubcategory(category, subcategory) ? (
-        <button
-          key={subcategory}
-          className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 justify-between items-center mx-auto w-[130px] hover:bg-white/5 z-10"
-          onClick={(e) => {
-            handleToggleSubcategory(category, subcategory);
-            e.stopPropagation();
-          }}
-        >
-          <div className="pr-[5px]">{formatSubcategories(subcategory)}</div>
-          <div className="rounded-full bg-forest-50 dark:bg-forest-900">
-            <Icon
-              icon="feather:check-circle"
-              className="w-[14px] h-[14px] opacity-100"
-            />
-          </div>
-        </button>
-      ) : null
-    ) : !checkSubcategory(category, subcategory) ? (
-      <button
-        key={subcategory}
-        className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 justify-between items-center mx-auto w-[130px] hover:bg-white/5 z-10 opacity-30"
-        onClick={(e) => {
-          handleToggleSubcategory(category, subcategory);
-          e.stopPropagation();
-        }}
-      >
-        <div className="pr-[5px]">{formatSubcategories(subcategory)}</div>
-        <div className="rounded-full bg-forest-50 dark:bg-forest-900">
-          <Icon
-            icon="feather:check-circle"
-            className="w-[14px] h-[14px] opacity-0"
-          />
-        </div>
-      </button>
-    ) : null;
+  function checkAllSelected(category) {
+    if (data[category].subcategories.list) {
+      return data[category].subcategories.list.every((subcategory) =>
+        selectedSubcategories[category].includes(subcategory),
+      );
+    }
+    return false;
   }
 
-  {
-    /*                              {data[category].subcategories.list.map(
-                                (subcategory) =>
-                                  checkSubcategory(category, subcategory) ? (
-                                    <button
-                                      key={subcategory}
-                                      className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 justify-between items-center mx-auto w-[130px] hover:bg-white/5 z-10"
-                                      onClick={(e) => {
-                                        handleToggleSubcategory(
-                                          category,
-                                          subcategory,
-                                        );
-                                        e.stopPropagation();
-                                      }}
-                                    >
-                                      <div className="pr-[5px]">
-                                        {formatSubcategories(subcategory)}
-                                      </div>
-                                      <div className="rounded-full bg-forest-50 dark:bg-forest-900">
-                                        <Icon
-                                          icon="feather:check-circle"
-                                          className="w-[14px] h-[14px] opacity-100"
-                                        />
-                                      </div>
-                                    </button>
-                                  ) : null,
-                              )} */
+  function HandleType({
+    selectedMode,
+    selectedValue,
+    setSelectedType,
+    showUsd,
+  }) {
+    useEffect(() => {
+      if (selectedValue === "share" || selectedMode === "txcount_") {
+        setSelectedType(selectedMode + selectedValue);
+      } else if (showUsd) {
+        if (selectedValue === "absolute_log") {
+          setSelectedType(selectedMode + "absolute" + "_usd");
+        } else {
+          setSelectedType(selectedMode + selectedValue + "_usd");
+        }
+      } else {
+        if (selectedValue === "absolute_log") {
+          setSelectedType(selectedMode + "absolute" + "_eth");
+        } else {
+          setSelectedType(selectedMode + selectedValue + "_eth");
+        }
+      }
+    }, [selectedMode, selectedValue, setSelectedType, showUsd]);
+
+    //Calculate type to hand off to chart and find index selectedValue for data
+  }
+
+  function HandleAggregate({
+    selectedCategory,
+    selectedType,
+    selectedTimespan,
+    selectedSubcategories,
+    data,
+    setChainValues,
+  }) {
+    const category = selectedCategory;
+    const timespan = selectedTimespan;
+    const type = selectedType;
+
+    useEffect(() => {
+      setChainValues(null);
+      let total = 0;
+
+      Object.keys(selectedSubcategories[category]).forEach((subcategory) => {
+        const subcategoryData =
+          data[category].subcategories[
+            selectedSubcategories[category][subcategory]
+          ];
+
+        const subcategoryChains = subcategoryData.aggregated[timespan].data;
+
+        const index =
+          subcategoryData.aggregated[timespan].data["types"].indexOf(type);
+
+        Object.keys(subcategoryChains).forEach((chain) => {
+          if (chain !== "types") {
+            const chainValue =
+              subcategoryData.aggregated[timespan].data[chain][index];
+
+            setChainValues((prevChainValues) => {
+              if (prevChainValues === null) {
+                return [[chain, chainValue]];
+              } else {
+                const updatedValues = prevChainValues.map(
+                  ([prevChain, prevValue]) =>
+                    prevChain === chain
+                      ? [prevChain, prevValue + chainValue]
+                      : [prevChain, prevValue],
+                );
+
+                const existingChain = prevChainValues.find(
+                  ([prevChain]) => prevChain === chain,
+                );
+                if (existingChain) {
+                  return updatedValues;
+                } else {
+                  return [...prevChainValues, [chain, chainValue]];
+                }
+              }
+            });
+          }
+        });
+      });
+    }, [category, type, timespan, selectedSubcategories, data, setChainValues]);
   }
 
   return (
@@ -223,24 +342,24 @@ export default function CategoryMetrics({
           <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
             <button
               className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                "gas_fees_share" === selectedMode
+                "gas_fees_" === selectedMode
                   ? "bg-forest-500 dark:bg-forest-1000"
                   : "hover:bg-forest-500/10"
               }`}
               onClick={() => {
-                setSelectedMode("gas_fees_share");
+                setSelectedMode("gas_fees_");
               }}
             >
               Gas Fees
             </button>
             <button
               className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                "txcount_share" === selectedMode
+                "txcount_" === selectedMode
                   ? "bg-forest-500 dark:bg-forest-1000"
                   : "hover:bg-forest-500/10"
               }`}
               onClick={() => {
-                setSelectedMode("txcount_share");
+                setSelectedMode("txcount_");
               }}
             >
               Transaction Count
@@ -261,6 +380,7 @@ export default function CategoryMetrics({
                 }`}
                 onClick={() => {
                   setSelectedTimespan(timespan);
+
                   // setXAxis();
                   // chartComponent?.current?.xAxis[0].update({
                   //   min: timespans[selectedTimespan].xMin,
@@ -333,6 +453,7 @@ export default function CategoryMetrics({
                           }
 
                           setSelectedCategory(category);
+
                           setSelectedChain(null);
                         }}
                       >
@@ -365,7 +486,7 @@ export default function CategoryMetrics({
                     <div
                       key={category}
                       className={
-                        "relative flex flex-col w-full h-full justify-center pl-[16px]"
+                        "relative flex flex-col min-w-[200] w-full h-full justify-center pl-[14px]"
                       }
                     >
                       <div className="text-sm font-bold pb-[10px]">
@@ -390,9 +511,19 @@ export default function CategoryMetrics({
                       key={category}
                       className={`relative flex w-full h-full ${
                         selectedCategory === category
-                          ? "borden-hidden rounded-[0px]"
-                          : "h-full"
+                          ? `border-hidden rounded-[0px] ${
+                              Object.keys(data[category].subcategories).length >
+                              8
+                                ? "w-[650px]"
+                                : Object.keys(data[category].subcategories)
+                                    .length > 5
+                                ? "w-[500px]"
+                                : "w-[400px]"
+                            }`
+                          : "h-full w-full min-w-[60px] hover:max-w-[180px]"
                       }
+
+
                 ${isCategoryHovered[category] ? "bg-white/5" : ""}
                 `}
                       onMouseEnter={() => {
@@ -408,21 +539,48 @@ export default function CategoryMetrics({
                         }));
                       }}
                       style={{
-                        backgroundColor:
+                        borderRight:
+                          "0.5px dotted var(--dark-active-text, #CDD8D3)",
+                        borderLeft:
+                          "0.5px dotted var(--dark-active-text, #CDD8D3)",
+                        background:
                           selectedCategory === category
                             ? "#5A6462"
-                            : `rgba(0, 0, 0, ${
-                                0.06 +
-                                (i / Object.keys(categories).length) * 0.94
-                              })`,
+                            : `linear-gradient(
+                                90deg,
+                                rgba(16, 20, 19, ${
+                                  0.3 -
+                                  (i / (Object.keys(categories).length - 1)) *
+                                    0.2
+                                }) 0%,
+                                #101413 15.10%,
+                                rgba(16, 20, 19, ${
+                                  0.06 +
+                                  (i / Object.keys(categories).length) * 0.94
+                                }) 48.96%,
+                                #101413 86.98%,
+                                rgba(16, 20, 19, ${
+                                  0.3 -
+                                  (i / (Object.keys(categories).length - 1)) *
+                                    0.2
+                                }) 100%
+                              )`,
                       }}
                     >
                       <div
                         key={category}
-                        className={`h-full flex flex-col items-center first-letter justify-between hover:cursor-pointer  ${
+                        className={`h-full flex flex-col first-letter justify-center  hover:cursor-pointer overflow-hidden ${
                           selectedCategory === category
-                            ? "w-[220px]"
-                            : "hover:bg-white/5 w-full"
+                            ? `border-hidden rounded-[0px] ${
+                                Object.keys(data[category].subcategories)
+                                  .length > 8
+                                  ? "w-[650px]"
+                                  : Object.keys(data[category].subcategories)
+                                      .length > 4
+                                  ? "w-[500px]"
+                                  : "w-[400px]"
+                              }`
+                            : "hover:bg-white/5 w-full min-w-[60px] hover:max-w-[180px] "
                         }`}
                         onClick={() => {
                           if (selectedCategory === category) {
@@ -435,65 +593,147 @@ export default function CategoryMetrics({
                         }}
                       >
                         <div
-                          className={`pt-2 ${
+                          key={"label" + category}
+                          className={`flex self-center justify-center mx-auto pb-8 pt-2 h-[30px] ${
                             selectedCategory === category
-                              ? "text-sm font-bold"
-                              : "text-xs font-medium"
+                              ? "text-base font-bold "
+                              : `text-base font-medium truncate hover:text-ellipsis ${
+                                  isCategoryHovered[category]
+                                    ? category === "native_transfers" ||
+                                      category === "token_transfers"
+                                      ? "pl-[0px] w-full"
+                                      : "w-full pl-0"
+                                    : category === "native_transfers" ||
+                                      category === "token_transfers"
+                                    ? "w-full "
+                                    : "w-full pl-0"
+                                }`
                           }`}
+                          style={{
+                            background:
+                              selectedCategory === category
+                                ? "#5A6462"
+                                : "none",
+                            backgroundClip:
+                              selectedCategory === category
+                                ? "initial"
+                                : "text",
+                            WebkitBackgroundClip:
+                              selectedCategory === category
+                                ? "initial"
+                                : "text",
+                            WebkitTextFillColor:
+                              selectedCategory === category
+                                ? "inherit"
+                                : "transparent",
+                            backgroundImage:
+                              selectedCategory === category
+                                ? "none"
+                                : `radial-gradient(ellipse at center, rgba(255, 255, 255, 1) 0%, rgba(0, 0, 0, 1) 100%), linear-gradient(90deg, rgba(16, 20, 19, ${
+                                    0.4 +
+                                    (i / (Object.keys(categories).length - 1)) *
+                                      0.4
+                                  }) 0%, #101413 15.10%, rgba(16, 20, 19, 0.00) 48.96%, #101413 86.98%, rgba(16, 20, 19, ${
+                                    0.4 +
+                                    (i / (Object.keys(categories).length - 1)) *
+                                      0.4
+                                  }) 100%)`,
+                          }}
                         >
                           {categories[category]}
                         </div>
 
                         <div
-                          className="flex flex-col gap-x-1 overflow-x-hidden overflow-y-auto scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 
-                                    pl-1 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller"
-                          style={
-                            categories[category] === "Token Transfer"
-                              ? { paddingRight: "20px" }
-                              : { paddingRight: "4px" }
-                          } // Add right padding for the scrollbar width
+                          className="flex flex-col gap-x-1 overflow-hidden h-full 
+                                    mx-4 "
                         >
                           {selectedCategory === category ? (
-                            <div key={data[category].subcategories}>
+                            <div className="flex h-full">
                               <div
-                                key={categories[category]}
-                                className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] pl-[12px] my-1 items-center mx-auto w-[190px] hover:bg-white/5 z-10"
-                                onClick={() => {
-                                  handleDeselectAllSubcategories(category);
-                                }}
+                                key={data[category].subcategories}
+                                className="flex flex-wrap w-full gap-x-2 gap-y-2 justify-center self-center items-center "
                               >
-                                <div className="pr-[5px]">
-                                  Deselect All Subcategories
+                                <div
+                                  key={categories[category]}
+                                  className={`flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[35px] min-w-[90px] hover:bg-white/5 z-10    ${
+                                    checkAllSelected(category)
+                                      ? "opacity-100"
+                                      : "opacity-30"
+                                  }`}
+                                  onClick={(e) => {
+                                    handleSelectAllSubcategories(category);
+                                    e.stopPropagation();
+                                  }}
+                                >
+                                  <div className="mr-2">
+                                    Select All Subcategories
+                                  </div>
+                                  <div className="rounded-full bg-forest-50 dark:bg-forest-900 mr-[1px]">
+                                    <Icon
+                                      icon="feather:check-circle"
+                                      className={`w-[14px] h-[14px] ${
+                                        checkAllSelected(category)
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      }`}
+                                    />
+                                  </div>
                                 </div>
-                                <div className="rounded-full bg-forest-50 dark:bg-forest-900">
-                                  <Icon
-                                    icon="feather:check-circle"
-                                    className="w-[14px] h-[14px]"
-                                  />
-                                </div>
+                                {data[category].subcategories.list.map(
+                                  (subcategory) =>
+                                    checkSubcategory(category, subcategory) ? (
+                                      <button
+                                        key={subcategory}
+                                        className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[35px] min-w-[90px] hover:bg-white/5 z-10"
+                                        onClick={(e) => {
+                                          handleToggleSubcategory(
+                                            category,
+                                            subcategory,
+                                          );
+                                          e.stopPropagation();
+                                        }}
+                                      >
+                                        <div className="mr-2">
+                                          {formatSubcategories(subcategory)}
+                                        </div>
+                                        <div className="rounded-full bg-forest-50 dark:bg-forest-900">
+                                          <Icon
+                                            icon="feather:check-circle"
+                                            className="w-[14px] h-[14px] opacity-100"
+                                          />
+                                        </div>
+                                      </button>
+                                    ) : null,
+                                )}
+
+                                {data[category].subcategories.list.map(
+                                  (subcategory) =>
+                                    !checkSubcategory(category, subcategory) ? (
+                                      <button
+                                        key={subcategory}
+                                        className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] 
+                                          justify-between items-center min-w-[90px] max-h-[35px] hover:bg-white/5 z-10 opacity-30 "
+                                        onClick={(e) => {
+                                          handleToggleSubcategory(
+                                            category,
+                                            subcategory,
+                                          );
+                                          e.stopPropagation();
+                                        }}
+                                      >
+                                        <div className="mr-2">
+                                          {formatSubcategories(subcategory)}
+                                        </div>
+                                        <div className="rounded-full bg-forest-50 dark:bg-forest-900">
+                                          <Icon
+                                            icon="feather:check-circle"
+                                            className="w-[14px] h-[14px] opacity-0"
+                                          />
+                                        </div>
+                                      </button>
+                                    ) : null,
+                                )}
                               </div>
-
-                              {data[category].subcategories.list.map(
-                                (subcategory) => (
-                                  <RenderSubcategory
-                                    key={subcategory}
-                                    subcategory={subcategory}
-                                    category={category}
-                                    selection={true}
-                                  />
-                                ),
-                              )}
-
-                              {data[category].subcategories.list.map(
-                                (subcategory) => (
-                                  <RenderSubcategory
-                                    key={subcategory}
-                                    subcategory={subcategory}
-                                    category={category}
-                                    selection={false}
-                                  />
-                                ),
-                              )}
                             </div>
                           ) : null}
                         </div>
@@ -516,7 +756,7 @@ export default function CategoryMetrics({
                     <div
                       key={category}
                       className={
-                        "relative flex flex-col w-full h-full justify-start pl-[16px] pt-2"
+                        "relative flex flex-col min-w-[150px] h-full justify-start pl-[16px] pt-2"
                       }
                     >
                       <div className="text-sm font-bold pb-[10px]">
@@ -531,6 +771,7 @@ export default function CategoryMetrics({
           )}
         </div>
       </Container>
+
       <Container>
         <div className="flex w-[95%] m-auto mt-[30px]">
           <div className="w-1/2 ">
@@ -548,9 +789,123 @@ export default function CategoryMetrics({
                 </div>
               ))}
             </div>
+            <div className="flex flex-col gap-y-2 mt-4">
+              {}
+              {sortedChainValues &&
+                sortedChainValues.map(([item, value], index) =>
+                  item !== "types" ? (
+                    <div
+                      key={item}
+                      className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${
+                        ["arbitrum", "imx", "zkSync Era", "all_l2s"].includes(
+                          item,
+                        )
+                          ? "text-white dark:text-black"
+                          : "text-white"
+                      } ${AllChainsByKeys[item].backgrounds[theme][1]}`}
+                      style={{
+                        width: `max(${
+                          (value / sortedChainValues[0][1]) * 95
+                        }%, 200px)`,
+                      }}
+                    >
+                      <div
+                        key={item + " " + value}
+                        className="flex items-center h-[45px] pl-[20px] min-w-[155px] w-full"
+                      >
+                        <div
+                          key={item + " " + index + value}
+                          className="flex w-[155px] items-center"
+                        >
+                          <div
+                            key={item + " " + index}
+                            className="flex items-center w-[30px]"
+                          >
+                            <Icon
+                              icon={`gtp:${
+                                item === "zksync_era" ? "zksync-era" : item
+                              }-logo-monochrome`}
+                              className="w-[15px] h-[15px]"
+                            />
+                          </div>
+                          <div className="-mb-0.5">
+                            {AllChainsByKeys[item].label}
+                          </div>
+                        </div>
+
+                        <div
+                          key={value + " " + index}
+                          className="flex justify-end flex-grow pr-4"
+                        >
+                          <div key={index} className="text-base flex">
+                            {/* <div>
+                            {selectedValue === "share"
+                              ? Math.round(value * 100)
+                              : (showUsd ? `$` : ``)+(
+                                  Math.round(value * 100) / 100,
+                                ).toLocaleString(undefined, {
+                                  minimumFractionDigits: 0,
+                                  maximumFractionDigits: 0,
+                                })}
+                                </div> */}
+                            {selectedValue === "share" ? (
+                              <div>{Math.round(value * 100)}%</div>
+                            ) : (
+                              <div className="flex gap-x-1">
+                                <div>
+                                  {/*usd or eth symbol */}
+                                  {(
+                                    Math.round(value * 100) / 100
+                                  ).toLocaleString(undefined, {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0,
+                                  })}
+                                </div>
+                                <div
+                                  className={` ${
+                                    showUsd ? "static" : "relative top-[1px]"
+                                  }`}
+                                >
+                                  {selectedMode === "gas_fees_"
+                                    ? showUsd
+                                      ? `$`
+                                      : `Ξ`
+                                    : ""}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null,
+                )}
+            </div>
             {/*Chains Here */}
           </div>
-          <div>Chart{/*Chart Here */}</div>
+          <div className="w-1/2 relative bottom-2">
+            {
+              <Chart
+                types={
+                  selectedCategory === null || selectedCategory === "Chains"
+                    ? data.native_transfers.daily.types
+                    : data[selectedCategory].daily.types
+                }
+                timespan={selectedTimespan}
+                series={chartSeries}
+                yScale={
+                  selectedValue === "share"
+                    ? "percentage"
+                    : selectedValue === "absolute_log"
+                    ? "logarithmic"
+                    : "linear"
+                }
+                // yScale="linear"
+                chartHeight="400px"
+                chartWidth="100%"
+              />
+            }
+          </div>
         </div>
         <div className="flex flex-col md:flex-row w-full justify-normal md:justify-end items-center text-sm md:text-base rounded-2xl md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
           {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
@@ -559,36 +914,36 @@ export default function CategoryMetrics({
 
           <button
             className={`rounded-full text-sm md:text-base py-1 lg:px-4 xl:px-6 font-medium  ${
-              selectedMode === "absolute"
+              selectedValue === "absolute"
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
             }`}
             onClick={() => {
-              setSelectedMode("absolute");
+              setSelectedValue("absolute");
             }}
           >
             Absolute
           </button>
           <button
             className={`rounded-full text-sm md:text-base py-1 lg:px-4 xl:px-6 font-medium  ${
-              selectedMode === "absolute_log"
+              selectedValue === "absolute_log"
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
             }`}
             onClick={() => {
-              setSelectedMode("absolute_log");
+              setSelectedValue("absolute_log");
             }}
           >
             Absolute Log
           </button>
           <button
             className={`rounded-full text-sm md:text-base py-1 lg:px-4 xl:px-6 font-medium ${
-              selectedMode === "chain_share"
+              selectedValue === "share"
                 ? "bg-forest-500 dark:bg-forest-1000"
                 : "hover:bg-forest-500/10"
             }`}
             onClick={() => {
-              setSelectedMode("chain_share");
+              setSelectedValue("share");
             }}
           >
             Share of Chain Usage

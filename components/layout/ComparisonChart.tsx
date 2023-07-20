@@ -757,8 +757,8 @@ export default function ComparisonChart({
         },
         gridLineColor:
           theme === "dark"
-            ? "rgba(215, 223, 222, 0.33)"
-            : "rgba(41, 51, 50, 0.33)",
+            ? "rgba(215, 223, 222, 0.11)"
+            : "rgba(41, 51, 50, 0.11)",
       },
       xAxis: {
         ordinal: false,
@@ -1233,14 +1233,21 @@ export default function ComparisonChart({
                         constructorType={"stockChart"}
                       />
                     </div>
-                    <div className="absolute bottom-[20%] right-[5%] md:bottom-14 md:right-8 pointer-events-none z-0 opacity-40 mix-blend-lighten">
+                    <div className="absolute bottom-[48.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-40 mix-blend-lighten">
                       <ChartWatermark className="w-[128.67px] h-[30.67px]" />
                     </div>
                   </div>
                 </div>
+
                 {avg && ["365d", "max"].includes(selectedTimespan) && (
                   <div className="absolute -top-[10px] right-3 sm:-top-[7px] md:top-[5px] md:right-3 lg:top-[5px] xl:top-[60px] xl:right-[calc(0%+1.75rem)] rounded-full text-xs font-medium capitalize">
                     Displaying 7d Rolling Average
+                  </div>
+                )}
+                {filteredData.length === 1 && filteredData[0].name === "" && (
+                  <div className="absolute top-[calc(50%+1.5rem)] left-[0px] text-xs font-medium flex justify-center w-full text-forest-500/60">
+                    No chain(s) selected for comparison. Please select at least
+                    one.
                   </div>
                 )}
                 <div className="absolute top-3 left-[calc(0%-1.75rem)] rounded-full text-xs font-medium"></div>

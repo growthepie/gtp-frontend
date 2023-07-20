@@ -619,8 +619,8 @@ export default function LandingChart({
         },
         gridLineColor:
           theme === "dark"
-            ? "rgba(215, 223, 222, 0.33)"
-            : "rgba(41, 51, 50, 0.33)",
+            ? "rgba(215, 223, 222, 0.11)"
+            : "rgba(41, 51, 50, 0.11)",
       },
       xAxis: {
         ordinal: false,
@@ -1234,7 +1234,7 @@ export default function LandingChart({
           )}
         </div>
       </div>
-      {highchartsLoaded && filteredData.length > 0 ? (
+      {highchartsLoaded ? (
         <div className="w-full py-4 rounded-xl">
           <div className="w-full h-[16rem] md:h-[26rem] relative rounded-xl">
             <div className="absolute w-full h-[24rem] top-1 md:top-4">
@@ -1247,9 +1247,14 @@ export default function LandingChart({
                 }}
               />
             </div>
-            <div className="absolute bottom-[20%] right-[5%] md:bottom-14 md:right-10 pointer-events-none z-0 opacity-50 mix-blend-lighten">
+            <div className="absolute bottom-[46.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50 mix-blend-lighten">
               <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px]" />
             </div>
+            {filteredData.length === 0 && (
+              <div className="absolute top-[calc(50%+2rem)] left-[0px] text-xs font-medium flex justify-center w-full text-forest-500/60">
+                No chain(s) selected for comparison. Please select at least one.
+              </div>
+            )}
           </div>
         </div>
       ) : (

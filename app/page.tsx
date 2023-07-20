@@ -271,6 +271,25 @@ export default function Home() {
               </>
             }
           />
+          <QuestionAnswer
+            className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
+            question="Interested in collaborating with us?"
+            answer={
+              <>
+                We are always looking for new collaborators. If you are
+                interested in working with us, please send us a message in our{" "}
+                <Link
+                  href="https://discord.gg/fxjJFe7QyN"
+                  className="underline"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  Discord
+                </Link>
+                .
+              </>
+            }
+          />
         </div>
       </Container>
     </>
