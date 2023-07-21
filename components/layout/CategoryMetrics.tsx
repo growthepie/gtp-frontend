@@ -29,7 +29,7 @@ export default function CategoryMetrics({
 }) {
   const [selectedMode, setSelectedMode] = useState("gas_fees_");
   const [selectedCategory, setSelectedCategory] = useState("native_transfers");
-  const [selectedChain, setSelectedChain] = useState<string | null>(null);
+
   const [openSub, setOpenSub] = useState(false);
   const [selectedValue, setSelectedValue] = useState("absolute");
 
@@ -38,9 +38,13 @@ export default function CategoryMetrics({
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { theme } = useTheme();
 
-  useEffect(() => {
-    setSelectedChain("arbitrum");
-  }, []);
+  const [selectedChains, setSelectedChains] = useState<{
+    [key: string]: boolean;
+  }>({
+    arbitrum: false,
+    zksync_era: true,
+    optimism: true,
+  });
 
   const sortedChainValues = chainValues?.sort((a, b) => b[1] - a[1]);
   const chartSeries = useMemo(() => {
@@ -335,6 +339,8 @@ export default function CategoryMetrics({
     }, [category, type, timespan, selectedSubcategories, data, setChainValues]);
   }
 
+  console.log(data);
+
   return (
     <div className="w-full flex-col relative">
       <Container>
@@ -453,8 +459,6 @@ export default function CategoryMetrics({
                           }
 
                           setSelectedCategory(category);
-
-                          setSelectedChain(null);
                         }}
                       >
                         <div
@@ -589,7 +593,6 @@ export default function CategoryMetrics({
                           }
 
                           setSelectedCategory(category);
-                          setSelectedChain(null);
                         }}
                       >
                         <div
@@ -793,7 +796,7 @@ export default function CategoryMetrics({
               {}
               {sortedChainValues &&
                 sortedChainValues.map(([item, value], index) =>
-                  item !== "types" ? (
+                  item !== "types" && selectedChains[item] ? (
                     <div
                       key={item}
                       className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${
@@ -805,8 +808,8 @@ export default function CategoryMetrics({
                       } ${AllChainsByKeys[item].backgrounds[theme][1]}`}
                       style={{
                         width: `max(${
-                          (value / sortedChainValues[0][1]) * 95
-                        }%, 200px)`,
+                          (value / sortedChainValues[0][1]) * 99
+                        }%, 205px)`,
                       }}
                     >
                       <div
@@ -815,7 +818,7 @@ export default function CategoryMetrics({
                       >
                         <div
                           key={item + " " + index + value}
-                          className="flex w-[155px] items-center"
+                          className="flex w-[155px] items-center pr-2"
                         >
                           <div
                             key={item + " " + index}
@@ -852,15 +855,6 @@ export default function CategoryMetrics({
                               <div>{Math.round(value * 100)}%</div>
                             ) : (
                               <div className="flex gap-x-1">
-                                <div>
-                                  {/*usd or eth symbol */}
-                                  {(
-                                    Math.round(value * 100) / 100
-                                  ).toLocaleString(undefined, {
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 0,
-                                  })}
-                                </div>
                                 <div
                                   className={` ${
                                     showUsd ? "static" : "relative top-[1px]"
@@ -872,9 +866,136 @@ export default function CategoryMetrics({
                                       : `Ξ`
                                     : ""}
                                 </div>
+                                <div>
+                                  {/*usd or eth symbol */}
+                                  {(
+                                    Math.round(value * 100) / 100
+                                  ).toLocaleString(undefined, {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0,
+                                  })}
+                                </div>
                               </div>
                             )}
                           </div>
+                          <button
+                            key={item + "select"}
+                            className="relative flex left-[25px] w-[24px] h-[24px] bg-forest-700 rounded-full self-center items-center justify-center"
+                            onClick={() =>
+                              setSelectedChains((prevSelectedChains) => ({
+                                ...prevSelectedChains,
+                                [item]: !prevSelectedChains[item],
+                              }))
+                            }
+                          >
+                            {" "}
+                            <Icon
+                              icon="feather:check-circle"
+                              className="w-[24px] h-[24px] opacity-100 text-white"
+                            />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null,
+                )}
+            </div>
+            <div className="flex flex-col gap-y-2 mt-2">
+              {}
+              {sortedChainValues &&
+                sortedChainValues.map(([item, value], index) =>
+                  item !== "types" && !selectedChains[item] ? (
+                    <div
+                      key={item}
+                      className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium opacity-10 ${
+                        ["arbitrum", "imx", "zkSync Era", "all_l2s"].includes(
+                          item,
+                        )
+                          ? "text-white dark:text-black"
+                          : "text-white"
+                      } ${AllChainsByKeys[item].backgrounds[theme][1]}`}
+                      style={{
+                        width: `max(${
+                          (value / sortedChainValues[0][1]) * 99
+                        }%, 205px)`,
+                      }}
+                    >
+                      <div
+                        key={item + " " + value}
+                        className="flex items-center h-[45px] pl-[20px] min-w-[155px] w-full"
+                      >
+                        <div
+                          key={item + " " + index + value}
+                          className="flex w-[155px] items-center pr-2"
+                        >
+                          <div
+                            key={item + " " + index}
+                            className="flex items-center w-[30px]"
+                          >
+                            <Icon
+                              icon={`gtp:${
+                                item === "zksync_era" ? "zksync-era" : item
+                              }-logo-monochrome`}
+                              className="w-[15px] h-[15px]"
+                            />
+                          </div>
+                          <div className="-mb-0.5">
+                            {AllChainsByKeys[item].label}
+                          </div>
+                        </div>
+
+                        <div
+                          key={value + " " + index}
+                          className="flex justify-end flex-grow pr-4"
+                        >
+                          <div key={index} className="text-base flex">
+                            {/* <div>
+                            {selectedValue === "share"
+                              ? Math.round(value * 100)
+                              : (showUsd ? `$` : ``)+(
+                                  Math.round(value * 100) / 100,
+                                ).toLocaleString(undefined, {
+                                  minimumFractionDigits: 0,
+                                  maximumFractionDigits: 0,
+                                })}
+                                </div> */}
+                            {selectedValue === "share" ? (
+                              <div>{Math.round(value * 100)}%</div>
+                            ) : (
+                              <div className="flex gap-x-1">
+                                <div
+                                  className={` ${
+                                    showUsd ? "static" : "relative top-[1px]"
+                                  }`}
+                                >
+                                  {selectedMode === "gas_fees_"
+                                    ? showUsd
+                                      ? `$`
+                                      : `Ξ`
+                                    : ""}
+                                </div>
+                                <div>
+                                  {/*usd or eth symbol */}
+                                  {(
+                                    Math.round(value * 100) / 100
+                                  ).toLocaleString(undefined, {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0,
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            key={item + "select"}
+                            className="relative left-[25px] w-[24px] h-[24px] bg-forest-700 rounded-full self-center"
+                            onClick={() =>
+                              setSelectedChains((prevSelectedChains) => ({
+                                ...prevSelectedChains,
+                                [item]: !prevSelectedChains[item],
+                              }))
+                            }
+                          ></button>
                         </div>
                       </div>
                     </div>
@@ -965,6 +1086,97 @@ export default function CategoryMetrics({
               </div>
             </TooltipContent>
           </Tooltip>
+        </div>
+      </Container>
+
+      <Container>
+        <div className="flex flex-col mt-[30px] w-[98%] mx-auto min-w-[980px]">
+          <div className="flex text-[14px] font-bold justify-between">
+            <div className="flex gap-x-[15px]">
+              <button className="flex gap-x-1 pl-4">
+                Chain
+                <Icon
+                  icon="formkit:arrowdown"
+                  className="opacity-50 text-white"
+                />
+              </button>
+              <button className="flex gap-x-1">
+                Rank
+                <Icon
+                  icon="formkit:arrowdown"
+                  className="opacity-50 text-white"
+                />
+              </button>
+              <button className="flex gap-x-1">
+                Contract
+                <Icon
+                  icon="formkit:arrowdown"
+                  className="opacity-50 text-white"
+                />
+              </button>
+            </div>
+            <div className="flex gap-x-1">
+              <button className="flex gap-x-1">
+                Category{" "}
+                <Icon
+                  icon="formkit:arrowdown"
+                  className="opacity-50 text-white"
+                />
+              </button>
+            </div>
+            <div className="flex gap-x-[15px]">
+              <button className="flex gap-x-1">
+                Value{" "}
+                <Icon
+                  icon="formkit:arrowdown"
+                  className="opacity-50 text-white"
+                />
+              </button>
+              <button className="flex gap-x-1">
+                Share of Total Usage{" "}
+                <Icon
+                  icon="formkit:arrowdown"
+                  className="opacity-50 text-white"
+                />
+              </button>
+              <button className="flex gap-x-1 pr-8">
+                Block Explorer{" "}
+                <Icon
+                  icon="formkit:arrowdown"
+                  className="opacity-50 text-white"
+                />
+              </button>
+            </div>
+          </div>
+          <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[15px] ">
+            <div className="flex w-[100%] ml-4 mr-8 justify-between items-center ">
+              <div className="flex gap-x-[30px] items-center">
+                <div
+                  className={`flex w-[34px] h-[34px] rounded-full items-center justify-center ${AllChainsByKeys["arbitrum"].backgrounds[theme][1]}`}
+                >
+                  <Icon
+                    icon={"gtp:arbitrum-logo-monochrome"}
+                    className="w-[21px] h-[21px] text-black"
+                  />
+                </div>
+                <div className="pr-[10px]">50</div>
+                <div>Uniswap-v3: SwapRouter</div>
+              </div>
+              <div className="flex items-center text-[14px] mr-[95px]">
+                <div>DeFi - DEX</div>
+              </div>
+              <div className="flex gap-x-[80px] items-center mr-4">
+                <div className="pr-[50px]">$1000.00</div>
+                <div className="pr-[15px]">20%</div>
+                <div>
+                  <Icon
+                    icon="material-symbols:link"
+                    className="w-[24px] h-[24px]"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </Container>
     </div>
