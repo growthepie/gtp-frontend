@@ -41,7 +41,7 @@ export default function CategoryMetrics({
   const [selectedChains, setSelectedChains] = useState<{
     [key: string]: boolean;
   }>({
-    arbitrum: false,
+    arbitrum: true,
     zksync_era: true,
     optimism: true,
   });
@@ -339,8 +339,6 @@ export default function CategoryMetrics({
     }, [category, type, timespan, selectedSubcategories, data, setChainValues]);
   }
 
-  console.log(data);
-
   return (
     <div className="w-full flex-col relative">
       <Container>
@@ -437,13 +435,30 @@ export default function CategoryMetrics({
                         }));
                       }}
                       style={{
-                        backgroundColor:
+                        borderLeft:
+                          "0.5px dotted var(--dark-active-text, #CDD8D3)",
+                        background:
                           selectedCategory === category
                             ? "#5A6462"
-                            : `rgba(0, 0, 0, ${
-                                0.06 +
-                                (i / Object.keys(categories).length) * 0.94
-                              })`,
+                            : `linear-gradient(
+                                90deg,
+                                rgba(16, 20, 19, ${
+                                  0.3 -
+                                  (i / (Object.keys(categories).length - 1)) *
+                                    0.2
+                                }) 0%,
+                                #101413 15.10%,
+                                rgba(16, 20, 19, ${
+                                  0.06 +
+                                  (i / Object.keys(categories).length) * 0.94
+                                }) 48.96%,
+                                #101413 86.98%,
+                                rgba(16, 20, 19, ${
+                                  0.3 -
+                                  (i / (Object.keys(categories).length - 1)) *
+                                    0.2
+                                }) 100%
+                              )`,
                       }}
                     >
                       <div
@@ -490,7 +505,7 @@ export default function CategoryMetrics({
                     <div
                       key={category}
                       className={
-                        "relative flex flex-col min-w-[200] w-full h-full justify-center pl-[14px]"
+                        "relative flex flex-col min-w-[140px] w-full h-full justify-center pl-[14px]"
                       }
                     >
                       <div className="text-sm font-bold pb-[10px]">
@@ -543,8 +558,6 @@ export default function CategoryMetrics({
                         }));
                       }}
                       style={{
-                        borderRight:
-                          "0.5px dotted var(--dark-active-text, #CDD8D3)",
                         borderLeft:
                           "0.5px dotted var(--dark-active-text, #CDD8D3)",
                         background:
@@ -759,7 +772,7 @@ export default function CategoryMetrics({
                     <div
                       key={category}
                       className={
-                        "relative flex flex-col min-w-[150px] h-full justify-start pl-[16px] pt-2"
+                        "relative flex flex-col min-w-[140px] w-full h-full justify-start pl-[16px] pt-2"
                       }
                     >
                       <div className="text-sm font-bold pb-[10px]">
@@ -838,7 +851,7 @@ export default function CategoryMetrics({
 
                         <div
                           key={value + " " + index}
-                          className="flex justify-end flex-grow pr-4"
+                          className="flex justify-end flex-grow"
                         >
                           <div key={index} className="text-base flex">
                             {/* <div>
@@ -880,7 +893,7 @@ export default function CategoryMetrics({
                           </div>
                           <button
                             key={item + "select"}
-                            className="relative flex left-[25px] w-[24px] h-[24px] bg-forest-700 rounded-full self-center items-center justify-center"
+                            className="relative flex left-[10px] w-[24px] h-[24px] bg-forest-700 rounded-full self-center items-center justify-center"
                             onClick={() =>
                               setSelectedChains((prevSelectedChains) => ({
                                 ...prevSelectedChains,
@@ -946,7 +959,7 @@ export default function CategoryMetrics({
 
                         <div
                           key={value + " " + index}
-                          className="flex justify-end flex-grow pr-4"
+                          className="flex justify-end flex-grow"
                         >
                           <div key={index} className="text-base flex">
                             {/* <div>
@@ -986,16 +999,18 @@ export default function CategoryMetrics({
                               </div>
                             )}
                           </div>
-                          <button
-                            key={item + "select"}
-                            className="relative left-[25px] w-[24px] h-[24px] bg-forest-700 rounded-full self-center"
-                            onClick={() =>
-                              setSelectedChains((prevSelectedChains) => ({
-                                ...prevSelectedChains,
-                                [item]: !prevSelectedChains[item],
-                              }))
-                            }
-                          ></button>
+                          <div className="flex">
+                            <button
+                              key={item + "select"}
+                              className="relative flex  left-[10px] w-[24px] h-[24px] bg-forest-700 rounded-full self-center justify-self-end"
+                              onClick={() =>
+                                setSelectedChains((prevSelectedChains) => ({
+                                  ...prevSelectedChains,
+                                  [item]: !prevSelectedChains[item],
+                                }))
+                              }
+                            ></button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1124,7 +1139,7 @@ export default function CategoryMetrics({
                 />
               </button>
             </div>
-            <div className="flex gap-x-[15px]">
+            <div className="flex gap-x-[17px]">
               <button className="flex gap-x-1">
                 Value{" "}
                 <Icon
