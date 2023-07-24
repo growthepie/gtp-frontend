@@ -1,0 +1,12 @@
+name: Deploy on op-demo push
+on:
+  push:
+    branches:
+    - op-demo
+    
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger rebuild on vercel
+        run: curl -X POST ${{ secrets.OPDEMO_DEPLOY_HOOK }}
