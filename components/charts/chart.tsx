@@ -249,7 +249,7 @@ export const Chart = ({
                     ...baseOptions.yAxis,
                     type: yScale,
                     min: yScale === "percentage" ? 0 : undefined,
-                    max: yScale === "percentage" ? 1 : undefined,
+                    max: yScale === "percentage" ? undefined : undefined,
                     gridLineColor:
                       theme === "dark"
                         ? "rgba(215, 223, 222, 0.11)"
