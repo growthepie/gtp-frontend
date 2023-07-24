@@ -1,6 +1,13 @@
 "use client";
 import Image from "next/image";
-import { useMemo, useState, useEffect, useRef, ReactNode } from "react";
+import {
+  useMemo,
+  useState,
+  useEffect,
+  useRef,
+  ReactNode,
+  useCallback,
+} from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import { useLocalStorage } from "usehooks-ts";
 import Link from "next/link";
@@ -13,6 +20,9 @@ import { animated } from "@react-spring/web";
 import { Chart } from "../charts/chart";
 import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
+import { LandingURL, MasterURL } from "@/lib/urls";
+import useSWR from "swr";
+import { MasterResponse } from "@/types/api/MasterResponse";
 
 export default function CategoryMetrics({
   data,
@@ -27,6 +37,13 @@ export default function CategoryMetrics({
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
 }) {
+  const {
+    data: master,
+    error: masterError,
+    isLoading: masterLoading,
+    isValidating: masterValidating,
+  } = useSWR<MasterResponse>(MasterURL);
+
   const [selectedMode, setSelectedMode] = useState("gas_fees_");
   const [selectedCategory, setSelectedCategory] = useState("native_transfers");
 
@@ -175,6 +192,39 @@ export default function CategoryMetrics({
   }, []);
 
   const categories = useMemo<{ [key: string]: string }>(() => {
+    if (master)
+      return {
+        categories: "Categories",
+
+        ...Object.keys(master.blockspace_categories.main_categories).reduce(
+          (acc, key) => {
+            if (key === "cross_chain") return acc;
+
+            // capitalize first letter of each word
+            // acc[key] = master.blockspace_categories.main_categories[
+            //   key
+            // ].replace(
+            //   /\w\S*/g,
+            //   (txt) =>
+            //     txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(),
+            // );
+
+            const words =
+              master.blockspace_categories.main_categories[key].split(" ");
+            const formatted = words
+              .map((word) => {
+                return word.charAt(0).toUpperCase() + word.slice(1);
+              })
+              .join(" ");
+
+            acc[key] = formatted;
+
+            return acc;
+          },
+          {},
+        ),
+        scaling: "Scaling",
+      };
     return {
       categories: "Categories",
       native_transfers: "Native Transfer",
@@ -186,7 +236,7 @@ export default function CategoryMetrics({
       scaling: "Scaling",
       gaming: "Gaming",
     };
-  }, []);
+  }, [master]);
 
   const [isCategoryHovered, setIsCategoryHovered] = useState<{
     [key: string]: boolean;
@@ -233,15 +283,24 @@ export default function CategoryMetrics({
     showUsd,
   });
 
-  function formatSubcategories(str) {
-    const title = str.replace(/_/g, " ");
-    const words = title.split(" ");
-    const formatted = words.map((word) => {
-      return word.charAt(0).toUpperCase() + word.slice(1);
-    });
+  const formatSubcategories = useCallback(
+    (str: string) => {
+      console.log("master", master);
+      const masterStr =
+        master && master.blockspace_categories.sub_categories[str]
+          ? master.blockspace_categories.sub_categories[str]
+          : str;
 
-    return formatted.join(" ");
-  }
+      const title = masterStr.replace(/_/g, " ");
+      const words = title.split(" ");
+      const formatted = words.map((word) => {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      });
+
+      return formatted.join(" ");
+    },
+    [master],
+  );
 
   function handleToggleSubcategory(category, subcategory) {
     setSelectedSubcategories((prevSelectedSubcategories) => {
