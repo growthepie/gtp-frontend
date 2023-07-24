@@ -191,24 +191,14 @@ export default function CategoryMetrics({
     };
   }, []);
 
-  const categories = useMemo<{ [key: string]: string }>(() => {
-    if (master)
-      return {
-        categories: "Categories",
+  const categories: { [key: string]: string } = useMemo(() => {
+    if (master) {
+      const result: { [key: string]: string } = {};
 
-        ...Object.keys(master.blockspace_categories.main_categories).reduce(
-          (acc, key) => {
-            if (key === "cross_chain") return acc;
-
-            // capitalize first letter of each word
-            // acc[key] = master.blockspace_categories.main_categories[
-            //   key
-            // ].replace(
-            //   /\w\S*/g,
-            //   (txt) =>
-            //     txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(),
-            // );
-
+      result.categories = "Categories";
+      Object.keys(master.blockspace_categories.main_categories).forEach(
+        (key) => {
+          if (key !== "cross_chain") {
             const words =
               master.blockspace_categories.main_categories[key].split(" ");
             const formatted = words
@@ -216,17 +206,17 @@ export default function CategoryMetrics({
                 return word.charAt(0).toUpperCase() + word.slice(1);
               })
               .join(" ");
+            result[key] = formatted;
+          }
+        },
+      );
 
-            acc[key] = formatted;
+      result.scaling = "Scaling";
 
-            return acc;
-          },
-          {},
-        ),
-        scaling: "Scaling",
-      };
+      return result;
+    }
+
     return {
-      categories: "Categories",
       native_transfers: "Native Transfer",
       token_transfers: "Token Transfer",
       nft_fi: "NFT",
@@ -240,15 +230,29 @@ export default function CategoryMetrics({
 
   const [isCategoryHovered, setIsCategoryHovered] = useState<{
     [key: string]: boolean;
-  }>({
-    native_transfers: false,
-    token_transfers: false,
-    nft_fi: false,
-    defi: false,
-    cefi: false,
-    utility: false,
-    scaling: false,
-    gaming: false,
+  }>(() => {
+    if (master) {
+      const initialIsCategoryHovered: { [key: string]: boolean } = {};
+      Object.keys(master.blockspace_categories.main_categories).forEach(
+        (key) => {
+          if (key !== "cross_chain") {
+            initialIsCategoryHovered[key] = false;
+          }
+        },
+      );
+      return initialIsCategoryHovered;
+    }
+
+    return {
+      native_transfers: false,
+      token_transfers: false,
+      nft_fi: false,
+      defi: false,
+      cefi: false,
+      utility: false,
+      scaling: false,
+      gaming: false,
+    };
   });
 
   const [selectedSubcategories, setSelectedSubcategories] = useState<{
@@ -285,7 +289,6 @@ export default function CategoryMetrics({
 
   const formatSubcategories = useCallback(
     (str: string) => {
-      console.log("master", master);
       const masterStr =
         master && master.blockspace_categories.sub_categories[str]
           ? master.blockspace_categories.sub_categories[str]

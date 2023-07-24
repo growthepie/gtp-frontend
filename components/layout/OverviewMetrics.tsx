@@ -19,6 +19,9 @@ import { useHover } from "usehooks-ts";
 import { Chart } from "../charts/chart";
 import Container from "./Container";
 import Colors from "tailwindcss/colors";
+import { LandingURL, MasterURL } from "@/lib/urls";
+import useSWR from "swr";
+import { MasterResponse } from "@/types/api/MasterResponse";
 
 const DisabledStates: {
   [mode: string]: {
@@ -49,12 +52,41 @@ export default function OverviewMetrics({
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
 }) {
+  const {
+    data: master,
+    error: masterError,
+    isLoading: masterLoading,
+    isValidating: masterValidating,
+  } = useSWR<MasterResponse>(MasterURL);
+
   const [selectedMode, setSelectedMode] = useState("txcount_share");
   const [isCategoryMenuExpanded, setIsCategoryMenuExpanded] = useState(true);
 
-  const categories = useMemo<{ [key: string]: string }>(() => {
+  const categories: { [key: string]: string } = useMemo(() => {
+    if (master) {
+      const result: { [key: string]: string } = {};
+
+      Object.keys(master.blockspace_categories.main_categories).forEach(
+        (key) => {
+          if (key !== "cross_chain") {
+            const words =
+              master.blockspace_categories.main_categories[key].split(" ");
+            const formatted = words
+              .map((word) => {
+                return word.charAt(0).toUpperCase() + word.slice(1);
+              })
+              .join(" ");
+            result[key] = formatted;
+          }
+        },
+      );
+
+      result.scaling = "Scaling";
+
+      return result;
+    }
+
     return {
-      // chains: "Chains",
       native_transfers: "Native Transfer",
       token_transfers: "Token Transfer",
       nft_fi: "NFT",
@@ -63,21 +95,34 @@ export default function OverviewMetrics({
       utility: "Utility",
       scaling: "Scaling",
       gaming: "Gaming",
-      unlabeled: "?",
     };
-  }, []);
+  }, [master]);
 
   const [isCategoryHovered, setIsCategoryHovered] = useState<{
     [key: string]: boolean;
-  }>({
-    native_transfers: false,
-    token_transfers: false,
-    nft_fi: false,
-    defi: false,
-    cefi: false,
-    utility: false,
-    scaling: false,
-    gaming: false,
+  }>(() => {
+    if (master) {
+      const initialIsCategoryHovered: { [key: string]: boolean } = {};
+      Object.keys(master.blockspace_categories.main_categories).forEach(
+        (key) => {
+          if (key !== "cross_chain") {
+            initialIsCategoryHovered[key] = false;
+          }
+        },
+      );
+      return initialIsCategoryHovered;
+    }
+
+    return {
+      native_transfers: false,
+      token_transfers: false,
+      nft_fi: false,
+      defi: false,
+      cefi: false,
+      utility: false,
+      scaling: false,
+      gaming: false,
+    };
   });
 
   const [selectedCategory, setSelectedCategory] = useState("native_transfers");
