@@ -48,7 +48,7 @@ export default function CategoryMetrics({
 
   const sortedChainValues = chainValues?.sort((a, b) => b[1] - a[1]);
   const chartSeries = useMemo(() => {
-    const today = new Date();
+    const today = new Date().getTime();
 
     if (selectedCategory && data)
       return [
@@ -140,28 +140,6 @@ export default function CategoryMetrics({
       },
     ];
   }, [selectedCategory, selectedType, data]);
-
-  console.log(
-    selectedCategory === null || selectedCategory === "Chains"
-      ? data.native_transfers.daily.types
-      : data[selectedCategory].daily.types,
-  );
-  console.log(chartSeries);
-
-  console.log(
-    chartSeries.map((series) => [
-      new Date(
-        series.data[0][
-          data.native_transfers.daily.types.indexOf(series.unixKey)
-        ],
-      ),
-      new Date(
-        series.data[series.data.length - 1][
-          data.native_transfers.daily.types.indexOf(series.unixKey)
-        ],
-      ),
-    ]),
-  );
 
   const timespans = useMemo(() => {
     return {
