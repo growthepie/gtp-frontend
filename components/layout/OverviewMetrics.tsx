@@ -22,6 +22,7 @@ import Colors from "tailwindcss/colors";
 import { LandingURL, MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import { navigationItems } from "@/lib/navigation";
 
 const DisabledStates: {
   [mode: string]: {
@@ -82,6 +83,7 @@ export default function OverviewMetrics({
       );
 
       result.scaling = "Scaling";
+      result.unlabeled = "Unlabeled";
 
       return result;
     }
@@ -436,7 +438,7 @@ export default function OverviewMetrics({
                         <div
                           key={category}
                           className={`relative flex h-full justify-center items-center 
-                          ${category === "unlabeled" ? "w-[40px]" : "flex-1"}
+                          ${category === "unlabeled" ? "flex-1" : "flex-1"}
                           ${
                             selectedCategory === category
                               ? "borden-hidden rounded-[0px]"
@@ -507,7 +509,10 @@ export default function OverviewMetrics({
             {
               //chain name is key
               Object.keys(data)
-                .filter((c) => c !== "all_l2s")
+                .filter(
+                  (c) =>
+                    c !== "all_l2s" && Object.keys(AllChainsByKeys).includes(c),
+                )
                 .map((chainKey, index) => {
                   return (
                     <div key={index} className="w-full h-full relative">
@@ -526,7 +531,11 @@ export default function OverviewMetrics({
                             <div className="flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px] z-10">
                               <div className="flex justify-center items-center w-[30px]">
                                 <Icon
-                                  icon={`gtp:${chainKey}-logo-monochrome`}
+                                  icon={
+                                    navigationItems[3].options.find(
+                                      (o) => o.key === chainKey,
+                                    )?.icon ?? ""
+                                  }
                                   className="w-[15px] h-[15px]"
                                 />
                               </div>
@@ -565,7 +574,12 @@ export default function OverviewMetrics({
                       ) : (
                         <div
                           className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${
-                            ["arbitrum", "imx", "all_l2s"].includes(chainKey)
+                            [
+                              "arbitrum",
+                              "imx",
+                              "all_l2s",
+                              "zksync_era",
+                            ].includes(chainKey)
                               ? "text-white dark:text-black"
                               : "text-white"
                           } ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`}
@@ -573,7 +587,11 @@ export default function OverviewMetrics({
                           <div className="flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px]">
                             <div className="flex justify-center items-center w-[30px]">
                               <Icon
-                                icon={`gtp:${chainKey}-logo-monochrome`}
+                                icon={
+                                  navigationItems[3].options.find(
+                                    (o) => o.key === chainKey,
+                                  )?.icon ?? ""
+                                }
                                 className="w-[15px] h-[15px]"
                               />
                             </div>

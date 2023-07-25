@@ -23,6 +23,7 @@ import { useTheme } from "next-themes";
 import { LandingURL, MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import { navigationItems } from "@/lib/navigation";
 
 export default function CategoryMetrics({
   data,
@@ -97,20 +98,20 @@ export default function CategoryMetrics({
             })
             .reverse(),
         },
-        {
-          id: ["zksync_era", selectedCategory, selectedType].join("_"),
-          name: "zksync_era",
-          unixKey: "unix",
-          dataKey: selectedType,
-          data: data[selectedCategory].daily["zksync_era"]
-            .map((item, i) => {
-              // remap date keys so first is today and each day is subtracted from there
-              const date = today - i * 24 * 60 * 60 * 1000;
-              item[0] = date;
-              return item;
-            })
-            .reverse(),
-        },
+        // {
+        //   id: ["zksync_era", selectedCategory, selectedType].join("_"),
+        //   name: "zksync_era",
+        //   unixKey: "unix",
+        //   dataKey: selectedType,
+        //   data: data[selectedCategory].daily["zksync_era"]
+        //     .map((item, i) => {
+        //       // remap date keys so first is today and each day is subtracted from there
+        //       const date = today - i * 24 * 60 * 60 * 1000;
+        //       item[0] = date;
+        //       return item;
+        //     })
+        //     .reverse(),
+        // },
       ];
     return [
       {
@@ -141,20 +142,20 @@ export default function CategoryMetrics({
           })
           .reverse(),
       },
-      {
-        id: ["zksync_era", "native_transfers", selectedType].join("_"),
-        name: "zksync_era",
-        unixKey: "unix",
-        dataKey: selectedType,
-        data: data["native_transfers"].daily["zksync_era"]
-          .map((item, i) => {
-            // remap date keys so first is today and each day is subtracted from there
-            const date = today - i * 24 * 60 * 60 * 1000;
-            item[0] = date;
-            return item;
-          })
-          .reverse(),
-      },
+      // {
+      //   id: ["zksync_era", "native_transfers", selectedType].join("_"),
+      //   name: "zksync_era",
+      //   unixKey: "unix",
+      //   dataKey: selectedType,
+      //   data: data["native_transfers"].daily["zksync_era"]
+      //     .map((item, i) => {
+      //       // remap date keys so first is today and each day is subtracted from there
+      //       const date = today - i * 24 * 60 * 60 * 1000;
+      //       item[0] = date;
+      //       return item;
+      //     })
+      //     .reverse(),
+      // },
     ];
   }, [selectedCategory, selectedType, data]);
 
@@ -414,7 +415,10 @@ export default function CategoryMetrics({
           subcategoryData.aggregated[timespan].data["types"].indexOf(type);
 
         Object.keys(subcategoryChains).forEach((chain) => {
-          if (chain !== "types") {
+          if (
+            chain !== "types" &&
+            Object.keys(AllChainsByKeys).includes(chain)
+          ) {
             const chainValue =
               subcategoryData.aggregated[timespan].data[chain][index];
 
@@ -919,7 +923,7 @@ export default function CategoryMetrics({
                     <div
                       key={item}
                       className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${
-                        ["arbitrum", "imx", "zkSync Era", "all_l2s"].includes(
+                        ["arbitrum", "imx", "zksync_era", "all_l2s"].includes(
                           item,
                         )
                           ? "text-white dark:text-black"
@@ -944,9 +948,11 @@ export default function CategoryMetrics({
                             className="flex items-center w-[30px]"
                           >
                             <Icon
-                              icon={`gtp:${
-                                item === "zksync_era" ? "zksync-era" : item
-                              }-logo-monochrome`}
+                              icon={
+                                navigationItems[3].options.find(
+                                  (o) => o.key === item,
+                                )?.icon ?? ""
+                              }
                               className="w-[15px] h-[15px]"
                             />
                           </div>
@@ -1027,7 +1033,7 @@ export default function CategoryMetrics({
                     <div
                       key={item}
                       className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium opacity-10 ${
-                        ["arbitrum", "imx", "zkSync Era", "all_l2s"].includes(
+                        ["arbitrum", "imx", "zksync_era", "all_l2s"].includes(
                           item,
                         )
                           ? "text-white dark:text-black"
@@ -1052,9 +1058,11 @@ export default function CategoryMetrics({
                             className="flex items-center w-[30px]"
                           >
                             <Icon
-                              icon={`gtp:${
-                                item === "zksync_era" ? "zksync-era" : item
-                              }-logo-monochrome`}
+                              icon={
+                                navigationItems[3].options.find(
+                                  (o) => o.key === item,
+                                )?.icon ?? ""
+                              }
                               className="w-[15px] h-[15px]"
                             />
                           </div>

@@ -8,6 +8,7 @@ import SidebarContainer from "@/components/layout/SidebarContainer";
 import Backgrounds from "@/components/layout/Backgrounds";
 import { Metadata } from "next";
 import Head from "./head";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.growthepie.xyz"),
@@ -90,6 +91,20 @@ export default function RootLayout({
     >
       <Head />
       <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway overflow-x-hidden overflow-y-auto">
+        <div className="top-0 left-0 right-0 z-50 w-full justify-center p-2 bg-black text-white">
+          <div className="font-medium">Please note:</div>
+          <div className="font-normal text-xs">
+            This subdomain was created for a{" "}
+            <Link
+              href="https://app.charmverse.io/op-grants/proposals?id=d6054104-15ee-41c4-b09f-b0980000c327"
+              className="underline"
+            >
+              proposal
+            </Link>{" "}
+            for cycle 14 of the OP grants program. Consider all data seen here
+            to be mock data.
+          </div>
+        </div>
         <Providers>
           <div className="flex h-fit w-full justify-center">
             <div className="flex w-full max-w-[1680px] min-h-screen">

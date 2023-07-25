@@ -228,38 +228,38 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "ethereum",
       },
       {
-        label: "Arbitrum",
+        label: "Zora",
         page: {
           description:
-            "Arbitrum One is developed by Offchain Labs and its mainnet launched in September 2021. It uses an optimistic rollup approach and is fully compatible with the Ethereum Virtual Machine (EVM), making it developer-friendly.",
+            "The Zora Network is secured by Ethereum and built on the OP Stack.",
         },
-        icon: "gtp:arbitrum-logo-monochrome",
+        icon: "gtp:optimism-logo-monochrome",
         key: "arbitrum",
         rootKey: "chainsArbitrum",
         urlKey: "arbitrum",
       },
-      {
-        label: "Immutable X",
-        page: {
-          description:
-            "Immutable X is an optimized game-specific zk rollup. It is designed to mint, transfer, and trade tokens and NFTs at higher volumes and zero gas fees. It is not EVM compatible but its easy-to-use APIs and SDKs aim to make development for game devs as easy as possible. It launched in April 2021.",
-        },
-        icon: "gtp:immutable-x-logo-monochrome",
-        key: "imx",
-        rootKey: "chainsImmutableX",
-        urlKey: "immutable-x",
-      },
-      {
-        label: "Polygon zkEVM",
-        page: {
-          description:
-            "Polygon zkEVM uses zero-knowledge proofs to enable faster and cheaper transactions. It allows users to build and run EVM-compatible smart contracts, achieving up to 100x lower gas fees and up to 2,000x faster transaction speeds than the Ethereum mainnet. It's fully compatible with the Ethereum Virtual Machine, making it easy for developers to migrate their applications to the Polygon network. It launched in March 2023.",
-        },
-        icon: "gtp:polygon-zkevm-logo-monochrome",
-        key: "polygon_zkevm",
-        rootKey: "chainsPolygon",
-        urlKey: "polygon-zkevm",
-      },
+      // {
+      //   label: "Immutable X",
+      //   page: {
+      //     description:
+      //       "Immutable X is an optimized game-specific zk rollup. It is designed to mint, transfer, and trade tokens and NFTs at higher volumes and zero gas fees. It is not EVM compatible but its easy-to-use APIs and SDKs aim to make development for game devs as easy as possible. It launched in April 2021.",
+      //   },
+      //   icon: "gtp:immutable-x-logo-monochrome",
+      //   key: "imx",
+      //   rootKey: "chainsImmutableX",
+      //   urlKey: "immutable-x",
+      // },
+      // {
+      //   label: "Polygon zkEVM",
+      //   page: {
+      //     description:
+      //       "Polygon zkEVM uses zero-knowledge proofs to enable faster and cheaper transactions. It allows users to build and run EVM-compatible smart contracts, achieving up to 100x lower gas fees and up to 2,000x faster transaction speeds than the Ethereum mainnet. It's fully compatible with the Ethereum Virtual Machine, making it easy for developers to migrate their applications to the Polygon network. It launched in March 2023.",
+      //   },
+      //   icon: "gtp:polygon-zkevm-logo-monochrome",
+      //   key: "polygon_zkevm",
+      //   rootKey: "chainsPolygon",
+      //   urlKey: "polygon-zkevm",
+      // },
       {
         label: "OP Mainnet",
         page: {
@@ -272,11 +272,12 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "optimism",
       },
       {
-        label: "zkSync Era",
+        label: "Gitcoin",
         page: {
-          description: "",
+          description:
+            "Gitcoin is a decentralized funding platform for open source projects. It was built on the OP Stack to enable fast and cheap transactions.",
         },
-        icon: "gtp:zksync-era-logo-monochrome",
+        icon: "gtp:optimism-logo-monochrome",
         key: "zksync_era",
         rootKey: "chainsOptimism",
         urlKey: "zksync-era",

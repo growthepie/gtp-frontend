@@ -21,106 +21,106 @@ export const AllChains = [
     },
   },
   {
-    label: "Arbitrum",
+    label: "Zora",
     icon: "/icons/arbitrum.png",
     key: "arbitrum",
     urlKey: "arbitrum",
     chainType: "L2",
     description:
-      "Arbitrum One is developed by Offchain Labs and its mainnet launched in September 2021. It uses an optimistic rollup approach and is fully compatible with the Ethereum Virtual Machine (EVM), making it developer-friendly.",
+      "Zora is a decentralized protocol for media ownership, governance, and distribution. It was built on OP Stack to enable fast and cheap transactions.",
     border: {
       light: ["border-[#2ECEE8]", "border-[#2ECEE8]"],
-      dark: ["border-[#1DF7EF]", "border-[#1DF7EF]"],
+      dark: ["border-[#3268F4]", "border-[#3268F4]"],
     },
     colors: {
       light: ["#2ECEE8", "#2ECEE8"], // tropical sea
-      dark: ["#1DF7EF", "#1DF7EF"], // tropical sea
+      dark: ["#3268F4", "#3268F4"], // tropical sea
     },
     backgrounds: {
       light: ["bg-[#2ECEE8]", "bg-[#2ECEE8]"],
-      dark: ["bg-[#1DF7EF]", "bg-[#1DF7EF]"],
+      dark: ["bg-[#3268F4]", "bg-[#3268F4]"],
     },
   },
-  {
-    label: "Aztec V2",
-    icon: "/icons/aztec.png",
-    key: "aztecv2",
-    urlKey: "aztec-v2",
-    chainType: "L2",
-    description: "",
-    border: {
-      light: ["border-[#000000]", "border-[#000000]"],
-      dark: ["border-[#000000]", "border-[#000000]"],
-    },
-    colors: { light: ["#000000", "#000000"], dark: ["#000000", "#000000"] },
-    backgrounds: {
-      light: ["bg-[#000000]", "bg-[#000000]"],
-      dark: ["bg-[#000000]", "bg-[#000000]"],
-    },
-  },
+  // {
+  //   label: "Aztec V2",
+  //   icon: "/icons/aztec.png",
+  //   key: "aztecv2",
+  //   urlKey: "aztec-v2",
+  //   chainType: "L2",
+  //   description: "",
+  //   border: {
+  //     light: ["border-[#000000]", "border-[#000000]"],
+  //     dark: ["border-[#000000]", "border-[#000000]"],
+  //   },
+  //   colors: { light: ["#000000", "#000000"], dark: ["#000000", "#000000"] },
+  //   backgrounds: {
+  //     light: ["bg-[#000000]", "bg-[#000000]"],
+  //     dark: ["bg-[#000000]", "bg-[#000000]"],
+  //   },
+  // },
 
-  {
-    label: "Immutable X",
-    icon: "/icons/immutablex.png",
-    key: "imx",
-    urlKey: "immutable-x",
-    chainType: "L2",
-    description:
-      "Immutable X is an optimized game-specific zk rollup. It is designed to mint, transfer, and trade tokens and NFTs at higher volumes and zero gas fees. It is not EVM compatible but its easy-to-use APIs and SDKs aim to make development for game devs as easy as possible. It launched in April 2021.",
-    border: {
-      light: ["border-[#08373C]", "border-[#08373C]"],
-      dark: ["border-[#3AFCC9]", "border-[#3AFCC9]"],
-    },
-    colors: {
-      light: ["#08373C", "#08373C"], // dark sea
-      dark: ["#3AFCC9", "#3AFCC9"], // dark sea
-    },
-    backgrounds: {
-      light: ["bg-[#08373C]", "bg-[#08373C]"],
-      dark: ["bg-[#3AFCC9]", "bg-[#3AFCC9]"],
-    },
-  },
-  {
-    label: "Polygon zkEVM",
-    icon: "/icons/polygon-pos.png",
-    key: "polygon_zkevm",
-    urlKey: "polygon-zkevm",
-    chainType: "L2",
-    description:
-      "Polygon zkEVM uses zero-knowledge proofs to enable faster and cheaper transactions. It allows users to build and run EVM-compatible smart contracts, achieving up to 100x lower gas fees and up to 2,000x faster transaction speeds than the Ethereum mainnet. It's fully compatible with the Ethereum Virtual Machine, making it easy for developers to migrate their applications to the Polygon network. It launched in March 2023.",
-    border: {
-      light: ["border-[#800094]", "border-[#800094]"],
-      dark: ["border-[#AD0DC5]", "border-[#AD0DC5]"],
-    },
-    colors: {
-      light: ["#800094", "#800094"], // purple
-      dark: ["#AD0DC5", "#AD0DC5"], // purple
-    },
-    backgrounds: {
-      light: ["bg-[#800094]", "bg-[#800094]"],
-      dark: ["bg-[#AD0DC5]", "bg-[#AD0DC5]"],
-    },
-  },
-  {
-    label: "Loopring",
-    icon: "/icons/loopring.png",
-    key: "loopring",
-    urlKey: "loopring",
-    chainType: "L2",
-    description: "",
-    border: {
-      light: ["border-[#000000]", "border-[#000000]"],
-      dark: ["border-[#000000]", "border-[#000000]"],
-    },
-    colors: {
-      light: ["#000000", "#000000"], // black
-      dark: ["#000000", "#000000"], // black
-    },
-    backgrounds: {
-      light: ["bg-[#000000]", "bg-[#000000]"],
-      dark: ["bg-[#000000]", "bg-[#000000]"],
-    },
-  },
+  // {
+  //   label: "Immutable X",
+  //   icon: "/icons/immutablex.png",
+  //   key: "imx",
+  //   urlKey: "immutable-x",
+  //   chainType: "L2",
+  //   description:
+  //     "Immutable X is an optimized game-specific zk rollup. It is designed to mint, transfer, and trade tokens and NFTs at higher volumes and zero gas fees. It is not EVM compatible but its easy-to-use APIs and SDKs aim to make development for game devs as easy as possible. It launched in April 2021.",
+  //   border: {
+  //     light: ["border-[#08373C]", "border-[#08373C]"],
+  //     dark: ["border-[#3AFCC9]", "border-[#3AFCC9]"],
+  //   },
+  //   colors: {
+  //     light: ["#08373C", "#08373C"], // dark sea
+  //     dark: ["#3AFCC9", "#3AFCC9"], // dark sea
+  //   },
+  //   backgrounds: {
+  //     light: ["bg-[#08373C]", "bg-[#08373C]"],
+  //     dark: ["bg-[#3AFCC9]", "bg-[#3AFCC9]"],
+  //   },
+  // },
+  // {
+  //   label: "Polygon zkEVM",
+  //   icon: "/icons/polygon-pos.png",
+  //   key: "polygon_zkevm",
+  //   urlKey: "polygon-zkevm",
+  //   chainType: "L2",
+  //   description:
+  //     "Polygon zkEVM uses zero-knowledge proofs to enable faster and cheaper transactions. It allows users to build and run EVM-compatible smart contracts, achieving up to 100x lower gas fees and up to 2,000x faster transaction speeds than the Ethereum mainnet. It's fully compatible with the Ethereum Virtual Machine, making it easy for developers to migrate their applications to the Polygon network. It launched in March 2023.",
+  //   border: {
+  //     light: ["border-[#800094]", "border-[#800094]"],
+  //     dark: ["border-[#AD0DC5]", "border-[#AD0DC5]"],
+  //   },
+  //   colors: {
+  //     light: ["#800094", "#800094"], // purple
+  //     dark: ["#AD0DC5", "#AD0DC5"], // purple
+  //   },
+  //   backgrounds: {
+  //     light: ["bg-[#800094]", "bg-[#800094]"],
+  //     dark: ["bg-[#AD0DC5]", "bg-[#AD0DC5]"],
+  //   },
+  // },
+  // {
+  //   label: "Loopring",
+  //   icon: "/icons/loopring.png",
+  //   key: "loopring",
+  //   urlKey: "loopring",
+  //   chainType: "L2",
+  //   description: "",
+  //   border: {
+  //     light: ["border-[#000000]", "border-[#000000]"],
+  //     dark: ["border-[#000000]", "border-[#000000]"],
+  //   },
+  //   colors: {
+  //     light: ["#000000", "#000000"], // black
+  //     dark: ["#000000", "#000000"], // black
+  //   },
+  //   backgrounds: {
+  //     light: ["bg-[#000000]", "bg-[#000000]"],
+  //     dark: ["bg-[#000000]", "bg-[#000000]"],
+  //   },
+  // },
   {
     label: "OP Mainnet",
     icon: "/icons/optimism.png",
@@ -143,24 +143,24 @@ export const AllChains = [
     },
   },
   {
-    label: "zkSync Era",
+    label: "Gitcoin",
     icon: "/icons/zksync-era.png",
     key: "zksync_era",
     urlKey: "zksync-era",
     chainType: "L2",
     description:
-      "zkSync Era is a Layer-2 protocol that scales Ethereum with cutting-edge ZK tech. Their mission isn't to merely increase Ethereum's throughput, but to fully preserve its foundational values – freedom, self-sovereignty, decentralization – at scale.",
+      "Gitcoin is a decentralized funding platform for open source projects. It was built on the OP Stack to enable fast and cheap transactions.",
     border: {
       light: ["border-[#390094]", "border-[#390094]"],
-      dark: ["border-[#7C32F4]", "border-[#7C32F4]"],
+      dark: ["border-[#EEFF97]", "border-[#EEFF97]"],
     },
     colors: {
       light: ["#390094", "#390094"], // dark purple
-      dark: ["#7C32F4", "#7C32F4"], // dark purple
+      dark: ["#EEFF97", "#EEFF97"], // dark purple
     },
     backgrounds: {
       light: ["bg-[#390094]", "bg-[#390094]"],
-      dark: ["bg-[#7C32F4]", "bg-[#7C32F4]"],
+      dark: ["bg-[#EEFF97]", "bg-[#EEFF97]"],
     },
   },
   {
