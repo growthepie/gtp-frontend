@@ -3,7 +3,7 @@ export const Contributors = [
     name: "Matthias Seidl",
     image: "/contributors/matthias.png",
     role: "Data",
-    twitter: "https://www.twitter.com/mseidl_",
+    twitter: "https://www.twitter.com/web3_data",
     linkedin: "https://www.linkedin.com/in/seidlmatthias",
   },
   {
@@ -50,11 +50,16 @@ export const Contributors = [
     twitter: "https://twitter.com/AhouraAzarbin",
     linkedin: "https://www.linkedin.com/in/ahoura-azarbin-a3887b180",
   },
+  {
+    name: "Nader Bennour",
+    image: "/contributors/nader.png",
+    role: "Data",
+    twitter: "https://twitter.com/naderfyi",
+    linkedin: "https://www.linkedin.com/in/naderfyi/",
+  },
 ];
 
-
 export const Datasources = [
-
   {
     name: "Zetta Block",
     image: "/contributors/zettablock-logo.png",
