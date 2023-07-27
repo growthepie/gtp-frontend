@@ -63,38 +63,39 @@ export default function OverviewMetrics({
   const [isCategoryMenuExpanded, setIsCategoryMenuExpanded] = useState(true);
 
   const categories: { [key: string]: string } = useMemo(() => {
-    if (master) {
-      const result: { [key: string]: string } = {};
+    // if (master) {
+    //   const result: { [key: string]: string } = {};
 
-      Object.keys(master.blockspace_categories.main_categories).forEach(
-        (key) => {
-          if (key !== "cross_chain") {
-            const words =
-              master.blockspace_categories.main_categories[key].split(" ");
-            const formatted = words
-              .map((word) => {
-                return word.charAt(0).toUpperCase() + word.slice(1);
-              })
-              .join(" ");
-            result[key] = formatted;
-          }
-        },
-      );
+    //   Object.keys(master.blockspace_categories.main_categories).forEach(
+    //     (key) => {
+    //       // if (key !== "cross_chain") {
+    //       const words =
+    //         master.blockspace_categories.main_categories[key].split(" ");
+    //       const formatted = words
+    //         .map((word) => {
+    //           return word.charAt(0).toUpperCase() + word.slice(1);
+    //         })
+    //         .join(" ");
+    //       result[key] = formatted;
+    //       // }
+    //     },
+    //   );
 
-      result.scaling = "Scaling";
+    //   // result.scaling = "Scaling";
 
-      return result;
-    }
+    //   return result;
+    // }
 
     return {
-      native_transfers: "Native Transfer",
-      token_transfers: "Token Transfer",
-      nft_fi: "NFT",
+      native_transfers: "Native Transfers",
+      token_transfers: "Token Transfers",
+      nft_fi: "NFT Fi",
       defi: "DeFi",
       cefi: "CeFi",
       utility: "Utility",
-      scaling: "Scaling",
+      cross_chain: "Cross Chain",
       gaming: "Gaming",
+      unlabeled: "Unlabeled",
     };
   }, [master]);
 
@@ -137,19 +138,28 @@ export default function OverviewMetrics({
   );
 
   const relativePercentageByChain = useMemo(() => {
-    return {
-      optimism:
-        100 -
-        (Object.keys(data["optimism"].overview[selectedTimespan]).length - 1) *
-          2,
-      arbitrum:
-        100 -
-        (Object.keys(data["arbitrum"].overview[selectedTimespan]).length - 1) *
-          2,
-      imx:
-        100 -
-        (Object.keys(data["imx"].overview[selectedTimespan]).length - 1) * 2,
-    };
+    return Object.keys(data).reduce((acc, chainKey) => {
+      return {
+        ...acc,
+        [chainKey]:
+          100 -
+          (Object.keys(data[chainKey].overview[selectedTimespan]).length - 1) *
+            2,
+      };
+    }, {});
+    // return {
+    //   optimism:
+    //     100 -
+    //     (Object.keys(data["optimism"].overview[selectedTimespan]).length - 1) *
+    //       2,
+    //   arbitrum:
+    //     100 -
+    //     (Object.keys(data["arbitrum"].overview[selectedTimespan]).length - 1) *
+    //       2,
+    //   imx:
+    //     100 -
+    //     (Object.keys(data["imx"].overview[selectedTimespan]).length - 1) * 2,
+    // };
   }, [data, selectedTimespan]);
 
   const { theme } = useTheme();
@@ -170,6 +180,8 @@ export default function OverviewMetrics({
       "90d": {
         label: "90 days",
         value: 90,
+        xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
+        xMax: Date.now(),
       },
       // "180d": {
       //   label: "180 days",
@@ -178,6 +190,8 @@ export default function OverviewMetrics({
       "365d": {
         label: "1 year",
         value: 365,
+        xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
+        xMax: Date.now(),
       },
       // max: {
       //   label: "Maximum",
@@ -208,8 +222,8 @@ export default function OverviewMetrics({
     ];
   }, [selectedChain, selectedCategory, selectedMode, data]);
 
-  console.log(data["optimism"].overview.types.indexOf("gas_fees_share"));
-  console.log(relativePercentage);
+  // console.log(data["optimism"].overview.types.indexOf("gas_fees_share"));
+  // console.log(relativePercentage);
 
   const getBarSectionStyle = useCallback(
     (
@@ -224,18 +238,21 @@ export default function OverviewMetrics({
 
       const categoriesKey = Object.keys(categories).indexOf(categoryKey);
       const dataKeys = Object.keys(data[chainKey].overview[selectedTimespan]);
-      const dataKeysInterectCategoriesKeys = Object.keys(categories).filter(
+      const dataKeysIntersectCategoriesKeys = Object.keys(categories).filter(
         (key) => dataKeys.includes(key),
       );
-      const dataIndex = dataKeysInterectCategoriesKeys.indexOf(categoryKey);
+      const dataIndex = dataKeysIntersectCategoriesKeys.indexOf(categoryKey);
 
       const categoryData =
         data[chainKey].overview[selectedTimespan][categoryKey];
 
       const isLastCategory =
-        dataIndex === dataKeysInterectCategoriesKeys.length - 1;
+        dataIndex === dataKeysIntersectCategoriesKeys.length - 1;
+
+      // const isLastCategory = categoryKey === "unlabeled";
 
       const dataTypes = data[chainKey].overview.types;
+      console.log("dataTypes", dataTypes);
 
       const isSelectedCategory = selectedCategory === categoryKey;
 
@@ -244,6 +261,31 @@ export default function OverviewMetrics({
 
       style.transition = "all 0.165s ease-in-out";
 
+      if (isLastCategory) style.borderRadius = "0px 9999999px 9999999px 0px";
+
+      if (!categoryData) {
+        // if (
+        //   (isSelectedCategory && isSelectedChainOrNoSelectedChain) ||
+        //   isCategoryHovered[categoryKey]
+        // ) {
+        //   if (isLastCategory) {
+        //     style.borderRadius = "20000px 99999px 99999px 20000px";
+        //   } else {
+        //     style.borderRadius = "5px";
+        //   }
+        // } else {
+        //   if (isLastCategory) {
+        //     style.borderRadius = "0px 99999px 99999px 0px";
+        //   } else {
+        //     style.borderRadius = "0px";
+        //   }
+        // }
+        // style.border = "0px solid #5A6462";
+        // style.backgroundColor = "rgba(0, 0, 0, 0.66)";
+        style.width = "0px";
+        style.margin = "0px 1px";
+        return style;
+      }
       if (
         (isSelectedCategory && isSelectedChainOrNoSelectedChain) ||
         isCategoryHovered[categoryKey]
@@ -254,26 +296,31 @@ export default function OverviewMetrics({
           style.borderRadius = "5px";
         }
 
-        style.width =
-          categoryData[dataTypes.indexOf(selectedMode)] *
-            relativePercentageByChain[chainKey] +
-          4 +
-          "%";
+        style.width = categoryData
+          ? categoryData[dataTypes.indexOf(selectedMode)] *
+              relativePercentageByChain[chainKey] +
+            8 +
+            "%"
+          : "0px";
         // if()
         style.transform =
           isCategoryHovered[categoryKey] && !isSelectedCategory
             ? "scale(1.04)"
-            : "scale(1.05)";
+            : isSelectedChainOrNoSelectedChain
+            ? "scale(1.07)"
+            : "scale(1.04)";
 
-        style.zIndex = isCategoryHovered[categoryKey] ? 1 : 5;
+        style.zIndex = isCategoryHovered[categoryKey] ? 2 : 5;
 
         style.backgroundColor = "";
       } else {
-        style.width =
-          categoryData[dataTypes.indexOf(selectedMode)] *
-            relativePercentageByChain[chainKey] +
-          4 +
-          "%";
+        style.width = categoryData
+          ? categoryData[dataTypes.indexOf(selectedMode)] *
+              relativePercentageByChain[chainKey] +
+            8 +
+            "%"
+          : "0px";
+
         // if(isCategoryHovered[categoryKey])
         // style.transform =
         //   isCategoryHovered[categoryKey] && !isSelectedCategory
@@ -286,7 +333,7 @@ export default function OverviewMetrics({
           style.borderRadius = "0px";
         }
 
-        if (categoryKey === "unlabeled") {
+        if (categoryKey === "unlabeled" && categoryData) {
           // style.backgroundColor = "rgba(88, 88, 88, 0.55)";
           style.background =
             "linear-gradient(-45deg, rgba(0, 0, 0, .88) 25%, rgba(0, 0, 0, .99) 25%, rgba(0, 0, 0, .99) 50%, rgba(0, 0, 0, .88) 50%, rgba(0, 0, 0, .88) 75%, rgba(0, 0, 0, .99) 75%, rgba(0, 0, 0, .99))";
@@ -436,7 +483,7 @@ export default function OverviewMetrics({
                         <div
                           key={category}
                           className={`relative flex h-full justify-center items-center 
-                          ${category === "unlabeled" ? "w-[40px]" : "flex-1"}
+                          ${category === "unlabeled" ? "flex-1" : "flex-1"}
                           ${
                             selectedCategory === category
                               ? "borden-hidden rounded-[0px]"
@@ -606,13 +653,24 @@ export default function OverviewMetrics({
                               </div>
                             )} */}
                             {Object.keys(categories).map((categoryKey, i) => {
-                              if (
-                                !(
-                                  categoryKey in
-                                  data[chainKey].overview[selectedTimespan]
-                                )
-                              )
-                                return null;
+                              // if (
+                              //   !(
+                              //     categoryKey in
+                              //     data[chainKey].overview[selectedTimespan]
+                              //   )
+                              // )
+                              //   return (
+                              //     <div
+                              //       key={categoryKey}
+                              //       className="w-1"
+                              //       style={getBarSectionStyle(
+                              //         chainKey,
+                              //         categoryKey,
+                              //       )}
+                              //     >
+                              //       {/* <div className="w-1 h-full bg-white border-1 border-black rounded-full"></div> */}
+                              //     </div>
+                              //   );
 
                               const rawChainCategories = Object.keys(
                                 data[chainKey].overview[selectedTimespan],
@@ -629,24 +687,18 @@ export default function OverviewMetrics({
                                 <div
                                   key={categoryKey}
                                   onClick={() => {
-                                    if (
-                                      selectedCategory === categoryKey &&
-                                      selectedChain === chainKey
-                                    ) {
+                                    if (selectedCategory === categoryKey) {
+                                      if (selectedChain === chainKey) {
+                                        // setSelectedCategory(categoryKey);
+                                        setSelectedChain(null);
+                                      } else {
+                                        // setSelectedCategory(categoryKey);
+                                        setSelectedChain(chainKey);
+                                      }
+                                    } else {
                                       setSelectedCategory(categoryKey);
                                       setSelectedChain(null);
-                                    } else {
-                                      // if (selectedChain !== chainKey)
-                                      //   setSelectedChain(chainKey);
-                                      // else
-                                      // setSelectedChain(null);
-                                      setSelectedCategory(categoryKey);
-                                      setSelectedChain(chainKey);
                                     }
-
-                                    // if (selectedChain !== chainKey)
-
-                                    // else setSelectedChain(null);
                                   }}
                                   onMouseEnter={() => {
                                     setIsCategoryHovered((prev) => ({
@@ -662,24 +714,23 @@ export default function OverviewMetrics({
                                   }}
                                   className={`flex flex-col h-[41px] justify-center items-center px-4 py-5 cursor-pointer relative transition-all duration-200 ease-in-out
                                     ${
-                                      (selectedCategory === categoryKey &&
-                                        (selectedChain === chainKey ||
-                                          selectedChain === null)) ||
-                                      isCategoryHovered[categoryKey]
-                                        ? isCategoryHovered[categoryKey] &&
-                                          selectedCategory !== categoryKey
-                                          ? `py-[23px] -my-[0px] z-10 shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
-                                          : `py-[25px] -my-[5px] z-10 shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
-                                        : ""
+                                      data[chainKey].overview[selectedTimespan][
+                                        categoryKey
+                                      ]
+                                        ? (selectedCategory === categoryKey &&
+                                            (selectedChain === chainKey ||
+                                              selectedChain === null)) ||
+                                          isCategoryHovered[categoryKey]
+                                          ? isCategoryHovered[categoryKey] &&
+                                            selectedCategory !== categoryKey
+                                            ? `py-[23px] -my-[0px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
+                                            : `py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
+                                          : `z-[1]`
+                                        : "px-0 py-0 hidden z-[1]"
                                     } 
                                     ${
                                       categoryIndex ===
-                                      Object.keys(
-                                        data[chainKey].overview[
-                                          selectedTimespan
-                                        ],
-                                      ).length -
-                                        1
+                                      Object.keys(categories).length - 1
                                         ? selectedCategory === categoryKey &&
                                           (selectedChain === chainKey ||
                                             selectedChain === null)
@@ -728,50 +779,58 @@ export default function OverviewMetrics({
                                         }}
                                       />
                                     )} */}
-                                  <div
-                                    className={`mix-blend-luminosity font-medium w-full absolute inset-0 flex items-center justify-center ${
-                                      (selectedCategory === categoryKey &&
-                                        (selectedChain === chainKey ||
-                                          selectedChain === null)) ||
-                                      isCategoryHovered[categoryKey]
-                                        ? `${
-                                            isCategoryHovered[categoryKey] &&
-                                            selectedCategory !== categoryKey
-                                              ? "text-xs"
-                                              : "text-sm font-semibold"
-                                          } ${
-                                            [
+                                  {data[chainKey].overview[selectedTimespan][
+                                    categoryKey
+                                  ] && (
+                                    <div
+                                      className={`mix-blend-luminosity font-medium w-full absolute inset-0 flex items-center justify-center ${
+                                        (selectedCategory === categoryKey &&
+                                          (selectedChain === chainKey ||
+                                            selectedChain === null)) ||
+                                        isCategoryHovered[categoryKey]
+                                          ? `${
+                                              isCategoryHovered[categoryKey] &&
+                                              selectedCategory !== categoryKey
+                                                ? "text-xs"
+                                                : "text-sm font-semibold"
+                                            } ${
+                                              [
+                                                "arbitrum",
+                                                "imx",
+                                                "all_l2s",
+                                              ].includes(chainKey)
+                                                ? "text-black"
+                                                : "text-white"
+                                            }`
+                                          : [
                                               "arbitrum",
                                               "imx",
                                               "all_l2s",
                                             ].includes(chainKey)
-                                              ? "text-black"
-                                              : "text-white"
-                                          }`
-                                        : [
-                                            "arbitrum",
-                                            "imx",
-                                            "all_l2s",
-                                          ].includes(chainKey)
-                                        ? i > 4
+                                          ? i > 4
+                                            ? "text-white/60 text-xs"
+                                            : "text-black text-xs"
+                                          : i > 4
                                           ? "text-white/60 text-xs"
-                                          : "text-black text-xs"
-                                        : i > 4
-                                        ? "text-white/60 text-xs"
-                                        : "text-white/80 text-xs"
-                                    }`}
-                                  >
-                                    {(
-                                      data[chainKey].overview[selectedTimespan][
-                                        categoryKey
-                                      ][
-                                        data[chainKey].overview.types.indexOf(
-                                          selectedMode,
-                                        )
-                                      ] * 100.0
-                                    ).toFixed(2)}
-                                    %
-                                  </div>
+                                          : "text-white/80 text-xs"
+                                      }`}
+                                    >
+                                      <>
+                                        {(
+                                          data[chainKey].overview[
+                                            selectedTimespan
+                                          ][categoryKey][
+                                            data[
+                                              chainKey
+                                            ].overview.types.indexOf(
+                                              selectedMode,
+                                            )
+                                          ] * 100.0
+                                        ).toFixed(2)}
+                                        %
+                                      </>
+                                    </div>
+                                  )}
                                 </div>
                               );
                             })}
