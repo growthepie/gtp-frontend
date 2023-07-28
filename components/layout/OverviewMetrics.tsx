@@ -246,10 +246,10 @@ export default function OverviewMetrics({
       const categoryData =
         data[chainKey].overview[selectedTimespan][categoryKey];
 
-      const isLastCategory =
-        dataIndex === dataKeysIntersectCategoriesKeys.length - 1;
+      // const isLastCategory =
+      //   dataIndex === dataKeysIntersectCategoriesKeys.length - 1;
 
-      // const isLastCategory = categoryKey === "unlabeled";
+      const isLastCategory = categoryKey === "unlabeled";
 
       const dataTypes = data[chainKey].overview.types;
       console.log("dataTypes", dataTypes);
@@ -259,31 +259,55 @@ export default function OverviewMetrics({
       const isSelectedChainOrNoSelectedChain =
         selectedChain === chainKey || !selectedChain;
 
+      // default transition
       style.transition = "all 0.165s ease-in-out";
 
-      if (isLastCategory) style.borderRadius = "0px 9999999px 9999999px 0px";
+      if (isLastCategory)
+        style.borderRadius = "20000px 99999px 99999px 20000px";
 
       if (!categoryData) {
-        // if (
-        //   (isSelectedCategory && isSelectedChainOrNoSelectedChain) ||
-        //   isCategoryHovered[categoryKey]
-        // ) {
-        //   if (isLastCategory) {
-        //     style.borderRadius = "20000px 99999px 99999px 20000px";
-        //   } else {
-        //     style.borderRadius = "5px";
-        //   }
-        // } else {
-        //   if (isLastCategory) {
-        //     style.borderRadius = "0px 99999px 99999px 0px";
-        //   } else {
-        //     style.borderRadius = "0px";
-        //   }
-        // }
-        // style.border = "0px solid #5A6462";
-        // style.backgroundColor = "rgba(0, 0, 0, 0.66)";
-        style.width = "0px";
+        if (
+          (isSelectedCategory && isSelectedChainOrNoSelectedChain) ||
+          isCategoryHovered[categoryKey]
+        ) {
+          if (isSelectedCategory && isSelectedChainOrNoSelectedChain) {
+            style.backgroundColor = "rgba(255,255,255, 0.88)";
+            style.color = "rgba(0, 0, 0, 0.66)";
+            // style.marginRight = "-5px";
+          } else {
+            style.backgroundColor = "rgba(255,255,255, 0.6)";
+            style.color = "rgba(0, 0, 0, 0.33)";
+          }
+          if (isLastCategory) {
+            style.borderRadius = "25% 125% 125% 25%";
+          } else {
+            style.borderRadius = "5px";
+          }
+          style.transform =
+            isCategoryHovered[categoryKey] && !isSelectedCategory
+              ? "scale(1.2)"
+              : isSelectedChainOrNoSelectedChain
+              ? "scale(1.30)"
+              : "scale(1.2)";
+          style.zIndex = isCategoryHovered[categoryKey] ? 2 : 5;
+        } else {
+          style.backgroundColor = "rgba(255,255,255, 0.60)";
+          if (isLastCategory) {
+            style.borderRadius = "20000px 9999999px 9999999px 20000px";
+            style.paddingRight = "30px";
+          } else {
+            style.borderRadius = "2px";
+          }
+        }
+        style.paddingTop = "0px";
+        style.paddingBottom = "0px";
+        style.width =
+          isCategoryHovered[categoryKey] || selectedCategory === categoryKey
+            ? "45px"
+            : "10px";
+
         style.margin = "0px 1px";
+
         return style;
       }
       if (
@@ -305,10 +329,15 @@ export default function OverviewMetrics({
         // if()
         style.transform =
           isCategoryHovered[categoryKey] && !isSelectedCategory
-            ? "scale(1.04)"
+            ? "scale(1.02)"
             : isSelectedChainOrNoSelectedChain
-            ? "scale(1.07)"
-            : "scale(1.04)";
+            ? "scale(1.03)"
+            : "scale(1.02)";
+
+        style.outline =
+          isSelectedCategory && isSelectedChainOrNoSelectedChain
+            ? "3px solid rgba(255,255,255, 1)"
+            : "3px solid rgba(255,255,255, 0.33)";
 
         style.zIndex = isCategoryHovered[categoryKey] ? 2 : 5;
 
@@ -688,6 +717,13 @@ export default function OverviewMetrics({
                                   key={categoryKey}
                                   onClick={() => {
                                     if (selectedCategory === categoryKey) {
+                                      if (
+                                        !data[chainKey].overview[
+                                          selectedTimespan
+                                        ][categoryKey]
+                                      ) {
+                                        return;
+                                      }
                                       if (selectedChain === chainKey) {
                                         // setSelectedCategory(categoryKey);
                                         setSelectedChain(null);
@@ -712,7 +748,7 @@ export default function OverviewMetrics({
                                       [categoryKey]: false,
                                     }));
                                   }}
-                                  className={`flex flex-col h-[41px] justify-center items-center px-4 py-5 cursor-pointer relative transition-all duration-200 ease-in-out
+                                  className={`flex flex-col h-[41px] justify-center items-center py-5 cursor-pointer relative transition-all duration-200 ease-in-out
                                     ${
                                       data[chainKey].overview[selectedTimespan][
                                         categoryKey
@@ -726,7 +762,7 @@ export default function OverviewMetrics({
                                             ? `py-[23px] -my-[0px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
                                             : `py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
                                           : `z-[1]`
-                                        : "px-0 py-0 hidden z-[1]"
+                                        : "py-[23px] -my-[0px] z-[2] shadow-lg"
                                     } 
                                     ${
                                       categoryIndex ===
@@ -779,42 +815,43 @@ export default function OverviewMetrics({
                                         }}
                                       />
                                     )} */}
-                                  {data[chainKey].overview[selectedTimespan][
-                                    categoryKey
-                                  ] && (
-                                    <div
-                                      className={`mix-blend-luminosity font-medium w-full absolute inset-0 flex items-center justify-center ${
-                                        (selectedCategory === categoryKey &&
-                                          (selectedChain === chainKey ||
-                                            selectedChain === null)) ||
-                                        isCategoryHovered[categoryKey]
-                                          ? `${
-                                              isCategoryHovered[categoryKey] &&
-                                              selectedCategory !== categoryKey
-                                                ? "text-xs"
-                                                : "text-sm font-semibold"
-                                            } ${
-                                              [
-                                                "arbitrum",
-                                                "imx",
-                                                "all_l2s",
-                                              ].includes(chainKey)
-                                                ? "text-black"
-                                                : "text-white"
-                                            }`
-                                          : [
+
+                                  <div
+                                    className={`mix-blend-luminosity font-medium w-full absolute inset-0 flex items-center justify-center ${
+                                      (selectedCategory === categoryKey &&
+                                        (selectedChain === chainKey ||
+                                          selectedChain === null)) ||
+                                      isCategoryHovered[categoryKey]
+                                        ? `${
+                                            isCategoryHovered[categoryKey] &&
+                                            selectedCategory !== categoryKey
+                                              ? "text-xs"
+                                              : "text-sm font-semibold"
+                                          } ${
+                                            [
                                               "arbitrum",
                                               "imx",
                                               "all_l2s",
                                             ].includes(chainKey)
-                                          ? i > 4
-                                            ? "text-white/60 text-xs"
-                                            : "text-black text-xs"
-                                          : i > 4
+                                              ? "text-black"
+                                              : "text-white"
+                                          }`
+                                        : [
+                                            "arbitrum",
+                                            "imx",
+                                            "all_l2s",
+                                          ].includes(chainKey)
+                                        ? i > 4
                                           ? "text-white/60 text-xs"
-                                          : "text-white/80 text-xs"
-                                      }`}
-                                    >
+                                          : "text-black text-xs"
+                                        : i > 4
+                                        ? "text-white/60 text-xs"
+                                        : "text-white/80 text-xs"
+                                    }`}
+                                  >
+                                    {data[chainKey].overview[selectedTimespan][
+                                      categoryKey
+                                    ] ? (
                                       <>
                                         {(
                                           data[chainKey].overview[
@@ -829,8 +866,20 @@ export default function OverviewMetrics({
                                         ).toFixed(2)}
                                         %
                                       </>
-                                    </div>
-                                  )}
+                                    ) : (
+                                      <div
+                                        className={`text-black/80
+                                        ${
+                                          isCategoryHovered[categoryKey] ||
+                                          selectedCategory === categoryKey
+                                            ? "opacity-100 py-8"
+                                            : "opacity-0"
+                                        } transition-opacity duration-300 ease-in-out`}
+                                      >
+                                        0%
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               );
                             })}
