@@ -259,10 +259,11 @@ export default function OverviewMetrics({
       const isSelectedChainOrNoSelectedChain =
         selectedChain === chainKey || !selectedChain;
 
+      // default transition
       style.transition = "all 0.165s ease-in-out";
 
-      // if (isLastCategory)
-      //   style.borderRadius = "20000px 99999px 99999px 20000px";
+      if (isLastCategory)
+        style.borderRadius = "20000px 99999px 99999px 20000px";
 
       if (!categoryData) {
         if (
@@ -270,10 +271,12 @@ export default function OverviewMetrics({
           isCategoryHovered[categoryKey]
         ) {
           if (isSelectedCategory && isSelectedChainOrNoSelectedChain) {
-            style.backgroundColor = "rgba(255,255,255, 1)";
+            style.backgroundColor = "rgba(255,255,255, 0.88)";
+            style.color = "rgba(0, 0, 0, 0.66)";
             // style.marginRight = "-5px";
           } else {
-            style.backgroundColor = "rgba(255,255,255, 0.60)";
+            style.backgroundColor = "rgba(255,255,255, 0.6)";
+            style.color = "rgba(0, 0, 0, 0.33)";
           }
           if (isLastCategory) {
             style.borderRadius = "25% 125% 125% 25%";
@@ -282,10 +285,10 @@ export default function OverviewMetrics({
           }
           style.transform =
             isCategoryHovered[categoryKey] && !isSelectedCategory
-              ? "scale(1.15)"
+              ? "scale(1.2)"
               : isSelectedChainOrNoSelectedChain
               ? "scale(1.30)"
-              : "scale(1.15)";
+              : "scale(1.2)";
           style.zIndex = isCategoryHovered[categoryKey] ? 2 : 5;
         } else {
           style.backgroundColor = "rgba(255,255,255, 0.60)";
@@ -302,7 +305,7 @@ export default function OverviewMetrics({
           isCategoryHovered[categoryKey] || selectedCategory === categoryKey
             ? "45px"
             : "10px";
-        style.color = "rgba(0, 0, 0, 0.60)";
+
         style.margin = "0px 1px";
 
         return style;
@@ -326,10 +329,15 @@ export default function OverviewMetrics({
         // if()
         style.transform =
           isCategoryHovered[categoryKey] && !isSelectedCategory
-            ? "scale(1.04)"
+            ? "scale(1.02)"
             : isSelectedChainOrNoSelectedChain
-            ? "scale(1.07)"
-            : "scale(1.04)";
+            ? "scale(1.03)"
+            : "scale(1.02)";
+
+        style.outline =
+          isSelectedCategory && isSelectedChainOrNoSelectedChain
+            ? "3px solid rgba(255,255,255, 1)"
+            : "3px solid rgba(255,255,255, 0.33)";
 
         style.zIndex = isCategoryHovered[categoryKey] ? 2 : 5;
 
