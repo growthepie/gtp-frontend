@@ -847,7 +847,7 @@ export default function OverviewMetrics({
                                               "all_l2s",
                                               "zksync_era",
                                             ].includes(chainKey)
-                                              ? "text-black"
+                                              ? "text-white dark:text-black"
                                               : "text-white"
                                           }`
                                         : [
@@ -856,8 +856,8 @@ export default function OverviewMetrics({
                                             "zksync_era",
                                           ].includes(chainKey)
                                         ? i > 4
-                                          ? "text-white/60 text-xs"
-                                          : "text-black text-xs"
+                                          ? "text-white/60 text-xs "
+                                          : "text-white/60 dark:text-black text-xs"
                                         : i > 4
                                         ? "text-white/60 text-xs"
                                         : "text-white/80 text-xs"
