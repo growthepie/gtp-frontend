@@ -44,14 +44,27 @@ export default function CategoryMetrics({
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
+  type ContractInfo = {
+    address: string;
+    name: string;
+    main_category_key: string;
+    sub_category_key: string;
+    chain: string;
+    gas_fees_absolute_eth: number;
+    gas_fees_absolute_usd: number;
+    gas_fees_share: number;
+    txcount_absolute: number;
+    txcount_share: number;
+  };
+
   const [selectedMode, setSelectedMode] = useState("gas_fees_");
   const [selectedCategory, setSelectedCategory] = useState("native_transfers");
 
   const [openSub, setOpenSub] = useState(false);
   const [selectedValue, setSelectedValue] = useState("absolute");
 
-  const [contractCategory, setContractCategory] = useState("chains");
-
+  const [contractCategory, setContractCategory] = useState("chain");
+  const [sortOrder, setSortOrder] = useState(true);
   const [chainValues, setChainValues] = useState<any[][] | null>(null);
   const [selectedType, setSelectedType] = useState("gas_fees_absolute_usd");
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -64,6 +77,176 @@ export default function CategoryMetrics({
     zksync_era: true,
     optimism: true,
   });
+
+  const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
+    {},
+  );
+  const [sortedContracts, setSortedContracts] = useState<{
+    [key: string]: ContractInfo;
+  }>({});
+
+  useEffect(() => {
+    // Process the data and create the contracts object
+    const result: { [key: string]: ContractInfo } = {};
+
+    for (const category of Object.keys(data)) {
+      if (data[category]) {
+        const contractsData =
+          data[category].aggregated[selectedTimespan].contracts.data;
+
+        for (const contract of Object.keys(contractsData)) {
+          const dataArray = contractsData[contract];
+          const key = dataArray[0] + dataArray[4];
+          const values = dataArray;
+
+          // Check if the key already exists in the result object
+          if (result.hasOwnProperty(key)) {
+            // If the key exists, update the values
+            result[key] = {
+              ...result[key],
+              address: values[0],
+              name: values[1],
+              main_category_key: values[2],
+              sub_category_key: values[3],
+              chain: values[4],
+              gas_fees_absolute_eth: values[5],
+              gas_fees_absolute_usd: values[6],
+              gas_fees_share: values[7],
+              txcount_absolute: values[8],
+              txcount_share: values[9],
+            };
+          } else {
+            // If the key doesn't exist, create a new entry
+            result[key] = {
+              address: values[0],
+              name: values[1],
+              main_category_key: values[2],
+              sub_category_key: values[3],
+              chain: values[4],
+              gas_fees_absolute_eth: values[5],
+              gas_fees_absolute_usd: values[6],
+              gas_fees_share: values[7],
+              txcount_absolute: values[8],
+              txcount_share: values[9],
+            };
+          }
+        }
+      }
+    }
+
+    // Update the contracts state with the new data
+    setContracts(result);
+  }, [data, selectedTimespan]);
+
+  useEffect(() => {
+    if (contractCategory === "contract") {
+      const clonedContracts = { ...contracts };
+      const sortedContractKeys = Object.keys(clonedContracts).sort((a, b) =>
+        clonedContracts[a].name.localeCompare(clonedContracts[b].name),
+      );
+
+      const sortedResult: { [key: string]: ContractInfo } =
+        sortedContractKeys.reduce((acc, key) => {
+          acc[key] = clonedContracts[key];
+          return acc;
+        }, {});
+
+      setSortedContracts(sortedResult);
+    } else if (contractCategory === "category") {
+      const clonedContracts = { ...contracts };
+      const sortedContractKeys = Object.keys(clonedContracts).sort((a, b) =>
+        clonedContracts[a].main_category_key.localeCompare(
+          clonedContracts[b].main_category_key,
+        ),
+      );
+
+      const sortedResult: { [key: string]: ContractInfo } =
+        sortedContractKeys.reduce((acc, key) => {
+          acc[key] = clonedContracts[key];
+          return acc;
+        }, {});
+
+      setSortedContracts(sortedResult);
+    } else if (contractCategory === "chain") {
+      const clonedContracts = { ...contracts };
+      const sortedContractKeys = Object.keys(clonedContracts).sort((a, b) =>
+        clonedContracts[a].chain.localeCompare(clonedContracts[b].chain),
+      );
+
+      const sortedResult: { [key: string]: ContractInfo } =
+        sortedContractKeys.reduce((acc, key) => {
+          acc[key] = clonedContracts[key];
+          return acc;
+        }, {});
+
+      setSortedContracts(sortedResult);
+    } else if (contractCategory === "value") {
+      const clonedContracts = { ...contracts };
+      const sortedContractKeys = Object.keys(clonedContracts).sort((a, b) => {
+        const valueA =
+          selectedMode === "gas_fees_"
+            ? showUsd
+              ? clonedContracts[a].gas_fees_absolute_usd
+              : clonedContracts[a].gas_fees_absolute_eth
+            : clonedContracts[a].txcount_absolute;
+
+        const valueB =
+          selectedMode === "gas_fees_"
+            ? showUsd
+              ? clonedContracts[b].gas_fees_absolute_usd
+              : clonedContracts[b].gas_fees_absolute_eth
+            : clonedContracts[b].txcount_absolute;
+
+        // Compare the values
+        return valueA - valueB;
+      });
+
+      const sortedResult: { [key: string]: ContractInfo } =
+        sortedContractKeys.reduce((acc, key) => {
+          acc[key] = clonedContracts[key];
+          return acc;
+        }, {});
+
+      setSortedContracts(sortedResult);
+    } else if (contractCategory === "share") {
+      const clonedContracts = { ...contracts };
+      const sortedContractKeys = Object.keys(clonedContracts).sort((a, b) => {
+        const valueA =
+          selectedMode === "gas_fees_"
+            ? showUsd
+              ? clonedContracts[a].gas_fees_absolute_usd
+              : clonedContracts[a].gas_fees_absolute_eth
+            : clonedContracts[a].txcount_absolute;
+
+        const valueB =
+          selectedMode === "gas_fees_"
+            ? showUsd
+              ? clonedContracts[b].gas_fees_absolute_usd
+              : clonedContracts[b].gas_fees_absolute_eth
+            : clonedContracts[b].txcount_absolute;
+
+        // Compare the values
+        return valueA - valueB;
+      });
+
+      const sortedResult: { [key: string]: ContractInfo } =
+        sortedContractKeys.reduce((acc, key) => {
+          acc[key] = clonedContracts[key];
+          return acc;
+        }, {});
+
+      setSortedContracts(sortedResult);
+    } else {
+      setSortedContracts(contracts);
+    }
+  }, [
+    contractCategory,
+    sortedContracts,
+    setSortedContracts,
+    contracts,
+    selectedMode,
+    showUsd,
+  ]);
 
   const sortedChainValues = chainValues?.sort((a, b) => b[1] - a[1]);
   const chartSeries = useMemo(() => {
@@ -229,70 +412,6 @@ export default function CategoryMetrics({
       gaming: "Gaming",
     };
   }, [master]);
-
-  const contracts = useMemo(() => {
-    type ContractInfo = {
-      address: string;
-      name: string;
-      main_category_key: string;
-      sub_category_key: string;
-      chain: string;
-      gas_fees_absolute_eth: number;
-      gas_fees_absolute_usd: number;
-      gas_fees_share: number;
-      txcount_absolute: number;
-      txcount_share: number;
-    };
-
-    const result: { [key: string]: ContractInfo } = {};
-
-    for (const category of Object.keys(data)) {
-      if (data[category]) {
-        const contractsData =
-          data[category].aggregated[selectedTimespan].contracts.data;
-
-        for (const contract of Object.keys(contractsData)) {
-          const dataArray = contractsData[contract];
-          const key = dataArray[0] + dataArray[4];
-          const values = dataArray;
-
-          // Check if the key already exists in the result object
-          if (result.hasOwnProperty(key)) {
-            // If the key exists, update the values
-            result[key] = {
-              ...result[key],
-              address: values[0],
-              name: values[1],
-              main_category_key: values[2],
-              sub_category_key: values[3],
-              chain: values[4],
-              gas_fees_absolute_eth: values[5],
-              gas_fees_absolute_usd: values[6],
-              gas_fees_share: values[7],
-              txcount_absolute: values[8],
-              txcount_share: values[9],
-            };
-          } else {
-            // If the key doesn't exist, create a new entry
-            result[key] = {
-              address: values[0],
-              name: values[1],
-              main_category_key: values[2],
-              sub_category_key: values[3],
-              chain: values[4],
-              gas_fees_absolute_eth: values[5],
-              gas_fees_absolute_usd: values[6],
-              gas_fees_share: values[7],
-              txcount_absolute: values[8],
-              txcount_share: values[9],
-            };
-          }
-        }
-      }
-    }
-
-    return result;
-  }, [data, selectedTimespan]);
 
   const [isCategoryHovered, setIsCategoryHovered] = useState<{
     [key: string]: boolean;
@@ -510,9 +629,6 @@ export default function CategoryMetrics({
       });
     }, [category, type, timespan, selectedSubcategories, data, setChainValues]);
   }
-
-  console.log(contracts);
-  console.log(data);
 
   return (
     <div className="w-full flex-col relative">
@@ -1274,6 +1390,7 @@ export default function CategoryMetrics({
                   <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug"></div>
                 </div>
               </div>
+              reverse
             </TooltipContent>
           </Tooltip>
         </div>
@@ -1282,109 +1399,263 @@ export default function CategoryMetrics({
         <div className="flex flex-col mt-[30px] w-[98%] mx-auto min-w-[980px] ">
           <div className="flex text-[14px] font-bold justify-between mb-[10px]">
             <div className="flex gap-x-[15px]">
-              <button className="flex gap-x-1 pl-4">
+              <button
+                className="flex gap-x-1 pl-4"
+                onClick={() => {
+                  setContractCategory("chain");
+                }}
+              >
                 Chain
                 <Icon
-                  icon="formkit:arrowdown"
-                  className="opacity-50 text-white"
+                  icon={
+                    contractCategory === "chain"
+                      ? sortOrder
+                        ? "formkit:arrowdown"
+                        : "formkit:arrowup"
+                      : "formkit:arrowdown"
+                  }
+                  className={` text-white ${
+                    contractCategory === "chain" ? "opacity-100" : "opacity-20"
+                  }`}
                 />
               </button>
               <button className="flex gap-x-1">
                 Rank
                 <Icon
-                  icon="formkit:arrowdown"
-                  className="opacity-50 text-white"
+                  icon={
+                    contractCategory === "rank"
+                      ? sortOrder
+                        ? "formkit:arrowdown"
+                        : "formkit:arrowup"
+                      : "formkit:arrowdown"
+                  }
+                  className={` text-white ${
+                    contractCategory === "rank" ? "opacity-100" : "opacity-20"
+                  }`}
                 />
               </button>
-              <button className="flex gap-x-1">
+              <button
+                className="flex gap-x-1"
+                onClick={() => {
+                  if (contractCategory !== "contract") {
+                    setSortOrder(true);
+                  } else {
+                    setSortOrder(!sortOrder);
+                  }
+                  setContractCategory("contract");
+                }}
+              >
                 Contract
                 <Icon
-                  icon="formkit:arrowdown"
-                  className="opacity-50 text-white"
+                  icon={
+                    contractCategory === "contract"
+                      ? sortOrder
+                        ? "formkit:arrowdown"
+                        : "formkit:arrowup"
+                      : "formkit:arrowdown"
+                  }
+                  className={` text-white ${
+                    contractCategory === "contract"
+                      ? "opacity-100"
+                      : "opacity-20"
+                  }`}
                 />
               </button>
             </div>
             <div className="flex gap-x-1">
-              <button className="flex gap-x-1">
+              <button
+                className="flex gap-x-1"
+                onClick={() => {
+                  if (contractCategory !== "category") {
+                    setSortOrder(true);
+                  } else {
+                    setSortOrder(!sortOrder);
+                  }
+                  setContractCategory("category");
+                }}
+              >
                 Category{" "}
                 <Icon
-                  icon="formkit:arrowdown"
-                  className="opacity-50 text-white"
+                  icon={
+                    contractCategory === "category"
+                      ? sortOrder
+                        ? "formkit:arrowdown"
+                        : "formkit:arrowup"
+                      : "formkit:arrowdown"
+                  }
+                  className={` text-white ${
+                    contractCategory === "category"
+                      ? "opacity-100"
+                      : "opacity-20"
+                  }`}
                 />
               </button>
             </div>
             <div className="flex gap-x-[17px]">
-              <button className="flex gap-x-1">
+              <button
+                className="flex gap-x-1"
+                onClick={() => {
+                  if (contractCategory !== "value") {
+                    setSortOrder(true);
+                  } else {
+                    setSortOrder(!sortOrder);
+                  }
+                  setContractCategory("value");
+                }}
+              >
                 Value{" "}
                 <Icon
-                  icon="formkit:arrowdown"
-                  className="opacity-50 text-white"
+                  icon={
+                    contractCategory === "value"
+                      ? sortOrder
+                        ? "formkit:arrowdown"
+                        : "formkit:arrowup"
+                      : "formkit:arrowdown"
+                  }
+                  className={` text-white ${
+                    contractCategory === "value" ? "opacity-100" : "opacity-20"
+                  }`}
                 />
               </button>
-              <button className="flex gap-x-1">
+              <button
+                className="flex gap-x-1"
+                onClick={() => {
+                  if (contractCategory !== "share") {
+                    setSortOrder(true);
+                  } else {
+                    setSortOrder(!sortOrder);
+                  }
+                  setContractCategory("share");
+                }}
+              >
                 Share of Total Usage{" "}
                 <Icon
-                  icon="formkit:arrowdown"
-                  className="opacity-50 text-white"
+                  icon={
+                    contractCategory === "share"
+                      ? sortOrder
+                        ? "formkit:arrowdown"
+                        : "formkit:arrowup"
+                      : "formkit:arrowdown"
+                  }
+                  className={` text-white ${
+                    contractCategory === "share" ? "opacity-100" : "opacity-20"
+                  }`}
                 />
               </button>
               <div className="flex gap-x-1 pr-8">Block Explorer </div>
             </div>
           </div>
-          {Object.keys(contracts).map((key, i) => (
-            <>
-              <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] ">
-                <div className="flex w-[100%] ml-4 mr-8 justify-between items-center ">
-                  <div className="flex items-center w-[30%] gap-x-[30px] pl-1 ">
-                    <div
-                      className={`flex w-[34px] h-[34px] rounded-full items-center justify-center ${AllChainsByKeys["arbitrum"].backgrounds[theme][1]}`}
-                    >
-                      <Icon
-                        icon={`gtp:${contracts[key].chain}-logo-monochrome`}
-                        className="w-[21px] h-[21px] text-black"
-                      />
-                    </div>
-                    <div className="flex w-[30px] items-center justify-center ">
-                      {i + 1}
-                    </div>
-                    <div>{contracts[key].name}</div>
-                  </div>
-                  <div className="flex items-center text-[14px] justify-center w-[30.3%] mr-[140px]">
-                    <div className="flex">
-                      {master &&
-                        master.blockspace_categories.main_categories[
-                          contracts[key].main_category_key
-                        ] +
-                          " - " +
-                          master.blockspace_categories.sub_categories[
-                            contracts[key].sub_category_key
-                          ]}
-                    </div>
-                  </div>
-                  <div className="flex gap-x-[80px] items-center w-[28%] mr-4 ">
-                    <div className="flex justify-center w-[30%]">
-                      {selectedMode === "gas_fees_"
-                        ? showUsd
-                          ? contracts[key].gas_fees_absolute_usd
-                          : contracts[key].gas_fees_absolute_eth
-                        : contracts[key].txcount_absolute}
-                    </div>
-                    <div className="pr-[15px]">
-                      {selectedMode === "gas_fees_"
-                        ? contracts[key].gas_fees_share
-                        : contracts[key].txcount_share}
-                    </div>
-                    <div>
-                      <Icon
-                        icon="material-symbols:link"
-                        className="w-[24px] h-[24px]"
-                      />
+          {sortOrder
+            ? Object.keys(sortedContracts).map((key, i) => (
+                <div key={key + "" + sortOrder}>
+                  <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] ">
+                    <div className="flex w-[100%] ml-4 mr-8 justify-between items-center ">
+                      <div className="flex items-center w-[30%] gap-x-[30px] pl-1 ">
+                        <div
+                          className={`flex w-[34px] h-[34px] rounded-full items-center justify-center ${AllChainsByKeys["arbitrum"].backgrounds[theme][1]}`}
+                        >
+                          <Icon
+                            icon={`gtp:${sortedContracts[key].chain}-logo-monochrome`}
+                            className="w-[21px] h-[21px] text-black"
+                          />
+                        </div>
+                        <div className="flex w-[30px] items-center justify-center ">
+                          {i + 1}
+                        </div>
+                        <div>{sortedContracts[key].name}</div>
+                      </div>
+                      <div className="flex items-center text-[14px] justify-center w-[30.3%] mr-[140px]">
+                        <div className="flex">
+                          {master &&
+                            master.blockspace_categories.main_categories[
+                              sortedContracts[key].main_category_key
+                            ] +
+                              " - " +
+                              master.blockspace_categories.sub_categories[
+                                sortedContracts[key].sub_category_key
+                              ]}
+                        </div>
+                      </div>
+                      <div className="flex gap-x-[80px] items-center w-[28%] mr-4 ">
+                        <div className="flex justify-center w-[30%]">
+                          {selectedMode === "gas_fees_"
+                            ? showUsd
+                              ? sortedContracts[key].gas_fees_absolute_usd
+                              : sortedContracts[key].gas_fees_absolute_eth
+                            : sortedContracts[key].txcount_absolute}
+                        </div>
+                        <div className="pr-[15px]">
+                          {selectedMode === "gas_fees_"
+                            ? sortedContracts[key].gas_fees_share
+                            : sortedContracts[key].txcount_share}
+                        </div>
+                        <div>
+                          <Icon
+                            icon="material-symbols:link"
+                            className="w-[24px] h-[24px]"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </>
-          ))}
+              ))
+            : Object.keys(sortedContracts)
+                .reverse()
+                .map((key, i) => (
+                  <div key={key + "" + sortOrder}>
+                    <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] ">
+                      <div className="flex w-[100%] ml-4 mr-8 justify-between items-center ">
+                        <div className="flex items-center w-[30%] gap-x-[30px] pl-1 ">
+                          <div
+                            className={`flex w-[34px] h-[34px] rounded-full items-center justify-center ${AllChainsByKeys["arbitrum"].backgrounds[theme][1]}`}
+                          >
+                            <Icon
+                              icon={`gtp:${sortedContracts[key].chain}-logo-monochrome`}
+                              className="w-[21px] h-[21px] text-black"
+                            />
+                          </div>
+                          <div className="flex w-[30px] items-center justify-center ">
+                            {i + 1}
+                          </div>
+                          <div>{sortedContracts[key].name}</div>
+                        </div>
+                        <div className="flex items-center text-[14px] justify-center w-[30.3%] mr-[140px]">
+                          <div className="flex">
+                            {master &&
+                              master.blockspace_categories.main_categories[
+                                sortedContracts[key].main_category_key
+                              ] +
+                                " - " +
+                                master.blockspace_categories.sub_categories[
+                                  sortedContracts[key].sub_category_key
+                                ]}
+                          </div>
+                        </div>
+                        <div className="flex gap-x-[80px] items-center w-[28%] mr-4 ">
+                          <div className="flex justify-center w-[30%]">
+                            {selectedMode === "gas_fees_"
+                              ? showUsd
+                                ? sortedContracts[key].gas_fees_absolute_usd
+                                : sortedContracts[key].gas_fees_absolute_eth
+                              : sortedContracts[key].txcount_absolute}
+                          </div>
+                          <div className="pr-[15px]">
+                            {selectedMode === "gas_fees_"
+                              ? sortedContracts[key].gas_fees_share
+                              : sortedContracts[key].txcount_share}
+                          </div>
+                          <div>
+                            <Icon
+                              icon="material-symbols:link"
+                              className="w-[24px] h-[24px]"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
         </div>
       </Container>
     </div>
