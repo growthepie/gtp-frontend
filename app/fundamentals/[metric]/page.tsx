@@ -102,7 +102,23 @@ const Chain = ({ params }: { params: any }) => {
           }
           iconContainerClassName="items-center mb-[22px] md:mb-[32px] relative"
         >
-          {pageData.description}
+          {pageData.description.includes("L2Beat.com.") ? (
+            <div>
+              <p>
+                {pageData.description.replace("L2Beat.com.", "")}
+
+                <a
+                  className="hover:underline"
+                  target="_blank"
+                  href="https://l2beat.com/scaling/tvl"
+                >
+                  L2Beat.com
+                </a>
+              </p>
+            </div>
+          ) : (
+            pageData.description
+          )}
           {pageData.note && (
             <div className="absolute text-xs">
               <span className="font-semibold text-forest-200 dark:text-forest-400">
