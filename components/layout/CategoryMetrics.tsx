@@ -1075,10 +1075,17 @@ export default function CategoryMetrics({
               ))}
             </div>
             <div className="flex flex-col gap-y-2 mt-4">
-              {}
               {sortedChainValues &&
-                sortedChainValues.map(([item, value], index) =>
-                  item !== "types" && selectedChains[item] ? (
+                sortedChainValues
+                  .filter(([item]) => item !== "types")
+                  .sort(([itemA], [itemB]) =>
+                    selectedChains[itemA] === selectedChains[itemB]
+                      ? 0
+                      : selectedChains[itemA]
+                      ? -1
+                      : 1,
+                  )
+                  .map(([item, value], index) => (
                     <div
                       key={item}
                       className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${
@@ -1087,7 +1094,11 @@ export default function CategoryMetrics({
                         )
                           ? "text-white dark:text-black"
                           : "text-white"
-                      } ${AllChainsByKeys[item].backgrounds[theme][1]}`}
+                      } ${
+                        selectedChains[item]
+                          ? AllChainsByKeys[item].backgrounds[theme][1]
+                          : `${AllChainsByKeys[item].backgrounds[theme][1]} opacity-30`
+                      }`}
                       style={{
                         width: `max(${
                           (value / sortedChainValues[0][1]) * 99
@@ -1123,22 +1134,12 @@ export default function CategoryMetrics({
                           className="flex justify-end flex-grow"
                         >
                           <div key={index} className="text-base flex">
-                            {/* <div>
-                            {selectedValue === "share"
-                              ? Math.round(value * 100)
-                              : (showUsd ? `$` : ``)+(
-                                  Math.round(value * 100) / 100,
-                                ).toLocaleString(undefined, {
-                                  minimumFractionDigits: 0,
-                                  maximumFractionDigits: 0,
-                                })}
-                                </div> */}
                             {selectedValue === "share" ? (
                               <div>{Math.round(value * 100)}%</div>
                             ) : (
                               <div className="flex gap-x-1">
                                 <div
-                                  className={` ${
+                                  className={`${
                                     showUsd ? "static" : "relative top-[1px]"
                                   }`}
                                 >
@@ -1149,7 +1150,6 @@ export default function CategoryMetrics({
                                     : ""}
                                 </div>
                                 <div>
-                                  {/*usd or eth symbol */}
                                   {(
                                     Math.round(value * 100) / 100
                                   ).toLocaleString(undefined, {
@@ -1162,7 +1162,9 @@ export default function CategoryMetrics({
                           </div>
                           <button
                             key={item + "select"}
-                            className="relative flex left-[10px] w-[24px] h-[24px] bg-forest-700 rounded-full self-center items-center justify-center"
+                            className={`relative flex left-[10px] w-[24px] h-[24px] bg-forest-700 rounded-full self-center items-center justify-center ${
+                              !selectedChains[item] ? "opacity-100" : ""
+                            }`}
                             onClick={() =>
                               setSelectedChains((prevSelectedChains) => ({
                                 ...prevSelectedChains,
@@ -1170,123 +1172,18 @@ export default function CategoryMetrics({
                               }))
                             }
                           >
-                            {" "}
                             <Icon
                               icon="feather:check-circle"
-                              className="w-[24px] h-[24px] opacity-100 text-white"
+                              className={`w-[24px] h-[24px] opacity-100 text-white ${
+                                !selectedChains[item] ? "opacity-0" : ""
+                              }`}
                             />
                           </button>
                         </div>
                       </div>
                     </div>
-                  ) : null,
-                )}
+                  ))}
             </div>
-            <div className="flex flex-col gap-y-2 mt-2">
-              {}
-              {sortedChainValues &&
-                sortedChainValues.map(([item, value], index) =>
-                  item !== "types" && !selectedChains[item] ? (
-                    <div
-                      key={item}
-                      className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium opacity-10 ${
-                        ["arbitrum", "imx", "zkSync Era", "all_l2s"].includes(
-                          item,
-                        )
-                          ? "text-white dark:text-black"
-                          : "text-white"
-                      } ${AllChainsByKeys[item].backgrounds[theme][1]}`}
-                      style={{
-                        width: `max(${
-                          (value / sortedChainValues[0][1]) * 99
-                        }%, 205px)`,
-                      }}
-                    >
-                      <div
-                        key={item + " " + value}
-                        className="flex items-center h-[45px] pl-[20px] min-w-[155px] w-full"
-                      >
-                        <div
-                          key={item + " " + index + value}
-                          className="flex w-[155px] items-center pr-2"
-                        >
-                          <div
-                            key={item + " " + index}
-                            className="flex items-center w-[30px]"
-                          >
-                            <Icon
-                              icon={`gtp:${
-                                item === "zksync_era" ? "zksync-era" : item
-                              }-logo-monochrome`}
-                              className="w-[15px] h-[15px]"
-                            />
-                          </div>
-                          <div className="-mb-0.5">
-                            {AllChainsByKeys[item].label}
-                          </div>
-                        </div>
-
-                        <div
-                          key={value + " " + index}
-                          className="flex justify-end flex-grow"
-                        >
-                          <div key={index} className="text-base flex">
-                            {/* <div>
-                            {selectedValue === "share"
-                              ? Math.round(value * 100)
-                              : (showUsd ? `$` : ``)+(
-                                  Math.round(value * 100) / 100,
-                                ).toLocaleString(undefined, {
-                                  minimumFractionDigits: 0,
-                                  maximumFractionDigits: 0,
-                                })}
-                                </div> */}
-                            {selectedValue === "share" ? (
-                              <div>{Math.round(value * 100)}%</div>
-                            ) : (
-                              <div className="flex gap-x-1">
-                                <div
-                                  className={` ${
-                                    showUsd ? "static" : "relative top-[1px]"
-                                  }`}
-                                >
-                                  {selectedMode === "gas_fees_"
-                                    ? showUsd
-                                      ? `$`
-                                      : `Ξ`
-                                    : ""}
-                                </div>
-                                <div>
-                                  {/*usd or eth symbol */}
-                                  {(
-                                    Math.round(value * 100) / 100
-                                  ).toLocaleString(undefined, {
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 0,
-                                  })}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex">
-                            <button
-                              key={item + "select"}
-                              className="relative flex  left-[10px] w-[24px] h-[24px] bg-forest-700 rounded-full self-center justify-self-end"
-                              onClick={() =>
-                                setSelectedChains((prevSelectedChains) => ({
-                                  ...prevSelectedChains,
-                                  [item]: !prevSelectedChains[item],
-                                }))
-                              }
-                            ></button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : null,
-                )}
-            </div>
-            {/*Chains Here */}
           </div>
           <div className="w-1/2 relative bottom-2">
             {
