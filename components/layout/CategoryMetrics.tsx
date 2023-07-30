@@ -241,55 +241,38 @@ export default function CategoryMetrics({
     }
   }, [contractCategory, contracts, selectedMode, showUsd]);
 
+  const chartReturn = useMemo(() => {
+    const today = new Date().getTime();
+    const chainArray = [];
+    //Array of selected chains to return to chart
+    for (i in selectedChains) {
+      if (selectedChains[i] === true) {
+        const obj = {
+          id: [String(i), selectedCategory, selectedType].join("_"),
+          name: String(i),
+          unixKey: "unix",
+          dataKey: selectedType,
+          data: data[selectedCategory].daily[String(i)]
+            .map((item, i) => {
+              // remap date keys so first is today and each day is subtracted from there
+              const date = today - i * 24 * 60 * 60 * 1000;
+              item[0] = date;
+              return item;
+            })
+            .reverse(),
+        };
+        chainArray.push(obj);
+      }
+    }
+
+    return chainArray;
+  }, [data, selectedChains, selectedCategory, selectedType]);
+
   const sortedChainValues = chainValues?.sort((a, b) => b[1] - a[1]);
   const chartSeries = useMemo(() => {
     const today = new Date().getTime();
 
-    if (selectedCategory && data)
-      return [
-        {
-          id: ["arbitrum", selectedCategory, selectedType].join("_"),
-          name: "arbitrum",
-          unixKey: "unix",
-          dataKey: selectedType,
-          data: data[selectedCategory].daily["arbitrum"]
-            .map((item, i) => {
-              // remap date keys so first is today and each day is subtracted from there
-              const date = today - i * 24 * 60 * 60 * 1000;
-              item[0] = date;
-              return item;
-            })
-            .reverse(),
-        },
-        {
-          id: ["optimism", selectedCategory, selectedType].join("_"),
-          name: "optimism",
-          unixKey: "unix",
-          dataKey: selectedType,
-          data: data[selectedCategory].daily["optimism"]
-            .map((item, i) => {
-              // remap date keys so first is today and each day is subtracted from there
-              const date = today - i * 24 * 60 * 60 * 1000;
-              item[0] = date;
-              return item;
-            })
-            .reverse(),
-        },
-        {
-          id: ["zksync_era", selectedCategory, selectedType].join("_"),
-          name: "zksync_era",
-          unixKey: "unix",
-          dataKey: selectedType,
-          data: data[selectedCategory].daily["zksync_era"]
-            .map((item, i) => {
-              // remap date keys so first is today and each day is subtracted from there
-              const date = today - i * 24 * 60 * 60 * 1000;
-              item[0] = date;
-              return item;
-            })
-            .reverse(),
-        },
-      ];
+    if (selectedCategory && data) return chartReturn;
     return [
       {
         id: ["arbitrum", "native_transfers", selectedType].join("_"),
@@ -334,7 +317,7 @@ export default function CategoryMetrics({
           .reverse(),
       },
     ];
-  }, [selectedCategory, selectedType, data]);
+  }, [selectedCategory, selectedType, data, chartReturn]);
 
   const timespans = useMemo(() => {
     return {
@@ -623,7 +606,7 @@ export default function CategoryMetrics({
     }, [category, type, timespan, selectedSubcategories, data, setChainValues]);
   }
 
-  console.log(selectedChains);
+  console.log(chartReturn);
 
   return (
     <div className="w-full flex-col relative">

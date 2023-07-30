@@ -369,7 +369,7 @@ const formatNumber = (
 type TimespanSelections = "7d" | "30d" | "90d" | "180d" | "365d" | "max";
 
 export const getTimespans = (
-  data,
+  data = null,
   isPercentageScale = false,
 ): {
   [key in TimespanSelections]: {
@@ -379,50 +379,14 @@ export const getTimespans = (
     xMax: number;
   };
 } => {
-  const maxDate = new Date(data.length > 0 ? data[data.length - 1][0] : 0);
+  const maxDate = data
+    ? new Date(data.length > 0 ? data[data.length - 1][0] : 0)
+    : new Date();
   const buffer = isPercentageScale ? 0 : 3.5 * 24 * 60 * 60 * 1000;
   const maxPlusBuffer = maxDate.valueOf() + buffer;
-
-  console.log({
-    "7d": {
-      label: "7 days",
-      value: 7,
-      xMin: maxDate.valueOf() - 7 * 24 * 60 * 60 * 1000,
-      xMax: maxPlusBuffer,
-    },
-    "30d": {
-      label: "30 days",
-      value: 30,
-      xMin: maxDate.valueOf() - 30 * 24 * 60 * 60 * 1000,
-      xMax: maxPlusBuffer,
-    },
-    "90d": {
-      label: "90 days",
-      value: 90,
-      xMin: maxDate.valueOf() - 90 * 24 * 60 * 60 * 1000,
-      xMax: maxPlusBuffer,
-    },
-    "180d": {
-      label: "180 days",
-      value: 180,
-      xMin: maxDate.valueOf() - 180 * 24 * 60 * 60 * 1000,
-      xMax: maxPlusBuffer,
-    },
-    "365d": {
-      label: "1 year",
-      value: 365,
-      xMin: maxDate.valueOf() - 365 * 24 * 60 * 60 * 1000,
-      xMax: maxPlusBuffer,
-    },
-    max: {
-      label: "Maximum",
-      value: 0,
-      xMin: data.reduce((min, d) => Math.min(min, d[0]), Infinity),
-
-      xMax: maxPlusBuffer,
-    },
-  });
-
+  const minDate = data
+    ? data.reduce((min, d) => Math.min(min, d[0]), Infinity)
+    : maxDate - 365 * 24 * 60 * 60 * 1000;
   return {
     "7d": {
       label: "7 days",
@@ -457,7 +421,7 @@ export const getTimespans = (
     max: {
       label: "Maximum",
       value: 0,
-      xMin: data.reduce((min, d) => Math.min(min, d[0]), Infinity),
+      xMin: minDate,
 
       xMax: maxPlusBuffer,
     },
