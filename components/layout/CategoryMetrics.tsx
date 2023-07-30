@@ -239,14 +239,7 @@ export default function CategoryMetrics({
     } else {
       setSortedContracts(contracts);
     }
-  }, [
-    contractCategory,
-    sortedContracts,
-    setSortedContracts,
-    contracts,
-    selectedMode,
-    showUsd,
-  ]);
+  }, [contractCategory, contracts, selectedMode, showUsd]);
 
   const sortedChainValues = chainValues?.sort((a, b) => b[1] - a[1]);
   const chartSeries = useMemo(() => {
@@ -629,6 +622,8 @@ export default function CategoryMetrics({
       });
     }, [category, type, timespan, selectedSubcategories, data, setChainValues]);
   }
+
+  console.log(selectedChains);
 
   return (
     <div className="w-full flex-col relative">
