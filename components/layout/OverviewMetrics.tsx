@@ -380,15 +380,15 @@ export default function OverviewMetrics({
         // if()
         style.transform =
           isCategoryHovered[categoryKey] && !isSelectedCategory
-            ? "scale(1.02)"
+            ? "scale(1.01)"
             : isSelectedChainOrNoSelectedChain
-            ? "scale(1.03)"
-            : "scale(1.02)";
+            ? "scale(1.08)"
+            : "scale(1.01)";
 
-        style.outline =
-          isSelectedCategory && isSelectedChainOrNoSelectedChain
-            ? "3px solid rgba(255,255,255, 1)"
-            : "3px solid rgba(255,255,255, 0.33)";
+        // style.outline =
+        //   isSelectedCategory && isSelectedChainOrNoSelectedChain
+        //     ? "3px solid rgba(255,255,255, 1)"
+        //     : "3px solid rgba(255,255,255, 0.33)";
 
         style.zIndex = isCategoryHovered[categoryKey] ? 2 : 5;
 
@@ -445,7 +445,6 @@ export default function OverviewMetrics({
 
   return (
     <div className="w-full flex-col relative">
-      <div>{selectedMode}</div>
       <Container>
         <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs xl:text-base xl:flex xl:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 xl:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
           <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
@@ -1008,6 +1007,7 @@ export default function OverviewMetrics({
           chartWidth="100%"
         />
         <Chart
+          chartType="area"
           types={
             selectedChain === null
               ? data.all_l2s.daily.types

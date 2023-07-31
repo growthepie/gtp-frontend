@@ -1203,6 +1203,7 @@ export default function CategoryMetrics({
           <div className="w-1/2 relative bottom-2">
             {
               <Chart
+                chartType="area"
                 types={
                   selectedCategory === null || selectedCategory === "Chains"
                     ? data.native_transfers.daily.types
