@@ -24,6 +24,8 @@ import { debounce } from "lodash";
 
 export const Chart = ({
   // data,
+  chartType,
+  stack = false,
   types,
   timespan,
   series,
@@ -32,6 +34,8 @@ export const Chart = ({
   chartWidth,
 }: {
   // data: { [chain: string]: number[][] };
+  chartType: "area" | "line";
+  stack?: boolean;
   types: string[];
   timespan: string;
   series: {
@@ -211,12 +215,21 @@ export const Chart = ({
                   ...baseOptions,
                   chart: {
                     ...baseOptions.chart,
+                    type: chartType,
                     height: parseFloat(chartHeight),
                     events: {
                       load: function () {
                         chartComponent.current = this;
                         drawChartSeries();
                       },
+                    },
+                  },
+                  plotOptions: {
+                    ...baseOptions.plotOptions,
+
+                    area: {
+                      ...baseOptions.plotOptions.area,
+                      stacking: stack ? "normal" : undefined,
                     },
                   },
                   tooltip: {
