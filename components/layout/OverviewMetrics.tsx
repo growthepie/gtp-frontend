@@ -994,6 +994,7 @@ export default function OverviewMetrics({
           chartWidth="100%"
         />
         <Chart
+          chartType="area"
           types={
             selectedChain === null
               ? data.all_l2s.daily.types

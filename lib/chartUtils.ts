@@ -174,7 +174,7 @@ export const tooltipPositioner = function (this, width, height, point) {
   };
 };
 
-export const baseOptions: Highcharts.Options = {
+export const baseOptions: any = {
   accessibility: { enabled: false },
   exporting: { enabled: false },
   chart: {
