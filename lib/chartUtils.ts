@@ -369,7 +369,7 @@ const formatNumber = (
 type TimespanSelections = "7d" | "30d" | "90d" | "180d" | "365d" | "max";
 
 export const getTimespans = (
-  data = null,
+  data?,
   isPercentageScale = false,
 ): {
   [key in TimespanSelections]: {
@@ -386,7 +386,7 @@ export const getTimespans = (
   const maxPlusBuffer = maxDate.valueOf() + buffer;
   const minDate = data
     ? data.reduce((min, d) => Math.min(min, d[0]), Infinity)
-    : maxDate - 365 * 24 * 60 * 60 * 1000;
+    : maxDate.valueOf() - 365 * 24 * 60 * 60 * 1000;
   return {
     "7d": {
       label: "7 days",

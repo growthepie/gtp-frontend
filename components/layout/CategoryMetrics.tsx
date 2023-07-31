@@ -57,6 +57,14 @@ export default function CategoryMetrics({
     txcount_share: number;
   };
 
+  type ChainData = {
+    id: string;
+    name: string;
+    unixKey: string;
+    dataKey: string;
+    data: any[]; // You should replace `any[]` with the correct type for your data array
+  };
+
   const [selectedMode, setSelectedMode] = useState("gas_fees_");
   const [selectedCategory, setSelectedCategory] = useState("native_transfers");
 
@@ -243,9 +251,10 @@ export default function CategoryMetrics({
 
   const chartReturn = useMemo(() => {
     const today = new Date().getTime();
-    const chainArray = [];
+    const chainArray: ChainData[] = [];
+
     //Array of selected chains to return to chart
-    for (i in selectedChains) {
+    for (let i in selectedChains) {
       if (selectedChains[i] === true) {
         const obj = {
           id: [String(i), selectedCategory, selectedType].join("_"),
