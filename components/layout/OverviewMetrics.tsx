@@ -23,6 +23,7 @@ import { LandingURL, MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { navigationItems } from "@/lib/navigation";
+import { useLocalStorage } from "usehooks-ts";
 
 const DisabledStates: {
   [mode: string]: {
@@ -32,7 +33,13 @@ const DisabledStates: {
     };
   };
 } = {
-  gas_fees_share: {
+  gas_fees_share_eth: {
+    imx: {
+      text: "No Gas Fees",
+      reason: "IMX does not charge Gas Fees",
+    },
+  },
+  gas_fees_share_usd: {
     imx: {
       text: "No Gas Fees",
       reason: "IMX does not charge Gas Fees",
@@ -59,7 +66,7 @@ export default function OverviewMetrics({
     isLoading: masterLoading,
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
-
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [selectedMode, setSelectedMode] = useState("txcount_share");
   const [isCategoryMenuExpanded, setIsCategoryMenuExpanded] = useState(true);
 
@@ -202,26 +209,70 @@ export default function OverviewMetrics({
   }, []);
 
   const chartSeries = useMemo(() => {
-    if (selectedChain)
+    const dataKey = selectedMode + "_all_l2s";
+    if (selectedChain) {
+      console.log(selectedChain, {
+        id: [selectedChain, selectedCategory, selectedMode].join("_"),
+        name: selectedChain,
+        unixKey: "unix",
+        dataKey: dataKey,
+        data: data[selectedChain].daily[selectedCategory].data.length,
+      });
       return [
         {
           id: [selectedChain, selectedCategory, selectedMode].join("_"),
           name: selectedChain,
           unixKey: "unix",
-          dataKey: selectedMode,
+          dataKey: dataKey,
           data: data[selectedChain].daily[selectedCategory].data,
         },
       ];
-    return [
-      {
-        id: ["all_l2s", selectedCategory, selectedMode].join("_"),
-        name: "all_l2s",
-        unixKey: "unix",
-        dataKey: selectedMode,
-        data: data.all_l2s.daily[selectedCategory].data,
-      },
-    ];
-  }, [selectedChain, selectedCategory, selectedMode, data]);
+    }
+    console.log(
+      selectedChain,
+      Object.keys(data)
+        .filter((chainKey) => chainKey !== "all_l2s")
+        .map((chainKey) => {
+          return {
+            id: [chainKey, selectedCategory, selectedMode].join("_"),
+            name: chainKey,
+            unixKey: "unix",
+            dataKey: dataKey,
+            data: data[chainKey].daily[selectedCategory].data.length,
+          };
+        }),
+    );
+    return Object.keys(data)
+      .filter(
+        (chainKey) =>
+          chainKey !== "all_l2s" &&
+          data[chainKey].daily[selectedCategory].data.length > 0,
+      )
+      .map((chainKey) => {
+        return {
+          id: [chainKey, selectedCategory, selectedMode].join("_"),
+          name: chainKey,
+          unixKey: "unix",
+          dataKey: dataKey,
+          data: data[chainKey].daily[selectedCategory].data,
+        };
+      });
+    // return [
+    //   {
+    //     id: ["all_l2s", selectedCategory, selectedMode].join("_"),
+    //     name: "all_l2s",
+    //     unixKey: "unix",
+    //     dataKey: selectedMode,
+    //     data: data.all_l2s.daily[selectedCategory].data,
+    //   },
+    // ];
+  }, [selectedMode, selectedChain, data, selectedCategory]);
+
+  useEffect(() => {
+    if (selectedMode.includes("gas_fees_share")) {
+      setSelectedMode(showUsd ? "gas_fees_share_usd" : "gas_fees_share_eth");
+    }
+  }, [selectedMode, showUsd]);
 
   // console.log(data["optimism"].overview.types.indexOf("gas_fees_share"));
   // console.log(relativePercentage);
@@ -253,7 +304,6 @@ export default function OverviewMetrics({
       const isLastCategory = categoryKey === "unlabeled";
 
       const dataTypes = data[chainKey].overview.types;
-      console.log("dataTypes", dataTypes);
 
       const isSelectedCategory = selectedCategory === categoryKey;
 
@@ -395,17 +445,20 @@ export default function OverviewMetrics({
 
   return (
     <div className="w-full flex-col relative">
+      <div>{selectedMode}</div>
       <Container>
         <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs xl:text-base xl:flex xl:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 xl:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
           <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
             <button
               className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                "gas_fees_share" === selectedMode
+                selectedMode.includes("gas_fees_share")
                   ? "bg-forest-500 dark:bg-forest-1000"
                   : "hover:bg-forest-500/10"
               }`}
               onClick={() => {
-                setSelectedMode("gas_fees_share");
+                setSelectedMode(
+                  showUsd ? "gas_fees_share_usd" : "gas_fees_share_eth",
+                );
               }}
             >
               Gas Fees
@@ -946,8 +999,30 @@ export default function OverviewMetrics({
               ? data.all_l2s.daily.types
               : data[selectedChain].daily.types
           }
+          chartType="area"
+          stack
           timespan={selectedTimespan}
           series={chartSeries}
+          yScale="percentage"
+          chartHeight="196px"
+          chartWidth="100%"
+        />
+        <Chart
+          types={
+            selectedChain === null
+              ? data.all_l2s.daily.types
+              : data[selectedChain].daily.types
+          }
+          timespan={selectedTimespan}
+          series={[
+            {
+              id: "all_l2s",
+              name: "all_l2s",
+              unixKey: "unix",
+              dataKey: selectedMode,
+              data: data.all_l2s.daily[selectedCategory].data,
+            },
+          ]}
           yScale="percentage"
           chartHeight="196px"
           chartWidth="100%"

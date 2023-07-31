@@ -24,6 +24,8 @@ import { debounce } from "lodash";
 
 export const Chart = ({
   // data,
+  chartType,
+  stack = false,
   types,
   timespan,
   series,
@@ -32,6 +34,8 @@ export const Chart = ({
   chartWidth,
 }: {
   // data: { [chain: string]: number[][] };
+  chartType: "area" | "line";
+  stack?: boolean;
   types: string[];
   timespan: string;
   series: {
@@ -49,7 +53,10 @@ export const Chart = ({
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
   const timespans = useMemo(
-    () => getTimespans(Object.values(series)[0].data),
+    () =>
+      series.length > 0
+        ? getTimespans(Object.values(series)[0].data)
+        : getTimespans(null),
     [series],
   );
   const tickPositions = useMemo(
@@ -59,7 +66,7 @@ export const Chart = ({
         timespans.max.xMax,
         timespan === "max",
       ),
-    [series, timespan, timespans.max.xMax, timespans.max.xMin],
+    [timespan, timespans.max.xMax, timespans.max.xMin],
   );
 
   const { theme } = useTheme();
@@ -178,11 +185,12 @@ export const Chart = ({
 
   return (
     <>
-      {Object.values(series)[0].data.length > 0 &&
-      timespans &&
-      highchartsLoaded ? (
-        <div className="w-full py-4 rounded-xl">
-          {/* <div>{JSON.stringify(timespans[timespan])}</div>
+      {
+        // series.length > 0 &&
+        // Object.values(series)[0].data.length > 0 &&
+        timespans && highchartsLoaded ? (
+          <div className="w-full py-4 rounded-xl">
+            {/* <div>{JSON.stringify(timespans[timespan])}</div>
           <div>
             {JSON.stringify(
               Object.keys(data).map((chain) => ({
@@ -194,98 +202,111 @@ export const Chart = ({
               })),
             )}
           </div> */}
-          <div
-            className="relative"
-            style={{ height: chartHeight, width: chartWidth }}
-          >
             <div
-              className="absolute top-0"
-              style={{
-                height: chartHeight,
-                width: chartWidth,
-              }}
+              className="relative"
+              style={{ height: chartHeight, width: chartWidth }}
             >
-              <HighchartsReact
-                highcharts={Highcharts}
-                options={{
-                  ...baseOptions,
-                  chart: {
-                    ...baseOptions.chart,
-                    height: parseFloat(chartHeight),
-                    events: {
-                      load: function () {
-                        chartComponent.current = this;
-                        drawChartSeries();
+              <div
+                className="absolute top-0"
+                style={{
+                  height: chartHeight,
+                  width: chartWidth,
+                }}
+              >
+                <HighchartsReact
+                  highcharts={Highcharts}
+                  options={{
+                    ...baseOptions,
+                    chart: {
+                      ...baseOptions.chart,
+                      type: chartType,
+                      height: parseFloat(chartHeight),
+                      events: {
+                        load: function () {
+                          chartComponent.current = this;
+                          drawChartSeries();
+                        },
                       },
                     },
-                  },
-                  tooltip: {
-                    ...baseOptions.tooltip,
-                    formatter:
-                      yScale === "percentage"
-                        ? tooltipFormatter(true, true, decimalToPercent)
-                        : tooltipFormatter(true, false, (x) => {
-                            return x.toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            });
-                          }),
-                  },
-                  xAxis: {
-                    ...baseOptions.xAxis,
-                    min: timespans[timespan].xMin,
-                    max: timespans[timespan].xMax,
-                    minorTicks: true,
-                    minorTickLength: 2,
-                    minorTickWidth: 2,
-                    minorGridLineWidth: 0,
-                    minorTickInterval: ["7d", "30d"].includes(timespan)
-                      ? 1000 * 60 * 60 * 24 * 1
-                      : 1000 * 60 * 60 * 24 * 7,
-                    tickPositions: tickPositions,
-                    labels: getXAxisLabels(),
-                  },
-                  yAxis: {
-                    ...baseOptions.yAxis,
-                    type: yScale,
-                    min: yScale === "percentage" ? 0 : undefined,
-                    max: yScale === "percentage" ? undefined : undefined,
-                    gridLineColor:
-                      theme === "dark"
-                        ? "rgba(215, 223, 222, 0.11)"
-                        : "rgba(41, 51, 50, 0.11)",
-                    labels: {
-                      formatter: function (
-                        this: AxisLabelsFormatterContextObject,
-                      ) {
-                        const { value } = this;
-                        if (yScale === "percentage") {
-                          return decimalToPercent(value);
-                        } else {
-                          return value;
-                        }
+                    plotOptions: {
+                      ...baseOptions.plotOptions,
+
+                      area: {
+                        ...baseOptions.plotOptions.area,
+                        stacking: stack ? "normal" : undefined,
                       },
                     },
-                  },
-                }}
-                constructorType={"stockChart"}
-                ref={(chart) => {
-                  chartComponent.current = chart?.chart;
-                }}
+                    tooltip: {
+                      ...baseOptions.tooltip,
+                      formatter:
+                        yScale === "percentage"
+                          ? tooltipFormatter(true, true, decimalToPercent)
+                          : tooltipFormatter(true, false, (x) => {
+                              return x.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              });
+                            }),
+                    },
+                    xAxis: {
+                      ...baseOptions.xAxis,
+                      min: timespans[timespan].xMin,
+                      max: timespans[timespan].xMax,
+                      minorTicks: true,
+                      minorTickLength: 2,
+                      minorTickWidth: 2,
+                      minorGridLineWidth: 0,
+                      minorTickInterval: ["7d", "30d"].includes(timespan)
+                        ? 1000 * 60 * 60 * 24 * 1
+                        : 1000 * 60 * 60 * 24 * 7,
+                      tickPositions: tickPositions,
+                      labels: getXAxisLabels(),
+                    },
+                    yAxis: {
+                      ...baseOptions.yAxis,
+                      type: yScale,
+                      min: yScale === "percentage" ? 0 : undefined,
+                      max: yScale === "percentage" ? undefined : undefined,
+                      gridLineColor:
+                        theme === "dark"
+                          ? "rgba(215, 223, 222, 0.11)"
+                          : "rgba(41, 51, 50, 0.11)",
+                      labels: {
+                        formatter: function (
+                          this: AxisLabelsFormatterContextObject,
+                        ) {
+                          const { value } = this;
+                          if (yScale === "percentage") {
+                            return decimalToPercent(value);
+                          } else {
+                            return value;
+                          }
+                        },
+                      },
+                    },
+                  }}
+                  constructorType={"stockChart"}
+                  ref={(chart) => {
+                    chartComponent.current = chart?.chart;
+                  }}
+                />
+              </div>
+              <div className="absolute bottom-[47.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50 mix-blend-lighten">
+                <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px]" />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="w-full h-[26rem] my-4 flex justify-center items-center">
+            <div className="w-10 h-10 animate-spin">
+              <Icon
+                icon="feather:loader"
+                className="w-10 h-10 text-forest-500"
               />
             </div>
-            <div className="absolute bottom-[47.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50 mix-blend-lighten">
-              <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px]" />
-            </div>
           </div>
-        </div>
-      ) : (
-        <div className="w-full h-[26rem] my-4 flex justify-center items-center">
-          <div className="w-10 h-10 animate-spin">
-            <Icon icon="feather:loader" className="w-10 h-10 text-forest-500" />
-          </div>
-        </div>
-      )}
+        )
+      }
     </>
   );
 };
