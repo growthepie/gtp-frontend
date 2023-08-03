@@ -16,13 +16,14 @@ import { Switch } from "../Switch";
 import { Sources } from "@/lib/datasources";
 import Container from "./Container";
 import { CategoryComparisonResponseData } from "@/types/api/CategoryComparisonResponse";
-import { animated } from "@react-spring/web";
+import { animated, useSpring } from "@react-spring/web";
 import { Chart } from "../charts/chart";
 import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import { LandingURL, MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import ChainAnimations from "./ChainAnimations";
 
 export default function CategoryMetrics({
   data,
@@ -615,7 +616,8 @@ export default function CategoryMetrics({
     }, [category, type, timespan, selectedSubcategories, data, setChainValues]);
   }
 
-  console.log(chartReturn);
+  console.log(typeof selectedChains + " 1");
+  console.log(typeof sortedChainValues + " 2");
 
   return (
     <div className="w-full flex-col relative">
@@ -1095,102 +1097,17 @@ export default function CategoryMetrics({
                       : 1,
                   )
                   .map(([item, value], index) => (
-                    <div
-                      key={item}
-                      className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${
-                        ["arbitrum", "imx", "zkSync Era", "all_l2s"].includes(
-                          item,
-                        )
-                          ? "text-white dark:text-black"
-                          : "text-white"
-                      } ${
-                        selectedChains[item]
-                          ? AllChainsByKeys[item].backgrounds[theme][1]
-                          : `${AllChainsByKeys[item].backgrounds[theme][1]} opacity-30`
-                      }`}
-                      style={{
-                        width: `max(${
-                          (value / sortedChainValues[0][1]) * 99
-                        }%, 205px)`,
-                      }}
-                    >
-                      <div
-                        key={item + " " + value}
-                        className="flex items-center h-[45px] pl-[20px] min-w-[155px] w-full"
-                      >
-                        <div
-                          key={item + " " + index + value}
-                          className="flex w-[155px] items-center pr-2"
-                        >
-                          <div
-                            key={item + " " + index}
-                            className="flex items-center w-[30px]"
-                          >
-                            <Icon
-                              icon={`gtp:${
-                                item === "zksync_era" ? "zksync-era" : item
-                              }-logo-monochrome`}
-                              className="w-[15px] h-[15px]"
-                            />
-                          </div>
-                          <div className="-mb-0.5">
-                            {AllChainsByKeys[item].label}
-                          </div>
-                        </div>
-
-                        <div
-                          key={value + " " + index}
-                          className="flex justify-end flex-grow"
-                        >
-                          <div key={index} className="text-base flex">
-                            {selectedValue === "share" ? (
-                              <div>{Math.round(value * 100)}%</div>
-                            ) : (
-                              <div className="flex gap-x-1">
-                                <div
-                                  className={`${
-                                    showUsd ? "static" : "relative top-[1px]"
-                                  }`}
-                                >
-                                  {selectedMode === "gas_fees_"
-                                    ? showUsd
-                                      ? `$`
-                                      : `Ξ`
-                                    : ""}
-                                </div>
-                                <div>
-                                  {(
-                                    Math.round(value * 100) / 100
-                                  ).toLocaleString(undefined, {
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 0,
-                                  })}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                          <button
-                            key={item + "select"}
-                            className={`relative flex left-[10px] w-[24px] h-[24px] bg-forest-700 rounded-full self-center items-center justify-center ${
-                              !selectedChains[item] ? "opacity-100" : ""
-                            }`}
-                            onClick={() =>
-                              setSelectedChains((prevSelectedChains) => ({
-                                ...prevSelectedChains,
-                                [item]: !prevSelectedChains[item],
-                              }))
-                            }
-                          >
-                            <Icon
-                              icon="feather:check-circle"
-                              className={`w-[24px] h-[24px] opacity-100 text-white ${
-                                !selectedChains[item] ? "opacity-0" : ""
-                              }`}
-                            />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+                    <ChainAnimations
+                      key={item + "" + selectedChains[item]}
+                      chain={item}
+                      value={value}
+                      index={index}
+                      sortedValues={sortedChainValues}
+                      selectedValue={selectedValue}
+                      selectedMode={selectedMode}
+                      selectedChains={selectedChains}
+                      setSelectedChains={setSelectedChains}
+                    />
                   ))}
             </div>
           </div>
