@@ -19,7 +19,8 @@ const ChainOverview = () => {
     error: usageError,
     isLoading: usageLoading,
     isValidating: usageValidating,
-  } = useSWR<ChainOverviewResponse>(BlockspaceURLs["chain-overview"]);
+  } = useSWR<ChainOverviewResponse>("/mock/overview.json");
+  // } = useSWR<ChainOverviewResponse>(BlockspaceURLs["chain-overview"]);
 
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",

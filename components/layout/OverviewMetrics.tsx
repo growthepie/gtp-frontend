@@ -208,7 +208,7 @@ export default function OverviewMetrics({
   }, []);
 
   const chartSeries = useMemo(() => {
-    const dataKey = selectedMode + "_all_l2s";
+    const dataKey = selectedMode;
     if (selectedChain) {
       console.log(selectedChain, {
         id: [selectedChain, selectedCategory, selectedMode].join("_"),
@@ -227,44 +227,31 @@ export default function OverviewMetrics({
         },
       ];
     }
-    console.log(
-      selectedChain,
-      Object.keys(data)
-        .filter((chainKey) => chainKey !== "all_l2s")
-        .map((chainKey) => {
-          return {
-            id: [chainKey, selectedCategory, selectedMode].join("_"),
-            name: chainKey,
-            unixKey: "unix",
-            dataKey: dataKey,
-            data: data[chainKey].daily[selectedCategory].data.length,
-          };
-        }),
-    );
-    return Object.keys(data)
-      .filter(
-        (chainKey) =>
-          chainKey !== "all_l2s" &&
-          data[chainKey].daily[selectedCategory].data.length > 0,
-      )
-      .map((chainKey) => {
-        return {
-          id: [chainKey, selectedCategory, selectedMode].join("_"),
-          name: chainKey,
-          unixKey: "unix",
-          dataKey: dataKey,
-          data: data[chainKey].daily[selectedCategory].data,
-        };
-      });
-    // return [
-    //   {
-    //     id: ["all_l2s", selectedCategory, selectedMode].join("_"),
-    //     name: "all_l2s",
-    //     unixKey: "unix",
-    //     dataKey: selectedMode,
-    //     data: data.all_l2s.daily[selectedCategory].data,
-    //   },
-    // ];
+
+    // return Object.keys(data)
+    //   .filter(
+    //     (chainKey) =>
+    //       chainKey !== "all_l2s" &&
+    //       data[chainKey].daily[selectedCategory].data.length > 0,
+    //   )
+    //   .map((chainKey) => {
+    //     return {
+    //       id: [chainKey, selectedCategory, selectedMode].join("_"),
+    //       name: chainKey,
+    //       unixKey: "unix",
+    //       dataKey: dataKey,
+    //       data: data[chainKey].daily[selectedCategory].data,
+    //     };
+    //   });
+    return [
+      {
+        id: ["all_l2s", selectedCategory, selectedMode].join("_"),
+        name: "all_l2s",
+        unixKey: "unix",
+        dataKey: selectedMode,
+        data: data.all_l2s.daily[selectedCategory].data,
+      },
+    ];
   }, [selectedMode, selectedChain, data, selectedCategory]);
 
   useEffect(() => {
@@ -301,6 +288,7 @@ export default function OverviewMetrics({
       //   dataIndex === dataKeysIntersectCategoriesKeys.length - 1;
 
       const isLastCategory = categoryKey === "unlabeled";
+      const isFirstCategory = categoryKey === "native_transfers";
 
       const dataTypes = data[chainKey].overview.types;
 
@@ -311,6 +299,9 @@ export default function OverviewMetrics({
 
       // default transition
       style.transition = "all 0.165s ease-in-out";
+
+      if (isFirstCategory) style.transformOrigin = "left center";
+      else if (isLastCategory) style.transformOrigin = "right center";
 
       if (isLastCategory)
         style.borderRadius = "20000px 99999px 99999px 20000px";
@@ -339,6 +330,9 @@ export default function OverviewMetrics({
               : isSelectedChainOrNoSelectedChain
               ? "scale(1.30)"
               : "scale(1.2)";
+
+          if (isLastCategory && isSelectedChainOrNoSelectedChain)
+            style.transform += " translateX(3px)";
           style.zIndex = isCategoryHovered[categoryKey] ? 2 : 5;
         } else {
           style.backgroundColor = "rgba(255,255,255, 0.60)";
@@ -379,10 +373,13 @@ export default function OverviewMetrics({
         // if()
         style.transform =
           isCategoryHovered[categoryKey] && !isSelectedCategory
-            ? "scale(1.01)"
+            ? "scaleY(1.01)"
             : isSelectedChainOrNoSelectedChain
-            ? "scale(1.08)"
-            : "scale(1.01)";
+            ? "scaleY(1.08)"
+            : "scaleY(1.01)";
+
+        if (isLastCategory && isSelectedChainOrNoSelectedChain)
+          style.transform += " translateX(3px)";
 
         // style.outline =
         //   isSelectedCategory && isSelectedChainOrNoSelectedChain
@@ -988,27 +985,6 @@ export default function OverviewMetrics({
           stack
           timespan={selectedTimespan}
           series={chartSeries}
-          yScale="percentage"
-          chartHeight="196px"
-          chartWidth="100%"
-        />
-        <Chart
-          chartType="area"
-          types={
-            selectedChain === null
-              ? data.all_l2s.daily.types
-              : data[selectedChain].daily.types
-          }
-          timespan={selectedTimespan}
-          series={[
-            {
-              id: "all_l2s",
-              name: "all_l2s",
-              unixKey: "unix",
-              dataKey: selectedMode,
-              data: data.all_l2s.daily[selectedCategory].data,
-            },
-          ]}
           yScale="percentage"
           chartHeight="196px"
           chartWidth="100%"
