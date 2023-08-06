@@ -3,6 +3,7 @@ import { Icon } from "@iconify/react";
 import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import { useLocalStorage } from "usehooks-ts";
+import { useMemo, useState, useEffect, useRef } from "react";
 
 export default function ChainAnimations({
   chain,
@@ -26,10 +27,41 @@ export default function ChainAnimations({
   const { theme } = useTheme();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
+  const [width, setWidth] = useState(() => {
+    if (sortedValues && value) {
+      const largestValue = Math.max(
+        ...Object.values(sortedValues).map(([, value]) => value),
+      );
+
+      const percentage = (value / largestValue) * 99;
+      return `max(${percentage}%, 205px)`;
+    } else {
+      return "auto";
+    }
+  });
+
+  useEffect(() => {
+    if (sortedValues && value) {
+      const largestValue = Math.max(
+        ...Object.values(sortedValues).map(([, value]) => value),
+      );
+
+      const percentage = (value / largestValue) * 99;
+      setWidth(`max(${percentage}%, 205px)`);
+    } else {
+      setWidth("auto");
+    }
+  }, [value, sortedValues]);
+
+  const springProps = useSpring({
+    transform: `translateY(${index * 50}px)`,
+    config: { duration: 250 },
+  });
+
   return (
     <animated.div
       key={chain}
-      className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${
+      className={`relative flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium hover:cursor-pointer ${
         ["arbitrum", "imx", "zkSync Era", "all_l2s"].includes(chain)
           ? "text-white dark:text-black"
           : "text-white"
@@ -39,8 +71,16 @@ export default function ChainAnimations({
           : `${AllChainsByKeys[chain].backgrounds[theme][1]} opacity-30`
       }`}
       style={{
-        width: `max(${(value / sortedValues[0][1]) * 99}%, 205px)`,
+        width: width,
+        bottom: `${index * 45}px`,
+        ...springProps,
       }}
+      onClick={() =>
+        setSelectedChains((prevSelectedChains) => ({
+          ...prevSelectedChains,
+          [chain]: !prevSelectedChains[chain],
+        }))
+      }
     >
       <div
         key={chain + " " + value}

@@ -77,6 +77,7 @@ export default function CategoryMetrics({
   const [chainValues, setChainValues] = useState<any[][] | null>(null);
   const [selectedType, setSelectedType] = useState("gas_fees_absolute_usd");
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+
   const { theme } = useTheme();
 
   const [selectedChains, setSelectedChains] = useState<{
@@ -278,7 +279,21 @@ export default function CategoryMetrics({
     return chainArray;
   }, [data, selectedChains, selectedCategory, selectedType]);
 
-  const sortedChainValues = chainValues?.sort((a, b) => b[1] - a[1]);
+  const sortedChainValues = useMemo(() => {
+    if (!chainValues || !selectedChains) return null;
+
+    return chainValues
+      .filter(([item]) => item !== "types")
+      .sort((a, b) => b[1] - a[1])
+      .sort(([itemA], [itemB]) =>
+        selectedChains[itemA] === selectedChains[itemB]
+          ? 0
+          : selectedChains[itemA]
+          ? -1
+          : 1,
+      );
+  }, [chainValues, selectedChains]);
+
   const chartSeries = useMemo(() => {
     const today = new Date().getTime();
 
@@ -616,8 +631,7 @@ export default function CategoryMetrics({
     }, [category, type, timespan, selectedSubcategories, data, setChainValues]);
   }
 
-  console.log(typeof selectedChains + " 1");
-  console.log(typeof sortedChainValues + " 2");
+  console.log(sortedChainValues);
 
   return (
     <div className="w-full flex-col relative">
@@ -1085,30 +1099,21 @@ export default function CategoryMetrics({
                 </div>
               ))}
             </div>
-            <div className="flex flex-col gap-y-2 mt-4">
+            <div className="flex flex-col mt-4 relative">
               {sortedChainValues &&
-                sortedChainValues
-                  .filter(([item]) => item !== "types")
-                  .sort(([itemA], [itemB]) =>
-                    selectedChains[itemA] === selectedChains[itemB]
-                      ? 0
-                      : selectedChains[itemA]
-                      ? -1
-                      : 1,
-                  )
-                  .map(([item, value], index) => (
-                    <ChainAnimations
-                      key={item + "" + selectedChains[item]}
-                      chain={item}
-                      value={value}
-                      index={index}
-                      sortedValues={sortedChainValues}
-                      selectedValue={selectedValue}
-                      selectedMode={selectedMode}
-                      selectedChains={selectedChains}
-                      setSelectedChains={setSelectedChains}
-                    />
-                  ))}
+                sortedChainValues.map(([item, value], index) => (
+                  <ChainAnimations
+                    key={item + "" + selectedChains[item]}
+                    chain={item}
+                    value={value}
+                    index={index}
+                    sortedValues={sortedChainValues}
+                    selectedValue={selectedValue}
+                    selectedMode={selectedMode}
+                    selectedChains={selectedChains}
+                    setSelectedChains={setSelectedChains}
+                  />
+                ))}
             </div>
           </div>
           <div className="w-1/2 relative bottom-2">
