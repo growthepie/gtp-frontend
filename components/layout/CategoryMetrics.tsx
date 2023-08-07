@@ -16,7 +16,7 @@ import { Switch } from "../Switch";
 import { Sources } from "@/lib/datasources";
 import Container from "./Container";
 import { CategoryComparisonResponseData } from "@/types/api/CategoryComparisonResponse";
-import { animated, useSpring } from "@react-spring/web";
+import { animated, useSpring, useTransition } from "@react-spring/web";
 import { Chart } from "../charts/chart";
 import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
@@ -631,7 +631,28 @@ export default function CategoryMetrics({
     }, [category, type, timespan, selectedSubcategories, data, setChainValues]);
   }
 
-  console.log(sortedChainValues);
+  const transitions = useTransition(
+    sortedChainValues?.map(([item, value], index) => ({
+      item,
+      value,
+      index,
+      yValue: 50 * index,
+    })),
+    {
+      key: (item: any) => item.item, // Use item as the key
+      from: { transitionY: 0, opacity: 0 },
+      leave: { transitiony: 0, opacity: 0 },
+      enter: ({ yValue, item }) => ({
+        y: yValue,
+        opacity: selectedChains[item] ? 1.0 : 0.3,
+      }),
+      update: ({ yValue, item }) => ({
+        y: yValue,
+        opacity: selectedChains[item] ? 1.0 : 0.3,
+      }),
+      config: { mass: 5, tension: 500, friction: 100 },
+    },
+  );
 
   return (
     <div className="w-full flex-col relative">
@@ -1101,18 +1122,24 @@ export default function CategoryMetrics({
             </div>
             <div className="flex flex-col mt-4 relative">
               {sortedChainValues &&
-                sortedChainValues.map(([item, value], index) => (
-                  <ChainAnimations
-                    key={item + "" + selectedChains[item]}
-                    chain={item}
-                    value={value}
-                    index={index}
-                    sortedValues={sortedChainValues}
-                    selectedValue={selectedValue}
-                    selectedMode={selectedMode}
-                    selectedChains={selectedChains}
-                    setSelectedChains={setSelectedChains}
-                  />
+                transitions((style, item, key) => (
+                  <animated.div
+                    key={key}
+                    style={{
+                      ...style,
+                    }}
+                  >
+                    <ChainAnimations
+                      chain={item.item}
+                      value={item.value}
+                      index={item.index}
+                      sortedValues={sortedChainValues}
+                      selectedValue={selectedValue}
+                      selectedMode={selectedMode}
+                      selectedChains={selectedChains}
+                      setSelectedChains={setSelectedChains}
+                    />
+                  </animated.div>
                 ))}
             </div>
           </div>
