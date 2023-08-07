@@ -637,11 +637,11 @@ export default function CategoryMetrics({
       value,
       index,
       yValue: 50 * index,
-    })),
+    })) || [],
     {
       key: (item: any) => item.item, // Use item as the key
-      from: { transitionY: 0, opacity: 0 },
-      leave: { transitiony: 0, opacity: 0 },
+      from: { y: 0, opacity: 0 },
+      leave: { y: 0, opacity: 0 },
       enter: ({ yValue, item }) => ({
         y: yValue,
         opacity: selectedChains[item] ? 1.0 : 0.3,
@@ -1122,9 +1122,9 @@ export default function CategoryMetrics({
             </div>
             <div className="flex flex-col mt-4 relative">
               {sortedChainValues &&
-                transitions((style, item, key) => (
+                transitions((style, item) => (
                   <animated.div
-                    key={key}
+                    key={item.item}
                     style={{
                       ...style,
                     }}

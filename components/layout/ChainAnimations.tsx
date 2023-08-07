@@ -73,8 +73,7 @@ export default function ChainAnimations({
         setSelectedChains((prevSelectedChains) => ({
           ...prevSelectedChains,
           [chain]: !prevSelectedChains[chain],
-        })),
-          event.stopPropagation();
+        }));
       }}
     >
       <div
