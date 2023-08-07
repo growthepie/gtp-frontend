@@ -654,6 +654,48 @@ export default function CategoryMetrics({
     },
   );
 
+  const categoryTransitions = useTransition(
+    Object.keys(categories).map((category, i) => ({
+      category,
+      i,
+    })),
+    {
+      from: { width: "95px" }, // Initial width for closed categories
+      enter: ({ category }) => ({
+        width:
+          openSub && selectedCategory === category
+            ? `${
+                Object.keys(data[category].subcategories).length > 8
+                  ? "650px"
+                  : Object.keys(data[category].subcategories).length > 5
+                  ? "500px"
+                  : "400px"
+              }`
+            : "95px",
+      }),
+      update: ({ category }) => ({
+        width:
+          selectedCategory === category
+            ? `${
+                Object.keys(data[category].subcategories).length > 8
+                  ? "650px"
+                  : Object.keys(data[category].subcategories).length > 5
+                  ? "500px"
+                  : "400px"
+              }`
+            : "95px",
+      }),
+      leave: { width: "95px" }, // Width when leaving
+      config: { mass: 5, tension: 500, friction: 100 },
+      keys: ({ category }) => category, // Use category as the key
+    },
+  );
+
+  const categoryAnimation = useSpring({
+    height: openSub ? "230px" : "67px",
+    config: { mass: 5, tension: 500, friction: 100 },
+  });
+
   return (
     <div className="w-full flex-col relative">
       <Container>
@@ -720,18 +762,19 @@ export default function CategoryMetrics({
       </Container>
       <Container className="block w-full !pr-0 lg:!px-[50px]">
         <div className="overflow-x-scroll lg:overflow-x-visible z-100 w-full scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
-          {!openSub ? (
-            <div
-              className={
-                "relative min-w-[820px] md:min-w-[850px] w-[97.5%] h-[67px] m-auto border-x-[1px] border-y-[1px] rounded-[15px] text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-forest-900 dark:bg-forest-1000 mt-8 overflow-hidden"
-              }
-            >
+          <animated.div
+            className={
+              "relative min-w-[820px] md:min-w-[850px] w-[97.5%] h-[67px] m-auto border-x-[1px] border-y-[1px] rounded-[15px] text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-forest-900 dark:bg-forest-1000 mt-8 overflow-hidden"
+            }
+            style={{ ...categoryAnimation }}
+          >
+            {!openSub ? (
               <div className="flex w-full h-full text-[12px]">
                 {Object.keys(categories).map((category, i) =>
                   categories[category] !== "Categories" ? (
                     <div
                       key={category}
-                      className={`relative flex w-full h-full justify-center items-center ${
+                      className={`relative flex w-full h-full justify-between items-center ${
                         selectedCategory === category
                           ? "borden-hidden rounded-[0px]"
                           : "h-full"
@@ -778,7 +821,7 @@ export default function CategoryMetrics({
                     >
                       <div
                         key={category}
-                        className={`w-full h-full flex flex-col text-center items-center first-letter justify-center hover:cursor-pointer ${
+                        className={`w-full h-full flex flex-col text-center items-center first-letter justify-between hover:cursor-pointer  ${
                           selectedCategory === category
                             ? ""
                             : "hover:bg-white/5"
@@ -792,18 +835,18 @@ export default function CategoryMetrics({
                         }}
                       >
                         <div
-                          className={` ${
+                          className={`flex items-center h-[25px]  mt-1 ${
                             selectedCategory === category
                               ? "text-sm font-bold"
                               : "text-xs font-medium"
                           }`}
                         >
-                          {categories[category]}
+                          <h1>{categories[category]}</h1>
                         </div>
 
-                        <button
+                        <div
                           key={i}
-                          className="relative top-[8px] h-[24px] w-full"
+                          className="relative flex items-center mb-2.5 top-[8px] h-[24px] w-full"
                           onClick={() => {
                             setOpenSub(!openSub);
                           }}
@@ -812,7 +855,7 @@ export default function CategoryMetrics({
                             icon="icon-park-outline:down"
                             className="w-full h-full"
                           />
-                        </button>
+                        </div>
                       </div>
                     </div>
                   ) : (
@@ -831,25 +874,19 @@ export default function CategoryMetrics({
                   ),
                 )}
               </div>
-            </div>
-          ) : (
-            <div
-              className={
-                "relative min-w-[820px] md:min-w-[850px] w-[97.5%] h-[230px] m-auto border-x-[1px] border-y-[1px] rounded-[15px] text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-forest-900 dark:bg-forest-1000 mt-8 overflow-hidden"
-              }
-            >
+            ) : (
               <div className="flex w-full h-full text-[12px]">
-                {Object.keys(categories).map((category, i) =>
-                  categories[category] !== "Categories" ? (
-                    <div
-                      key={category}
+                {categoryTransitions((style, item) =>
+                  categories[item.category] !== "Categories" ? (
+                    <animated.div
+                      key={item.category}
                       className={`relative flex w-full h-full ${
-                        selectedCategory === category
+                        selectedCategory === item.category
                           ? `border-hidden rounded-[0px] ${
-                              Object.keys(data[category].subcategories).length >
-                              8
+                              Object.keys(data[item.category].subcategories)
+                                .length > 8
                                 ? "w-[650px]"
-                                : Object.keys(data[category].subcategories)
+                                : Object.keys(data[item.category].subcategories)
                                     .length > 5
                                 ? "w-[500px]"
                                 : "w-[400px]"
@@ -858,141 +895,159 @@ export default function CategoryMetrics({
                       }
 
 
-                ${isCategoryHovered[category] ? "bg-white/5" : ""}
+                ${isCategoryHovered[item.category] ? "bg-white/5" : ""}
                 `}
                       onMouseEnter={() => {
                         setIsCategoryHovered((prev) => ({
                           ...prev,
-                          [category]: true,
+                          [item.category]: true,
                         }));
                       }}
                       onMouseLeave={() => {
                         setIsCategoryHovered((prev) => ({
                           ...prev,
-                          [category]: false,
+                          [item.category]: false,
                         }));
                       }}
                       style={{
                         borderLeft:
                           "0.5px dotted var(--dark-active-text, #CDD8D3)",
                         background:
-                          selectedCategory === category
+                          selectedCategory === item.category
                             ? "#5A6462"
                             : `linear-gradient(
                                 90deg,
                                 rgba(16, 20, 19, ${
                                   0.3 -
-                                  (i / (Object.keys(categories).length - 1)) *
+                                  (item.i /
+                                    (Object.keys(categories).length - 1)) *
                                     0.2
                                 }) 0%,
                                 #101413 15.10%,
                                 rgba(16, 20, 19, ${
                                   0.06 +
-                                  (i / Object.keys(categories).length) * 0.94
+                                  (item.i / Object.keys(categories).length) *
+                                    0.94
                                 }) 48.96%,
                                 #101413 86.98%,
                                 rgba(16, 20, 19, ${
                                   0.3 -
-                                  (i / (Object.keys(categories).length - 1)) *
+                                  (item.i /
+                                    (Object.keys(categories).length - 1)) *
                                     0.2
                                 }) 100%
                               )`,
+                        ...style,
                       }}
                     >
                       <div
-                        key={category}
-                        className={`h-full flex flex-col first-letter justify-center  hover:cursor-pointer overflow-hidden ${
-                          selectedCategory === category
+                        key={item.category}
+                        className={`h-full flex flex-col first-letter justify-between  hover:cursor-pointer overflow-hidden ${
+                          selectedCategory === item.category
                             ? `border-hidden rounded-[0px] ${
-                                Object.keys(data[category].subcategories)
+                                Object.keys(data[item.category].subcategories)
                                   .length > 8
                                   ? "w-[650px]"
-                                  : Object.keys(data[category].subcategories)
-                                      .length > 4
+                                  : Object.keys(
+                                      data[item.category].subcategories,
+                                    ).length > 4
                                   ? "w-[500px]"
                                   : "w-[400px]"
                               }`
                             : "hover:bg-white/5 w-full min-w-[60px] hover:max-w-[180px] "
                         }`}
                         onClick={() => {
-                          if (selectedCategory === category) {
+                          if (selectedCategory === item.category) {
                             setOpenSub(!openSub);
                             return;
                           }
 
-                          setSelectedCategory(category);
+                          setSelectedCategory(item.category);
                         }}
                       >
                         <div
-                          key={"label" + category}
+                          key={"label" + item.category}
                           className={`flex self-center justify-center mx-auto pb-8 pt-2 h-[30px] ${
-                            selectedCategory === category
+                            selectedCategory === item.category
                               ? "text-base font-bold "
                               : `text-base font-medium truncate hover:text-ellipsis ${
-                                  isCategoryHovered[category]
-                                    ? category === "native_transfers" ||
-                                      category === "token_transfers"
+                                  isCategoryHovered[item.category]
+                                    ? item.category === "native_transfers" ||
+                                      item.category === "token_transfers"
                                       ? "pl-[0px] w-full"
                                       : "w-full pl-0"
-                                    : category === "native_transfers" ||
-                                      category === "token_transfers"
+                                    : item.category === "native_transfers" ||
+                                      item.category === "token_transfers"
                                     ? "w-full "
                                     : "w-full pl-0"
                                 }`
                           }`}
                           style={{
                             background:
-                              selectedCategory === category
+                              selectedCategory === item.category
                                 ? "#5A6462"
                                 : "none",
                             backgroundClip:
-                              selectedCategory === category
+                              selectedCategory === item.category
                                 ? "initial"
                                 : "text",
                             WebkitBackgroundClip:
-                              selectedCategory === category
+                              selectedCategory === item.category
                                 ? "initial"
                                 : "text",
                             WebkitTextFillColor:
-                              selectedCategory === category
+                              selectedCategory === item.category
                                 ? "inherit"
                                 : "transparent",
                             backgroundImage:
-                              selectedCategory === category
+                              selectedCategory === item.category
                                 ? "none"
                                 : `radial-gradient(ellipse at center, rgba(255, 255, 255, 1) 0%, rgba(0, 0, 0, 1) 100%), linear-gradient(90deg, rgba(16, 20, 19, ${
                                     0.4 +
-                                    (i / (Object.keys(categories).length - 1)) *
+                                    (item.i /
+                                      (Object.keys(categories).length - 1)) *
                                       0.4
                                   }) 0%, #101413 15.10%, rgba(16, 20, 19, 0.00) 48.96%, #101413 86.98%, rgba(16, 20, 19, ${
                                     0.4 +
-                                    (i / (Object.keys(categories).length - 1)) *
+                                    (item.i /
+                                      (Object.keys(categories).length - 1)) *
                                       0.4
                                   }) 100%)`,
                           }}
                         >
-                          {categories[category]}
+                          {categories[item.category]}
                         </div>
 
                         <div
                           className="flex flex-col gap-x-1 overflow-hidden h-full 
-                                    mx-4 "
+                                    mx-4 items-center"
                         >
-                          {selectedCategory === category ? (
-                            <div className="flex h-full">
+                          {selectedCategory === item.category ? (
+                            <div
+                              className={`flex h-full  ${
+                                Object.keys(data[item.category].subcategories)
+                                  .length > 8
+                                  ? "w-[600px]"
+                                  : Object.keys(
+                                      data[item.category].subcategories,
+                                    ).length > 4
+                                  ? "w-[450px]"
+                                  : "w-[350px]"
+                              }`}
+                            >
                               <div
-                                key={data[category].subcategories}
+                                key={data[item.category].subcategories}
                                 className="flex flex-wrap w-full gap-x-2 gap-y-2 justify-center self-center items-center "
                               >
                                 <div
-                                  key={categories[category]}
+                                  key={categories[item.category]}
                                   className={`flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[35px] min-w-[90px] hover:bg-white/5 z-10    ${
-                                    checkAllSelected(category)
+                                    checkAllSelected(item.category)
                                       ? "opacity-100"
                                       : "opacity-30"
                                   }`}
                                   onClick={(e) => {
-                                    handleSelectAllSubcategories(category);
+                                    handleSelectAllSubcategories(item.category);
                                     e.stopPropagation();
                                   }}
                                 >
@@ -1003,22 +1058,25 @@ export default function CategoryMetrics({
                                     <Icon
                                       icon="feather:check-circle"
                                       className={`w-[14px] h-[14px] ${
-                                        checkAllSelected(category)
+                                        checkAllSelected(item.category)
                                           ? "opacity-100"
                                           : "opacity-0"
                                       }`}
                                     />
                                   </div>
                                 </div>
-                                {data[category].subcategories.list.map(
+                                {data[item.category].subcategories.list.map(
                                   (subcategory) =>
-                                    checkSubcategory(category, subcategory) ? (
+                                    checkSubcategory(
+                                      item.category,
+                                      subcategory,
+                                    ) ? (
                                       <button
                                         key={subcategory}
                                         className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[35px] min-w-[90px] hover:bg-white/5 z-10"
                                         onClick={(e) => {
                                           handleToggleSubcategory(
-                                            category,
+                                            item.category,
                                             subcategory,
                                           );
                                           e.stopPropagation();
@@ -1037,16 +1095,19 @@ export default function CategoryMetrics({
                                     ) : null,
                                 )}
 
-                                {data[category].subcategories.list.map(
+                                {data[item.category].subcategories.list.map(
                                   (subcategory) =>
-                                    !checkSubcategory(category, subcategory) ? (
+                                    !checkSubcategory(
+                                      item.category,
+                                      subcategory,
+                                    ) ? (
                                       <button
                                         key={subcategory}
                                         className="flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] 
                                           justify-between items-center min-w-[90px] max-h-[35px] hover:bg-white/5 z-10 opacity-30 "
                                         onClick={(e) => {
                                           handleToggleSubcategory(
-                                            category,
+                                            item.category,
                                             subcategory,
                                           );
                                           e.stopPropagation();
@@ -1081,25 +1142,25 @@ export default function CategoryMetrics({
                           />
                         </button>
                       </div>
-                    </div>
+                    </animated.div>
                   ) : (
                     // Different response for "Chains" category
                     <div
-                      key={category}
+                      key={item.category}
                       className={
-                        "relative flex flex-col min-w-[140px] w-full h-full justify-start pl-[16px] pt-2"
+                        "relative flex flex-col min-w-[140px] max-w-[140px] w-full h-full justify-start pl-[16px] pt-2"
                       }
                     >
                       <div className="text-sm font-bold pb-[10px]">
-                        {categories[category]}
+                        {categories[item.category]}
                       </div>
                       <div className="text-xs font-medium">Subcategories</div>
                     </div>
                   ),
                 )}
               </div>
-            </div>
-          )}
+            )}
+          </animated.div>
         </div>
       </Container>
 
