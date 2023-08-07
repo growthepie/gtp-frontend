@@ -69,6 +69,9 @@ export default function CategoryMetrics({
   const [selectedMode, setSelectedMode] = useState("gas_fees_");
   const [selectedCategory, setSelectedCategory] = useState("native_transfers");
 
+  const [animationFinished, setAnimationFinished] = useState(true);
+  const [exitAnimation, setExitAnimation] = useState(false);
+
   const [openSub, setOpenSub] = useState(false);
   const [selectedValue, setSelectedValue] = useState("absolute");
 
@@ -631,6 +634,24 @@ export default function CategoryMetrics({
     }, [category, type, timespan, selectedSubcategories, data, setChainValues]);
   }
 
+  const handleOpen = (category) => {
+    if (animationFinished) {
+      if (!openSub) {
+        setOpenSub(!openSub);
+        setAnimationFinished(false);
+        setTimeout(() => {
+          setAnimationFinished(true);
+        }, 500);
+      } else {
+        setExitAnimation(true);
+        setTimeout(() => {
+          setOpenSub(!openSub);
+          setExitAnimation(false);
+        }, 550);
+      }
+    }
+  };
+
   const transitions = useTransition(
     sortedChainValues?.map(([item, value], index) => ({
       item,
@@ -660,7 +681,7 @@ export default function CategoryMetrics({
       i,
     })),
     {
-      from: { width: "95px" }, // Initial width for closed categories
+      from: { width: "140px" }, // Initial width for closed categories
       enter: ({ category }) => ({
         width:
           openSub && selectedCategory === category
@@ -671,11 +692,11 @@ export default function CategoryMetrics({
                   ? "500px"
                   : "400px"
               }`
-            : "95px",
+            : "140px",
       }),
       update: ({ category }) => ({
-        width:
-          selectedCategory === category
+        width: !exitAnimation
+          ? openSub && selectedCategory === category
             ? `${
                 Object.keys(data[category].subcategories).length > 8
                   ? "650px"
@@ -683,17 +704,22 @@ export default function CategoryMetrics({
                   ? "500px"
                   : "400px"
               }`
-            : "95px",
+            : "140px"
+          : "140px",
       }),
-      leave: { width: "95px" }, // Width when leaving
+      leave: { width: "140px" },
       config: { mass: 5, tension: 500, friction: 100 },
-      keys: ({ category }) => category, // Use category as the key
+      keys: ({ category }) => category,
+      delay: animationFinished ? 0 : 500,
     },
   );
 
   const categoryAnimation = useSpring({
     height: openSub ? "230px" : "67px",
     config: { mass: 5, tension: 500, friction: 100 },
+    onRest: () => {
+      setAnimationFinished(true);
+    },
   });
 
   return (
@@ -828,7 +854,7 @@ export default function CategoryMetrics({
                         }`}
                         onClick={() => {
                           if (selectedCategory === category) {
-                            setOpenSub(!openSub);
+                            handleOpen(category);
                           }
 
                           setSelectedCategory(category);
@@ -848,7 +874,7 @@ export default function CategoryMetrics({
                           key={i}
                           className="relative flex items-center mb-2.5 top-[8px] h-[24px] w-full"
                           onClick={() => {
-                            setOpenSub(!openSub);
+                            handleOpen(category);
                           }}
                         >
                           <Icon
@@ -958,7 +984,7 @@ export default function CategoryMetrics({
                         }`}
                         onClick={() => {
                           if (selectedCategory === item.category) {
-                            setOpenSub(!openSub);
+                            handleOpen(item.category);
                             return;
                           }
 
@@ -1133,7 +1159,7 @@ export default function CategoryMetrics({
                         <button
                           className="relative bottom-[4px] h-[24px] w-full"
                           onClick={() => {
-                            setOpenSub(!openSub);
+                            handleOpen(item.category);
                           }}
                         >
                           <Icon
