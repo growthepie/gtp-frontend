@@ -53,42 +53,36 @@ export default function ChainAnimations({
     }
   }, [value, sortedValues]);
 
-  const springProps = useSpring({
-    transform: `translateY(${index * 50}px)`,
-    config: { duration: 250 },
-  });
-
   return (
     <animated.div
       key={chain}
-      className={`relative flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium hover:cursor-pointer ${
+      className={`relative flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium hover:cursor-pointer z-0 ${
         ["arbitrum", "imx", "zkSync Era", "all_l2s"].includes(chain)
           ? "text-white dark:text-black"
           : "text-white"
       } ${
         selectedChains[chain]
           ? AllChainsByKeys[chain].backgrounds[theme][1]
-          : `${AllChainsByKeys[chain].backgrounds[theme][1]} opacity-30`
+          : `${AllChainsByKeys[chain].backgrounds[theme][1]} `
       }`}
       style={{
         width: width,
         bottom: `${index * 45}px`,
-        ...springProps,
       }}
-      onClick={() =>
+      onClick={() => {
         setSelectedChains((prevSelectedChains) => ({
           ...prevSelectedChains,
           [chain]: !prevSelectedChains[chain],
-        }))
-      }
+        }));
+      }}
     >
       <div
         key={chain + " " + value}
-        className="flex items-center h-[45px] pl-[20px] min-w-[155px] w-full"
+        className="flex items-center h-[45px] pl-[20px] min-w-[155px] w-full "
       >
         <div
           key={chain + " " + index + value}
-          className="flex w-[155px] items-center pr-2"
+          className="flex w-[155px] items-center pr-2 "
         >
           <div key={chain + " " + index} className="flex items-center w-[30px]">
             <Icon
@@ -119,17 +113,11 @@ export default function ChainAnimations({
               </div>
             )}
           </div>
-          <button
+          <div
             key={chain + "select"}
-            className={`relative flex left-[10px] w-[24px] h-[24px] bg-forest-700 rounded-full self-center items-center justify-center ${
+            className={`relative flex left-[10px] w-[24px] h-[24px] bg-forest-700 rounded-full self-center items-center justify-center z-10 ${
               !selectedChains[chain] ? "opacity-100" : ""
             }`}
-            onClick={() =>
-              setSelectedChains((prevSelectedChains) => ({
-                ...prevSelectedChains,
-                [chain]: !prevSelectedChains[chain],
-              }))
-            }
           >
             <Icon
               icon="feather:check-circle"
@@ -137,7 +125,7 @@ export default function ChainAnimations({
                 !selectedChains[chain] ? "opacity-0" : ""
               }`}
             />
-          </button>
+          </div>
         </div>
       </div>
     </animated.div>
