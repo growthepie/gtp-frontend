@@ -990,6 +990,76 @@ export default function OverviewMetrics({
           chartWidth="100%"
         />
       </Container>
+      <div>
+        {data[selectedChain ?? "all_l2s"].overview[
+          selectedTimespan
+        ].contracts.data.map((contract, i) => (
+          <div key={contract[0]}>
+            <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] ">
+              <div className="flex w-[100%] ml-4 mr-8 justify-between items-center ">
+                <div className="flex items-center w-[30%] gap-x-[30px] pl-1 ">
+                  <div
+                    className={`flex w-[34px] h-[34px] rounded-full items-center justify-center ${
+                      AllChainsByKeys[selectedChain ?? "all_l2s"].backgrounds[
+                        theme
+                      ][1]
+                    }`}
+                  >
+                    <Icon
+                      icon={`gtp:${selectedChain ?? "all_l2s"}-logo-monochrome`}
+                      className="w-[21px] h-[21px] text-black"
+                    />
+                  </div>
+                  <div className="flex w-[30px] items-center justify-center ">
+                    {i + 1}
+                  </div>
+                  <div>
+                    {
+                      contract[
+                        data[selectedChain ?? "all_l2s"].overview[
+                          selectedTimespan
+                        ].contracts.types.indexOf("name")
+                      ]
+                    }
+                  </div>
+                </div>
+                {/* <div className="flex items-center text-[14px] justify-center w-[30.3%] mr-[140px]">
+                  <div className="flex">
+                    {master &&
+                      master.blockspace_categories.main_categories[
+                        contract[data[selectedChain].overview[selectedTimespan].contracts.types.indexOf("main_category_key")]
+                      ] +
+                        " - " +
+                        master.blockspace_categories.sub_categories[
+                          contract[data[selectedChain].overview[selectedTimespan].contracts.types.indexOf("sub_category_key")]
+                        ]}
+                  </div>
+                </div>
+                <div className="flex gap-x-[80px] items-center w-[28%] mr-4 ">
+                  <div className="flex justify-center w-[30%]">
+                    {selectedMode === "gas_fees_"
+                      ? showUsd
+                        ? contract.gas_fees_absolute_usd
+                        : contract.gas_fees_absolute_eth
+                      : contract.txcount_absolute}
+                  </div>
+                  <div className="pr-[15px]">
+                    {selectedMode === "gas_fees_"
+                      ? contract.gas_fees_share
+                      : contract.txcount_share}
+                  </div>
+                  <div>
+                    <Icon
+                      icon="material-symbols:link"
+                      className="w-[24px] h-[24px]"
+                    />
+                  </div>
+                </div> */}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
