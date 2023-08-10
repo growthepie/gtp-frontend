@@ -710,7 +710,6 @@ export default function CategoryMetrics({
       leave: { width: "140px" },
       config: { mass: 5, tension: 500, friction: 100 },
       keys: ({ category }) => category,
-      delay: animationFinished ? 0 : 500,
     },
   );
 
@@ -895,7 +894,7 @@ export default function CategoryMetrics({
                     <div
                       key={category}
                       className={
-                        "relative flex flex-col min-w-[140px] w-full h-full justify-center pl-[14px]"
+                        "relative flex flex-col min-w-[140px] w-full h-full justify-start mt-2 ml-0.5 pl-[14px]"
                       }
                     >
                       <div className="text-sm font-bold pb-[10px]">
