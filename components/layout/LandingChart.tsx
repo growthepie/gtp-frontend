@@ -454,7 +454,9 @@ export default function LandingChart({
 
   const timespans = useMemo(() => {
     const maxDate = new Date(
-      filteredData.length > 0
+      filteredData.length > 0 &&
+      filteredData[0].data.length > 0 &&
+      filteredData[0].data[filteredData[0].data.length - 1][0]
         ? filteredData[0].data[filteredData[0].data.length - 1][0]
         : 0,
     );
