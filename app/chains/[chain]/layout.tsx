@@ -11,23 +11,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const key = AllChainsByUrlKey[params.chain].key;
 
   // fetch data from API
-  const res: MasterResponse = await fetch(MasterURL).then((r) => r.json());
-
-  console.log("params", params); // eslint-disable-line no-console
-
-  if (key) {
-    console.log("chains/chain/layout::key", key);
-    console.log(
-      "chains/chain/layout::Object.keys(res.chains)",
-      Object.keys(res.chains),
-    );
-    console.log("chains/chain/layout::res.chains[key]", res.chains[key]); // eslint-disable-line no-console
-  }
+  const res: MasterResponse = await fetch(MasterURL, {
+    cache: "no-store",
+  }).then((r) => r.json());
 
   if (res && key && res.chains[key]) {
-    console.log(
-      `key: ${key} - ${res.chains[key].name} - ${res.chains[key].description}`,
-    ); // eslint-disable-line no-console
     return {
       title: res.chains[key].name,
       description: res.chains[key].description,
