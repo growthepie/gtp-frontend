@@ -1000,13 +1000,23 @@ export default function OverviewMetrics({
                 <div className="flex items-center w-[30%] gap-x-[30px] pl-1 ">
                   <div
                     className={`flex w-[34px] h-[34px] rounded-full items-center justify-center ${
-                      AllChainsByKeys[selectedChain ?? "all_l2s"].backgrounds[
-                        theme
-                      ][1]
+                      AllChainsByKeys[
+                        contract[
+                          data[selectedChain ?? "all_l2s"].overview[
+                            selectedTimespan
+                          ].contracts.types.indexOf("chain")
+                        ]
+                      ].backgrounds[theme][0]
                     }`}
                   >
                     <Icon
-                      icon={`gtp:${selectedChain ?? "all_l2s"}-logo-monochrome`}
+                      icon={`gtp:${
+                        contract[
+                          data[selectedChain ?? "all_l2s"].overview[
+                            selectedTimespan
+                          ].contracts.types.indexOf("chain")
+                        ]
+                      }-logo-monochrome`}
                       className="w-[21px] h-[21px] text-black"
                     />
                   </div>
