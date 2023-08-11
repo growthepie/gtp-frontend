@@ -13,9 +13,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // fetch data from API
   const res: MasterResponse = await fetch(MasterURL).then((r) => r.json());
 
-  console.log("chains/chain/layout::key", key);
-  console.log("chains/chain/layout::res.chains[key]", res.chains[key]);
-  console.log("chains/chain/layout::res", res);
+  console.log("chains/chain/layout::key", key); // eslint-disable-line no-console
+  console.log("chains/chain/layout::res.chains[key]", res.chains[key]); // eslint-disable-line no-console
+  console.log("chains/chain/layout::res", res); // eslint-disable-line no-console
 
   if (res && key && res.chains[key]) {
     console.log(
