@@ -16,10 +16,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   console.log("params", params); // eslint-disable-line no-console
 
   if (key) {
-    console.log("chains/chain/layout::key", key); // eslint-disable-line no-console
+    console.log("chains/chain/layout::key", key);
+    console.log(
+      "chains/chain/layout::Object.keys(res.chains)",
+      Object.keys(res.chains),
+    );
     console.log("chains/chain/layout::res.chains[key]", res.chains[key]); // eslint-disable-line no-console
   }
-  // console.log("chains/chain/layout::res", res); // eslint-disable-line no-console
 
   if (res && key && res.chains[key]) {
     console.log(
