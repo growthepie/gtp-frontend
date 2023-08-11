@@ -243,9 +243,12 @@ export default function LandingMetricsTable({
                                 </>
                               ) : (
                                 <>
-                                  {item.chain.key === "base"
-                                    ? "0 mo."
-                                    : "\u00A0"}
+                                  {item.chain.key === "base" ? "0" : "\u00A0"}
+                                  <span className="font-[350] text-[9px] md:text-[11px] inline-block pl-0.5">
+                                    {item.chain.key === "base"
+                                      ? " mo."
+                                      : "\u00A0"}
+                                  </span>
                                 </>
                               )}
                             </div>
