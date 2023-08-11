@@ -405,11 +405,16 @@ const MetricsTable = ({
                           0 ? (
                             <span className="text-[#45AA6F] dark:text-[#4CFF7E]">
                               {reversePerformer ? "-" : "+"}
-                              {Math.abs(
-                                Math.round(
-                                  item.data.changes[timespan][0] * 1000,
-                                ) / 10,
-                              ).toFixed(1)}
+                              {(() => {
+                                const percentage = Math.abs(
+                                  Math.round(
+                                    item.data.changes[timespan][0] * 1000,
+                                  ) / 10,
+                                ).toFixed(1);
+                                return percentage.length >= 4
+                                  ? Math.floor(percentage)
+                                  : percentage;
+                              })()}
                               %
                             </span>
                           ) : (

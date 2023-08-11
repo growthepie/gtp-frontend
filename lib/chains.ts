@@ -164,6 +164,27 @@ export const AllChains = [
     },
   },
   {
+    label: "Base",
+    icon: "/icons/Base.png",
+    key: "base",
+    urlKey: "base",
+    chainType: "L2",
+    description:
+      "Base is an fully EVM compatible optimistic rollup built on the OP Stack. It is incubated inside of Coinbase. Public mainnet launch was on August 9th 2023.",
+    border: {
+      light: ["bg-[#2151F5]", "bg-[#2151F5]"],
+      dark: ["bg-[#2151F5", "bg-[#2151F5]"],
+    },
+    colors: {
+      light: ["#2151F5", "#2151F5"], // dark purple
+      dark: ["#2151F5", "#2151F5"], // dark purple
+    },
+    backgrounds: {
+      light: ["bg-[#2151F5]", "bg-[#2151F5]"],
+      dark: ["bg-[#2151F5]", "bg-[#2151F5]"],
+    },
+  },
+  {
     label: "Multiple",
     icon: null,
     key: "multiple",

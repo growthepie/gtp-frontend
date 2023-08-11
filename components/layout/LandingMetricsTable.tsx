@@ -234,12 +234,18 @@ export default function LandingMetricsTable({
                               )}{" "} */}
                             </div>
                             <div className="">
-                              {monthsSinceLaunch[item.chain.key][1] > 0 && (
+                              {monthsSinceLaunch[item.chain.key][1] > 0 ? (
                                 <>
                                   {monthsSinceLaunch[item.chain.key][1]}
                                   <span className="font-[350] text-[9px] md:text-[11px] inline-block pl-0.5">
                                     mo.
                                   </span>
+                                </>
+                              ) : (
+                                <>
+                                  {item.chain.key === "base"
+                                    ? "0 mo."
+                                    : "\u00A0"}
                                 </>
                               )}
                             </div>

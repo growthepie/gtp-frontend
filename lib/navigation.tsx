@@ -47,7 +47,8 @@ export const navigationItems: NavigationItem[] = [
         label: "Transaction Count",
         page: {
           title: "Transaction Count",
-          description: "The number of daily transactions. We try to only count transactions that are executed by users/smart contracts - no system transactions.",
+          description:
+            "The number of daily transactions. We try to only count transactions that are executed by users/smart contracts - no system transactions.",
           why: "The number of transactions processed on a blockchain is a reliable metric for measuring its usage. However, it should be noted that this metric alone may not provide sufficient insight into the actual value of the transactions being conducted. For instance, while some chains may have a lower transaction count, the value of these transactions may be significantly higher due to their use in decentralized finance (DeFi) applications. On the other hand, certain chains may have a higher transaction count due to their use in gaming or other applications involving lower value transactions.",
           icon: "feather:clock",
         },
@@ -280,6 +281,17 @@ export const navigationItems: NavigationItem[] = [
         key: "zksync_era",
         rootKey: "chainsOptimism",
         urlKey: "zksync-era",
+      },
+      {
+        label: "Base",
+        page: {
+          description:
+            "Base is an fully EVM compatible optimistic rollup built on the OP Stack. It is incubated inside of Coinbase. Public mainnet launch was on August 9th 2023.",
+        },
+        icon: "gtp:base-logo-monochrome-1",
+        key: "base",
+        rootKey: "chainsBase",
+        urlKey: "base",
       },
       // {
       //   label: "Loopring",
