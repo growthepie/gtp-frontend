@@ -405,11 +405,25 @@ const MetricsTable = ({
                           0 ? (
                             <span className="text-[#45AA6F] dark:text-[#4CFF7E]">
                               {reversePerformer ? "-" : "+"}
-                              {Math.abs(
-                                Math.round(
-                                  item.data.changes[timespan][0] * 1000,
-                                ) / 10,
-                              ).toFixed(1)}
+                              {(() => {
+                                const rawPercentage = Math.abs(
+                                  Math.round(
+                                    item.data.changes[timespan][0] * 1000,
+                                  ) / 10,
+                                ).toFixed(1);
+
+                                const percentage = parseFloat(rawPercentage);
+
+                                if (!isNaN(percentage)) {
+                                  const formattedPercentage =
+                                    percentage.toFixed(1);
+                                  return formattedPercentage.length >= 4
+                                    ? Math.floor(percentage)
+                                    : formattedPercentage;
+                                } else {
+                                  return "Invalid Percentage";
+                                }
+                              })()}
                               %
                             </span>
                           ) : (

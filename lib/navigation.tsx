@@ -240,6 +240,17 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "arbitrum",
       },
       {
+        label: "Base",
+        page: {
+          description:
+            "Base is an fully EVM compatible optimistic rollup built on the OP Stack. It is incubated inside of Coinbase. Public mainnet launch was on August 9th 2023.",
+        },
+        icon: "gtp:base-logo-monochrome",
+        key: "base",
+        rootKey: "chainsBase",
+        urlKey: "base",
+      },
+      {
         label: "Immutable X",
         page: {
           description:
@@ -282,6 +293,7 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "chainsOptimism",
         urlKey: "zksync-era",
       },
+
       // {
       //   label: "Loopring",
       //   page: {

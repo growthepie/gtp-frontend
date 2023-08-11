@@ -33,7 +33,7 @@ const Chain = ({ params }: { params: any }) => {
   if (!chainKey) {
     return <div>Chain not found</div>;
   }
-
+  console.log(ChainURLs[chainKey]);
   return (
     <>
       <ShowLoading
