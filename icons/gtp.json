@@ -127,7 +127,9 @@
       "body": "<g fill=\"none\"><g clip-path=\"url(#svgID1)\"><g clip-path=\"url(#svgID2)\"><mask id=\"svgID0\" width=\"43\" height=\"9\" x=\"0\" y=\"3\" maskUnits=\"userSpaceOnUse\" style=\"mask-type:luminance\"><path fill=\"#fff\" d=\"M42.857 3.572H0v8.376h42.857V3.572Z\"/></mask><g fill=\"currentColor\" fill-rule=\"evenodd\" clip-rule=\"evenodd\" mask=\"url(#svgID0)\"><path d=\"m14.876 7.683-4.22-4.109v3.01l-4.19 3.013 4.19.002v2.194l4.22-4.11ZM-.001 7.681l4.22 4.11V8.805l4.19-3.037-4.19-.003V3.572L0 7.682Z\"/></g></g></g><defs><clipPath id=\"svgID1\"><path fill=\"#fff\" d=\"M0 0h15v15H0z\"/></clipPath><clipPath id=\"svgID2\"><path fill=\"#fff\" d=\"M0 3.571h42.857v8.571H0z\"/></clipPath></defs></g>"
     },
     "base-logo-monochrome": {
-      "body": "<svg width=\"15\" height=\"15\" viewBox=\"0 0 15 15\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path d=\"M7.48692 15C11.6363 15 15 11.6422 15 7.5C15 3.35786 11.6363 0 7.48692 0C3.55025 0 0.320738 3.02245 0 6.86958H9.93056V8.13042H5.39358e-08C0.320739 11.9775 3.55025 15 7.48692 15Z\" fill=\"#CDD8D3\"/>\n</svg>"
+      "body": "<g fill=\"none\"><path d=\"M7.48692 15C11.6363 15 15 11.6422 15 7.5C15 3.35786 11.6363 0 7.48692 0C3.55025 0 0.320738 3.02245 0 6.86958H9.93056V8.13042H5.39358e-08C0.320739 11.9775 3.55025 15 7.48692 15Z\" fill=\"currentColor\"/></g>",
+      "width": 15,
+      "height": 15
     },
     "base-logo-monochrome-1": {
       "body": "<svg width=\"15\" height=\"15\" viewBox=\"0 0 15 15\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path d=\"M7.48692 15C11.6363 15 15 11.6422 15 7.5C15 3.35786 11.6363 0 7.48692 0C3.55025 0 0.320738 3.02245 0 6.86958H9.93056V8.13042H5.39358e-08C0.320739 11.9775 3.55025 15 7.48692 15Z\" fill=\"#5A6462\"/>\n</svg>"
