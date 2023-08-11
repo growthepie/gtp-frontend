@@ -13,7 +13,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // fetch data from API
   const res: MasterResponse = await fetch(MasterURL).then((r) => r.json());
 
+  console.log("chains/chain/layout::key", key);
+  console.log("chains/chain/layout::res.chains[key]", res.chains[key]);
+  console.log("chains/chain/layout::res", res);
+
   if (res && key && res.chains[key]) {
+    console.log(
+      `key: ${key} - ${res.chains[key].name} - ${res.chains[key].description}`,
+    ); // eslint-disable-line no-console
     return {
       title: res.chains[key].name,
       description: res.chains[key].description,
