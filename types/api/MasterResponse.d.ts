@@ -10,6 +10,7 @@ export interface Chains {
   optimism: Optimism;
   arbitrum: Arbitrum;
   imx: Imx;
+  base: Base;
 }
 
 export interface Ethereum {
