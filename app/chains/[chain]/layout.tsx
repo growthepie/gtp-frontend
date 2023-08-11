@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { MasterURL } from "@/lib/urls";
-import { AllChains } from "@/lib/chains";
+import { AllChainsByUrlKey } from "@/lib/chains";
 import { MasterResponse } from "@/types/api/MasterResponse";
 
 type Props = {
@@ -8,7 +8,7 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const key = AllChains.find((c) => c.urlKey === params.chain)?.key;
+  const key = AllChainsByUrlKey[params.chain].key;
 
   // fetch data from API
   const res: MasterResponse = await fetch(MasterURL).then((r) => r.json());

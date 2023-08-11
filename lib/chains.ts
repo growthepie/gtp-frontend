@@ -237,3 +237,8 @@ export const AllChainsByLabels = AllChains.reduce((acc, chain) => {
   acc[chain.label] = chain;
   return acc;
 }, {});
+
+export const AllChainsByUrlKey = AllChains.reduce((acc, chain) => {
+  acc[chain.urlKey] = chain;
+  return acc;
+}, {});
