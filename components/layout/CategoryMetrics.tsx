@@ -792,10 +792,10 @@ export default function CategoryMetrics({
         </div>
       </Container>
       <Container className="block w-full !pr-0 lg:!px-[50px]">
-        <div className="overflow-x-scroll lg:overflow-x-visible z-100 w-full scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
+        <div className="overflow-x-scroll lg:overflow-x-visible z-100 w-full scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
           <animated.div
             className={
-              "relative min-w-[820px] md:min-w-[850px] w-[97.5%] h-[67px] m-auto border-x-[1px] border-y-[1px] rounded-[15px] text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-forest-900 dark:bg-forest-1000 mt-8 overflow-hidden"
+              "relative min-w-[820px] md:min-w-[850px] w-[97.5%] h-[67px] m-auto border-x-[1px] border-y-[1px] rounded-[15px] dark:text-forest-50  text-forest-1000 border-forest-400 dark:border-forest-800  dark:bg-forest-1000 mt-8 overflow-hidden"
             }
             style={{ ...categoryAnimation }}
           >
@@ -807,10 +807,10 @@ export default function CategoryMetrics({
                       key={category}
                       className={`relative flex w-full h-full justify-between items-center ${
                         selectedCategory === category
-                          ? "borden-hidden rounded-[0px]"
+                          ? "borden-hidden rounded-[0px] text-white"
                           : "h-full"
                       }
-                    ${isCategoryHovered[category] ? "bg-white/5" : ""}`}
+                    ${isCategoryHovered[category] ? "" : ""}`}
                       onMouseEnter={() => {
                         setIsCategoryHovered((prev) => ({
                           ...prev,
@@ -829,6 +829,8 @@ export default function CategoryMetrics({
                         background:
                           selectedCategory === category
                             ? "#5A6462"
+                            : theme === "light"
+                            ? "#FFFFFF"
                             : `linear-gradient(
                                 90deg,
                                 rgba(16, 20, 19, ${
@@ -855,7 +857,7 @@ export default function CategoryMetrics({
                         className={`w-full h-full flex flex-col text-center items-center first-letter justify-between hover:cursor-pointer  ${
                           selectedCategory === category
                             ? ""
-                            : "hover:bg-white/5"
+                            : "hover:bg-forest-500 dark:hover:bg-white/5"
                         }`}
                         onClick={() => {
                           if (selectedCategory === category) {
@@ -894,7 +896,7 @@ export default function CategoryMetrics({
                     <div
                       key={category}
                       className={
-                        "relative flex flex-col min-w-[140px] w-full h-full justify-start mt-2 ml-0.5 pl-[14px]"
+                        "relative flex flex-col min-w-[140px] w-full h-full justify-start mt-2 ml-0.5 pl-[14px] dark:text-white bg-white dark:bg-inherit"
                       }
                     >
                       <div className="text-sm font-bold pb-[10px]">
@@ -913,7 +915,7 @@ export default function CategoryMetrics({
                       key={item.category}
                       className={`relative flex w-full h-full ${
                         selectedCategory === item.category
-                          ? `border-hidden rounded-[0px] ${
+                          ? `border-hidden rounded-[0px] dark:text-inherit text-white ${
                               Object.keys(data[item.category].subcategories)
                                 .length > 8
                                 ? "w-[650px]"
@@ -946,6 +948,8 @@ export default function CategoryMetrics({
                         background:
                           selectedCategory === item.category
                             ? "#5A6462"
+                            : theme === "light"
+                            ? "#FFFFFF"
                             : `linear-gradient(
                                 90deg,
                                 rgba(16, 20, 19, ${
@@ -998,7 +1002,7 @@ export default function CategoryMetrics({
                       >
                         <div
                           key={"label" + item.category}
-                          className={`flex self-center justify-center mx-auto pb-8 pt-2 h-[30px] ${
+                          className={`flex self-center justify-center mx-auto pb-8 pt-2 h-[30px]  ${
                             selectedCategory === item.category
                               ? "text-base font-bold "
                               : `text-base font-medium truncate hover:text-ellipsis ${
@@ -1029,9 +1033,13 @@ export default function CategoryMetrics({
                             WebkitTextFillColor:
                               selectedCategory === item.category
                                 ? "inherit"
+                                : theme === "light"
+                                ? "initial"
                                 : "transparent",
                             backgroundImage:
                               selectedCategory === item.category
+                                ? "none"
+                                : theme === "light"
                                 ? "none"
                                 : `radial-gradient(ellipse at center, rgba(255, 255, 255, 1) 0%, rgba(0, 0, 0, 1) 100%), linear-gradient(90deg, rgba(16, 20, 19, ${
                                     0.4 +
@@ -1085,7 +1093,7 @@ export default function CategoryMetrics({
                                   <div className="mr-2">
                                     Select All Subcategories
                                   </div>
-                                  <div className="rounded-full bg-forest-50 dark:bg-forest-900 mr-[1px]">
+                                  <div className="rounded-full bg-forest-900 mr-[1px]">
                                     <Icon
                                       icon="feather:check-circle"
                                       className={`w-[14px] h-[14px] ${
@@ -1119,7 +1127,7 @@ export default function CategoryMetrics({
                                       <div className="mr-2">
                                         {formatSubcategories(subcategory)}
                                       </div>
-                                      <div className="rounded-full bg-forest-50 dark:bg-forest-900">
+                                      <div className="rounded-full bg-forest-900">
                                         <Icon
                                           icon="feather:check-circle"
                                           className={`w-[14px] h-[14px]  ${
