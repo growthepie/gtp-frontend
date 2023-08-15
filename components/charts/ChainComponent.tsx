@@ -50,10 +50,6 @@ export default function ChainComponent({
   selectedTimespan: string;
   selectedScale: string;
 }) {
-  if (!data) {
-    return <div>Loading...</div>; // You can replace this with your loading component
-  }
-
   const chartComponents = useRef<Highcharts.Chart[]>([]);
   const zoomedMargin = [1, 15, 0, 0];
   const defaultMargin = [1, 15, 0, 0];

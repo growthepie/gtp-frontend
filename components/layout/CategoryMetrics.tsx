@@ -63,7 +63,7 @@ export default function CategoryMetrics({
     name: string;
     unixKey: string;
     dataKey: string;
-    data: any[]; // You should replace `any[]` with the correct type for your data array
+    data: any[];
   };
 
   const [selectedMode, setSelectedMode] = useState("gas_fees_");
@@ -89,6 +89,8 @@ export default function CategoryMetrics({
     arbitrum: true,
     zksync_era: true,
     optimism: true,
+    polygon_zkevm: true,
+    imx: true,
   });
 
   const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
@@ -266,13 +268,37 @@ export default function CategoryMetrics({
 
     //Array of selected chains to return to chart
     for (let i in selectedChains) {
-      if (selectedChains[i] === true) {
+      if (
+        selectedChains[i] === true &&
+        data[selectedCategory].daily[String(i)]
+      ) {
         const obj = {
           id: [String(i), selectedCategory, selectedType].join("_"),
           name: String(i),
           unixKey: "unix",
           dataKey: selectedType,
           data: data[selectedCategory].daily[String(i)],
+        };
+        chainArray.push(obj);
+      }
+    }
+
+    return chainArray;
+  }, [data, selectedChains, selectedCategory, selectedType]);
+
+  const chartReturnTest = useMemo(() => {
+    const today = new Date().getTime();
+    const chainArray: ChainData[] = [];
+
+    //Array of selected chains to return to chart
+    for (let i in selectedChains) {
+      if (selectedChains[i] === true) {
+        const obj = {
+          id: [String(i), "cefi", selectedType].join("_"),
+          name: String(i),
+          unixKey: "unix",
+          dataKey: selectedType,
+          data: data["cefi"].daily[String(i)],
         };
         chainArray.push(obj);
       }
@@ -343,6 +369,34 @@ export default function CategoryMetrics({
           })
           .reverse(),
       },
+      {
+        id: ["polygon_zkevm", "native_transfers", selectedType].join("_"),
+        name: "polygon_zkevm",
+        unixKey: "unix",
+        dataKey: selectedType,
+        data: data["native_transfers"].daily["polygon_zkevm"]
+          .map((item, i) => {
+            // remap date keys so first is today and each day is subtracted from there
+            const date = today - i * 24 * 60 * 60 * 1000;
+            item[0] = date;
+            return item;
+          })
+          .reverse(),
+      },
+      {
+        id: ["imx", "native_transfers", selectedType].join("_"),
+        name: "imx",
+        unixKey: "unix",
+        dataKey: selectedType,
+        data: data["native_transfers"].daily["imx"]
+          .map((item, i) => {
+            // remap date keys so first is today and each day is subtracted from there
+            const date = today - i * 24 * 60 * 60 * 1000;
+            item[0] = date;
+            return item;
+          })
+          .reverse(),
+      },
     ];
   }, [selectedCategory, selectedType, data, chartReturn]);
 
@@ -379,14 +433,14 @@ export default function CategoryMetrics({
     };
   }, []);
 
-  const categories: { [key: string]: string } = useMemo(() => {
-    if (master) {
-      const result: { [key: string]: string } = {};
+  const categories: { [key: string]: string } =
+    useMemo(() => {
+      if (master) {
+        const result: { [key: string]: string } = {};
 
-      result.categories = "Categories";
-      Object.keys(master.blockspace_categories.main_categories).forEach(
-        (key) => {
-          if (key !== "cross_chain") {
+        result.categories = "Categories";
+        Object.keys(master.blockspace_categories.main_categories).forEach(
+          (key) => {
             const words =
               master.blockspace_categories.main_categories[key].split(" ");
             const formatted = words
@@ -395,27 +449,14 @@ export default function CategoryMetrics({
               })
               .join(" ");
             result[key] = formatted;
-          }
-        },
-      );
+          },
+        );
 
-      // result.scaling = "Scaling";
+        // result.scaling = "Scaling";
 
-      return result;
-    }
-
-    return {
-      nft_fi: "NFT Fi",
-      defi: "DeFi",
-      gaming: "Gaming",
-      cefi: "CeFi",
-      utility: "Utility",
-      unlabeled: "Unlabeled",
-      native_transfers: "Native Transfers",
-      token_transfers: "Token Transfers",
-      cross_chain: "Cross-Chain",
-    };
-  }, [master]);
+        return result;
+      }
+    }, [master]) ?? {};
 
   const [isCategoryHovered, setIsCategoryHovered] = useState<{
     [key: string]: boolean;
@@ -443,6 +484,39 @@ export default function CategoryMetrics({
       gaming: false,
     };
   });
+
+  const categorySizes: { [key: string]: { width: string; height: string } } =
+    useMemo(() => {
+      const retSize: { [key: string]: { width: string; height: string } } = {};
+      for (const category in categories) {
+        if (data[category]) {
+          const subcategoryCount = Object.keys(
+            data[category].subcategories,
+          ).length;
+          let width = "100%"; // Default width
+          let height = "";
+
+          if (subcategoryCount >= 7) {
+            height = "230px";
+          } else if (subcategoryCount >= 5) {
+            height = "180px";
+          } else {
+            height = "150px";
+          }
+
+          if (subcategoryCount >= 5 && subcategoryCount < 7) {
+            width = "550px";
+          } else if (subcategoryCount >= 7) {
+            width = "450px";
+          } else {
+            width = "650px";
+          }
+
+          retSize[category] = { width, height };
+        }
+      }
+      return retSize;
+    }, [data, categories]);
 
   const [selectedSubcategories, setSelectedSubcategories] = useState<{
     [key: string]: any[];
@@ -662,7 +736,7 @@ export default function CategoryMetrics({
     {
       key: (item: any) => item.item, // Use item as the key
       from: { y: 0, opacity: 0 },
-      leave: { y: 0, opacity: 0 },
+      leave: null,
       enter: ({ yValue, item }) => ({
         y: yValue,
         opacity: selectedChains[item] ? 1.0 : 0.3,
@@ -685,47 +759,32 @@ export default function CategoryMetrics({
       enter: ({ category }) => ({
         width:
           openSub && selectedCategory === category
-            ? `${
-                Object.keys(data[category].subcategories).length > 8
-                  ? "650px"
-                  : Object.keys(data[category].subcategories).length > 5
-                  ? "500px"
-                  : "400px"
-              }`
+            ? categorySizes[category].width
             : "140px",
       }),
       update: ({ category }) => ({
         width: !exitAnimation
           ? openSub && selectedCategory === category
-            ? `${
-                Object.keys(data[category].subcategories).length > 8
-                  ? "650px"
-                  : Object.keys(data[category].subcategories).length > 5
-                  ? "500px"
-                  : "400px"
-              }`
+            ? categorySizes[category].width
             : "140px"
           : "140px",
       }),
       leave: { width: "140px" },
-      config: { mass: 5, tension: 500, friction: 100 },
+
       keys: ({ category }) => category,
+      config: { mass: 5, tension: 500, friction: 100 },
     },
   );
 
   const categoryAnimation = useSpring({
-    height: openSub
-      ? Object.keys(data[selectedCategory].subcategories).length >= 5
-        ? Object.keys(data[selectedCategory].subcategories).length >= 7
-          ? "230px"
-          : "180px"
-        : "150px"
-      : "67px",
+    height: openSub ? categorySizes[selectedCategory].height : "67px",
     config: { mass: 5, tension: 500, friction: 100 },
     onRest: () => {
       setAnimationFinished(true);
     },
   });
+
+  console.log(categories);
 
   return (
     <div className="w-full flex-col relative">
@@ -1223,7 +1282,7 @@ export default function CategoryMetrics({
             </div>
           </div>
           <div className="w-1/2 relative bottom-2">
-            {
+            {chartSeries && (
               <Chart
                 chartType="area"
                 types={
@@ -1244,7 +1303,7 @@ export default function CategoryMetrics({
                 chartHeight="400px"
                 chartWidth="100%"
               />
-            }
+            )}
           </div>
         </div>
         <div className="flex flex-col md:flex-row w-full justify-normal md:justify-end items-center text-sm md:text-base rounded-2xl md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
