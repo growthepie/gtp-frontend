@@ -12,6 +12,7 @@ export interface Chains {
   arbitrum: Arbitrum;
   imx: Imx;
   zksync_era: ZksyncEra;
+  base: Base;
 }
 
 export interface Ethereum {
@@ -19,6 +20,7 @@ export interface Ethereum {
   symbol: string;
   technology: string;
   purpose: string;
+  rollup: string;
   launch_date: string;
   website: string;
   twitter: string;
@@ -79,14 +81,25 @@ export interface ZksyncEra {
   twitter: string;
   block_explorer: string;
 }
+export interface Base {
+  name: string;
+  symbol: string;
+  rollup: string;
+  launch_date: string;
+  website: string;
+  twitter: string;
+  block_explorer: string;
+}
 
 export interface Metrics {
-  tvl: Tvl;
-  txcount: Txcount;
-  daa: Daa;
-  stables_mcap: StablesMcap;
-  fees: Fees;
-  txcosts: Txcosts;
+  name: string;
+  symbol: string;
+  technology: string;
+  purpose: string;
+  launch_date: string;
+  website: string;
+  twitter: string;
+  block_explorer: string;
 }
 
 export interface Tvl {
@@ -94,6 +107,7 @@ export interface Tvl {
   metric_keys: string[];
   units: string[];
   avg: boolean;
+  source: string;
 }
 
 export interface Txcount {
@@ -101,6 +115,7 @@ export interface Txcount {
   metric_keys: string[];
   units: string[];
   avg: boolean;
+  source: string;
 }
 
 export interface Daa {
@@ -108,6 +123,7 @@ export interface Daa {
   metric_keys: string[];
   units: string[];
   avg: boolean;
+  source: string;
 }
 
 export interface StablesMcap {
@@ -115,6 +131,7 @@ export interface StablesMcap {
   metric_keys: string[];
   units: string[];
   avg: boolean;
+  source: string;
 }
 
 export interface Fees {
@@ -183,4 +200,5 @@ export interface SubCategories {
   l2_rent: string;
   bridge: string;
   cc_communication: string;
+  source: string;
 }

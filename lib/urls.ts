@@ -15,6 +15,7 @@ export const ChainURLs = {
   optimism: "https://api.growthepie.xyz/v1/chains/optimism.json",
   imx: "https://api.growthepie.xyz/v1/chains/imx.json",
   zksync_era: "https://api.growthepie.xyz/v1/chains/zksync_era.json",
+  base: "https://api.growthepie.xyz/v1/chains/base.json",
 };
 
 export const BlockspaceURLs = {
