@@ -93,7 +93,7 @@ export default function Header() {
           #GG18
         </div>
         <div className="flex space-x-0.5">
-          <div className="hidden md:block">We are part of Gitcoin.</div>
+          <div className="hidden sm:block">We are part of Gitcoin.</div>
           <div className="animate-bounce">🎉</div>{" "}
           <div>Help us by donating to our project.</div>
         </div>
