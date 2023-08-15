@@ -106,6 +106,8 @@ export default function CategoryMetrics({
       if (data[category]) {
         const contractsData =
           data[category].aggregated[selectedTimespan].contracts.data;
+        const types =
+          data[category].aggregated[selectedTimespan].contracts.types;
 
         for (const contract of Object.keys(contractsData)) {
           const dataArray = contractsData[contract];
@@ -117,30 +119,34 @@ export default function CategoryMetrics({
             // If the key exists, update the values
             result[key] = {
               ...result[key],
-              address: values[0],
-              name: values[1],
-              main_category_key: values[2],
-              sub_category_key: values[3],
-              chain: values[4],
-              gas_fees_absolute_eth: values[5],
-              gas_fees_absolute_usd: values[6],
-              gas_fees_share: values[7],
-              txcount_absolute: values[8],
-              txcount_share: values[9],
+              address: values[types.indexOf("address")],
+              name: values[types.indexOf("name")],
+              main_category_key: values[types.indexOf("main_category_key")],
+              sub_category_key: values[types.indexOf("sub_category_key")],
+              chain: values[types.indexOf("chain")],
+              gas_fees_absolute_eth:
+                values[types.indexOf("gas_fees_absolute_eth")],
+              gas_fees_absolute_usd:
+                values[types.indexOf("gas_fees_absolute_usd")],
+              gas_fees_share: values[types.indexOf("gas_fees_share")] ?? "",
+              txcount_absolute: values[types.indexOf("txcount_absolute")],
+              txcount_share: values[types.indexOf("txcount_share")] ?? "",
             };
           } else {
             // If the key doesn't exist, create a new entry
             result[key] = {
-              address: values[0],
-              name: values[1],
-              main_category_key: values[2],
-              sub_category_key: values[3],
-              chain: values[4],
-              gas_fees_absolute_eth: values[5],
-              gas_fees_absolute_usd: values[6],
-              gas_fees_share: values[7],
-              txcount_absolute: values[8],
-              txcount_share: values[9],
+              address: values[types.indexOf("address")],
+              name: values[types.indexOf("name")],
+              main_category_key: values[types.indexOf("main_category_key")],
+              sub_category_key: values[types.indexOf("sub_category_key")],
+              chain: values[types.indexOf("chain")],
+              gas_fees_absolute_eth:
+                values[types.indexOf("gas_fees_absolute_eth")],
+              gas_fees_absolute_usd:
+                values[types.indexOf("gas_fees_absolute_usd")],
+              gas_fees_share: values[types.indexOf("gas_fees_share")] ?? "",
+              txcount_absolute: values[types.indexOf("txcount_absolute")],
+              txcount_share: values[types.indexOf("txcount_share")] ?? "",
             };
           }
         }
@@ -266,14 +272,7 @@ export default function CategoryMetrics({
           name: String(i),
           unixKey: "unix",
           dataKey: selectedType,
-          data: data[selectedCategory].daily[String(i)]
-            .map((item, i) => {
-              // remap date keys so first is today and each day is subtracted from there
-              const date = today - i * 24 * 60 * 60 * 1000;
-              item[0] = date;
-              return item;
-            })
-            .reverse(),
+          data: data[selectedCategory].daily[String(i)],
         };
         chainArray.push(obj);
       }
@@ -400,20 +399,21 @@ export default function CategoryMetrics({
         },
       );
 
-      result.scaling = "Scaling";
+      // result.scaling = "Scaling";
 
       return result;
     }
 
     return {
-      native_transfers: "Native Transfer",
-      token_transfers: "Token Transfer",
-      nft_fi: "NFT",
+      nft_fi: "NFT Fi",
       defi: "DeFi",
+      gaming: "Gaming",
       cefi: "CeFi",
       utility: "Utility",
-      scaling: "Scaling",
-      gaming: "Gaming",
+      unlabeled: "Unlabeled",
+      native_transfers: "Native Transfers",
+      token_transfers: "Token Transfers",
+      cross_chain: "Cross-Chain",
     };
   }, [master]);
 
@@ -1457,7 +1457,10 @@ export default function CategoryMetrics({
                     <div className="flex w-[100%] ml-4 mr-8 justify-between items-center ">
                       <div className="flex items-center w-[30%] gap-x-[30px] pl-1 ">
                         <div
-                          className={`flex w-[34px] h-[34px] rounded-full items-center justify-center ${AllChainsByKeys["arbitrum"].backgrounds[theme][1]}`}
+                          className={`flex w-[34px] h-[34px] rounded-full items-center justify-center ${
+                            AllChainsByKeys[sortedContracts[key].chain]
+                              .backgrounds[theme][1]
+                          }`}
                         >
                           <Icon
                             icon={`gtp:${sortedContracts[key].chain}-logo-monochrome`}
@@ -1485,14 +1488,23 @@ export default function CategoryMetrics({
                         <div className="flex justify-center w-[30%]">
                           {selectedMode === "gas_fees_"
                             ? showUsd
-                              ? sortedContracts[key].gas_fees_absolute_usd
-                              : sortedContracts[key].gas_fees_absolute_eth
-                            : sortedContracts[key].txcount_absolute}
+                              ? sortedContracts[
+                                  key
+                                ].gas_fees_absolute_usd.toFixed(2)
+                              : sortedContracts[
+                                  key
+                                ].gas_fees_absolute_eth.toFixed(2)
+                            : sortedContracts[key].txcount_absolute.toFixed(2)}
                         </div>
-                        <div className="pr-[15px]">
+                        <div className="pr-[15px] text-right">
                           {selectedMode === "gas_fees_"
-                            ? sortedContracts[key].gas_fees_share
-                            : sortedContracts[key].txcount_share}
+                            ? (
+                                sortedContracts[key].gas_fees_share * 100.0
+                              ).toFixed(2)
+                            : (
+                                sortedContracts[key].txcount_share * 100.0
+                              ).toFixed(2)}
+                          %
                         </div>
                         <div>
                           <Icon
@@ -1513,7 +1525,10 @@ export default function CategoryMetrics({
                       <div className="flex w-[100%] ml-4 mr-8 justify-between items-center ">
                         <div className="flex items-center w-[30%] gap-x-[30px] pl-1 ">
                           <div
-                            className={`flex w-[34px] h-[34px] rounded-full items-center justify-center ${AllChainsByKeys["arbitrum"].backgrounds[theme][1]}`}
+                            className={`flex w-[34px] h-[34px] rounded-full items-center justify-center ${
+                              AllChainsByKeys[sortedContracts[key].chain]
+                                .backgrounds[theme][1]
+                            }`}
                           >
                             <Icon
                               icon={`gtp:${sortedContracts[key].chain}-logo-monochrome`}
@@ -1541,14 +1556,25 @@ export default function CategoryMetrics({
                           <div className="flex justify-center w-[30%]">
                             {selectedMode === "gas_fees_"
                               ? showUsd
-                                ? sortedContracts[key].gas_fees_absolute_usd
-                                : sortedContracts[key].gas_fees_absolute_eth
-                              : sortedContracts[key].txcount_absolute}
+                                ? sortedContracts[
+                                    key
+                                  ].gas_fees_absolute_usd.toFixed(2)
+                                : sortedContracts[
+                                    key
+                                  ].gas_fees_absolute_eth.toFixed(2)
+                              : sortedContracts[key].txcount_absolute.toFixed(
+                                  2,
+                                )}
                           </div>
-                          <div className="pr-[15px]">
+                          <div className="pr-[15px] text-right">
                             {selectedMode === "gas_fees_"
-                              ? sortedContracts[key].gas_fees_share
-                              : sortedContracts[key].txcount_share}
+                              ? (
+                                  sortedContracts[key].gas_fees_share * 100.0
+                                ).toFixed(2)
+                              : (
+                                  sortedContracts[key].txcount_share * 100.0
+                                ).toFixed(2)}
+                            %
                           </div>
                           <div>
                             <Icon
