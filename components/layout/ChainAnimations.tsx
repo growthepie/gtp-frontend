@@ -92,9 +92,7 @@ export default function ChainAnimations({
               className="flex items-center w-[30px]"
             >
               <Icon
-                icon={`gtp:${
-                  chain === "zksync_era" ? "zksync-era" : chain
-                }-logo-monochrome`}
+                icon={`gtp:${chain.replace("_", "-")}-logo-monochrome`}
                 className="w-[15px] h-[15px]"
               />
             </div>

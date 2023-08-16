@@ -67,7 +67,8 @@ export default function CategoryMetrics({
   };
 
   const [selectedMode, setSelectedMode] = useState("gas_fees_");
-  const [selectedCategory, setSelectedCategory] = useState("native_transfers");
+  const [selectedCategory, setSelectedCategory] = useState("nft_fi");
+  const [contractHover, setContractHover] = useState({});
 
   const [animationFinished, setAnimationFinished] = useState(true);
   const [exitAnimation, setExitAnimation] = useState(false);
@@ -158,109 +159,6 @@ export default function CategoryMetrics({
     // Update the contracts state with the new data
     setContracts(result);
   }, [data, selectedTimespan]);
-
-  useEffect(() => {
-    if (contractCategory === "contract") {
-      const clonedContracts = { ...contracts };
-      const sortedContractKeys = Object.keys(clonedContracts).sort((a, b) =>
-        clonedContracts[a].name.localeCompare(clonedContracts[b].name),
-      );
-
-      const sortedResult: { [key: string]: ContractInfo } =
-        sortedContractKeys.reduce((acc, key) => {
-          acc[key] = clonedContracts[key];
-          return acc;
-        }, {});
-
-      setSortedContracts(sortedResult);
-    } else if (contractCategory === "category") {
-      const clonedContracts = { ...contracts };
-      const sortedContractKeys = Object.keys(clonedContracts).sort((a, b) =>
-        clonedContracts[a].main_category_key.localeCompare(
-          clonedContracts[b].main_category_key,
-        ),
-      );
-
-      const sortedResult: { [key: string]: ContractInfo } =
-        sortedContractKeys.reduce((acc, key) => {
-          acc[key] = clonedContracts[key];
-          return acc;
-        }, {});
-
-      setSortedContracts(sortedResult);
-    } else if (contractCategory === "chain") {
-      const clonedContracts = { ...contracts };
-      const sortedContractKeys = Object.keys(clonedContracts).sort((a, b) =>
-        clonedContracts[a].chain.localeCompare(clonedContracts[b].chain),
-      );
-
-      const sortedResult: { [key: string]: ContractInfo } =
-        sortedContractKeys.reduce((acc, key) => {
-          acc[key] = clonedContracts[key];
-          return acc;
-        }, {});
-
-      setSortedContracts(sortedResult);
-    } else if (contractCategory === "value") {
-      const clonedContracts = { ...contracts };
-      const sortedContractKeys = Object.keys(clonedContracts).sort((a, b) => {
-        const valueA =
-          selectedMode === "gas_fees_"
-            ? showUsd
-              ? clonedContracts[a].gas_fees_absolute_usd
-              : clonedContracts[a].gas_fees_absolute_eth
-            : clonedContracts[a].txcount_absolute;
-
-        const valueB =
-          selectedMode === "gas_fees_"
-            ? showUsd
-              ? clonedContracts[b].gas_fees_absolute_usd
-              : clonedContracts[b].gas_fees_absolute_eth
-            : clonedContracts[b].txcount_absolute;
-
-        // Compare the values
-        return valueA - valueB;
-      });
-
-      const sortedResult: { [key: string]: ContractInfo } =
-        sortedContractKeys.reduce((acc, key) => {
-          acc[key] = clonedContracts[key];
-          return acc;
-        }, {});
-
-      setSortedContracts(sortedResult);
-    } else if (contractCategory === "share") {
-      const clonedContracts = { ...contracts };
-      const sortedContractKeys = Object.keys(clonedContracts).sort((a, b) => {
-        const valueA =
-          selectedMode === "gas_fees_"
-            ? showUsd
-              ? clonedContracts[a].gas_fees_absolute_usd
-              : clonedContracts[a].gas_fees_absolute_eth
-            : clonedContracts[a].txcount_absolute;
-
-        const valueB =
-          selectedMode === "gas_fees_"
-            ? showUsd
-              ? clonedContracts[b].gas_fees_absolute_usd
-              : clonedContracts[b].gas_fees_absolute_eth
-            : clonedContracts[b].txcount_absolute;
-
-        // Compare the values
-        return valueA - valueB;
-      });
-
-      const sortedResult: { [key: string]: ContractInfo } =
-        sortedContractKeys.reduce((acc, key) => {
-          acc[key] = clonedContracts[key];
-          return acc;
-        }, {});
-
-      setSortedContracts(sortedResult);
-    } else {
-      setSortedContracts(contracts);
-    }
-  }, [contractCategory, contracts, selectedMode, showUsd]);
 
   const chartReturn = useMemo(() => {
     const today = new Date().getTime();
@@ -598,6 +496,91 @@ export default function CategoryMetrics({
     });
   }
 
+  useEffect(() => {
+    if (!contracts) {
+      return;
+    }
+
+    const filteredContracts = Object.entries(contracts)
+      .filter(([key, contract]) => {
+        const isChainSelected = selectedChains[contract.chain];
+        const isSubcategorySelected = selectedSubcategories[
+          contract.main_category_key
+        ].includes(contract.sub_category_key);
+        const isCategoryMatched =
+          contract.main_category_key === selectedCategory;
+
+        return isChainSelected && isSubcategorySelected && isCategoryMatched;
+      })
+      .reduce((filtered, [key, contract]) => {
+        filtered[key] = contract;
+        return filtered;
+      }, {});
+
+    let sortedContractKeys = Object.keys(filteredContracts);
+
+    // Define a sorting function
+    const sortFunction = (a, b) => {
+      const valueA =
+        selectedMode === "gas_fees_"
+          ? showUsd
+            ? filteredContracts[a]?.gas_fees_absolute_usd
+            : filteredContracts[a]?.gas_fees_absolute_eth
+          : filteredContracts[a]?.txcount_absolute;
+
+      const valueB =
+        selectedMode === "gas_fees_"
+          ? showUsd
+            ? filteredContracts[b]?.gas_fees_absolute_usd
+            : filteredContracts[b]?.gas_fees_absolute_eth
+          : filteredContracts[b]?.txcount_absolute;
+
+      // Compare the values
+      return valueA - valueB;
+    };
+
+    if (contractCategory === "contract") {
+      // Use the sortFunction
+      sortedContractKeys = sortedContractKeys.sort((a, b) => {
+        return filteredContracts[a]?.name.localeCompare(
+          filteredContracts[b]?.name,
+        );
+      });
+    } else if (contractCategory === "category") {
+      // Use the sortFunction
+      sortedContractKeys = sortedContractKeys.sort((a, b) => {
+        return filteredContracts[a]?.main_category_key.localeCompare(
+          filteredContracts[b].main_category_key,
+        );
+      });
+    } else if (contractCategory === "chain") {
+      // Use the sortFunction
+      sortedContractKeys = sortedContractKeys.sort((a, b) => {
+        return filteredContracts[a]?.chain.localeCompare(
+          filteredContracts[b]?.chain,
+        );
+      });
+    } else if (contractCategory === "value" || contractCategory === "share") {
+      // Use the sortFunction
+      sortedContractKeys = sortedContractKeys.sort(sortFunction);
+    }
+
+    const sortedResult = sortedContractKeys.reduce((acc, key) => {
+      acc[key] = filteredContracts[key];
+      return acc;
+    }, {});
+
+    setSortedContracts(sortedResult);
+  }, [
+    contractCategory,
+    contracts,
+    selectedCategory,
+    selectedChains,
+    selectedSubcategories,
+    selectedMode,
+    showUsd,
+  ]);
+
   function checkSubcategory(category, subcategory) {
     return selectedSubcategories[category].includes(subcategory);
   }
@@ -727,12 +710,14 @@ export default function CategoryMetrics({
   };
 
   const transitions = useTransition(
-    sortedChainValues?.map(([item, value], index) => ({
-      item,
-      value,
-      index,
-      yValue: 50 * index,
-    })) || [],
+    sortedChainValues
+      ?.filter(([item]) => !(item === "imx" && selectedMode === "gas_fees_"))
+      .map(([item, value], index) => ({
+        item,
+        value,
+        index,
+        yValue: 50 * index,
+      })) || [],
     {
       key: (item: any) => item.item, // Use item as the key
       from: { y: 0, opacity: 0 },
@@ -783,8 +768,6 @@ export default function CategoryMetrics({
       setAnimationFinished(true);
     },
   });
-
-  console.log(categories);
 
   return (
     <div className="w-full flex-col relative">
@@ -1249,14 +1232,15 @@ export default function CategoryMetrics({
                 {formatSubcategories(selectedCategory)}:{" "}
               </div>
 
-              {selectedSubcategories[selectedCategory].map((subcategory) => (
-                <div
-                  key={subcategory}
-                  className="bg-forest-50 border-forest-900 border-[1px] dark:bg-[#151A19] rounded-full text-xs px-[8px] py-[5px] mx-[5px]"
-                >
-                  {formatSubcategories(subcategory)}
-                </div>
-              ))}
+              {selectedSubcategories[selectedCategory] &&
+                selectedSubcategories[selectedCategory].map((subcategory) => (
+                  <div
+                    key={subcategory}
+                    className="bg-forest-50 border-forest-900 border-[1px] dark:bg-[#151A19] rounded-full text-xs px-[8px] py-[5px] mx-[5px]"
+                  >
+                    {formatSubcategories(subcategory)}
+                  </div>
+                ))}
             </div>
             <div className="flex flex-col mt-4 relative">
               {sortedChainValues &&
@@ -1369,8 +1353,8 @@ export default function CategoryMetrics({
       </Container>
       <Container>
         <div className="flex flex-col mt-[30px] w-[98%] mx-auto min-w-[980px] ">
-          <div className="flex text-[14px] font-bold justify-between mb-[10px]">
-            <div className="flex gap-x-[15px]">
+          <div className="flex text-[14px] font-bold mb-[10px]">
+            <div className="flex gap-x-[15px] w-[33%]">
               <button
                 className="flex gap-x-1 pl-4"
                 onClick={() => {
@@ -1391,21 +1375,7 @@ export default function CategoryMetrics({
                   }`}
                 />
               </button>
-              <button className="flex gap-x-1">
-                Rank
-                <Icon
-                  icon={
-                    contractCategory === "rank"
-                      ? sortOrder
-                        ? "formkit:arrowdown"
-                        : "formkit:arrowup"
-                      : "formkit:arrowdown"
-                  }
-                  className={` text-white ${
-                    contractCategory === "rank" ? "opacity-100" : "opacity-20"
-                  }`}
-                />
-              </button>
+
               <button
                 className="flex gap-x-1"
                 onClick={() => {
@@ -1434,9 +1404,9 @@ export default function CategoryMetrics({
                 />
               </button>
             </div>
-            <div className="flex gap-x-1">
+            <div className="flex w-[40%] ">
               <button
-                className="flex gap-x-1"
+                className="flex gap-x-1 w-[40%]"
                 onClick={() => {
                   if (contractCategory !== "category") {
                     setSortOrder(true);
@@ -1462,10 +1432,37 @@ export default function CategoryMetrics({
                   }`}
                 />
               </button>
-            </div>
-            <div className="flex gap-x-[17px]">
               <button
                 className="flex gap-x-1"
+                onClick={() => {
+                  if (contractCategory !== "category") {
+                    setSortOrder(true);
+                  } else {
+                    setSortOrder(!sortOrder);
+                  }
+                  setContractCategory("category");
+                }}
+              >
+                Subcategory{" "}
+                <Icon
+                  icon={
+                    contractCategory === "category"
+                      ? sortOrder
+                        ? "formkit:arrowdown"
+                        : "formkit:arrowup"
+                      : "formkit:arrowdown"
+                  }
+                  className={` text-white ${
+                    contractCategory === "category"
+                      ? "opacity-100"
+                      : "opacity-20"
+                  }`}
+                />
+              </button>
+            </div>
+            <div className="flex gap-x-[17px] w-[27%] ">
+              <button
+                className="flex gap-x-1 w-[51.5%] "
                 onClick={() => {
                   if (contractCategory !== "value") {
                     setSortOrder(true);
@@ -1475,7 +1472,9 @@ export default function CategoryMetrics({
                   setContractCategory("value");
                 }}
               >
-                Value{" "}
+                {selectedMode === "gas_fees_"
+                  ? "Gas Fees "
+                  : "Transaction Count "}
                 <Icon
                   icon={
                     contractCategory === "value"
@@ -1489,70 +1488,88 @@ export default function CategoryMetrics({
                   }`}
                 />
               </button>
-              <button
-                className="flex gap-x-1"
-                onClick={() => {
-                  if (contractCategory !== "share") {
-                    setSortOrder(true);
-                  } else {
-                    setSortOrder(!sortOrder);
-                  }
-                  setContractCategory("share");
-                }}
-              >
-                Share of Total Usage{" "}
-                <Icon
-                  icon={
-                    contractCategory === "share"
-                      ? sortOrder
-                        ? "formkit:arrowdown"
-                        : "formkit:arrowup"
-                      : "formkit:arrowdown"
-                  }
-                  className={` text-white ${
-                    contractCategory === "share" ? "opacity-100" : "opacity-20"
-                  }`}
-                />
-              </button>
-              <div className="flex gap-x-1 pr-8">Block Explorer </div>
+
+              <div className="flex gap-x-1 pr-6 ">Block Explorer </div>
             </div>
           </div>
           {sortOrder
             ? Object.keys(sortedContracts).map((key, i) => (
                 <div key={key + "" + sortOrder}>
                   <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] ">
-                    <div className="flex w-[100%] ml-4 mr-8 justify-between items-center ">
-                      <div className="flex items-center w-[30%] gap-x-[30px] pl-1 ">
+                    <div className="flex w-[100%] ml-4 mr-8 items-center ">
+                      <div className="flex items-center h-10 w-[34%] gap-x-[20px] pl-1  ">
+                        <div className=" w-[40px]">
+                          <div
+                            className={`flex min-w-9 min-h-9 w-9 h-9 rounded-full items-center justify-center border-[5px] ${
+                              AllChainsByKeys[sortedContracts[key].chain]
+                                .border[theme][1]
+                            }`}
+                          >
+                            <Icon
+                              icon={`gtp:${sortedContracts[key].chain.replace(
+                                "_",
+                                "-",
+                              )}-logo-monochrome`}
+                              className="min-w-5 min-h-5 w-5 h-5"
+                              style={{
+                                color:
+                                  AllChainsByKeys[sortedContracts[key].chain]
+                                    .colors[theme][1],
+                              }}
+                            />
+                          </div>
+                        </div>
+
                         <div
-                          className={`flex w-[34px] h-[34px] rounded-full items-center justify-center ${
-                            AllChainsByKeys[sortedContracts[key].chain]
-                              .backgrounds[theme][1]
-                          }`}
+                          key={sortedContracts[key].address}
+                          className={` w-[200px] h-full flex items-center ${
+                            contractHover[key] && !sortedContracts[key].name
+                              ? "relative right-[10px] text-[14px]"
+                              : ""
+                          } `}
+                          onMouseEnter={() => {
+                            setContractHover((prevHover) => ({
+                              ...prevHover,
+                              [key]: true,
+                            }));
+                          }}
+                          onMouseLeave={() => {
+                            setContractHover((prevHover) => ({
+                              ...prevHover,
+                              [key]: false,
+                            }));
+                          }}
                         >
-                          <Icon
-                            icon={`gtp:${sortedContracts[key].chain}-logo-monochrome`}
-                            className="w-[21px] h-[21px] text-black"
-                          />
+                          {sortedContracts[key].name
+                            ? sortedContracts[key].name
+                            : contractHover[key]
+                            ? sortedContracts[key].address
+                            : sortedContracts[key].address.substring(0, 20) +
+                              "..."}
+                          {sortedContracts[key].name ? (
+                            <span className="hover:visible invisible bg-black rounded-xl text-[12px] relative bottom-4">
+                              {sortedContracts[key].address}
+                            </span>
+                          ) : null}
                         </div>
-                        <div className="flex w-[30px] items-center justify-center ">
-                          {i + 1}
-                        </div>
-                        <div>{sortedContracts[key].name}</div>
                       </div>
-                      <div className="flex items-center text-[14px] justify-center w-[30.3%] mr-[140px]">
-                        <div className="flex">
+                      <div className="flex items-center text-[14px] w-[43%]  justify-start  h-full ">
+                        <div className="flex w-[40%] ">
                           {master &&
                             master.blockspace_categories.main_categories[
                               sortedContracts[key].main_category_key
-                            ] +
-                              " - " +
-                              master.blockspace_categories.sub_categories[
-                                sortedContracts[key].sub_category_key
-                              ]}
+                            ]}
+                        </div>
+                        <div className="flex ">
+                          {" "}
+                          {master &&
+                            master.blockspace_categories.sub_categories[
+                              sortedContracts[key].sub_category_key
+                            ]}
                         </div>
                       </div>
-                      <div className="flex gap-x-[80px] items-center w-[28%] mr-4 ">
-                        <div className="flex justify-center w-[30%]">
+                      <div className="flex items-center w-[24.5%]  mr-4  ">
+                        <div className="flex w-[70%] justify-start ">
                           {selectedMode === "gas_fees_"
                             ? showUsd
                               ? sortedContracts[
@@ -1563,20 +1580,11 @@ export default function CategoryMetrics({
                                 ].gas_fees_absolute_eth.toFixed(2)
                             : sortedContracts[key].txcount_absolute.toFixed(2)}
                         </div>
-                        <div className="pr-[15px] text-right">
-                          {selectedMode === "gas_fees_"
-                            ? (
-                                sortedContracts[key].gas_fees_share * 100.0
-                              ).toFixed(2)
-                            : (
-                                sortedContracts[key].txcount_share * 100.0
-                              ).toFixed(2)}
-                          %
-                        </div>
-                        <div>
+
+                        <div className="flex items-center w-[30%] justify-end ">
                           <Icon
                             icon="material-symbols:link"
-                            className="w-[24px] h-[24px]"
+                            className="w-[30px] h-[30px]"
                           />
                         </div>
                       </div>
@@ -1589,38 +1597,80 @@ export default function CategoryMetrics({
                 .map((key, i) => (
                   <div key={key + "" + sortOrder}>
                     <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] ">
-                      <div className="flex w-[100%] ml-4 mr-8 justify-between items-center ">
-                        <div className="flex items-center w-[30%] gap-x-[30px] pl-1 ">
+                      <div className="flex w-[100%] ml-4 mr-8 items-center ">
+                        <div className="flex items-center h-10 w-[34%] gap-x-[20px] pl-1  ">
+                          <div className=" w-[40px]">
+                            <div
+                              className={`flex min-w-9 min-h-9 w-9 h-9 rounded-full items-center justify-center border-[5px] ${
+                                AllChainsByKeys[sortedContracts[key].chain]
+                                  .border[theme][1]
+                              }`}
+                            >
+                              <Icon
+                                icon={`gtp:${sortedContracts[key].chain.replace(
+                                  "_",
+                                  "-",
+                                )}-logo-monochrome`}
+                                className="min-w-5 min-h-5 w-5 h-5"
+                                style={{
+                                  color:
+                                    AllChainsByKeys[sortedContracts[key].chain]
+                                      .colors[theme][1],
+                                }}
+                              />
+                            </div>
+                          </div>
+
                           <div
-                            className={`flex w-[34px] h-[34px] rounded-full items-center justify-center ${
-                              AllChainsByKeys[sortedContracts[key].chain]
-                                .backgrounds[theme][1]
-                            }`}
+                            key={sortedContracts[key].address}
+                            className={` w-[200px] h-full flex items-center ${
+                              contractHover[key] && !sortedContracts[key].name
+                                ? "relative right-[10px] text-[14px]"
+                                : ""
+                            } `}
+                            onMouseEnter={() => {
+                              setContractHover((prevHover) => ({
+                                ...prevHover,
+                                [key]: true,
+                              }));
+                            }}
+                            onMouseLeave={() => {
+                              setContractHover((prevHover) => ({
+                                ...prevHover,
+                                [key]: false,
+                              }));
+                            }}
                           >
-                            <Icon
-                              icon={`gtp:${sortedContracts[key].chain}-logo-monochrome`}
-                              className="w-[21px] h-[21px] text-black"
-                            />
+                            {sortedContracts[key].name
+                              ? sortedContracts[key].name
+                              : contractHover[key]
+                              ? sortedContracts[key].address
+                              : sortedContracts[key].address.substring(0, 20) +
+                                "..."}
+                            {sortedContracts[key].name ? (
+                              <span className="hover:visible invisible bg-black rounded-xl text-[12px] relative bottom-4">
+                                {sortedContracts[key].address}
+                              </span>
+                            ) : null}
                           </div>
-                          <div className="flex w-[30px] items-center justify-center ">
-                            {i + 1}
-                          </div>
-                          <div>{sortedContracts[key].name}</div>
                         </div>
-                        <div className="flex items-center text-[14px] justify-center w-[30.3%] mr-[140px]">
-                          <div className="flex">
+                        <div className="flex items-center text-[14px] w-[43%]  justify-start  h-full ">
+                          <div className="flex w-[40%] ">
                             {master &&
                               master.blockspace_categories.main_categories[
                                 sortedContracts[key].main_category_key
-                              ] +
-                                " - " +
-                                master.blockspace_categories.sub_categories[
-                                  sortedContracts[key].sub_category_key
-                                ]}
+                              ]}
+                          </div>
+                          <div className="flex ">
+                            {" "}
+                            {master &&
+                              master.blockspace_categories.sub_categories[
+                                sortedContracts[key].sub_category_key
+                              ]}
                           </div>
                         </div>
-                        <div className="flex gap-x-[80px] items-center w-[28%] mr-4 ">
-                          <div className="flex justify-center w-[30%]">
+                        <div className="flex items-center w-[24.5%]  mr-4  ">
+                          <div className="flex w-[70%] justify-start ">
                             {selectedMode === "gas_fees_"
                               ? showUsd
                                 ? sortedContracts[
@@ -1633,20 +1683,11 @@ export default function CategoryMetrics({
                                   2,
                                 )}
                           </div>
-                          <div className="pr-[15px] text-right">
-                            {selectedMode === "gas_fees_"
-                              ? (
-                                  sortedContracts[key].gas_fees_share * 100.0
-                                ).toFixed(2)
-                              : (
-                                  sortedContracts[key].txcount_share * 100.0
-                                ).toFixed(2)}
-                            %
-                          </div>
-                          <div>
+
+                          <div className="flex items-center w-[30%] justify-end ">
                             <Icon
                               icon="material-symbols:link"
-                              className="w-[24px] h-[24px]"
+                              className="w-[30px] h-[30px]"
                             />
                           </div>
                         </div>
