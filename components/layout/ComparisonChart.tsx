@@ -1213,13 +1213,13 @@ export default function ComparisonChart({
             )}
           </div>
           <div
-            className={`absolute right-6 top-0 transition-[transform] duration-300 ease-in-out -z-10 ${
+            className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[calc(50%-19px)] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${
               avg && ["365d", "max"].includes(selectedTimespan)
                 ? "translate-y-[calc(-100%+3px)]"
                 : "translate-y-0 "
             }`}
           >
-            <div className="bg-forest-500 dark:bg-forest-1000 rounded-t-2xl border border-forest-500 dark:border-forest-400 text-center px-4 py-1 z-0">
+            <div className="bg-forest-500 dark:bg-forest-1000 rounded-t-2xl border border-forest-500 dark:border-forest-400 text-center w-full py-1 z-0 ">
               7-day rolling average
             </div>
           </div>
