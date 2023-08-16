@@ -1145,7 +1145,7 @@ export default function ComparisonChart({
   return (
     <div className="w-full flex-col relative">
       <Container className="">
-        <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5">
+        <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative">
           <div className="hidden md:flex justify-center items-center">
             <div className="w-7 h-7 md:w-9 md:h-9 relative ml-[21px] mr-1.5">
               <Image
@@ -1160,6 +1160,7 @@ export default function ComparisonChart({
               Selected Chains
             </h2>
           </div>
+
           <div className="flex w-full md:w-auto justify-between md:justify-center items-stretch md:items-center space-x-[4px] md:space-x-1">
             {!zoomed ? (
               Object.keys(timespans).map((timespan) => (
@@ -1211,7 +1212,19 @@ export default function ComparisonChart({
               </>
             )}
           </div>
+          <div
+            className={`absolute right-6 top-0 transition-[transform] duration-300 ease-in-out -z-10 ${
+              avg && ["365d", "max"].includes(selectedTimespan)
+                ? "translate-y-[calc(-100%+3px)]"
+                : "translate-y-0 "
+            }`}
+          >
+            <div className="bg-forest-500 dark:bg-forest-1000 rounded-t-2xl border border-forest-500 dark:border-forest-400 text-center px-4 py-1 z-0">
+              7-day rolling average
+            </div>
+          </div>
         </div>
+
         <div className="w-full flex flex-col-reverse lg:flex-row mt-8 md:mt-0">
           <div
             className={`hidden lg:block lg:w-7/12 xl:w-5/12 pl-2 pr-[19px] self-center`}
@@ -1239,11 +1252,11 @@ export default function ComparisonChart({
                   </div>
                 </div>
 
-                {avg && ["365d", "max"].includes(selectedTimespan) && (
+                {/* {avg && ["365d", "max"].includes(selectedTimespan) && (
                   <div className="absolute -top-[10px] right-3 sm:-top-[7px] md:top-[5px] md:right-3 lg:top-[5px] xl:top-[60px] xl:right-[calc(0%+1.75rem)] rounded-full text-xs font-medium capitalize">
                     Displaying 7d Rolling Average
                   </div>
-                )}
+                )} */}
                 {filteredData.length === 1 && filteredData[0].name === "" && (
                   <div className="absolute top-[calc(50%+1.5rem)] left-[0px] text-xs font-medium flex justify-center w-full text-forest-500/60">
                     No chain(s) selected for comparison. Please select at least
