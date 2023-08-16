@@ -1219,7 +1219,7 @@ export default function ComparisonChart({
                 : "translate-y-0 "
             }`}
           >
-            <div className="bg-forest-500 dark:bg-forest-1000 rounded-t-2xl border border-forest-500 dark:border-forest-400 text-center w-full py-1 z-0 ">
+            <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
               7-day rolling average
             </div>
           </div>
