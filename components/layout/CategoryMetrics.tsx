@@ -1644,7 +1644,7 @@ export default function CategoryMetrics({
                                       key
                                     ].gas_fees_absolute_eth.toFixed(2)
                                 : sortedContracts[key].txcount_absolute.toFixed(
-                                    2,
+                                    0,
                                   )}
                               <div>
                                 {selectedMode === "gas_fees_"
@@ -1778,7 +1778,7 @@ export default function CategoryMetrics({
                                       ].gas_fees_absolute_eth.toFixed(2)
                                   : sortedContracts[
                                       key
-                                    ].txcount_absolute.toFixed(2)}
+                                    ].txcount_absolute.toFixed(0)}
                                 <div>
                                   {" "}
                                   {selectedMode === "gas_fees_"
