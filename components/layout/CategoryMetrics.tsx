@@ -9,7 +9,7 @@ import {
   useCallback,
 } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
 import { Switch } from "../Switch";
@@ -93,6 +93,7 @@ export default function CategoryMetrics({
   const [selectedType, setSelectedType] = useState("gas_fees_absolute_usd");
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [showMore, setShowMore] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 1023px)");
 
   const { theme } = useTheme();
 
@@ -402,9 +403,9 @@ export default function CategoryMetrics({
           let height = "";
 
           if (subcategoryCount >= 7) {
-            height = "210px";
+            height = !isMobile ? "210px" : "230px";
           } else if (subcategoryCount >= 5) {
-            height = "180px";
+            height = !isMobile ? "180px" : "200px";
           } else {
             height = "150px";
           }
@@ -817,29 +818,39 @@ export default function CategoryMetrics({
       i,
     })),
     {
-      from: { width: "140px" }, // Initial width for closed categories
+      from: { width: "100px" }, // Initial width for closed categories
       enter: ({ category }) => ({
         width:
           openSub && selectedCategory === category
             ? Object.keys(data[category].subcategories).length > 8
-              ? "550px"
+              ? !isMobile
+                ? "550px"
+                : "500px"
               : Object.keys(data[category].subcategories).length > 5
-              ? "450px"
+              ? !isMobile
+                ? "450px"
+                : "400px"
               : "410px"
-            : "140px",
+            : "100px",
       }),
       update: ({ category }) => ({
         width: !exitAnimation
           ? openSub && selectedCategory === category
             ? Object.keys(data[category].subcategories).length > 8
-              ? "550px"
+              ? !isMobile
+                ? "550px"
+                : "500px"
               : Object.keys(data[category].subcategories).length > 5
-              ? "450px"
-              : "410px"
-            : "140px"
-          : "140px",
+              ? !isMobile
+                ? "450px"
+                : "440px"
+              : !isMobile
+              ? "410px"
+              : "405px"
+            : "100px"
+          : "100px",
       }),
-      leave: { width: "140px" },
+      leave: { width: "100px" },
 
       keys: ({ category }) => category,
       config: { mass: 1, tension: 70, friction: 20 },
@@ -916,23 +927,27 @@ export default function CategoryMetrics({
               </button>
             ))}
             <div
-              className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-0 right-[50px] pr-[15px] w-[calc(50%-19px)] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${
-                ["365d", "90d"].includes(selectedTimespan)
-                  ? "translate-y-[calc(-100%+3px)]"
-                  : "translate-y-0 "
+              className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[50px] right-[20px] md:right-[150px] lg:top-0 lg:right-[50px] pr-[15px] w-[calc(50%-19px)] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${
+                !isMobile
+                  ? ["365d", "90d"].includes(selectedTimespan)
+                    ? "translate-y-[calc(-100%+3px)]"
+                    : "translate-y-0 "
+                  : ["365d", "90d"].includes(selectedTimespan)
+                  ? "translate-y-[calc(100%+3px)]"
+                  : "translate-y-0"
               }`}
             >
-              <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
+              <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
                 7-day rolling average
               </div>
             </div>
           </div>
         </div>
       </Container>
-      <Container className="block w-full !pr-0 lg:!px-[50px]">
+      <Container className="block w-full !pr-0 lg:!px-[50px] lg:mt-0 mt-6">
         <div className="w-[98%] mx-auto xl:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-2">
           <animated.div
-            className="relative min-w-[1000px] md:min-w-[1050px] w-[97.5%] h-[67px] m-auto border-x-[1px] border-y-[1px] rounded-[15px] dark:text-forest-50  text-forest-1000 border-forest-400 dark:border-forest-800  dark:bg-forest-1000 mt-8 overflow-hidden"
+            className="relative min-w-[1150px] md:min-w-[1200px] w-[97.5%] h-[67px] m-auto border-x-[1px] border-y-[1px] rounded-[15px] dark:text-forest-50  text-forest-1000 border-forest-400 dark:border-forest-800  dark:bg-forest-1000 mt-8 overflow-hidden"
             style={{ ...categoryAnimation }}
           >
             {!openSub ? (
@@ -1060,8 +1075,8 @@ export default function CategoryMetrics({
                                 ? "w-[500px]"
                                 : "w-[400px]"
                             }`
-                          : "h-full w-full min-w-[60px] hover:max-w-[180px]"
-                      }
+                          : `h-full w-full  hover:max-w-[180px]`
+                      } ${!isMobile ? "min-w-[120px]" : "min-w-[80px]"}
 
 
                 ${isCategoryHovered[item.category] ? "bg-white/5" : ""}
@@ -1294,8 +1309,8 @@ export default function CategoryMetrics({
                                     />
                                     <h1>
                                       {" "}
-                                      There are currently no toggleable
-                                      subcategories for the given category.{" "}
+                                      There are currently no subcategories for
+                                      the given category.{" "}
                                     </h1>
                                   </div>
                                 )}
@@ -1339,8 +1354,8 @@ export default function CategoryMetrics({
       </Container>
 
       <Container>
-        <div className="flex w-[95%] m-auto mt-[30px]">
-          <div className="w-[44%] flex flex-col justify-between">
+        <div className="flex flex-col justify-between lg:flex-row w-[95%] mx-auto  mt-[20px] lg:mt-[30px]">
+          <div className="w-full lg:w-[44%]  flex flex-col justify-between">
             <div className="flex flex-col mt-4 relative">
               {sortedChainValues &&
                 transitions((style, item) => (
@@ -1363,7 +1378,7 @@ export default function CategoryMetrics({
                   </animated.div>
                 ))}
             </div>
-            <div className="flex flex-wrap items-center w-[87%] gap-y-2">
+            <div className="flex flex-wrap items-center w-[87%] gap-y-2 invisible lg:visible">
               <div className="font-bold text-sm pr-2 pl-2">
                 {formatSubcategories(selectedCategory)}:{" "}
               </div>
@@ -1372,14 +1387,14 @@ export default function CategoryMetrics({
                 selectedSubcategories[selectedCategory].map((subcategory) => (
                   <div
                     key={subcategory}
-                    className="  text-xs px-[8px] py-[5px] mx-[5px]"
+                    className="  text-xs px-[4px] py-[5px] mx-[5px]"
                   >
                     {formatSubcategories(subcategory)}
                   </div>
                 ))}
             </div>
           </div>
-          <div className="w-[56%] relative bottom-2">
+          <div className="w-full lg:w-[56%] relative bottom-2 mt-2 mb-[90px] h-[320px] lg:mt-0 lg:h-auto">
             {chartSeries && (
               <Chart
                 chartType="line"
@@ -1403,8 +1418,23 @@ export default function CategoryMetrics({
               />
             )}
           </div>
+          <div className="flex flex-wrap items-center w-[100%] gap-y-2 lg:hidden">
+            <div className="font-bold text-sm pr-2 pl-2">
+              {formatSubcategories(selectedCategory)}:{" "}
+            </div>
+
+            {selectedSubcategories[selectedCategory] &&
+              selectedSubcategories[selectedCategory].map((subcategory) => (
+                <div
+                  key={subcategory}
+                  className="  text-xs px-[2px] py-[5px] mx-[5px]"
+                >
+                  {formatSubcategories(subcategory)}
+                </div>
+              ))}
+          </div>
         </div>
-        <div className="flex flex-col md:flex-row w-full justify-normal md:justify-end items-center text-sm md:text-base rounded-2xl md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
+        <div className="flex flex-col md:flex-row w-[98%] mx-auto items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
           {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
           {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
           {/* toggle ETH */}
@@ -1424,7 +1454,6 @@ export default function CategoryMetrics({
                   <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug"></div>
                 </div>
               </div>
-              reverse
             </TooltipContent>
           </Tooltip>
         </div>
@@ -1439,10 +1468,10 @@ export default function CategoryMetrics({
           </p>
         </div>
       </Container>
-      <Container>
+      <Container className="xl:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-4">
         <div className="flex flex-col mt-[30px] w-[98%] mx-auto min-w-[980px] ">
-          <div className="flex text-[14px] font-bold mb-[10px]">
-            <div className="flex gap-x-[15px] w-[33%]">
+          <div className="flex text-[14px] font-bold mb-[10px] ">
+            <div className="flex gap-x-[15px] w-[33%] ">
               <button
                 className="flex gap-x-1 pl-4"
                 onClick={() => {
