@@ -346,6 +346,23 @@ export default function CategoryMetrics({
       }
     }, [master]) ?? {};
 
+  const updatedSubcategories = useMemo(() => {
+    const initialSelectedSubcategories = {};
+    Object.keys(categories).forEach((category) => {
+      if (data[category]?.subcategories?.list) {
+        initialSelectedSubcategories[category] = [
+          ...data[category].subcategories.list,
+        ];
+      } else {
+        initialSelectedSubcategories[category] = [];
+      }
+    });
+    return initialSelectedSubcategories;
+  }, [data, categories]);
+
+  const [selectedSubcategories, setSelectedSubcategories] =
+    useState(updatedSubcategories);
+
   const [isCategoryHovered, setIsCategoryHovered] = useState<{
     [key: string]: boolean;
   }>(() => {
@@ -385,7 +402,7 @@ export default function CategoryMetrics({
           let height = "";
 
           if (subcategoryCount >= 7) {
-            height = "230px";
+            height = "210px";
           } else if (subcategoryCount >= 5) {
             height = "180px";
           } else {
@@ -405,22 +422,6 @@ export default function CategoryMetrics({
       }
       return retSize;
     }, [data, categories]);
-
-  const [selectedSubcategories, setSelectedSubcategories] = useState<{
-    [key: string]: any[];
-  }>(() => {
-    const initialSelectedSubcategories = {};
-    Object.keys(categories).forEach((category) => {
-      if (data[category]?.subcategories?.list) {
-        initialSelectedSubcategories[category] = [
-          ...data[category].subcategories.list,
-        ];
-      } else {
-        initialSelectedSubcategories[category] = [];
-      }
-    });
-    return initialSelectedSubcategories;
-  });
 
   const result = HandleAggregate({
     selectedCategory,
@@ -692,47 +693,48 @@ export default function CategoryMetrics({
     useEffect(() => {
       setChainValues(null);
       let total = 0;
+      if (selectedSubcategories[category]) {
+        Object.keys(selectedSubcategories[category])?.forEach((subcategory) => {
+          const subcategoryData =
+            data[category].subcategories[
+              selectedSubcategories[category][subcategory]
+            ];
 
-      Object.keys(selectedSubcategories[category]).forEach((subcategory) => {
-        const subcategoryData =
-          data[category].subcategories[
-            selectedSubcategories[category][subcategory]
-          ];
+          const subcategoryChains = subcategoryData.aggregated[timespan].data;
 
-        const subcategoryChains = subcategoryData.aggregated[timespan].data;
+          const index =
+            subcategoryData.aggregated[timespan].data["types"].indexOf(type);
 
-        const index =
-          subcategoryData.aggregated[timespan].data["types"].indexOf(type);
+          Object.keys(subcategoryChains).forEach((chain) => {
+            if (chain !== "types") {
+              const chainValue =
+                subcategoryData.aggregated[timespan].data[chain][index];
 
-        Object.keys(subcategoryChains).forEach((chain) => {
-          if (chain !== "types") {
-            const chainValue =
-              subcategoryData.aggregated[timespan].data[chain][index];
-
-            setChainValues((prevChainValues) => {
-              if (prevChainValues === null) {
-                return [[chain, chainValue]];
-              } else {
-                const updatedValues = prevChainValues.map(
-                  ([prevChain, prevValue]) =>
-                    prevChain === chain
-                      ? [prevChain, prevValue + chainValue]
-                      : [prevChain, prevValue],
-                );
-
-                const existingChain = prevChainValues.find(
-                  ([prevChain]) => prevChain === chain,
-                );
-                if (existingChain) {
-                  return updatedValues;
+              setChainValues((prevChainValues) => {
+                if (prevChainValues === null) {
+                  return [[chain, chainValue]];
                 } else {
-                  return [...prevChainValues, [chain, chainValue]];
+                  const updatedValues = prevChainValues.map(
+                    ([prevChain, prevValue]) =>
+                      prevChain === chain
+                        ? [prevChain, prevValue + chainValue]
+                        : [prevChain, prevValue],
+                  );
+
+                  const existingChain = prevChainValues.find(
+                    ([prevChain]) => prevChain === chain,
+                  );
+                  if (existingChain) {
+                    return updatedValues;
+                  } else {
+                    return [...prevChainValues, [chain, chainValue]];
+                  }
                 }
-              }
-            });
-          }
+              });
+            }
+          });
         });
-      });
+      }
     }, [category, type, timespan, selectedSubcategories, data, setChainValues]);
   }
 
@@ -820,20 +822,20 @@ export default function CategoryMetrics({
         width:
           openSub && selectedCategory === category
             ? Object.keys(data[category].subcategories).length > 8
-              ? "650px"
+              ? "550px"
               : Object.keys(data[category].subcategories).length > 5
-              ? "500px"
-              : "400px"
+              ? "450px"
+              : "410px"
             : "140px",
       }),
       update: ({ category }) => ({
         width: !exitAnimation
           ? openSub && selectedCategory === category
             ? Object.keys(data[category].subcategories).length > 8
-              ? "650px"
+              ? "550px"
               : Object.keys(data[category].subcategories).length > 5
-              ? "500px"
-              : "400px"
+              ? "450px"
+              : "410px"
             : "140px"
           : "140px",
       }),
@@ -855,10 +857,10 @@ export default function CategoryMetrics({
   return (
     <div className="w-full flex-col relative">
       <Container>
-        <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs xl:text-base xl:flex xl:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 xl:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
-          <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
+        <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 lg:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
+          <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
             <button
-              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
+              className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
                 "gas_fees_" === selectedMode
                   ? "bg-forest-500 dark:bg-forest-1000"
                   : "hover:bg-forest-500/10"
@@ -870,7 +872,7 @@ export default function CategoryMetrics({
               Gas Fees
             </button>
             <button
-              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
+              className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
                 "txcount_" === selectedMode
                   ? "bg-forest-500 dark:bg-forest-1000"
                   : "hover:bg-forest-500/10"
@@ -882,15 +884,15 @@ export default function CategoryMetrics({
               Transaction Count
             </button>
           </div>
-          <div className="block xl:hidden w-[70%] mx-auto my-[10px]">
+          <div className="block lg:hidden w-[70%] mx-auto my-[10px]">
             <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
           </div>
-          <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
+          <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
             {Object.keys(timespans).map((timespan) => (
               <button
                 key={timespan}
                 //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
+                className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
                   selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
@@ -928,11 +930,9 @@ export default function CategoryMetrics({
         </div>
       </Container>
       <Container className="block w-full !pr-0 lg:!px-[50px]">
-        <div className="overflow-x-scroll lg:overflow-x-visible z-100 w-full scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
+        <div className="w-[98%] mx-auto xl:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-2">
           <animated.div
-            className={
-              "relative min-w-[820px] md:min-w-[850px] w-[97.5%] h-[67px] m-auto border-x-[1px] border-y-[1px] rounded-[15px] dark:text-forest-50  text-forest-1000 border-forest-400 dark:border-forest-800  dark:bg-forest-1000 mt-8 overflow-hidden"
-            }
+            className="relative min-w-[1000px] md:min-w-[1050px] w-[97.5%] h-[67px] m-auto border-x-[1px] border-y-[1px] rounded-[15px] dark:text-forest-50  text-forest-1000 border-forest-400 dark:border-forest-800  dark:bg-forest-1000 mt-8 overflow-hidden"
             style={{ ...categoryAnimation }}
           >
             {!openSub ? (
@@ -1214,70 +1214,90 @@ export default function CategoryMetrics({
                                 key={data[item.category].subcategories}
                                 className="flex flex-wrap w-full gap-x-2 gap-y-2 justify-center self-center items-center  "
                               >
-                                <div
-                                  key={categories[item.category]}
-                                  className={`flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[35px] min-w-[90px] hover:bg-white/5 z-10    ${
-                                    checkAllSelected(item.category)
-                                      ? "opacity-100"
-                                      : "opacity-30"
-                                  }`}
-                                  onClick={(e) => {
-                                    handleSelectAllSubcategories(item.category);
-                                    e.stopPropagation();
-                                  }}
-                                >
-                                  <div className="mr-2">
-                                    Select All Subcategories
+                                {item.category !== "unlabeled" &&
+                                item.category !== "native_transfers" ? (
+                                  <div
+                                    key={categories[item.category]}
+                                    className={`flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[35px] min-w-[90px] hover:bg-white/5 z-10    ${
+                                      checkAllSelected(item.category)
+                                        ? "opacity-100"
+                                        : "opacity-30"
+                                    }`}
+                                    onClick={(e) => {
+                                      handleSelectAllSubcategories(
+                                        item.category,
+                                      );
+                                      e.stopPropagation();
+                                    }}
+                                  >
+                                    <div className="mr-2">
+                                      Select All Subcategories
+                                    </div>
+                                    <div className="rounded-full bg-forest-900 mr-[1px]">
+                                      <Icon
+                                        icon="feather:check-circle"
+                                        className={`w-[14px] h-[14px] ${
+                                          checkAllSelected(item.category)
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        }`}
+                                      />
+                                    </div>
                                   </div>
-                                  <div className="rounded-full bg-forest-900 mr-[1px]">
+                                ) : null}
+                                {item.category !== "unlabeled" &&
+                                item.category !== "native_transfers" ? (
+                                  data[item.category].subcategories.list.map(
+                                    (subcategory) => (
+                                      <button
+                                        key={subcategory}
+                                        className={`flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[35px] min-w-[90px] hover:bg-white/5 z-10 ${
+                                          checkSubcategory(
+                                            item.category,
+                                            subcategory,
+                                          )
+                                            ? "opacity-100"
+                                            : "opacity-30"
+                                        }`}
+                                        onClick={(e) => {
+                                          handleToggleSubcategory(
+                                            item.category,
+                                            subcategory,
+                                          );
+                                          e.stopPropagation();
+                                        }}
+                                      >
+                                        <div className="mr-2">
+                                          {formatSubcategories(subcategory)}
+                                        </div>
+                                        <div className="rounded-full bg-forest-900">
+                                          <Icon
+                                            icon="feather:check-circle"
+                                            className={`w-[14px] h-[14px]  ${
+                                              checkSubcategory(
+                                                item.category,
+                                                subcategory,
+                                              )
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                            }  `}
+                                          />
+                                        </div>
+                                      </button>
+                                    ),
+                                  )
+                                ) : (
+                                  <div className="flex items-center gap-x-1 ">
                                     <Icon
-                                      icon="feather:check-circle"
-                                      className={`w-[14px] h-[14px] ${
-                                        checkAllSelected(item.category)
-                                          ? "opacity-100"
-                                          : "opacity-0"
-                                      }`}
+                                      icon="feather:info"
+                                      className="w-6 h-6"
                                     />
+                                    <h1>
+                                      {" "}
+                                      There are currently no toggleable
+                                      subcategories for the given category.{" "}
+                                    </h1>
                                   </div>
-                                </div>
-                                {data[item.category].subcategories.list.map(
-                                  (subcategory) => (
-                                    <button
-                                      key={subcategory}
-                                      className={`flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[35px] min-w-[90px] hover:bg-white/5 z-10 ${
-                                        checkSubcategory(
-                                          item.category,
-                                          subcategory,
-                                        )
-                                          ? "opacity-100"
-                                          : "opacity-30"
-                                      }`}
-                                      onClick={(e) => {
-                                        handleToggleSubcategory(
-                                          item.category,
-                                          subcategory,
-                                        );
-                                        e.stopPropagation();
-                                      }}
-                                    >
-                                      <div className="mr-2">
-                                        {formatSubcategories(subcategory)}
-                                      </div>
-                                      <div className="rounded-full bg-forest-900">
-                                        <Icon
-                                          icon="feather:check-circle"
-                                          className={`w-[14px] h-[14px]  ${
-                                            checkSubcategory(
-                                              item.category,
-                                              subcategory,
-                                            )
-                                              ? "opacity-100"
-                                              : "opacity-0"
-                                          }  `}
-                                        />
-                                      </div>
-                                    </button>
-                                  ),
                                 )}
                               </div>
                             </div>
@@ -1413,8 +1433,9 @@ export default function CategoryMetrics({
         <div className="w-[96%] mx-auto mt-[30px] flex flex-col">
           <h1 className="text-lg font-bold">Most Active Contracts</h1>
           <p className="text-sm mt-[15px]">
-            See the most active contracts within the selected timeframe (1 year)
-            and for your selected category/subcategories.{" "}
+            See the most active contracts within the selected timeframe (
+            {timespans[selectedTimespan].label}) and for your selected
+            category/subcategories.{" "}
           </p>
         </div>
       </Container>
