@@ -818,29 +818,39 @@ export default function CategoryMetrics({
       i,
     })),
     {
-      from: { width: "140px" }, // Initial width for closed categories
+      from: { width: "100px" }, // Initial width for closed categories
       enter: ({ category }) => ({
         width:
           openSub && selectedCategory === category
             ? Object.keys(data[category].subcategories).length > 8
-              ? "550px"
+              ? !isMobile
+                ? "550px"
+                : "500px"
               : Object.keys(data[category].subcategories).length > 5
-              ? "450px"
+              ? !isMobile
+                ? "450px"
+                : "400px"
               : "410px"
-            : "140px",
+            : "100px",
       }),
       update: ({ category }) => ({
         width: !exitAnimation
           ? openSub && selectedCategory === category
             ? Object.keys(data[category].subcategories).length > 8
-              ? "550px"
+              ? !isMobile
+                ? "550px"
+                : "500px"
               : Object.keys(data[category].subcategories).length > 5
-              ? "450px"
-              : "410px"
-            : "140px"
-          : "140px",
+              ? !isMobile
+                ? "450px"
+                : "440px"
+              : !isMobile
+              ? "410px"
+              : "405px"
+            : "100px"
+          : "100px",
       }),
-      leave: { width: "140px" },
+      leave: { width: "100px" },
 
       keys: ({ category }) => category,
       config: { mass: 1, tension: 70, friction: 20 },
@@ -1054,7 +1064,7 @@ export default function CategoryMetrics({
                   categories[item.category] !== "Categories" ? (
                     <animated.div
                       key={item.category}
-                      className={`relative flex w-full h-full   ${
+                      className={`relative flex w-full h-full ${
                         selectedCategory === item.category
                           ? `border-hidden rounded-[0px] dark:text-inherit text-white ${
                               Object.keys(data[item.category].subcategories)
@@ -1065,8 +1075,8 @@ export default function CategoryMetrics({
                                 ? "w-[500px]"
                                 : "w-[400px]"
                             }`
-                          : `h-full min-w-[80px]  hover:max-w-[180px]`
-                      } 
+                          : `h-full w-full  hover:max-w-[180px]`
+                      } ${!isMobile ? "min-w-[120px]" : "min-w-[80px]"}
 
 
                 ${isCategoryHovered[item.category] ? "bg-white/5" : ""}
