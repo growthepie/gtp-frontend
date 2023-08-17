@@ -111,10 +111,21 @@ export default function ChainAnimations({
                     {selectedMode === "gas_fees_" ? (showUsd ? `$` : `Ξ`) : ""}
                   </div>
                   <div>
-                    {(Math.round(value * 100) / 100).toLocaleString(undefined, {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0,
-                    })}
+                    {showUsd
+                      ? (Math.round(value * 100) / 100).toLocaleString(
+                          undefined,
+                          {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0,
+                          },
+                        )
+                      : (Math.round(value * 100) / 100).toLocaleString(
+                          undefined,
+                          {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 2,
+                          },
+                        )}
                   </div>
                 </div>
               )}

@@ -76,6 +76,8 @@ export default function CategoryMetrics({
   const [openSub, setOpenSub] = useState(false);
   const [selectedValue, setSelectedValue] = useState("absolute");
 
+  const [maxDisplayedContracts, setMaxDisplayedContracts] = useState(10);
+
   const [contractCategory, setContractCategory] = useState("chain");
   const [sortOrder, setSortOrder] = useState(true);
   const [chainValues, setChainValues] = useState<any[][] | null>(null);
@@ -162,7 +164,6 @@ export default function CategoryMetrics({
   }, [data, selectedTimespan]);
 
   const chartReturn = useMemo(() => {
-    const today = new Date().getTime();
     const chainArray: ChainData[] = [];
 
     //Array of selected chains to return to chart
@@ -177,27 +178,6 @@ export default function CategoryMetrics({
           unixKey: "unix",
           dataKey: selectedType,
           data: data[selectedCategory].daily[String(i)],
-        };
-        chainArray.push(obj);
-      }
-    }
-
-    return chainArray;
-  }, [data, selectedChains, selectedCategory, selectedType]);
-
-  const chartReturnTest = useMemo(() => {
-    const today = new Date().getTime();
-    const chainArray: ChainData[] = [];
-
-    //Array of selected chains to return to chart
-    for (let i in selectedChains) {
-      if (selectedChains[i] === true) {
-        const obj = {
-          id: [String(i), "cefi", selectedType].join("_"),
-          name: String(i),
-          unixKey: "unix",
-          dataKey: selectedType,
-          data: data["cefi"].daily[String(i)],
         };
         chainArray.push(obj);
       }
@@ -564,7 +544,13 @@ export default function CategoryMetrics({
       // Use the sortFunction
       sortedContractKeys = sortedContractKeys.sort((a, b) => {
         return filteredContracts[a]?.main_category_key.localeCompare(
-          filteredContracts[b].main_category_key,
+          filteredContracts[b]?.main_category_key,
+        );
+      });
+    } else if (contractCategory === "subcategory") {
+      sortedContractKeys = sortedContractKeys.sort((a, b) => {
+        return filteredContracts[a]?.sub_category_key.localeCompare(
+          filteredContracts[b]?.sub_category_key,
         );
       });
     } else if (contractCategory === "chain") {
@@ -594,6 +580,33 @@ export default function CategoryMetrics({
     selectedMode,
     showUsd,
   ]);
+
+  const largestContractValue = useMemo(() => {
+    let retValue = 0;
+    if (selectedMode === "gas_fees_") {
+      if (showUsd) {
+        for (let i in sortedContracts) {
+          if (sortedContracts[i].gas_fees_absolute_usd > retValue) {
+            retValue = sortedContracts[i].gas_fees_absolute_usd;
+          }
+        }
+      } else {
+        for (let i in sortedContracts) {
+          if (sortedContracts[i].gas_fees_absolute_eth > retValue) {
+            retValue = sortedContracts[i].gas_fees_absolute_eth;
+          }
+        }
+      }
+    } else {
+      for (let i in sortedContracts) {
+        if (sortedContracts[i].txcount_absolute > retValue) {
+          retValue = sortedContracts[i].txcount_absolute;
+        }
+      }
+    }
+
+    return retValue;
+  }, [selectedMode, sortedContracts, showUsd]);
 
   function checkSubcategory(category, subcategory) {
     return selectedSubcategories[category].includes(subcategory);
@@ -705,6 +718,36 @@ export default function CategoryMetrics({
     }, [category, type, timespan, selectedSubcategories, data, setChainValues]);
   }
 
+  function getWidth(x) {
+    let retValue = "0%";
+    console.log(x);
+    if (selectedMode === "gas_fees_") {
+      if (showUsd) {
+        retValue =
+          String(
+            (
+              (x.gas_fees_absolute_usd.toFixed(2) / largestContractValue) *
+              100
+            ).toFixed(1),
+          ) + "%";
+      } else {
+        retValue =
+          String(
+            (
+              (x.gas_fees_absolute_eth.toFixed(2) / largestContractValue) *
+              100
+            ).toFixed(1),
+          ) + "%";
+      }
+    } else {
+      retValue =
+        String(((x.txcount_absolute / largestContractValue) * 100).toFixed(1)) +
+        "%";
+    }
+
+    return retValue;
+  }
+
   const handleOpen = (category) => {
     if (animationFinished) {
       if (!openSub) {
@@ -771,19 +814,17 @@ export default function CategoryMetrics({
       leave: { width: "140px" },
 
       keys: ({ category }) => category,
-      config: { mass: 5, tension: 500, friction: 100 },
+      config: { mass: 1, tension: 70, friction: 20 },
     },
   );
 
   const categoryAnimation = useSpring({
     height: openSub ? categorySizes[selectedCategory].height : "67px",
-    config: { mass: 5, tension: 500, friction: 100 },
+    config: { mass: 1, tension: 70, friction: 20 },
     onRest: () => {
       setAnimationFinished(true);
     },
   });
-
-  console.log(data);
 
   return (
     <div className="w-full flex-col relative">
@@ -1358,6 +1399,11 @@ export default function CategoryMetrics({
               <button
                 className="flex gap-x-1 pl-4"
                 onClick={() => {
+                  if (contractCategory !== "chain") {
+                    setSortOrder(true);
+                  } else {
+                    setSortOrder(!sortOrder);
+                  }
                   setContractCategory("chain");
                 }}
               >
@@ -1435,25 +1481,25 @@ export default function CategoryMetrics({
               <button
                 className="flex gap-x-1"
                 onClick={() => {
-                  if (contractCategory !== "category") {
+                  if (contractCategory !== "subcategory") {
                     setSortOrder(true);
                   } else {
                     setSortOrder(!sortOrder);
                   }
-                  setContractCategory("category");
+                  setContractCategory("subcategory");
                 }}
               >
                 Subcategory{" "}
                 <Icon
                   icon={
-                    contractCategory === "category"
+                    contractCategory === "subcategory"
                       ? sortOrder
                         ? "formkit:arrowdown"
                         : "formkit:arrowup"
                       : "formkit:arrowdown"
                   }
                   className={` text-white ${
-                    contractCategory === "category"
+                    contractCategory === "subcategory"
                       ? "opacity-100"
                       : "opacity-20"
                   }`}
@@ -1494,7 +1540,7 @@ export default function CategoryMetrics({
           </div>
           {sortOrder
             ? Object.keys(sortedContracts).map((key, i) => {
-                if (!showMore && i > 0) {
+                if (!showMore && i >= maxDisplayedContracts) {
                   return null;
                 }
 
@@ -1558,7 +1604,7 @@ export default function CategoryMetrics({
                             ) : null}
                           </div>
                         </div>
-                        <div className="flex items-center text-[14px] w-[43%]  justify-start  h-full ">
+                        <div className="flex items-center text-[14px] w-[43%]  justify-start  h-full  ">
                           <div className="flex w-[40%] ">
                             {master &&
                               master.blockspace_categories.main_categories[
@@ -1578,21 +1624,39 @@ export default function CategoryMetrics({
                           </div>
                         </div>
                         <div className="flex items-center w-[24.5%]  mr-4  ">
-                          <div className="flex w-[70%] justify-start ">
-                            {selectedMode === "gas_fees_"
-                              ? showUsd
-                                ? sortedContracts[
-                                    key
-                                  ].gas_fees_absolute_usd.toFixed(2)
-                                : sortedContracts[
-                                    key
-                                  ].gas_fees_absolute_eth.toFixed(2)
-                              : sortedContracts[key].txcount_absolute.toFixed(
-                                  2,
-                                )}
+                          <div className="flex flex-col w-[38%] justify-start ">
+                            <div className="flex gap-x-1 self-end ">
+                              {selectedMode === "gas_fees_"
+                                ? showUsd
+                                  ? sortedContracts[
+                                      key
+                                    ].gas_fees_absolute_usd.toFixed(0)
+                                  : sortedContracts[
+                                      key
+                                    ].gas_fees_absolute_eth.toFixed(2)
+                                : sortedContracts[key].txcount_absolute.toFixed(
+                                    2,
+                                  )}
+                              <div>
+                                {selectedMode === "gas_fees_"
+                                  ? showUsd
+                                    ? `$`
+                                    : `Ξ`
+                                  : ""}
+                              </div>
+                            </div>
+
+                            <div className="h-[3px] w-[110px] bg-forest-900 flex justify-end">
+                              <div
+                                className={`h-full bg-forest-50`}
+                                style={{
+                                  width: getWidth(sortedContracts[key]),
+                                }}
+                              ></div>
+                            </div>
                           </div>
 
-                          <div className="flex items-center w-[30%] justify-end ">
+                          <div className="flex items-center w-[70%] justify-end ">
                             <Icon
                               icon="material-symbols:link"
                               className="w-[30px] h-[30px]"
@@ -1607,9 +1671,10 @@ export default function CategoryMetrics({
             : Object.keys(sortedContracts)
                 .reverse()
                 .map((key, i) => {
-                  if (!showMore && i > 0) {
+                  if (!showMore && i >= maxDisplayedContracts) {
                     return null;
                   }
+
                   return (
                     <div key={key + "" + sortOrder}>
                       <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] ">
@@ -1692,21 +1757,40 @@ export default function CategoryMetrics({
                             </div>
                           </div>
                           <div className="flex items-center w-[24.5%]  mr-4  ">
-                            <div className="flex w-[70%] justify-start ">
-                              {selectedMode === "gas_fees_"
-                                ? showUsd
-                                  ? sortedContracts[
-                                      key
-                                    ].gas_fees_absolute_usd.toFixed(2)
+                            <div className="flex flex-col w-[38%] justify-start ">
+                              <div className="flex gap-x-1 self-end ">
+                                {selectedMode === "gas_fees_"
+                                  ? showUsd
+                                    ? sortedContracts[
+                                        key
+                                      ].gas_fees_absolute_usd.toFixed(0)
+                                    : sortedContracts[
+                                        key
+                                      ].gas_fees_absolute_eth.toFixed(2)
                                   : sortedContracts[
                                       key
-                                    ].gas_fees_absolute_eth.toFixed(2)
-                                : sortedContracts[key].txcount_absolute.toFixed(
-                                    2,
-                                  )}
+                                    ].txcount_absolute.toFixed(2)}
+                                <div>
+                                  {" "}
+                                  {selectedMode === "gas_fees_"
+                                    ? showUsd
+                                      ? `$`
+                                      : `Ξ`
+                                    : ""}
+                                </div>
+                              </div>
+
+                              <div className="h-[3px] w-[110px] bg-forest-900 flex justify-end">
+                                <div
+                                  className={`h-full bg-forest-50`}
+                                  style={{
+                                    width: getWidth(sortedContracts[key]),
+                                  }}
+                                ></div>
+                              </div>
                             </div>
 
-                            <div className="flex items-center w-[30%] justify-end ">
+                            <div className="flex items-center w-[70%] justify-end ">
                               <Icon
                                 icon="material-symbols:link"
                                 className="w-[30px] h-[30px]"
@@ -1719,12 +1803,22 @@ export default function CategoryMetrics({
                   );
                 })}
           <button
-            className="relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full bg-forest-700 p-[6px 16px]"
+            className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full bg-forest-700 p-[6px 16px] ${
+              Object.keys(sortedContracts).length <= 10 ? "hidden" : "visible"
+            }`}
             onClick={() => {
               setShowMore(!showMore);
+              if (Object.keys(sortedContracts).length > maxDisplayedContracts) {
+                setMaxDisplayedContracts(maxDisplayedContracts + 10);
+              } else {
+                setMaxDisplayedContracts(10);
+              }
             }}
           >
-            {showMore ? "Show Less" : "Show More"}
+            {Object.keys(sortedContracts).length}
+            {Object.keys(sortedContracts).length < maxDisplayedContracts
+              ? "Show Less"
+              : "Show More"}
           </button>
         </div>
       </Container>
