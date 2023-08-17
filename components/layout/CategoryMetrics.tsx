@@ -358,6 +358,9 @@ export default function CategoryMetrics({
         initialSelectedSubcategories[category] = [];
       }
     });
+    if (initialSelectedSubcategories === {}) {
+      return null;
+    }
     return initialSelectedSubcategories;
   }, [data, categories]);
 
@@ -489,7 +492,7 @@ export default function CategoryMetrics({
   }
 
   useEffect(() => {
-    if (!contracts) {
+    if (!contracts || selectedSubcategories === null) {
       return;
     }
 
