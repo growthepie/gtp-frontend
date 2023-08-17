@@ -66,6 +66,15 @@ export default function CategoryMetrics({
     data: any[];
   };
 
+  const ContractUrls = {
+    arbitrum: "https://arbiscan.io/address/",
+    optimism: "https://optimistic.etherscan.io/address/",
+    zksync_era: "https://explorer.zksync.io/address/",
+    polygon_zkevm: "https://zkevm.polygonscan.com/address/",
+    imx: "https://immutascan.io/address/",
+    base: "https://basescan.org/address/",
+  };
+
   const [selectedMode, setSelectedMode] = useState("gas_fees_");
   const [selectedCategory, setSelectedCategory] = useState("nft_fi");
   const [contractHover, setContractHover] = useState({});
@@ -78,7 +87,7 @@ export default function CategoryMetrics({
 
   const [maxDisplayedContracts, setMaxDisplayedContracts] = useState(10);
 
-  const [contractCategory, setContractCategory] = useState("chain");
+  const [contractCategory, setContractCategory] = useState("value");
   const [sortOrder, setSortOrder] = useState(true);
   const [chainValues, setChainValues] = useState<any[][] | null>(null);
   const [selectedType, setSelectedType] = useState("gas_fees_absolute_usd");
@@ -729,7 +738,7 @@ export default function CategoryMetrics({
 
   function getWidth(x) {
     let retValue = "0%";
-    console.log(x);
+
     if (selectedMode === "gas_fees_") {
       if (showUsd) {
         retValue =
@@ -1303,7 +1312,7 @@ export default function CategoryMetrics({
 
       <Container>
         <div className="flex w-[95%] m-auto mt-[30px]">
-          <div className="w-1/2 flex flex-col justify-between">
+          <div className="w-[44%] flex flex-col justify-between">
             <div className="flex flex-col mt-4 relative">
               {sortedChainValues &&
                 transitions((style, item) => (
@@ -1342,10 +1351,10 @@ export default function CategoryMetrics({
                 ))}
             </div>
           </div>
-          <div className="w-1/2 relative bottom-2">
+          <div className="w-[56%] relative bottom-2">
             {chartSeries && (
               <Chart
-                chartType="area"
+                chartType="line"
                 types={
                   selectedCategory === null || selectedCategory === "Chains"
                     ? data.native_transfers.daily.types
@@ -1460,33 +1469,7 @@ export default function CategoryMetrics({
               </button>
             </div>
             <div className="flex w-[40%] ">
-              <button
-                className="flex gap-x-1 w-[40%]"
-                onClick={() => {
-                  if (contractCategory !== "category") {
-                    setSortOrder(true);
-                  } else {
-                    setSortOrder(!sortOrder);
-                  }
-                  setContractCategory("category");
-                }}
-              >
-                Category{" "}
-                <Icon
-                  icon={
-                    contractCategory === "category"
-                      ? sortOrder
-                        ? "formkit:arrowdown"
-                        : "formkit:arrowup"
-                      : "formkit:arrowdown"
-                  }
-                  className={` text-white ${
-                    contractCategory === "category"
-                      ? "opacity-100"
-                      : "opacity-20"
-                  }`}
-                />
-              </button>
+              <button className="flex gap-x-1 w-[40%]">Category </button>
               <button
                 className="flex gap-x-1"
                 onClick={() => {
@@ -1517,7 +1500,7 @@ export default function CategoryMetrics({
             </div>
             <div className="flex gap-x-[17px] w-[27%] ">
               <button
-                className="flex gap-x-1 w-[51.5%] "
+                className="flex gap-x-1 w-[37.5%] justify-end  "
                 onClick={() => {
                   if (contractCategory !== "value") {
                     setSortOrder(true);
@@ -1544,10 +1527,12 @@ export default function CategoryMetrics({
                 />
               </button>
 
-              <div className="flex gap-x-1 pr-6 ">Block Explorer </div>
+              <div className="flex gap-x-1 w-[62.5%]  justify-center">
+                <div>Block Explorer </div>
+              </div>
             </div>
           </div>
-          {sortOrder
+          {!sortOrder
             ? Object.keys(sortedContracts).map((key, i) => {
                 if (!showMore && i >= maxDisplayedContracts) {
                   return null;
@@ -1633,26 +1618,33 @@ export default function CategoryMetrics({
                           </div>
                         </div>
                         <div className="flex items-center w-[24.5%]  mr-4  ">
-                          <div className="flex flex-col w-[38%] justify-start ">
-                            <div className="flex gap-x-1 self-end ">
-                              {selectedMode === "gas_fees_"
-                                ? showUsd
-                                  ? sortedContracts[
-                                      key
-                                    ].gas_fees_absolute_usd.toFixed(0)
-                                  : sortedContracts[
-                                      key
-                                    ].gas_fees_absolute_eth.toFixed(2)
-                                : sortedContracts[key].txcount_absolute.toFixed(
-                                    0,
-                                  )}
-                              <div>
+                          <div className="flex flex-col w-[38%] items-end ">
+                            <div className="flex gap-x-1 w-[110px] justify-end  ">
+                              <div className="flex">
+                                {" "}
                                 {selectedMode === "gas_fees_"
                                   ? showUsd
                                     ? `$`
                                     : `Ξ`
                                   : ""}
                               </div>
+                              {selectedMode === "gas_fees_"
+                                ? showUsd
+                                  ? Number(
+                                      sortedContracts[
+                                        key
+                                      ].gas_fees_absolute_usd.toFixed(0),
+                                    ).toLocaleString("en-US")
+                                  : Number(
+                                      sortedContracts[
+                                        key
+                                      ].gas_fees_absolute_eth.toFixed(2),
+                                    ).toLocaleString("en-US")
+                                : Number(
+                                    sortedContracts[
+                                      key
+                                    ].txcount_absolute.toFixed(0),
+                                  ).toLocaleString("en-US")}
                             </div>
 
                             <div className="h-[3px] w-[110px] bg-forest-900 flex justify-end">
@@ -1665,11 +1657,20 @@ export default function CategoryMetrics({
                             </div>
                           </div>
 
-                          <div className="flex items-center w-[70%] justify-end ">
-                            <Icon
-                              icon="material-symbols:link"
-                              className="w-[30px] h-[30px]"
-                            />
+                          <div className="flex items-center w-[57%] justify-end ">
+                            <a
+                              href={
+                                ContractUrls[sortedContracts[key].chain] +
+                                "" +
+                                sortedContracts[key].address
+                              }
+                              target="_blank"
+                            >
+                              <Icon
+                                icon="material-symbols:link"
+                                className="w-[30px] h-[30px]"
+                              />
+                            </a>
                           </div>
                         </div>
                       </div>
@@ -1766,20 +1767,9 @@ export default function CategoryMetrics({
                             </div>
                           </div>
                           <div className="flex items-center w-[24.5%]  mr-4  ">
-                            <div className="flex flex-col w-[38%] justify-start ">
-                              <div className="flex gap-x-1 self-end ">
-                                {selectedMode === "gas_fees_"
-                                  ? showUsd
-                                    ? sortedContracts[
-                                        key
-                                      ].gas_fees_absolute_usd.toFixed(0)
-                                    : sortedContracts[
-                                        key
-                                      ].gas_fees_absolute_eth.toFixed(2)
-                                  : sortedContracts[
-                                      key
-                                    ].txcount_absolute.toFixed(0)}
-                                <div>
+                            <div className="flex flex-col w-[38%] items-end ">
+                              <div className="flex gap-x-1 w-[110px] justify-end  ">
+                                <div className="flex">
                                   {" "}
                                   {selectedMode === "gas_fees_"
                                     ? showUsd
@@ -1787,6 +1777,23 @@ export default function CategoryMetrics({
                                       : `Ξ`
                                     : ""}
                                 </div>
+                                {selectedMode === "gas_fees_"
+                                  ? showUsd
+                                    ? Number(
+                                        sortedContracts[
+                                          key
+                                        ].gas_fees_absolute_usd.toFixed(0),
+                                      ).toLocaleString("en-US")
+                                    : Number(
+                                        sortedContracts[
+                                          key
+                                        ].gas_fees_absolute_eth.toFixed(2),
+                                      ).toLocaleString("en-US")
+                                  : Number(
+                                      sortedContracts[
+                                        key
+                                      ].txcount_absolute.toFixed(0),
+                                    ).toLocaleString("en-US")}
                               </div>
 
                               <div className="h-[3px] w-[110px] bg-forest-900 flex justify-end">
@@ -1799,11 +1806,20 @@ export default function CategoryMetrics({
                               </div>
                             </div>
 
-                            <div className="flex items-center w-[70%] justify-end ">
-                              <Icon
-                                icon="material-symbols:link"
-                                className="w-[30px] h-[30px]"
-                              />
+                            <div className="flex items-center w-[57%] justify-end ">
+                              <a
+                                href={
+                                  ContractUrls[sortedContracts[key].chain] +
+                                  "" +
+                                  sortedContracts[key].address
+                                }
+                                target="_blank"
+                              >
+                                <Icon
+                                  icon="material-symbols:link"
+                                  className="w-[30px] h-[30px]"
+                                />
+                              </a>
                             </div>
                           </div>
                         </div>
