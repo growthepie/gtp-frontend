@@ -819,13 +819,21 @@ export default function CategoryMetrics({
       enter: ({ category }) => ({
         width:
           openSub && selectedCategory === category
-            ? categorySizes[category].width
+            ? Object.keys(data[category].subcategories).length > 8
+              ? "650px"
+              : Object.keys(data[category].subcategories).length > 5
+              ? "500px"
+              : "400px"
             : "140px",
       }),
       update: ({ category }) => ({
         width: !exitAnimation
           ? openSub && selectedCategory === category
-            ? categorySizes[category].width
+            ? Object.keys(data[category].subcategories).length > 8
+              ? "650px"
+              : Object.keys(data[category].subcategories).length > 5
+              ? "500px"
+              : "400px"
             : "140px"
           : "140px",
       }),
