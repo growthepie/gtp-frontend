@@ -548,11 +548,13 @@ export default function CategoryMetrics({
         );
       });
     } else if (contractCategory === "subcategory") {
-      sortedContractKeys = sortedContractKeys.sort((a, b) => {
-        return filteredContracts[a]?.sub_category_key.localeCompare(
-          filteredContracts[b]?.sub_category_key,
-        );
-      });
+      if (selectedCategory !== "unlabeled") {
+        sortedContractKeys = sortedContractKeys.sort((a, b) => {
+          return filteredContracts[a]?.sub_category_key.localeCompare(
+            filteredContracts[b]?.sub_category_key,
+          );
+        });
+      }
     } else if (contractCategory === "chain") {
       // Use the sortFunction
       sortedContractKeys = sortedContractKeys.sort((a, b) => {
@@ -570,7 +572,14 @@ export default function CategoryMetrics({
       return acc;
     }, {});
 
-    setSortedContracts(sortedResult);
+    if (
+      selectedCategory === "unlabeled" &&
+      (contractCategory === "category" || contractCategory === "subcategory")
+    ) {
+      setSortedContracts(sortedContracts);
+    } else {
+      setSortedContracts(sortedResult);
+    }
   }, [
     contractCategory,
     contracts,
