@@ -32,6 +32,7 @@ export const Chart = ({
   yScale = "linear",
   chartHeight,
   chartWidth,
+  decimals = 2,
 }: {
   // data: { [chain: string]: number[][] };
   chartType: "area" | "line";
@@ -48,6 +49,7 @@ export const Chart = ({
   yScale?: "linear" | "logarithmic" | "percentage";
   chartHeight: string;
   chartWidth: string;
+  decimals?: number;
 }) => {
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
@@ -88,50 +90,197 @@ export const Chart = ({
       const currentSeries = chartComponent.current.series;
 
       // remove all series
-      for (var i = chartComponent.current.series.length - 1; i >= 0; i--) {
-        chartComponent.current.series[i].remove(false);
-      }
+      // for (var i = chartComponent.current.series.length - 1; i >= 0; i--) {
+      //   chartComponent.current.series[i].remove(false);
+      // }
+
+      const seriesToRemove = currentSeries.filter(
+        (cs) => !series.find((s) => s.name === cs.name),
+      );
+
+      seriesToRemove.forEach((s) => {
+        s.remove(false);
+      });
 
       // add new series
       series.forEach((s) => {
-        chartComponent.current?.addSeries(
-          {
-            name: s.name,
-            data: s.data.map((d) => [
-              d[types.indexOf(s.unixKey)],
-              d[types.indexOf(s.dataKey)],
-            ]),
-            type: "area",
-            borderColor: "transparent",
-            shadow: {
-              color: "#CDD8D3" + "FF",
-              offsetX: 0,
-              offsetY: 0,
-              width: 2,
-            },
-            color: {
-              linearGradient: {
-                x1: 0,
-                y1: 0,
-                x2: 0,
-                y2: 1,
-              },
-              stops: [
-                [0, AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] + "FF"],
-                [
-                  0.349,
-                  AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] + "88",
+        if (currentSeries && currentSeries.find((cs) => cs.name === s.name)) {
+          const seriesToUpdate = currentSeries.find((cs) => cs.name === s.name);
+
+          seriesToUpdate &&
+            seriesToUpdate.setData(
+              s.data.map((d) => [
+                d[types.indexOf(s.unixKey)],
+                d[types.indexOf(s.dataKey)],
+              ]),
+              false,
+            );
+        } else {
+          chartComponent.current?.addSeries(
+            {
+              name: s.name,
+              data: s.data.map((d) => [
+                d[types.indexOf(s.unixKey)],
+                d[types.indexOf(s.dataKey)],
+              ]),
+              type: chartType,
+              clip: true,
+              fillOpacity: 1,
+              fillColor: {
+                linearGradient: {
+                  x1: 0,
+                  y1: 0,
+                  x2: 0,
+                  y2: 1,
+                },
+                stops: [
+                  [
+                    0,
+                    AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] + "33",
+                  ],
+                  [
+                    1,
+                    AllChainsByKeys[s.name]?.colors[theme ?? "dark"][1] + "33",
+                  ],
                 ],
-                [1, AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] + "00"],
-              ],
+              },
+              borderColor: AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0],
+              borderWidth: 1,
+              lineWidth: 2,
+              ...// @ts-ignore
+              (chartType !== "column"
+                ? {
+                    shadow: {
+                      color:
+                        AllChainsByKeys[s.name]?.colors[theme ?? "dark"][1] +
+                        "33",
+                      width: 10,
+                    },
+                    color: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 1,
+                        y2: 0,
+                      },
+                      stops: [
+                        [
+                          0,
+                          AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0],
+                        ],
+                        // [0.33, AllChainsByKeys[series.name].colors[1]],
+                        [
+                          1,
+                          AllChainsByKeys[s.name]?.colors[theme ?? "dark"][1],
+                        ],
+                      ],
+                    },
+                  }
+                : s.name === "all_l2s"
+                ? {
+                    borderColor: "transparent",
+
+                    shadow: {
+                      color: "#CDD8D3" + "FF",
+                      // color:
+                      //   AllChainsByKeys[series.name].colors[theme][1] + "33",
+                      // width: 10,
+                      offsetX: 0,
+                      offsetY: 0,
+                      width: 2,
+                    },
+                    color: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 0,
+                        y2: 1,
+                      },
+                      stops:
+                        theme === "dark"
+                          ? [
+                              [
+                                0,
+                                AllChainsByKeys[s.name]?.colors[
+                                  theme ?? "dark"
+                                ][0] + "E6",
+                              ],
+                              // [
+                              //   0.3,
+                              //   //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
+                              //   AllChainsByKeys[series.name].colors[theme][0] +
+                              //     "FF",
+                              // ],
+                              [
+                                1,
+                                AllChainsByKeys[s.name]?.colors[
+                                  theme ?? "dark"
+                                ][1] + "E6",
+                              ],
+                            ]
+                          : [
+                              [
+                                0,
+                                AllChainsByKeys[s.name]?.colors[
+                                  theme ?? "dark"
+                                ][0] + "E6",
+                              ],
+                              // [
+                              //   0.7,
+                              //   AllChainsByKeys[series.name].colors[theme][0] +
+                              //     "88",
+                              // ],
+                              [
+                                1,
+                                AllChainsByKeys[s.name]?.colors[
+                                  theme ?? "dark"
+                                ][1] + "E6",
+                              ],
+                            ],
+                    },
+                  }
+                : {
+                    borderColor: "transparent",
+                    shadow: {
+                      color: "#CDD8D3" + "FF",
+                      offsetX: 0,
+                      offsetY: 0,
+                      width: 2,
+                    },
+                    color: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 0,
+                        y2: 1,
+                      },
+                      stops: [
+                        [
+                          0,
+                          AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] +
+                            "FF",
+                        ],
+                        [
+                          0.349,
+                          AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] +
+                            "88",
+                        ],
+                        [
+                          1,
+                          AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] +
+                            "00",
+                        ],
+                      ],
+                    },
+                  }),
             },
-          },
-          false,
-        );
+            false,
+          );
+        }
       });
       chartComponent.current?.redraw();
     }
-  }, [chartComponent, series, theme, types]);
+  }, [chartType, series, theme, types]);
 
   useEffect(() => {
     drawChartSeries();
@@ -230,7 +379,9 @@ export const Chart = ({
                     },
                     plotOptions: {
                       ...baseOptions.plotOptions,
-
+                      line: {
+                        stacking: undefined,
+                      },
                       area: {
                         ...baseOptions.plotOptions.area,
                         stacking: stack ? "normal" : undefined,
@@ -241,12 +392,14 @@ export const Chart = ({
                       formatter:
                         yScale === "percentage"
                           ? tooltipFormatter(true, true, decimalToPercent)
-                          : tooltipFormatter(true, false, (x) => {
-                              return x.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              });
-                            }),
+                          : tooltipFormatter(
+                              true,
+                              false,
+                              (x) => {
+                                return parseFloat(x).toFixed(decimals);
+                              },
+                              series.length > 0 ? series[0].dataKey : undefined,
+                            ),
                     },
                     xAxis: {
                       ...baseOptions.xAxis,
@@ -295,6 +448,11 @@ export const Chart = ({
                 <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px]" />
               </div>
             </div>
+            {series.length === 0 && (
+              <div className="absolute top-[calc(50%+1.5rem)] left-[0px] text-xs font-medium flex justify-center w-full text-forest-500/60">
+                No chain(s) selected for comparison. Please select at least one.
+              </div>
+            )}
           </div>
         ) : (
           <div className="w-full h-[26rem] my-4 flex justify-center items-center">

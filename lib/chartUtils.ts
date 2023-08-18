@@ -19,6 +19,8 @@ export const tooltipFormatter = (
   shared = true,
   percentage = true,
   valueFormatter: (value: any) => string = (value) => value,
+  dataKey?: string,
+  reversePerformer?: boolean,
 ) => {
   const percentageFormatter = function (
     this: Highcharts.TooltipFormatterContextObject,
@@ -38,38 +40,51 @@ export const tooltipFormatter = (
       year: "numeric",
     });
 
-    let tooltip = `
-      <div class="mt-3 mr-3 mb-3 w-48 md:w-60 text-xs font-raleway">
-        <div class="w-full flex justify-between font-bold text-[13px] md:text-[1rem] items-end pl-6 pr-1 mb-2">${dateString}</div>
-        <div className="flex flex-col">
-          `;
-    points.forEach((point: any) => {
-      const { y, color, series, percentage } = point;
-      const name = series.name;
+    let tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
+        <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
 
-      const date = x ? new Date(x) : new Date();
-      const dateString = date.toLocaleDateString(undefined, {
-        timeZone: "UTC",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
+    points
+      .sort((a: any, b: any) => {
+        if (reversePerformer) return a.y - b.y;
 
-      let value = y ? formatNumber(y, false, true) : 0;
+        return b.y - a.y;
+      })
+      .forEach((point: any) => {
+        const { y, color, series, percentage } = point;
+        const name = series.name;
 
-      if (valueFormatter) {
-        value = valueFormatter(value);
-      } else {
-        value = Highcharts.numberFormat(percentage, 2);
-      }
+        const date = x ? new Date(x) : new Date();
+        const dateString = date.toLocaleDateString(undefined, {
+          timeZone: "UTC",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
 
-      tooltip += `
-        <div class="flex w-full space-x-2 items-center font-medium mb-1">
+        let value = y ? formatNumber(y, false, true) : 0;
+
+        if (valueFormatter) {
+          value = valueFormatter(value);
+        } else {
+          value = Highcharts.numberFormat(percentage, 2);
+        }
+
+        tooltip += `
+        <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
         <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors["dark"][0]}"></div>
         <div class="tooltip-point-name">${AllChainsByKeys[name].label}</div>
         <div class="flex-1 text-right font-inter">${value}</div>
+      </div>
+      <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+        <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
+
+        <div class="h-[2px] rounded-none absolute right-0 -top-[3px] bg-forest-900 dark:bg-forest-50" 
+        style="
+          width: ${percentage}%;
+          background-color: ${AllChainsByKeys[name].colors["dark"][0]};
+        "></div>
       </div>`;
-    });
+      });
     tooltip += `
         </div>
       </div>`;
@@ -94,45 +109,79 @@ export const tooltipFormatter = (
       year: "numeric",
     });
 
-    console.log(points[0]);
+    let prefix = "";
+    let suffix = "";
 
-    let tooltip = `
-      <div class="mt-3 mr-3 mb-3 w-48 md:w-60 text-xs font-raleway">
-        <div class="w-full flex justify-between font-bold text-[13px] md:text-[1rem] items-end pl-6 pr-1 mb-2">${dateString}</div>
-        <div className="flex flex-col">
-          `;
-    points.forEach((point: any) => {
-      const { y, color, series, percentage } = point;
-      const name = series.name;
-
-      const date = x ? new Date(x) : new Date();
-      const dateString = date.toLocaleDateString(undefined, {
-        timeZone: "UTC",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-
-      let value = y ? formatNumber(y, false, true) : 0;
-
-      if (valueFormatter) {
-        value = valueFormatter(value);
-      } else {
-        value = Highcharts.numberFormat(value, 2);
+    if (dataKey) {
+      if (dataKey.includes("eth")) {
+        prefix = "Ξ";
+      } else if (dataKey.includes("usd")) {
+        prefix = "$";
       }
+    }
 
-      tooltip += `
-        <div class="flex w-full space-x-2 items-center font-medium mb-1">
-        <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors["dark"][0]}"></div>
+    let pointsSum = points.reduce((acc: number, point: any) => {
+      acc += point.y;
+      return acc;
+    }, 0);
+
+    let tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
+        <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
+
+    points
+      .sort((a: any, b: any) => {
+        if (reversePerformer) return a.y - b.y;
+
+        return b.y - a.y;
+      })
+      .forEach((point: any) => {
+        const { y, color, series, percentage } = point;
+        const name = series.name;
+
+        const date = x ? new Date(x) : new Date();
+        const dateString = date.toLocaleDateString(undefined, {
+          timeZone: "UTC",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+
+        let value = y ? formatNumber(y, false, true) : 0;
+
+        if (valueFormatter) {
+          value = valueFormatter(value);
+        } else {
+          value = Highcharts.numberFormat(value, 2);
+        }
+
+        tooltip += `
+        <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+        <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+          AllChainsByKeys[name].colors["dark"][0]
+        }"></div>
         <div class="tooltip-point-name">${AllChainsByKeys[name].label}</div>
-        <div class="flex-1 text-right font-inter">${value}</div>
+        <div class="flex-1 text-right justify-end font-inter flex">
+          <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">${prefix}</div>
+          ${value}
+          <div class="opacity-70 ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
+        </div>
+      </div>
+      <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+        <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
+
+        <div class="h-[2px] rounded-none absolute right-0 -top-[3px] bg-forest-900 dark:bg-forest-50" 
+        style="
+          width: ${(y / pointsSum) * 100}%;
+          background-color: ${AllChainsByKeys[name].colors["dark"][0]};
+        "></div>
       </div>`;
-    });
+      });
     tooltip += `
         </div>
       </div>`;
     return tooltip;
   };
+
   if (shared) {
     return percentage ? percentageFormatter : normalFormatter;
   }

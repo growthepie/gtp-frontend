@@ -173,29 +173,6 @@ export default function CategoryMetrics({
     setContracts(result);
   }, [data, selectedTimespan]);
 
-  const chartReturn = useMemo(() => {
-    const chainArray: ChainData[] = [];
-
-    //Array of selected chains to return to chart
-    for (let i in selectedChains) {
-      if (
-        selectedChains[i] === true &&
-        data[selectedCategory].daily[String(i)]
-      ) {
-        const obj = {
-          id: [String(i), selectedCategory, selectedType].join("_"),
-          name: String(i),
-          unixKey: "unix",
-          dataKey: selectedType,
-          data: data[selectedCategory].daily[String(i)],
-        };
-        chainArray.push(obj);
-      }
-    }
-
-    return chainArray;
-  }, [data, selectedChains, selectedCategory, selectedType]);
-
   const sortedChainValues = useMemo(() => {
     if (!chainValues || !selectedChains) return null;
 
@@ -210,6 +187,184 @@ export default function CategoryMetrics({
           : 1,
       );
   }, [chainValues, selectedChains]);
+
+  const timespans = useMemo(() => {
+    return {
+      "7d": {
+        label: "7 days",
+        value: 7,
+        xMin: Date.now() - 7 * 24 * 60 * 60 * 1000,
+        xMax: Date.now(),
+      },
+      "30d": {
+        label: "30 days",
+        value: 30,
+        xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
+        xMax: Date.now(),
+      },
+      "90d": {
+        label: "90 days",
+        value: 90,
+      },
+      // "180d": {
+      //   label: "180 days",
+      //   value: 180,
+      // },
+      "365d": {
+        label: "1 year",
+        value: 365,
+      },
+      // max: {
+      //   label: "Maximum",
+      //   value: 0,
+      // },
+    };
+  }, []);
+
+  const categories: { [key: string]: string } = useMemo(() => {
+    if (master) {
+      const result: { [key: string]: string } = {};
+
+      result.categories = "Categories";
+      Object.keys(master.blockspace_categories.main_categories).forEach(
+        (key) => {
+          const words =
+            master.blockspace_categories.main_categories[key].split(" ");
+          const formatted = words
+            .map((word) => {
+              return word.charAt(0).toUpperCase() + word.slice(1);
+            })
+            .join(" ");
+          result[key] = formatted;
+        },
+      );
+
+      // result.scaling = "Scaling";
+
+      return result;
+    }
+
+    return {};
+  }, [master]);
+
+  const updatedSubcategories = useMemo(() => {
+    const initialSelectedSubcategories = {};
+    Object.keys(categories).forEach((category) => {
+      if (data[category]?.subcategories?.list) {
+        initialSelectedSubcategories[category] = [
+          ...data[category].subcategories.list,
+        ];
+      } else {
+        initialSelectedSubcategories[category] = [];
+      }
+    });
+    return initialSelectedSubcategories;
+  }, [data, categories]);
+
+  const [selectedSubcategories, setSelectedSubcategories] =
+    useState(updatedSubcategories);
+
+  const chartReturn = useMemo(() => {
+    const chainArray: ChainData[] = [];
+
+    if (!selectedSubcategories) return [];
+
+    console.log(
+      "selectedSubcategories[selectedCategory].length",
+      selectedSubcategories[selectedCategory].length,
+    );
+    console.log(
+      "data[selectedCategory].subcategories.list.length",
+      data[selectedCategory].subcategories.list.length,
+    );
+
+    //Array of selected chains to return to chart
+    for (let i in selectedChains) {
+      if (
+        selectedChains[i] === true &&
+        data[selectedCategory].daily[String(i)]
+      ) {
+        // don't show imx gas fees chart
+        if (i === "imx" && selectedMode === "gas_fees_") continue;
+
+        // default to total main category values
+        let chartData = data[selectedCategory].daily[String(i)];
+
+        // check if we're filtering out any subcategories
+        if (
+          selectedSubcategories[selectedCategory].length !==
+          data[selectedCategory].subcategories.list.length
+        ) {
+          // get the lengths of the selected subcategories' daily values for this chain
+          const selectedSubcategoryLengths = selectedSubcategories[
+            selectedCategory
+          ].map((subcategory) => {
+            const rows =
+              data[selectedCategory].subcategories[subcategory].daily[
+                String(i)
+              ];
+            return rows ? rows.length : 0;
+          });
+
+          // if all subcategories have no data, skip this chain
+          if (selectedSubcategoryLengths.every((length) => length === 0))
+            continue;
+
+          // get the index of the longest subcategory
+          const longestSubcategoryIndex = selectedSubcategoryLengths.indexOf(
+            Math.max(...selectedSubcategoryLengths),
+          );
+
+          const baseData =
+            data[selectedCategory].subcategories[
+              selectedSubcategories[selectedCategory][longestSubcategoryIndex]
+            ].daily[String(i)];
+
+          for (
+            let i = 0;
+            i < selectedSubcategories[selectedCategory].length;
+            i++
+          ) {
+            if (longestSubcategoryIndex) continue;
+
+            const subcategory = selectedSubcategories[selectedCategory][i];
+            const subcategoryData =
+              data[selectedCategory].subcategories[subcategory].daily[
+                String(i)
+              ] ?? [];
+
+            // for each day, add the subcategory's values to the base value (except the first value which is the date)
+            for (let row = 0; row < subcategoryData.length; row++) {
+              for (let col = 1; col < subcategoryData[row].length; col++) {
+                baseData[row][col] += subcategoryData[row][col];
+              }
+            }
+          }
+
+          if (baseData) {
+            chartData = baseData;
+          }
+        }
+
+        const obj = {
+          id: [String(i), selectedCategory, selectedType].join("_"),
+          name: String(i),
+          unixKey: "unix",
+          dataKey: selectedType,
+          data: chartData,
+        };
+        chainArray.push(obj);
+      }
+    }
+
+    return chainArray;
+  }, [
+    selectedSubcategories,
+    selectedCategory,
+    data,
+    selectedChains,
+    selectedType,
+  ]);
 
   const chartSeries = useMemo(() => {
     const today = new Date().getTime();
@@ -288,81 +443,6 @@ export default function CategoryMetrics({
       },
     ];
   }, [selectedCategory, selectedType, data, chartReturn]);
-
-  const timespans = useMemo(() => {
-    return {
-      "7d": {
-        label: "7 days",
-        value: 7,
-        xMin: Date.now() - 7 * 24 * 60 * 60 * 1000,
-        xMax: Date.now(),
-      },
-      "30d": {
-        label: "30 days",
-        value: 30,
-        xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
-        xMax: Date.now(),
-      },
-      "90d": {
-        label: "90 days",
-        value: 90,
-      },
-      // "180d": {
-      //   label: "180 days",
-      //   value: 180,
-      // },
-      "365d": {
-        label: "1 year",
-        value: 365,
-      },
-      // max: {
-      //   label: "Maximum",
-      //   value: 0,
-      // },
-    };
-  }, []);
-
-  const categories: { [key: string]: string } =
-    useMemo(() => {
-      if (master) {
-        const result: { [key: string]: string } = {};
-
-        result.categories = "Categories";
-        Object.keys(master.blockspace_categories.main_categories).forEach(
-          (key) => {
-            const words =
-              master.blockspace_categories.main_categories[key].split(" ");
-            const formatted = words
-              .map((word) => {
-                return word.charAt(0).toUpperCase() + word.slice(1);
-              })
-              .join(" ");
-            result[key] = formatted;
-          },
-        );
-
-        // result.scaling = "Scaling";
-
-        return result;
-      }
-    }, [master]) ?? {};
-
-  const updatedSubcategories = useMemo(() => {
-    const initialSelectedSubcategories = {};
-    Object.keys(categories).forEach((category) => {
-      if (data[category]?.subcategories?.list) {
-        initialSelectedSubcategories[category] = [
-          ...data[category].subcategories.list,
-        ];
-      } else {
-        initialSelectedSubcategories[category] = [];
-      }
-    });
-    return initialSelectedSubcategories;
-  }, [data, categories]);
-
-  const [selectedSubcategories, setSelectedSubcategories] =
-    useState(updatedSubcategories);
 
   const [isCategoryHovered, setIsCategoryHovered] = useState<{
     [key: string]: boolean;
@@ -1405,6 +1485,7 @@ export default function CategoryMetrics({
                 // yScale="linear"
                 chartHeight="400px"
                 chartWidth="100%"
+                decimals={2}
               />
             )}
           </div>
