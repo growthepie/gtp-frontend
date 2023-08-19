@@ -898,39 +898,29 @@ export default function CategoryMetrics({
       i,
     })),
     {
-      from: { width: "100px" }, // Initial width for closed categories
+      from: { width: "140px" }, // Initial width for closed categories
       enter: ({ category }) => ({
         width:
           openSub && selectedCategory === category
             ? Object.keys(data[category].subcategories).length > 8
-              ? !isMobile
-                ? "550px"
-                : "500px"
+              ? "650px"
               : Object.keys(data[category].subcategories).length > 5
-              ? !isMobile
-                ? "450px"
-                : "400px"
-              : "410px"
-            : "100px",
+              ? "500px"
+              : "400px"
+            : "140px",
       }),
       update: ({ category }) => ({
         width: !exitAnimation
           ? openSub && selectedCategory === category
             ? Object.keys(data[category].subcategories).length > 8
-              ? !isMobile
-                ? "550px"
-                : "500px"
+              ? "650px"
               : Object.keys(data[category].subcategories).length > 5
-              ? !isMobile
-                ? "450px"
-                : "440px"
-              : !isMobile
-              ? "410px"
-              : "405px"
-            : "100px"
-          : "100px",
+              ? "500px"
+              : "400px"
+            : "140px"
+          : "140px",
       }),
-      leave: { width: "100px" },
+      leave: { width: "140px" },
 
       keys: ({ category }) => category,
       config: { mass: 1, tension: 70, friction: 20 },
@@ -1025,7 +1015,7 @@ export default function CategoryMetrics({
         </div>
       </Container>
       <Container className="block w-full !pr-0 lg:!px-[50px] lg:mt-0 mt-6">
-        <div className="w-[98%] mx-auto xl:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-2">
+        <div className="w-[98%] mx-auto overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-2">
           <animated.div
             className="relative min-w-[1150px] md:min-w-[1200px] w-[97.5%] h-[67px] m-auto border-x-[1px] border-y-[1px] rounded-[15px] dark:text-forest-50  text-forest-1000 border-forest-400 dark:border-forest-800  dark:bg-forest-1000 mt-8 overflow-hidden"
             style={{ ...categoryAnimation }}
@@ -1155,8 +1145,9 @@ export default function CategoryMetrics({
                                 ? "w-[500px]"
                                 : "w-[400px]"
                             }`
-                          : `h-full w-full  hover:max-w-[180px]`
-                      } ${!isMobile ? "min-w-[120px]" : "min-w-[80px]"}
+                          : "h-full w-full min-w-[60px] hover:max-w-[180px]"
+                      }
+
 
 
                 ${isCategoryHovered[item.category] ? "bg-white/5" : ""}
