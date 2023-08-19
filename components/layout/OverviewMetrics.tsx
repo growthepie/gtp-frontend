@@ -176,9 +176,9 @@ export default function OverviewMetrics({
     for (const category of Object.keys(data)) {
       if (data) {
         const contractsData =
-          data.all_l2s["overview"].overview[selectedTimespan].contracts.data;
+          data.all_l2s["overview"][selectedTimespan].contracts.data;
         const types =
-          data.all_l2s["overview"].overview[selectedTimespan].contracts.types;
+          data.all_l2s["overview"][selectedTimespan].contracts.types;
 
         for (const contract of Object.keys(contractsData)) {
           const dataArray = contractsData[contract];
