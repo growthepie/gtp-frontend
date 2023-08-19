@@ -46,6 +46,28 @@ const DisabledStates: {
   },
 };
 
+type ContractInfo = {
+  address: string;
+  name: string;
+  main_category_key: string;
+  sub_category_key: string;
+  chain: string;
+  gas_fees_absolute_eth: number;
+  gas_fees_absolute_usd: number;
+  gas_fees_share: number;
+  txcount_absolute: number;
+  txcount_share: number;
+};
+
+const ContractUrls = {
+  arbitrum: "https://arbiscan.io/address/",
+  optimism: "https://optimistic.etherscan.io/address/",
+  zksync_era: "https://explorer.zksync.io/address/",
+  polygon_zkevm: "https://zkevm.polygonscan.com/address/",
+  imx: "https://immutascan.io/address/",
+  base: "https://basescan.org/address/",
+};
+
 export default function OverviewMetrics({
   data,
   showEthereumMainnet,
@@ -68,6 +90,19 @@ export default function OverviewMetrics({
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [selectedMode, setSelectedMode] = useState("txcount_share");
   const [isCategoryMenuExpanded, setIsCategoryMenuExpanded] = useState(true);
+  const [contractCategory, setContractCategory] = useState("value");
+  const [sortOrder, setSortOrder] = useState(false);
+
+  const [showMore, setShowMore] = useState(false);
+  const [maxDisplayedContracts, setMaxDisplayedContracts] = useState(10);
+  const [contractHover, setContractHover] = useState({});
+  const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
+    {},
+  );
+
+  const [sortedContracts, setSortedContracts] = useState<{
+    [key: string]: ContractInfo;
+  }>({});
 
   const categories: { [key: string]: string } = useMemo(() => {
     // if (master) {
@@ -132,6 +167,64 @@ export default function OverviewMetrics({
       gaming: false,
     };
   });
+
+  useEffect(() => {
+    // Process the data and create the contracts object
+    const result: { [key: string]: ContractInfo } = {};
+
+    for (const category of Object.keys(data)) {
+      if (data) {
+        const contractsData =
+          data.all_l2s.overview[selectedTimespan].contracts.data;
+        const types = data.all_l2s.overview[selectedTimespan].contracts.types;
+
+        for (const contract of Object.keys(contractsData)) {
+          const dataArray = contractsData[contract];
+          const key = dataArray[0] + dataArray[4];
+          const values = dataArray;
+
+          // Check if the key already exists in the result object
+          if (result.hasOwnProperty(key)) {
+            // If the key exists, update the values
+            result[key] = {
+              ...result[key],
+              address: values[types.indexOf("address")],
+              name: values[types.indexOf("name")],
+              main_category_key: values[types.indexOf("main_category_key")],
+              sub_category_key: values[types.indexOf("sub_category_key")],
+              chain: values[types.indexOf("chain")],
+              gas_fees_absolute_eth:
+                values[types.indexOf("gas_fees_absolute_eth")],
+              gas_fees_absolute_usd:
+                values[types.indexOf("gas_fees_absolute_usd")],
+              gas_fees_share: values[types.indexOf("gas_fees_share")] ?? "",
+              txcount_absolute: values[types.indexOf("txcount_absolute")],
+              txcount_share: values[types.indexOf("txcount_share")] ?? "",
+            };
+          } else {
+            // If the key doesn't exist, create a new entry
+            result[key] = {
+              address: values[types.indexOf("address")],
+              name: values[types.indexOf("name")],
+              main_category_key: values[types.indexOf("main_category_key")],
+              sub_category_key: values[types.indexOf("sub_category_key")],
+              chain: values[types.indexOf("chain")],
+              gas_fees_absolute_eth:
+                values[types.indexOf("gas_fees_absolute_eth")],
+              gas_fees_absolute_usd:
+                values[types.indexOf("gas_fees_absolute_usd")],
+              gas_fees_share: values[types.indexOf("gas_fees_share")] ?? "",
+              txcount_absolute: values[types.indexOf("txcount_absolute")],
+              txcount_share: values[types.indexOf("txcount_share")] ?? "",
+            };
+          }
+        }
+      }
+    }
+
+    // Update the contracts state with the new data
+    setContracts(result);
+  }, [data, selectedTimespan]);
 
   const [selectedCategory, setSelectedCategory] = useState("native_transfers");
 
@@ -262,7 +355,175 @@ export default function OverviewMetrics({
 
   // console.log(data["optimism"].overview.types.indexOf("gas_fees_share"));
   // console.log(relativePercentage);
+  useEffect(() => {
+    if (!contracts) {
+      return;
+    }
 
+    const filteredContracts = Object.entries(contracts)
+      .filter(([key, contract]) => {
+        const isAllChainsSelected = selectedChain === null;
+
+        const isChainSelected =
+          isAllChainsSelected || contract.chain === selectedChain;
+
+        const isCategoryMatched =
+          contract.main_category_key === selectedCategory;
+
+        console.log(contract.main_category_key);
+        console.log(selectedCategory);
+
+        return isChainSelected && isCategoryMatched;
+      })
+      .reduce((filtered, [key, contract]) => {
+        filtered[key] = contract;
+        return filtered;
+      }, {});
+
+    let sortedContractKeys = Object.keys(filteredContracts);
+
+    console.log(filteredContracts);
+    // Define a sorting function
+    const sortFunction = (a, b) => {
+      const valueA =
+        selectedMode === "gas_fees_"
+          ? showUsd
+            ? filteredContracts[a]?.gas_fees_absolute_usd
+            : filteredContracts[a]?.gas_fees_absolute_eth
+          : filteredContracts[a]?.txcount_absolute;
+
+      const valueB =
+        selectedMode === "gas_fees_"
+          ? showUsd
+            ? filteredContracts[b]?.gas_fees_absolute_usd
+            : filteredContracts[b]?.gas_fees_absolute_eth
+          : filteredContracts[b]?.txcount_absolute;
+
+      // Compare the values
+      return valueA - valueB;
+    };
+
+    if (contractCategory === "contract") {
+      // Use the sortFunction
+      sortedContractKeys = sortedContractKeys.sort((a, b) => {
+        const nameA = filteredContracts[a]?.name;
+        const nameB = filteredContracts[b]?.name;
+
+        if (nameA && nameB) {
+          return nameA.localeCompare(nameB);
+        }
+
+        const addressA = filteredContracts[a]?.address;
+        const addressB = filteredContracts[b]?.address;
+
+        return addressA.localeCompare(addressB);
+      });
+    } else if (contractCategory === "category") {
+      // Use the sortFunction
+      sortedContractKeys = sortedContractKeys.sort((a, b) => {
+        return filteredContracts[a]?.main_category_key.localeCompare(
+          filteredContracts[b]?.main_category_key,
+        );
+      });
+    } else if (contractCategory === "subcategory") {
+      if (selectedCategory !== "unlabeled") {
+        sortedContractKeys = sortedContractKeys.sort((a, b) => {
+          return filteredContracts[a]?.sub_category_key.localeCompare(
+            filteredContracts[b]?.sub_category_key,
+          );
+        });
+      }
+    } else if (contractCategory === "chain") {
+      // Use the sortFunction
+      sortedContractKeys = sortedContractKeys.sort((a, b) => {
+        return filteredContracts[a]?.chain.localeCompare(
+          filteredContracts[b]?.chain,
+        );
+      });
+    } else if (contractCategory === "value" || contractCategory === "share") {
+      // Use the sortFunction
+      sortedContractKeys = sortedContractKeys.sort(sortFunction);
+    }
+
+    const sortedResult = sortedContractKeys.reduce((acc, key) => {
+      acc[key] = filteredContracts[key];
+      return acc;
+    }, {});
+
+    if (
+      selectedCategory === "unlabeled" &&
+      (contractCategory === "category" || contractCategory === "subcategory")
+    ) {
+      setSortedContracts(sortedContracts);
+    } else {
+      setSortedContracts(sortedResult);
+    }
+  }, [
+    contractCategory,
+    contracts,
+    selectedCategory,
+    selectedChain,
+    selectedMode,
+    showUsd,
+  ]);
+
+  const largestContractValue = useMemo(() => {
+    let retValue = 0;
+    if (selectedMode === "gas_fees_") {
+      if (showUsd) {
+        for (let i in sortedContracts) {
+          if (sortedContracts[i].gas_fees_absolute_usd > retValue) {
+            retValue = sortedContracts[i].gas_fees_absolute_usd;
+          }
+        }
+      } else {
+        for (let i in sortedContracts) {
+          if (sortedContracts[i].gas_fees_absolute_eth > retValue) {
+            retValue = sortedContracts[i].gas_fees_absolute_eth;
+          }
+        }
+      }
+    } else {
+      for (let i in sortedContracts) {
+        if (sortedContracts[i].txcount_absolute > retValue) {
+          retValue = sortedContracts[i].txcount_absolute;
+        }
+      }
+    }
+
+    return retValue;
+  }, [selectedMode, sortedContracts, showUsd]);
+
+  function getWidth(x) {
+    let retValue = "0%";
+
+    if (selectedMode === "gas_fees_") {
+      if (showUsd) {
+        retValue =
+          String(
+            (
+              (x.gas_fees_absolute_usd.toFixed(2) / largestContractValue) *
+              100
+            ).toFixed(1),
+          ) + "%";
+      } else {
+        retValue =
+          String(
+            (
+              (x.gas_fees_absolute_eth.toFixed(2) / largestContractValue) *
+              100
+            ).toFixed(1),
+          ) + "%";
+      }
+    } else {
+      retValue =
+        String(((x.txcount_absolute / largestContractValue) * 100).toFixed(1)) +
+        "%";
+    }
+
+    return retValue;
+  }
+  console.log(data);
   const getBarSectionStyle = useCallback(
     (
       chainKey: string,
@@ -967,7 +1228,7 @@ export default function OverviewMetrics({
         </div>
       </Container>
       <Container>
-        <div className="mt-[20px] lg:mt-[50px] mb-[38px]">
+        <div className="mt-[20px] lg:mt-[50px] mb-[38px] ">
           <h2 className="text-[20px] font-bold">
             {selectedChain
               ? AllChainsByKeys[selectedChain].label
@@ -990,86 +1251,444 @@ export default function OverviewMetrics({
           chartWidth="100%"
         />
       </Container>
-      <div>
-        {data[selectedChain ?? "all_l2s"].overview[
-          selectedTimespan
-        ].contracts.data.map((contract, i) => (
-          <div key={contract[0]}>
-            <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] ">
-              <div className="flex w-[100%] ml-4 mr-8 justify-between items-center ">
-                <div className="flex items-center w-[30%] gap-x-[30px] pl-1 ">
-                  <div
-                    className={`flex w-[34px] h-[34px] rounded-full items-center justify-center ${
-                      AllChainsByKeys[
-                        contract[
-                          data[selectedChain ?? "all_l2s"].overview[
-                            selectedTimespan
-                          ].contracts.types.indexOf("chain")
-                        ]
-                      ].backgrounds[theme][0]
-                    }`}
-                  >
-                    <Icon
-                      icon={`gtp:${
-                        contract[
-                          data[selectedChain ?? "all_l2s"].overview[
-                            selectedTimespan
-                          ].contracts.types.indexOf("chain")
-                        ]
-                      }-logo-monochrome`}
-                      className="w-[21px] h-[21px] text-black"
-                    />
-                  </div>
-                  <div className="flex w-[30px] items-center justify-center ">
-                    {i + 1}
-                  </div>
-                  <div>
-                    {
-                      contract[
-                        data[selectedChain ?? "all_l2s"].overview[
-                          selectedTimespan
-                        ].contracts.types.indexOf("name")
-                      ]
-                    }
-                  </div>
-                </div>
-                {/* <div className="flex items-center text-[14px] justify-center w-[30.3%] mr-[140px]">
-                  <div className="flex">
-                    {master &&
-                      master.blockspace_categories.main_categories[
-                        contract[data[selectedChain].overview[selectedTimespan].contracts.types.indexOf("main_category_key")]
-                      ] +
-                        " - " +
-                        master.blockspace_categories.sub_categories[
-                          contract[data[selectedChain].overview[selectedTimespan].contracts.types.indexOf("sub_category_key")]
-                        ]}
-                  </div>
-                </div>
-                <div className="flex gap-x-[80px] items-center w-[28%] mr-4 ">
-                  <div className="flex justify-center w-[30%]">
-                    {selectedMode === "gas_fees_"
-                      ? showUsd
-                        ? contract.gas_fees_absolute_usd
-                        : contract.gas_fees_absolute_eth
-                      : contract.txcount_absolute}
-                  </div>
-                  <div className="pr-[15px]">
-                    {selectedMode === "gas_fees_"
-                      ? contract.gas_fees_share
-                      : contract.txcount_share}
-                  </div>
-                  <div>
-                    <Icon
-                      icon="material-symbols:link"
-                      className="w-[24px] h-[24px]"
-                    />
-                  </div>
-                </div> */}
-              </div>
+      <Container className="w-[98%] mt-[30px] mx-auto">
+        <div className="flex text-[14px] font-bold mb-[20px] ">
+          <div className="flex gap-x-[15px] w-[33%] ">
+            <button
+              className="flex gap-x-1 pl-4"
+              onClick={() => {
+                if (contractCategory !== "chain") {
+                  setSortOrder(true);
+                } else {
+                  setSortOrder(!sortOrder);
+                }
+                setContractCategory("chain");
+              }}
+            >
+              Chain
+              <Icon
+                icon={
+                  contractCategory === "chain"
+                    ? sortOrder
+                      ? "formkit:arrowdown"
+                      : "formkit:arrowup"
+                    : "formkit:arrowdown"
+                }
+                className={` text-white ${
+                  contractCategory === "chain" ? "opacity-100" : "opacity-20"
+                }`}
+              />
+            </button>
+
+            <button
+              className="flex gap-x-1"
+              onClick={() => {
+                if (contractCategory !== "contract") {
+                  setSortOrder(true);
+                } else {
+                  setSortOrder(!sortOrder);
+                }
+                setContractCategory("contract");
+              }}
+            >
+              Contract
+              <Icon
+                icon={
+                  contractCategory === "contract"
+                    ? sortOrder
+                      ? "formkit:arrowdown"
+                      : "formkit:arrowup"
+                    : "formkit:arrowdown"
+                }
+                className={` text-white ${
+                  contractCategory === "contract" ? "opacity-100" : "opacity-20"
+                }`}
+              />
+            </button>
+          </div>
+          <div className="flex w-[30%]  ">
+            <button className="flex gap-x-1 w-[53%] ">Category </button>
+            <button
+              className="flex gap-x-1"
+              onClick={() => {
+                if (contractCategory !== "subcategory") {
+                  setSortOrder(true);
+                } else {
+                  setSortOrder(!sortOrder);
+                }
+                setContractCategory("subcategory");
+              }}
+            >
+              Subcategory{" "}
+              <Icon
+                icon={
+                  contractCategory === "subcategory"
+                    ? sortOrder
+                      ? "formkit:arrowdown"
+                      : "formkit:arrowup"
+                    : "formkit:arrowdown"
+                }
+                className={` text-white ${
+                  contractCategory === "subcategory"
+                    ? "opacity-100"
+                    : "opacity-20"
+                }`}
+              />
+            </button>
+          </div>
+          <div className="flex w-[37%]  ">
+            <button
+              className="flex gap-x-1 w-[51.5%] justify-end "
+              onClick={() => {
+                if (contractCategory !== "value") {
+                  setSortOrder(true);
+                } else {
+                  setSortOrder(!sortOrder);
+                }
+                setContractCategory("value");
+              }}
+            >
+              {selectedMode === "gas_fees_"
+                ? "Gas Fees "
+                : "Transaction Count "}
+              <Icon
+                icon={
+                  contractCategory === "value"
+                    ? sortOrder
+                      ? "formkit:arrowdown"
+                      : "formkit:arrowup"
+                    : "formkit:arrowdown"
+                }
+                className={` text-white ${
+                  contractCategory === "value" ? "opacity-100" : "opacity-20"
+                }`}
+              />
+            </button>
+
+            <div className="flex gap-x-1 w-[48.5%] justify-center">
+              <div>Block Explorer </div>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+        <div>
+          {!sortOrder
+            ? Object.keys(sortedContracts).map((key, i) => {
+                if (!showMore && i >= maxDisplayedContracts) {
+                  return null;
+                }
+
+                return (
+                  <div key={key + "" + sortOrder}>
+                    <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] ">
+                      <div className="flex w-[100%] ml-4 mr-8 items-center ">
+                        <div className="flex items-center h-10 w-[34%] gap-x-[20px] pl-1  ">
+                          <div className=" w-[40px]">
+                            <div
+                              className={`flex min-w-9 min-h-9 w-9 h-9 rounded-full items-center justify-center border-[5px] ${
+                                AllChainsByKeys[sortedContracts[key].chain]
+                                  .border[theme][1]
+                              }`}
+                            >
+                              <Icon
+                                icon={`gtp:${sortedContracts[key].chain.replace(
+                                  "_",
+                                  "-",
+                                )}-logo-monochrome`}
+                                className="min-w-5 min-h-5 w-5 h-5"
+                                style={{
+                                  color:
+                                    AllChainsByKeys[sortedContracts[key].chain]
+                                      .colors[theme][1],
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          <div
+                            key={sortedContracts[key].address}
+                            className={` w-[200px] h-full flex items-center ${
+                              contractHover[key] && !sortedContracts[key].name
+                                ? "relative right-[10px] text-[14px]"
+                                : ""
+                            } `}
+                            onMouseEnter={() => {
+                              setContractHover((prevHover) => ({
+                                ...prevHover,
+                                [key]: true,
+                              }));
+                            }}
+                            onMouseLeave={() => {
+                              setContractHover((prevHover) => ({
+                                ...prevHover,
+                                [key]: false,
+                              }));
+                            }}
+                          >
+                            {sortedContracts[key].name
+                              ? sortedContracts[key].name
+                              : contractHover[key]
+                              ? sortedContracts[key].address
+                              : sortedContracts[key].address.substring(0, 20) +
+                                "..."}
+                            {sortedContracts[key].name ? (
+                              <span className="hover:visible invisible bg-black rounded-xl text-[12px] relative bottom-4">
+                                {sortedContracts[key].address}
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+                        <div className="flex items-center text-[14px] w-[43%]  justify-start  h-full  ">
+                          <div className="flex w-[40%] ">
+                            {master &&
+                              master.blockspace_categories.main_categories[
+                                sortedContracts[key].main_category_key
+                              ]}
+                          </div>
+                          <div className="flex ">
+                            {" "}
+                            {master &&
+                            master.blockspace_categories.sub_categories[
+                              sortedContracts[key].sub_category_key
+                            ]
+                              ? master.blockspace_categories.sub_categories[
+                                  sortedContracts[key].sub_category_key
+                                ]
+                              : "Unlabeled"}
+                          </div>
+                        </div>
+                        <div className="flex items-center w-[24.5%]  mr-4  ">
+                          <div className="flex flex-col w-[38%] items-end ">
+                            <div className="flex gap-x-1 w-[110px] justify-end  ">
+                              <div className="flex">
+                                {" "}
+                                {selectedMode === "gas_fees_"
+                                  ? showUsd
+                                    ? `$`
+                                    : `Ξ`
+                                  : ""}
+                              </div>
+                              {selectedMode === "gas_fees_"
+                                ? showUsd
+                                  ? Number(
+                                      sortedContracts[
+                                        key
+                                      ].gas_fees_absolute_usd.toFixed(0),
+                                    ).toLocaleString("en-US")
+                                  : Number(
+                                      sortedContracts[
+                                        key
+                                      ].gas_fees_absolute_eth.toFixed(2),
+                                    ).toLocaleString("en-US")
+                                : Number(
+                                    sortedContracts[
+                                      key
+                                    ].txcount_absolute.toFixed(0),
+                                  ).toLocaleString("en-US")}
+                            </div>
+
+                            <div className="h-[3px] w-[110px] bg-forest-900 flex justify-end">
+                              <div
+                                className={`h-full bg-forest-50`}
+                                style={{
+                                  width: getWidth(sortedContracts[key]),
+                                }}
+                              ></div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center w-[57%] justify-end ">
+                            <a
+                              href={
+                                ContractUrls[sortedContracts[key].chain] +
+                                "" +
+                                sortedContracts[key].address
+                              }
+                              target="_blank"
+                            >
+                              <Icon
+                                icon="material-symbols:link"
+                                className="w-[30px] h-[30px]"
+                              />
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            : Object.keys(sortedContracts)
+                .reverse()
+                .map((key, i) => {
+                  if (!showMore && i >= maxDisplayedContracts) {
+                    return null;
+                  }
+
+                  return (
+                    <div key={key + "" + sortOrder}>
+                      <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] ">
+                        <div className="flex w-[100%] ml-4 mr-8 items-center ">
+                          <div className="flex items-center h-10 w-[34%] gap-x-[20px] pl-1  ">
+                            <div className=" w-[40px]">
+                              <div
+                                className={`flex min-w-9 min-h-9 w-9 h-9 rounded-full items-center justify-center border-[5px] ${
+                                  AllChainsByKeys[sortedContracts[key].chain]
+                                    .border[theme][1]
+                                }`}
+                              >
+                                <Icon
+                                  icon={`gtp:${sortedContracts[
+                                    key
+                                  ].chain.replace("_", "-")}-logo-monochrome`}
+                                  className="min-w-5 min-h-5 w-5 h-5"
+                                  style={{
+                                    color:
+                                      AllChainsByKeys[
+                                        sortedContracts[key].chain
+                                      ].colors[theme][1],
+                                  }}
+                                />
+                              </div>
+                            </div>
+
+                            <div
+                              key={sortedContracts[key].address}
+                              className={` w-[200px] h-full flex items-center ${
+                                contractHover[key] && !sortedContracts[key].name
+                                  ? "relative right-[10px] text-[14px]"
+                                  : ""
+                              } `}
+                              onMouseEnter={() => {
+                                setContractHover((prevHover) => ({
+                                  ...prevHover,
+                                  [key]: true,
+                                }));
+                              }}
+                              onMouseLeave={() => {
+                                setContractHover((prevHover) => ({
+                                  ...prevHover,
+                                  [key]: false,
+                                }));
+                              }}
+                            >
+                              {sortedContracts[key].name
+                                ? sortedContracts[key].name
+                                : contractHover[key]
+                                ? sortedContracts[key].address
+                                : sortedContracts[key].address.substring(
+                                    0,
+                                    20,
+                                  ) + "..."}
+                              {sortedContracts[key].name ? (
+                                <span className="hover:visible invisible bg-black rounded-xl text-[12px] relative bottom-4">
+                                  {sortedContracts[key].address}
+                                </span>
+                              ) : null}
+                            </div>
+                          </div>
+                          <div className="flex items-center text-[14px] w-[43%]  justify-start  h-full ">
+                            <div className="flex w-[40%] ">
+                              {master &&
+                                master.blockspace_categories.main_categories[
+                                  sortedContracts[key].main_category_key
+                                ]}
+                            </div>
+                            <div className="flex ">
+                              {" "}
+                              {master &&
+                              master.blockspace_categories.sub_categories[
+                                sortedContracts[key].sub_category_key
+                              ]
+                                ? master.blockspace_categories.sub_categories[
+                                    sortedContracts[key].sub_category_key
+                                  ]
+                                : "Unlabeled"}
+                            </div>
+                          </div>
+                          <div className="flex items-center w-[24.5%]  mr-4  ">
+                            <div className="flex flex-col w-[38%] items-end ">
+                              <div className="flex gap-x-1 w-[110px] justify-end  ">
+                                <div className="flex">
+                                  {" "}
+                                  {selectedMode === "gas_fees_"
+                                    ? showUsd
+                                      ? `$`
+                                      : `Ξ`
+                                    : ""}
+                                </div>
+                                {selectedMode === "gas_fees_"
+                                  ? showUsd
+                                    ? Number(
+                                        sortedContracts[
+                                          key
+                                        ].gas_fees_absolute_usd.toFixed(0),
+                                      ).toLocaleString("en-US")
+                                    : Number(
+                                        sortedContracts[
+                                          key
+                                        ].gas_fees_absolute_eth.toFixed(2),
+                                      ).toLocaleString("en-US")
+                                  : Number(
+                                      sortedContracts[
+                                        key
+                                      ].txcount_absolute.toFixed(0),
+                                    ).toLocaleString("en-US")}
+                              </div>
+
+                              <div className="h-[3px] w-[110px] bg-forest-900 flex justify-end">
+                                <div
+                                  className={`h-full bg-forest-50`}
+                                  style={{
+                                    width: getWidth(sortedContracts[key]),
+                                  }}
+                                ></div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center w-[57%] justify-end ">
+                              <a
+                                href={
+                                  ContractUrls[sortedContracts[key].chain] +
+                                  "" +
+                                  sortedContracts[key].address
+                                }
+                                target="_blank"
+                              >
+                                <Icon
+                                  icon="material-symbols:link"
+                                  className="w-[30px] h-[30px]"
+                                />
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+          <div className="w-full flex justify-center">
+            <button
+              className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${
+                Object.keys(sortedContracts).length <= 10 ? "hidden" : "visible"
+              }`}
+              onClick={() => {
+                setShowMore(!showMore);
+                if (
+                  Object.keys(sortedContracts).length > maxDisplayedContracts
+                ) {
+                  setMaxDisplayedContracts(maxDisplayedContracts + 10);
+                } else {
+                  setMaxDisplayedContracts(10);
+                }
+              }}
+            >
+              {Object.keys(sortedContracts).length <= maxDisplayedContracts
+                ? "Show Less"
+                : "Show More"}
+            </button>
+          </div>
+        </div>
+      </Container>
     </div>
   );
 }
