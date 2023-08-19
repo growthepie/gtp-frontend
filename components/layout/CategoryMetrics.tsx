@@ -226,20 +226,41 @@ export default function CategoryMetrics({
       const result: { [key: string]: string } = {};
 
       result.categories = "Categories";
-      Object.keys(master.blockspace_categories.main_categories).forEach(
-        (key) => {
-          const words =
-            master.blockspace_categories.main_categories[key].split(" ");
-          const formatted = words
-            .map((word) => {
-              return word.charAt(0).toUpperCase() + word.slice(1);
-            })
-            .join(" ");
-          result[key] = formatted;
-        },
+      const categoryKeys = Object.keys(
+        master.blockspace_categories.main_categories,
       );
 
-      // result.scaling = "Scaling";
+      // Remove "unlabeled" if present and store it for later
+      const unlabeledIndex = categoryKeys.indexOf("unlabeled");
+      let unlabeledCategory = "";
+      if (unlabeledIndex !== -1) {
+        unlabeledCategory = categoryKeys.splice(unlabeledIndex, 1)[0];
+      }
+
+      categoryKeys.forEach((key) => {
+        const words =
+          master.blockspace_categories.main_categories[key].split(" ");
+        const formatted = words
+          .map((word) => {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+          })
+          .join(" ");
+        result[key] = formatted;
+      });
+
+      // Add "unlabeled" to the end if it was present
+      if (unlabeledCategory) {
+        const words =
+          master.blockspace_categories.main_categories[unlabeledCategory].split(
+            " ",
+          );
+        const formatted = words
+          .map((word) => {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+          })
+          .join(" ");
+        result[unlabeledCategory] = formatted;
+      }
 
       return result;
     }
@@ -1015,7 +1036,7 @@ export default function CategoryMetrics({
         </div>
       </Container>
       <Container className="block w-full !pr-0 lg:!px-[50px] lg:mt-0 mt-6">
-        <div className="w-[98%] mx-auto overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-2">
+        <div className="w-[98%] mx-auto cxl:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-2">
           <animated.div
             className="relative min-w-[1150px] md:min-w-[1200px] w-[97.5%] h-[67px] m-auto border-x-[1px] border-y-[1px] rounded-[15px] dark:text-forest-50  text-forest-1000 border-forest-400 dark:border-forest-800  dark:bg-forest-1000 mt-8 overflow-hidden"
             style={{ ...categoryAnimation }}
@@ -1598,8 +1619,8 @@ export default function CategoryMetrics({
                 />
               </button>
             </div>
-            <div className="flex w-[40%] ">
-              <button className="flex gap-x-1 w-[40%]">Category </button>
+            <div className="flex w-[30%]  ">
+              <button className="flex gap-x-1 w-[53%] ">Category </button>
               <button
                 className="flex gap-x-1"
                 onClick={() => {
@@ -1628,9 +1649,9 @@ export default function CategoryMetrics({
                 />
               </button>
             </div>
-            <div className="flex gap-x-[17px] w-[27%] ">
+            <div className="flex w-[37%]  ">
               <button
-                className="flex gap-x-1 w-[37.5%] justify-end  "
+                className="flex gap-x-1 w-[51.5%] justify-end "
                 onClick={() => {
                   if (contractCategory !== "value") {
                     setSortOrder(true);
@@ -1657,7 +1678,7 @@ export default function CategoryMetrics({
                 />
               </button>
 
-              <div className="flex gap-x-1 w-[62.5%]  justify-center">
+              <div className="flex gap-x-1 w-[48.5%] justify-center">
                 <div>Block Explorer </div>
               </div>
             </div>
