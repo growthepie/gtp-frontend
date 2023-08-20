@@ -114,6 +114,14 @@ export default function CategoryMetrics({
     [key: string]: ContractInfo;
   }>({});
 
+  const dailyKey = useMemo(() => {
+    if (["90d", "365d"].includes(selectedTimespan)) {
+      return "daily_7d_rolling";
+    } else {
+      return "daily";
+    }
+  }, [selectedTimespan]);
+
   useEffect(() => {
     // Process the data and create the contracts object
     const result: { [key: string]: ContractInfo } = {};
@@ -303,13 +311,13 @@ export default function CategoryMetrics({
     for (let i in selectedChains) {
       if (
         selectedChains[i] === true &&
-        data[selectedCategory].daily[String(i)]
+        data[selectedCategory][dailyKey][String(i)]
       ) {
         // don't show imx gas fees chart
         if (i === "imx" && selectedMode === "gas_fees_") continue;
 
         // default to total main category values
-        let chartData = data[selectedCategory].daily[String(i)];
+        let chartData = data[selectedCategory][dailyKey][String(i)];
 
         // check if we're filtering out any subcategories
         if (
@@ -321,7 +329,7 @@ export default function CategoryMetrics({
             selectedCategory
           ].map((subcategory) => {
             const rows =
-              data[selectedCategory].subcategories[subcategory].daily[
+              data[selectedCategory].subcategories[subcategory][dailyKey][
                 String(i)
               ];
             return rows ? rows.length : 0;
@@ -350,7 +358,7 @@ export default function CategoryMetrics({
 
             const subcategory = selectedSubcategories[selectedCategory][i];
             const subcategoryData =
-              data[selectedCategory].subcategories[subcategory].daily[
+              data[selectedCategory].subcategories[subcategory][dailyKey][
                 String(i)
               ] ?? [];
 
@@ -384,6 +392,8 @@ export default function CategoryMetrics({
     selectedCategory,
     data,
     selectedChains,
+    dailyKey,
+    selectedMode,
     selectedType,
   ]);
 
@@ -397,7 +407,7 @@ export default function CategoryMetrics({
         name: "arbitrum",
         unixKey: "unix",
         dataKey: selectedType,
-        data: data["native_transfers"].daily["arbitrum"]
+        data: data["native_transfers"][dailyKey]["arbitrum"]
           .map((item, i) => {
             // remap date keys so first is today and each day is subtracted from there
             const date = today - i * 24 * 60 * 60 * 1000;
@@ -411,7 +421,7 @@ export default function CategoryMetrics({
         name: "optimism",
         unixKey: "unix",
         dataKey: selectedType,
-        data: data["native_transfers"].daily["optimism"]
+        data: data["native_transfers"][dailyKey]["optimism"]
           .map((item, i) => {
             // remap date keys so first is today and each day is subtracted from there
             const date = today - i * 24 * 60 * 60 * 1000;
@@ -425,7 +435,7 @@ export default function CategoryMetrics({
         name: "zksync_era",
         unixKey: "unix",
         dataKey: selectedType,
-        data: data["native_transfers"].daily["zksync_era"]
+        data: data["native_transfers"][dailyKey]["zksync_era"]
           .map((item, i) => {
             // remap date keys so first is today and each day is subtracted from there
             const date = today - i * 24 * 60 * 60 * 1000;
@@ -439,7 +449,7 @@ export default function CategoryMetrics({
         name: "polygon_zkevm",
         unixKey: "unix",
         dataKey: selectedType,
-        data: data["native_transfers"].daily["polygon_zkevm"]
+        data: data["native_transfers"][dailyKey]["polygon_zkevm"]
           .map((item, i) => {
             // remap date keys so first is today and each day is subtracted from there
             const date = today - i * 24 * 60 * 60 * 1000;
@@ -453,7 +463,7 @@ export default function CategoryMetrics({
         name: "imx",
         unixKey: "unix",
         dataKey: selectedType,
-        data: data["native_transfers"].daily["imx"]
+        data: data["native_transfers"][dailyKey]["imx"]
           .map((item, i) => {
             // remap date keys so first is today and each day is subtracted from there
             const date = today - i * 24 * 60 * 60 * 1000;
@@ -463,7 +473,7 @@ export default function CategoryMetrics({
           .reverse(),
       },
     ];
-  }, [selectedCategory, selectedType, data, chartReturn]);
+  }, [selectedCategory, data, chartReturn, selectedType, dailyKey]);
 
   const [isCategoryHovered, setIsCategoryHovered] = useState<{
     [key: string]: boolean;
@@ -1591,8 +1601,8 @@ export default function CategoryMetrics({
                 chartType="line"
                 types={
                   selectedCategory === null || selectedCategory === "Chains"
-                    ? data.native_transfers.daily.types
-                    : data[selectedCategory].daily.types
+                    ? data.native_transfers[dailyKey].types
+                    : data[selectedCategory][dailyKey].types
                 }
                 timespan={selectedTimespan}
                 series={chartSeries}
