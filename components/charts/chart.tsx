@@ -16,6 +16,7 @@ import {
   getXAxisLabels,
   decimalToPercent,
   tooltipFormatter,
+  formatNumber,
 } from "@/lib/chartUtils";
 import ChartWatermark from "../layout/ChartWatermark";
 import { Icon } from "@iconify/react";
@@ -396,7 +397,12 @@ export const Chart = ({
                               true,
                               false,
                               (x) => {
-                                return parseFloat(x).toFixed(decimals);
+                                return parseFloat(x)
+                                  .toFixed(decimals)
+                                  .toLocaleString(undefined, {
+                                    minimumFractionDigits: decimals,
+                                    maximumFractionDigits: decimals,
+                                  });
                               },
                               series.length > 0 ? series[0].dataKey : undefined,
                             ),
@@ -425,15 +431,38 @@ export const Chart = ({
                           ? "rgba(215, 223, 222, 0.11)"
                           : "rgba(41, 51, 50, 0.11)",
                       labels: {
+                        ...baseOptions.yAxis.labels,
                         formatter: function (
-                          this: AxisLabelsFormatterContextObject,
+                          t: Highcharts.AxisLabelsFormatterContextObject,
                         ) {
-                          const { value } = this;
-                          if (yScale === "percentage") {
-                            return decimalToPercent(value);
-                          } else {
-                            return value;
+                          const isPercentage = yScale === "percentage";
+                          let prefix = "";
+                          let suffix = "";
+
+                          if (isPercentage) {
+                            prefix = "";
+                            suffix = "%";
+                          } else if (series.length > 0) {
+                            if (series[0].dataKey.includes("usd")) {
+                              prefix = "$";
+                              suffix = "";
+                            } else if (
+                              series.length > 0 &&
+                              series[0].dataKey.includes("eth")
+                            ) {
+                              prefix = "";
+                              suffix = "Ξ";
+                            }
                           }
+
+                          return formatNumber(
+                            t.value,
+                            true,
+                            isPercentage,
+                            prefix,
+                            suffix,
+                          );
+                          // return t.value;
                         },
                       },
                     },

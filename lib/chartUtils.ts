@@ -12,7 +12,7 @@ export const ChartColors = {
 };
 
 export const decimalToPercent = (decimal: number | string, decimals = 2) => {
-  return `${((decimal as number) * 100.0).toFixed(decimals)}%`;
+  return `${parseFloat(decimal as number).toFixed(decimals)}%`;
 };
 
 export const tooltipFormatter = (
@@ -62,6 +62,7 @@ export const tooltipFormatter = (
         });
 
         let value = y ? formatNumber(y, false, true) : 0;
+        // let value = y;
 
         if (valueFormatter) {
           value = valueFormatter(value);
@@ -114,7 +115,7 @@ export const tooltipFormatter = (
 
     if (dataKey) {
       if (dataKey.includes("eth")) {
-        prefix = "Ξ";
+        suffix = "Ξ";
       } else if (dataKey.includes("usd")) {
         prefix = "$";
       }
@@ -146,12 +147,13 @@ export const tooltipFormatter = (
           year: "numeric",
         });
 
-        let value = y ? formatNumber(y, false, true) : 0;
+        let value = y;
+        // let value = y;
 
         if (valueFormatter) {
           value = valueFormatter(value);
         } else {
-          value = Highcharts.numberFormat(value, 2);
+          value = formatNumber(y, false, false, prefix, suffix);
         }
 
         tooltip += `
@@ -162,7 +164,10 @@ export const tooltipFormatter = (
         <div class="tooltip-point-name">${AllChainsByKeys[name].label}</div>
         <div class="flex-1 text-right justify-end font-inter flex">
           <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">${prefix}</div>
-          ${value}
+          ${parseFloat(value).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
           <div class="opacity-70 ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
         </div>
       </div>
@@ -275,6 +280,7 @@ export const baseOptions: any = {
       },
       formatter: function (t: Highcharts.AxisLabelsFormatterContextObject) {
         return formatNumber(t.value, true);
+        // return t.value;
       },
     },
     gridLineColor: "rgba(215, 223, 222, 0.33)",
@@ -403,17 +409,44 @@ export const baseOptions: any = {
   },
 };
 
-const formatNumber = (
-  value: number | string,
-  isAxis = false,
-  isPercentage = false,
-) => {
-  return isAxis
-    ? !isPercentage
-      ? d3.format(".2s")(value)
-      : d3.format(".2s")(value) + "%"
-    : d3.format(",.2~s")(value);
-};
+export const formatNumber =
+  // (
+  //   value: number | string,
+  //   isAxis = false,
+  //   isPercentage = false,
+  // ) => {
+  (
+    value: number | string,
+    isAxis = false,
+    isPercentage = false,
+    prefix = "",
+    suffix = "",
+  ) => {
+    // let prefix = valuePrefix;
+    // let suffix = "";
+    let val = parseFloat(value as string);
+
+    let number = d3.format(`.2~s`)(val).replace(/G/, "B");
+
+    if (isAxis) {
+      if (isPercentage) {
+        number = decimalToPercent(val * 100, 0);
+      } else {
+        number = prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+      }
+    } else {
+      if (isPercentage) {
+        number =
+          d3
+            .format(".2~s")(val * 100)
+            .replace(/G/, "B") + "%";
+      } else {
+        number = val;
+      }
+    }
+
+    return number;
+  };
 
 type TimespanSelections = "7d" | "30d" | "90d" | "180d" | "365d" | "max";
 
