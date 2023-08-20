@@ -1015,6 +1015,119 @@ export default function CategoryMetrics({
         </div>
       </Container>
       <Container className="block w-full !pr-0 lg:!px-[50px] lg:mt-0 mt-6">
+        <div className="flex min-w-[1150px] md:min-w-[1200px] w-[95%] m-auto min-h-[67px] items-center rounded-[15px] bg-white border dark:text-forest-50  text-forest-1000 border-forest-400 dark:border-forest-800  dark:bg-forest-1000 mt-6">
+          <div
+            className={
+              "relative flex flex-col min-w-[140px] max-w-[140px] w-[140px] min-h-[67px] justify-start pl-[16px] pt-2"
+            }
+          >
+            <div className="">
+              <div className="text-sm font-bold pb-[10px]">Categories</div>
+              <div className="text-xs font-medium">Subcategories</div>
+            </div>
+          </div>
+          <div className="flex flex-1">
+            {Object.keys(categories)
+              .filter((c) => c != "categories")
+              .map((category, i) => {
+                const subcategoryCount = Object.keys(categories).filter(
+                  (c) => c != "categories",
+                );
+
+                return (
+                  <div
+                    key={i}
+                    className={`relative text-sm min-h-[67px] flex flex-col items-center justify-center transition-all duration-300 ease-in-out overflow-clip border-l border-dotted border-white whitespace-nowrap ${
+                      selectedCategory === category && openSub
+                        ? "basis-[50%] font-bold"
+                        : !openSub
+                        ? "basis-full"
+                        : "basis-[calc(50%/8)]"
+                    }
+                    ${selectedCategory === category ? "bg-[#5A6462]" : ``}
+                    ${
+                      i ===
+                      Object.keys(categories).filter((c) => c != "categories")
+                        .length -
+                        1
+                        ? "rounded-r-[13px]"
+                        : ""
+                    }`}
+                  >
+                    <div
+                      className={`absolute z-10 inset-0 flex items-center justify-center shadow-[inset_35px_0px_13px_-25px_rgba(0,0,0,0.85),inset_-35px_0px_13px_-25px_rgba(0,0,0,0.85)] transition-opacity duration-300 pointer-events-none
+                      ${
+                        openSub &&
+                        selectedCategory &&
+                        selectedCategory !== category
+                          ? "opacity-100"
+                          : "opacity-0"
+                      }
+                      ${i === subcategoryCount - 1 ? "rounded-r-[13px]" : ""}`}
+                    />
+                    <div
+                      className="flex flex-1 w-full justify-center items-center pt-1.5 text-sm cursor-pointer transition-all duration-300 hover:bg-gradient-to-b hover:from-forest-500/10 hover:to-forest-500/0"
+                      onClick={() => {
+                        setSelectedCategory(category);
+                      }}
+                    >
+                      {categories[category]}
+                    </div>
+                    <div
+                      className={`transition-[height] duration-300 ${
+                        selectedCategory === category && openSub
+                          ? "h-[50px]"
+                          : "h-0 delay-300"
+                      }`}
+                    ></div>
+                    <div
+                      className="flex w-full justify-center items-center pb-1 text-xs font-medium cursor-pointer transition-all duration-300 hover:bg-gradient-to-t hover:from-forest-500/10 hover:to-forest-500/0"
+                      onClick={() => {
+                        if (selectedCategory !== category) {
+                          setSelectedCategory(category);
+                        }
+
+                        if (selectedCategory === category || !openSub)
+                          setOpenSub(!openSub);
+                      }}
+                    >
+                      {openSub ? (
+                        <Icon
+                          icon="icon-park-outline:up"
+                          className={`w-6 h-6 transition-opacity duration-300 ${
+                            selectedCategory === category
+                              ? "opacity-100"
+                              : "opacity-0"
+                          }`}
+                        />
+                      ) : (
+                        <Icon
+                          icon="icon-park-outline:down"
+                          className="w-6 h-6"
+                        />
+                      )}
+                    </div>
+                    {/* </>
+                  ) : (
+                    <>
+                      <div className="text-sm pb-[10px]">
+                        {categories[category]}
+                      </div>
+                      <div className="text-xs font-medium">
+                        <Icon
+                          icon="icon-park-outline:down"
+                          className="w-6 h-6"
+                        />
+                      </div>
+                    </>
+                  )} */}
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      </Container>
+      <Container className="block w-full !pr-0 lg:!px-[50px] lg:mt-0 mt-6">
         <div className="w-[98%] mx-auto xl:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-2">
           <animated.div
             className="relative min-w-[1150px] md:min-w-[1200px] w-[97.5%] h-[67px] m-auto border-x-[1px] border-y-[1px] rounded-[15px] dark:text-forest-50  text-forest-1000 border-forest-400 dark:border-forest-800  dark:bg-forest-1000 mt-8 overflow-hidden"
@@ -1149,8 +1262,8 @@ export default function CategoryMetrics({
                       } 
 
 
-                ${isCategoryHovered[item.category] ? "bg-white/5" : ""}
-                `}
+                      ${isCategoryHovered[item.category] ? "bg-white/5" : ""}
+                      `}
                       onMouseEnter={() => {
                         setIsCategoryHovered((prev) => ({
                           ...prev,
