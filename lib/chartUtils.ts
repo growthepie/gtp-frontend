@@ -12,7 +12,7 @@ export const ChartColors = {
 };
 
 export const decimalToPercent = (decimal: number | string, decimals = 2) => {
-  return `${parseFloat(decimal as number).toFixed(decimals)}%`;
+  return `${parseFloat(decimal as string).toFixed(decimals)}%`;
 };
 
 export const tooltipFormatter = (
