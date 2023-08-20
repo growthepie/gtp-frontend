@@ -397,12 +397,7 @@ export const Chart = ({
                               true,
                               false,
                               (x) => {
-                                return parseFloat(x)
-                                  .toFixed(decimals)
-                                  .toLocaleString(undefined, {
-                                    minimumFractionDigits: decimals,
-                                    maximumFractionDigits: decimals,
-                                  });
+                                return parseFloat(x).toFixed(decimals);
                               },
                               series.length > 0 ? series[0].dataKey : undefined,
                             ),
