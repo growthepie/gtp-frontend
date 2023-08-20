@@ -105,6 +105,7 @@ export default function CategoryMetrics({
     optimism: true,
     polygon_zkevm: true,
     imx: true,
+    base: true,
   });
 
   const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
@@ -1028,7 +1029,7 @@ export default function CategoryMetrics({
               </button>
             ))}
             <div
-              className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[50px] right-[20px] md:right-[150px] lg:top-0 lg:right-[50px] pr-[15px] w-[calc(50%-19px)] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${
+              className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[50px] right-[20px] md:right-[45px] lg:top-0 lg:right-[50px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${
                 !isMobile
                   ? ["365d", "90d"].includes(selectedTimespan)
                     ? "translate-y-[calc(-100%+3px)]"
