@@ -992,7 +992,10 @@ export default function OverviewMetrics({
                           <div className="flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px]">
                             <div className="flex justify-center items-center w-[30px]">
                               <Icon
-                                icon={`gtp:${chainKey}-logo-monochrome`}
+                                icon={`gtp:${chainKey.replace(
+                                  "_",
+                                  "-",
+                                )}-logo-monochrome`}
                                 className="w-[15px] h-[15px]"
                               />
                             </div>
