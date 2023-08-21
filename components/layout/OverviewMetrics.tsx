@@ -168,7 +168,9 @@ export default function OverviewMetrics({
     };
   });
 
-  console.log(data.all_l2s["overview"]);
+  const [selectedCategory, setSelectedCategory] = useState("native_transfers");
+
+  // console.log(data.all_l2s["overview"]);
   useEffect(() => {
     // Process the data and create the contracts object
     const result: { [key: string]: ContractInfo } = {};
@@ -176,9 +178,11 @@ export default function OverviewMetrics({
     for (const category of Object.keys(data)) {
       if (data) {
         const contractsData =
-          data.all_l2s["overview"][selectedTimespan].contracts.data;
+          data.all_l2s["overview"][selectedTimespan][selectedCategory].contracts
+            .data;
         const types =
-          data.all_l2s["overview"][selectedTimespan].contracts.types;
+          data.all_l2s["overview"][selectedTimespan][selectedCategory].contracts
+            .types;
 
         for (const contract of Object.keys(contractsData)) {
           const dataArray = contractsData[contract];
@@ -226,9 +230,7 @@ export default function OverviewMetrics({
 
     // Update the contracts state with the new data
     setContracts(result);
-  }, [data, selectedTimespan]);
-
-  const [selectedCategory, setSelectedCategory] = useState("native_transfers");
+  }, [data, selectedCategory, selectedTimespan]);
 
   const [selectedChain, setSelectedChain] = useState<string | null>(null);
 
@@ -467,6 +469,7 @@ export default function OverviewMetrics({
     selectedChain,
     selectedMode,
     showUsd,
+    sortedContracts,
   ]);
 
   const largestContractValue = useMemo(() => {
@@ -545,7 +548,7 @@ export default function OverviewMetrics({
       const dataIndex = dataKeysIntersectCategoriesKeys.indexOf(categoryKey);
 
       const categoryData =
-        data[chainKey].overview[selectedTimespan][categoryKey];
+        data[chainKey].overview[selectedTimespan][categoryKey]["data"];
 
       // const isLastCategory =
       //   dataIndex === dataKeysIntersectCategoriesKeys.length - 1;
@@ -994,25 +997,12 @@ export default function OverviewMetrics({
                               </div>
                             )} */}
                             {Object.keys(categories).map((categoryKey, i) => {
-                              // if (
-                              //   !(
-                              //     categoryKey in
-                              //     data[chainKey].overview[selectedTimespan]
-                              //   )
-                              // )
-                              //   return (
-                              //     <div
-                              //       key={categoryKey}
-                              //       className="w-1"
-                              //       style={getBarSectionStyle(
-                              //         chainKey,
-                              //         categoryKey,
-                              //       )}
-                              //     >
-                              //       {/* <div className="w-1 h-full bg-white border-1 border-black rounded-full"></div> */}
-                              //     </div>
-                              //   );
-
+                              console.log(
+                                "data[chainKey].overview[selectedTimespan][categoryKey]",
+                                data[chainKey].overview[selectedTimespan][
+                                  categoryKey
+                                ],
+                              );
                               const rawChainCategories = Object.keys(
                                 data[chainKey].overview[selectedTimespan],
                               );
@@ -1032,7 +1022,7 @@ export default function OverviewMetrics({
                                       if (
                                         !data[chainKey].overview[
                                           selectedTimespan
-                                        ][categoryKey]
+                                        ][categoryKey]["data"]
                                       ) {
                                         return;
                                       }
@@ -1091,43 +1081,6 @@ export default function OverviewMetrics({
                                     categoryKey,
                                   )}
                                 >
-                                  {/* highlight on hover div */}
-                                  {/* {isCategoryHovered[categoryKey] &&
-                                    !(
-                                      selectedCategory === categoryKey &&
-                                      selectedChain === null
-                                    ) && (
-                                      <div
-                                        className={`absolute inset-0 bg-white/30 mix-blend-hard-light`}
-                                        style={{
-                                          borderRadius: `${
-                                            (selectedCategory === categoryKey &&
-                                              (selectedChain === chainKey ||
-                                                selectedChain === null)) ||
-                                            isCategoryHovered[categoryKey]
-                                              ? categoryIndex ===
-                                                Object.keys(
-                                                  data[chainKey].overview[
-                                                    selectedTimespan
-                                                  ],
-                                                ).length -
-                                                  1
-                                                ? "20000px 99999px 99999px 20000px"
-                                                : "5px"
-                                              : categoryIndex ===
-                                                Object.keys(
-                                                  data[chainKey].overview[
-                                                    selectedTimespan
-                                                  ],
-                                                ).length -
-                                                  1
-                                              ? "0px 99999px 99999px 0px"
-                                              : "0px"
-                                          }`,
-                                        }}
-                                      />
-                                    )} */}
-
                                   <div
                                     className={`mix-blend-luminosity font-medium w-full absolute inset-0 flex items-center justify-center ${
                                       (selectedCategory === categoryKey &&
@@ -1163,12 +1116,12 @@ export default function OverviewMetrics({
                                   >
                                     {data[chainKey].overview[selectedTimespan][
                                       categoryKey
-                                    ] ? (
+                                    ]["data"] ? (
                                       <>
                                         {(
                                           data[chainKey].overview[
                                             selectedTimespan
-                                          ][categoryKey][
+                                          ][categoryKey]["data"][
                                             data[
                                               chainKey
                                             ].overview.types.indexOf(
