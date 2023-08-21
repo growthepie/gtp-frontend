@@ -24,7 +24,7 @@ const ChainOverview = () => {
 
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
-    "7d",
+    "365d",
   );
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(

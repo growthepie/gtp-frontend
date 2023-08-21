@@ -89,10 +89,10 @@ export default function OverviewMetrics({
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const [selectedMode, setSelectedMode] = useState("txcount_share");
+  const [selectedMode, setSelectedMode] = useState("gas_fees_share_usd");
   const [isCategoryMenuExpanded, setIsCategoryMenuExpanded] = useState(true);
   const [contractCategory, setContractCategory] = useState("value");
-  const [sortOrder, setSortOrder] = useState(false);
+  const [sortOrder, setSortOrder] = useState(true);
 
   const [showMore, setShowMore] = useState(false);
   const [maxDisplayedContracts, setMaxDisplayedContracts] = useState(10);
@@ -171,7 +171,6 @@ export default function OverviewMetrics({
 
   const [selectedCategory, setSelectedCategory] = useState("native_transfers");
 
-  // console.log(data.all_l2s["overview"]);
   // useEffect(() => {
   //   // Process the data and create the contracts object
   //   const result: { [key: string]: ContractInfo } = {};
@@ -371,7 +370,6 @@ export default function OverviewMetrics({
   const chartSeries = useMemo(() => {
     const dataKey = selectedMode;
     if (selectedChain) {
-      // console.log(selectedChain, {
       //   id: [selectedChain, selectedCategory, selectedMode].join("_"),
       //   name: selectedChain,
       //   unixKey: "unix",
@@ -444,19 +442,17 @@ export default function OverviewMetrics({
       }, {});
 
     const sortFunction = (a, b) => {
-      const valueA =
-        selectedMode === "gas_fees_"
-          ? showUsd
-            ? filteredContracts[a]?.gas_fees_absolute_usd
-            : filteredContracts[a]?.gas_fees_absolute_eth
-          : filteredContracts[a]?.txcount_absolute;
+      const valueA = selectedMode.includes("gas_fees_")
+        ? showUsd
+          ? filteredContracts[a]?.gas_fees_absolute_usd
+          : filteredContracts[a]?.gas_fees_absolute_eth
+        : filteredContracts[a]?.txcount_absolute;
 
-      const valueB =
-        selectedMode === "gas_fees_"
-          ? showUsd
-            ? filteredContracts[b]?.gas_fees_absolute_usd
-            : filteredContracts[b]?.gas_fees_absolute_eth
-          : filteredContracts[b]?.txcount_absolute;
+      const valueB = selectedMode.includes("gas_fees_")
+        ? showUsd
+          ? filteredContracts[b]?.gas_fees_absolute_usd
+          : filteredContracts[b]?.gas_fees_absolute_eth
+        : filteredContracts[b]?.txcount_absolute;
 
       // Compare the values
       return valueA - valueB;
@@ -514,12 +510,11 @@ export default function OverviewMetrics({
   const largestContractValue = useMemo(() => {
     let retValue = 0;
     for (const contract of Object.values(sortedContracts)) {
-      const value =
-        selectedMode === "gas_fees_"
-          ? showUsd
-            ? contract.gas_fees_absolute_usd
-            : contract.gas_fees_absolute_eth
-          : contract.txcount_absolute;
+      const value = selectedMode.includes("gas_fees_")
+        ? showUsd
+          ? contract.gas_fees_absolute_usd
+          : contract.gas_fees_absolute_eth
+        : contract.txcount_absolute;
 
       retValue = Math.max(retValue, value);
     }
@@ -530,7 +525,7 @@ export default function OverviewMetrics({
   function getWidth(x) {
     let retValue = "0%";
 
-    if (selectedMode === "gas_fees_") {
+    if (selectedMode.includes("gas_fees")) {
       if (showUsd) {
         retValue =
           String(
@@ -556,7 +551,7 @@ export default function OverviewMetrics({
 
     return retValue;
   }
-  // console.log(data);
+
   const getBarSectionStyle = useCallback(
     (
       chainKey: string,
@@ -1334,9 +1329,12 @@ export default function OverviewMetrics({
                 setContractCategory("value");
               }}
             >
-              {selectedMode === "gas_fees_"
+              {selectedMode.includes("gas_fees")
                 ? "Gas Fees "
                 : "Transaction Count "}
+              <p className="font-normal">
+                ({timespans[selectedTimespan].label})
+              </p>
               <Icon
                 icon={
                   contractCategory === "value"
@@ -1359,7 +1357,7 @@ export default function OverviewMetrics({
         <div>
           {!sortOrder
             ? Object.keys(sortedContracts).map((key, i) => {
-                if (!showMore && i >= maxDisplayedContracts) {
+                if (i >= maxDisplayedContracts) {
                   return null;
                 }
 
@@ -1447,13 +1445,13 @@ export default function OverviewMetrics({
                             <div className="flex gap-x-1 w-[110px] justify-end  ">
                               <div className="flex">
                                 {" "}
-                                {selectedMode === "gas_fees_"
+                                {selectedMode.includes("gas_fees_")
                                   ? showUsd
                                     ? `$`
                                     : `Ξ`
                                   : ""}
                               </div>
-                              {selectedMode === "gas_fees_"
+                              {selectedMode.includes("gas_fees_")
                                 ? showUsd
                                   ? Number(
                                       sortedContracts[
@@ -1506,7 +1504,7 @@ export default function OverviewMetrics({
             : Object.keys(sortedContracts)
                 .reverse()
                 .map((key, i) => {
-                  if (!showMore && i >= maxDisplayedContracts) {
+                  if (i >= maxDisplayedContracts) {
                     return null;
                   }
 
@@ -1617,13 +1615,13 @@ export default function OverviewMetrics({
                               <div className="flex gap-x-1 w-[110px] justify-end  ">
                                 <div className="flex">
                                   {" "}
-                                  {selectedMode === "gas_fees_"
+                                  {selectedMode.includes("gas_fees_")
                                     ? showUsd
                                       ? `$`
                                       : `Ξ`
                                     : ""}
                                 </div>
-                                {selectedMode === "gas_fees_"
+                                {selectedMode.includes("gas_fees_")
                                   ? showUsd
                                     ? Number(
                                         sortedContracts[
@@ -1673,10 +1671,14 @@ export default function OverviewMetrics({
                     </div>
                   );
                 })}
-          <div className="w-full flex justify-center">
+          <div className="w-full flex justify-center mb-2">
             <button
               className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${
                 Object.keys(sortedContracts).length <= 10 ? "hidden" : "visible"
+              } ${
+                Object.keys(sortedContracts).length <= maxDisplayedContracts
+                  ? "hidden"
+                  : "visible"
               }`}
               onClick={() => {
                 setShowMore(!showMore);
@@ -1689,9 +1691,7 @@ export default function OverviewMetrics({
                 }
               }}
             >
-              {Object.keys(sortedContracts).length <= maxDisplayedContracts
-                ? "Show Less"
-                : "Show More"}
+              Show More
             </button>
           </div>
         </div>

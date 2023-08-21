@@ -302,15 +302,6 @@ export default function CategoryMetrics({
 
     if (!selectedSubcategories) return [];
 
-    console.log(
-      "selectedSubcategories[selectedCategory].length",
-      selectedSubcategories[selectedCategory].length,
-    );
-    console.log(
-      "data[selectedCategory].subcategories.list.length",
-      data[selectedCategory].subcategories.list.length,
-    );
-
     //Array of selected chains to return to chart
     for (let i in selectedChains) {
       if (
@@ -938,7 +929,6 @@ export default function CategoryMetrics({
     },
   });
 
-  console.log(maxDisplayedContracts);
   return (
     <div className="w-full flex-col relative">
       <Container>
@@ -1737,12 +1727,12 @@ export default function CategoryMetrics({
                   setContractCategory("value");
                 }}
               >
-                <p className="font-normal">
-                  ({timespans[selectedTimespan].label})
-                </p>
                 {selectedMode === "gas_fees_"
                   ? "Gas Fees "
                   : "Transaction Count "}
+                <p className="font-normal">
+                  ({timespans[selectedTimespan].label})
+                </p>
                 <Icon
                   icon={
                     contractCategory === "value"
@@ -2102,6 +2092,10 @@ export default function CategoryMetrics({
             <button
               className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${
                 Object.keys(sortedContracts).length <= 10 ? "hidden" : "visible"
+              } ${
+                Object.keys(sortedContracts).length <= maxDisplayedContracts
+                  ? "hidden"
+                  : "visible"
               }`}
               onClick={() => {
                 setShowMore(!showMore);
@@ -2114,9 +2108,7 @@ export default function CategoryMetrics({
                 }
               }}
             >
-              {Object.keys(sortedContracts).length <= maxDisplayedContracts
-                ? "Show Less"
-                : "Show More"}
+              Show More
             </button>
           </div>
         </div>
