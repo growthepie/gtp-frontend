@@ -431,15 +431,10 @@ export default function OverviewMetrics({
     const filteredContracts = Object.entries(contracts)
       .filter(([key, contract]) => {
         const isAllChainsSelected = selectedChain === null;
-
         const isChainSelected =
           isAllChainsSelected || contract.chain === selectedChain;
-
         const isCategoryMatched =
           contract.main_category_key === selectedCategory;
-
-        // console.log(contract.main_category_key);
-        // console.log(selectedCategory);
 
         return isChainSelected && isCategoryMatched;
       })
@@ -448,10 +443,6 @@ export default function OverviewMetrics({
         return filtered;
       }, {});
 
-    let sortedContractKeys = Object.keys(filteredContracts);
-
-    // console.log(filteredContracts);
-    // Define a sorting function
     const sortFunction = (a, b) => {
       const valueA =
         selectedMode === "gas_fees_"
@@ -471,49 +462,34 @@ export default function OverviewMetrics({
       return valueA - valueB;
     };
 
-    if (contractCategory === "contract") {
-      // Use the sortFunction
-      sortedContractKeys = sortedContractKeys.sort((a, b) => {
-        const nameA = filteredContracts[a]?.name;
-        const nameB = filteredContracts[b]?.name;
-
-        if (nameA && nameB) {
-          return nameA.localeCompare(nameB);
-        }
-
-        const addressA = filteredContracts[a]?.address;
-        const addressB = filteredContracts[b]?.address;
-
-        return addressA.localeCompare(addressB);
-      });
-    } else if (contractCategory === "category") {
-      // Use the sortFunction
-      sortedContractKeys = sortedContractKeys.sort((a, b) => {
+    const sortedResult = Object.keys(filteredContracts).sort((a, b) => {
+      if (contractCategory === "contract") {
+        return (
+          filteredContracts[a]?.name || filteredContracts[a]?.address
+        ).localeCompare(
+          filteredContracts[b]?.name || filteredContracts[b]?.address,
+        );
+      } else if (contractCategory === "category") {
         return filteredContracts[a]?.main_category_key.localeCompare(
           filteredContracts[b]?.main_category_key,
         );
-      });
-    } else if (contractCategory === "subcategory") {
-      if (selectedCategory !== "unlabeled") {
-        sortedContractKeys = sortedContractKeys.sort((a, b) => {
-          return filteredContracts[a]?.sub_category_key.localeCompare(
-            filteredContracts[b]?.sub_category_key,
-          );
-        });
-      }
-    } else if (contractCategory === "chain") {
-      // Use the sortFunction
-      sortedContractKeys = sortedContractKeys.sort((a, b) => {
+      } else if (
+        contractCategory === "subcategory" &&
+        selectedCategory !== "unlabeled"
+      ) {
+        return filteredContracts[a]?.sub_category_key.localeCompare(
+          filteredContracts[b]?.sub_category_key,
+        );
+      } else if (contractCategory === "chain") {
         return filteredContracts[a]?.chain.localeCompare(
           filteredContracts[b]?.chain,
         );
-      });
-    } else if (contractCategory === "value" || contractCategory === "share") {
-      // Use the sortFunction
-      sortedContractKeys = sortedContractKeys.sort(sortFunction);
-    }
+      } else if (contractCategory === "value" || contractCategory === "share") {
+        return sortFunction(a, b);
+      }
+    });
 
-    const sortedResult = sortedContractKeys.reduce((acc, key) => {
+    const sortedContractsObj = sortedResult.reduce((acc, key) => {
       acc[key] = filteredContracts[key];
       return acc;
     }, {});
@@ -522,9 +498,9 @@ export default function OverviewMetrics({
       selectedCategory === "unlabeled" &&
       (contractCategory === "category" || contractCategory === "subcategory")
     ) {
-      setSortedContracts(sortedContracts);
+      setSortedContracts(sortedContractsObj);
     } else {
-      setSortedContracts(sortedResult);
+      setSortedContracts(sortedContractsObj);
     }
   }, [
     contractCategory,
@@ -533,31 +509,19 @@ export default function OverviewMetrics({
     selectedChain,
     selectedMode,
     showUsd,
-    sortedContracts,
   ]);
 
   const largestContractValue = useMemo(() => {
     let retValue = 0;
-    if (selectedMode === "gas_fees_") {
-      if (showUsd) {
-        for (let i in sortedContracts) {
-          if (sortedContracts[i].gas_fees_absolute_usd > retValue) {
-            retValue = sortedContracts[i].gas_fees_absolute_usd;
-          }
-        }
-      } else {
-        for (let i in sortedContracts) {
-          if (sortedContracts[i].gas_fees_absolute_eth > retValue) {
-            retValue = sortedContracts[i].gas_fees_absolute_eth;
-          }
-        }
-      }
-    } else {
-      for (let i in sortedContracts) {
-        if (sortedContracts[i].txcount_absolute > retValue) {
-          retValue = sortedContracts[i].txcount_absolute;
-        }
-      }
+    for (const contract of Object.values(sortedContracts)) {
+      const value =
+        selectedMode === "gas_fees_"
+          ? showUsd
+            ? contract.gas_fees_absolute_usd
+            : contract.gas_fees_absolute_eth
+          : contract.txcount_absolute;
+
+      retValue = Math.max(retValue, value);
     }
 
     return retValue;

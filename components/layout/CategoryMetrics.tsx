@@ -611,14 +611,12 @@ export default function CategoryMetrics({
     const filteredContracts = Object.entries(contracts)
       .filter(([key, contract]) => {
         const isChainSelected = selectedChains[contract.chain];
-
         const isSubcategorySelected =
           selectedCategory === "unlabeled" && contract.sub_category_key === null
             ? true
-            : selectedSubcategories[contract.main_category_key].includes(
+            : selectedSubcategories[contract.main_category_key]?.includes(
                 contract.sub_category_key,
               );
-
         const isCategoryMatched =
           contract.main_category_key === selectedCategory;
 
@@ -628,10 +626,6 @@ export default function CategoryMetrics({
         filtered[key] = contract;
         return filtered;
       }, {});
-
-    let sortedContractKeys = Object.keys(filteredContracts);
-
-    // Define a sorting function
     const sortFunction = (a, b) => {
       const valueA =
         selectedMode === "gas_fees_"
@@ -651,47 +645,32 @@ export default function CategoryMetrics({
       return valueA - valueB;
     };
 
-    if (contractCategory === "contract") {
-      // Use the sortFunction
-      sortedContractKeys = sortedContractKeys.sort((a, b) => {
-        const nameA = filteredContracts[a]?.name;
-        const nameB = filteredContracts[b]?.name;
-
-        if (nameA && nameB) {
-          return nameA.localeCompare(nameB);
-        }
-
-        const addressA = filteredContracts[a]?.address;
-        const addressB = filteredContracts[b]?.address;
-
-        return addressA.localeCompare(addressB);
-      });
-    } else if (contractCategory === "category") {
-      // Use the sortFunction
-      sortedContractKeys = sortedContractKeys.sort((a, b) => {
+    const sortedContractKeys = Object.keys(filteredContracts).sort((a, b) => {
+      if (contractCategory === "contract") {
+        return (
+          filteredContracts[a]?.name || filteredContracts[a]?.address
+        ).localeCompare(
+          filteredContracts[b]?.name || filteredContracts[b]?.address,
+        );
+      } else if (contractCategory === "category") {
         return filteredContracts[a]?.main_category_key.localeCompare(
           filteredContracts[b]?.main_category_key,
         );
-      });
-    } else if (contractCategory === "subcategory") {
-      if (selectedCategory !== "unlabeled") {
-        sortedContractKeys = sortedContractKeys.sort((a, b) => {
-          return filteredContracts[a]?.sub_category_key.localeCompare(
-            filteredContracts[b]?.sub_category_key,
-          );
-        });
-      }
-    } else if (contractCategory === "chain") {
-      // Use the sortFunction
-      sortedContractKeys = sortedContractKeys.sort((a, b) => {
+      } else if (
+        contractCategory === "subcategory" &&
+        selectedCategory !== "unlabeled"
+      ) {
+        return filteredContracts[a]?.sub_category_key.localeCompare(
+          filteredContracts[b]?.sub_category_key,
+        );
+      } else if (contractCategory === "chain") {
         return filteredContracts[a]?.chain.localeCompare(
           filteredContracts[b]?.chain,
         );
-      });
-    } else if (contractCategory === "value" || contractCategory === "share") {
-      // Use the sortFunction
-      sortedContractKeys = sortedContractKeys.sort(sortFunction);
-    }
+      } else if (contractCategory === "value" || contractCategory === "share") {
+        return sortFunction(a, b); // Using the previously defined sortFunction
+      }
+    });
 
     const sortedResult = sortedContractKeys.reduce((acc, key) => {
       acc[key] = filteredContracts[key];
@@ -702,7 +681,7 @@ export default function CategoryMetrics({
       selectedCategory === "unlabeled" &&
       (contractCategory === "category" || contractCategory === "subcategory")
     ) {
-      setSortedContracts(sortedContracts);
+      setSortedContracts(sortedResult);
     } else {
       setSortedContracts(sortedResult);
     }
@@ -718,26 +697,15 @@ export default function CategoryMetrics({
 
   const largestContractValue = useMemo(() => {
     let retValue = 0;
-    if (selectedMode === "gas_fees_") {
-      if (showUsd) {
-        for (let i in sortedContracts) {
-          if (sortedContracts[i].gas_fees_absolute_usd > retValue) {
-            retValue = sortedContracts[i].gas_fees_absolute_usd;
-          }
-        }
-      } else {
-        for (let i in sortedContracts) {
-          if (sortedContracts[i].gas_fees_absolute_eth > retValue) {
-            retValue = sortedContracts[i].gas_fees_absolute_eth;
-          }
-        }
-      }
-    } else {
-      for (let i in sortedContracts) {
-        if (sortedContracts[i].txcount_absolute > retValue) {
-          retValue = sortedContracts[i].txcount_absolute;
-        }
-      }
+    for (const contract of Object.values(sortedContracts)) {
+      const value =
+        selectedMode === "gas_fees_"
+          ? showUsd
+            ? contract.gas_fees_absolute_usd
+            : contract.gas_fees_absolute_eth
+          : contract.txcount_absolute;
+
+      retValue = Math.max(retValue, value);
     }
 
     return retValue;
@@ -1848,15 +1816,35 @@ export default function CategoryMetrics({
                             }}
                           >
                             {sortedContracts[key].name
-                              ? sortedContracts[key].name
+                              ? `${sortedContracts[key].project_name}: ${sortedContracts[key].name}`
                               : contractHover[key]
                               ? sortedContracts[key].address
-                              : sortedContracts[key].address.substring(0, 20) +
-                                "..."}
+                              : sortedContracts[key].address.substring(0, 6) +
+                                "..." +
+                                sortedContracts[key].address.substring(36, 42)}
                             {sortedContracts[key].name ? (
-                              <span className="hover:visible invisible bg-black rounded-xl text-[12px] relative bottom-4">
-                                {sortedContracts[key].address}
-                              </span>
+                              <div className="group-hover:flex hidden space-x-2 items-center bg-black/50 px-0.5 rounded-xl text-[12px]">
+                                <div>
+                                  {sortedContracts[key].address.substring(
+                                    0,
+                                    6,
+                                  ) +
+                                    "..." +
+                                    sortedContracts[key].address.substring(
+                                      36,
+                                      42,
+                                    )}
+                                </div>
+                                <Icon
+                                  icon="feather:copy"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(
+                                      sortedContracts[key].address,
+                                    );
+                                  }}
+                                  className="w-3 h-3 cursor-pointer"
+                                />
+                              </div>
                             ) : null}
                           </div>
                         </div>
