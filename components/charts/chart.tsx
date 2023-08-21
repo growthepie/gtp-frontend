@@ -314,12 +314,12 @@ export const Chart = ({
           // chart.reflow();
         })
         .then(() => {
-          delay(50).then(
+          delay(100).then(
             () => chartComponent.current && chartComponent.current.reflow(),
           );
         })
         .then(() => {
-          delay(50).then(() => chartComponent.current && resetXAxisExtremes());
+          delay(150).then(() => chartComponent.current && resetXAxisExtremes());
         });
     }
   }, 150);

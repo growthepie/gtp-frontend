@@ -48,6 +48,7 @@ const DisabledStates: {
 
 type ContractInfo = {
   address: string;
+  project_name: string;
   name: string;
   main_category_key: string;
   sub_category_key: string;
@@ -96,9 +97,9 @@ export default function OverviewMetrics({
   const [showMore, setShowMore] = useState(false);
   const [maxDisplayedContracts, setMaxDisplayedContracts] = useState(10);
   const [contractHover, setContractHover] = useState({});
-  const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
-    {},
-  );
+  // const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
+  //   {},
+  // );
 
   const [sortedContracts, setSortedContracts] = useState<{
     [key: string]: ContractInfo;
@@ -171,10 +172,71 @@ export default function OverviewMetrics({
   const [selectedCategory, setSelectedCategory] = useState("native_transfers");
 
   // console.log(data.all_l2s["overview"]);
-  useEffect(() => {
-    // Process the data and create the contracts object
-    const result: { [key: string]: ContractInfo } = {};
+  // useEffect(() => {
+  //   // Process the data and create the contracts object
+  //   const result: { [key: string]: ContractInfo } = {};
 
+  //   for (const category of Object.keys(data)) {
+  //     if (data) {
+  //       const contractsData =
+  //         data.all_l2s["overview"][selectedTimespan][selectedCategory].contracts
+  //           .data;
+  //       const types =
+  //         data.all_l2s["overview"][selectedTimespan][selectedCategory].contracts
+  //           .types;
+
+  //       for (const contract of Object.keys(contractsData)) {
+  //         const dataArray = contractsData[contract];
+  //         const key = dataArray[0] + dataArray[4];
+  //         const values = dataArray;
+
+  //         // Check if the key already exists in the result object
+  //         if (result.hasOwnProperty(key)) {
+  //           // If the key exists, update the values
+  //           result[key] = {
+  //             ...result[key],
+  //             address: values[types.indexOf("address")],
+  //             project_name: values[types.indexOf("project_name")],
+  //             name: values[types.indexOf("name")],
+  //             main_category_key: values[types.indexOf("main_category_key")],
+  //             sub_category_key: values[types.indexOf("sub_category_key")],
+  //             chain: values[types.indexOf("chain")],
+  //             gas_fees_absolute_eth:
+  //               values[types.indexOf("gas_fees_absolute_eth")],
+  //             gas_fees_absolute_usd:
+  //               values[types.indexOf("gas_fees_absolute_usd")],
+  //             gas_fees_share: values[types.indexOf("gas_fees_share")] ?? "",
+  //             txcount_absolute: values[types.indexOf("txcount_absolute")],
+  //             txcount_share: values[types.indexOf("txcount_share")] ?? "",
+  //           };
+  //         } else {
+  //           // If the key doesn't exist, create a new entry
+  //           result[key] = {
+  //             address: values[types.indexOf("address")],
+  //             project_name: values[types.indexOf("project_name")],
+  //             name: values[types.indexOf("name")],
+  //             main_category_key: values[types.indexOf("main_category_key")],
+  //             sub_category_key: values[types.indexOf("sub_category_key")],
+  //             chain: values[types.indexOf("chain")],
+  //             gas_fees_absolute_eth:
+  //               values[types.indexOf("gas_fees_absolute_eth")],
+  //             gas_fees_absolute_usd:
+  //               values[types.indexOf("gas_fees_absolute_usd")],
+  //             gas_fees_share: values[types.indexOf("gas_fees_share")] ?? "",
+  //             txcount_absolute: values[types.indexOf("txcount_absolute")],
+  //             txcount_share: values[types.indexOf("txcount_share")] ?? "",
+  //           };
+  //         }
+  //       }
+  //     }
+  //   }
+
+  //   // Update the contracts state with the new data
+  //   setContracts(result);
+  // }, [data, selectedCategory, selectedTimespan]);
+
+  const contracts = useMemo<{ [key: string]: ContractInfo }>(() => {
+    const result: { [key: string]: ContractInfo } = {};
     for (const category of Object.keys(data)) {
       if (data) {
         const contractsData =
@@ -195,6 +257,7 @@ export default function OverviewMetrics({
             result[key] = {
               ...result[key],
               address: values[types.indexOf("address")],
+              project_name: values[types.indexOf("project_name")],
               name: values[types.indexOf("name")],
               main_category_key: values[types.indexOf("main_category_key")],
               sub_category_key: values[types.indexOf("sub_category_key")],
@@ -211,6 +274,7 @@ export default function OverviewMetrics({
             // If the key doesn't exist, create a new entry
             result[key] = {
               address: values[types.indexOf("address")],
+              project_name: values[types.indexOf("project_name")],
               name: values[types.indexOf("name")],
               main_category_key: values[types.indexOf("main_category_key")],
               sub_category_key: values[types.indexOf("sub_category_key")],
@@ -229,7 +293,7 @@ export default function OverviewMetrics({
     }
 
     // Update the contracts state with the new data
-    setContracts(result);
+    return result;
   }, [data, selectedCategory, selectedTimespan]);
 
   const [selectedChain, setSelectedChain] = useState<string | null>(null);
@@ -307,13 +371,13 @@ export default function OverviewMetrics({
   const chartSeries = useMemo(() => {
     const dataKey = selectedMode;
     if (selectedChain) {
-      console.log(selectedChain, {
-        id: [selectedChain, selectedCategory, selectedMode].join("_"),
-        name: selectedChain,
-        unixKey: "unix",
-        dataKey: dataKey,
-        data: data[selectedChain].daily[selectedCategory].data.length,
-      });
+      // console.log(selectedChain, {
+      //   id: [selectedChain, selectedCategory, selectedMode].join("_"),
+      //   name: selectedChain,
+      //   unixKey: "unix",
+      //   dataKey: dataKey,
+      //   data: data[selectedChain].daily[selectedCategory].data.length,
+      // });
       return [
         {
           id: [selectedChain, selectedCategory, selectedMode].join("_"),
@@ -374,8 +438,8 @@ export default function OverviewMetrics({
         const isCategoryMatched =
           contract.main_category_key === selectedCategory;
 
-        console.log(contract.main_category_key);
-        console.log(selectedCategory);
+        // console.log(contract.main_category_key);
+        // console.log(selectedCategory);
 
         return isChainSelected && isCategoryMatched;
       })
@@ -386,7 +450,7 @@ export default function OverviewMetrics({
 
     let sortedContractKeys = Object.keys(filteredContracts);
 
-    console.log(filteredContracts);
+    // console.log(filteredContracts);
     // Define a sorting function
     const sortFunction = (a, b) => {
       const valueA =
@@ -528,7 +592,7 @@ export default function OverviewMetrics({
 
     return retValue;
   }
-  console.log(data);
+  // console.log(data);
   const getBarSectionStyle = useCallback(
     (
       chainKey: string,
@@ -997,12 +1061,12 @@ export default function OverviewMetrics({
                               </div>
                             )} */}
                             {Object.keys(categories).map((categoryKey, i) => {
-                              console.log(
-                                "data[chainKey].overview[selectedTimespan][categoryKey]",
-                                data[chainKey].overview[selectedTimespan][
-                                  categoryKey
-                                ],
-                              );
+                              // console.log(
+                              //   "data[chainKey].overview[selectedTimespan][categoryKey]",
+                              //   data[chainKey].overview[selectedTimespan][
+                              //     categoryKey
+                              //   ],
+                              // );
                               const rawChainCategories = Object.keys(
                                 data[chainKey].overview[selectedTimespan],
                               );
@@ -1481,7 +1545,7 @@ export default function OverviewMetrics({
 
                   return (
                     <div key={key + "" + sortOrder}>
-                      <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] ">
+                      <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] group">
                         <div className="flex w-[100%] ml-4 mr-8 items-center ">
                           <div className="flex items-center h-10 w-[34%] gap-x-[20px] pl-1  ">
                             <div className=" w-[40px]">
@@ -1508,7 +1572,7 @@ export default function OverviewMetrics({
 
                             <div
                               key={sortedContracts[key].address}
-                              className={` w-[200px] h-full flex items-center ${
+                              className={`flex flex-col flex-1 h-full items-start justify-center ${
                                 contractHover[key] && !sortedContracts[key].name
                                   ? "relative right-[10px] text-[14px]"
                                   : ""
@@ -1527,17 +1591,38 @@ export default function OverviewMetrics({
                               }}
                             >
                               {sortedContracts[key].name
-                                ? sortedContracts[key].name
+                                ? `${sortedContracts[key].project_name}: ${sortedContracts[key].name}`
                                 : contractHover[key]
                                 ? sortedContracts[key].address
-                                : sortedContracts[key].address.substring(
-                                    0,
-                                    20,
-                                  ) + "..."}
+                                : sortedContracts[key].address.substring(0, 6) +
+                                  "..." +
+                                  sortedContracts[key].address.substring(
+                                    36,
+                                    42,
+                                  )}
                               {sortedContracts[key].name ? (
-                                <span className="hover:visible invisible bg-black rounded-xl text-[12px] relative bottom-4">
-                                  {sortedContracts[key].address}
-                                </span>
+                                <div className="group-hover:flex hidden space-x-2 items-center bg-black/50 px-0.5 rounded-xl text-[12px]">
+                                  <div>
+                                    {sortedContracts[key].address.substring(
+                                      0,
+                                      6,
+                                    ) +
+                                      "..." +
+                                      sortedContracts[key].address.substring(
+                                        36,
+                                        42,
+                                      )}
+                                  </div>
+                                  <Icon
+                                    icon="feather:copy"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(
+                                        sortedContracts[key].address,
+                                      );
+                                    }}
+                                    className="w-3 h-3 cursor-pointer"
+                                  />
+                                </div>
                               ) : null}
                             </div>
                           </div>
