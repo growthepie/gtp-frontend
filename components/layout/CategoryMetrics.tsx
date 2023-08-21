@@ -967,6 +967,7 @@ export default function CategoryMetrics({
     },
   });
 
+  console.log(maxDisplayedContracts);
   return (
     <div className="w-full flex-col relative">
       <Container>
@@ -1765,6 +1766,9 @@ export default function CategoryMetrics({
                   setContractCategory("value");
                 }}
               >
+                <p className="font-normal">
+                  ({timespans[selectedTimespan].label})
+                </p>
                 {selectedMode === "gas_fees_"
                   ? "Gas Fees "
                   : "Transaction Count "}
@@ -1789,7 +1793,7 @@ export default function CategoryMetrics({
           </div>
           {!sortOrder
             ? Object.keys(sortedContracts).map((key, i) => {
-                if (!showMore && i >= maxDisplayedContracts) {
+                if (i >= maxDisplayedContracts) {
                   return null;
                 }
 
@@ -1936,7 +1940,7 @@ export default function CategoryMetrics({
             : Object.keys(sortedContracts)
                 .reverse()
                 .map((key, i) => {
-                  if (!showMore && i >= maxDisplayedContracts) {
+                  if (i >= maxDisplayedContracts) {
                     return null;
                   }
 
@@ -2082,24 +2086,27 @@ export default function CategoryMetrics({
                     </div>
                   );
                 })}
-          <button
-            className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full bg-forest-700 p-[6px 16px] ${
-              Object.keys(sortedContracts).length <= 10 ? "hidden" : "visible"
-            }`}
-            onClick={() => {
-              setShowMore(!showMore);
-              if (Object.keys(sortedContracts).length > maxDisplayedContracts) {
-                setMaxDisplayedContracts(maxDisplayedContracts + 10);
-              } else {
-                setMaxDisplayedContracts(10);
-              }
-            }}
-          >
-            {Object.keys(sortedContracts).length}
-            {Object.keys(sortedContracts).length < maxDisplayedContracts
-              ? "Show Less"
-              : "Show More"}
-          </button>
+          <div className="w-full flex justify-center mb-2">
+            <button
+              className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${
+                Object.keys(sortedContracts).length <= 10 ? "hidden" : "visible"
+              }`}
+              onClick={() => {
+                setShowMore(!showMore);
+                if (
+                  Object.keys(sortedContracts).length > maxDisplayedContracts
+                ) {
+                  setMaxDisplayedContracts(maxDisplayedContracts + 10);
+                } else {
+                  setMaxDisplayedContracts(10);
+                }
+              }}
+            >
+              {Object.keys(sortedContracts).length <= maxDisplayedContracts
+                ? "Show Less"
+                : "Show More"}
+            </button>
+          </div>
         </div>
       </Container>
     </div>
