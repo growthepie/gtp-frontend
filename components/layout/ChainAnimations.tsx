@@ -32,9 +32,14 @@ export default function ChainAnimations({
       const largestValue = Math.max(
         ...Object.values(sortedValues).map(([, value]) => value),
       );
+      let minWidth = 205;
+
+      const relativeWidth = 205 + (sortedValues[index][1] / largestValue) * 150;
+      console.log(relativeWidth);
 
       const percentage = (value / largestValue) * 99;
-      return `max(${percentage}%, 205px)`;
+      const newWidth = `max(${percentage}%, ${relativeWidth}px)`;
+      return `max(${percentage}%, ${minWidth}px)`;
     } else {
       return "auto";
     }
@@ -45,9 +50,16 @@ export default function ChainAnimations({
       const largestValue = Math.max(
         ...Object.values(sortedValues).map(([, value]) => value),
       );
+      let minWidth = 205;
+
+      const relativeWidth = 205 + (sortedValues[index][1] / largestValue) * 150;
+      console.log(relativeWidth);
 
       const percentage = (value / largestValue) * 99;
-      setWidth(`max(${percentage}%, 205px)`);
+      const newWidth = `max(${percentage}%, ${relativeWidth}px)`;
+
+      // Set the width state using the setWidth function
+      setWidth(newWidth);
     } else {
       setWidth("auto");
     }
@@ -99,7 +111,10 @@ export default function ChainAnimations({
             <div className="-mb-0.5">{AllChainsByKeys[chain].label}</div>
           </div>
 
-          <div key={value + " " + index} className="flex justify-end flex-grow">
+          <div
+            key={value + " " + index}
+            className="flex justify-end flex-grow "
+          >
             <div key={index} className="text-base flex">
               {selectedValue === "share" ? (
                 <div>{Math.round(value * 100)}%</div>
