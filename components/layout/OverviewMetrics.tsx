@@ -106,40 +106,49 @@ export default function OverviewMetrics({
   }>({});
 
   const categories: { [key: string]: string } = useMemo(() => {
-    // if (master) {
-    //   const result: { [key: string]: string } = {};
+    if (master) {
+      const result: { [key: string]: string } = {};
 
-    //   Object.keys(master.blockspace_categories.main_categories).forEach(
-    //     (key) => {
-    //       // if (key !== "cross_chain") {
-    //       const words =
-    //         master.blockspace_categories.main_categories[key].split(" ");
-    //       const formatted = words
-    //         .map((word) => {
-    //           return word.charAt(0).toUpperCase() + word.slice(1);
-    //         })
-    //         .join(" ");
-    //       result[key] = formatted;
-    //       // }
-    //     },
-    //   );
+      const categoryKeys = Object.keys(
+        master.blockspace_categories.main_categories,
+      );
 
-    //   // result.scaling = "Scaling";
+      // Remove "unlabeled" if present and store it for later
+      const unlabeledIndex = categoryKeys.indexOf("unlabeled");
+      let unlabeledCategory = "";
+      if (unlabeledIndex !== -1) {
+        unlabeledCategory = categoryKeys.splice(unlabeledIndex, 1)[0];
+      }
 
-    //   return result;
-    // }
+      categoryKeys.forEach((key) => {
+        const words =
+          master.blockspace_categories.main_categories[key].split(" ");
+        const formatted = words
+          .map((word) => {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+          })
+          .join(" ");
+        result[key] = formatted;
+      });
 
-    return {
-      native_transfers: "Native Transfers",
-      token_transfers: "Token Transfers",
-      nft_fi: "NFT Fi",
-      defi: "DeFi",
-      cefi: "CeFi",
-      utility: "Utility",
-      cross_chain: "Cross Chain",
-      gaming: "Gaming",
-      unlabeled: "Unlabeled",
-    };
+      // Add "unlabeled" to the end if it was present
+      if (unlabeledCategory) {
+        const words =
+          master.blockspace_categories.main_categories[unlabeledCategory].split(
+            " ",
+          );
+        const formatted = words
+          .map((word) => {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+          })
+          .join(" ");
+        result[unlabeledCategory] = formatted;
+      }
+
+      return result;
+    }
+
+    return {};
   }, [master]);
 
   const [isCategoryHovered, setIsCategoryHovered] = useState<{
@@ -169,7 +178,7 @@ export default function OverviewMetrics({
     };
   });
 
-  const [selectedCategory, setSelectedCategory] = useState("native_transfers");
+  const [selectedCategory, setSelectedCategory] = useState("nft_fi");
 
   // useEffect(() => {
   //   // Process the data and create the contracts object
@@ -233,6 +242,24 @@ export default function OverviewMetrics({
   //   // Update the contracts state with the new data
   //   setContracts(result);
   // }, [data, selectedCategory, selectedTimespan]);
+
+  const formatSubcategories = useCallback(
+    (str: string) => {
+      const masterStr =
+        master && master.blockspace_categories.sub_categories[str]
+          ? master.blockspace_categories.sub_categories[str]
+          : str;
+
+      const title = masterStr.replace(/_/g, " ");
+      const words = title.split(" ");
+      const formatted = words.map((word) => {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      });
+
+      return formatted.join(" ");
+    },
+    [master],
+  );
 
   const contracts = useMemo<{ [key: string]: ContractInfo }>(() => {
     const result: { [key: string]: ContractInfo } = {};
@@ -577,7 +604,7 @@ export default function OverviewMetrics({
       //   dataIndex === dataKeysIntersectCategoriesKeys.length - 1;
 
       const isLastCategory = categoryKey === "unlabeled";
-      const isFirstCategory = categoryKey === "native_transfers";
+      const isFirstCategory = categoryKey === "nft_fi";
 
       const dataTypes = data[chainKey].overview.types;
 
@@ -1232,6 +1259,29 @@ export default function OverviewMetrics({
           chartWidth="100%"
         />
       </Container>
+      <Container className="w-[60%] ml-4">
+        <div className="flex flex-wrap items-center w-[87%] gap-y-2 invisible lg:visible">
+          <h1 className="font-bold text-sm pr-2 pl-2">
+            {master &&
+              master.blockspace_categories.main_categories[selectedCategory]}
+          </h1>
+          {master &&
+            Object.keys(
+              master.blockspace_categories["mapping"][selectedCategory],
+            ).map((key) => {
+              return (
+                <p className="text-xs px-[4px] py-[5px] mx-[5px]" key={key}>
+                  {formatSubcategories(
+                    master.blockspace_categories["mapping"][selectedCategory][
+                      key
+                    ],
+                  )}
+                </p>
+              );
+            })}
+        </div>
+      </Container>
+
       <Container className="w-[98%] mt-[30px] mx-auto">
         <div className="flex text-[14px] font-bold mb-[20px] ">
           <div className="flex gap-x-[15px] w-[33%] ">
