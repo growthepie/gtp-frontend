@@ -44,6 +44,18 @@ const DisabledStates: {
       reason: "IMX does not charge Gas Fees",
     },
   },
+  gas_fees_usd_absolute: {
+    imx: {
+      text: "No Gas Fees",
+      reason: "IMX does not charge Gas Fees",
+    },
+  },
+  gas_fees_eth_absolute: {
+    imx: {
+      text: "No Gas Fees",
+      reason: "IMX does not charge Gas Fees",
+    },
+  },
 };
 
 type ContractInfo = {
@@ -97,6 +109,7 @@ export default function OverviewMetrics({
   const [showMore, setShowMore] = useState(false);
   const [maxDisplayedContracts, setMaxDisplayedContracts] = useState(10);
   const [contractHover, setContractHover] = useState({});
+  const [selectedValue, setSelectedValue] = useState("share");
   // const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
   //   {},
   // );
@@ -549,6 +562,42 @@ export default function OverviewMetrics({
     return retValue;
   }, [selectedMode, sortedContracts, showUsd]);
 
+  const sumChainValue = useMemo(() => {
+    const chainValues = {};
+
+    Object.keys(data).forEach((chainKey) => {
+      let sumValue = 0;
+
+      // Iterate over each category for the current chain
+      Object.keys(data[chainKey].overview[selectedTimespan]).forEach(
+        (category) => {
+          const categoryData =
+            data[chainKey].overview[selectedTimespan][category].data;
+
+          // Check if category data exists and index is valid
+          if (
+            categoryData &&
+            data[chainKey].overview["types"].indexOf(selectedMode) !== -1
+          ) {
+            const dataIndex =
+              data[chainKey].overview["types"].indexOf(selectedMode);
+            const categoryValue = categoryData[dataIndex];
+            sumValue += categoryValue; // Add to the sum
+          }
+        },
+      );
+
+      // Store the sum of values for the chain
+      chainValues[chainKey] = sumValue;
+    });
+
+    return chainValues;
+  }, [data, selectedTimespan, selectedMode]);
+
+  console.log(sumChainValue);
+
+  // Usage: largestChainValue["optimism"] will give you the largest value for the "optimism" chain
+
   function getWidth(x) {
     let retValue = "0%";
 
@@ -578,7 +627,7 @@ export default function OverviewMetrics({
 
     return retValue;
   }
-
+  console.log(data);
   const getBarSectionStyle = useCallback(
     (
       chainKey: string,
@@ -680,13 +729,24 @@ export default function OverviewMetrics({
           style.borderRadius = "5px";
         }
 
-        style.width = categoryData
-          ? categoryData[dataTypes.indexOf(selectedMode)] *
-              relativePercentageByChain[chainKey] +
-            8 +
-            "%"
-          : "0px";
-        // if()
+        if (selectedValue === "share") {
+          style.width = categoryData
+            ? categoryData[dataTypes.indexOf(selectedMode)] *
+                relativePercentageByChain[chainKey] +
+              8 +
+              "%"
+            : "0px";
+          // if()
+        } else {
+          style.width = categoryData
+            ? (categoryData[dataTypes.indexOf(selectedMode)] /
+                sumChainValue[chainKey]) *
+                relativePercentageByChain[chainKey] +
+              8 +
+              "%"
+            : "0px";
+          // if()
+        }
         style.transform =
           isCategoryHovered[categoryKey] && !isSelectedCategory
             ? "scaleY(1.01)"
@@ -706,12 +766,23 @@ export default function OverviewMetrics({
 
         style.backgroundColor = "";
       } else {
-        style.width = categoryData
-          ? categoryData[dataTypes.indexOf(selectedMode)] *
-              relativePercentageByChain[chainKey] +
-            8 +
-            "%"
-          : "0px";
+        if (selectedValue === "share") {
+          style.width = categoryData
+            ? categoryData[dataTypes.indexOf(selectedMode)] *
+                relativePercentageByChain[chainKey] +
+              8 +
+              "%"
+            : "0px";
+          // if()
+        } else {
+          style.width = categoryData
+            ? (categoryData[dataTypes.indexOf(selectedMode)] /
+                sumChainValue[chainKey]) *
+                relativePercentageByChain[chainKey] +
+              8 +
+              "%"
+            : "0px";
+        }
 
         // if(isCategoryHovered[categoryKey])
         // style.transform =
@@ -755,6 +826,20 @@ export default function OverviewMetrics({
     ],
   );
 
+  function formatNumber(number: number): string {
+    if (number >= 1e9) {
+      return (number / 1e9).toFixed(1) + "B";
+    } else if (number >= 1e6) {
+      return (number / 1e6).toFixed(1) + "M";
+    } else if (number >= 1e3) {
+      return (number / 1e3).toFixed(1) + "K";
+    } else if (number !== 0) {
+      return parseFloat(number.toFixed(2)).toString();
+    } else {
+      return "0";
+    }
+  }
+
   return (
     <div className="w-full flex-col relative">
       <Container>
@@ -762,13 +847,19 @@ export default function OverviewMetrics({
           <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
             <button
               className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                selectedMode.includes("gas_fees_share")
+                selectedMode.includes("gas_fees")
                   ? "bg-forest-500 dark:bg-forest-1000"
                   : "hover:bg-forest-500/10"
               }`}
               onClick={() => {
                 setSelectedMode(
-                  showUsd ? "gas_fees_share_usd" : "gas_fees_share_eth",
+                  selectedValue === "absolute"
+                    ? showUsd
+                      ? "gas_fees_usd_absolute"
+                      : "gas_fees_eth_absolute"
+                    : showUsd
+                    ? "gas_fees_share_usd"
+                    : "gas_fees_share_eth",
                 );
               }}
             >
@@ -776,18 +867,22 @@ export default function OverviewMetrics({
             </button>
             <button
               className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                "txcount_share" === selectedMode
+                selectedMode.includes("txcount")
                   ? "bg-forest-500 dark:bg-forest-1000"
                   : "hover:bg-forest-500/10"
               }`}
               onClick={() => {
-                setSelectedMode("txcount_share");
+                setSelectedMode(
+                  selectedValue === "absolute"
+                    ? "txcount_absolute"
+                    : "txcount_share",
+                );
               }}
             >
               Transaction Count
             </button>
           </div>
-          <div className="block xl:hidden w-[70%] mx-auto my-[10px]">
+          <div className="block xl:hidden w-[70%] mx-auto mt-[5px]">
             <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
           </div>
           <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
@@ -829,7 +924,7 @@ export default function OverviewMetrics({
           >
             <div
               className={
-                "relative h-[50px] border-x-[1px] border-t-[1px] rounded-t-[15px] text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-forest-900 dark:bg-forest-1000 mt-8 overflow-hidden"
+                "relative h-[50px] border-x-[1px] border-t-[1px] rounded-t-[15px] text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-forest-900 dark:bg-forest-1000 mt-6 overflow-hidden"
               }
             >
               <div className="flex w-full h-full text-[12px]">
@@ -839,36 +934,11 @@ export default function OverviewMetrics({
                   <button className="flex flex-col flex-1 h-full justify-center items-center border-x border-transparent overflow-hidden">
                     <div
                       className={`relative -left-[39px] top-[17px] text-xs font-medium`}
-                    >
-                      Chains
-                    </div>
+                    ></div>
                     <div
                       className={`relative left-[30px] -top-[17px] text-xs font-medium`}
-                    >
-                      Categories
-                    </div>
+                    ></div>
                   </button>
-                  <svg
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                    }}
-                  >
-                    <line
-                      strokeDasharray="2, 2"
-                      x1="0"
-                      y1="0"
-                      x2="100%"
-                      y2="100%"
-                      style={{
-                        stroke: theme === "dark" ? "#5a6462" : "#eaeceb",
-                        strokeWidth: 1,
-                      }}
-                    />
-                  </svg>
                 </div>
                 <div className="flex flex-1">
                   {Object.keys(categories).map(
@@ -1171,18 +1241,37 @@ export default function OverviewMetrics({
                                       categoryKey
                                     ]["data"] ? (
                                       <>
-                                        {(
-                                          data[chainKey].overview[
-                                            selectedTimespan
-                                          ][categoryKey]["data"][
-                                            data[
-                                              chainKey
-                                            ].overview.types.indexOf(
-                                              selectedMode,
-                                            )
-                                          ] * 100.0
-                                        ).toFixed(2)}
-                                        %
+                                        {selectedValue === "absolute"
+                                          ? selectedMode.includes("txcount")
+                                            ? ""
+                                            : showUsd
+                                            ? "$ "
+                                            : "Ξ "
+                                          : ""}
+                                        {selectedValue === "share"
+                                          ? (
+                                              data[chainKey].overview[
+                                                selectedTimespan
+                                              ][categoryKey]["data"][
+                                                data[
+                                                  chainKey
+                                                ].overview.types.indexOf(
+                                                  selectedMode,
+                                                )
+                                              ] * 100.0
+                                            ).toFixed(2)
+                                          : formatNumber(
+                                              data[chainKey].overview[
+                                                selectedTimespan
+                                              ][categoryKey]["data"][
+                                                data[
+                                                  chainKey
+                                                ].overview.types.indexOf(
+                                                  selectedMode,
+                                                )
+                                              ],
+                                            )}
+                                        {selectedValue === "share" ? "%" : ""}{" "}
                                       </>
                                     ) : (
                                       <div
@@ -1194,7 +1283,14 @@ export default function OverviewMetrics({
                                             : "opacity-0"
                                         } transition-opacity duration-300 ease-in-out`}
                                       >
-                                        0%
+                                        {selectedValue === "absolute"
+                                          ? selectedMode.includes("txcount")
+                                            ? ""
+                                            : showUsd
+                                            ? "$ "
+                                            : "Ξ "
+                                          : ""}
+                                        0 {selectedValue === "share" ? "%" : ""}{" "}
                                       </div>
                                     )}
                                   </div>
@@ -1254,7 +1350,7 @@ export default function OverviewMetrics({
           stack
           timespan={selectedTimespan}
           series={chartSeries}
-          yScale="percentage"
+          yScale={selectedValue === "share" ? "percentage" : "linear"}
           chartHeight="196px"
           chartWidth="100%"
         />
@@ -1279,6 +1375,76 @@ export default function OverviewMetrics({
                 </p>
               );
             })}
+        </div>
+      </Container>
+      <Container>
+        {" "}
+        <div className="flex flex-col md:flex-row w-[98%] mx-auto md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
+          {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
+          {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
+          {/* toggle ETH */}
+          <button
+            className={`px-[16px] py-[4px]  rounded-full ${
+              selectedValue === "absolute"
+                ? "bg-forest-500 dark:bg-forest-1000"
+                : "hover:bg-forest-500/10"
+            }`}
+            onClick={() => {
+              setSelectedValue("absolute");
+              if (!selectedMode.includes("absolute")) {
+                if (selectedMode.includes("gas_fees")) {
+                  if (showUsd) {
+                    setSelectedMode("gas_fees_usd_absolute");
+                  } else {
+                    setSelectedMode("gas_fees_eth_absolute");
+                  }
+                } else {
+                  setSelectedMode("txcount_absolute");
+                }
+              }
+            }}
+          >
+            Absolute
+          </button>
+          <button
+            className={`px-[16px] py-[4px]  rounded-full ${
+              selectedValue === "share"
+                ? "bg-forest-500 dark:bg-forest-1000"
+                : "hover:bg-forest-500/10"
+            }`}
+            onClick={() => {
+              setSelectedValue("share");
+
+              if (selectedMode.includes("gas_fees")) {
+                if (showUsd) {
+                  setSelectedMode("gas_fees_share_usd");
+                } else {
+                  setSelectedMode("gas_fees_share_eth");
+                }
+              } else {
+                setSelectedMode("txcount_share");
+              }
+            }}
+          >
+            Share of Chain Usage
+          </button>
+          <Tooltip placement="left" allowInteract>
+            <TooltipTrigger>
+              <div className="p-1 z-10">
+                <Icon icon="feather:info" className="w-6 h-6" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
+              <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
+                <div className="flex flex-col space-y-1">
+                  <div className="font-bold text-sm leading-snug">
+                    Data Sources:
+                  </div>
+                  <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug"></div>
+                </div>
+              </div>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </Container>
 
