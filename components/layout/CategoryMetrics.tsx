@@ -350,26 +350,25 @@ export default function CategoryMetrics({
           }
         }
 
+        let hasDataForSelectedSubcategories = false;
+
         for (let subRows = 0; subRows < maxSubcategoryLength; subRows++) {
           let sum = 0;
 
-          // Iterate over all subcategories, even if they are not selected
-          for (let j in data[selectedCategory].subcategories) {
+          // Iterate over selected subcategories only
+          for (let j of selectedSubcategories[selectedCategory]) {
             if (
-              String(j) !== "list" &&
+              j !== "list" &&
               data[selectedCategory].subcategories[j][dailyKey][i]
             ) {
               const subcategoryData =
                 data[selectedCategory].subcategories[j][dailyKey][i];
-              if (
-                selectedSubcategories[selectedCategory].indexOf(String(j)) !==
-                  -1 &&
-                subcategoryData.length > subRows
-              ) {
+              if (subcategoryData.length > subRows) {
                 sum +=
                   subcategoryData[subcategoryData.length - (1 + subRows)][
                     dataIndex
                   ];
+                hasDataForSelectedSubcategories = true;
               }
             }
           }
@@ -378,14 +377,16 @@ export default function CategoryMetrics({
           chartData[chartData.length - (1 + subRows)][dataIndex] = sum;
         }
 
-        const obj = {
-          id: [String(i), selectedCategory, selectedType].join("_"),
-          name: String(i),
-          unixKey: "unix",
-          dataKey: selectedType,
-          data: chartData,
-        };
-        chainArray.push(obj);
+        if (hasDataForSelectedSubcategories) {
+          const obj = {
+            id: [String(i), selectedCategory, selectedType].join("_"),
+            name: String(i),
+            unixKey: "unix",
+            dataKey: selectedType,
+            data: chartData,
+          };
+          chainArray.push(obj);
+        }
       }
     }
 
