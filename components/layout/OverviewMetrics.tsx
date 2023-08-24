@@ -1448,6 +1448,16 @@ export default function OverviewMetrics({
         </div>
       </Container>
 
+      <Container>
+        <div className="w-[96%] mx-auto mt-[30px] flex flex-col">
+          <h1 className="text-lg font-bold">Most Active Contracts</h1>
+          <p className="text-sm mt-[15px]">
+            See the most active contracts within the selected timeframe (
+            {timespans[selectedTimespan].label}) and for your selected category.{" "}
+          </p>
+        </div>
+      </Container>
+
       <Container className="w-[98%] mt-[30px] mx-auto">
         <div className="flex text-[14px] font-bold mb-[20px] ">
           <div className="flex gap-x-[15px] w-[33%] ">
