@@ -21,7 +21,7 @@ const Imprint = () => {
           <div className="mb-4">
             Register Number: HRB 252443 B <br />
             Register Court: Amtsgericht Charlottenburg <br />
-            VAT Number: - <br />
+            VAT Number: DE361013740 <br />
           </div>
           <div className="mb-4">Represented by: Matthias Seidl</div>
 
