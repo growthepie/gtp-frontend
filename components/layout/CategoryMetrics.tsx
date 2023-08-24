@@ -298,77 +298,84 @@ export default function CategoryMetrics({
   const [selectedSubcategories, setSelectedSubcategories] =
     useState(updatedSubcategories);
   console.log(data);
+
   const chartReturn = useMemo(() => {
     const chainArray: ChainData[] = [];
 
     if (!selectedSubcategories) return [];
 
-    //Array of selected chains to return to chart
     for (let i in selectedChains) {
       if (
         selectedChains[i] === true &&
         data[selectedCategory][dailyKey][String(i)]
       ) {
-        // don't show imx gas fees chart
-        if (i === "imx" && selectedMode === "gas_fees_") continue;
-
-        // default to total main category values
+        if (selectedMode.includes("gas_fees") && String(i) === "imx") {
+          // Skip this iteration
+          continue;
+        }
+        let selectedFilter =
+          selectedMode +
+          selectedValue +
+          (selectedMode.includes("gas_fees")
+            ? showUsd
+              ? "_usd"
+              : "_eth"
+            : "");
         let chartData = data[selectedCategory][dailyKey][String(i)];
 
-        // check if we're filtering out any subcategories
-        if (
-          selectedSubcategories[selectedCategory].length !==
-          data[selectedCategory].subcategories.list.length
-        ) {
-          // get the lengths of the selected subcategories' daily values for this chain
-          const selectedSubcategoryLengths = selectedSubcategories[
-            selectedCategory
-          ].map((subcategory) => {
-            const rows =
-              data[selectedCategory].subcategories[subcategory][dailyKey][
-                String(i)
-              ];
-            return rows ? rows.length : 0;
-          });
+        let maxSubcategoryLength = 0;
+        let dataIndex =
+          data[selectedCategory][dailyKey].types.indexOf(selectedFilter);
 
-          // if all subcategories have no data, skip this chain
-          if (selectedSubcategoryLengths.every((length) => length === 0))
-            continue;
-
-          // get the index of the longest subcategory
-          const longestSubcategoryIndex = selectedSubcategoryLengths.indexOf(
-            Math.max(...selectedSubcategoryLengths),
-          );
-
-          const baseData =
-            data[selectedCategory].subcategories[
-              selectedSubcategories[selectedCategory][longestSubcategoryIndex]
-            ][dailyKey][String(i)];
-
-          for (
-            let i = 0;
-            i < selectedSubcategories[selectedCategory].length;
-            i++
+        for (let j in data[selectedCategory].subcategories) {
+          if (
+            String(j) !== "list" &&
+            selectedSubcategories[selectedCategory].indexOf(String(j)) !== -1 &&
+            data[selectedCategory].subcategories[j][dailyKey][i]
           ) {
-            if (longestSubcategoryIndex) continue;
-
-            const subcategory = selectedSubcategories[selectedCategory][i];
             const subcategoryData =
-              data[selectedCategory].subcategories[subcategory][dailyKey][
-                String(i)
-              ] ?? [];
+              data[selectedCategory].subcategories[j][dailyKey][i];
 
-            // for each day, add the subcategory's values to the base value (except the first value which is the date)
-            for (let row = 0; row < subcategoryData.length; row++) {
-              for (let col = 1; col < subcategoryData[row].length; col++) {
-                baseData[row][col] += subcategoryData[row][col];
+            console.log("Processing subcategory:", j);
+            console.log(
+              "subcategoryData:",
+              data[selectedCategory].subcategories[j],
+            );
+            console.log("subcategoryData:", subcategoryData);
+
+            maxSubcategoryLength = Math.max(
+              maxSubcategoryLength,
+              subcategoryData.length,
+            );
+          }
+        }
+
+        for (let subRows = 0; subRows < maxSubcategoryLength; subRows++) {
+          let sum = 0;
+
+          // Iterate over all subcategories, even if they are not selected
+          for (let j in data[selectedCategory].subcategories) {
+            if (
+              String(j) !== "list" &&
+              data[selectedCategory].subcategories[j][dailyKey][i]
+            ) {
+              const subcategoryData =
+                data[selectedCategory].subcategories[j][dailyKey][i];
+              if (
+                selectedSubcategories[selectedCategory].indexOf(String(j)) !==
+                  -1 &&
+                subcategoryData.length > subRows
+              ) {
+                sum +=
+                  subcategoryData[subcategoryData.length - (1 + subRows)][
+                    dataIndex
+                  ];
               }
             }
           }
 
-          if (baseData) {
-            chartData = baseData;
-          }
+          // Update the corresponding value in chartData
+          chartData[chartData.length - (1 + subRows)][dataIndex] = sum;
         }
 
         const obj = {
@@ -381,6 +388,8 @@ export default function CategoryMetrics({
         chainArray.push(obj);
       }
     }
+
+    // ...
 
     return chainArray;
   }, [
