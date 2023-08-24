@@ -25,7 +25,8 @@ module.exports = {
         width: "width",
       },
       screens: {
-        cxl: "1250px",
+        cxl: "1450px",
+        exl: "1600px",
       },
       colors: {
         ethereum: {

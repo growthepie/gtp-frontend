@@ -627,7 +627,7 @@ export default function OverviewMetrics({
 
     return retValue;
   }
-  console.log(data);
+
   const getBarSectionStyle = useCallback(
     (
       chainKey: string,
@@ -1355,8 +1355,8 @@ export default function OverviewMetrics({
           chartWidth="100%"
         />
       </Container>
-      <Container className="w-[60%] ml-4">
-        <div className="flex flex-wrap items-center w-[87%] gap-y-2 invisible lg:visible">
+      <Container className="w-[98%] ml-4">
+        <div className="flex flex-wrap items-center w-[100%] gap-y-2 invisible lg:visible">
           <h1 className="font-bold text-sm pr-2 pl-2">
             {master &&
               master.blockspace_categories.main_categories[selectedCategory]}

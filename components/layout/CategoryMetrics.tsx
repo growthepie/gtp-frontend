@@ -24,6 +24,7 @@ import { LandingURL, MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import ChainAnimations from "./ChainAnimations";
+import { useUIContext } from "@/contexts/UIContext";
 
 export default function CategoryMetrics({
   data,
@@ -75,7 +76,7 @@ export default function CategoryMetrics({
     imx: "https://immutascan.io/address/",
     base: "https://basescan.org/address/",
   };
-
+  const { isSidebarOpen } = useUIContext();
   const [selectedMode, setSelectedMode] = useState("gas_fees_");
   const [selectedCategory, setSelectedCategory] = useState("nft");
   const [contractHover, setContractHover] = useState({});
@@ -108,7 +109,7 @@ export default function CategoryMetrics({
     imx: true,
     base: true,
   });
-
+  console.log(isSidebarOpen);
   const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
     {},
   );
@@ -519,7 +520,7 @@ export default function CategoryMetrics({
           if (subcategoryCount >= 5 && subcategoryCount < 7) {
             width = "550px";
           } else if (subcategoryCount >= 7) {
-            width = "450px";
+            width = "550px";
           } else {
             width = "650px";
           }
@@ -900,7 +901,7 @@ export default function CategoryMetrics({
               ? "650px"
               : Object.keys(data[category].subcategories).length > 5
               ? "500px"
-              : "400px"
+              : "500px"
             : "140px",
       }),
       update: ({ category }) => ({
@@ -910,7 +911,7 @@ export default function CategoryMetrics({
               ? "650px"
               : Object.keys(data[category].subcategories).length > 5
               ? "500px"
-              : "400px"
+              : "500px"
             : "140px"
           : "140px",
       }),
@@ -1108,7 +1109,11 @@ export default function CategoryMetrics({
         </div>
       </Container> */}
       <Container className="block w-full !pr-0 lg:!px-[50px] lg:mt-0 mt-6">
-        <div className="w-[98%] mx-auto cxl:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-2">
+        <div
+          className={`w-[98%] mx-auto  overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-2 ${
+            isSidebarOpen ? "exl:overflow-hidden" : "cxl:overflow-hidden"
+          }`}
+        >
           <animated.div
             className="relative min-w-[1150px] md:min-w-[1200px] w-[97.5%] h-[67px] m-auto border-x-[1px] border-y-[1px] rounded-[15px] dark:text-forest-50  text-forest-1000 border-forest-400 dark:border-forest-800  dark:bg-forest-1000 mt-8 overflow-hidden"
             style={{ ...categoryAnimation }}
@@ -1542,23 +1547,8 @@ export default function CategoryMetrics({
                   </animated.div>
                 ))}
             </div>
-            <div className="flex flex-wrap items-center w-[87%] gap-y-2 invisible lg:visible">
-              <div className="font-bold text-sm pr-2 pl-2">
-                {formatSubcategories(selectedCategory)}:{" "}
-              </div>
-
-              {selectedSubcategories[selectedCategory] &&
-                selectedSubcategories[selectedCategory].map((subcategory) => (
-                  <div
-                    key={subcategory}
-                    className="  text-xs px-[4px] py-[5px] mx-[5px]"
-                  >
-                    {formatSubcategories(subcategory)}
-                  </div>
-                ))}
-            </div>
           </div>
-          <div className="w-full lg:w-[56%] relative bottom-2 mt-2 mb-[90px] h-[320px] lg:mt-0 lg:h-auto">
+          <div className="w-full lg:w-[56%] relative bottom-2 mt-2 mb-[50px] h-[320px] lg:mt-0 lg:h-auto">
             {chartSeries && (
               <Chart
                 chartType="line"
@@ -1593,6 +1583,24 @@ export default function CategoryMetrics({
               ))}
           </div>
         </div>
+        <Container>
+          {" "}
+          <div className="flex flex-wrap items-center w-[87%] gap-y-2 invisible lg:visible ">
+            <div className="font-bold text-sm pr-2 pl-2">
+              {formatSubcategories(selectedCategory)}:{" "}
+            </div>
+
+            {selectedSubcategories[selectedCategory] &&
+              selectedSubcategories[selectedCategory].map((subcategory) => (
+                <div
+                  key={subcategory}
+                  className="  text-xs px-[4px] py-[5px] mx-[5px]"
+                >
+                  {formatSubcategories(subcategory)}
+                </div>
+              ))}
+          </div>{" "}
+        </Container>
         <div className="flex flex-col md:flex-row w-[98%] mx-auto items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
           {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
           {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
