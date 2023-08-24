@@ -77,7 +77,7 @@ export default function CategoryMetrics({
   };
 
   const [selectedMode, setSelectedMode] = useState("gas_fees_");
-  const [selectedCategory, setSelectedCategory] = useState("nft_fi");
+  const [selectedCategory, setSelectedCategory] = useState("nft");
   const [contractHover, setContractHover] = useState({});
 
   const [animationFinished, setAnimationFinished] = useState(true);
@@ -296,7 +296,7 @@ export default function CategoryMetrics({
 
   const [selectedSubcategories, setSelectedSubcategories] =
     useState(updatedSubcategories);
-
+  console.log(data);
   const chartReturn = useMemo(() => {
     const chainArray: ChainData[] = [];
 

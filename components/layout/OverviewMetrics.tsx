@@ -191,7 +191,7 @@ export default function OverviewMetrics({
     };
   });
 
-  const [selectedCategory, setSelectedCategory] = useState("nft_fi");
+  const [selectedCategory, setSelectedCategory] = useState("nft");
 
   // useEffect(() => {
   //   // Process the data and create the contracts object
