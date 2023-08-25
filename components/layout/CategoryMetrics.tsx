@@ -1118,14 +1118,14 @@ export default function CategoryMetrics({
           </div>
         </div>
       </Container> */}
-      <Container className="block w-full !pr-0 lg:!px-[50px] lg:mt-0 mt-6">
+      <Container className="block w-full !pr-0 lg:!px-[40px] px-[100px] lg:mt-0 mt-6 lg:w-[100%] lg:mx-auto ">
         <div
-          className={`w-[98%] mx-auto  overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-2 ${
+          className={`w-[100%] mx-auto  overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-2 ${
             isSidebarOpen ? "exl:overflow-hidden" : "cxl:overflow-hidden"
           }`}
         >
           <animated.div
-            className="relative min-w-[1150px] md:min-w-[1200px] w-[97.5%] h-[67px] m-auto border-x-[1px] border-y-[1px] rounded-[15px] dark:text-forest-50  text-forest-1000 border-forest-400 dark:border-forest-800  dark:bg-forest-1000 mt-8 overflow-hidden"
+            className="relative min-w-[950px] md:min-w-[900px] w-[20%] md:w-[97.5%] h-[67px] m-auto border-x-[1px] border-y-[1px] rounded-[15px] dark:text-forest-50  text-forest-1000 border-forest-400 dark:border-forest-800  dark:bg-forest-1000 mt-8 overflow-hidden"
             style={{ ...categoryAnimation }}
           >
             {!openSub ? (
@@ -1253,7 +1253,7 @@ export default function CategoryMetrics({
                                 ? "w-[500px]"
                                 : "w-[400px]"
                             }`
-                          : "h-full w-full min-w-[60px] hover:max-w-[180px]"
+                          : "h-full w-full min-w-[40px] hover:max-w-[180px]"
                       }
 
 
@@ -1319,7 +1319,7 @@ export default function CategoryMetrics({
                                   ? "w-[500px]"
                                   : "w-[400px]"
                               }`
-                            : "hover:bg-white/5 w-full min-w-[60px] hover:max-w-[180px] "
+                            : "hover:bg-white/5 w-full min-w-[40px] hover:max-w-[180px] "
                         }`}
                         onClick={() => {
                           if (selectedCategory === item.category) {
@@ -1535,9 +1535,9 @@ export default function CategoryMetrics({
       </Container>
 
       <Container>
-        <div className="flex flex-col justify-between lg:flex-row w-[95%] mx-auto  mt-[20px] lg:mt-[30px]">
-          <div className="w-full lg:w-[44%]  flex flex-col justify-between">
-            <div className="flex flex-col mt-4 relative">
+        <div className="flex flex-col justify-between lg:flex-row w-[98.5%] gap-y-8 mx-auto mt-[20px] lg:mt-[30px]">
+          <div className="w-full lg:w-[44%] flex flex-col justify-between ">
+            <div className="flex flex-col mt-4  relative">
               {sortedChainValues &&
                 transitions((style, item) => (
                   <animated.div
@@ -1579,7 +1579,7 @@ export default function CategoryMetrics({
               />
             )}
           </div>
-          <div className="flex flex-wrap items-center w-[100%] gap-y-2 lg:hidden">
+          <div className="flex flex-wrap items-center w-[100%] gap-y-2 lg:hidden mt-4">
             <div className="font-bold text-sm pr-2 pl-2">
               {formatSubcategories(selectedCategory)}:{" "}
             </div>
@@ -1595,9 +1595,9 @@ export default function CategoryMetrics({
               ))}
           </div>
         </div>
-        <Container>
+        <div>
           {" "}
-          <div className="flex flex-wrap items-center w-[87%] gap-y-2 invisible lg:visible ">
+          <div className="flex flex-wrap items-center w-[98.5%] mx-auto gap-y-2 invisible lg:visible ">
             <div className="font-bold text-sm pr-2 pl-2">
               {formatSubcategories(selectedCategory)}:{" "}
             </div>
@@ -1612,8 +1612,8 @@ export default function CategoryMetrics({
                 </div>
               ))}
           </div>{" "}
-        </Container>
-        <div className="flex flex-col md:flex-row w-[98%] mx-auto items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
+        </div>
+        <div className="flex flex-col md:flex-row w-[99%] mx-auto items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
           {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
           {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
           {/* toggle ETH */}

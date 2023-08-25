@@ -23,7 +23,7 @@ const CategoryComparison = () => {
   );
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
-    "7d",
+    "max",
   );
 
   return (
