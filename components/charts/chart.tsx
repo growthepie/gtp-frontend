@@ -16,6 +16,7 @@ import {
   getXAxisLabels,
   decimalToPercent,
   tooltipFormatter,
+  formatNumber,
 } from "@/lib/chartUtils";
 import ChartWatermark from "../layout/ChartWatermark";
 import { Icon } from "@iconify/react";
@@ -24,14 +25,19 @@ import { debounce } from "lodash";
 
 export const Chart = ({
   // data,
+  chartType,
+  stack = false,
   types,
   timespan,
   series,
   yScale = "linear",
   chartHeight,
   chartWidth,
+  decimals = 2,
 }: {
   // data: { [chain: string]: number[][] };
+  chartType: "area" | "line";
+  stack?: boolean;
   types: string[];
   timespan: string;
   series: {
@@ -44,12 +50,16 @@ export const Chart = ({
   yScale?: "linear" | "logarithmic" | "percentage";
   chartHeight: string;
   chartWidth: string;
+  decimals?: number;
 }) => {
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
   const timespans = useMemo(
-    () => getTimespans(Object.values(series)[0].data),
+    () =>
+      series.length > 0
+        ? getTimespans(Object.values(series)[0].data)
+        : getTimespans(null),
     [series],
   );
   const tickPositions = useMemo(
@@ -59,7 +69,7 @@ export const Chart = ({
         timespans.max.xMax,
         timespan === "max",
       ),
-    [series, timespan, timespans.max.xMax, timespans.max.xMin],
+    [timespan, timespans.max.xMax, timespans.max.xMin],
   );
 
   const { theme } = useTheme();
@@ -81,50 +91,197 @@ export const Chart = ({
       const currentSeries = chartComponent.current.series;
 
       // remove all series
-      for (var i = chartComponent.current.series.length - 1; i >= 0; i--) {
-        chartComponent.current.series[i].remove(false);
-      }
+      // for (var i = chartComponent.current.series.length - 1; i >= 0; i--) {
+      //   chartComponent.current.series[i].remove(false);
+      // }
+
+      const seriesToRemove = currentSeries.filter(
+        (cs) => !series.find((s) => s.name === cs.name),
+      );
+
+      seriesToRemove.forEach((s) => {
+        s.remove(false);
+      });
 
       // add new series
       series.forEach((s) => {
-        chartComponent.current?.addSeries(
-          {
-            name: s.name,
-            data: s.data.map((d) => [
-              d[types.indexOf(s.unixKey)],
-              d[types.indexOf(s.dataKey)],
-            ]),
-            type: "area",
-            borderColor: "transparent",
-            shadow: {
-              color: "#CDD8D3" + "FF",
-              offsetX: 0,
-              offsetY: 0,
-              width: 2,
-            },
-            color: {
-              linearGradient: {
-                x1: 0,
-                y1: 0,
-                x2: 0,
-                y2: 1,
-              },
-              stops: [
-                [0, AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] + "FF"],
-                [
-                  0.349,
-                  AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] + "88",
+        if (currentSeries && currentSeries.find((cs) => cs.name === s.name)) {
+          const seriesToUpdate = currentSeries.find((cs) => cs.name === s.name);
+
+          seriesToUpdate &&
+            seriesToUpdate.setData(
+              s.data.map((d) => [
+                d[types.indexOf(s.unixKey)],
+                d[types.indexOf(s.dataKey)],
+              ]),
+              false,
+            );
+        } else {
+          chartComponent.current?.addSeries(
+            {
+              name: s.name,
+              data: s.data.map((d) => [
+                d[types.indexOf(s.unixKey)],
+                d[types.indexOf(s.dataKey)],
+              ]),
+              type: chartType,
+              clip: true,
+              fillOpacity: 1,
+              fillColor: {
+                linearGradient: {
+                  x1: 0,
+                  y1: 0,
+                  x2: 0,
+                  y2: 1,
+                },
+                stops: [
+                  [
+                    0,
+                    AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] + "33",
+                  ],
+                  [
+                    1,
+                    AllChainsByKeys[s.name]?.colors[theme ?? "dark"][1] + "33",
+                  ],
                 ],
-                [1, AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] + "00"],
-              ],
+              },
+              borderColor: AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0],
+              borderWidth: 1,
+              lineWidth: 2,
+              ...// @ts-ignore
+              (chartType !== "column"
+                ? {
+                    shadow: {
+                      color:
+                        AllChainsByKeys[s.name]?.colors[theme ?? "dark"][1] +
+                        "33",
+                      width: 10,
+                    },
+                    color: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 1,
+                        y2: 0,
+                      },
+                      stops: [
+                        [
+                          0,
+                          AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0],
+                        ],
+                        // [0.33, AllChainsByKeys[series.name].colors[1]],
+                        [
+                          1,
+                          AllChainsByKeys[s.name]?.colors[theme ?? "dark"][1],
+                        ],
+                      ],
+                    },
+                  }
+                : s.name === "all_l2s"
+                ? {
+                    borderColor: "transparent",
+
+                    shadow: {
+                      color: "#CDD8D3" + "FF",
+                      // color:
+                      //   AllChainsByKeys[series.name].colors[theme][1] + "33",
+                      // width: 10,
+                      offsetX: 0,
+                      offsetY: 0,
+                      width: 2,
+                    },
+                    color: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 0,
+                        y2: 1,
+                      },
+                      stops:
+                        theme === "dark"
+                          ? [
+                              [
+                                0,
+                                AllChainsByKeys[s.name]?.colors[
+                                  theme ?? "dark"
+                                ][0] + "E6",
+                              ],
+                              // [
+                              //   0.3,
+                              //   //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
+                              //   AllChainsByKeys[series.name].colors[theme][0] +
+                              //     "FF",
+                              // ],
+                              [
+                                1,
+                                AllChainsByKeys[s.name]?.colors[
+                                  theme ?? "dark"
+                                ][1] + "E6",
+                              ],
+                            ]
+                          : [
+                              [
+                                0,
+                                AllChainsByKeys[s.name]?.colors[
+                                  theme ?? "dark"
+                                ][0] + "E6",
+                              ],
+                              // [
+                              //   0.7,
+                              //   AllChainsByKeys[series.name].colors[theme][0] +
+                              //     "88",
+                              // ],
+                              [
+                                1,
+                                AllChainsByKeys[s.name]?.colors[
+                                  theme ?? "dark"
+                                ][1] + "E6",
+                              ],
+                            ],
+                    },
+                  }
+                : {
+                    borderColor: "transparent",
+                    shadow: {
+                      color: "#CDD8D3" + "FF",
+                      offsetX: 0,
+                      offsetY: 0,
+                      width: 2,
+                    },
+                    color: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 0,
+                        y2: 1,
+                      },
+                      stops: [
+                        [
+                          0,
+                          AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] +
+                            "FF",
+                        ],
+                        [
+                          0.349,
+                          AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] +
+                            "88",
+                        ],
+                        [
+                          1,
+                          AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] +
+                            "00",
+                        ],
+                      ],
+                    },
+                  }),
             },
-          },
-          false,
-        );
+            false,
+          );
+        }
       });
       chartComponent.current?.redraw();
     }
-  }, [chartComponent, series, theme, types]);
+  }, [chartType, series, theme, types]);
 
   useEffect(() => {
     drawChartSeries();
@@ -157,12 +314,12 @@ export const Chart = ({
           // chart.reflow();
         })
         .then(() => {
-          delay(50).then(
+          delay(100).then(
             () => chartComponent.current && chartComponent.current.reflow(),
           );
         })
         .then(() => {
-          delay(50).then(() => chartComponent.current && resetXAxisExtremes());
+          delay(150).then(() => chartComponent.current && resetXAxisExtremes());
         });
     }
   }, 150);
@@ -178,11 +335,12 @@ export const Chart = ({
 
   return (
     <>
-      {Object.values(series)[0].data.length > 0 &&
-      timespans &&
-      highchartsLoaded ? (
-        <div className="w-full py-4 rounded-xl">
-          {/* <div>{JSON.stringify(timespans[timespan])}</div>
+      {
+        // series.length > 0 &&
+        // Object.values(series)[0].data.length > 0 &&
+        timespans && highchartsLoaded ? (
+          <div className="w-full py-4 rounded-xl">
+            {/* <div>{JSON.stringify(timespans[timespan])}</div>
           <div>
             {JSON.stringify(
               Object.keys(data).map((chain) => ({
@@ -194,98 +352,143 @@ export const Chart = ({
               })),
             )}
           </div> */}
-          <div
-            className="relative"
-            style={{ height: chartHeight, width: chartWidth }}
-          >
             <div
-              className="absolute top-0"
-              style={{
-                height: chartHeight,
-                width: chartWidth,
-              }}
+              className="relative"
+              style={{ height: chartHeight, width: chartWidth }}
             >
-              <HighchartsReact
-                highcharts={Highcharts}
-                options={{
-                  ...baseOptions,
-                  chart: {
-                    ...baseOptions.chart,
-                    height: parseFloat(chartHeight),
-                    events: {
-                      load: function () {
-                        chartComponent.current = this;
-                        drawChartSeries();
+              <div
+                className="absolute top-0"
+                style={{
+                  height: chartHeight,
+                  width: chartWidth,
+                }}
+              >
+                <HighchartsReact
+                  highcharts={Highcharts}
+                  options={{
+                    ...baseOptions,
+                    chart: {
+                      ...baseOptions.chart,
+                      type: chartType,
+                      height: parseFloat(chartHeight),
+                      events: {
+                        load: function () {
+                          chartComponent.current = this;
+                          drawChartSeries();
+                        },
                       },
                     },
-                  },
-                  tooltip: {
-                    ...baseOptions.tooltip,
-                    formatter:
-                      yScale === "percentage"
-                        ? tooltipFormatter(true, true, decimalToPercent)
-                        : tooltipFormatter(true, false, (x) => {
-                            return x.toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            });
-                          }),
-                  },
-                  xAxis: {
-                    ...baseOptions.xAxis,
-                    min: timespans[timespan].xMin,
-                    max: timespans[timespan].xMax,
-                    minorTicks: true,
-                    minorTickLength: 2,
-                    minorTickWidth: 2,
-                    minorGridLineWidth: 0,
-                    minorTickInterval: ["7d", "30d"].includes(timespan)
-                      ? 1000 * 60 * 60 * 24 * 1
-                      : 1000 * 60 * 60 * 24 * 7,
-                    tickPositions: tickPositions,
-                    labels: getXAxisLabels(),
-                  },
-                  yAxis: {
-                    ...baseOptions.yAxis,
-                    type: yScale,
-                    min: yScale === "percentage" ? 0 : undefined,
-                    max: yScale === "percentage" ? 1 : undefined,
-                    gridLineColor:
-                      theme === "dark"
-                        ? "rgba(215, 223, 222, 0.11)"
-                        : "rgba(41, 51, 50, 0.11)",
-                    labels: {
-                      formatter: function (
-                        this: AxisLabelsFormatterContextObject,
-                      ) {
-                        const { value } = this;
-                        if (yScale === "percentage") {
-                          return decimalToPercent(value);
-                        } else {
-                          return value;
-                        }
+                    plotOptions: {
+                      ...baseOptions.plotOptions,
+                      line: {
+                        stacking: undefined,
+                      },
+                      area: {
+                        ...baseOptions.plotOptions.area,
+                        stacking: stack ? "normal" : undefined,
                       },
                     },
-                  },
-                }}
-                constructorType={"stockChart"}
-                ref={(chart) => {
-                  chartComponent.current = chart?.chart;
-                }}
+                    tooltip: {
+                      ...baseOptions.tooltip,
+                      formatter:
+                        yScale === "percentage"
+                          ? tooltipFormatter(true, true, decimalToPercent)
+                          : tooltipFormatter(
+                              true,
+                              false,
+                              (x) => {
+                                return parseFloat(x).toFixed(decimals);
+                              },
+                              series.length > 0 ? series[0].dataKey : undefined,
+                            ),
+                    },
+                    xAxis: {
+                      ...baseOptions.xAxis,
+                      min: timespans[timespan].xMin,
+                      max: timespans[timespan].xMax,
+                      minorTicks: true,
+                      minorTickLength: 2,
+                      minorTickWidth: 2,
+                      minorGridLineWidth: 0,
+                      minorTickInterval: ["7d", "30d"].includes(timespan)
+                        ? 1000 * 60 * 60 * 24 * 1
+                        : 1000 * 60 * 60 * 24 * 7,
+                      tickPositions: tickPositions,
+                      labels: getXAxisLabels(),
+                    },
+                    yAxis: {
+                      ...baseOptions.yAxis,
+                      type: yScale,
+                      min: yScale === "percentage" ? 0 : undefined,
+                      max: yScale === "percentage" ? undefined : undefined,
+                      gridLineColor:
+                        theme === "dark"
+                          ? "rgba(215, 223, 222, 0.11)"
+                          : "rgba(41, 51, 50, 0.11)",
+                      labels: {
+                        ...baseOptions.yAxis.labels,
+                        formatter: function (
+                          t: Highcharts.AxisLabelsFormatterContextObject,
+                        ) {
+                          const isPercentage = yScale === "percentage";
+                          let prefix = "";
+                          let suffix = "";
+
+                          if (isPercentage) {
+                            prefix = "";
+                            suffix = "%";
+                          } else if (series.length > 0) {
+                            if (series[0].dataKey.includes("usd")) {
+                              prefix = "$";
+                              suffix = "";
+                            } else if (
+                              series.length > 0 &&
+                              series[0].dataKey.includes("eth")
+                            ) {
+                              prefix = "";
+                              suffix = "Ξ";
+                            }
+                          }
+
+                          return formatNumber(
+                            t.value,
+                            true,
+                            isPercentage,
+                            prefix,
+                            suffix,
+                          );
+                          // return t.value;
+                        },
+                      },
+                    },
+                  }}
+                  constructorType={"stockChart"}
+                  ref={(chart) => {
+                    chartComponent.current = chart?.chart;
+                  }}
+                />
+              </div>
+              <div className="absolute bottom-[47.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50 mix-blend-lighten">
+                <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px]" />
+              </div>
+            </div>
+            {series.length === 0 && (
+              <div className="absolute top-[calc(50%+1.5rem)] left-[0px] text-xs font-medium flex justify-center w-full text-forest-500/60">
+                No chain(s) selected for comparison. Please select at least one.
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="w-full h-[26rem] my-4 flex justify-center items-center">
+            <div className="w-10 h-10 animate-spin">
+              <Icon
+                icon="feather:loader"
+                className="w-10 h-10 text-forest-500"
               />
             </div>
-            <div className="absolute bottom-[47.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50 mix-blend-lighten">
-              <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px]" />
-            </div>
           </div>
-        </div>
-      ) : (
-        <div className="w-full h-[26rem] my-4 flex justify-center items-center">
-          <div className="w-10 h-10 animate-spin">
-            <Icon icon="feather:loader" className="w-10 h-10 text-forest-500" />
-          </div>
-        </div>
-      )}
+        )
+      }
     </>
   );
 };

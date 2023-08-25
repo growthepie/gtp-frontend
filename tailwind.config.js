@@ -24,6 +24,12 @@ module.exports = {
         height: "height",
         width: "width",
       },
+      screens: {
+        cxl: "1100px",
+        exl: "1330px",
+        mdl: "1000px",
+        xs: "480px",
+      },
       colors: {
         ethereum: {
           DEFAULT: "#099FD4",

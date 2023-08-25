@@ -19,6 +19,10 @@ import { useHover } from "usehooks-ts";
 import { Chart } from "../charts/chart";
 import Container from "./Container";
 import Colors from "tailwindcss/colors";
+import { LandingURL, MasterURL } from "@/lib/urls";
+import useSWR from "swr";
+import { MasterResponse } from "@/types/api/MasterResponse";
+import { useLocalStorage } from "usehooks-ts";
 
 const DisabledStates: {
   [mode: string]: {
@@ -28,12 +32,53 @@ const DisabledStates: {
     };
   };
 } = {
-  gas_fees_share: {
+  gas_fees_share_eth: {
     imx: {
       text: "No Gas Fees",
       reason: "IMX does not charge Gas Fees",
     },
   },
+  gas_fees_share_usd: {
+    imx: {
+      text: "No Gas Fees",
+      reason: "IMX does not charge Gas Fees",
+    },
+  },
+  gas_fees_usd_absolute: {
+    imx: {
+      text: "No Gas Fees",
+      reason: "IMX does not charge Gas Fees",
+    },
+  },
+  gas_fees_eth_absolute: {
+    imx: {
+      text: "No Gas Fees",
+      reason: "IMX does not charge Gas Fees",
+    },
+  },
+};
+
+type ContractInfo = {
+  address: string;
+  project_name: string;
+  name: string;
+  main_category_key: string;
+  sub_category_key: string;
+  chain: string;
+  gas_fees_absolute_eth: number;
+  gas_fees_absolute_usd: number;
+  gas_fees_share: number;
+  txcount_absolute: number;
+  txcount_share: number;
+};
+
+const ContractUrls = {
+  arbitrum: "https://arbiscan.io/address/",
+  optimism: "https://optimistic.etherscan.io/address/",
+  zksync_era: "https://explorer.zksync.io/address/",
+  polygon_zkevm: "https://zkevm.polygonscan.com/address/",
+  imx: "https://immutascan.io/address/",
+  base: "https://basescan.org/address/",
 };
 
 export default function OverviewMetrics({
@@ -49,38 +94,246 @@ export default function OverviewMetrics({
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
 }) {
-  const [selectedMode, setSelectedMode] = useState("txcount_share");
+  const {
+    data: master,
+    error: masterError,
+    isLoading: masterLoading,
+    isValidating: masterValidating,
+  } = useSWR<MasterResponse>(MasterURL);
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const [selectedMode, setSelectedMode] = useState("gas_fees_share_usd");
   const [isCategoryMenuExpanded, setIsCategoryMenuExpanded] = useState(true);
+  const [contractCategory, setContractCategory] = useState("value");
+  const [sortOrder, setSortOrder] = useState(true);
 
-  const categories = useMemo<{ [key: string]: string }>(() => {
-    return {
-      // chains: "Chains",
-      native_transfers: "Native Transfer",
-      token_transfers: "Token Transfer",
-      nft_fi: "NFT",
-      defi: "DeFi",
-      cefi: "CeFi",
-      utility: "Utility",
-      scaling: "Scaling",
-      gaming: "Gaming",
-      unlabeled: "?",
-    };
-  }, []);
+  const [showMore, setShowMore] = useState(false);
+  const [maxDisplayedContracts, setMaxDisplayedContracts] = useState(10);
+  const [contractHover, setContractHover] = useState({});
+  const [selectedValue, setSelectedValue] = useState("share");
+  // const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
+  //   {},
+  // );
+
+  const [sortedContracts, setSortedContracts] = useState<{
+    [key: string]: ContractInfo;
+  }>({});
+
+  const categories: { [key: string]: string } = useMemo(() => {
+    if (master) {
+      const result: { [key: string]: string } = {};
+
+      const categoryKeys = Object.keys(
+        master.blockspace_categories.main_categories,
+      );
+
+      // Remove "unlabeled" if present and store it for later
+      const unlabeledIndex = categoryKeys.indexOf("unlabeled");
+      let unlabeledCategory = "";
+      if (unlabeledIndex !== -1) {
+        unlabeledCategory = categoryKeys.splice(unlabeledIndex, 1)[0];
+      }
+
+      categoryKeys.forEach((key) => {
+        const words =
+          master.blockspace_categories.main_categories[key].split(" ");
+        const formatted = words
+          .map((word) => {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+          })
+          .join(" ");
+        result[key] = formatted;
+      });
+
+      // Add "unlabeled" to the end if it was present
+      if (unlabeledCategory) {
+        const words =
+          master.blockspace_categories.main_categories[unlabeledCategory].split(
+            " ",
+          );
+        const formatted = words
+          .map((word) => {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+          })
+          .join(" ");
+        result[unlabeledCategory] = formatted;
+      }
+
+      return result;
+    }
+
+    return {};
+  }, [master]);
 
   const [isCategoryHovered, setIsCategoryHovered] = useState<{
     [key: string]: boolean;
-  }>({
-    native_transfers: false,
-    token_transfers: false,
-    nft_fi: false,
-    defi: false,
-    cefi: false,
-    utility: false,
-    scaling: false,
-    gaming: false,
+  }>(() => {
+    if (master) {
+      const initialIsCategoryHovered: { [key: string]: boolean } = {};
+      Object.keys(master.blockspace_categories.main_categories).forEach(
+        (key) => {
+          if (key !== "cross_chain") {
+            initialIsCategoryHovered[key] = false;
+          }
+        },
+      );
+      return initialIsCategoryHovered;
+    }
+
+    return {
+      native_transfers: false,
+      token_transfers: false,
+      nft_fi: false,
+      defi: false,
+      cefi: false,
+      utility: false,
+      scaling: false,
+      gaming: false,
+    };
   });
 
-  const [selectedCategory, setSelectedCategory] = useState("native_transfers");
+  const [selectedCategory, setSelectedCategory] = useState("nft");
+
+  // useEffect(() => {
+  //   // Process the data and create the contracts object
+  //   const result: { [key: string]: ContractInfo } = {};
+
+  //   for (const category of Object.keys(data)) {
+  //     if (data) {
+  //       const contractsData =
+  //         data.all_l2s["overview"][selectedTimespan][selectedCategory].contracts
+  //           .data;
+  //       const types =
+  //         data.all_l2s["overview"][selectedTimespan][selectedCategory].contracts
+  //           .types;
+
+  //       for (const contract of Object.keys(contractsData)) {
+  //         const dataArray = contractsData[contract];
+  //         const key = dataArray[0] + dataArray[4];
+  //         const values = dataArray;
+
+  //         // Check if the key already exists in the result object
+  //         if (result.hasOwnProperty(key)) {
+  //           // If the key exists, update the values
+  //           result[key] = {
+  //             ...result[key],
+  //             address: values[types.indexOf("address")],
+  //             project_name: values[types.indexOf("project_name")],
+  //             name: values[types.indexOf("name")],
+  //             main_category_key: values[types.indexOf("main_category_key")],
+  //             sub_category_key: values[types.indexOf("sub_category_key")],
+  //             chain: values[types.indexOf("chain")],
+  //             gas_fees_absolute_eth:
+  //               values[types.indexOf("gas_fees_absolute_eth")],
+  //             gas_fees_absolute_usd:
+  //               values[types.indexOf("gas_fees_absolute_usd")],
+  //             gas_fees_share: values[types.indexOf("gas_fees_share")] ?? "",
+  //             txcount_absolute: values[types.indexOf("txcount_absolute")],
+  //             txcount_share: values[types.indexOf("txcount_share")] ?? "",
+  //           };
+  //         } else {
+  //           // If the key doesn't exist, create a new entry
+  //           result[key] = {
+  //             address: values[types.indexOf("address")],
+  //             project_name: values[types.indexOf("project_name")],
+  //             name: values[types.indexOf("name")],
+  //             main_category_key: values[types.indexOf("main_category_key")],
+  //             sub_category_key: values[types.indexOf("sub_category_key")],
+  //             chain: values[types.indexOf("chain")],
+  //             gas_fees_absolute_eth:
+  //               values[types.indexOf("gas_fees_absolute_eth")],
+  //             gas_fees_absolute_usd:
+  //               values[types.indexOf("gas_fees_absolute_usd")],
+  //             gas_fees_share: values[types.indexOf("gas_fees_share")] ?? "",
+  //             txcount_absolute: values[types.indexOf("txcount_absolute")],
+  //             txcount_share: values[types.indexOf("txcount_share")] ?? "",
+  //           };
+  //         }
+  //       }
+  //     }
+  //   }
+
+  //   // Update the contracts state with the new data
+  //   setContracts(result);
+  // }, [data, selectedCategory, selectedTimespan]);
+
+  const formatSubcategories = useCallback(
+    (str: string) => {
+      const masterStr =
+        master && master.blockspace_categories.sub_categories[str]
+          ? master.blockspace_categories.sub_categories[str]
+          : str;
+
+      const title = masterStr.replace(/_/g, " ");
+      const words = title.split(" ");
+      const formatted = words.map((word) => {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      });
+
+      return formatted.join(" ");
+    },
+    [master],
+  );
+
+  const contracts = useMemo<{ [key: string]: ContractInfo }>(() => {
+    const result: { [key: string]: ContractInfo } = {};
+    for (const category of Object.keys(data)) {
+      if (data) {
+        const contractsData =
+          data.all_l2s["overview"][selectedTimespan][selectedCategory].contracts
+            .data;
+        const types =
+          data.all_l2s["overview"][selectedTimespan][selectedCategory].contracts
+            .types;
+
+        for (const contract of Object.keys(contractsData)) {
+          const dataArray = contractsData[contract];
+          const key = dataArray[0] + dataArray[4];
+          const values = dataArray;
+
+          // Check if the key already exists in the result object
+          if (result.hasOwnProperty(key)) {
+            // If the key exists, update the values
+            result[key] = {
+              ...result[key],
+              address: values[types.indexOf("address")],
+              project_name: values[types.indexOf("project_name")],
+              name: values[types.indexOf("name")],
+              main_category_key: values[types.indexOf("main_category_key")],
+              sub_category_key: values[types.indexOf("sub_category_key")],
+              chain: values[types.indexOf("chain")],
+              gas_fees_absolute_eth:
+                values[types.indexOf("gas_fees_absolute_eth")],
+              gas_fees_absolute_usd:
+                values[types.indexOf("gas_fees_absolute_usd")],
+              gas_fees_share: values[types.indexOf("gas_fees_share")] ?? "",
+              txcount_absolute: values[types.indexOf("txcount_absolute")],
+              txcount_share: values[types.indexOf("txcount_share")] ?? "",
+            };
+          } else {
+            // If the key doesn't exist, create a new entry
+            result[key] = {
+              address: values[types.indexOf("address")],
+              project_name: values[types.indexOf("project_name")],
+              name: values[types.indexOf("name")],
+              main_category_key: values[types.indexOf("main_category_key")],
+              sub_category_key: values[types.indexOf("sub_category_key")],
+              chain: values[types.indexOf("chain")],
+              gas_fees_absolute_eth:
+                values[types.indexOf("gas_fees_absolute_eth")],
+              gas_fees_absolute_usd:
+                values[types.indexOf("gas_fees_absolute_usd")],
+              gas_fees_share: values[types.indexOf("gas_fees_share")] ?? "",
+              txcount_absolute: values[types.indexOf("txcount_absolute")],
+              txcount_share: values[types.indexOf("txcount_share")] ?? "",
+            };
+          }
+        }
+      }
+    }
+
+    // Update the contracts state with the new data
+    return result;
+  }, [data, selectedCategory, selectedTimespan]);
 
   const [selectedChain, setSelectedChain] = useState<string | null>(null);
 
@@ -92,19 +345,28 @@ export default function OverviewMetrics({
   );
 
   const relativePercentageByChain = useMemo(() => {
-    return {
-      optimism:
-        100 -
-        (Object.keys(data["optimism"].overview[selectedTimespan]).length - 1) *
-          2,
-      arbitrum:
-        100 -
-        (Object.keys(data["arbitrum"].overview[selectedTimespan]).length - 1) *
-          2,
-      imx:
-        100 -
-        (Object.keys(data["imx"].overview[selectedTimespan]).length - 1) * 2,
-    };
+    return Object.keys(data).reduce((acc, chainKey) => {
+      return {
+        ...acc,
+        [chainKey]:
+          100 -
+          (Object.keys(data[chainKey].overview[selectedTimespan]).length - 1) *
+            2,
+      };
+    }, {});
+    // return {
+    //   optimism:
+    //     100 -
+    //     (Object.keys(data["optimism"].overview[selectedTimespan]).length - 1) *
+    //       2,
+    //   arbitrum:
+    //     100 -
+    //     (Object.keys(data["arbitrum"].overview[selectedTimespan]).length - 1) *
+    //       2,
+    //   imx:
+    //     100 -
+    //     (Object.keys(data["imx"].overview[selectedTimespan]).length - 1) * 2,
+    // };
   }, [data, selectedTimespan]);
 
   const { theme } = useTheme();
@@ -122,36 +384,60 @@ export default function OverviewMetrics({
         xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
       },
-      "90d": {
-        label: "90 days",
-        value: 90,
-      },
-      // "180d": {
-      //   label: "180 days",
-      //   value: 180,
+      // "90d": {
+      //   label: "90 days",
+      //   value: 90,
       // },
-      "365d": {
-        label: "1 year",
-        value: 365,
+      "180d": {
+        label: "180 days",
+        value: 180,
       },
-      // max: {
-      //   label: "Maximum",
-      //   value: 0,
+      // "365d": {
+      //   label: "1 year",
+      //   value: 365,
       // },
+      max: {
+        label: "Maximum",
+        value: 0,
+      },
     };
   }, []);
 
   const chartSeries = useMemo(() => {
-    if (selectedChain)
+    const dataKey = selectedMode;
+    if (selectedChain) {
+      //   id: [selectedChain, selectedCategory, selectedMode].join("_"),
+      //   name: selectedChain,
+      //   unixKey: "unix",
+      //   dataKey: dataKey,
+      //   data: data[selectedChain].daily[selectedCategory].data.length,
+      // });
       return [
         {
           id: [selectedChain, selectedCategory, selectedMode].join("_"),
           name: selectedChain,
           unixKey: "unix",
-          dataKey: selectedMode,
+          dataKey: dataKey,
           data: data[selectedChain].daily[selectedCategory].data,
         },
       ];
+    }
+
+    // return Object.keys(data)
+    //   .filter(
+    //     (chainKey) =>
+    //       chainKey !== "all_l2s" &&
+    //       data[chainKey].daily[selectedCategory].data.length > 0,
+    //   )
+    //   .map((chainKey) => {
+    //     return {
+    //       id: [chainKey, selectedCategory, selectedMode].join("_"),
+    //       name: chainKey,
+    //       unixKey: "unix",
+    //       dataKey: dataKey,
+    //       data: data[chainKey].daily[selectedCategory].data,
+    //     };
+    //   });
     return [
       {
         id: ["all_l2s", selectedCategory, selectedMode].join("_"),
@@ -161,10 +447,182 @@ export default function OverviewMetrics({
         data: data.all_l2s.daily[selectedCategory].data,
       },
     ];
-  }, [selectedChain, selectedCategory, selectedMode, data]);
+  }, [selectedMode, selectedChain, data, selectedCategory]);
 
-  console.log(data["optimism"].overview.types.indexOf("gas_fees_share"));
-  console.log(relativePercentage);
+  useEffect(() => {
+    if (selectedMode.includes("gas_fees_share")) {
+      setSelectedMode(showUsd ? "gas_fees_share_usd" : "gas_fees_share_eth");
+    }
+  }, [selectedMode, showUsd]);
+
+  // console.log(data["optimism"].overview.types.indexOf("gas_fees_share"));
+  // console.log(relativePercentage);
+  useEffect(() => {
+    if (!contracts) {
+      return;
+    }
+
+    const filteredContracts = Object.entries(contracts)
+      .filter(([key, contract]) => {
+        const isAllChainsSelected = selectedChain === null;
+        const isChainSelected =
+          isAllChainsSelected || contract.chain === selectedChain;
+        const isCategoryMatched =
+          contract.main_category_key === selectedCategory;
+
+        return isChainSelected && isCategoryMatched;
+      })
+      .reduce((filtered, [key, contract]) => {
+        filtered[key] = contract;
+        return filtered;
+      }, {});
+
+    const sortFunction = (a, b) => {
+      const valueA = selectedMode.includes("gas_fees_")
+        ? showUsd
+          ? filteredContracts[a]?.gas_fees_absolute_usd
+          : filteredContracts[a]?.gas_fees_absolute_eth
+        : filteredContracts[a]?.txcount_absolute;
+
+      const valueB = selectedMode.includes("gas_fees_")
+        ? showUsd
+          ? filteredContracts[b]?.gas_fees_absolute_usd
+          : filteredContracts[b]?.gas_fees_absolute_eth
+        : filteredContracts[b]?.txcount_absolute;
+
+      // Compare the values
+      return valueA - valueB;
+    };
+
+    const sortedResult = Object.keys(filteredContracts).sort((a, b) => {
+      if (contractCategory === "contract") {
+        return (
+          filteredContracts[a]?.name || filteredContracts[a]?.address
+        ).localeCompare(
+          filteredContracts[b]?.name || filteredContracts[b]?.address,
+        );
+      } else if (contractCategory === "category") {
+        return filteredContracts[a]?.main_category_key.localeCompare(
+          filteredContracts[b]?.main_category_key,
+        );
+      } else if (
+        contractCategory === "subcategory" &&
+        selectedCategory !== "unlabeled"
+      ) {
+        return filteredContracts[a]?.sub_category_key.localeCompare(
+          filteredContracts[b]?.sub_category_key,
+        );
+      } else if (contractCategory === "chain") {
+        return filteredContracts[a]?.chain.localeCompare(
+          filteredContracts[b]?.chain,
+        );
+      } else if (contractCategory === "value" || contractCategory === "share") {
+        return sortFunction(a, b);
+      }
+    });
+
+    const sortedContractsObj = sortedResult.reduce((acc, key) => {
+      acc[key] = filteredContracts[key];
+      return acc;
+    }, {});
+
+    if (
+      selectedCategory === "unlabeled" &&
+      (contractCategory === "category" || contractCategory === "subcategory")
+    ) {
+      setSortedContracts(sortedContractsObj);
+    } else {
+      setSortedContracts(sortedContractsObj);
+    }
+  }, [
+    contractCategory,
+    contracts,
+    selectedCategory,
+    selectedChain,
+    selectedMode,
+    showUsd,
+  ]);
+
+  const largestContractValue = useMemo(() => {
+    let retValue = 0;
+    for (const contract of Object.values(sortedContracts)) {
+      const value = selectedMode.includes("gas_fees_")
+        ? showUsd
+          ? contract.gas_fees_absolute_usd
+          : contract.gas_fees_absolute_eth
+        : contract.txcount_absolute;
+
+      retValue = Math.max(retValue, value);
+    }
+
+    return retValue;
+  }, [selectedMode, sortedContracts, showUsd]);
+
+  const sumChainValue = useMemo(() => {
+    const chainValues = {};
+
+    Object.keys(data).forEach((chainKey) => {
+      let sumValue = 0;
+
+      // Iterate over each category for the current chain
+      Object.keys(data[chainKey].overview[selectedTimespan]).forEach(
+        (category) => {
+          const categoryData =
+            data[chainKey].overview[selectedTimespan][category].data;
+
+          // Check if category data exists and index is valid
+          if (
+            categoryData &&
+            data[chainKey].overview["types"].indexOf(selectedMode) !== -1
+          ) {
+            const dataIndex =
+              data[chainKey].overview["types"].indexOf(selectedMode);
+            const categoryValue = categoryData[dataIndex];
+            sumValue += categoryValue; // Add to the sum
+          }
+        },
+      );
+
+      // Store the sum of values for the chain
+      chainValues[chainKey] = sumValue;
+    });
+
+    return chainValues;
+  }, [data, selectedTimespan, selectedMode]);
+
+  console.log(sumChainValue);
+
+  // Usage: largestChainValue["optimism"] will give you the largest value for the "optimism" chain
+
+  function getWidth(x) {
+    let retValue = "0%";
+
+    if (selectedMode.includes("gas_fees")) {
+      if (showUsd) {
+        retValue =
+          String(
+            (
+              (x.gas_fees_absolute_usd.toFixed(2) / largestContractValue) *
+              100
+            ).toFixed(1),
+          ) + "%";
+      } else {
+        retValue =
+          String(
+            (
+              (x.gas_fees_absolute_eth.toFixed(2) / largestContractValue) *
+              100
+            ).toFixed(1),
+          ) + "%";
+      }
+    } else {
+      retValue =
+        String(((x.txcount_absolute / largestContractValue) * 100).toFixed(1)) +
+        "%";
+    }
+
+    return retValue;
+  }
 
   const getBarSectionStyle = useCallback(
     (
@@ -179,16 +637,19 @@ export default function OverviewMetrics({
 
       const categoriesKey = Object.keys(categories).indexOf(categoryKey);
       const dataKeys = Object.keys(data[chainKey].overview[selectedTimespan]);
-      const dataKeysInterectCategoriesKeys = Object.keys(categories).filter(
+      const dataKeysIntersectCategoriesKeys = Object.keys(categories).filter(
         (key) => dataKeys.includes(key),
       );
-      const dataIndex = dataKeysInterectCategoriesKeys.indexOf(categoryKey);
+      const dataIndex = dataKeysIntersectCategoriesKeys.indexOf(categoryKey);
 
       const categoryData =
-        data[chainKey].overview[selectedTimespan][categoryKey];
+        data[chainKey].overview[selectedTimespan][categoryKey]["data"];
 
-      const isLastCategory =
-        dataIndex === dataKeysInterectCategoriesKeys.length - 1;
+      // const isLastCategory =
+      //   dataIndex === dataKeysIntersectCategoriesKeys.length - 1;
+
+      const isLastCategory = categoryKey === "unlabeled";
+      const isFirstCategory = categoryKey === "nft_fi";
 
       const dataTypes = data[chainKey].overview.types;
 
@@ -197,8 +658,63 @@ export default function OverviewMetrics({
       const isSelectedChainOrNoSelectedChain =
         selectedChain === chainKey || !selectedChain;
 
+      // default transition
       style.transition = "all 0.165s ease-in-out";
 
+      if (isFirstCategory) style.transformOrigin = "left center";
+      else if (isLastCategory) style.transformOrigin = "right center";
+
+      if (isLastCategory)
+        style.borderRadius = "20000px 99999px 99999px 20000px";
+
+      if (!categoryData) {
+        if (
+          (isSelectedCategory && isSelectedChainOrNoSelectedChain) ||
+          isCategoryHovered[categoryKey]
+        ) {
+          if (isSelectedCategory && isSelectedChainOrNoSelectedChain) {
+            style.backgroundColor = "rgba(255,255,255, 0.88)";
+            style.color = "rgba(0, 0, 0, 0.66)";
+            // style.marginRight = "-5px";
+          } else {
+            style.backgroundColor = "rgba(255,255,255, 0.6)";
+            style.color = "rgba(0, 0, 0, 0.33)";
+          }
+          if (isLastCategory) {
+            style.borderRadius = "25% 125% 125% 25%";
+          } else {
+            style.borderRadius = "5px";
+          }
+          style.transform =
+            isCategoryHovered[categoryKey] && !isSelectedCategory
+              ? "scale(1.2)"
+              : isSelectedChainOrNoSelectedChain
+              ? "scale(1.30)"
+              : "scale(1.2)";
+
+          if (isLastCategory && isSelectedChainOrNoSelectedChain)
+            style.transform += " translateX(3px)";
+          style.zIndex = isCategoryHovered[categoryKey] ? 2 : 5;
+        } else {
+          style.backgroundColor = "rgba(255,255,255, 0.60)";
+          if (isLastCategory) {
+            style.borderRadius = "20000px 9999999px 9999999px 20000px";
+            style.paddingRight = "30px";
+          } else {
+            style.borderRadius = "2px";
+          }
+        }
+        style.paddingTop = "0px";
+        style.paddingBottom = "0px";
+        style.width =
+          isCategoryHovered[categoryKey] || selectedCategory === categoryKey
+            ? "45px"
+            : "10px";
+
+        style.margin = "0px 1px";
+
+        return style;
+      }
       if (
         (isSelectedCategory && isSelectedChainOrNoSelectedChain) ||
         isCategoryHovered[categoryKey]
@@ -209,26 +725,61 @@ export default function OverviewMetrics({
           style.borderRadius = "5px";
         }
 
-        style.width =
-          categoryData[dataTypes.indexOf(selectedMode)] *
-            relativePercentageByChain[chainKey] +
-          4 +
-          "%";
-        // if()
+        if (selectedValue === "share") {
+          style.width = categoryData
+            ? categoryData[dataTypes.indexOf(selectedMode)] *
+                relativePercentageByChain[chainKey] +
+              8 +
+              "%"
+            : "0px";
+          // if()
+        } else {
+          style.width = categoryData
+            ? (categoryData[dataTypes.indexOf(selectedMode)] /
+                sumChainValue[chainKey]) *
+                relativePercentageByChain[chainKey] +
+              8 +
+              "%"
+            : "0px";
+          // if()
+        }
         style.transform =
           isCategoryHovered[categoryKey] && !isSelectedCategory
-            ? "scale(1.04)"
-            : "scale(1.05)";
+            ? "scaleY(1.01)"
+            : isSelectedChainOrNoSelectedChain
+            ? "scaleY(1.08)"
+            : "scaleY(1.01)";
 
-        style.zIndex = isCategoryHovered[categoryKey] ? 1 : 5;
+        if (isLastCategory && isSelectedChainOrNoSelectedChain)
+          style.transform += " translateX(3px)";
+
+        // style.outline =
+        //   isSelectedCategory && isSelectedChainOrNoSelectedChain
+        //     ? "3px solid rgba(255,255,255, 1)"
+        //     : "3px solid rgba(255,255,255, 0.33)";
+
+        style.zIndex = isCategoryHovered[categoryKey] ? 2 : 5;
 
         style.backgroundColor = "";
       } else {
-        style.width =
-          categoryData[dataTypes.indexOf(selectedMode)] *
-            relativePercentageByChain[chainKey] +
-          4 +
-          "%";
+        if (selectedValue === "share") {
+          style.width = categoryData
+            ? categoryData[dataTypes.indexOf(selectedMode)] *
+                relativePercentageByChain[chainKey] +
+              8 +
+              "%"
+            : "0px";
+          // if()
+        } else {
+          style.width = categoryData
+            ? (categoryData[dataTypes.indexOf(selectedMode)] /
+                sumChainValue[chainKey]) *
+                relativePercentageByChain[chainKey] +
+              8 +
+              "%"
+            : "0px";
+        }
+
         // if(isCategoryHovered[categoryKey])
         // style.transform =
         //   isCategoryHovered[categoryKey] && !isSelectedCategory
@@ -241,7 +792,7 @@ export default function OverviewMetrics({
           style.borderRadius = "0px";
         }
 
-        if (categoryKey === "unlabeled") {
+        if (categoryKey === "unlabeled" && categoryData) {
           // style.backgroundColor = "rgba(88, 88, 88, 0.55)";
           style.background =
             "linear-gradient(-45deg, rgba(0, 0, 0, .88) 25%, rgba(0, 0, 0, .99) 25%, rgba(0, 0, 0, .99) 50%, rgba(0, 0, 0, .88) 50%, rgba(0, 0, 0, .88) 75%, rgba(0, 0, 0, .99) 75%, rgba(0, 0, 0, .99))";
@@ -271,45 +822,81 @@ export default function OverviewMetrics({
     ],
   );
 
+  function formatNumber(number: number): string {
+    if (number === 0) {
+      return "0";
+    } else if (Math.abs(number) >= 1e6) {
+      if (Math.abs(number) >= 1e9) {
+        return (number / 1e9).toFixed(1) + "B";
+      } else {
+        return (number / 1e6).toFixed(1) + "M";
+      }
+    } else if (Math.abs(number) >= 1e3) {
+      const rounded =
+        Math.abs(number) >= 10000
+          ? Math.round(number / 1e3)
+          : (number / 1e3).toFixed(1);
+      return `${rounded}${Math.abs(number) >= 10000 ? "K" : "k"}`;
+    } else if (Math.abs(number) >= 100) {
+      return number.toFixed(0);
+    } else if (Math.abs(number) >= 10) {
+      return number.toFixed(1);
+    } else {
+      return number.toFixed(2);
+    }
+  }
+
   return (
     <div className="w-full flex-col relative">
       <Container>
-        <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs xl:text-base xl:flex xl:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 xl:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
-          <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
+        <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 lg:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
+          <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
             <button
-              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                "gas_fees_share" === selectedMode
+              className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
+                selectedMode.includes("gas_fees")
                   ? "bg-forest-500 dark:bg-forest-1000"
                   : "hover:bg-forest-500/10"
               }`}
               onClick={() => {
-                setSelectedMode("gas_fees_share");
+                setSelectedMode(
+                  selectedValue === "absolute"
+                    ? showUsd
+                      ? "gas_fees_usd_absolute"
+                      : "gas_fees_eth_absolute"
+                    : showUsd
+                    ? "gas_fees_share_usd"
+                    : "gas_fees_share_eth",
+                );
               }}
             >
               Gas Fees
             </button>
             <button
-              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                "txcount_share" === selectedMode
+              className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
+                selectedMode.includes("txcount")
                   ? "bg-forest-500 dark:bg-forest-1000"
                   : "hover:bg-forest-500/10"
               }`}
               onClick={() => {
-                setSelectedMode("txcount_share");
+                setSelectedMode(
+                  selectedValue === "absolute"
+                    ? "txcount_absolute"
+                    : "txcount_share",
+                );
               }}
             >
               Transaction Count
             </button>
           </div>
-          <div className="block xl:hidden w-[70%] mx-auto my-[10px]">
+          <div className="block lg:hidden w-[70%] mx-auto mt-[5px]">
             <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
           </div>
-          <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
+          <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
             {Object.keys(timespans).map((timespan) => (
               <button
                 key={timespan}
                 //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
+                className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
                   selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
@@ -338,12 +925,12 @@ export default function OverviewMetrics({
         <div className="overflow-x-scroll lg:overflow-x-visible z-100 w-full scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
           <div
             className={
-              "min-w-[820px] md:min-w-[850px] overflow-hidden px-[16px]"
+              "min-w-[880px] md:min-w-[910px] overflow-hidden px-[16px]"
             }
           >
             <div
               className={
-                "relative h-[50px] border-x-[1px] border-t-[1px] rounded-t-[15px] text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-forest-900 dark:bg-forest-1000 mt-8 overflow-hidden"
+                "relative h-[50px] border-x-[1px] border-t-[1px] rounded-t-[15px] text-forest-50 dark:text-forest-50 border-forest-400 dark:border-forest-800 bg-forest-900 dark:bg-forest-1000 mt-6 overflow-hidden"
               }
             >
               <div className="flex w-full h-full text-[12px]">
@@ -353,36 +940,11 @@ export default function OverviewMetrics({
                   <button className="flex flex-col flex-1 h-full justify-center items-center border-x border-transparent overflow-hidden">
                     <div
                       className={`relative -left-[39px] top-[17px] text-xs font-medium`}
-                    >
-                      Chains
-                    </div>
+                    ></div>
                     <div
                       className={`relative left-[30px] -top-[17px] text-xs font-medium`}
-                    >
-                      Categories
-                    </div>
+                    ></div>
                   </button>
-                  <svg
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                    }}
-                  >
-                    <line
-                      strokeDasharray="2, 2"
-                      x1="0"
-                      y1="0"
-                      x2="100%"
-                      y2="100%"
-                      style={{
-                        stroke: theme === "dark" ? "#5a6462" : "#eaeceb",
-                        strokeWidth: 1,
-                      }}
-                    />
-                  </svg>
                 </div>
                 <div className="flex flex-1">
                   {Object.keys(categories).map(
@@ -391,7 +953,7 @@ export default function OverviewMetrics({
                         <div
                           key={category}
                           className={`relative flex h-full justify-center items-center 
-                          ${category === "unlabeled" ? "w-[40px]" : "flex-1"}
+                          ${category === "unlabeled" ? "flex-1" : "flex-1"}
                           ${
                             selectedCategory === category
                               ? "borden-hidden rounded-[0px]"
@@ -458,7 +1020,7 @@ export default function OverviewMetrics({
           </div>
           {/* <colorful rows> */}
           {/* {selectedScale === "gasfees" ? ( */}
-          <div className="flex flex-col space-y-[10px] min-w-[820px] md:min-w-[850px] mb-8">
+          <div className="flex flex-col space-y-[10px] min-w-[880px] md:min-w-[910px] mb-8">
             {
               //chain name is key
               Object.keys(data)
@@ -528,7 +1090,10 @@ export default function OverviewMetrics({
                           <div className="flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px]">
                             <div className="flex justify-center items-center w-[30px]">
                               <Icon
-                                icon={`gtp:${chainKey}-logo-monochrome`}
+                                icon={`gtp:${chainKey.replace(
+                                  "_",
+                                  "-",
+                                )}-logo-monochrome`}
                                 className="w-[15px] h-[15px]"
                               />
                             </div>
@@ -561,14 +1126,12 @@ export default function OverviewMetrics({
                               </div>
                             )} */}
                             {Object.keys(categories).map((categoryKey, i) => {
-                              if (
-                                !(
-                                  categoryKey in
-                                  data[chainKey].overview[selectedTimespan]
-                                )
-                              )
-                                return null;
-
+                              // console.log(
+                              //   "data[chainKey].overview[selectedTimespan][categoryKey]",
+                              //   data[chainKey].overview[selectedTimespan][
+                              //     categoryKey
+                              //   ],
+                              // );
                               const rawChainCategories = Object.keys(
                                 data[chainKey].overview[selectedTimespan],
                               );
@@ -584,24 +1147,25 @@ export default function OverviewMetrics({
                                 <div
                                   key={categoryKey}
                                   onClick={() => {
-                                    if (
-                                      selectedCategory === categoryKey &&
-                                      selectedChain === chainKey
-                                    ) {
+                                    if (selectedCategory === categoryKey) {
+                                      if (
+                                        !data[chainKey].overview[
+                                          selectedTimespan
+                                        ][categoryKey]["data"]
+                                      ) {
+                                        return;
+                                      }
+                                      if (selectedChain === chainKey) {
+                                        // setSelectedCategory(categoryKey);
+                                        setSelectedChain(null);
+                                      } else {
+                                        // setSelectedCategory(categoryKey);
+                                        setSelectedChain(chainKey);
+                                      }
+                                    } else {
                                       setSelectedCategory(categoryKey);
                                       setSelectedChain(null);
-                                    } else {
-                                      // if (selectedChain !== chainKey)
-                                      //   setSelectedChain(chainKey);
-                                      // else
-                                      // setSelectedChain(null);
-                                      setSelectedCategory(categoryKey);
-                                      setSelectedChain(chainKey);
                                     }
-
-                                    // if (selectedChain !== chainKey)
-
-                                    // else setSelectedChain(null);
                                   }}
                                   onMouseEnter={() => {
                                     setIsCategoryHovered((prev) => ({
@@ -615,26 +1179,25 @@ export default function OverviewMetrics({
                                       [categoryKey]: false,
                                     }));
                                   }}
-                                  className={`flex flex-col h-[41px] justify-center items-center px-4 py-5 cursor-pointer relative transition-all duration-200 ease-in-out
+                                  className={`flex flex-col h-[41px] justify-center items-center py-5 cursor-pointer relative transition-all duration-200 ease-in-out
                                     ${
-                                      (selectedCategory === categoryKey &&
-                                        (selectedChain === chainKey ||
-                                          selectedChain === null)) ||
-                                      isCategoryHovered[categoryKey]
-                                        ? isCategoryHovered[categoryKey] &&
-                                          selectedCategory !== categoryKey
-                                          ? `py-[23px] -my-[0px] z-10 shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
-                                          : `py-[25px] -my-[5px] z-10 shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
-                                        : ""
+                                      data[chainKey].overview[selectedTimespan][
+                                        categoryKey
+                                      ]
+                                        ? (selectedCategory === categoryKey &&
+                                            (selectedChain === chainKey ||
+                                              selectedChain === null)) ||
+                                          isCategoryHovered[categoryKey]
+                                          ? isCategoryHovered[categoryKey] &&
+                                            selectedCategory !== categoryKey
+                                            ? `py-[23px] -my-[0px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
+                                            : `py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
+                                          : `z-[1]`
+                                        : "py-[23px] -my-[0px] z-[2] shadow-lg"
                                     } 
                                     ${
                                       categoryIndex ===
-                                      Object.keys(
-                                        data[chainKey].overview[
-                                          selectedTimespan
-                                        ],
-                                      ).length -
-                                        1
+                                      Object.keys(categories).length - 1
                                         ? selectedCategory === categoryKey &&
                                           (selectedChain === chainKey ||
                                             selectedChain === null)
@@ -647,42 +1210,6 @@ export default function OverviewMetrics({
                                     categoryKey,
                                   )}
                                 >
-                                  {/* highlight on hover div */}
-                                  {/* {isCategoryHovered[categoryKey] &&
-                                    !(
-                                      selectedCategory === categoryKey &&
-                                      selectedChain === null
-                                    ) && (
-                                      <div
-                                        className={`absolute inset-0 bg-white/30 mix-blend-hard-light`}
-                                        style={{
-                                          borderRadius: `${
-                                            (selectedCategory === categoryKey &&
-                                              (selectedChain === chainKey ||
-                                                selectedChain === null)) ||
-                                            isCategoryHovered[categoryKey]
-                                              ? categoryIndex ===
-                                                Object.keys(
-                                                  data[chainKey].overview[
-                                                    selectedTimespan
-                                                  ],
-                                                ).length -
-                                                  1
-                                                ? "20000px 99999px 99999px 20000px"
-                                                : "5px"
-                                              : categoryIndex ===
-                                                Object.keys(
-                                                  data[chainKey].overview[
-                                                    selectedTimespan
-                                                  ],
-                                                ).length -
-                                                  1
-                                              ? "0px 99999px 99999px 0px"
-                                              : "0px"
-                                          }`,
-                                        }}
-                                      />
-                                    )} */}
                                   <div
                                     className={`mix-blend-luminosity font-medium w-full absolute inset-0 flex items-center justify-center ${
                                       (selectedCategory === categoryKey &&
@@ -716,16 +1243,62 @@ export default function OverviewMetrics({
                                         : "text-white/80 text-xs"
                                     }`}
                                   >
-                                    {(
-                                      data[chainKey].overview[selectedTimespan][
-                                        categoryKey
-                                      ][
-                                        data[chainKey].overview.types.indexOf(
-                                          selectedMode,
-                                        )
-                                      ] * 100.0
-                                    ).toFixed(2)}
-                                    %
+                                    {data[chainKey].overview[selectedTimespan][
+                                      categoryKey
+                                    ]["data"] ? (
+                                      <>
+                                        {selectedValue === "absolute"
+                                          ? selectedMode.includes("txcount")
+                                            ? ""
+                                            : showUsd
+                                            ? "$ "
+                                            : "Ξ "
+                                          : ""}
+                                        {selectedValue === "share"
+                                          ? (
+                                              data[chainKey].overview[
+                                                selectedTimespan
+                                              ][categoryKey]["data"][
+                                                data[
+                                                  chainKey
+                                                ].overview.types.indexOf(
+                                                  selectedMode,
+                                                )
+                                              ] * 100.0
+                                            ).toFixed(2)
+                                          : formatNumber(
+                                              data[chainKey].overview[
+                                                selectedTimespan
+                                              ][categoryKey]["data"][
+                                                data[
+                                                  chainKey
+                                                ].overview.types.indexOf(
+                                                  selectedMode,
+                                                )
+                                              ],
+                                            )}
+                                        {selectedValue === "share" ? "%" : ""}{" "}
+                                      </>
+                                    ) : (
+                                      <div
+                                        className={`text-black/80
+                                        ${
+                                          isCategoryHovered[categoryKey] ||
+                                          selectedCategory === categoryKey
+                                            ? "opacity-100 py-8"
+                                            : "opacity-0"
+                                        } transition-opacity duration-300 ease-in-out`}
+                                      >
+                                        {selectedValue === "absolute"
+                                          ? selectedMode.includes("txcount")
+                                            ? ""
+                                            : showUsd
+                                            ? "$ "
+                                            : "Ξ "
+                                          : ""}
+                                        0 {selectedValue === "share" ? "%" : ""}{" "}
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               );
@@ -765,7 +1338,7 @@ export default function OverviewMetrics({
         </div>
       </Container>
       <Container>
-        <div className="mt-[20px] lg:mt-[50px] mb-[38px]">
+        <div className="mt-[20px] lg:mt-[50px] mb-[38px] ">
           <h2 className="text-[20px] font-bold">
             {selectedChain
               ? AllChainsByKeys[selectedChain].label
@@ -779,12 +1352,576 @@ export default function OverviewMetrics({
               ? data.all_l2s.daily.types
               : data[selectedChain].daily.types
           }
+          chartType="area"
+          stack
           timespan={selectedTimespan}
           series={chartSeries}
-          yScale="percentage"
+          yScale={selectedValue === "share" ? "percentage" : "linear"}
           chartHeight="196px"
           chartWidth="100%"
         />
+      </Container>
+      <Container className="w-[98%] ml-4">
+        <div className="flex flex-wrap items-center w-[100%] gap-y-2 invisible lg:visible">
+          <h1 className="font-bold text-sm pr-2 pl-2">
+            {master &&
+              master.blockspace_categories.main_categories[selectedCategory]}
+          </h1>
+          {master &&
+            Object.keys(
+              master.blockspace_categories["mapping"][selectedCategory],
+            ).map((key) => {
+              return (
+                <p className="text-xs px-[4px] py-[5px] mx-[5px]" key={key}>
+                  {formatSubcategories(
+                    master.blockspace_categories["mapping"][selectedCategory][
+                      key
+                    ],
+                  )}
+                </p>
+              );
+            })}
+        </div>
+      </Container>
+      <Container>
+        {" "}
+        <div className="flex flex-row w-[98%] mx-auto justify-center md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
+          {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
+          {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
+          {/* toggle ETH */}
+          <button
+            className={`px-[16px] py-[4px]  rounded-full ${
+              selectedValue === "absolute"
+                ? "bg-forest-500 dark:bg-forest-1000"
+                : "hover:bg-forest-500/10"
+            }`}
+            onClick={() => {
+              setSelectedValue("absolute");
+              if (!selectedMode.includes("absolute")) {
+                if (selectedMode.includes("gas_fees")) {
+                  if (showUsd) {
+                    setSelectedMode("gas_fees_usd_absolute");
+                  } else {
+                    setSelectedMode("gas_fees_eth_absolute");
+                  }
+                } else {
+                  setSelectedMode("txcount_absolute");
+                }
+              }
+            }}
+          >
+            Absolute
+          </button>
+          <button
+            className={`px-[16px] py-[4px]  rounded-full ${
+              selectedValue === "share"
+                ? "bg-forest-500 dark:bg-forest-1000"
+                : "hover:bg-forest-500/10"
+            }`}
+            onClick={() => {
+              setSelectedValue("share");
+
+              if (selectedMode.includes("gas_fees")) {
+                if (showUsd) {
+                  setSelectedMode("gas_fees_share_usd");
+                } else {
+                  setSelectedMode("gas_fees_share_eth");
+                }
+              } else {
+                setSelectedMode("txcount_share");
+              }
+            }}
+          >
+            Share of Chain Usage
+          </button>
+        </div>
+      </Container>
+
+      <Container>
+        <div className="w-[97%] mx-auto mt-[30px] flex flex-col">
+          <h1 className="text-lg font-bold">Most Active Contracts</h1>
+          <p className="text-sm mt-[15px]">
+            See the most active contracts within the selected timeframe (
+            {timespans[selectedTimespan].label}) and for your selected category.{" "}
+          </p>
+        </div>
+      </Container>
+
+      <Container className="lg:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-4">
+        <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[1120px]  ">
+          <div className="flex text-[14px] font-bold mb-[10px]">
+            <div className="flex gap-x-[15px] w-[33%] ">
+              <button
+                className="flex gap-x-1 pl-4"
+                onClick={() => {
+                  if (contractCategory !== "chain") {
+                    setSortOrder(true);
+                  } else {
+                    setSortOrder(!sortOrder);
+                  }
+                  setContractCategory("chain");
+                }}
+              >
+                Chain
+                <Icon
+                  icon={
+                    contractCategory === "chain"
+                      ? sortOrder
+                        ? "formkit:arrowdown"
+                        : "formkit:arrowup"
+                      : "formkit:arrowdown"
+                  }
+                  className={` text-white ${
+                    contractCategory === "chain" ? "opacity-100" : "opacity-20"
+                  }`}
+                />
+              </button>
+
+              <button
+                className="flex gap-x-1"
+                onClick={() => {
+                  if (contractCategory !== "contract") {
+                    setSortOrder(true);
+                  } else {
+                    setSortOrder(!sortOrder);
+                  }
+                  setContractCategory("contract");
+                }}
+              >
+                Contract
+                <Icon
+                  icon={
+                    contractCategory === "contract"
+                      ? sortOrder
+                        ? "formkit:arrowdown"
+                        : "formkit:arrowup"
+                      : "formkit:arrowdown"
+                  }
+                  className={` text-white ${
+                    contractCategory === "contract"
+                      ? "opacity-100"
+                      : "opacity-20"
+                  }`}
+                />
+              </button>
+            </div>
+            <div className="flex w-[30%]  ">
+              <button className="flex gap-x-1 w-[53%] ">Category </button>
+              <button
+                className="flex gap-x-1"
+                onClick={() => {
+                  if (contractCategory !== "subcategory") {
+                    setSortOrder(true);
+                  } else {
+                    setSortOrder(!sortOrder);
+                  }
+                  setContractCategory("subcategory");
+                }}
+              >
+                Subcategory{" "}
+                <Icon
+                  icon={
+                    contractCategory === "subcategory"
+                      ? sortOrder
+                        ? "formkit:arrowdown"
+                        : "formkit:arrowup"
+                      : "formkit:arrowdown"
+                  }
+                  className={` text-white ${
+                    contractCategory === "subcategory"
+                      ? "opacity-100"
+                      : "opacity-20"
+                  }`}
+                />
+              </button>
+            </div>
+            <div className="flex w-[37%]  ">
+              <button
+                className="flex gap-x-1 w-[51.5%] justify-end "
+                onClick={() => {
+                  if (contractCategory !== "value") {
+                    setSortOrder(true);
+                  } else {
+                    setSortOrder(!sortOrder);
+                  }
+                  setContractCategory("value");
+                }}
+              >
+                {selectedMode.includes("gas_fees")
+                  ? "Gas Fees "
+                  : "Transaction Count "}
+                <p className="font-normal">
+                  ({timespans[selectedTimespan].label})
+                </p>
+                <Icon
+                  icon={
+                    contractCategory === "value"
+                      ? sortOrder
+                        ? "formkit:arrowdown"
+                        : "formkit:arrowup"
+                      : "formkit:arrowdown"
+                  }
+                  className={` text-white ${
+                    contractCategory === "value" ? "opacity-100" : "opacity-20"
+                  }`}
+                />
+              </button>
+
+              <div className="flex gap-x-1 w-[48.5%] justify-center">
+                <div>Block Explorer </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            {!sortOrder
+              ? Object.keys(sortedContracts).map((key, i) => {
+                  if (i >= maxDisplayedContracts) {
+                    return null;
+                  }
+
+                  return (
+                    <div key={key + "" + sortOrder}>
+                      <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] ">
+                        <div className="flex w-[100%] ml-4 mr-8 items-center ">
+                          <div className="flex items-center h-10 w-[34%] gap-x-[20px] pl-1  ">
+                            <div className=" w-[40px]">
+                              <div
+                                className={`flex min-w-9 min-h-9 w-9 h-9 rounded-full items-center justify-center border-[5px] ${
+                                  AllChainsByKeys[sortedContracts[key].chain]
+                                    .border[theme][1]
+                                }`}
+                              >
+                                <Icon
+                                  icon={`gtp:${sortedContracts[
+                                    key
+                                  ].chain.replace("_", "-")}-logo-monochrome`}
+                                  className="min-w-5 min-h-5 w-5 h-5"
+                                  style={{
+                                    color:
+                                      AllChainsByKeys[
+                                        sortedContracts[key].chain
+                                      ].colors[theme][1],
+                                  }}
+                                />
+                              </div>
+                            </div>
+
+                            <div
+                              key={sortedContracts[key].address}
+                              className={` w-[200px] h-full flex items-center ${
+                                contractHover[key] && !sortedContracts[key].name
+                                  ? "relative right-[10px] text-[14px]"
+                                  : ""
+                              } `}
+                              onMouseEnter={() => {
+                                setContractHover((prevHover) => ({
+                                  ...prevHover,
+                                  [key]: true,
+                                }));
+                              }}
+                              onMouseLeave={() => {
+                                setContractHover((prevHover) => ({
+                                  ...prevHover,
+                                  [key]: false,
+                                }));
+                              }}
+                            >
+                              {sortedContracts[key].name
+                                ? sortedContracts[key].name
+                                : contractHover[key]
+                                ? sortedContracts[key].address
+                                : sortedContracts[key].address.substring(
+                                    0,
+                                    20,
+                                  ) + "..."}
+                              {sortedContracts[key].name ? (
+                                <span className="hover:visible invisible bg-black rounded-xl text-[12px] relative bottom-4">
+                                  {sortedContracts[key].address}
+                                </span>
+                              ) : null}
+                            </div>
+                          </div>
+                          <div className="flex items-center text-[14px] w-[43%]  justify-start  h-full  ">
+                            <div className="flex w-[40%] ">
+                              {master &&
+                                master.blockspace_categories.main_categories[
+                                  sortedContracts[key].main_category_key
+                                ]}
+                            </div>
+                            <div className="flex ">
+                              {" "}
+                              {master &&
+                              master.blockspace_categories.sub_categories[
+                                sortedContracts[key].sub_category_key
+                              ]
+                                ? master.blockspace_categories.sub_categories[
+                                    sortedContracts[key].sub_category_key
+                                  ]
+                                : "Unlabeled"}
+                            </div>
+                          </div>
+                          <div className="flex items-center w-[24.5%]  mr-4  ">
+                            <div className="flex flex-col w-[38%] items-end ">
+                              <div className="flex gap-x-1 w-[110px] justify-end  ">
+                                <div className="flex">
+                                  {" "}
+                                  {selectedMode.includes("gas_fees_")
+                                    ? showUsd
+                                      ? `$`
+                                      : `Ξ`
+                                    : ""}
+                                </div>
+                                {selectedMode.includes("gas_fees_")
+                                  ? showUsd
+                                    ? Number(
+                                        sortedContracts[
+                                          key
+                                        ].gas_fees_absolute_usd.toFixed(0),
+                                      ).toLocaleString("en-US")
+                                    : Number(
+                                        sortedContracts[
+                                          key
+                                        ].gas_fees_absolute_eth.toFixed(2),
+                                      ).toLocaleString("en-US")
+                                  : Number(
+                                      sortedContracts[
+                                        key
+                                      ].txcount_absolute.toFixed(0),
+                                    ).toLocaleString("en-US")}
+                              </div>
+
+                              <div className="h-[3px] w-[110px] bg-forest-900 flex justify-end">
+                                <div
+                                  className={`h-full bg-forest-50`}
+                                  style={{
+                                    width: getWidth(sortedContracts[key]),
+                                  }}
+                                ></div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center w-[57%] justify-end ">
+                              <a
+                                href={
+                                  ContractUrls[sortedContracts[key].chain] +
+                                  "" +
+                                  sortedContracts[key].address
+                                }
+                                target="_blank"
+                              >
+                                <Icon
+                                  icon="material-symbols:link"
+                                  className="w-[30px] h-[30px]"
+                                />
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              : Object.keys(sortedContracts)
+                  .reverse()
+                  .map((key, i) => {
+                    if (i >= maxDisplayedContracts) {
+                      return null;
+                    }
+
+                    return (
+                      <div key={key + "" + sortOrder}>
+                        <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] group">
+                          <div className="flex w-[100%] ml-4 mr-8 items-center ">
+                            <div className="flex items-center h-10 w-[34%] gap-x-[20px] pl-1  ">
+                              <div className=" w-[40px]">
+                                <div
+                                  className={`flex min-w-9 min-h-9 w-9 h-9 rounded-full items-center justify-center border-[5px] ${
+                                    AllChainsByKeys[sortedContracts[key].chain]
+                                      .border[theme][1]
+                                  }`}
+                                >
+                                  <Icon
+                                    icon={`gtp:${sortedContracts[
+                                      key
+                                    ].chain.replace("_", "-")}-logo-monochrome`}
+                                    className="min-w-5 min-h-5 w-5 h-5"
+                                    style={{
+                                      color:
+                                        AllChainsByKeys[
+                                          sortedContracts[key].chain
+                                        ].colors[theme][1],
+                                    }}
+                                  />
+                                </div>
+                              </div>
+
+                              <div
+                                key={sortedContracts[key].address}
+                                className={`flex flex-col flex-1 h-full items-start justify-center ${
+                                  contractHover[key] &&
+                                  !sortedContracts[key].name
+                                    ? "relative right-[10px] text-[14px]"
+                                    : ""
+                                } `}
+                                onMouseEnter={() => {
+                                  setContractHover((prevHover) => ({
+                                    ...prevHover,
+                                    [key]: true,
+                                  }));
+                                }}
+                                onMouseLeave={() => {
+                                  setContractHover((prevHover) => ({
+                                    ...prevHover,
+                                    [key]: false,
+                                  }));
+                                }}
+                              >
+                                {sortedContracts[key].name
+                                  ? `${sortedContracts[key].project_name}: ${sortedContracts[key].name}`
+                                  : contractHover[key]
+                                  ? sortedContracts[key].address
+                                  : sortedContracts[key].address.substring(
+                                      0,
+                                      6,
+                                    ) +
+                                    "..." +
+                                    sortedContracts[key].address.substring(
+                                      36,
+                                      42,
+                                    )}
+                                {sortedContracts[key].name ? (
+                                  <div className="group-hover:flex hidden space-x-2 items-center bg-black/50 px-0.5 rounded-xl text-[12px]">
+                                    <div>
+                                      {sortedContracts[key].address.substring(
+                                        0,
+                                        6,
+                                      ) +
+                                        "..." +
+                                        sortedContracts[key].address.substring(
+                                          36,
+                                          42,
+                                        )}
+                                    </div>
+                                    <Icon
+                                      icon="feather:copy"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(
+                                          sortedContracts[key].address,
+                                        );
+                                      }}
+                                      className="w-3 h-3 cursor-pointer"
+                                    />
+                                  </div>
+                                ) : null}
+                              </div>
+                            </div>
+                            <div className="flex items-center text-[14px] w-[43%]  justify-start  h-full ">
+                              <div className="flex w-[40%] ">
+                                {master &&
+                                  master.blockspace_categories.main_categories[
+                                    sortedContracts[key].main_category_key
+                                  ]}
+                              </div>
+                              <div className="flex ">
+                                {" "}
+                                {master &&
+                                master.blockspace_categories.sub_categories[
+                                  sortedContracts[key].sub_category_key
+                                ]
+                                  ? master.blockspace_categories.sub_categories[
+                                      sortedContracts[key].sub_category_key
+                                    ]
+                                  : "Unlabeled"}
+                              </div>
+                            </div>
+                            <div className="flex items-center w-[24.5%]  mr-4  ">
+                              <div className="flex flex-col w-[38%] items-end ">
+                                <div className="flex gap-x-1 w-[110px] justify-end  ">
+                                  <div className="flex">
+                                    {" "}
+                                    {selectedMode.includes("gas_fees_")
+                                      ? showUsd
+                                        ? `$`
+                                        : `Ξ`
+                                      : ""}
+                                  </div>
+                                  {selectedMode.includes("gas_fees_")
+                                    ? showUsd
+                                      ? Number(
+                                          sortedContracts[
+                                            key
+                                          ].gas_fees_absolute_usd.toFixed(0),
+                                        ).toLocaleString("en-US")
+                                      : Number(
+                                          sortedContracts[
+                                            key
+                                          ].gas_fees_absolute_eth.toFixed(2),
+                                        ).toLocaleString("en-US")
+                                    : Number(
+                                        sortedContracts[
+                                          key
+                                        ].txcount_absolute.toFixed(0),
+                                      ).toLocaleString("en-US")}
+                                </div>
+
+                                <div className="h-[3px] w-[110px] bg-forest-900 flex justify-end">
+                                  <div
+                                    className={`h-full bg-forest-50`}
+                                    style={{
+                                      width: getWidth(sortedContracts[key]),
+                                    }}
+                                  ></div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center w-[57%] justify-end ">
+                                <a
+                                  href={
+                                    ContractUrls[sortedContracts[key].chain] +
+                                    "" +
+                                    sortedContracts[key].address
+                                  }
+                                  target="_blank"
+                                >
+                                  <Icon
+                                    icon="material-symbols:link"
+                                    className="w-[30px] h-[30px]"
+                                  />
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+            <div className="w-full flex justify-center mb-2">
+              <button
+                className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${
+                  Object.keys(sortedContracts).length <= 10
+                    ? "hidden"
+                    : "visible"
+                } ${
+                  Object.keys(sortedContracts).length <= maxDisplayedContracts
+                    ? "hidden"
+                    : "visible"
+                }`}
+                onClick={() => {
+                  setShowMore(!showMore);
+                  if (
+                    Object.keys(sortedContracts).length > maxDisplayedContracts
+                  ) {
+                    setMaxDisplayedContracts(maxDisplayedContracts + 10);
+                  } else {
+                    setMaxDisplayedContracts(10);
+                  }
+                }}
+              >
+                Show More
+              </button>
+            </div>
+          </div>
+        </div>
       </Container>
     </div>
   );

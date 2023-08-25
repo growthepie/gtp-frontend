@@ -12,6 +12,7 @@ import useSWR from "swr";
 import { Icon } from "@iconify/react";
 import { navigationItems } from "@/lib/navigation";
 import Subheading from "@/components/layout/Subheading";
+import { useUIContext } from "@/contexts/UIContext";
 
 const ChainOverview = () => {
   const {
@@ -19,13 +20,14 @@ const ChainOverview = () => {
     error: usageError,
     isLoading: usageLoading,
     isValidating: usageValidating,
+    // } = useSWR<ChainOverviewResponse>("/mock/overview.json");
   } = useSWR<ChainOverviewResponse>(BlockspaceURLs["chain-overview"]);
 
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
-    "7d",
+    "max",
   );
-
+  const { isSidebarOpen } = useUIContext();
   const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(
     "blockspaceShowEthereumMainnet",
     false,
@@ -52,13 +54,20 @@ const ChainOverview = () => {
           leftIcon={
             pageData.icon && (
               <div className="self-start md:self-center pr-[7px] pl-[0px] pt-0.5 md:pt-0 md:pr-[10px] md:pl-[0px]">
-                <Icon icon={pageData.icon} className="w-5 h-5 md:w-6 md:h-6" />
+                <Icon
+                  icon={pageData.icon}
+                  className={`relative  w-5 h-5 md:w-6 md:h-6 ${
+                    isSidebarOpen
+                      ? "bottom-8"
+                      : "bottom-[0px] xs:bottom-[0px] sm:bottom-0 md:bottom-[70px] lg:bottom-6 "
+                  }`}
+                />
               </div>
             )
           }
           iconContainerClassName="items-center mb-[22px] md:mb-[32px] relative"
         >
-          {pageData.description}
+          <p>{pageData.description}</p>
           {pageData.note && (
             <div className="absolute text-xs">
               <span className="font-semibold text-forest-200 dark:text-forest-400">

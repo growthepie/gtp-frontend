@@ -12,13 +12,15 @@ export const ChartColors = {
 };
 
 export const decimalToPercent = (decimal: number | string, decimals = 2) => {
-  return `${((decimal as number) * 100.0).toFixed(decimals)}%`;
+  return `${parseFloat(decimal as string).toFixed(decimals)}%`;
 };
 
 export const tooltipFormatter = (
   shared = true,
   percentage = true,
   valueFormatter: (value: any) => string = (value) => value,
+  dataKey?: string,
+  reversePerformer?: boolean,
 ) => {
   const percentageFormatter = function (
     this: Highcharts.TooltipFormatterContextObject,
@@ -38,38 +40,52 @@ export const tooltipFormatter = (
       year: "numeric",
     });
 
-    let tooltip = `
-      <div class="mt-3 mr-3 mb-3 w-48 md:w-60 text-xs font-raleway">
-        <div class="w-full flex justify-between font-bold text-[13px] md:text-[1rem] items-end pl-6 pr-1 mb-2">${dateString}</div>
-        <div className="flex flex-col">
-          `;
-    points.forEach((point: any) => {
-      const { y, color, series, percentage } = point;
-      const name = series.name;
+    let tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
+        <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
 
-      const date = x ? new Date(x) : new Date();
-      const dateString = date.toLocaleDateString(undefined, {
-        timeZone: "UTC",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
+    points
+      .sort((a: any, b: any) => {
+        if (reversePerformer) return a.y - b.y;
 
-      let value = y ? formatNumber(y, false, true) : 0;
+        return b.y - a.y;
+      })
+      .forEach((point: any) => {
+        const { y, color, series, percentage } = point;
+        const name = series.name;
 
-      if (valueFormatter) {
-        value = valueFormatter(value);
-      } else {
-        value = Highcharts.numberFormat(percentage, 2);
-      }
+        const date = x ? new Date(x) : new Date();
+        const dateString = date.toLocaleDateString(undefined, {
+          timeZone: "UTC",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
 
-      tooltip += `
-        <div class="flex w-full space-x-2 items-center font-medium mb-1">
+        let value = y ? formatNumber(y, false, true) : 0;
+        // let value = y;
+
+        if (valueFormatter) {
+          value = valueFormatter(value);
+        } else {
+          value = Highcharts.numberFormat(percentage, 2);
+        }
+
+        tooltip += `
+        <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
         <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors["dark"][0]}"></div>
         <div class="tooltip-point-name">${AllChainsByKeys[name].label}</div>
         <div class="flex-1 text-right font-inter">${value}</div>
+      </div>
+      <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+        <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
+
+        <div class="h-[2px] rounded-none absolute right-0 -top-[3px] bg-forest-900 dark:bg-forest-50" 
+        style="
+          width: ${percentage}%;
+          background-color: ${AllChainsByKeys[name].colors["dark"][0]};
+        "></div>
       </div>`;
-    });
+      });
     tooltip += `
         </div>
       </div>`;
@@ -94,45 +110,83 @@ export const tooltipFormatter = (
       year: "numeric",
     });
 
-    console.log(points[0]);
+    let prefix = "";
+    let suffix = "";
 
-    let tooltip = `
-      <div class="mt-3 mr-3 mb-3 w-48 md:w-60 text-xs font-raleway">
-        <div class="w-full flex justify-between font-bold text-[13px] md:text-[1rem] items-end pl-6 pr-1 mb-2">${dateString}</div>
-        <div className="flex flex-col">
-          `;
-    points.forEach((point: any) => {
-      const { y, color, series, percentage } = point;
-      const name = series.name;
-
-      const date = x ? new Date(x) : new Date();
-      const dateString = date.toLocaleDateString(undefined, {
-        timeZone: "UTC",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-
-      let value = y ? formatNumber(y, false, true) : 0;
-
-      if (valueFormatter) {
-        value = valueFormatter(value);
-      } else {
-        value = Highcharts.numberFormat(value, 2);
+    if (dataKey) {
+      if (dataKey.includes("eth")) {
+        suffix = "Ξ";
+      } else if (dataKey.includes("usd")) {
+        prefix = "$";
       }
+    }
 
-      tooltip += `
-        <div class="flex w-full space-x-2 items-center font-medium mb-1">
-        <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors["dark"][0]}"></div>
+    let pointsSum = points.reduce((acc: number, point: any) => {
+      acc += point.y;
+      return acc;
+    }, 0);
+
+    let tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
+        <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
+
+    points
+      .sort((a: any, b: any) => {
+        if (reversePerformer) return a.y - b.y;
+
+        return b.y - a.y;
+      })
+      .forEach((point: any) => {
+        const { y, color, series, percentage } = point;
+        const name = series.name;
+
+        const date = x ? new Date(x) : new Date();
+        const dateString = date.toLocaleDateString(undefined, {
+          timeZone: "UTC",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+
+        let value = y;
+        // let value = y;
+
+        if (valueFormatter) {
+          value = valueFormatter(value);
+        } else {
+          value = formatNumber(y, false, false, prefix, suffix);
+        }
+
+        tooltip += `
+        <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+        <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+          AllChainsByKeys[name].colors["dark"][0]
+        }"></div>
         <div class="tooltip-point-name">${AllChainsByKeys[name].label}</div>
-        <div class="flex-1 text-right font-inter">${value}</div>
+        <div class="flex-1 text-right justify-end font-inter flex">
+          <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">${prefix}</div>
+          ${parseFloat(value).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+          <div class="opacity-70 ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
+        </div>
+      </div>
+      <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+        <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
+
+        <div class="h-[2px] rounded-none absolute right-0 -top-[3px] bg-forest-900 dark:bg-forest-50" 
+        style="
+          width: ${(y / pointsSum) * 100}%;
+          background-color: ${AllChainsByKeys[name].colors["dark"][0]};
+        "></div>
       </div>`;
-    });
+      });
     tooltip += `
         </div>
       </div>`;
     return tooltip;
   };
+
   if (shared) {
     return percentage ? percentageFormatter : normalFormatter;
   }
@@ -174,7 +228,7 @@ export const tooltipPositioner = function (this, width, height, point) {
   };
 };
 
-export const baseOptions: Highcharts.Options = {
+export const baseOptions: any = {
   accessibility: { enabled: false },
   exporting: { enabled: false },
   chart: {
@@ -226,6 +280,7 @@ export const baseOptions: Highcharts.Options = {
       },
       formatter: function (t: Highcharts.AxisLabelsFormatterContextObject) {
         return formatNumber(t.value, true);
+        // return t.value;
       },
     },
     gridLineColor: "rgba(215, 223, 222, 0.33)",
@@ -354,22 +409,49 @@ export const baseOptions: Highcharts.Options = {
   },
 };
 
-const formatNumber = (
-  value: number | string,
-  isAxis = false,
-  isPercentage = false,
-) => {
-  return isAxis
-    ? !isPercentage
-      ? d3.format(".2s")(value)
-      : d3.format(".2s")(value) + "%"
-    : d3.format(",.2~s")(value);
-};
+export const formatNumber =
+  // (
+  //   value: number | string,
+  //   isAxis = false,
+  //   isPercentage = false,
+  // ) => {
+  (
+    value: number | string,
+    isAxis = false,
+    isPercentage = false,
+    prefix = "",
+    suffix = "",
+  ) => {
+    // let prefix = valuePrefix;
+    // let suffix = "";
+    let val = parseFloat(value as string);
+
+    let number = d3.format(`.2~s`)(val).replace(/G/, "B");
+
+    if (isAxis) {
+      if (isPercentage) {
+        number = decimalToPercent(val * 100, 0);
+      } else {
+        number = prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+      }
+    } else {
+      if (isPercentage) {
+        number =
+          d3
+            .format(".2~s")(val * 100)
+            .replace(/G/, "B") + "%";
+      } else {
+        number = val;
+      }
+    }
+
+    return number;
+  };
 
 type TimespanSelections = "7d" | "30d" | "90d" | "180d" | "365d" | "max";
 
 export const getTimespans = (
-  data,
+  data?,
   isPercentageScale = false,
 ): {
   [key in TimespanSelections]: {
@@ -379,50 +461,14 @@ export const getTimespans = (
     xMax: number;
   };
 } => {
-  const maxDate = new Date(data.length > 0 ? data[data.length - 1][0] : 0);
+  const maxDate = data
+    ? new Date(data.length > 0 ? data[data.length - 1][0] : 0)
+    : new Date();
   const buffer = isPercentageScale ? 0 : 3.5 * 24 * 60 * 60 * 1000;
   const maxPlusBuffer = maxDate.valueOf() + buffer;
-
-  console.log({
-    "7d": {
-      label: "7 days",
-      value: 7,
-      xMin: maxDate.valueOf() - 7 * 24 * 60 * 60 * 1000,
-      xMax: maxPlusBuffer,
-    },
-    "30d": {
-      label: "30 days",
-      value: 30,
-      xMin: maxDate.valueOf() - 30 * 24 * 60 * 60 * 1000,
-      xMax: maxPlusBuffer,
-    },
-    "90d": {
-      label: "90 days",
-      value: 90,
-      xMin: maxDate.valueOf() - 90 * 24 * 60 * 60 * 1000,
-      xMax: maxPlusBuffer,
-    },
-    "180d": {
-      label: "180 days",
-      value: 180,
-      xMin: maxDate.valueOf() - 180 * 24 * 60 * 60 * 1000,
-      xMax: maxPlusBuffer,
-    },
-    "365d": {
-      label: "1 year",
-      value: 365,
-      xMin: maxDate.valueOf() - 365 * 24 * 60 * 60 * 1000,
-      xMax: maxPlusBuffer,
-    },
-    max: {
-      label: "Maximum",
-      value: 0,
-      xMin: data.reduce((min, d) => Math.min(min, d[0]), Infinity),
-
-      xMax: maxPlusBuffer,
-    },
-  });
-
+  const minDate = data
+    ? data.reduce((min, d) => Math.min(min, d[0]), Infinity)
+    : maxDate.valueOf() - 365 * 24 * 60 * 60 * 1000;
   return {
     "7d": {
       label: "7 days",
@@ -457,7 +503,7 @@ export const getTimespans = (
     max: {
       label: "Maximum",
       value: 0,
-      xMin: data.reduce((min, d) => Math.min(min, d[0]), Infinity),
+      xMin: minDate,
 
       xMax: maxPlusBuffer,
     },

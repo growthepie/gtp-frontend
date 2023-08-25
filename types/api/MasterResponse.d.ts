@@ -2,6 +2,7 @@
   current_version: string;
   chains: Chains;
   metrics: Metrics;
+  blockspace_categories: BlockspaceCategories;
 }
 
 export interface Chains {
@@ -10,12 +11,15 @@ export interface Chains {
   optimism: Optimism;
   arbitrum: Arbitrum;
   imx: Imx;
+  zksync_era: ZksyncEra;
   base: Base;
 }
 
 export interface Ethereum {
   name: string;
   symbol: string;
+  technology: string;
+  purpose: string;
   rollup: string;
   launch_date: string;
   website: string;
@@ -26,7 +30,8 @@ export interface Ethereum {
 export interface PolygonZkevm {
   name: string;
   symbol: string;
-  rollup: string;
+  technology: string;
+  purpose: string;
   launch_date: string;
   website: string;
   twitter: string;
@@ -36,7 +41,8 @@ export interface PolygonZkevm {
 export interface Optimism {
   name: string;
   symbol: string;
-  rollup: string;
+  technology: string;
+  purpose: string;
   launch_date: string;
   website: string;
   twitter: string;
@@ -46,7 +52,8 @@ export interface Optimism {
 export interface Arbitrum {
   name: string;
   symbol: string;
-  rollup: string;
+  technology: string;
+  purpose: string;
   launch_date: string;
   website: string;
   twitter: string;
@@ -56,13 +63,24 @@ export interface Arbitrum {
 export interface Imx {
   name: string;
   symbol: string;
-  rollup: string;
+  technology: string;
+  purpose: string;
   launch_date: string;
   website: string;
   twitter: string;
   block_explorer: string;
 }
 
+export interface ZksyncEra {
+  name: string;
+  symbol: string;
+  technology: string;
+  purpose: string;
+  launch_date: string;
+  website: string;
+  twitter: string;
+  block_explorer: string;
+}
 export interface Base {
   name: string;
   symbol: string;
@@ -74,17 +92,21 @@ export interface Base {
 }
 
 export interface Metrics {
-  tvl: Tvl;
-  txcount: Txcount;
-  daa: Daa;
-  stables_mcap: StablesMcap;
-  fees: Fees;
+  name: string;
+  symbol: string;
+  technology: string;
+  purpose: string;
+  launch_date: string;
+  website: string;
+  twitter: string;
+  block_explorer: string;
 }
 
 export interface Tvl {
   name: string;
   metric_keys: string[];
   units: string[];
+  avg: boolean;
   source: string;
 }
 
@@ -92,6 +114,7 @@ export interface Txcount {
   name: string;
   metric_keys: string[];
   units: string[];
+  avg: boolean;
   source: string;
 }
 
@@ -99,6 +122,7 @@ export interface Daa {
   name: string;
   metric_keys: string[];
   units: string[];
+  avg: boolean;
   source: string;
 }
 
@@ -106,6 +130,7 @@ export interface StablesMcap {
   name: string;
   metric_keys: string[];
   units: string[];
+  avg: boolean;
   source: string;
 }
 
@@ -113,5 +138,67 @@ export interface Fees {
   name: string;
   metric_keys: string[];
   units: string[];
+  avg: boolean;
+}
+
+export interface Txcosts {
+  name: string;
+  metric_keys: string[];
+  units: string[];
+  avg: boolean;
+}
+
+export interface BlockspaceCategories {
+  main_categories: MainCategories;
+  sub_categories: SubCategories;
+}
+
+export interface MainCategories {
+  native_transfers: string;
+  token_transfers: string;
+  nft_fi: string;
+  defi: string;
+  gaming: string;
+  cefi: string;
+  utility: string;
+  cross_chain: string;
+}
+
+export interface SubCategories {
+  native_transfer: string;
+  stablecoin: string;
+  lsd: string;
+  erc20: string;
+  erc721: string;
+  erc1155: string;
+  nft_marketplace: string;
+  nft_fi: string;
+  dex: string;
+  derivative: string;
+  lending: string;
+  staking: string;
+  gaming: string;
+  gambling: string;
+  ponzi: string;
+  cex: string;
+  trading: string;
+  mev: string;
+  privacy: string;
+  identity: string;
+  social_media: string;
+  carbon_credits: string;
+  depin: string;
+  oracle: string;
+  insurance: string;
+  developer_tools: string;
+  airdrop: string;
+  payments: string;
+  community: string;
+  other: string;
+  middleware: string;
+  smart_contract_deployment: string;
+  l2_rent: string;
+  bridge: string;
+  cc_communication: string;
   source: string;
 }

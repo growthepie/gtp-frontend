@@ -101,7 +101,7 @@ export const navigationItems: NavigationItem[] = [
       {
         label: "Total Value Locked",
         page: {
-          title: "TVL On-Chain",
+          title: "Total Value Locked",
           description:
             "The sum of all funds locked on the chain. Methodology and data is derived from L2Beat.com.",
           why: "TVL is a crucial metric for assessing the success of a blockchain. A high TVL indicates that users have significant trust in the chain's security and reliability, as well as confidence in the usefulness and functionality of the various applications available on the chain.",
@@ -187,8 +187,8 @@ export const navigationItems: NavigationItem[] = [
         label: "Chain Overview",
         page: {
           title: "Chain Overview",
-          description:
-            "An overview of chains' high-level blockspace usage. All expressed in shares of a chain's total blockspace.",
+          description: `We measure the gas fees spent and the number of transactions sent to smart contracts. We then map these smart contracts to distinct categories. The chart below breaks down the total blockspace of a chain into these categories. Each category is made up of multiple subcategories, which are listed in the mapping table below the chart.
+            Toggling between the "Absolute" and "Share of Chain Usage" options shows either the absolute amount of gas fees/transactions, or the share of the chain's total blockspace.`,
           icon: "gtp:blockspace-chain-overview",
         },
         icon: "gtp:blockspace-chain-overview",

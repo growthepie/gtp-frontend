@@ -23,7 +23,7 @@ const CategoryComparison = () => {
   );
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
-    "7d",
+    "max",
   );
 
   return (
@@ -32,17 +32,21 @@ const CategoryComparison = () => {
         <Heading className="text-[30px] leading-snug md:text-[36px] mb-[15px] md:mb-[30px]">
           Category Comparison
         </Heading>
-        <div className="flex items-center mb-[30px]">
+        <div className="flex items-center w-[92%]  mb-[30px]">
           <Image
             src="/GTP-Package.svg"
             alt="GTP Chain"
-            className="object-contain mr-[17px]"
+            className="object-contain w-[32px] h-[32px] mr-2 relative bottom-[100px] xs:bottom-[60px] sm:bottom-4 md:bottom-6 lg:bottom-4"
             height={32}
             width={32}
           />
           <h1 className="text-[16px]">
-            An overview of chains high-level blockspace usage. All expressed in
-            share of chain usage.
+            We measure the gas fees spent and the number of transactions sent to
+            smart contracts. The smart contracts are mapped to distinct
+            categories. The chart below allows to compare the usage of these
+            categories across different chains. Each category is made up of
+            multiple subcategories. You can click on the category dropdown in
+            order to see and filter its subcategories.
           </h1>
         </div>
       </Container>
