@@ -25,7 +25,7 @@ const ChainOverview = () => {
 
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
-    "365d",
+    "max",
   );
   const { isSidebarOpen } = useUIContext();
   const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(

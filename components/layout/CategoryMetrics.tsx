@@ -118,7 +118,7 @@ export default function CategoryMetrics({
   }>({});
 
   const dailyKey = useMemo(() => {
-    if (["90d", "365d"].includes(selectedTimespan)) {
+    if (["180d", "max"].includes(selectedTimespan)) {
       return "daily_7d_rolling";
     } else {
       return "daily";
@@ -215,22 +215,22 @@ export default function CategoryMetrics({
         xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
       },
-      "90d": {
-        label: "90 days",
-        value: 90,
-      },
-      // "180d": {
-      //   label: "180 days",
-      //   value: 180,
+      // "90d": {
+      //   label: "90 days",
+      //   value: 90,
       // },
-      "365d": {
-        label: "1 year",
-        value: 365,
+      "180d": {
+        label: "180 days",
+        value: 180,
       },
-      // max: {
-      //   label: "Maximum",
-      //   value: 0,
+      // "365d": {
+      //   label: "1 year",
+      //   value: 365,
       // },
+      max: {
+        label: "Maximum",
+        value: 0,
+      },
     };
   }, []);
 

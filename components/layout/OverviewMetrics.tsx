@@ -384,26 +384,22 @@ export default function OverviewMetrics({
         xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
       },
-      "90d": {
-        label: "90 days",
-        value: 90,
-        xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
-        xMax: Date.now(),
-      },
-      // "180d": {
-      //   label: "180 days",
-      //   value: 180,
+      // "90d": {
+      //   label: "90 days",
+      //   value: 90,
       // },
-      "365d": {
-        label: "1 year",
-        value: 365,
-        xMin: Date.now() - 365 * 24 * 60 * 60 * 1000,
-        xMax: Date.now(),
+      "180d": {
+        label: "180 days",
+        value: 180,
       },
-      // max: {
-      //   label: "Maximum",
-      //   value: 0,
+      // "365d": {
+      //   label: "1 year",
+      //   value: 365,
       // },
+      max: {
+        label: "Maximum",
+        value: 0,
+      },
     };
   }, []);
 
