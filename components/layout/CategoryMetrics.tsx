@@ -908,24 +908,24 @@ export default function CategoryMetrics({
         width:
           openSub && selectedCategory === category
             ? Object.keys(data[category].subcategories).length > 8
-              ? "650px"
+              ? "700px"
               : Object.keys(data[category].subcategories).length > 5
-              ? "500px"
-              : "500px"
-            : "140px",
+              ? "550px"
+              : "550px"
+            : "190px",
       }),
       update: ({ category }) => ({
         width: !exitAnimation
           ? openSub && selectedCategory === category
             ? Object.keys(data[category].subcategories).length > 8
-              ? "650px"
+              ? "700px"
               : Object.keys(data[category].subcategories).length > 5
-              ? "500px"
-              : "500px"
-            : "140px"
-          : "140px",
+              ? "550px"
+              : "550px"
+            : "190px"
+          : "190px",
       }),
-      leave: { width: "140px" },
+      leave: { width: "190px" },
 
       keys: ({ category }) => category,
       config: { mass: 1, tension: 70, friction: 20 },
