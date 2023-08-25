@@ -1560,7 +1560,7 @@ export default function CategoryMetrics({
                 ))}
             </div>
           </div>
-          <div className="w-full lg:w-[56%] relative bottom-2 mt-2 mb-[50px] h-[320px] lg:mt-0 lg:h-auto">
+          <div className="w-full lg:w-[56%] relative bottom-2 mt-2 mb-[30px] h-[320px] lg:mt-0 lg:h-auto">
             {chartSeries && (
               <Chart
                 chartType="line"
@@ -1597,7 +1597,7 @@ export default function CategoryMetrics({
         </div>
         <div>
           {" "}
-          <div className="flex flex-wrap items-center w-[98.5%] mx-auto gap-y-2 invisible lg:visible ">
+          <div className="flex flex-wrap items-center w-[98%] mx-auto gap-y-2 invisible lg:visible ">
             <div className="font-bold text-sm pr-2 pl-2">
               {formatSubcategories(selectedCategory)}:{" "}
             </div>
@@ -1613,32 +1613,9 @@ export default function CategoryMetrics({
               ))}
           </div>{" "}
         </div>
-        <div className="flex flex-col md:flex-row w-[99%] mx-auto items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
-          {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
-          {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
-          {/* toggle ETH */}
-
-          <Tooltip placement="left" allowInteract>
-            <TooltipTrigger>
-              <div className="p-1 z-10">
-                <Icon icon="feather:info" className="w-6 h-6" />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-              <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
-                <div className="flex flex-col space-y-1">
-                  <div className="font-bold text-sm leading-snug">
-                    Data Sources:
-                  </div>
-                  <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug"></div>
-                </div>
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        </div>
       </Container>
       <Container>
-        <div className="w-[96%] mx-auto mt-[30px] flex flex-col">
+        <div className="w-[97%] mx-auto mt-[30px] flex flex-col">
           <h1 className="text-lg font-bold">Most Active Contracts</h1>
           <p className="text-sm mt-[15px]">
             See the most active contracts within the selected timeframe (
@@ -1648,7 +1625,7 @@ export default function CategoryMetrics({
         </div>
       </Container>
       <Container className="xl:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-4">
-        <div className="flex flex-col mt-[30px] w-[98%] mx-auto min-w-[980px] ">
+        <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[1050px] ">
           <div className="flex text-[14px] font-bold mb-[10px] ">
             <div className="flex gap-x-[15px] w-[33%] ">
               <button

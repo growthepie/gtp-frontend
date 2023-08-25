@@ -823,26 +823,36 @@ export default function OverviewMetrics({
   );
 
   function formatNumber(number: number): string {
-    if (number >= 1e9) {
-      return (number / 1e9).toFixed(1) + "B";
-    } else if (number >= 1e6) {
-      return (number / 1e6).toFixed(1) + "M";
-    } else if (number >= 1e3) {
-      return (number / 1e3).toFixed(1) + "K";
-    } else if (number !== 0) {
-      return parseFloat(number.toFixed(2)).toString();
-    } else {
+    if (number === 0) {
       return "0";
+    } else if (Math.abs(number) >= 1e6) {
+      if (Math.abs(number) >= 1e9) {
+        return (number / 1e9).toFixed(1) + "B";
+      } else {
+        return (number / 1e6).toFixed(1) + "M";
+      }
+    } else if (Math.abs(number) >= 1e3) {
+      const rounded =
+        Math.abs(number) >= 10000
+          ? Math.round(number / 1e3)
+          : (number / 1e3).toFixed(1);
+      return `${rounded}${Math.abs(number) >= 10000 ? "K" : "k"}`;
+    } else if (Math.abs(number) >= 100) {
+      return number.toFixed(0);
+    } else if (Math.abs(number) >= 10) {
+      return number.toFixed(1);
+    } else {
+      return number.toFixed(2);
     }
   }
 
   return (
     <div className="w-full flex-col relative">
       <Container>
-        <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs xl:text-base xl:flex xl:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 xl:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
-          <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
+        <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 lg:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
+          <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
             <button
-              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
+              className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
                 selectedMode.includes("gas_fees")
                   ? "bg-forest-500 dark:bg-forest-1000"
                   : "hover:bg-forest-500/10"
@@ -862,7 +872,7 @@ export default function OverviewMetrics({
               Gas Fees
             </button>
             <button
-              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
+              className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
                 selectedMode.includes("txcount")
                   ? "bg-forest-500 dark:bg-forest-1000"
                   : "hover:bg-forest-500/10"
@@ -878,15 +888,15 @@ export default function OverviewMetrics({
               Transaction Count
             </button>
           </div>
-          <div className="block xl:hidden w-[70%] mx-auto mt-[5px]">
+          <div className="block lg:hidden w-[70%] mx-auto mt-[5px]">
             <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
           </div>
-          <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
+          <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
             {Object.keys(timespans).map((timespan) => (
               <button
                 key={timespan}
                 //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
+                className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
                   selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
@@ -915,7 +925,7 @@ export default function OverviewMetrics({
         <div className="overflow-x-scroll lg:overflow-x-visible z-100 w-full scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
           <div
             className={
-              "min-w-[820px] md:min-w-[850px] overflow-hidden px-[16px]"
+              "min-w-[880px] md:min-w-[910px] overflow-hidden px-[16px]"
             }
           >
             <div
@@ -1010,7 +1020,7 @@ export default function OverviewMetrics({
           </div>
           {/* <colorful rows> */}
           {/* {selectedScale === "gasfees" ? ( */}
-          <div className="flex flex-col space-y-[10px] min-w-[820px] md:min-w-[850px] mb-8">
+          <div className="flex flex-col space-y-[10px] min-w-[880px] md:min-w-[910px] mb-8">
             {
               //chain name is key
               Object.keys(data)
@@ -1424,28 +1434,11 @@ export default function OverviewMetrics({
           >
             Share of Chain Usage
           </button>
-          <Tooltip placement="left" allowInteract>
-            <TooltipTrigger>
-              <div className="p-1 z-10">
-                <Icon icon="feather:info" className="w-6 h-6" />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-              <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-[420px] h-[80px] flex items-center">
-                <div className="flex flex-col space-y-1">
-                  <div className="font-bold text-sm leading-snug">
-                    Data Sources:
-                  </div>
-                  <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug"></div>
-                </div>
-              </div>
-            </TooltipContent>
-          </Tooltip>
         </div>
       </Container>
 
       <Container>
-        <div className="w-[96%] mx-auto mt-[30px] flex flex-col">
+        <div className="w-[97%] mx-auto mt-[30px] flex flex-col">
           <h1 className="text-lg font-bold">Most Active Contracts</h1>
           <p className="text-sm mt-[15px]">
             See the most active contracts within the selected timeframe (
@@ -1454,285 +1447,141 @@ export default function OverviewMetrics({
         </div>
       </Container>
 
-      <Container className="w-[98%] mt-[30px] mx-auto">
-        <div className="flex text-[14px] font-bold mb-[20px] ">
-          <div className="flex gap-x-[15px] w-[33%] ">
-            <button
-              className="flex gap-x-1 pl-4"
-              onClick={() => {
-                if (contractCategory !== "chain") {
-                  setSortOrder(true);
-                } else {
-                  setSortOrder(!sortOrder);
-                }
-                setContractCategory("chain");
-              }}
-            >
-              Chain
-              <Icon
-                icon={
-                  contractCategory === "chain"
-                    ? sortOrder
-                      ? "formkit:arrowdown"
-                      : "formkit:arrowup"
-                    : "formkit:arrowdown"
-                }
-                className={` text-white ${
-                  contractCategory === "chain" ? "opacity-100" : "opacity-20"
-                }`}
-              />
-            </button>
+      <Container className="lg:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-4">
+        <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[1050px] ">
+          <div className="flex text-[14px] font-bold mb-[10px]">
+            <div className="flex gap-x-[15px] w-[33%] ">
+              <button
+                className="flex gap-x-1 pl-4"
+                onClick={() => {
+                  if (contractCategory !== "chain") {
+                    setSortOrder(true);
+                  } else {
+                    setSortOrder(!sortOrder);
+                  }
+                  setContractCategory("chain");
+                }}
+              >
+                Chain
+                <Icon
+                  icon={
+                    contractCategory === "chain"
+                      ? sortOrder
+                        ? "formkit:arrowdown"
+                        : "formkit:arrowup"
+                      : "formkit:arrowdown"
+                  }
+                  className={` text-white ${
+                    contractCategory === "chain" ? "opacity-100" : "opacity-20"
+                  }`}
+                />
+              </button>
 
-            <button
-              className="flex gap-x-1"
-              onClick={() => {
-                if (contractCategory !== "contract") {
-                  setSortOrder(true);
-                } else {
-                  setSortOrder(!sortOrder);
-                }
-                setContractCategory("contract");
-              }}
-            >
-              Contract
-              <Icon
-                icon={
-                  contractCategory === "contract"
-                    ? sortOrder
-                      ? "formkit:arrowdown"
-                      : "formkit:arrowup"
-                    : "formkit:arrowdown"
-                }
-                className={` text-white ${
-                  contractCategory === "contract" ? "opacity-100" : "opacity-20"
-                }`}
-              />
-            </button>
-          </div>
-          <div className="flex w-[30%]  ">
-            <button className="flex gap-x-1 w-[53%] ">Category </button>
-            <button
-              className="flex gap-x-1"
-              onClick={() => {
-                if (contractCategory !== "subcategory") {
-                  setSortOrder(true);
-                } else {
-                  setSortOrder(!sortOrder);
-                }
-                setContractCategory("subcategory");
-              }}
-            >
-              Subcategory{" "}
-              <Icon
-                icon={
-                  contractCategory === "subcategory"
-                    ? sortOrder
-                      ? "formkit:arrowdown"
-                      : "formkit:arrowup"
-                    : "formkit:arrowdown"
-                }
-                className={` text-white ${
-                  contractCategory === "subcategory"
-                    ? "opacity-100"
-                    : "opacity-20"
-                }`}
-              />
-            </button>
-          </div>
-          <div className="flex w-[37%]  ">
-            <button
-              className="flex gap-x-1 w-[51.5%] justify-end "
-              onClick={() => {
-                if (contractCategory !== "value") {
-                  setSortOrder(true);
-                } else {
-                  setSortOrder(!sortOrder);
-                }
-                setContractCategory("value");
-              }}
-            >
-              {selectedMode.includes("gas_fees")
-                ? "Gas Fees "
-                : "Transaction Count "}
-              <p className="font-normal">
-                ({timespans[selectedTimespan].label})
-              </p>
-              <Icon
-                icon={
-                  contractCategory === "value"
-                    ? sortOrder
-                      ? "formkit:arrowdown"
-                      : "formkit:arrowup"
-                    : "formkit:arrowdown"
-                }
-                className={` text-white ${
-                  contractCategory === "value" ? "opacity-100" : "opacity-20"
-                }`}
-              />
-            </button>
+              <button
+                className="flex gap-x-1"
+                onClick={() => {
+                  if (contractCategory !== "contract") {
+                    setSortOrder(true);
+                  } else {
+                    setSortOrder(!sortOrder);
+                  }
+                  setContractCategory("contract");
+                }}
+              >
+                Contract
+                <Icon
+                  icon={
+                    contractCategory === "contract"
+                      ? sortOrder
+                        ? "formkit:arrowdown"
+                        : "formkit:arrowup"
+                      : "formkit:arrowdown"
+                  }
+                  className={` text-white ${
+                    contractCategory === "contract"
+                      ? "opacity-100"
+                      : "opacity-20"
+                  }`}
+                />
+              </button>
+            </div>
+            <div className="flex w-[30%]  ">
+              <button className="flex gap-x-1 w-[53%] ">Category </button>
+              <button
+                className="flex gap-x-1"
+                onClick={() => {
+                  if (contractCategory !== "subcategory") {
+                    setSortOrder(true);
+                  } else {
+                    setSortOrder(!sortOrder);
+                  }
+                  setContractCategory("subcategory");
+                }}
+              >
+                Subcategory{" "}
+                <Icon
+                  icon={
+                    contractCategory === "subcategory"
+                      ? sortOrder
+                        ? "formkit:arrowdown"
+                        : "formkit:arrowup"
+                      : "formkit:arrowdown"
+                  }
+                  className={` text-white ${
+                    contractCategory === "subcategory"
+                      ? "opacity-100"
+                      : "opacity-20"
+                  }`}
+                />
+              </button>
+            </div>
+            <div className="flex w-[37%]  ">
+              <button
+                className="flex gap-x-1 w-[51.5%] justify-end "
+                onClick={() => {
+                  if (contractCategory !== "value") {
+                    setSortOrder(true);
+                  } else {
+                    setSortOrder(!sortOrder);
+                  }
+                  setContractCategory("value");
+                }}
+              >
+                {selectedMode.includes("gas_fees")
+                  ? "Gas Fees "
+                  : "Transaction Count "}
+                <p className="font-normal">
+                  ({timespans[selectedTimespan].label})
+                </p>
+                <Icon
+                  icon={
+                    contractCategory === "value"
+                      ? sortOrder
+                        ? "formkit:arrowdown"
+                        : "formkit:arrowup"
+                      : "formkit:arrowdown"
+                  }
+                  className={` text-white ${
+                    contractCategory === "value" ? "opacity-100" : "opacity-20"
+                  }`}
+                />
+              </button>
 
-            <div className="flex gap-x-1 w-[48.5%] justify-center">
-              <div>Block Explorer </div>
+              <div className="flex gap-x-1 w-[48.5%] justify-center">
+                <div>Block Explorer </div>
+              </div>
             </div>
           </div>
-        </div>
-        <div>
-          {!sortOrder
-            ? Object.keys(sortedContracts).map((key, i) => {
-                if (i >= maxDisplayedContracts) {
-                  return null;
-                }
-
-                return (
-                  <div key={key + "" + sortOrder}>
-                    <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] ">
-                      <div className="flex w-[100%] ml-4 mr-8 items-center ">
-                        <div className="flex items-center h-10 w-[34%] gap-x-[20px] pl-1  ">
-                          <div className=" w-[40px]">
-                            <div
-                              className={`flex min-w-9 min-h-9 w-9 h-9 rounded-full items-center justify-center border-[5px] ${
-                                AllChainsByKeys[sortedContracts[key].chain]
-                                  .border[theme][1]
-                              }`}
-                            >
-                              <Icon
-                                icon={`gtp:${sortedContracts[key].chain.replace(
-                                  "_",
-                                  "-",
-                                )}-logo-monochrome`}
-                                className="min-w-5 min-h-5 w-5 h-5"
-                                style={{
-                                  color:
-                                    AllChainsByKeys[sortedContracts[key].chain]
-                                      .colors[theme][1],
-                                }}
-                              />
-                            </div>
-                          </div>
-
-                          <div
-                            key={sortedContracts[key].address}
-                            className={` w-[200px] h-full flex items-center ${
-                              contractHover[key] && !sortedContracts[key].name
-                                ? "relative right-[10px] text-[14px]"
-                                : ""
-                            } `}
-                            onMouseEnter={() => {
-                              setContractHover((prevHover) => ({
-                                ...prevHover,
-                                [key]: true,
-                              }));
-                            }}
-                            onMouseLeave={() => {
-                              setContractHover((prevHover) => ({
-                                ...prevHover,
-                                [key]: false,
-                              }));
-                            }}
-                          >
-                            {sortedContracts[key].name
-                              ? sortedContracts[key].name
-                              : contractHover[key]
-                              ? sortedContracts[key].address
-                              : sortedContracts[key].address.substring(0, 20) +
-                                "..."}
-                            {sortedContracts[key].name ? (
-                              <span className="hover:visible invisible bg-black rounded-xl text-[12px] relative bottom-4">
-                                {sortedContracts[key].address}
-                              </span>
-                            ) : null}
-                          </div>
-                        </div>
-                        <div className="flex items-center text-[14px] w-[43%]  justify-start  h-full  ">
-                          <div className="flex w-[40%] ">
-                            {master &&
-                              master.blockspace_categories.main_categories[
-                                sortedContracts[key].main_category_key
-                              ]}
-                          </div>
-                          <div className="flex ">
-                            {" "}
-                            {master &&
-                            master.blockspace_categories.sub_categories[
-                              sortedContracts[key].sub_category_key
-                            ]
-                              ? master.blockspace_categories.sub_categories[
-                                  sortedContracts[key].sub_category_key
-                                ]
-                              : "Unlabeled"}
-                          </div>
-                        </div>
-                        <div className="flex items-center w-[24.5%]  mr-4  ">
-                          <div className="flex flex-col w-[38%] items-end ">
-                            <div className="flex gap-x-1 w-[110px] justify-end  ">
-                              <div className="flex">
-                                {" "}
-                                {selectedMode.includes("gas_fees_")
-                                  ? showUsd
-                                    ? `$`
-                                    : `Ξ`
-                                  : ""}
-                              </div>
-                              {selectedMode.includes("gas_fees_")
-                                ? showUsd
-                                  ? Number(
-                                      sortedContracts[
-                                        key
-                                      ].gas_fees_absolute_usd.toFixed(0),
-                                    ).toLocaleString("en-US")
-                                  : Number(
-                                      sortedContracts[
-                                        key
-                                      ].gas_fees_absolute_eth.toFixed(2),
-                                    ).toLocaleString("en-US")
-                                : Number(
-                                    sortedContracts[
-                                      key
-                                    ].txcount_absolute.toFixed(0),
-                                  ).toLocaleString("en-US")}
-                            </div>
-
-                            <div className="h-[3px] w-[110px] bg-forest-900 flex justify-end">
-                              <div
-                                className={`h-full bg-forest-50`}
-                                style={{
-                                  width: getWidth(sortedContracts[key]),
-                                }}
-                              ></div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center w-[57%] justify-end ">
-                            <a
-                              href={
-                                ContractUrls[sortedContracts[key].chain] +
-                                "" +
-                                sortedContracts[key].address
-                              }
-                              target="_blank"
-                            >
-                              <Icon
-                                icon="material-symbols:link"
-                                className="w-[30px] h-[30px]"
-                              />
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            : Object.keys(sortedContracts)
-                .reverse()
-                .map((key, i) => {
+          <div>
+            {!sortOrder
+              ? Object.keys(sortedContracts).map((key, i) => {
                   if (i >= maxDisplayedContracts) {
                     return null;
                   }
 
                   return (
                     <div key={key + "" + sortOrder}>
-                      <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] group">
+                      <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] ">
                         <div className="flex w-[100%] ml-4 mr-8 items-center ">
                           <div className="flex items-center h-10 w-[34%] gap-x-[20px] pl-1  ">
                             <div className=" w-[40px]">
@@ -1759,7 +1608,7 @@ export default function OverviewMetrics({
 
                             <div
                               key={sortedContracts[key].address}
-                              className={`flex flex-col flex-1 h-full items-start justify-center ${
+                              className={` w-[200px] h-full flex items-center ${
                                 contractHover[key] && !sortedContracts[key].name
                                   ? "relative right-[10px] text-[14px]"
                                   : ""
@@ -1778,42 +1627,21 @@ export default function OverviewMetrics({
                               }}
                             >
                               {sortedContracts[key].name
-                                ? `${sortedContracts[key].project_name}: ${sortedContracts[key].name}`
+                                ? sortedContracts[key].name
                                 : contractHover[key]
                                 ? sortedContracts[key].address
-                                : sortedContracts[key].address.substring(0, 6) +
-                                  "..." +
-                                  sortedContracts[key].address.substring(
-                                    36,
-                                    42,
-                                  )}
+                                : sortedContracts[key].address.substring(
+                                    0,
+                                    20,
+                                  ) + "..."}
                               {sortedContracts[key].name ? (
-                                <div className="group-hover:flex hidden space-x-2 items-center bg-black/50 px-0.5 rounded-xl text-[12px]">
-                                  <div>
-                                    {sortedContracts[key].address.substring(
-                                      0,
-                                      6,
-                                    ) +
-                                      "..." +
-                                      sortedContracts[key].address.substring(
-                                        36,
-                                        42,
-                                      )}
-                                  </div>
-                                  <Icon
-                                    icon="feather:copy"
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(
-                                        sortedContracts[key].address,
-                                      );
-                                    }}
-                                    className="w-3 h-3 cursor-pointer"
-                                  />
-                                </div>
+                                <span className="hover:visible invisible bg-black rounded-xl text-[12px] relative bottom-4">
+                                  {sortedContracts[key].address}
+                                </span>
                               ) : null}
                             </div>
                           </div>
-                          <div className="flex items-center text-[14px] w-[43%]  justify-start  h-full ">
+                          <div className="flex items-center text-[14px] w-[43%]  justify-start  h-full  ">
                             <div className="flex w-[40%] ">
                               {master &&
                                 master.blockspace_categories.main_categories[
@@ -1892,29 +1720,206 @@ export default function OverviewMetrics({
                       </div>
                     </div>
                   );
-                })}
-          <div className="w-full flex justify-center mb-2">
-            <button
-              className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${
-                Object.keys(sortedContracts).length <= 10 ? "hidden" : "visible"
-              } ${
-                Object.keys(sortedContracts).length <= maxDisplayedContracts
-                  ? "hidden"
-                  : "visible"
-              }`}
-              onClick={() => {
-                setShowMore(!showMore);
-                if (
-                  Object.keys(sortedContracts).length > maxDisplayedContracts
-                ) {
-                  setMaxDisplayedContracts(maxDisplayedContracts + 10);
-                } else {
-                  setMaxDisplayedContracts(10);
-                }
-              }}
-            >
-              Show More
-            </button>
+                })
+              : Object.keys(sortedContracts)
+                  .reverse()
+                  .map((key, i) => {
+                    if (i >= maxDisplayedContracts) {
+                      return null;
+                    }
+
+                    return (
+                      <div key={key + "" + sortOrder}>
+                        <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] group">
+                          <div className="flex w-[100%] ml-4 mr-8 items-center ">
+                            <div className="flex items-center h-10 w-[34%] gap-x-[20px] pl-1  ">
+                              <div className=" w-[40px]">
+                                <div
+                                  className={`flex min-w-9 min-h-9 w-9 h-9 rounded-full items-center justify-center border-[5px] ${
+                                    AllChainsByKeys[sortedContracts[key].chain]
+                                      .border[theme][1]
+                                  }`}
+                                >
+                                  <Icon
+                                    icon={`gtp:${sortedContracts[
+                                      key
+                                    ].chain.replace("_", "-")}-logo-monochrome`}
+                                    className="min-w-5 min-h-5 w-5 h-5"
+                                    style={{
+                                      color:
+                                        AllChainsByKeys[
+                                          sortedContracts[key].chain
+                                        ].colors[theme][1],
+                                    }}
+                                  />
+                                </div>
+                              </div>
+
+                              <div
+                                key={sortedContracts[key].address}
+                                className={`flex flex-col flex-1 h-full items-start justify-center ${
+                                  contractHover[key] &&
+                                  !sortedContracts[key].name
+                                    ? "relative right-[10px] text-[14px]"
+                                    : ""
+                                } `}
+                                onMouseEnter={() => {
+                                  setContractHover((prevHover) => ({
+                                    ...prevHover,
+                                    [key]: true,
+                                  }));
+                                }}
+                                onMouseLeave={() => {
+                                  setContractHover((prevHover) => ({
+                                    ...prevHover,
+                                    [key]: false,
+                                  }));
+                                }}
+                              >
+                                {sortedContracts[key].name
+                                  ? `${sortedContracts[key].project_name}: ${sortedContracts[key].name}`
+                                  : contractHover[key]
+                                  ? sortedContracts[key].address
+                                  : sortedContracts[key].address.substring(
+                                      0,
+                                      6,
+                                    ) +
+                                    "..." +
+                                    sortedContracts[key].address.substring(
+                                      36,
+                                      42,
+                                    )}
+                                {sortedContracts[key].name ? (
+                                  <div className="group-hover:flex hidden space-x-2 items-center bg-black/50 px-0.5 rounded-xl text-[12px]">
+                                    <div>
+                                      {sortedContracts[key].address.substring(
+                                        0,
+                                        6,
+                                      ) +
+                                        "..." +
+                                        sortedContracts[key].address.substring(
+                                          36,
+                                          42,
+                                        )}
+                                    </div>
+                                    <Icon
+                                      icon="feather:copy"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(
+                                          sortedContracts[key].address,
+                                        );
+                                      }}
+                                      className="w-3 h-3 cursor-pointer"
+                                    />
+                                  </div>
+                                ) : null}
+                              </div>
+                            </div>
+                            <div className="flex items-center text-[14px] w-[43%]  justify-start  h-full ">
+                              <div className="flex w-[40%] ">
+                                {master &&
+                                  master.blockspace_categories.main_categories[
+                                    sortedContracts[key].main_category_key
+                                  ]}
+                              </div>
+                              <div className="flex ">
+                                {" "}
+                                {master &&
+                                master.blockspace_categories.sub_categories[
+                                  sortedContracts[key].sub_category_key
+                                ]
+                                  ? master.blockspace_categories.sub_categories[
+                                      sortedContracts[key].sub_category_key
+                                    ]
+                                  : "Unlabeled"}
+                              </div>
+                            </div>
+                            <div className="flex items-center w-[24.5%]  mr-4  ">
+                              <div className="flex flex-col w-[38%] items-end ">
+                                <div className="flex gap-x-1 w-[110px] justify-end  ">
+                                  <div className="flex">
+                                    {" "}
+                                    {selectedMode.includes("gas_fees_")
+                                      ? showUsd
+                                        ? `$`
+                                        : `Ξ`
+                                      : ""}
+                                  </div>
+                                  {selectedMode.includes("gas_fees_")
+                                    ? showUsd
+                                      ? Number(
+                                          sortedContracts[
+                                            key
+                                          ].gas_fees_absolute_usd.toFixed(0),
+                                        ).toLocaleString("en-US")
+                                      : Number(
+                                          sortedContracts[
+                                            key
+                                          ].gas_fees_absolute_eth.toFixed(2),
+                                        ).toLocaleString("en-US")
+                                    : Number(
+                                        sortedContracts[
+                                          key
+                                        ].txcount_absolute.toFixed(0),
+                                      ).toLocaleString("en-US")}
+                                </div>
+
+                                <div className="h-[3px] w-[110px] bg-forest-900 flex justify-end">
+                                  <div
+                                    className={`h-full bg-forest-50`}
+                                    style={{
+                                      width: getWidth(sortedContracts[key]),
+                                    }}
+                                  ></div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center w-[57%] justify-end ">
+                                <a
+                                  href={
+                                    ContractUrls[sortedContracts[key].chain] +
+                                    "" +
+                                    sortedContracts[key].address
+                                  }
+                                  target="_blank"
+                                >
+                                  <Icon
+                                    icon="material-symbols:link"
+                                    className="w-[30px] h-[30px]"
+                                  />
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+            <div className="w-full flex justify-center mb-2">
+              <button
+                className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${
+                  Object.keys(sortedContracts).length <= 10
+                    ? "hidden"
+                    : "visible"
+                } ${
+                  Object.keys(sortedContracts).length <= maxDisplayedContracts
+                    ? "hidden"
+                    : "visible"
+                }`}
+                onClick={() => {
+                  setShowMore(!showMore);
+                  if (
+                    Object.keys(sortedContracts).length > maxDisplayedContracts
+                  ) {
+                    setMaxDisplayedContracts(maxDisplayedContracts + 10);
+                  } else {
+                    setMaxDisplayedContracts(10);
+                  }
+                }}
+              >
+                Show More
+              </button>
+            </div>
           </div>
         </div>
       </Container>
