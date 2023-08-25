@@ -28,6 +28,7 @@ module.exports = {
         cxl: "1100px",
         exl: "1330px",
         mdl: "1000px",
+        xs: "480px",
       },
       colors: {
         ethereum: {

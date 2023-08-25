@@ -1535,7 +1535,7 @@ export default function CategoryMetrics({
       </Container>
 
       <Container>
-        <div className="flex flex-col justify-between lg:flex-row w-[98.5%] gap-y-8 mx-auto mt-[20px] lg:mt-[30px]">
+        <div className="flex flex-col justify-between lg:flex-row w-[98.5%] gap-y-8 mx-auto mt-[20px] lg:mt-[30px] mb-[20px] lg:mb-0">
           <div className="w-full lg:w-[44%] flex flex-col justify-between ">
             <div className="flex flex-col mt-4  relative">
               {sortedChainValues &&
@@ -1560,7 +1560,7 @@ export default function CategoryMetrics({
                 ))}
             </div>
           </div>
-          <div className="w-full lg:w-[56%] relative bottom-2 mt-2 mb-[30px] h-[320px] lg:mt-0 lg:h-auto">
+          <div className="w-full lg:w-[56%] relative bottom-2 mt-6 mb-[30px] h-[320px] lg:mt-0 lg:h-auto">
             {chartSeries && (
               <Chart
                 chartType="line"
@@ -1579,7 +1579,7 @@ export default function CategoryMetrics({
               />
             )}
           </div>
-          <div className="flex flex-wrap items-center w-[100%] gap-y-2 lg:hidden mt-4">
+          <div className="flex flex-wrap items-center w-[100%] gap-y-2 lg:hidden mt-8 ">
             <div className="font-bold text-sm pr-2 pl-2">
               {formatSubcategories(selectedCategory)}:{" "}
             </div>
@@ -1615,7 +1615,7 @@ export default function CategoryMetrics({
         </div>
       </Container>
       <Container>
-        <div className="w-[97%] mx-auto mt-[30px] flex flex-col">
+        <div className="w-[97%] mx-auto mt-[5px] lg:mt-[30px] flex flex-col">
           <h1 className="text-lg font-bold">Most Active Contracts</h1>
           <p className="text-sm mt-[15px]">
             See the most active contracts within the selected timeframe (
@@ -1625,7 +1625,7 @@ export default function CategoryMetrics({
         </div>
       </Container>
       <Container className="xl:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-4">
-        <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[1050px] ">
+        <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[1120px] ">
           <div className="flex text-[14px] font-bold mb-[10px] ">
             <div className="flex gap-x-[15px] w-[33%] ">
               <button

@@ -36,7 +36,7 @@ const CategoryComparison = () => {
           <Image
             src="/GTP-Package.svg"
             alt="GTP Chain"
-            className="object-contain w-[32px] h-[32px] mr-2 relative bottom-4"
+            className="object-contain w-[32px] h-[32px] mr-2 relative bottom-[100px] xs:bottom-[60px] sm:bottom-4 md:bottom-6 lg:bottom-4"
             height={32}
             width={32}
           />

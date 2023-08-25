@@ -1385,7 +1385,7 @@ export default function OverviewMetrics({
       </Container>
       <Container>
         {" "}
-        <div className="flex flex-col md:flex-row w-[98%] mx-auto md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
+        <div className="flex flex-row w-[98%] mx-auto justify-center md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
           {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
           {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
           {/* toggle ETH */}
@@ -1448,7 +1448,7 @@ export default function OverviewMetrics({
       </Container>
 
       <Container className="lg:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-4">
-        <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[1050px] ">
+        <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[1120px]  ">
           <div className="flex text-[14px] font-bold mb-[10px]">
             <div className="flex gap-x-[15px] w-[33%] ">
               <button

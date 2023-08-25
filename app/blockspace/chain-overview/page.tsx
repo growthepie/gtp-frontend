@@ -57,7 +57,9 @@ const ChainOverview = () => {
                 <Icon
                   icon={pageData.icon}
                   className={`relative  w-5 h-5 md:w-6 md:h-6 ${
-                    isSidebarOpen ? "bottom-8" : "bottom-5"
+                    isSidebarOpen
+                      ? "bottom-8"
+                      : "bottom-[0px] xs:bottom-[0px] sm:bottom-0 md:bottom-[70px] lg:bottom-6 "
                   }`}
                 />
               </div>
