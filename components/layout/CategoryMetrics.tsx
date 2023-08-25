@@ -1501,7 +1501,9 @@ export default function CategoryMetrics({
                         <button
                           className="relative bottom-[4px] h-[24px] w-full"
                           onClick={() => {
-                            handleOpen(item.category);
+                            if (selectedCategory === item.category) {
+                              handleOpen(item.category);
+                            }
                           }}
                         >
                           <Icon
