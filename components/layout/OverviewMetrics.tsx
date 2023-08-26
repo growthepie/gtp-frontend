@@ -287,7 +287,7 @@ export default function OverviewMetrics({
 
         for (const contract of Object.keys(contractsData)) {
           const dataArray = contractsData[contract];
-          const key = dataArray[0] + dataArray[4];
+          const key = dataArray[0] + dataArray[4] + dataArray[5];
           const values = dataArray;
 
           // Check if the key already exists in the result object
