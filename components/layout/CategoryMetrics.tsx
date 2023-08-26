@@ -1766,6 +1766,7 @@ export default function CategoryMetrics({
                                 AllChainsByKeys[sortedContracts[key].chain]
                                   .border[theme][1]
                               }`}
+                              key={key + "title" + sortOrder}
                             >
                               <Icon
                                 icon={`gtp:${sortedContracts[key].chain.replace(
@@ -1784,9 +1785,9 @@ export default function CategoryMetrics({
 
                           <div
                             key={sortedContracts[key].address}
-                            className={` w-[200px] h-full flex items-center ${
+                            className={`flex flex-col flex-1 h-full items-start justify-center ${
                               contractHover[key] && !sortedContracts[key].name
-                                ? "relative right-[10px] text-[14px]"
+                                ? ""
                                 : ""
                             } `}
                             onMouseEnter={() => {
@@ -1804,13 +1805,16 @@ export default function CategoryMetrics({
                           >
                             {sortedContracts[key].name
                               ? `${sortedContracts[key].project_name}: ${sortedContracts[key].name}`
-                              : contractHover[key]
-                              ? sortedContracts[key].address
                               : sortedContracts[key].address.substring(0, 6) +
                                 "..." +
                                 sortedContracts[key].address.substring(36, 42)}
-                            {sortedContracts[key].name ? (
-                              <div className="group-hover:flex hidden space-x-2 items-center bg-black/50 px-0.5 rounded-xl text-[12px]">
+                            {sortedContracts[key].name ||
+                            sortedContracts[key].address ? (
+                              <div
+                                className={` space-x-2 items-center bg-black/50 px-0.5 rounded-xl text-[12px] ${
+                                  contractHover[key] ? "flex" : "hidden"
+                                }`}
+                              >
                                 <div>
                                   {sortedContracts[key].address.substring(
                                     0,
@@ -1933,6 +1937,7 @@ export default function CategoryMetrics({
                                   AllChainsByKeys[sortedContracts[key].chain]
                                     .border[theme][1]
                                 }`}
+                                key={key + "title" + sortOrder}
                               >
                                 <Icon
                                   icon={`gtp:${sortedContracts[
@@ -1953,7 +1958,7 @@ export default function CategoryMetrics({
                               key={sortedContracts[key].address}
                               className={`flex flex-col flex-1 h-full items-start justify-center ${
                                 contractHover[key] && !sortedContracts[key].name
-                                  ? "relative right-[10px] text-[14px]"
+                                  ? ""
                                   : ""
                               } `}
                               onMouseEnter={() => {
@@ -1971,15 +1976,14 @@ export default function CategoryMetrics({
                             >
                               {sortedContracts[key].name
                                 ? `${sortedContracts[key].project_name}: ${sortedContracts[key].name}`
-                                : contractHover[key]
-                                ? sortedContracts[key].address
                                 : sortedContracts[key].address.substring(0, 6) +
                                   "..." +
                                   sortedContracts[key].address.substring(
                                     36,
                                     42,
                                   )}
-                              {sortedContracts[key].name ? (
+                              {sortedContracts[key].name ||
+                              sortedContracts[key].address ? (
                                 <div className="group-hover:flex hidden space-x-2 items-center bg-black/50 px-0.5 rounded-xl text-[12px]">
                                   <div>
                                     {sortedContracts[key].address.substring(
@@ -2090,7 +2094,8 @@ export default function CategoryMetrics({
               className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${
                 Object.keys(sortedContracts).length <= 10 ? "hidden" : "visible"
               } ${
-                Object.keys(sortedContracts).length <= maxDisplayedContracts
+                Object.keys(sortedContracts).length <= maxDisplayedContracts ||
+                maxDisplayedContracts >= 50
                   ? "hidden"
                   : "visible"
               }`}
