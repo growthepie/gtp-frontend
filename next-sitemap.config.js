@@ -4,8 +4,6 @@ module.exports = {
   generateRobotsTxt: true,
   exclude: [
     "/blog",
-    "/blockspace/chain-overview",
-    "/blockspace/category-comparison",
     "/server-sitemap.xml",
   ],
   robotsTxtOptions: {

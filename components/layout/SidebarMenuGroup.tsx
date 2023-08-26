@@ -73,7 +73,7 @@ export default function SidebarMenuGroup({
   };
 
   // disable Blockspace menu item in production
-  if (item.name === "Blockspace" && !IS_PREVIEW)
+  if (item.name === "Blockspace" && IS_PREVIEW)
     return (
       <div className="group flex flex-col">
         <Tooltip key={item.label} placement="right">
