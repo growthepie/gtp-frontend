@@ -95,6 +95,7 @@ export default function CategoryMetrics({
   const [selectedType, setSelectedType] = useState("gas_fees_absolute_usd");
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [showMore, setShowMore] = useState(false);
+  const [copyContract, setCopyContract] = useState(false);
   const isMobile = useMediaQuery("(max-width: 1023px)");
 
   const { theme } = useTheme();
@@ -1757,7 +1758,7 @@ export default function CategoryMetrics({
 
                 return (
                   <div key={key + "" + sortOrder}>
-                    <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] ">
+                    <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] group">
                       <div className="flex w-[100%] ml-4 mr-8 items-center ">
                         <div className="flex items-center h-10 w-[34%] gap-x-[20px] pl-1  ">
                           <div className=" w-[40px]">
@@ -1801,19 +1802,46 @@ export default function CategoryMetrics({
                                 ...prevHover,
                                 [key]: false,
                               }));
+                              setCopyContract(false);
                             }}
                           >
                             {sortedContracts[key].name
-                              ? `${sortedContracts[key].project_name}: ${sortedContracts[key].name}`
+                              ? !contractHover[key]
+                                ? `${
+                                    sortedContracts[key].project_name
+                                      ? sortedContracts[key].project_name + ": "
+                                      : ""
+                                  } ${sortedContracts[key].name}`
+                                : `${
+                                    (
+                                      sortedContracts[key].project_name +
+                                      ": " +
+                                      sortedContracts[key].name
+                                    ).length >= 40
+                                      ? (
+                                          sortedContracts[key].project_name +
+                                          ": " +
+                                          sortedContracts[key].name
+                                        ).substring(0, 38) + "..."
+                                      : sortedContracts[key].project_name
+                                      ? sortedContracts[key].project_name +
+                                        ": " +
+                                        sortedContracts[key].name
+                                      : sortedContracts[key].name
+                                  }`
                               : sortedContracts[key].address.substring(0, 6) +
                                 "..." +
-                                sortedContracts[key].address.substring(36, 42)}
+                                sortedContracts[key].address.substring(
+                                  36,
+                                  42,
+                                )}{" "}
                             {sortedContracts[key].name ||
                             sortedContracts[key].address ? (
                               <div
-                                className={` space-x-2 items-center bg-black/50 px-0.5 rounded-xl text-[12px] ${
-                                  contractHover[key] ? "flex" : "hidden"
-                                }`}
+                                className="group-hover:flex hidden space-x-2 items-center bg-black/50 px-0.5 rounded-xl text-[12px]"
+                                onClick={() => {
+                                  setCopyContract(true);
+                                }}
                               >
                                 <div>
                                   {sortedContracts[key].address.substring(
@@ -1827,7 +1855,11 @@ export default function CategoryMetrics({
                                     )}
                                 </div>
                                 <Icon
-                                  icon="feather:copy"
+                                  icon={`${
+                                    !copyContract
+                                      ? "feather:copy"
+                                      : "feather:check"
+                                  }`}
                                   onClick={() => {
                                     navigator.clipboard.writeText(
                                       sortedContracts[key].address,
@@ -1839,7 +1871,7 @@ export default function CategoryMetrics({
                             ) : null}
                           </div>
                         </div>
-                        <div className="flex items-center text-[14px] w-[43%]  justify-start  h-full  ">
+                        <div className="flex items-center text-[14px] w-[43%]  justify-start  h-full ">
                           <div className="flex w-[40%] ">
                             {master &&
                               master.blockspace_categories.main_categories[
@@ -1972,19 +2004,48 @@ export default function CategoryMetrics({
                                   ...prevHover,
                                   [key]: false,
                                 }));
+                                setCopyContract(false);
                               }}
                             >
                               {sortedContracts[key].name
-                                ? `${sortedContracts[key].project_name}: ${sortedContracts[key].name}`
+                                ? !contractHover[key]
+                                  ? `${
+                                      sortedContracts[key].project_name
+                                        ? sortedContracts[key].project_name +
+                                          ": "
+                                        : ""
+                                    } ${sortedContracts[key].name}`
+                                  : `${
+                                      (
+                                        sortedContracts[key].project_name +
+                                        ": " +
+                                        sortedContracts[key].name
+                                      ).length >= 40
+                                        ? (
+                                            sortedContracts[key].project_name +
+                                            ": " +
+                                            sortedContracts[key].name
+                                          ).substring(0, 38) + "..."
+                                        : sortedContracts[key].project_name
+                                        ? sortedContracts[key].project_name +
+                                          ": " +
+                                          sortedContracts[key].name
+                                        : sortedContracts[key].name
+                                    }`
                                 : sortedContracts[key].address.substring(0, 6) +
                                   "..." +
                                   sortedContracts[key].address.substring(
                                     36,
                                     42,
-                                  )}
+                                  )}{" "}
                               {sortedContracts[key].name ||
                               sortedContracts[key].address ? (
-                                <div className="group-hover:flex hidden space-x-2 items-center bg-black/50 px-0.5 rounded-xl text-[12px]">
+                                <div
+                                  className="group-hover:flex hidden space-x-2 items-center bg-black/50 px-0.5 rounded-xl text-[12px]"
+                                  onClick={() => {
+                                    setCopyContract(true);
+                                  }}
+                                >
                                   <div>
                                     {sortedContracts[key].address.substring(
                                       0,
@@ -1997,7 +2058,11 @@ export default function CategoryMetrics({
                                       )}
                                   </div>
                                   <Icon
-                                    icon="feather:copy"
+                                    icon={`${
+                                      !copyContract
+                                        ? "feather:copy"
+                                        : "feather:check"
+                                    }`}
                                     onClick={() => {
                                       navigator.clipboard.writeText(
                                         sortedContracts[key].address,
