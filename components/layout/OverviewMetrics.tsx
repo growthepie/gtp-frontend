@@ -15,7 +15,7 @@ import { useTheme } from "next-themes";
 import { Chains } from "@/types/api/ChainOverviewResponse";
 import { AllChainsByKeys } from "@/lib/chains";
 import { color } from "highcharts";
-import { useHover } from "usehooks-ts";
+import { useHover, useMediaQuery } from "usehooks-ts";
 import { Chart } from "../charts/chart";
 import Container from "./Container";
 import Colors from "tailwindcss/colors";
@@ -114,6 +114,7 @@ export default function OverviewMetrics({
   // const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
   //   {},
   // );
+  const isMobile = useMediaQuery("(max-width: 1023px)");
 
   const [sortedContracts, setSortedContracts] = useState<{
     [key: string]: ContractInfo;
@@ -917,6 +918,21 @@ export default function OverviewMetrics({
                 {timespans[timespan].label}
               </button>
             ))}
+          </div>
+          <div
+            className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[50px] right-[20px] md:right-[45px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${
+              !isMobile
+                ? ["max", "180d"].includes(selectedTimespan)
+                  ? "translate-y-[calc(-100%+3px)]"
+                  : "translate-y-0 "
+                : ["max", "180d"].includes(selectedTimespan)
+                ? "translate-y-[calc(100%+3px)]"
+                : "translate-y-0"
+            }`}
+          >
+            <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
+              7-day rolling average
+            </div>
           </div>
         </div>
       </Container>
