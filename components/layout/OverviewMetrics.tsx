@@ -1463,8 +1463,8 @@ export default function OverviewMetrics({
       </Container>
 
       <Container className="lg:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-4">
-        <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[1120px]  ">
-          <div className="flex text-[14px] font-bold mb-[10px]">
+        <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[1020px]  ">
+          <div className="flex exl:text-[14px] text-[12px] font-bold mb-[10px]">
             <div className="flex gap-x-[15px] w-[33%] ">
               <button
                 className="flex gap-x-1 pl-4"
@@ -1520,7 +1520,7 @@ export default function OverviewMetrics({
                 />
               </button>
             </div>
-            <div className="flex w-[30%]  ">
+            <div className="flex w-[30%]">
               <button className="flex gap-x-1 w-[53%] ">Category </button>
               <button
                 className="flex gap-x-1"
