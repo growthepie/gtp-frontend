@@ -83,7 +83,7 @@ export default function Header() {
         </div>
       </div>
       {/* Donation Banner <XL screen */}
-      <Link
+      {/* <Link
         href="https://explorer.gitcoin.co/#/round/10/0x8de918f0163b2021839a8d84954dd7e8e151326d/0x8de918f0163b2021839a8d84954dd7e8e151326d-48"
         target="_blank"
         rel="noopener"
@@ -98,7 +98,7 @@ export default function Header() {
           <div>Help us by donating to our project.</div>
         </div>
         <Icon icon="feather:arrow-right-circle" className="h-6 w-6" />
-      </Link>
+      </Link> */}
     </header>
   );
 }
