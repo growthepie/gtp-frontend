@@ -34,6 +34,7 @@ export const Chart = ({
   chartHeight,
   chartWidth,
   decimals = 2,
+  maxY,
 }: {
   // data: { [chain: string]: number[][] };
   chartType: "area" | "line";
@@ -51,6 +52,7 @@ export const Chart = ({
   chartHeight: string;
   chartWidth: string;
   decimals?: number;
+  maxY?: number;
 }) => {
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
@@ -281,11 +283,11 @@ export const Chart = ({
       });
       chartComponent.current?.redraw();
     }
-  }, [chartType, series, theme, types]);
+  }, [chartType, series, theme, types, maxY]);
 
   useEffect(() => {
     drawChartSeries();
-  }, [drawChartSeries, series, types]);
+  }, [drawChartSeries, series, types, maxY]);
 
   const resetXAxisExtremes = useCallback(() => {
     if (chartComponent.current) {
@@ -420,7 +422,7 @@ export const Chart = ({
                       ...baseOptions.yAxis,
                       type: yScale,
                       min: yScale === "percentage" ? 0 : undefined,
-                      max: yScale === "percentage" ? undefined : undefined,
+                      max: yScale === "percentage" ? maxY : maxY,
                       gridLineColor:
                         theme === "dark"
                           ? "rgba(215, 223, 222, 0.11)"
@@ -469,7 +471,13 @@ export const Chart = ({
                 />
               </div>
               <div className="absolute bottom-[47.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50 mix-blend-lighten">
-                <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px]" />
+                <ChartWatermark
+                  className={`h-[30.67px]  md:h-[46px] ${
+                    parseInt(chartHeight, 10) > 200
+                      ? "w-[128px] md:w-[163px]"
+                      : "w-[128.67px] md:w-[193px] "
+                  }`}
+                />
               </div>
             </div>
             {series.length === 0 && (

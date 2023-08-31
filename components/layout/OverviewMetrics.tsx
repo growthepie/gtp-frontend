@@ -454,6 +454,10 @@ export default function OverviewMetrics({
   useEffect(() => {
     if (selectedMode.includes("gas_fees_share")) {
       setSelectedMode(showUsd ? "gas_fees_share_usd" : "gas_fees_share_eth");
+    } else {
+      setSelectedMode(
+        showUsd ? "gas_fees_usd_absolute" : "gas_fees_eth_absolute",
+      );
     }
   }, [selectedMode, showUsd]);
 
@@ -822,6 +826,66 @@ export default function OverviewMetrics({
     ],
   );
 
+  const chartMax = useMemo(() => {
+    let returnValue = 0;
+    let typeIndex = data["all_l2s"].daily["types"].indexOf(selectedMode);
+
+    if (selectedChain) {
+      for (
+        let i = 0;
+        i <
+        (selectedTimespan === "max"
+          ? data[selectedChain].daily[selectedCategory].data.length
+          : timespans[selectedTimespan].value);
+        i++
+      ) {
+        if (
+          data[selectedChain].daily[selectedCategory].data.length - (i + 1) >=
+          0
+        ) {
+          if (
+            data[selectedChain].daily[selectedCategory].data[
+              data[selectedChain].daily[selectedCategory].data.length - (i + 1)
+            ][typeIndex] > returnValue
+          ) {
+            returnValue =
+              data[selectedChain].daily[selectedCategory].data[
+                data[selectedChain].daily[selectedCategory].data.length -
+                  (i + 1)
+              ][typeIndex];
+          }
+        }
+      }
+    } else {
+      for (
+        let i = 0;
+        i <
+        (selectedTimespan === "max"
+          ? data["all_l2s"].daily[selectedCategory].data.length
+          : timespans[selectedTimespan].value);
+        i++
+      ) {
+        if (
+          data["all_l2s"].daily[selectedCategory].data.length - (i + 1) >=
+          0
+        ) {
+          if (
+            data["all_l2s"].daily[selectedCategory].data[
+              data["all_l2s"].daily[selectedCategory].data.length - (i + 1)
+            ][typeIndex] > returnValue
+          ) {
+            returnValue =
+              data["all_l2s"].daily[selectedCategory].data[
+                data["all_l2s"].daily[selectedCategory].data.length - (i + 1)
+              ][typeIndex];
+          }
+        }
+      }
+    }
+    return returnValue;
+  }, [selectedTimespan, selectedCategory, selectedMode, selectedChain]);
+
+  console.log(chartMax);
   function formatNumber(number: number): string {
     if (number === 0) {
       return "0";
@@ -1374,6 +1438,7 @@ export default function OverviewMetrics({
           yScale={selectedValue === "share" ? "percentage" : "linear"}
           chartHeight="196px"
           chartWidth="100%"
+          maxY={chartMax}
         />
       </Container>
       <Container className="w-[98%] ml-4">
