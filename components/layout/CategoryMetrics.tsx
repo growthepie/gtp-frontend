@@ -229,7 +229,7 @@ export default function CategoryMetrics({
       //   value: 365,
       // },
       max: {
-        label: "Maximum",
+        label: "All Time",
         value: 0,
       },
     };

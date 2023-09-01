@@ -399,7 +399,7 @@ export default function OverviewMetrics({
       //   value: 365,
       // },
       max: {
-        label: "Maximum",
+        label: "All Time",
         value: 0,
       },
     };
