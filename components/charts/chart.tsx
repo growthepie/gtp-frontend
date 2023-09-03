@@ -352,30 +352,20 @@ export const Chart = ({
       let numIntervals;
 
       if (yScale === "percentage") {
-        // For percentages, use a default interval of 0.05
-        selectedInterval = 0.05;
-        numIntervals = maxY / selectedInterval;
+        selectedInterval = 0.05; // Default interval for percentages
       } else {
-        // For other scales, calculate the interval based on maxY
-        const tickIntervals = [25, 20, 15, 10, 5, 2, 1, 0.5, 0.1, 0.05];
-
-        for (const interval of tickIntervals) {
-          if (maxY >= interval) {
-            selectedInterval = interval;
-            numIntervals = maxY / interval;
-            break;
-          }
-        }
-
-        if (!selectedInterval) {
-          // If no suitable interval is found, use a default interval
-          selectedInterval = 1;
-          numIntervals = maxY / selectedInterval;
-        }
+        selectedInterval = 1; // Default interval for other scales
       }
 
-      // Round up maxY to ensure it's not smaller than the calculated maxY
-      maxY = Math.ceil(maxY / selectedInterval) * selectedInterval;
+      // Calculate the number of intervals based on maxY and the selectedInterval
+      numIntervals = Math.ceil(maxY / selectedInterval);
+
+      // Adjust the interval and numIntervals if needed
+      while (selectedInterval * numIntervals > maxY) {
+        // Reduce the interval until it doesn't exceed maxY
+        selectedInterval /= 2;
+        numIntervals = Math.ceil(maxY / selectedInterval);
+      }
 
       // Set a maximum of 4 intervals
       if (numIntervals > 3) {

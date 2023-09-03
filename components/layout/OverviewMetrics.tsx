@@ -883,11 +883,11 @@ export default function OverviewMetrics({
       }
     }
 
-    let roundingFactor = selectedMode.includes("share") ? 0.05 : 1000; // 0.05 for percentages, 1000 for absolute values
+    let roundingFactor = selectedMode.includes("share") ? 0.05 : 100; // 0.05 for percentages, 1000 for absolute values
     returnValue = returnValue / roundingFactor;
     returnValue = Math.ceil(returnValue) * roundingFactor;
 
-    if (!selectedMode.includes("share")) {
+    if (!selectedMode.includes("share") && returnValue > 10000) {
       returnValue = Math.ceil(returnValue / 10000) * 10000;
     }
 
@@ -975,6 +975,7 @@ export default function OverviewMetrics({
       return number.toFixed(2);
     }
   }
+  console.log(chartAvg / chartMax);
 
   return (
     <div className="w-full flex-col relative">
@@ -1491,7 +1492,7 @@ export default function OverviewMetrics({
             : {categories[selectedCategory]}
           </h2>
         </div>
-        <div className="flex">
+        <div className="flex items-center">
           <Chart
             types={
               selectedChain === null
@@ -1508,7 +1509,32 @@ export default function OverviewMetrics({
             maxY={chartMax}
             chartAvg={chartAvg}
           />
-          <div className="rounded-full w-[120px] "></div>
+          <div className="flex items-end relative top-[2px] h-[180px] w-[100px]  ">
+            <div
+              className="flex h-[28px] relative items-center justify-center rounded-full w-auto px-2.5 bg-green-800"
+              style={{
+                bottom:
+                  163 * (chartAvg / chartMax) +
+                  (chartAvg / chartMax > 0.45
+                    ? chartAvg / chartMax > 0.5
+                      ? 7
+                      : 10
+                    : 14),
+                backgroundColor:
+                  AllChainsByKeys[selectedChain ? selectedChain : "all_l2s"]
+                    ?.colors[theme ?? "dark"][0],
+                color: selectedChain
+                  ? selectedChain === "arbitrum"
+                    ? "black"
+                    : "white"
+                  : "black",
+              }}
+            >
+              {selectedMode.includes("share")
+                ? (chartAvg * 100).toFixed(1) + "%"
+                : chartAvg.toFixed(1)}
+            </div>
+          </div>
         </div>
       </Container>
       <Container className="w-[98%] ml-4">
