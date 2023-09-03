@@ -35,6 +35,7 @@ export const Chart = ({
   chartWidth,
   decimals = 2,
   maxY,
+  chartAvg,
 }: {
   // data: { [chain: string]: number[][] };
   chartType: "area" | "line";
@@ -53,6 +54,7 @@ export const Chart = ({
   chartWidth: string;
   decimals?: number;
   maxY?: number;
+  chartAvg?: number;
 }) => {
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
@@ -335,6 +337,61 @@ export const Chart = ({
     };
   }, [chartComponent, timespan, timespans, resituateChart]);
 
+  const chartColor =
+    AllChainsByKeys[series[0].name]?.colors[theme ?? "dark"][0];
+
+  function useYAxisTicks(maxY, yScale) {
+    const [yAxisTicks, setYAxisTicks] = useState({
+      interval: 0.05, // Default interval for percentages
+      numIntervals: 1,
+    });
+
+    useEffect(() => {
+      // Determine the tick interval based on maxY
+      let selectedInterval;
+      let numIntervals;
+
+      if (yScale === "percentage") {
+        // For percentages, use a default interval of 0.05
+        selectedInterval = 0.05;
+        numIntervals = maxY / selectedInterval;
+      } else {
+        // For other scales, calculate the interval based on maxY
+        const tickIntervals = [25, 20, 15, 10, 5, 2, 1, 0.5, 0.1, 0.05];
+
+        for (const interval of tickIntervals) {
+          if (maxY >= interval) {
+            selectedInterval = interval;
+            numIntervals = maxY / interval;
+            break;
+          }
+        }
+
+        if (!selectedInterval) {
+          // If no suitable interval is found, use a default interval
+          selectedInterval = 1;
+          numIntervals = maxY / selectedInterval;
+        }
+      }
+
+      // Round up maxY to ensure it's not smaller than the calculated maxY
+      maxY = Math.ceil(maxY / selectedInterval) * selectedInterval;
+
+      // Set a maximum of 4 intervals
+      if (numIntervals > 3) {
+        numIntervals = 3;
+        selectedInterval = maxY / numIntervals;
+      }
+
+      // Set the yAxisTicks state
+      setYAxisTicks({ interval: selectedInterval, numIntervals });
+    }, [maxY, yScale]);
+
+    return yAxisTicks;
+  }
+
+  const yAxisTicks = useYAxisTicks(maxY, yScale);
+
   return (
     <>
       {
@@ -422,11 +479,26 @@ export const Chart = ({
                       ...baseOptions.yAxis,
                       type: yScale,
                       min: yScale === "percentage" ? 0 : undefined,
-                      max: yScale === "percentage" ? maxY : maxY,
+                      max: maxY ? maxY : undefined,
+                      tickPositions: maxY
+                        ? Array.from(
+                            { length: yAxisTicks.numIntervals + 1 },
+                            (_, i) => i * yAxisTicks.interval,
+                          )
+                        : undefined,
+                      tickInterval: maxY ? yAxisTicks.interval : undefined,
                       gridLineColor:
                         theme === "dark"
                           ? "rgba(215, 223, 222, 0.11)"
                           : "rgba(41, 51, 50, 0.11)",
+                      plotLines: [
+                        {
+                          color: chartColor ? chartColor : null,
+                          width: 1,
+                          value: chartAvg ? chartAvg : null,
+                          dashStyle: "Dash",
+                        },
+                      ],
                       labels: {
                         ...baseOptions.yAxis.labels,
                         formatter: function (

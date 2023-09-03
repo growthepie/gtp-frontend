@@ -882,10 +882,76 @@ export default function OverviewMetrics({
         }
       }
     }
+
+    let roundingFactor = selectedMode.includes("share") ? 0.05 : 1000; // 0.05 for percentages, 1000 for absolute values
+    returnValue = returnValue / roundingFactor;
+    returnValue = Math.ceil(returnValue) * roundingFactor;
+
+    if (!selectedMode.includes("share")) {
+      returnValue = Math.ceil(returnValue / 10000) * 10000;
+    }
+
     return returnValue;
   }, [selectedTimespan, selectedCategory, selectedMode, selectedChain]);
 
-  console.log(chartMax);
+  const chartAvg = useMemo(() => {
+    let typeIndex = data["all_l2s"].daily["types"].indexOf(selectedMode);
+    let returnValue = 0;
+    if (selectedChain) {
+      let sum = 0;
+      for (
+        let i = 0;
+        i <
+        (selectedTimespan === "max"
+          ? data[selectedChain].daily[selectedCategory].data.length
+          : timespans[selectedTimespan].value);
+        i++
+      ) {
+        if (
+          data[selectedChain].daily[selectedCategory].data.length - (i + 1) >=
+          0
+        ) {
+          sum +=
+            data[selectedChain].daily[selectedCategory].data[
+              data[selectedChain].daily[selectedCategory].data.length - (i + 1)
+            ][typeIndex];
+        }
+      }
+      returnValue =
+        sum /
+        (selectedTimespan === "max"
+          ? data[selectedChain].daily[selectedCategory].data.length
+          : timespans[selectedTimespan].value);
+    } else {
+      let sum = 0;
+      for (
+        let i = 0;
+        i <
+        (selectedTimespan === "max"
+          ? data["all_l2s"].daily[selectedCategory].data.length
+          : timespans[selectedTimespan].value);
+        i++
+      ) {
+        if (
+          data["all_l2s"].daily[selectedCategory].data.length - (i + 1) >=
+          0
+        ) {
+          sum +=
+            data["all_l2s"].daily[selectedCategory].data[
+              data["all_l2s"].daily[selectedCategory].data.length - (i + 1)
+            ][typeIndex];
+        }
+      }
+      returnValue =
+        sum /
+        (selectedTimespan === "max"
+          ? data["all_l2s"].daily[selectedCategory].data.length
+          : timespans[selectedTimespan].value);
+    }
+
+    return returnValue;
+  }, [selectedTimespan, selectedMode, selectedCategory, selectedChain]);
+
   function formatNumber(number: number): string {
     if (number === 0) {
       return "0";
@@ -1425,21 +1491,25 @@ export default function OverviewMetrics({
             : {categories[selectedCategory]}
           </h2>
         </div>
-        <Chart
-          types={
-            selectedChain === null
-              ? data.all_l2s.daily.types
-              : data[selectedChain].daily.types
-          }
-          chartType="area"
-          stack
-          timespan={selectedTimespan}
-          series={chartSeries}
-          yScale={selectedValue === "share" ? "percentage" : "linear"}
-          chartHeight="196px"
-          chartWidth="100%"
-          maxY={chartMax}
-        />
+        <div className="flex">
+          <Chart
+            types={
+              selectedChain === null
+                ? data.all_l2s.daily.types
+                : data[selectedChain].daily.types
+            }
+            chartType="area"
+            stack
+            timespan={selectedTimespan}
+            series={chartSeries}
+            yScale={selectedValue === "share" ? "percentage" : "linear"}
+            chartHeight="196px"
+            chartWidth="100%"
+            maxY={chartMax}
+            chartAvg={chartAvg}
+          />
+          <div className="rounded-full w-[120px] "></div>
+        </div>
       </Container>
       <Container className="w-[98%] ml-4">
         <div className="flex flex-wrap items-center w-[100%] gap-y-2 invisible lg:visible">
