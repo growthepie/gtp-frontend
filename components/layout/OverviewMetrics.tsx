@@ -920,7 +920,7 @@ export default function OverviewMetrics({
             ))}
           </div>
           <div
-            className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[20px] right-[20px] md:right-[45px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${
+            className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[30px] right-[20px] md:right-[45px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${
               !isMobile
                 ? ["max", "180d"].includes(selectedTimespan)
                   ? "translate-y-[calc(-100%+3px)]"
