@@ -23,6 +23,7 @@ import { LandingURL, MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useLocalStorage } from "usehooks-ts";
+import { animated, useSpring } from "@react-spring/web";
 
 const DisabledStates: {
   [mode: string]: {
@@ -883,7 +884,7 @@ export default function OverviewMetrics({
       }
     }
 
-    let roundingFactor = selectedMode.includes("share") ? 0.05 : 100; // 0.05 for percentages, 1000 for absolute values
+    let roundingFactor = selectedMode.includes("share") ? 0.05 : 1; // 0.05 for percentages, 1000 for absolute values
     returnValue = returnValue / roundingFactor;
     returnValue = Math.ceil(returnValue) * roundingFactor;
 
@@ -975,7 +976,6 @@ export default function OverviewMetrics({
       return number.toFixed(2);
     }
   }
-  console.log(chartAvg / chartMax);
 
   return (
     <div className="w-full flex-col relative">
@@ -1510,7 +1510,7 @@ export default function OverviewMetrics({
             chartAvg={chartAvg}
           />
           <div className="flex items-end relative top-[2px] h-[180px] w-[100px]  ">
-            <div
+            <animated.div
               className="flex h-[28px] relative items-center justify-center rounded-full w-auto px-2.5 bg-green-800"
               style={{
                 bottom:
@@ -1532,8 +1532,8 @@ export default function OverviewMetrics({
             >
               {selectedMode.includes("share")
                 ? (chartAvg * 100).toFixed(1) + "%"
-                : chartAvg.toFixed(1)}
-            </div>
+                : (showUsd ? "$ " : "Ξ ") + formatNumber(chartAvg)}
+            </animated.div>
           </div>
         </div>
       </Container>
