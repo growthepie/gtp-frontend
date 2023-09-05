@@ -1649,7 +1649,7 @@ export default function CategoryMetrics({
                         : "formkit:arrowup"
                       : "formkit:arrowdown"
                   }
-                  className={` text-white ${
+                  className={` dark:text-white text-black ${
                     contractCategory === "chain" ? "opacity-100" : "opacity-20"
                   }`}
                 />
@@ -1675,7 +1675,7 @@ export default function CategoryMetrics({
                         : "formkit:arrowup"
                       : "formkit:arrowdown"
                   }
-                  className={` text-white ${
+                  className={` dark:text-white text-black ${
                     contractCategory === "contract"
                       ? "opacity-100"
                       : "opacity-20"
@@ -1705,7 +1705,7 @@ export default function CategoryMetrics({
                         : "formkit:arrowup"
                       : "formkit:arrowdown"
                   }
-                  className={` text-white ${
+                  className={` dark:text-white text-black ${
                     contractCategory === "subcategory"
                       ? "opacity-100"
                       : "opacity-20"
@@ -1739,7 +1739,7 @@ export default function CategoryMetrics({
                         : "formkit:arrowup"
                       : "formkit:arrowdown"
                   }
-                  className={` text-white ${
+                  className={` dark:text-white text-black ${
                     contractCategory === "value" ? "opacity-100" : "opacity-20"
                   }`}
                 />
@@ -1758,7 +1758,7 @@ export default function CategoryMetrics({
 
                 return (
                   <div key={key + "" + sortOrder}>
-                    <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] group">
+                    <div className="flex rounded-full border-forest-200 dark:border-forest-100 border-[1px] h-[60px] mt-[7.5px] group">
                       <div className="flex w-[100%] ml-4 mr-8 items-center ">
                         <div className="flex items-center h-10 w-[34%] gap-x-[20px] pl-1  ">
                           <div className=" w-[40px]">
@@ -1920,9 +1920,9 @@ export default function CategoryMetrics({
                                   ).toLocaleString("en-US")}
                             </div>
 
-                            <div className="h-[3px] w-[110px] bg-forest-900 flex justify-end">
+                            <div className="h-[3px] w-[110px] bg-forest-50 dark:bg-forest-900 flex justify-end">
                               <div
-                                className={`h-full bg-forest-50`}
+                                className={`h-full bg-forest-900 dark:bg-forest-50`}
                                 style={{
                                   width: getWidth(sortedContracts[key]),
                                 }}
@@ -1960,7 +1960,7 @@ export default function CategoryMetrics({
 
                   return (
                     <div key={key + "" + sortOrder}>
-                      <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] group">
+                      <div className="flex rounded-full border-forest-200 dark:border-forest-100 border-[1px] h-[60px] mt-[7.5px] group">
                         <div className="flex w-[100%] ml-4 mr-8 items-center ">
                           <div className="flex items-center h-10 w-[34%] gap-x-[20px] pl-1  ">
                             <div className=" w-[40px]">
@@ -2123,9 +2123,9 @@ export default function CategoryMetrics({
                                     ).toLocaleString("en-US")}
                               </div>
 
-                              <div className="h-[3px] w-[110px] bg-forest-900 flex justify-end">
+                              <div className="h-[3px] w-[110px] bg-forest-50 dark:bg-forest-900 flex justify-end">
                                 <div
-                                  className={`h-full bg-forest-50`}
+                                  className={`h-full bg-forest-900 dark:bg-forest-50`}
                                   style={{
                                     width: getWidth(sortedContracts[key]),
                                   }}
