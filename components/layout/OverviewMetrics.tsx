@@ -922,6 +922,9 @@ export default function OverviewMetrics({
         sum /
         (selectedTimespan === "max"
           ? data[selectedChain].daily[selectedCategory].data.length
+          : timespans[selectedTimespan].value >=
+            data[selectedChain].daily[selectedCategory].data.length
+          ? data[selectedChain].daily[selectedCategory].data.length
           : timespans[selectedTimespan].value);
     } else {
       let sum = 0;
@@ -943,15 +946,31 @@ export default function OverviewMetrics({
             ][typeIndex];
         }
       }
+
       returnValue =
         sum /
         (selectedTimespan === "max"
+          ? data["all_l2s"].daily[selectedCategory].data.length
+          : timespans[selectedTimespan].value >=
+            data["all_l2s"].daily[selectedCategory].data.length
           ? data["all_l2s"].daily[selectedCategory].data.length
           : timespans[selectedTimespan].value);
     }
 
     return returnValue;
   }, [selectedTimespan, selectedMode, selectedCategory, selectedChain]);
+
+  const avgHeight = useSpring({
+    y:
+      -1 *
+      (163 * (chartAvg / chartMax) +
+        (chartAvg / chartMax > 0.45
+          ? chartAvg / chartMax > 0.5
+            ? 7
+            : 10
+          : 14)),
+    config: { mass: 1, tension: 70, friction: 20 },
+  });
 
   function formatNumber(number: number): string {
     if (number === 0) {
@@ -1509,17 +1528,10 @@ export default function OverviewMetrics({
             maxY={chartMax}
             chartAvg={chartAvg}
           />
-          <div className="flex items-end relative top-[2px] h-[180px] w-[100px]  ">
+          <div className="flex items-end relative top-[2px] h-[180px] w-[80px] lg:w-[100px]  ">
             <animated.div
-              className="flex h-[28px] relative items-center justify-center rounded-full w-auto px-2.5 bg-green-800"
+              className="flex h-[28px] relative items-center justify-center rounded-full w-auto px-2.5 lg:text-base text-sm font-medium"
               style={{
-                bottom:
-                  163 * (chartAvg / chartMax) +
-                  (chartAvg / chartMax > 0.45
-                    ? chartAvg / chartMax > 0.5
-                      ? 7
-                      : 10
-                    : 14),
                 backgroundColor:
                   AllChainsByKeys[selectedChain ? selectedChain : "all_l2s"]
                     ?.colors[theme ?? "dark"][0],
@@ -1528,6 +1540,7 @@ export default function OverviewMetrics({
                     ? "black"
                     : "white"
                   : "black",
+                ...avgHeight,
               }}
             >
               {selectedMode.includes("share")
