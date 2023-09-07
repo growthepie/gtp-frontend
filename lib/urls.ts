@@ -6,6 +6,8 @@ export const MetricsURLs = {
   "total-value-locked": "https://api.growthepie.xyz/v1/metrics/tvl.json",
   "transaction-count": "https://api.growthepie.xyz/v1/metrics/txcount.json",
   "transaction-costs": "https://api.growthepie.xyz/v1/metrics/txcosts.json",
+  "rent-paid": "https://api.growthepie.xyz/v1/metrics/rent_paid.json",
+  earnings: "https://api.growthepie.xyz/v1/metrics/profit.json",
 };
 
 export const ChainURLs = {

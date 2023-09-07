@@ -127,6 +127,32 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "fees-paid-by-users",
       },
       {
+        label: "Rent Paid",
+        page: {
+          title: "Rent Paid",
+          description: "The sum of rent that was paid ...",
+          why: "Rent paid is a critical metric for ...",
+          icon: "feather:credit-card",
+        },
+        icon: "feather:credit-card",
+        key: "rent_paid",
+        rootKey: "metricsRentPaid",
+        urlKey: "rent-paid",
+      },
+      {
+        label: "Earnings",
+        page: {
+          title: "Earnings",
+          description: "The sum of earnings that were paid ...",
+          why: "Earnings is a critical metric for ...",
+          icon: "feather:credit-card",
+        },
+        icon: "feather:credit-card",
+        key: "profit",
+        rootKey: "metricsEarnings",
+        urlKey: "earnings",
+      },
+      {
         label: "Stablecoin Market Cap",
         page: {
           title: "Stablecoin Market Cap",
