@@ -31,14 +31,6 @@ export default function Header() {
             <Icon icon="feather:arrow-right-circle" className="h-6 w-6" />
           </Link> */}
           {/* Logo */}
-          <Image
-            src="/farcaster-logo.png"
-            alt="Forest"
-            className="w-6 h-6 z-10"
-            height={4}
-            width={4}
-            quality={100}
-          />
 
           <div className="flex justify-between items-end md:hidden relative w-full">
             <Link href="/" className="">
