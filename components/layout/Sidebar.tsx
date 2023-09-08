@@ -64,7 +64,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                   </button>
                 </div>
               </div>
-              <div className="z-20 mt-[30px] h-[calc(100vh-100px)] w-full flex flex-col justify-between overflow-hidden">
+              <div className="z-20 mt-[30px] h-[calc(100vh-100px)] w-full flex flex-col justify-between overflow-hidden relative">
                 <div className="flex-1 w-full overflow-x-hidden relative overflow-y-scroll scrollbar-none">
                   {navigationItems.map((item) => (
                     <SidebarMenuGroup
@@ -132,17 +132,17 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
 
   return (
     <motion.div
-      className={`flex-1 flex flex-col justify-items-start select-none overflow-hidden ${
-        isSidebarOpen ? "w-[18rem]" : "w-[5.5rem]"
+      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden  ${
+        isSidebarOpen ? "w-[18rem]" : ""
       }`}
       animate={{
         width: isSidebarOpen ? "18rem" : "5.5rem",
       }}
       transition={{
-        duration: 0.2,
+        duration: 0.3,
       }}
     >
-      <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-forest-800/30 scrollbar-track-forest-800/10 relative">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rounded-md scrollbar-thumb-forest-800/30 scrollbar-track-forest-800/10">
         {navigationItems.map((item) => (
           <SidebarMenuGroup
             key={item.name + "_item"}
