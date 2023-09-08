@@ -77,7 +77,7 @@ export default function SidebarMenuGroup({
   if (item.name === "")
     return (
       <div className="group flex flex-col">
-        <Tooltip key={item.label} placement="right">
+        <Tooltip key={item.name} placement="right">
           <TooltipTrigger className="h-6 mb-8 cursor-default pl-0 md:pl-8 overflow-visible">
             <div className="flex items-center justify-items-center opacity-70">
               <div className="w-6 mx-0">
@@ -109,15 +109,17 @@ export default function SidebarMenuGroup({
       </div>
     );
 
+  console.log(item.name);
+
   if (
     ["API Documentation", "Wiki", "Contributors", "Home", "Blog"].includes(
       item.name,
     )
   )
     return (
-      <div className="group flex flex-col">
+      <div key={item.name} className="group flex flex-col">
         {/* open in new tab */}
-        <Tooltip key={item.label} placement="right">
+        <Tooltip placement="right">
           <TooltipTrigger className="h-6 mb-8 cursor-default pl-0 md:pl-8 overflow-visible">
             <Link
               target={
@@ -157,8 +159,8 @@ export default function SidebarMenuGroup({
     );
 
   return (
-    <div className="flex flex-col" suppressHydrationWarning>
-      <Tooltip key={item.label} placement="right">
+    <div key={item.key} className="flex flex-col" suppressHydrationWarning>
+      <Tooltip placement="right">
         <TooltipTrigger className="h-6 pl-0 md:pl-8 overflow-visible">
           <div
             className="group flex items-center justify-items-start mb-2 cursor-pointer relative"
@@ -216,7 +218,7 @@ export default function SidebarMenuGroup({
       >
         {item.options.map((option, i) => {
           return (
-            <>
+            <div key={option.key}>
               {option.category &&
                 Object.keys(navigationCategories).includes(option.category) &&
                 (i === 0 ||
@@ -249,7 +251,6 @@ export default function SidebarMenuGroup({
                   </div>
                 )}
               <Tooltip
-                key={option.label}
                 className="px-0 md:px-5 overflow-visible break-inside-auto relative"
                 placement="start"
                 strategy="absolute"
@@ -264,7 +265,7 @@ export default function SidebarMenuGroup({
                     href={`/${item.name.toLowerCase()}/${option.urlKey}`}
                   >
                     {!sidebarOpen && (
-                      <div className="absolute top-0 left-[30px] right-[210px] bottom-0 z-50 bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726]"></div>
+                      <div className="absolute top-0 left-[24px] w-[44px] h-[28px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726]"></div>
                     )}
                     <div
                       className={`w-6 absolute left-[13px]  ${
@@ -313,7 +314,7 @@ export default function SidebarMenuGroup({
                   </TooltipContent>
                 )}
               </Tooltip>
-            </>
+            </div>
           );
         })}
       </div>
