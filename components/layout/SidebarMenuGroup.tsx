@@ -250,7 +250,7 @@ export default function SidebarMenuGroup({
                     </div>
                   </div>
                 )}
-              <Tooltip placement="start" strategy="absolute">
+              <Tooltip placement="start">
                 <TooltipTrigger className="px-0 md:px-5">
                   <Link
                     className={`group flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
