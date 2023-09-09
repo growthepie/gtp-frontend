@@ -71,16 +71,9 @@ export default function Header() {
             href="https://warpcast.com/growthepie"
             target="_blank"
             rel="noopener"
-            className="w-6 h-6"
+            className="w-6 h-6 dark:text-forest-200 text-forest-900"
           >
-            <Image
-              src="/farcaster-logo.png"
-              alt="Forest"
-              className="w-6 h-6 z-10"
-              height={100}
-              width={100}
-              quality={100}
-            />
+            <Icon icon="gtp:gtp-farcaster" className="h-6 w-6" />
           </Link>
 
           <Link
