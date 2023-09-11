@@ -19,7 +19,7 @@ import { motion } from "framer-motion";
 
 interface TooltipOptions {
   initialOpen?: boolean;
-  placement?: Placement | Alignment;
+  placement?: Placement;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   allowInteract?: boolean;
