@@ -73,14 +73,7 @@ export default function Header() {
             rel="noopener"
             className="w-6 h-6"
           >
-            <Image
-              src="/farcaster-logo.png"
-              alt="Forest"
-              className="w-6 h-6 z-10"
-              height={100}
-              width={100}
-              quality={100}
-            />
+            <Icon icon="gtp:farcaster" className="h-6 w-6" />
           </Link>
 
           <Link
