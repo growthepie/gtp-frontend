@@ -149,10 +149,10 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "fees-paid-by-users",
       },
       {
-        label: "Rent Paid",
+        label: "Rent Paid to L1",
         category: "economics",
         page: {
-          title: "Rent Paid",
+          title: "Rent Paid to L1",
           description:
             "The gas fees paid by L2s to post transaction data & verification states onto Ethereum.",
           why: "Rent paid is a critical metric for ...",
@@ -164,10 +164,10 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "rent-paid",
       },
       {
-        label: "Earnings",
+        label: "On-chain Profit",
         category: "economics",
         page: {
-          title: "Earnings",
+          title: "On-chain Profit",
           description:
             "The net profit of L2s, accounting for revenues as L2 gas fees collected and expenses as posting transaction data & verification states onto Ethereum.",
           why: "Earnings is a critical metric for ...",
@@ -176,7 +176,7 @@ export const navigationItems: NavigationItem[] = [
         icon: "feather:credit-card",
         key: "profit",
         rootKey: "metricsEarnings",
-        urlKey: "earnings",
+        urlKey: "profit",
       },
       {
         label: "Transaction Costs",

@@ -893,7 +893,7 @@ export default function ChainChart({
         (item) => item.key === key,
       );
 
-      if (!navItem) return null;
+      if (!navItem || !navItem.category) return null;
 
       return navigationCategories[navItem.category]
         ? navigationCategories[navItem.category].icon
