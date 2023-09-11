@@ -22,7 +22,7 @@ import d3 from "d3";
 import { AllChainsByKeys } from "@/lib/chains";
 import { debounce, forEach } from "lodash";
 
-import { navigationItems } from "@/lib/navigation";
+import { navigationItems, navigationCategories } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import ChartWatermark from "./ChartWatermark";
@@ -887,6 +887,21 @@ export default function ChainChart({
     },
   };
 
+  const getNavIcon = useCallback(
+    (key: string) => {
+      const navItem = navigationItems[1].options.find(
+        (item) => item.key === key,
+      );
+
+      if (!navItem) return null;
+
+      return navigationCategories[navItem.category]
+        ? navigationCategories[navItem.category].icon
+        : null;
+    },
+    [navigationItems],
+  );
+
   const lastPointLines = useMemo<{
     [key: string]: Highcharts.SVGElement;
   }>(() => ({}), []);
@@ -1037,7 +1052,7 @@ export default function ChainChart({
 
       {data && (
         <div
-          className="grid grid-rows-8 lg:grid-rows-3 lg:grid-cols-2 lg:grid-flow-col gap-y-0 gap-x-[15px]"
+          className="grid grid-rows-8 lg:grid-rows-4 lg:grid-cols-2 lg:grid-flow-col gap-y-0 gap-x-[15px]"
           // style={{
           //   gridRow: `span ${Math.ceil(enabledFundamentalsKeys.length / 2)}`,
           // }}
@@ -1066,11 +1081,15 @@ export default function ChainChart({
                         <div className="lg:hidden text-xs flex-1 text-right leading-snug">
                           {data.chain_id === "ethereum" && (
                             <>
-                              {key === "tvl" && (
-                                <>
-                                  TVL On-Chain data is not available for
-                                  Ethereum
-                                </>
+                              {["tvl", "rent_paid", "profit"].includes(key) && (
+                                <>Data is not available for Ethereum</>
+                              )}
+                            </>
+                          )}
+                          {data.chain_id === "imx" && (
+                            <>
+                              {["rent_paid", "profit"].includes(key) && (
+                                <>Data is not available for Ethereum</>
                               )}
                             </>
                           )}
@@ -1099,11 +1118,15 @@ export default function ChainChart({
                         <div className="absolute inset-0 hidden lg:flex font-medium opacity-30 select-none justify-center items-center text-xs lg:text-sm">
                           {data.chain_id === "ethereum" && (
                             <>
-                              {key === "tvl" && (
-                                <>
-                                  TVL On-Chain data is not available for
-                                  Ethereum
-                                </>
+                              {["tvl", "rent_paid", "profit"].includes(key) && (
+                                <>Data is not available for Ethereum</>
+                              )}
+                            </>
+                          )}
+                          {data.chain_id === "imx" && (
+                            <>
+                              {["rent_paid", "profit"].includes(key) && (
+                                <>Data is not available for Ethereum</>
                               )}
                             </>
                           )}
@@ -1116,12 +1139,8 @@ export default function ChainChart({
                           )}
                         </div>
                         <Icon
-                          icon={
-                            navigationItems[1].options.find(
-                              (o) => o.key === key,
-                            )?.icon ?? ""
-                          }
-                          className="absolute h-[64px] w-[64px] top-[55px] right-[26px] dark:text-[#CDD8D3] opacity-5 pointer-events-none"
+                          icon={getNavIcon(key)}
+                          className="absolute h-[50px] w-[50px] bottom-[16px] left-[36px] dark:text-[#CDD8D3] opacity-20 pointer-events-none"
                         />
                       </div>
                     </div>
@@ -1370,11 +1389,8 @@ export default function ChainChart({
                     </div>
                     <div>
                       <Icon
-                        icon={
-                          navigationItems[1].options.find((o) => o.key === key)
-                            ?.icon ?? ""
-                        }
-                        className="absolute h-[64px] w-[64px] top-[55px] right-[26px] dark:text-[#CDD8D3] opacity-5 pointer-events-none"
+                        icon={getNavIcon(key)}
+                        className="absolute h-[50px] w-[50px] bottom-[16px] left-[36px] dark:text-[#CDD8D3] opacity-20 pointer-events-none"
                       />
                     </div>
                   </div>
