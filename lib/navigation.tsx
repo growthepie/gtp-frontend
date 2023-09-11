@@ -164,10 +164,10 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "rent-paid",
       },
       {
-        label: "On-chain Profit",
+        label: "Onchain Profit",
         category: "economics",
         page: {
-          title: "On-chain Profit",
+          title: "Onchain Profit",
           description:
             "The net profit of L2s, accounting for revenues as L2 gas fees collected and expenses as posting transaction data & verification states onto Ethereum.",
           why: "Earnings is a critical metric for ...",
