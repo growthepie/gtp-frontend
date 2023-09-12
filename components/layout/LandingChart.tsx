@@ -42,6 +42,7 @@ const baseOptions: Highcharts.Options = {
     animation: false,
     backgroundColor: "transparent",
     showAxes: false,
+
     zooming: {
       type: "x",
       resetButton: {
@@ -202,6 +203,8 @@ export default function LandingChart({
 }) {
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
+  const [isDragging, setIsDragging] = useState(false);
+
   useEffect(() => {
     Highcharts.setOptions({
       lang: {
@@ -212,6 +215,166 @@ export default function LandingChart({
     highchartsAnnotations(Highcharts);
 
     setHighchartsLoaded(true);
+
+    Highcharts.wrap(Highcharts.Pointer.prototype, "dragStart", function (p, e) {
+      console.log("dragStart");
+      // place vertical dotted line on click
+      if (this.chart.series.length > 0) {
+        const x = e.chartX;
+        const y = e.chartY;
+
+        this.chart.zoomStartX = x;
+        this.chart.zoomStartY = y;
+      }
+
+      p.call(this);
+    });
+
+    Highcharts.wrap(Highcharts.Pointer.prototype, "drag", function (p, e) {
+      console.log("drag");
+
+      setIsDragging(true);
+
+      // update vertical dotted line on drag
+      if (this.chart.series.length > 0) {
+        const x = e.chartX;
+        const y = e.chartY;
+
+        const leftX = this.chart.zoomStartX < x ? this.chart.zoomStartX : x;
+        const rightX = this.chart.zoomStartX < x ? x : this.chart.zoomStartX;
+
+        if (this.chart.zoomLineStart) {
+          this.chart.zoomLineStart.destroy();
+        }
+
+        this.chart.zoomLineStart = this.chart.renderer
+          .path([
+            "M",
+            this.chart.zoomStartX,
+            this.chart.plotTop,
+            "L",
+            this.chart.zoomStartX,
+            this.chart.plotTop + this.chart.plotHeight,
+          ])
+          .attr({
+            stroke: "#fff",
+            stroke: "rgba(205, 216, 211, 1)",
+            "stroke-width": "1px",
+            "stroke-linejoin": "round",
+            "stroke-dasharray": "2, 1",
+            "shape-rendering": "crispEdges",
+            zIndex: 100,
+          })
+          .add();
+
+        if (this.chart.zoomStartIcon) {
+          this.chart.zoomStartIcon.destroy();
+        }
+
+        // place "rightArrow.svg" icon in middle of vertical dotted line
+        this.chart.zoomStartIcon = this.chart.renderer
+          .image(
+            "/cursors/rightArrow.svg",
+            leftX - 17,
+            this.chart.zoomStartY,
+            34,
+            34,
+          )
+          .attr({
+            zIndex: 999,
+          })
+          .add();
+
+        this.chart.zoomStartIcon.toFront();
+
+        if (this.chart.zoomLineEnd) {
+          this.chart.zoomLineEnd.destroy();
+        }
+
+        this.chart.zoomLineEnd = this.chart.renderer
+          .path([
+            "M",
+            x,
+            this.chart.plotTop,
+            "L",
+            x,
+            this.chart.plotTop + this.chart.plotHeight,
+          ])
+          .attr({
+            stroke: "#fff",
+            stroke: "rgba(205, 216, 211, 1)",
+            "stroke-width": "1px",
+            "stroke-linejoin": "round",
+            "stroke-dasharray": "2, 1",
+            "shape-rendering": "crispEdges",
+            zIndex: 100,
+          })
+          .add();
+
+        this.chart.zoomLineEnd.toFront();
+
+        if (this.chart.zoomEndIcon) {
+          this.chart.zoomEndIcon.destroy();
+        }
+
+        // place "leftArrow.svg" icon in middle of vertical dotted line
+        this.chart.zoomEndIcon = this.chart.renderer
+          .image("/cursors/leftArrow.svg", rightX - 17, y, 34, 34)
+          .attr({
+            zIndex: 999,
+          })
+          .add();
+
+        this.chart.zoomEndIcon.toFront();
+      }
+
+      p.call(this);
+    });
+
+    Highcharts.wrap(Highcharts.Pointer.prototype, "drop", function (p, e) {
+      console.log("drop");
+
+      setIsDragging(false);
+
+      // remove vertical dotted line on release
+      if (this.chart.zoomLineStart) {
+        try {
+          this.chart.zoomLineStart.destroy();
+          this.chart.zoomLineStart = null;
+        } catch (e) {
+          console.log(e);
+        }
+      }
+
+      if (this.chart.zoomLineEnd) {
+        try {
+          this.chart.zoomLineEnd.destroy();
+          this.chart.zoomLineEnd = null;
+        } catch (e) {
+          console.log(e);
+        }
+      }
+
+      if (this.chart.zoomStartIcon) {
+        try {
+          this.chart.zoomStartIcon.destroy();
+          this.chart.zoomStartIcon = null;
+        } catch (e) {
+          console.log(e);
+        }
+      }
+
+      if (this.chart.zoomEndIcon) {
+        try {
+          this.chart.zoomEndIcon.destroy();
+          this.chart.zoomEndIcon = null;
+        } catch (e) {
+          console.log(e);
+        }
+      }
+
+      p.call(this);
+    });
   }, []);
 
   const { isSidebarOpen } = useUIContext();
@@ -558,6 +721,7 @@ export default function LandingChart({
         height: isMobile ? 250 : 400,
         type: selectedScale === "percentage" ? "area" : "column",
         plotBorderColor: "transparent",
+
         zooming: {
           resetButton: {
             theme: {
@@ -950,7 +1114,7 @@ export default function LandingChart({
                           ? AllChainsByKeys[series.name]?.colors[theme][0] +
                             "66"
                           : "transparent",
-                      strokeWidth: 0,
+                      "stroke-width": 0,
                     },
                   },
                   // lineWidth: 4,
@@ -1309,7 +1473,39 @@ export default function LandingChart({
       {highchartsLoaded ? (
         <div className="w-full py-4 rounded-xl">
           <div className="w-full h-[16rem] md:h-[26rem] relative rounded-xl">
-            <div className="absolute w-full h-[24rem] top-1 md:top-4">
+            <div
+              className="absolute w-full h-[24rem] top-1 md:top-4"
+              style={{
+                cursor: isDragging
+                  ? "none"
+                  : `url("/cursors/zoom.svg") 17 17, auto`,
+              }}
+              // onClick={(e) => {
+              //   const chart = chartComponent?.current;
+
+              //   if (!chart)
+              //     return console.error("chartComponent.current is null");
+
+              //   if (chart.isInsidePlot(e.chartX - chart.plotLeft, e.chartY)) {
+              //     if (e.type === "mousedown") {
+              //       const x = e.chartX - chart.plotLeft;
+              //       const y = e.chartY - chart.plotTop;
+
+              //       // place vertical dotted line at the click position
+              //       chart.xAxis[0].addPlotLine({
+              //         id: "plot-line",
+              //         value: chart.xAxis[0].toValue(x, true),
+              //         color: "rgba(215, 223, 222, 0.5)",
+              //         width: 1,
+              //         dashStyle: "Dash",
+              //         zIndex: 100,
+              //       });
+              //     }
+              //     if (e.type === "mouseup") {
+              //     }
+              //   }
+              // }}
+            >
               <HighchartsReact
                 highcharts={Highcharts}
                 options={options}

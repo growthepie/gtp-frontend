@@ -35,6 +35,15 @@
   shape-rendering: crispEdges;
 }
 
+.highcharts-selection-marker {
+  fill: rgba(205, 216, 211, 0.2);
+  /* stroke: rgba(205, 216, 211, 1);
+  stroke-width: 1px;
+  stroke-linejoin: round;
+  stroke-dasharray: 2, 2;
+  shape-rendering: crispEdges; */
+}
+
 .scroller::-webkit-scrollbar-button:end:increment {
   width: 50px;
   display: block;
