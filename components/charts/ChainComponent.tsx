@@ -867,7 +867,7 @@ export default function ChainComponent({
 
   return (
     <div key={category} className="w-full h-fit relative">
-      <div className="w-[431px] h-[176px] relative">
+      <div className="w-full h-[176px] relative">
         <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] rounded-[15px]"></div>
         <div className="absolute w-full h-[142px] top-[49px]">
           <HighchartsReact
@@ -1043,7 +1043,7 @@ export default function ChainComponent({
         </div>
       </div>
 
-      {!zoomed
+      {/* {!zoomed
         ? (category === "stables_mcap" || category === "txcosts") && (
             <div
               className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
@@ -1098,7 +1098,7 @@ export default function ChainComponent({
                 })}
               </div>
             </div>
-          )}
+          )} */}
     </div>
   );
 }

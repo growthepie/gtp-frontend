@@ -14,7 +14,7 @@ import {
   FloatingPortal,
   safePolygon,
 } from "@floating-ui/react";
-import type { Placement } from "@floating-ui/react";
+import type { Placement, Alignment } from "@floating-ui/react";
 import { motion } from "framer-motion";
 
 interface TooltipOptions {
@@ -73,7 +73,7 @@ export function useTooltip({
       ...interactions,
       ...data,
     }),
-    [open, setOpen, interactions, data]
+    [open, setOpen, interactions, data],
   );
 }
 
@@ -122,7 +122,7 @@ export const TooltipTrigger = React.forwardRef<
         ...props,
         ...children.props,
         "data-state": context.open ? "open" : "closed",
-      })
+      }),
     );
   }
 

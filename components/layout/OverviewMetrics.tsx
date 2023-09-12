@@ -400,7 +400,7 @@ export default function OverviewMetrics({
       //   value: 365,
       // },
       max: {
-        label: "Maximum",
+        label: "All Time",
         value: 0,
       },
     };
@@ -1084,7 +1084,7 @@ export default function OverviewMetrics({
             ))}
           </div>
           <div
-            className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[50px] right-[20px] md:right-[45px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${
+            className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[30px] right-[20px] md:right-[45px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${
               !isMobile
                 ? ["max", "180d"].includes(selectedTimespan)
                   ? "translate-y-[calc(-100%+3px)]"
@@ -1676,7 +1676,7 @@ export default function OverviewMetrics({
                         : "formkit:arrowup"
                       : "formkit:arrowdown"
                   }
-                  className={` text-white ${
+                  className={` dark:text-white text-black ${
                     contractCategory === "chain" ? "opacity-100" : "opacity-20"
                   }`}
                 />
@@ -1702,7 +1702,7 @@ export default function OverviewMetrics({
                         : "formkit:arrowup"
                       : "formkit:arrowdown"
                   }
-                  className={` text-white ${
+                  className={` dark:text-white text-black ${
                     contractCategory === "contract"
                       ? "opacity-100"
                       : "opacity-20"
@@ -1732,7 +1732,7 @@ export default function OverviewMetrics({
                         : "formkit:arrowup"
                       : "formkit:arrowdown"
                   }
-                  className={` text-white ${
+                  className={` dark:text-white text-black ${
                     contractCategory === "subcategory"
                       ? "opacity-100"
                       : "opacity-20"
@@ -1766,7 +1766,7 @@ export default function OverviewMetrics({
                         : "formkit:arrowup"
                       : "formkit:arrowdown"
                   }
-                  className={` text-white ${
+                  className={` dark:text-white text-black ${
                     contractCategory === "value" ? "opacity-100" : "opacity-20"
                   }`}
                 />
@@ -1786,7 +1786,7 @@ export default function OverviewMetrics({
 
                   return (
                     <div key={key + "" + sortOrder}>
-                      <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] ">
+                      <div className="flex rounded-full border-forest-200 dark:border-forest-100 border-[1px] h-[60px] mt-[7.5px] ">
                         <div className="flex w-[100%] ml-4 mr-8 items-center ">
                           <div className="flex items-center h-10 w-[34%] gap-x-[20px] pl-1  ">
                             <div className=" w-[40px]">
@@ -1958,9 +1958,9 @@ export default function OverviewMetrics({
                                     ).toLocaleString("en-US")}
                               </div>
 
-                              <div className="h-[3px] w-[110px] bg-forest-900 flex justify-end">
+                              <div className="h-[3px] w-[110px] bg-forest-100 dark:bg-forest-900 flex justify-end">
                                 <div
-                                  className={`h-full bg-forest-50`}
+                                  className={`h-full bg-forest-900 dark:bg-forest-50`}
                                   style={{
                                     width: getWidth(sortedContracts[key]),
                                   }}
@@ -1998,7 +1998,7 @@ export default function OverviewMetrics({
 
                     return (
                       <div key={key + "" + sortOrder}>
-                        <div className="flex rounded-full border-forest-100 border-[1px] h-[60px] mt-[7.5px] ">
+                        <div className="flex rounded-full border-forest-200 dark:border-forest-100 border-[1px] h-[60px] mt-[7.5px] ">
                           <div className="flex w-[100%] ml-4 mr-8 items-center ">
                             <div className="flex items-center h-10 w-[34%] gap-x-[20px] pl-1  ">
                               <div className=" w-[40px]">
@@ -2175,9 +2175,9 @@ export default function OverviewMetrics({
                                       ).toLocaleString("en-US")}
                                 </div>
 
-                                <div className="h-[3px] w-[110px] bg-forest-900 flex justify-end">
+                                <div className="h-[3px] w-[110px] bg-forest-100 dark:bg-forest-900 flex justify-end">
                                   <div
-                                    className={`h-full bg-forest-50`}
+                                    className={`h-full bg-forest-900 dark:bg-forest-50`}
                                     style={{
                                       width: getWidth(sortedContracts[key]),
                                     }}

@@ -8,6 +8,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "./Tooltip";
 import { MasterURL } from "@/lib/urls";
 import { NavigationItem } from "@/lib/navigation";
 import { IS_PREVIEW } from "@/lib/helpers";
+import { navigationCategories } from "@/lib/navigation";
 
 type SidebarProps = {
   item: NavigationItem;
@@ -76,7 +77,7 @@ export default function SidebarMenuGroup({
   if (item.name === "")
     return (
       <div className="group flex flex-col">
-        <Tooltip key={item.label} placement="right">
+        <Tooltip key={item.name} placement="right">
           <TooltipTrigger className="h-6 mb-8 cursor-default pl-0 md:pl-8 overflow-visible">
             <div className="flex items-center justify-items-center opacity-70">
               <div className="w-6 mx-0">
@@ -108,15 +109,17 @@ export default function SidebarMenuGroup({
       </div>
     );
 
+  console.log(item.name);
+
   if (
     ["API Documentation", "Wiki", "Contributors", "Home", "Blog"].includes(
       item.name,
     )
   )
     return (
-      <div className="group flex flex-col">
+      <div key={item.name} className="group flex flex-col">
         {/* open in new tab */}
-        <Tooltip key={item.label} placement="right">
+        <Tooltip placement="right">
           <TooltipTrigger className="h-6 mb-8 cursor-default pl-0 md:pl-8 overflow-visible">
             <Link
               target={
@@ -156,12 +159,11 @@ export default function SidebarMenuGroup({
     );
 
   return (
-    <div className="flex flex-col" suppressHydrationWarning>
-      <div className="text-xs"></div>
-      <Tooltip key={item.label} placement="right">
+    <div key={item.key} className="flex flex-col" suppressHydrationWarning>
+      <Tooltip placement="right">
         <TooltipTrigger className="h-6 pl-0 md:pl-8 overflow-visible">
           <div
-            className="group flex items-center justify-items-start mb-2 cursor-pointer"
+            className="group flex items-center justify-items-start mb-2 cursor-pointer relative"
             onClick={handleToggle}
           >
             <div className="w-6 mx-0">
@@ -169,32 +171,37 @@ export default function SidebarMenuGroup({
                 <Icon icon={item.icon} className="h-7 w-7 p-0.5 mx-auto" />
               </div>
             </div>
-            {sidebarOpen ? (
+            {/* {sidebarOpen ? (
               <div className={`flex-1 flex items-start justify-between`}>
                 <div className="text-base font-bold mx-3 py-0.5">
                   {item.label}
                 </div>
                 <Icon
-                  icon={
-                    isOpen
-                      ? "feather:arrow-down-circle"
-                      : "feather:arrow-left-circle"
-                  }
+                  icon={"feather:chevron-right"}
                   className="w-[13px] h-[13px] mr-[5px] md:mr-5 my-auto"
                 />
               </div>
-            ) : (
-              <div className={`flex-1 flex items-center justify-end`}>
-                <Icon
-                  icon={
-                    isOpen
-                      ? "feather:arrow-down-circle"
-                      : "feather:arrow-left-circle"
-                  }
-                  className="w-[13px] h-[13px] mr-2"
-                />
+            ) : ( */}
+            <div
+              className={`absolute flex-1 flex items-center transition-all duration-300 origin-[-10px_10px]  ${
+                isOpen
+                  ? "rotate-90 bottom-[12px] left-[20px]"
+                  : "rotate-0 bottom-[7px] left-[22px]"
+              }`}
+            >
+              <Icon
+                icon={"feather:chevron-right"}
+                className="w-[12px] h-[12px] mr-2"
+              />
+            </div>
+            {sidebarOpen && (
+              <div className={`flex-1 flex items-start justify-between`}>
+                <div className="text-base font-bold mx-3 py-0.5 break-inside-avoid">
+                  {item.label}
+                </div>
               </div>
             )}
+            {/* )} */}
           </div>
         </TooltipTrigger>
         {!sidebarOpen && (
@@ -205,55 +212,105 @@ export default function SidebarMenuGroup({
       </Tooltip>
 
       <div
-        className={`flex flex-col overflow-hidden mb-8 w-full md:w-80 transition-height duration-200 ${
+        className={`flex flex-col overflow-hidden mb-8 w-full md:w-80 transition-all duration-300 ease-out ${
           isOpen ? "h-auto mt-4" : "h-0 mt-0"
         }`}
       >
-        {item.options.map((option) => {
+        {item.options.map((option, i) => {
           return (
-            <Tooltip key={option.label} placement="right">
-              <TooltipTrigger className="px-0 md:px-5 overflow-visible">
-                <Link
-                  className={`group flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
-                    urlParts[1].trim().localeCompare(option.urlKey) === 0
-                      ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
-                      : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
-                  }`}
-                  href={`/${item.name.toLowerCase()}/${option.urlKey}`}
-                >
-                  <div
-                    className={`w-6 absolute left-[13px]  ${
+            <div key={option.key}>
+              {option.category &&
+                Object.keys(navigationCategories).includes(option.category) &&
+                (i === 0 ||
+                  (i > 0 &&
+                    item.options[i - 1].category != option.category)) && (
+                  <div className="px-0 md:px-5 mt-[7px] mb-[2px] overflow-visible text-forest-800">
+                    <div className="flex items-center justify-items-center rounded-full md:rounded-l-full relative">
+                      <div className={`w-6 absolute left-[13px]`}>
+                        {navigationCategories[option.category].icon && (
+                          <Icon
+                            icon={navigationCategories[option.category].icon}
+                            className={
+                              item.name === "Fundamentals"
+                                ? "h-4 w-4 mx-auto"
+                                : "h-[15px] w-[15px] mx-auto"
+                            }
+                          />
+                        )}
+                      </div>
+                      <div
+                        className={`text-[10px] w-48 font-medium break-inside-auto text-left ml-12 uppercase`}
+                      >
+                        {sidebarOpen ? (
+                          navigationCategories[option.category].label
+                        ) : (
+                          <span>&nbsp;</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              <Tooltip placement="top-start">
+                <TooltipTrigger className="px-0 md:px-5">
+                  <Link
+                    className={`group flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
                       urlParts[1].trim().localeCompare(option.urlKey) === 0
-                        ? "text-inherit"
-                        : "text-[#5A6462] group-hover:text-inherit"
+                        ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                        : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                    }`}
+                    href={`/${item.name.toLowerCase()}/${option.urlKey}`}
+                  >
+                    {!sidebarOpen && (
+                      <div className="absolute top-0 left-[24px] w-[44px] h-[28px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726]"></div>
+                    )}
+                    <div
+                      className={`w-6 absolute left-[13px]  ${
+                        urlParts[1].trim().localeCompare(option.urlKey) === 0
+                          ? "text-inherit"
+                          : "text-[#5A6462] group-hover:text-inherit"
+                      }`}
+                    >
+                      {["Chains", "Blockspace"].includes(item.name) && (
+                        <Icon
+                          icon={option.icon}
+                          className={
+                            item.name === "Fundamentals"
+                              ? "h-4 w-4 mx-auto"
+                              : "h-[15px] w-[15px] mx-auto"
+                          }
+                        />
+                      )}
+                    </div>
+                    {option.category ? (
+                      <div
+                        className={`text-sm py-1 w-48 font-normal break-inside-auto transition-all duration-300 ease-in text-left ${
+                          sidebarOpen ? "ml-12" : "ml-4"
+                        }`}
+                      >
+                        {option.label}
+                      </div>
+                    ) : (
+                      <div
+                        className={`text-sm py-1 w-48 font-normal break-inside-auto text-left ml-12`}
+                      >
+                        {sidebarOpen ? option.label : <span>&nbsp;</span>}
+                      </div>
+                    )}
+                  </Link>
+                </TooltipTrigger>
+                {!sidebarOpen && (
+                  <TooltipContent
+                    className={`bg-forest-900 text-forest-900 dark:bg-forest-50 dark:text-forest-50 py-1 px-4 text-base break-inside-auto shadow-md z-50 pointer-events-none ml-[8px] mt-[36px] flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
+                      urlParts[1].trim().localeCompare(option.urlKey) === 0
+                        ? "bg-[#CDD8D3] dark:bg-forest-1000"
+                        : "bg-[#F0F5F3] dark:bg-[#5A6462]"
                     }`}
                   >
-                    {["Fundamentals", "Chains", "Blockspace"].includes(
-                      item.name,
-                    ) && (
-                      <Icon
-                        icon={option.icon}
-                        className={
-                          item.name === "Fundamentals"
-                            ? "h-4 w-4 mx-auto"
-                            : "h-[15px] w-[15px] mx-auto"
-                        }
-                      />
-                    )}
-                  </div>
-                  <div
-                    className={`text-base py-1 w-48 font-normal break-inside-auto text-left ml-12`}
-                  >
-                    {sidebarOpen ? option.label : <span>&nbsp;</span>}
-                  </div>
-                </Link>
-              </TooltipTrigger>
-              {!sidebarOpen && (
-                <TooltipContent className="bg-forest-900 text-forest-50 dark:bg-forest-50 dark:text-forest-900 rounded-md p-2 text-xs font-medium break-inside-auto -ml-56 shadow-md z-50">
-                  {option.label}
-                </TooltipContent>
-              )}
-            </Tooltip>
+                    {option.label}
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </div>
           );
         })}
       </div>

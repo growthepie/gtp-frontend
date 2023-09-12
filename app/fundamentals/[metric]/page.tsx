@@ -5,7 +5,7 @@ import { MetricsResponse } from "@/types/api/MetricsResponse";
 import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
 import ComparisonChart from "@/components/layout/ComparisonChart";
-import { useSessionStorage } from "usehooks-ts";
+import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import useSWR from "swr";
 import MetricsTable from "@/components/layout/MetricsTable";
 import { MetricsURLs } from "@/lib/urls";
@@ -18,7 +18,7 @@ import Container from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
 
 const Chain = ({ params }: { params: any }) => {
-  const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [errorCode, setErrorCode] = useState<number | null>(null);
 
   const {

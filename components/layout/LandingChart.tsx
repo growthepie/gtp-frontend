@@ -7,7 +7,7 @@ import Highcharts, {
   AxisLabelsFormatterContextObject,
 } from "highcharts/highstock";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { useSessionStorage } from "usehooks-ts";
+import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { merge } from "lodash";
 import { Switch } from "../Switch";
@@ -218,7 +218,7 @@ export default function LandingChart({
 
   const { theme } = useTheme();
 
-  const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const [selectedTimespan, setSelectedTimespan] = useState("max");
 

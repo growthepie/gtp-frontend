@@ -31,6 +31,7 @@ export default function Header() {
             <Icon icon="feather:arrow-right-circle" className="h-6 w-6" />
           </Link> */}
           {/* Logo */}
+
           <div className="flex justify-between items-end md:hidden relative w-full">
             <Link href="/" className="">
               <div className="h-[36px] w-[154.05px] relative">
@@ -67,6 +68,15 @@ export default function Header() {
           </Link>
 
           <Link
+            href="https://warpcast.com/growthepie"
+            target="_blank"
+            rel="noopener"
+            className="w-6 h-6"
+          >
+            <Icon icon="gtp:farcaster" className="h-6 w-6" />
+          </Link>
+
+          <Link
             href="https://discord.gg/fxjJFe7QyN"
             target="_blank"
             rel="noopener"
@@ -82,6 +92,7 @@ export default function Header() {
           </Link>
         </div>
       </div>
+
       {/* Donation Banner <XL screen */}
       {/* <Link
         href="https://explorer.gitcoin.co/#/round/10/0x8de918f0163b2021839a8d84954dd7e8e151326d/0x8de918f0163b2021839a8d84954dd7e8e151326d-48"
