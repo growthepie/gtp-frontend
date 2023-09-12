@@ -897,7 +897,8 @@ export default function OverviewMetrics({
 
   const chartAvg = useMemo(() => {
     let typeIndex = data["all_l2s"].daily["types"].indexOf(selectedMode);
-    let overviewIndex = data["all_l2s"].overview["types"].indexOf(selectedMode);
+    let overviewIndex = data.all_l2s["overview"]["types"].indexOf(selectedMode);
+
     let returnValue = 0;
 
     if (selectedMode.includes("absolute")) {
@@ -975,14 +976,15 @@ export default function OverviewMetrics({
   }, [selectedTimespan, selectedMode, selectedCategory, selectedChain]);
 
   const avgHeight = useSpring({
-    y:
-      -1 *
-      (163 * (chartAvg / chartMax) +
-        (chartAvg / chartMax > 0.45
-          ? chartAvg / chartMax > 0.5
-            ? 7
-            : 10
-          : 14)),
+    y: chartAvg
+      ? -1 *
+        (163 * (chartAvg / chartMax) +
+          (chartAvg / chartMax > 0.45
+            ? chartAvg / chartMax > 0.5
+              ? 7
+              : 10
+            : 14))
+      : 0,
     config: { mass: 1, tension: 70, friction: 20 },
   });
 
@@ -1540,7 +1542,7 @@ export default function OverviewMetrics({
             chartHeight="196px"
             chartWidth="100%"
             maxY={chartMax}
-            chartAvg={chartAvg}
+            chartAvg={chartAvg || undefined}
           />
           {chartAvg && (
             <div className="flex items-end relative top-[2px] h-[180px] w-[80px] lg:w-[100px]  ">
