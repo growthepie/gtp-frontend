@@ -257,7 +257,6 @@ export default function LandingChart({
             this.chart.plotTop + this.chart.plotHeight,
           ])
           .attr({
-            stroke: "#fff",
             stroke: "rgba(205, 216, 211, 1)",
             "stroke-width": "1px",
             "stroke-linejoin": "round",
@@ -301,7 +300,6 @@ export default function LandingChart({
             this.chart.plotTop + this.chart.plotHeight,
           ])
           .attr({
-            stroke: "#fff",
             stroke: "rgba(205, 216, 211, 1)",
             "stroke-width": "1px",
             "stroke-linejoin": "round",
