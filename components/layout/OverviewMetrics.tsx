@@ -455,7 +455,7 @@ export default function OverviewMetrics({
   useEffect(() => {
     if (selectedMode.includes("gas_fees_share")) {
       setSelectedMode(showUsd ? "gas_fees_share_usd" : "gas_fees_share_eth");
-    } else {
+    } else if (selectedMode.includes("gas_fees")) {
       setSelectedMode(
         showUsd ? "gas_fees_usd_absolute" : "gas_fees_eth_absolute",
       );
@@ -897,35 +897,50 @@ export default function OverviewMetrics({
 
   const chartAvg = useMemo(() => {
     let typeIndex = data["all_l2s"].daily["types"].indexOf(selectedMode);
+    let overviewIndex = data.all_l2s["overview"]["types"].indexOf(selectedMode);
+
     let returnValue = 0;
+
+    if (selectedMode.includes("absolute")) {
+      return null;
+    }
+
     if (selectedChain) {
       let sum = 0;
-      for (
-        let i = 0;
-        i <
-        (selectedTimespan === "max"
-          ? data[selectedChain].daily[selectedCategory].data.length
-          : timespans[selectedTimespan].value);
-        i++
-      ) {
-        if (
-          data[selectedChain].daily[selectedCategory].data.length - (i + 1) >=
-          0
+      if (selectedMode.includes("share")) {
+        returnValue =
+          data[selectedChain].overview[selectedTimespan][selectedCategory].data[
+            overviewIndex
+          ];
+      } else {
+        for (
+          let i = 0;
+          i <
+          (selectedTimespan === "max"
+            ? data[selectedChain].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value);
+          i++
         ) {
-          sum +=
-            data[selectedChain].daily[selectedCategory].data[
-              data[selectedChain].daily[selectedCategory].data.length - (i + 1)
-            ][typeIndex];
+          if (
+            data[selectedChain].daily[selectedCategory].data.length - (i + 1) >=
+            0
+          ) {
+            sum +=
+              data[selectedChain].daily[selectedCategory].data[
+                data[selectedChain].daily[selectedCategory].data.length -
+                  (i + 1)
+              ][typeIndex];
+          }
         }
+        returnValue =
+          sum /
+          (selectedTimespan === "max"
+            ? data[selectedChain].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value >=
+              data[selectedChain].daily[selectedCategory].data.length
+            ? data[selectedChain].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value);
       }
-      returnValue =
-        sum /
-        (selectedTimespan === "max"
-          ? data[selectedChain].daily[selectedCategory].data.length
-          : timespans[selectedTimespan].value >=
-            data[selectedChain].daily[selectedCategory].data.length
-          ? data[selectedChain].daily[selectedCategory].data.length
-          : timespans[selectedTimespan].value);
     } else {
       let sum = 0;
       for (
@@ -961,14 +976,15 @@ export default function OverviewMetrics({
   }, [selectedTimespan, selectedMode, selectedCategory, selectedChain]);
 
   const avgHeight = useSpring({
-    y:
-      -1 *
-      (163 * (chartAvg / chartMax) +
-        (chartAvg / chartMax > 0.45
-          ? chartAvg / chartMax > 0.5
-            ? 7
-            : 10
-          : 14)),
+    y: chartAvg
+      ? -1 *
+        (163 * (chartAvg / chartMax) +
+          (chartAvg / chartMax > 0.45
+            ? chartAvg / chartMax > 0.5
+              ? 7
+              : 10
+            : 14))
+      : 0,
     config: { mass: 1, tension: 70, friction: 20 },
   });
 
@@ -1526,28 +1542,30 @@ export default function OverviewMetrics({
             chartHeight="196px"
             chartWidth="100%"
             maxY={chartMax}
-            chartAvg={chartAvg}
+            chartAvg={chartAvg || undefined}
           />
-          <div className="flex items-end relative top-[2px] h-[180px] w-[80px] lg:w-[100px]  ">
-            <animated.div
-              className="flex h-[28px] relative items-center justify-center rounded-full w-auto px-2.5 lg:text-base text-sm font-medium"
-              style={{
-                backgroundColor:
-                  AllChainsByKeys[selectedChain ? selectedChain : "all_l2s"]
-                    ?.colors[theme ?? "dark"][0],
-                color: selectedChain
-                  ? selectedChain === "arbitrum"
-                    ? "black"
-                    : "white"
-                  : "black",
-                ...avgHeight,
-              }}
-            >
-              {selectedMode.includes("share")
-                ? (chartAvg * 100).toFixed(1) + "%"
-                : (showUsd ? "$ " : "Ξ ") + formatNumber(chartAvg)}
-            </animated.div>
-          </div>
+          {chartAvg && (
+            <div className="flex items-end relative top-[2px] h-[180px] w-[80px] lg:w-[100px]  ">
+              <animated.div
+                className="flex h-[28px] relative items-center justify-center rounded-full w-auto px-2.5 lg:text-base text-sm font-medium"
+                style={{
+                  backgroundColor:
+                    AllChainsByKeys[selectedChain ? selectedChain : "all_l2s"]
+                      ?.colors[theme ?? "dark"][0],
+                  color: selectedChain
+                    ? selectedChain === "arbitrum"
+                      ? "black"
+                      : "white"
+                    : "black",
+                  ...avgHeight,
+                }}
+              >
+                {selectedMode.includes("share")
+                  ? (chartAvg * 100).toFixed(2) + "%"
+                  : (showUsd ? "$ " : "Ξ ") + formatNumber(chartAvg)}
+              </animated.div>
+            </div>
+          )}
         </div>
       </Container>
       <Container className="w-[98%] ml-4">
