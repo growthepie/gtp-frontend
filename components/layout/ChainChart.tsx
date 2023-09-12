@@ -1052,7 +1052,7 @@ export default function ChainChart({
 
       {data && (
         <div
-          className="grid grid-rows-8 lg:grid-rows-4 lg:grid-cols-2 lg:grid-flow-col gap-y-0 gap-x-[15px]"
+          className="grid grid-rows-8 lg:grid-rows-4 lg:grid-cols-2 lg:grid-flow-row gap-y-0 gap-x-[15px]"
           // style={{
           //   gridRow: `span ${Math.ceil(enabledFundamentalsKeys.length / 2)}`,
           // }}
@@ -1149,7 +1149,7 @@ export default function ChainChart({
                       <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
                     </div>
                     {!zoomed
-                      ? (key === "stables_mcap" || key === "txcosts") && (
+                      ? (key === "profit" || key === "txcosts") && (
                           <div
                             className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
                               key === "txcosts" ? "hidden lg:block" : ""
@@ -1177,7 +1177,7 @@ export default function ChainChart({
                             </div>
                           </div>
                         )
-                      : (key === "stables_mcap" || key === "txcosts") &&
+                      : (key === "profit" || key === "txcosts") &&
                         intervalShown && (
                           <div
                             className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
@@ -1399,7 +1399,7 @@ export default function ChainChart({
                     <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
                   </div>
                   {!zoomed
-                    ? (key === "stables_mcap" || key === "txcosts") && (
+                    ? (key === "profit" || key === "txcosts") && (
                         <div
                           className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
                             key === "txcosts" ? "hidden lg:block" : ""
@@ -1427,7 +1427,7 @@ export default function ChainChart({
                           </div>
                         </div>
                       )
-                    : (key === "stables_mcap" || key === "txcosts") &&
+                    : (key === "profit" || key === "txcosts") &&
                       intervalShown && (
                         <div
                           className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
