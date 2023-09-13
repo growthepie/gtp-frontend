@@ -22,7 +22,7 @@ import d3 from "d3";
 import { AllChainsByKeys } from "@/lib/chains";
 import { debounce, forEach } from "lodash";
 
-import { navigationItems } from "@/lib/navigation";
+import { navigationItems, navigationCategories } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import ChartWatermark from "@/components/layout/ChartWatermark";
@@ -317,6 +317,36 @@ export default function ChainComponent({
       return tickPositions;
     },
     [selectedTimespan],
+  );
+
+  const getNavIcon = useCallback(
+    (key: string) => {
+      const navItem = navigationItems[1].options.find(
+        (item) => item.key === key,
+      );
+
+      if (!navItem || !navItem.category) return null;
+
+      return navigationCategories[navItem.category]
+        ? navigationCategories[navItem.category].icon
+        : null;
+    },
+    [navigationItems],
+  );
+
+  const getNavLabel = useCallback(
+    (key: string) => {
+      const navItem = navigationItems[1].options.find(
+        (item) => item.key === key,
+      );
+
+      if (!navItem || !navItem.category) return null;
+
+      return navigationCategories[navItem.category]
+        ? navigationCategories[navItem.category].label
+        : null;
+    },
+    [navigationItems],
   );
 
   const displayValues = useMemo(() => {
@@ -1004,9 +1034,6 @@ export default function ChainComponent({
               }
             }}
           />
-          <div className="absolute bottom-[48.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-40 mix-blend-lighten">
-            <ChartWatermark className="w-[102.936px] h-[24.536px]" />
-          </div>
         </div>
         <div className="absolute top-[14px] w-full flex justify-between items-center px-[26px]">
           <div className="text-[20px] leading-snug font-bold">
@@ -1032,14 +1059,11 @@ export default function ChainComponent({
             className={`absolute top-[calc(50% - 0.5px)] right-[20px] w-[4px] h-[4px] rounded-full bg-forest-900 dark:bg-forest-50`}
           ></div>
         </div>
-        <div>
-          <Icon
-            icon={
-              navigationItems[1].options.find((o) => o.key === category)
-                ?.icon ?? ""
-            }
-            className="absolute h-[64px] w-[64px] top-[55px] right-[26px] dark:text-[#CDD8D3] opacity-5 pointer-events-none"
-          />
+        <div className="flex absolute h-[40px] w-[320px] top-[120px] left-[36px] items-center gap-x-[6px] dark:text-[#CDD8D3] opacity-20 pointer-events-none">
+          <Icon icon={getNavIcon(category)} className="w-[40px] h-[40px] " />
+          <div className="text-[30px] font-bold text-forest-200">
+            {getNavLabel(category).toUpperCase()}
+          </div>
         </div>
       </div>
 
