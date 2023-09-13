@@ -205,17 +205,7 @@ export default function LandingChart({
 
   const [isDragging, setIsDragging] = useState(false);
 
-  useEffect(() => {
-    Highcharts.setOptions({
-      lang: {
-        numericSymbols: ["K", " M", "B", "T", "P", "E"],
-      },
-    });
-    highchartsRoundedCorners(Highcharts);
-    highchartsAnnotations(Highcharts);
-
-    setHighchartsLoaded(true);
-
+  const loadHighchartsWrappers = () => {
     Highcharts.wrap(Highcharts.Pointer.prototype, "dragStart", function (p, e) {
       console.log("dragStart");
       // place vertical dotted line on click
@@ -250,10 +240,10 @@ export default function LandingChart({
         this.chart.zoomLineStart = this.chart.renderer
           .path([
             "M",
-            this.chart.zoomStartX,
+            leftX,
             this.chart.plotTop,
             "L",
-            this.chart.zoomStartX,
+            leftX,
             this.chart.plotTop + this.chart.plotHeight,
           ])
           .attr({
@@ -264,27 +254,8 @@ export default function LandingChart({
             "shape-rendering": "crispEdges",
             zIndex: 100,
           })
-          .add();
-
-        if (this.chart.zoomStartIcon) {
-          this.chart.zoomStartIcon.destroy();
-        }
-
-        // place "rightArrow.svg" icon in middle of vertical dotted line
-        this.chart.zoomStartIcon = this.chart.renderer
-          .image(
-            "/cursors/rightArrow.svg",
-            leftX - 17,
-            this.chart.zoomStartY,
-            34,
-            34,
-          )
-          .attr({
-            zIndex: 999,
-          })
-          .add();
-
-        this.chart.zoomStartIcon.toFront();
+          .add()
+          .toFront();
 
         if (this.chart.zoomLineEnd) {
           this.chart.zoomLineEnd.destroy();
@@ -293,10 +264,10 @@ export default function LandingChart({
         this.chart.zoomLineEnd = this.chart.renderer
           .path([
             "M",
-            x,
+            rightX,
             this.chart.plotTop,
             "L",
-            x,
+            rightX,
             this.chart.plotTop + this.chart.plotHeight,
           ])
           .attr({
@@ -307,9 +278,29 @@ export default function LandingChart({
             "shape-rendering": "crispEdges",
             zIndex: 100,
           })
-          .add();
+          .add()
+          .toFront();
 
-        this.chart.zoomLineEnd.toFront();
+        if (this.chart.zoomStartIcon) {
+          this.chart.zoomStartIcon.destroy();
+        }
+
+        // place "rightArrow.svg" icon in middle of vertical dotted line
+        this.chart.zoomStartIcon = this.chart.renderer
+          .image(
+            x < this.chart.zoomStartX
+              ? "/cursors/leftArrow.svg"
+              : "/cursors/rightArrow.svg",
+            this.chart.zoomStartX - 17,
+            this.chart.zoomStartY,
+            34,
+            34,
+          )
+          .attr({
+            zIndex: 999,
+          })
+          .add()
+          .toFront();
 
         if (this.chart.zoomEndIcon) {
           this.chart.zoomEndIcon.destroy();
@@ -317,13 +308,136 @@ export default function LandingChart({
 
         // place "leftArrow.svg" icon in middle of vertical dotted line
         this.chart.zoomEndIcon = this.chart.renderer
-          .image("/cursors/leftArrow.svg", rightX - 17, y, 34, 34)
+          .image(
+            x < this.chart.zoomStartX
+              ? "/cursors/rightArrow.svg"
+              : "/cursors/leftArrow.svg",
+            x - 17,
+            y,
+            34,
+            34,
+          )
           .attr({
             zIndex: 999,
           })
-          .add();
+          .add()
+          .toFront();
 
-        this.chart.zoomEndIcon.toFront();
+        // get the x value of the left and right edges of the selected area
+        const leftXValue = this.chart.xAxis[0].toValue(
+          leftX - this.chart.plotLeft,
+          true,
+        );
+        const rightXValue = this.chart.xAxis[0].toValue(
+          rightX - this.chart.plotLeft,
+          true,
+        );
+
+        const leftDate = new Date(leftXValue);
+        const rightDate = new Date(rightXValue);
+
+        // display the number of days selected
+        const numDays = Math.round(
+          (rightXValue - leftXValue) / (24 * 60 * 60 * 1000),
+        );
+
+        if (this.chart.numDaysText) {
+          this.chart.numDaysText.destroy();
+        }
+
+        // display the number of days selected
+        this.chart.numDaysText = this.chart.renderer
+          .label(
+            `${numDays} day${numDays > 1 ? "s" : ""}`,
+            leftX + (rightX - leftX) / 2,
+            rightX - leftX < 160
+              ? this.chart.plotHeight - 50
+              : this.chart.plotHeight - 20,
+          )
+          .attr({
+            zIndex: 999,
+            fill: "rgb(215, 223, 222)",
+            r: 5,
+            padding: 5,
+            "font-size": "12px",
+            "font-weight": "500",
+            align: "center",
+            opacity: 0.7,
+          })
+          .css({
+            color: "#2A3433",
+            "font-family": "Inter",
+          })
+          .add()
+          .shadow(true)
+          .toFront();
+
+        if (this.chart.leftDateText) {
+          this.chart.leftDateText.destroy();
+        }
+
+        // display the left date
+        this.chart.leftDateText = this.chart.renderer
+          .label(
+            `${leftDate.toLocaleDateString(undefined, {
+              timeZone: "UTC",
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}`,
+            leftX,
+            this.chart.plotHeight - 20,
+          )
+          .attr({
+            zIndex: 999,
+            fill: "#2A3433",
+            r: 5,
+            padding: 6,
+            "font-size": "12px",
+            "font-weight": "500",
+            align: "center",
+          })
+          .css({
+            color: "rgb(215, 223, 222)",
+            "font-family": "Inter",
+          })
+          .add()
+          .shadow(true)
+          .toFront();
+
+        if (this.chart.rightDateText) {
+          this.chart.rightDateText.destroy();
+        }
+
+        // display the right date label with arrow pointing down
+        this.chart.rightDateText = this.chart.renderer
+          .label(
+            `${rightDate.toLocaleDateString(undefined, {
+              timeZone: "UTC",
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}`,
+            rightX,
+            this.chart.plotHeight - 20,
+          )
+          .attr({
+            zIndex: 999,
+            fill: "#2A3433",
+            r: 5,
+            padding: 6,
+            "font-size": "12px",
+            "font-weight": "500",
+            align: "center",
+          })
+          .css({
+            color: "rgb(215, 223, 222)",
+            "font-family": "Inter",
+          })
+          .add()
+          .shadow(true);
+
+        this.chart.rightDateText.toFront();
       }
 
       p.call(this);
@@ -334,45 +448,43 @@ export default function LandingChart({
 
       setIsDragging(false);
 
-      // remove vertical dotted line on release
-      if (this.chart.zoomLineStart) {
-        try {
-          this.chart.zoomLineStart.destroy();
-          this.chart.zoomLineStart = null;
-        } catch (e) {
-          console.log(e);
-        }
-      }
+      const elements = [
+        "zoomLineStart",
+        "zoomLineEnd",
+        "zoomStartIcon",
+        "zoomEndIcon",
+        "numDaysText",
+        "leftDateText",
+        "rightDateText",
+      ];
 
-      if (this.chart.zoomLineEnd) {
-        try {
-          this.chart.zoomLineEnd.destroy();
-          this.chart.zoomLineEnd = null;
-        } catch (e) {
-          console.log(e);
+      elements.forEach((element) => {
+        if (this.chart[element]) {
+          try {
+            this.chart[element].destroy();
+            this.chart[element] = null;
+          } catch (e) {
+            console.log(e);
+          }
         }
-      }
-
-      if (this.chart.zoomStartIcon) {
-        try {
-          this.chart.zoomStartIcon.destroy();
-          this.chart.zoomStartIcon = null;
-        } catch (e) {
-          console.log(e);
-        }
-      }
-
-      if (this.chart.zoomEndIcon) {
-        try {
-          this.chart.zoomEndIcon.destroy();
-          this.chart.zoomEndIcon = null;
-        } catch (e) {
-          console.log(e);
-        }
-      }
+      });
 
       p.call(this);
     });
+  };
+
+  useEffect(() => {
+    Highcharts.setOptions({
+      lang: {
+        numericSymbols: ["K", " M", "B", "T", "P", "E"],
+      },
+    });
+    highchartsRoundedCorners(Highcharts);
+    highchartsAnnotations(Highcharts);
+
+    loadHighchartsWrappers();
+
+    setHighchartsLoaded(true);
   }, []);
 
   const { isSidebarOpen } = useUIContext();
@@ -826,6 +938,7 @@ export default function LandingChart({
         style: {
           color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
         },
+        enabled: isDragging ? false : true,
       },
       series: [
         ...filteredData
@@ -1229,6 +1342,7 @@ export default function LandingChart({
     formatNumber,
     getSeriesType,
     getTickPositions,
+    isDragging,
     isMobile,
     metric,
     onXAxisSetExtremes,
