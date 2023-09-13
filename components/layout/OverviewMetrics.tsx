@@ -976,7 +976,15 @@ export default function OverviewMetrics({
   }, [selectedTimespan, selectedMode, selectedCategory, selectedChain]);
 
   const avgHeight = useSpring({
-    y: chartAvg ? -1 * (171 * (chartAvg / chartMax) - 4) : 0,
+    y: chartAvg
+      ? -1 *
+        (163 * (chartAvg / chartMax) +
+          (chartAvg / chartMax > 0.45
+            ? chartAvg / chartMax > 0.5
+              ? 7
+              : 10
+            : 14))
+      : 0,
     config: { mass: 1, tension: 70, friction: 20 },
   });
 

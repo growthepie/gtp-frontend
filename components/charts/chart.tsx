@@ -384,6 +384,10 @@ export const Chart = ({
   const numIntervals = Math.ceil(parseFloat(chartHeight) / 171);
   const intervalSize = maxY ? maxY / numIntervals : 0;
 
+  const lastTick = tickPositions[tickPositions.length - 1];
+  const displayMinorTicksOnly =
+    lastTick < timespans[timespan].xMin || lastTick > timespans[timespan].xMax;
+
   return (
     <>
       {
@@ -464,12 +468,9 @@ export const Chart = ({
                       minorTickInterval: ["7d", "30d"].includes(timespan)
                         ? 1000 * 60 * 60 * 24 * 1
                         : 1000 * 60 * 60 * 24 * 7,
-                      tickPositions: maxY
-                        ? Array.from(
-                            { length: numIntervals + 1 },
-                            (_, i) => i * intervalSize,
-                          )
-                        : undefined,
+                      tickPositions: displayMinorTicksOnly
+                        ? undefined
+                        : tickPositions,
                       labels: getXAxisLabels(),
                     },
                     yAxis: {
@@ -479,8 +480,8 @@ export const Chart = ({
                       max: maxY ? maxY : undefined,
                       tickPositions: maxY
                         ? Array.from(
-                            { length: yAxisTicks.numIntervals + 1 },
-                            (_, i) => i * yAxisTicks.interval,
+                            { length: numIntervals + 1 },
+                            (_, i) => i * intervalSize,
                           )
                         : undefined,
                       tickInterval: maxY ? yAxisTicks.interval : undefined,
