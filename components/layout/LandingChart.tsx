@@ -207,7 +207,6 @@ export default function LandingChart({
 
   const loadHighchartsWrappers = () => {
     Highcharts.wrap(Highcharts.Pointer.prototype, "dragStart", function (p, e) {
-      console.log("dragStart");
       // place vertical dotted line on click
       if (this.chart.series.length > 0) {
         const x = e.chartX;
@@ -221,8 +220,6 @@ export default function LandingChart({
     });
 
     Highcharts.wrap(Highcharts.Pointer.prototype, "drag", function (p, e) {
-      console.log("drag");
-
       setIsDragging(true);
 
       // update vertical dotted line on drag
@@ -442,8 +439,6 @@ export default function LandingChart({
     });
 
     Highcharts.wrap(Highcharts.Pointer.prototype, "drop", function (p, e) {
-      console.log("drop");
-
       setIsDragging(false);
 
       const elements = [
