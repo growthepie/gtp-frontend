@@ -335,7 +335,6 @@ export default function LandingChart({
             })
             .css({
               color: "rgb(215, 223, 222)",
-              "font-family": "Inter",
             })
             .add()
             .shadow(true)
