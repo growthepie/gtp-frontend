@@ -366,7 +366,6 @@ export default function LandingChart({
           })
           .css({
             color: "#2A3433",
-            "font-family": "Inter",
           })
           .add()
           .shadow(true)
@@ -399,7 +398,6 @@ export default function LandingChart({
           })
           .css({
             color: "rgb(215, 223, 222)",
-            "font-family": "Inter",
           })
           .add()
           .shadow(true)
