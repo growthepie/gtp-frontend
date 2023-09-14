@@ -1527,7 +1527,7 @@ export default function OverviewMetrics({
             : {categories[selectedCategory]}
           </h2>
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center w-full ">
           <Chart
             types={
               selectedChain === null
@@ -1545,9 +1545,9 @@ export default function OverviewMetrics({
             chartAvg={chartAvg || undefined}
           />
           {chartAvg && (
-            <div className="flex items-end relative top-[2px] h-[180px] w-[80px] lg:w-[100px]  ">
+            <div className="flex items-end relative top-[2px] h-[180px] min-w-[50px] lg:min-w-[70px] ">
               <animated.div
-                className="flex h-[28px] relative items-center justify-center rounded-full w-auto px-2.5 lg:text-base text-sm font-medium"
+                className="flex h-[28px] relative items-center justify-center rounded-full w-full px-2.5 lg:text-base text-sm font-medium"
                 style={{
                   backgroundColor:
                     AllChainsByKeys[selectedChain ? selectedChain : "all_l2s"]
@@ -1592,7 +1592,7 @@ export default function OverviewMetrics({
       </Container>
       <Container>
         {" "}
-        <div className="flex flex-row w-[98%] mx-auto justify-center md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
+        <div className="flex flex-row w-[100%] mx-auto justify-center md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
           {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
           {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
           {/* toggle ETH */}
@@ -1655,7 +1655,7 @@ export default function OverviewMetrics({
       </Container>
 
       <Container className="lg:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-4">
-        <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[1020px]  ">
+        <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[880px]  ">
           <div className="flex exl:text-[14px] text-[12px] font-bold mb-[10px]">
             <div className="flex gap-x-[15px] w-[33%] ">
               <button
