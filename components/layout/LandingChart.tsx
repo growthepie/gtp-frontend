@@ -392,8 +392,10 @@ export default function LandingChart({
 
         this.chart.zoomStartIcon.attr({
           x:
-            x < this.chart.zoomStartX ? leftX - 17 : this.chart.zoomStartX - 17,
-          y: x < this.chart.zoomStartX ? y : this.chart.zoomStartY,
+            x < this.chart.zoomStartX
+              ? leftX - 14.5
+              : this.chart.zoomStartX - 14.5,
+          y: x < this.chart.zoomStartX ? y - 15 : this.chart.zoomStartY - 15,
           src:
             x < this.chart.zoomStartX
               ? "/cursors/rightArrow.svg"
@@ -405,8 +407,8 @@ export default function LandingChart({
         }
 
         this.chart.zoomEndIcon.attr({
-          x: x < this.chart.zoomStartX ? rightX - 17 : x - 17,
-          y: x < this.chart.zoomStartX ? this.chart.zoomStartY : y,
+          x: x < this.chart.zoomStartX ? rightX - 14.5 : x - 14.5,
+          y: x < this.chart.zoomStartX ? this.chart.zoomStartY - 15 : y - 15,
           src:
             x < this.chart.zoomStartX
               ? "/cursors/leftArrow.svg"
@@ -1624,7 +1626,7 @@ export default function LandingChart({
               style={{
                 cursor: isDragging
                   ? "none"
-                  : `url("/cursors/zoom.svg") 17 17, auto`,
+                  : `url("/cursors/zoom.svg") 14.5 14.5, auto`,
               }}
               // onClick={(e) => {
               //   const chart = chartComponent?.current;
