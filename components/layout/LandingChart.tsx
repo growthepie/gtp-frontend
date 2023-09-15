@@ -518,7 +518,7 @@ export default function LandingChart({
     highchartsRoundedCorners(Highcharts);
     highchartsAnnotations(Highcharts);
 
-    loadHighchartsWrappers();
+    // loadHighchartsWrappers();
 
     setHighchartsLoaded(true);
   }, []);
@@ -1623,11 +1623,11 @@ export default function LandingChart({
           <div className="w-full h-[16rem] md:h-[26rem] relative rounded-xl">
             <div
               className="absolute w-full h-[24rem] top-1 md:top-4"
-              style={{
-                cursor: isDragging
-                  ? "none"
-                  : `url("/cursors/zoom.svg") 14.5 14.5, auto`,
-              }}
+              // style={{
+              //   cursor: isDragging
+              //     ? "none"
+              //     : `url("/cursors/zoom.svg") 14.5 14.5, auto`,
+              // }}
               // onClick={(e) => {
               //   const chart = chartComponent?.current;
 
