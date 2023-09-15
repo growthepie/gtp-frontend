@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import Heading from "@/components/layout/Heading";
 import Container from "@/components/layout/Container";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { useSessionStorage } from "usehooks-ts";
 import CategoryMetrics from "@/components/layout/CategoryMetrics";
 import { BlockspaceURLs } from "@/lib/urls";
@@ -50,6 +51,7 @@ const CategoryComparison = () => {
           </h1>
         </div>
       </Container>
+
       {usageData && (
         <CategoryMetrics
           showEthereumMainnet={showEthereumMainnet}

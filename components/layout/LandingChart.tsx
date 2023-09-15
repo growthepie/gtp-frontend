@@ -7,7 +7,7 @@ import Highcharts, {
   AxisLabelsFormatterContextObject,
 } from "highcharts/highstock";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { useSessionStorage } from "usehooks-ts";
+import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { merge } from "lodash";
 import { Switch } from "../Switch";
@@ -42,6 +42,7 @@ const baseOptions: Highcharts.Options = {
     animation: false,
     backgroundColor: "transparent",
     showAxes: false,
+
     zooming: {
       type: "x",
       resetButton: {
@@ -202,6 +203,312 @@ export default function LandingChart({
 }) {
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
+  const [isDragging, setIsDragging] = useState(false);
+
+  const loadHighchartsWrappers = () => {
+    // on drag start
+    Highcharts.wrap(Highcharts.Pointer.prototype, "dragStart", function (p, e) {
+      // place vertical dotted line on click
+      if (this.chart.series.length > 0) {
+        const x = e.chartX;
+        const y = e.chartY;
+
+        this.chart.zoomStartX = x;
+        this.chart.zoomStartY = y;
+
+        if (!this.chart.zoomLineStart) {
+          this.chart.zoomLineStart = this.chart.renderer
+            .path([
+              "M",
+              x,
+              this.chart.plotTop,
+              "L",
+              x,
+              this.chart.plotTop + this.chart.plotHeight,
+            ])
+            .attr({
+              stroke: "rgba(205, 216, 211, 1)",
+              "stroke-width": "1px",
+              "stroke-linejoin": "round",
+              "stroke-dasharray": "2, 1",
+              "shape-rendering": "crispEdges",
+              zIndex: 100,
+            })
+            .add()
+            .toFront();
+        }
+
+        if (!this.chart.zoomLineEnd) {
+          this.chart.zoomLineEnd = this.chart.renderer
+            .path([
+              "M",
+              x,
+              this.chart.plotTop,
+              "L",
+              x,
+              this.chart.plotTop + this.chart.plotHeight,
+            ])
+            .attr({
+              stroke: "rgba(205, 216, 211, 1)",
+              "stroke-width": "1px",
+              "stroke-linejoin": "round",
+              "stroke-dasharray": "2, 1",
+              "shape-rendering": "crispEdges",
+              zIndex: 100,
+            })
+            .add()
+            .toFront();
+        }
+
+        if (!this.chart.zoomStartIcon) {
+          this.chart.zoomStartIcon = this.chart.renderer
+            .image("/cursors/rightArrow.svg", x - 17, y, 34, 34)
+            .attr({
+              zIndex: 999,
+            })
+            .add()
+            .toFront();
+        }
+
+        if (!this.chart.zoomEndIcon) {
+          this.chart.zoomEndIcon = this.chart.renderer
+            .image("/cursors/leftArrow.svg", x - 17, y, 34, 34)
+            .attr({
+              zIndex: 999,
+            })
+            .add()
+            .toFront();
+        }
+
+        if (!this.chart.numDaysText) {
+          this.chart.numDaysText = this.chart.renderer
+            .label(``, x, y)
+            .attr({
+              zIndex: 999,
+              fill: "rgb(215, 223, 222)",
+              r: 5,
+              padding: 5,
+              "font-size": "12px",
+              "font-weight": "500",
+              align: "center",
+              opacity: 0.7,
+            })
+            .css({
+              color: "#2A3433",
+            })
+            .add()
+            .shadow(true)
+            .toFront();
+        }
+
+        if (!this.chart.leftDateText) {
+          this.chart.leftDateText = this.chart.renderer
+            .label(``, x, this.chart.plotHeight - 20)
+            .attr({
+              zIndex: 999,
+              fill: "#2A3433",
+              r: 5,
+              padding: 6,
+              "font-size": "12px",
+              "font-weight": "500",
+              align: "center",
+            })
+            .css({
+              color: "rgb(215, 223, 222)",
+            })
+            .add()
+            .shadow(true)
+            .toFront();
+        }
+
+        if (!this.chart.rightDateText) {
+          this.chart.rightDateText = this.chart.renderer
+            .label(``, x, this.chart.plotHeight - 20)
+            .attr({
+              zIndex: 999,
+              fill: "#2A3433",
+              r: 5,
+              padding: 6,
+              "font-size": "12px",
+              "font-weight": "500",
+              align: "center",
+            })
+            .css({
+              color: "rgb(215, 223, 222)",
+            })
+            .add()
+            .shadow(true)
+            .toFront();
+        }
+      }
+
+      p.call(this);
+    });
+
+    Highcharts.wrap(Highcharts.Pointer.prototype, "drag", function (p, e) {
+      setIsDragging(true);
+
+      // update vertical dotted line on drag
+      if (this.chart.series.length > 0) {
+        const x = e.chartX;
+        const y = e.chartY;
+
+        const leftX = this.chart.zoomStartX < x ? this.chart.zoomStartX : x;
+        const rightX = this.chart.zoomStartX < x ? x : this.chart.zoomStartX;
+
+        if (this.chart.zoomLineStart.attr("visibility") === "hidden") {
+          this.chart.zoomLineStart.attr("visibility", "visible");
+        }
+
+        this.chart.zoomLineStart.attr({
+          d: [
+            "M",
+            leftX,
+            this.chart.plotTop,
+            "L",
+            leftX,
+            this.chart.plotTop + this.chart.plotHeight,
+          ],
+        });
+
+        if (this.chart.zoomLineEnd.attr("visibility") === "hidden") {
+          this.chart.zoomLineEnd.attr("visibility", "visible");
+        }
+
+        this.chart.zoomLineEnd.attr({
+          d: [
+            "M",
+            rightX,
+            this.chart.plotTop,
+            "L",
+            rightX,
+            this.chart.plotTop + this.chart.plotHeight,
+          ],
+        });
+
+        if (this.chart.zoomStartIcon.attr("visibility") === "hidden") {
+          this.chart.zoomStartIcon.attr("visibility", "visible");
+        }
+
+        this.chart.zoomStartIcon.attr({
+          x:
+            x < this.chart.zoomStartX
+              ? leftX - 14.5
+              : this.chart.zoomStartX - 14.5,
+          y: x < this.chart.zoomStartX ? y - 15 : this.chart.zoomStartY - 15,
+          src:
+            x < this.chart.zoomStartX
+              ? "/cursors/rightArrow.svg"
+              : "/cursors/leftArrow.svg",
+        });
+
+        if (this.chart.zoomEndIcon.attr("visibility") === "hidden") {
+          this.chart.zoomEndIcon.attr("visibility", "visible");
+        }
+
+        this.chart.zoomEndIcon.attr({
+          x: x < this.chart.zoomStartX ? rightX - 14.5 : x - 14.5,
+          y: x < this.chart.zoomStartX ? this.chart.zoomStartY - 15 : y - 15,
+          src:
+            x < this.chart.zoomStartX
+              ? "/cursors/leftArrow.svg"
+              : "/cursors/rightArrow.svg",
+        });
+
+        // get the x value of the left and right edges of the selected area
+        const leftXValue = this.chart.xAxis[0].toValue(
+          leftX - this.chart.plotLeft,
+          true,
+        );
+        const rightXValue = this.chart.xAxis[0].toValue(
+          rightX - this.chart.plotLeft,
+          true,
+        );
+
+        const leftDate = new Date(leftXValue);
+        const rightDate = new Date(rightXValue);
+
+        // display the number of days selected
+        const numDays = Math.round(
+          (rightXValue - leftXValue) / (24 * 60 * 60 * 1000),
+        );
+
+        if (this.chart.numDaysText.attr("visibility") === "hidden") {
+          this.chart.numDaysText.attr("visibility", "visible");
+        }
+
+        this.chart.numDaysText.attr({
+          text: `${numDays} day${numDays > 1 ? "s" : ""}`,
+          x: leftX + (rightX - leftX) / 2,
+          y:
+            rightX - leftX < 160
+              ? this.chart.plotHeight - 50
+              : this.chart.plotHeight - 20,
+        });
+
+        if (this.chart.leftDateText.attr("visibility") === "hidden") {
+          this.chart.leftDateText.attr("visibility", "visible");
+        }
+
+        // display the left date
+        this.chart.leftDateText.attr({
+          text: `${leftDate.toLocaleDateString(undefined, {
+            timeZone: "UTC",
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })}`,
+          x: leftX,
+          y: this.chart.plotHeight - 20,
+        });
+
+        if (this.chart.rightDateText.attr("visibility") === "hidden") {
+          this.chart.rightDateText.attr("visibility", "visible");
+        }
+
+        // display the right date label with arrow pointing down
+        this.chart.rightDateText.attr({
+          text: `${rightDate.toLocaleDateString(undefined, {
+            timeZone: "UTC",
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })}`,
+          x: rightX,
+          y: this.chart.plotHeight - 20,
+        });
+      }
+
+      p.call(this);
+    });
+
+    Highcharts.wrap(Highcharts.Pointer.prototype, "drop", function (p, e) {
+      setIsDragging(false);
+
+      const elements = [
+        "zoomLineStart",
+        "zoomLineEnd",
+        "zoomStartIcon",
+        "zoomEndIcon",
+        "numDaysText",
+        "leftDateText",
+        "rightDateText",
+      ];
+
+      elements.forEach((element) => {
+        if (this.chart[element]) {
+          try {
+            this.chart[element].attr("visibility", "hidden");
+          } catch (e) {
+            console.log(e);
+          }
+        }
+      });
+
+      p.call(this);
+    });
+  };
+
   useEffect(() => {
     Highcharts.setOptions({
       lang: {
@@ -211,6 +518,8 @@ export default function LandingChart({
     highchartsRoundedCorners(Highcharts);
     highchartsAnnotations(Highcharts);
 
+    // loadHighchartsWrappers();
+
     setHighchartsLoaded(true);
   }, []);
 
@@ -218,7 +527,7 @@ export default function LandingChart({
 
   const { theme } = useTheme();
 
-  const [showUsd, setShowUsd] = useSessionStorage("showUsd", true);
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const [selectedTimespan, setSelectedTimespan] = useState("max");
 
@@ -558,6 +867,7 @@ export default function LandingChart({
         height: isMobile ? 250 : 400,
         type: selectedScale === "percentage" ? "area" : "column",
         plotBorderColor: "transparent",
+
         zooming: {
           resetButton: {
             theme: {
@@ -664,6 +974,7 @@ export default function LandingChart({
         style: {
           color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
         },
+        enabled: isDragging ? false : true,
       },
       series: [
         ...filteredData
@@ -950,7 +1261,7 @@ export default function LandingChart({
                           ? AllChainsByKeys[series.name]?.colors[theme][0] +
                             "66"
                           : "transparent",
-                      strokeWidth: 0,
+                      "stroke-width": 0,
                     },
                   },
                   // lineWidth: 4,
@@ -1067,6 +1378,7 @@ export default function LandingChart({
     formatNumber,
     getSeriesType,
     getTickPositions,
+    isDragging,
     isMobile,
     metric,
     onXAxisSetExtremes,
@@ -1309,7 +1621,39 @@ export default function LandingChart({
       {highchartsLoaded ? (
         <div className="w-full py-4 rounded-xl">
           <div className="w-full h-[16rem] md:h-[26rem] relative rounded-xl">
-            <div className="absolute w-full h-[24rem] top-1 md:top-4">
+            <div
+              className="absolute w-full h-[24rem] top-1 md:top-4"
+              // style={{
+              //   cursor: isDragging
+              //     ? "none"
+              //     : `url("/cursors/zoom.svg") 14.5 14.5, auto`,
+              // }}
+              // onClick={(e) => {
+              //   const chart = chartComponent?.current;
+
+              //   if (!chart)
+              //     return console.error("chartComponent.current is null");
+
+              //   if (chart.isInsidePlot(e.chartX - chart.plotLeft, e.chartY)) {
+              //     if (e.type === "mousedown") {
+              //       const x = e.chartX - chart.plotLeft;
+              //       const y = e.chartY - chart.plotTop;
+
+              //       // place vertical dotted line at the click position
+              //       chart.xAxis[0].addPlotLine({
+              //         id: "plot-line",
+              //         value: chart.xAxis[0].toValue(x, true),
+              //         color: "rgba(215, 223, 222, 0.5)",
+              //         width: 1,
+              //         dashStyle: "Dash",
+              //         zIndex: 100,
+              //       });
+              //     }
+              //     if (e.type === "mouseup") {
+              //     }
+              //   }
+              // }}
+            >
               <HighchartsReact
                 highcharts={Highcharts}
                 options={options}

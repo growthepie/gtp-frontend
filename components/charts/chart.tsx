@@ -34,6 +34,8 @@ export const Chart = ({
   chartHeight,
   chartWidth,
   decimals = 2,
+  maxY,
+  chartAvg,
 }: {
   // data: { [chain: string]: number[][] };
   chartType: "area" | "line";
@@ -51,6 +53,8 @@ export const Chart = ({
   chartHeight: string;
   chartWidth: string;
   decimals?: number;
+  maxY?: number;
+  chartAvg?: number;
 }) => {
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
@@ -281,11 +285,11 @@ export const Chart = ({
       });
       chartComponent.current?.redraw();
     }
-  }, [chartType, series, theme, types]);
+  }, [chartType, series, theme, types, maxY]);
 
   useEffect(() => {
     drawChartSeries();
-  }, [drawChartSeries, series, types]);
+  }, [drawChartSeries, series, types, maxY]);
 
   const resetXAxisExtremes = useCallback(() => {
     if (chartComponent.current) {
@@ -332,6 +336,57 @@ export const Chart = ({
       resituateChart.cancel();
     };
   }, [chartComponent, timespan, timespans, resituateChart]);
+
+  const chartColor =
+    AllChainsByKeys[series[0].name]?.colors[theme ?? "dark"][0];
+
+  function useYAxisTicks(maxY, yScale) {
+    const [yAxisTicks, setYAxisTicks] = useState({
+      interval: 0.05, // Default interval for percentages
+      numIntervals: 1,
+    });
+
+    useEffect(() => {
+      // Determine the tick interval based on maxY
+      let selectedInterval;
+      let numIntervals;
+
+      if (yScale === "percentage") {
+        selectedInterval = 0.05; // Default interval for percentages
+      } else {
+        selectedInterval = 1; // Default interval for other scales
+      }
+
+      // Calculate the number of intervals based on maxY and the selectedInterval
+      numIntervals = Math.ceil(maxY / selectedInterval);
+
+      // Adjust the interval and numIntervals if needed
+      while (selectedInterval * numIntervals > maxY) {
+        // Reduce the interval until it doesn't exceed maxY
+        selectedInterval /= 2;
+        numIntervals = Math.ceil(maxY / selectedInterval);
+      }
+
+      // Set a maximum of 4 intervals
+      if (numIntervals > 3) {
+        numIntervals = 3;
+        selectedInterval = maxY / numIntervals;
+      }
+
+      // Set the yAxisTicks state
+      setYAxisTicks({ interval: selectedInterval, numIntervals });
+    }, [maxY, yScale]);
+
+    return yAxisTicks;
+  }
+
+  const yAxisTicks = useYAxisTicks(maxY, yScale);
+  const numIntervals = Math.ceil(parseFloat(chartHeight) / 171);
+  const intervalSize = maxY ? maxY / numIntervals : 0;
+
+  const lastTick = tickPositions[tickPositions.length - 1];
+  const displayMinorTicksOnly =
+    lastTick < timespans[timespan].xMin || lastTick > timespans[timespan].xMax;
 
   return (
     <>
@@ -413,18 +468,35 @@ export const Chart = ({
                       minorTickInterval: ["7d", "30d"].includes(timespan)
                         ? 1000 * 60 * 60 * 24 * 1
                         : 1000 * 60 * 60 * 24 * 7,
-                      tickPositions: tickPositions,
+                      tickPositions: displayMinorTicksOnly
+                        ? undefined
+                        : tickPositions,
                       labels: getXAxisLabels(),
                     },
                     yAxis: {
                       ...baseOptions.yAxis,
                       type: yScale,
                       min: yScale === "percentage" ? 0 : undefined,
-                      max: yScale === "percentage" ? undefined : undefined,
+                      max: maxY ? maxY : undefined,
+                      tickPositions: maxY
+                        ? Array.from(
+                            { length: numIntervals + 1 },
+                            (_, i) => i * intervalSize,
+                          )
+                        : undefined,
+                      tickInterval: maxY ? yAxisTicks.interval : undefined,
                       gridLineColor:
                         theme === "dark"
                           ? "rgba(215, 223, 222, 0.11)"
                           : "rgba(41, 51, 50, 0.11)",
+                      plotLines: [
+                        {
+                          color: chartColor ? chartColor : null,
+                          width: 1,
+                          value: chartAvg ? chartAvg : null,
+                          dashStyle: "Dash",
+                        },
+                      ],
                       labels: {
                         ...baseOptions.yAxis.labels,
                         formatter: function (
@@ -469,7 +541,13 @@ export const Chart = ({
                 />
               </div>
               <div className="absolute bottom-[47.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50 mix-blend-lighten">
-                <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px]" />
+                <ChartWatermark
+                  className={`h-[30.67px]  md:h-[46px] ${
+                    parseInt(chartHeight, 10) > 200
+                      ? "w-[128px] md:w-[163px]"
+                      : "w-[128.67px] md:w-[193px] "
+                  }`}
+                />
               </div>
             </div>
             {series.length === 0 && (
