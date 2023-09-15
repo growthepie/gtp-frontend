@@ -155,7 +155,7 @@ export const navigationItems: NavigationItem[] = [
           title: "Rent Paid to L1",
           description:
             "The gas fees paid by L2s to post transaction data & verification states onto Ethereum.",
-          why: "Rent paid is a critical metric for ...",
+          why: "Rent paid to L1 quantifies the expenses associated with posting L2 transaction data and proofs onto the Ethereum blockchain. The term 'rent' signifies the gas fees L2s incur to leverage the security of the Ethereum blockchain. This metric provides valuable insights into the value accrual for ETH holders.",
           icon: "feather:credit-card",
         },
         icon: "feather:credit-card",
@@ -170,7 +170,7 @@ export const navigationItems: NavigationItem[] = [
           title: "Onchain Profit",
           description:
             "The net profit of L2s, accounting for revenues as L2 gas fees collected and expenses as posting transaction data & verification states onto Ethereum.",
-          why: "Earnings is a critical metric for ...",
+          why: "Onchain Profit is a key metric for assessing the financial viability of scaling solutions. It quantifies profitability by comparing the revenue generated from L2 gas fees collected to the costs associated with data & proof posting onto the Ethereum blockchain. L2 profitability can increases for two reasons: firstly, when there is high demand for L2 blockspace, enabling an auction of the available blockspace for a premium. Secondly, if the operator (who controls the sequencer) increases the base fee scalar. This metric can be used to gauge the health and success of Layer 2 solutions.",
           icon: "feather:credit-card",
         },
         icon: "feather:credit-card",

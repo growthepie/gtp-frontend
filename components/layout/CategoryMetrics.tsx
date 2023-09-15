@@ -1648,7 +1648,7 @@ export default function CategoryMetrics({
         </div>
       </Container>
       <Container className="xl:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-4">
-        <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[1020px] ">
+        <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[880px] ">
           <div className="flex exl:text-[14px] text-[12px] font-bold mb-[10px]">
             <div className="flex gap-x-[15px] w-[33%] ">
               <button
