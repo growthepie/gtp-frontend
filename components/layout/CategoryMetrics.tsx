@@ -293,7 +293,11 @@ export default function CategoryMetrics({
   const updatedSubcategories = useMemo(() => {
     const initialSelectedSubcategories = {};
     Object.keys(categories).forEach((category) => {
-      if (queryCategory === category && querySubcategories.length > 0) {
+      if (
+        queryCategory === category &&
+        querySubcategories &&
+        querySubcategories.length > 0
+      ) {
         const intersection = data[category].subcategories.list.filter(
           (subcategory) => {
             return querySubcategories.includes(subcategory);
