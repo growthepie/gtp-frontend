@@ -249,6 +249,26 @@ export default function ComparisonChart({
 
   const isMobile = useMediaQuery("(max-width: 767px)");
 
+  const SourcesDisplay = useMemo(() => {
+    return sources && sources.length > 0 ? (
+      sources
+        .map<ReactNode>((s) => (
+          <Link
+            key={s}
+            rel="noopener noreferrer"
+            target="_blank"
+            href={Sources[s] ?? ""}
+            className="hover:text-forest-500 dark:hover:text-forest-500 underline"
+          >
+            {s}
+          </Link>
+        ))
+        .reduce((prev, curr) => [prev, ", ", curr])
+    ) : (
+      <>Unavailable</>
+    );
+  }, [sources]);
+
   const getTickPositions = useCallback(
     (xMin: any, xMax: any): number[] => {
       const tickPositions: number[] = [];
@@ -1310,19 +1330,7 @@ export default function ComparisonChart({
                           Data Sources:
                         </div>
                         <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
-                          {sources
-                            .map<ReactNode>((s) => (
-                              <Link
-                                key={s}
-                                rel="noopener noreferrer"
-                                target="_blank"
-                                href={Sources[s] ?? ""}
-                                className="hover:text-forest-500 dark:hover:text-forest-500 underline"
-                              >
-                                {s}
-                              </Link>
-                            ))
-                            .reduce((prev, curr) => [prev, ", ", curr])}
+                          {SourcesDisplay}
                         </div>
                       </div>
                     </div>
@@ -1393,19 +1401,7 @@ export default function ComparisonChart({
                             Data Sources:
                           </div>
                           <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
-                            {sources
-                              .map<ReactNode>((s) => (
-                                <Link
-                                  key={s}
-                                  rel="noopener noreferrer"
-                                  target="_blank"
-                                  href={Sources[s] ?? ""}
-                                  className="hover:text-forest-500 dark:hover:text-forest-500 underline"
-                                >
-                                  {s}
-                                </Link>
-                              ))
-                              .reduce((prev, curr) => [prev, ", ", curr])}
+                            {SourcesDisplay}
                           </div>
                         </div>
                       </div>
@@ -1479,19 +1475,7 @@ export default function ComparisonChart({
                             Data Sources:
                           </div>
                           <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
-                            {sources
-                              .map<ReactNode>((s) => (
-                                <Link
-                                  key={s}
-                                  rel="noopener noreferrer"
-                                  target="_blank"
-                                  href={Sources[s] ?? ""}
-                                  className="hover:text-forest-500 dark:hover:text-forest-500 underline"
-                                >
-                                  {s}
-                                </Link>
-                              ))
-                              .reduce((prev, curr) => [prev, ", ", curr])}
+                            {SourcesDisplay}
                           </div>
                         </div>
                       </div>

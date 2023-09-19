@@ -11,6 +11,7 @@ export type NavigationItem = {
   icon: string;
   options: {
     label: string;
+    category?: string;
     page?: {
       title?: string;
       description: string;
@@ -26,6 +27,29 @@ export type NavigationItem = {
     urlKey: string;
   }[];
   href?: string;
+};
+
+export const navigationCategories = {
+  activity: {
+    label: "Activity",
+    icon: "feather:clock",
+  },
+  "value-locked": {
+    label: "Value Locked",
+    icon: "feather:star",
+  },
+  economics: {
+    label: "Economics",
+    icon: "feather:credit-card",
+  },
+  developer: {
+    label: "Developer",
+    icon: "feather:code",
+  },
+  convenience: {
+    label: "Convenience",
+    icon: "gtp:transaction-costs",
+  },
 };
 
 export const navigationItems: NavigationItem[] = [
@@ -44,21 +68,8 @@ export const navigationItems: NavigationItem[] = [
     icon: "gtp:fundamentals",
     options: [
       {
-        label: "Transaction Count",
-        page: {
-          title: "Transaction Count",
-          description:
-            "The number of daily transactions. We try to only count transactions that are executed by users/smart contracts - no system transactions.",
-          why: "The number of transactions processed on a blockchain is a reliable metric for measuring its usage. However, it should be noted that this metric alone may not provide sufficient insight into the actual value of the transactions being conducted. For instance, while some chains may have a lower transaction count, the value of these transactions may be significantly higher due to their use in decentralized finance (DeFi) applications. On the other hand, certain chains may have a higher transaction count due to their use in gaming or other applications involving lower value transactions.",
-          icon: "feather:clock",
-        },
-        icon: "feather:clock",
-        key: "txcount",
-        rootKey: "metricsTxCount",
-        urlKey: "transaction-count",
-      },
-      {
         label: "Daily Active Addresses",
+        category: "activity",
         page: {
           title: "Daily Active Addresses",
           description:
@@ -72,7 +83,104 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "daily-active-addresses",
       },
       {
+        label: "Transaction Count",
+        category: "activity",
+        page: {
+          title: "Transaction Count",
+          description:
+            "The number of daily transactions. We try to only count transactions that are executed by users/smart contracts - no system transactions.",
+          why: "The number of transactions processed on a blockchain is a reliable metric for measuring its usage. However, it should be noted that this metric alone may not provide sufficient insight into the actual value of the transactions being conducted. For instance, while some chains may have a lower transaction count, the value of these transactions may be significantly higher due to their use in decentralized finance (DeFi) applications. On the other hand, certain chains may have a higher transaction count due to their use in gaming or other applications involving lower value transactions.",
+          icon: "feather:clock",
+        },
+        icon: "feather:clock",
+        key: "txcount",
+        rootKey: "metricsTxCount",
+        urlKey: "transaction-count",
+      },
+      {
+        label: "Stablecoin Market Cap",
+        category: "value-locked",
+        page: {
+          title: "Stablecoin Market Cap",
+          description: "The sum of stablecoins that are locked on the chain.",
+          why: "Stablecoin market cap is a crucial metric for evaluating the growth and development of a blockchain's decentralized finance (DeFi) ecosystem.Stables are a popular choice for use in DeFi applications such as lending, borrowing, and trading. The market cap of stablecoins on a particular chain can provide valuable insights into the level of adoption and usage of DeFi applications on the network. A high stablecoin market cap is indicative of a robust and thriving DeFi ecosystem, where users are actively engaged in utilizing the various financial applications available on the chain.",
+          icon: "feather:dollar-sign",
+        },
+        icon: "feather:dollar-sign",
+        key: "stables_mcap",
+        rootKey: "metricsStablesMcap",
+        urlKey: "stablecoin-market-cap",
+      },
+      {
+        label: "Total Value Locked",
+        category: "value-locked",
+        page: {
+          title: "Total Value Locked",
+          description:
+            "The sum of all funds locked on the chain. Methodology and data is derived from L2Beat.com.",
+          why: "TVL is a crucial metric for assessing the success of a blockchain. A high TVL indicates that users have significant trust in the chain's security and reliability, as well as confidence in the usefulness and functionality of the various applications available on the chain.",
+          icon: "feather:star",
+        },
+        icon: "feather:star",
+        key: "tvl",
+        rootKey: "metricsTvl",
+        urlKey: "total-value-locked",
+      },
+
+      // // put navigation items that we want to hide in production here
+      // ...(IS_PREVIEW
+      //   ? [
+
+      //     ]
+      //   : []),
+      {
+        label: "Fees Paid by Users",
+        category: "economics",
+        page: {
+          title: "Fees Paid by Users",
+          description:
+            "The sum of fees that were paid by users of the chain in gas fees or, in the case of chains like Immutable X,  the amount of fees that were paid to the protocol wallet.",
+          why: "Fees paid by users is a critical metric for measuring a blockchain's adoption and revenue generation. A high fee revenue can be an indication that users find the chain's applications and security valuable, and are willing to pay for it. This metric is often referred to as a chain's revenue, as it reflects the total amount of income generated by the network.",
+          icon: "feather:credit-card",
+        },
+        icon: "feather:credit-card",
+        key: "fees",
+        rootKey: "metricsFeesPaidToEthereum",
+        urlKey: "fees-paid-by-users",
+      },
+      {
+        label: "Rent Paid to L1",
+        category: "economics",
+        page: {
+          title: "Rent Paid to L1",
+          description:
+            "The gas fees paid by L2s to post transaction data & verification states onto Ethereum.",
+          why: "Rent paid to L1 quantifies the expenses associated with posting L2 transaction data and proofs onto the Ethereum blockchain. The term 'rent' signifies the gas fees L2s incur to leverage the security of the Ethereum blockchain. This metric provides valuable insights into the value accrual for ETH holders.",
+          icon: "feather:credit-card",
+        },
+        icon: "feather:credit-card",
+        key: "rent_paid",
+        rootKey: "metricsRentPaid",
+        urlKey: "rent-paid",
+      },
+      {
+        label: "Onchain Profit",
+        category: "economics",
+        page: {
+          title: "Onchain Profit",
+          description:
+            "The net profit of L2s, accounting for revenues as L2 gas fees collected and expenses as posting transaction data & verification states onto Ethereum.",
+          why: "Onchain Profit is a key metric for assessing the financial viability of scaling solutions. It quantifies profitability by comparing the revenue generated from L2 gas fees collected to the costs associated with data & proof posting onto the Ethereum blockchain. L2 profitability can increases for two reasons: firstly, when there is high demand for L2 blockspace, enabling an auction of the available blockspace for a premium. Secondly, if the operator (who controls the sequencer) increases the base fee scalar. This metric can be used to gauge the health and success of Layer 2 solutions.",
+          icon: "feather:credit-card",
+        },
+        icon: "feather:credit-card",
+        key: "profit",
+        rootKey: "metricsEarnings",
+        urlKey: "profit",
+      },
+      {
         label: "Transaction Costs",
+        category: "convenience",
         page: {
           title: "Transaction Costs",
           description: "The median amount that is paid per transaction.",
@@ -91,53 +199,6 @@ export const navigationItems: NavigationItem[] = [
         key: "txcosts",
         rootKey: "metricsTxCosts",
         urlKey: "transaction-costs",
-      },
-      // // put navigation items that we want to hide in production here
-      // ...(IS_PREVIEW
-      //   ? [
-
-      //     ]
-      //   : []),
-      {
-        label: "Total Value Locked",
-        page: {
-          title: "Total Value Locked",
-          description:
-            "The sum of all funds locked on the chain. Methodology and data is derived from L2Beat.com.",
-          why: "TVL is a crucial metric for assessing the success of a blockchain. A high TVL indicates that users have significant trust in the chain's security and reliability, as well as confidence in the usefulness and functionality of the various applications available on the chain.",
-          icon: "feather:star",
-        },
-        icon: "feather:star",
-        key: "tvl",
-        rootKey: "metricsTvl",
-        urlKey: "total-value-locked",
-      },
-      {
-        label: "Fees Paid by Users",
-        page: {
-          title: "Fees Paid by Users",
-          description:
-            "The sum of fees that were paid by users of the chain in gas fees or, in the case of chains like Immutable X,  the amount of fees that were paid to the protocol wallet.",
-          why: "Fees paid by users is a critical metric for measuring a blockchain's adoption and revenue generation. A high fee revenue can be an indication that users find the chain's applications and security valuable, and are willing to pay for it. This metric is often referred to as a chain's revenue, as it reflects the total amount of income generated by the network.",
-          icon: "feather:credit-card",
-        },
-        icon: "feather:credit-card",
-        key: "fees",
-        rootKey: "metricsFeesPaidToEthereum",
-        urlKey: "fees-paid-by-users",
-      },
-      {
-        label: "Stablecoin Market Cap",
-        page: {
-          title: "Stablecoin Market Cap",
-          description: "The sum of stablecoins that are locked on the chain.",
-          why: "Stablecoin market cap is a crucial metric for evaluating the growth and development of a blockchain's decentralized finance (DeFi) ecosystem.Stables are a popular choice for use in DeFi applications such as lending, borrowing, and trading. The market cap of stablecoins on a particular chain can provide valuable insights into the level of adoption and usage of DeFi applications on the network. A high stablecoin market cap is indicative of a robust and thriving DeFi ecosystem, where users are actively engaged in utilizing the various financial applications available on the chain.",
-          icon: "feather:dollar-sign",
-        },
-        icon: "feather:dollar-sign",
-        key: "stables_mcap",
-        rootKey: "metricsStablesMcap",
-        urlKey: "stablecoin-market-cap",
       },
 
       // {

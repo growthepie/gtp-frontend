@@ -11,6 +11,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { Switch } from "../Switch";
 import { Sources } from "@/lib/datasources";
@@ -46,6 +47,11 @@ export default function CategoryMetrics({
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
+  // get the category from the url
+  const queryCategory = useSearchParams().get("category");
+  // subcategories is an array of strings
+  const querySubcategories = useSearchParams().get("subcategories")?.split(",");
+
   type ContractInfo = {
     address: string;
     project_name: string;
@@ -78,7 +84,9 @@ export default function CategoryMetrics({
   };
   const { isSidebarOpen } = useUIContext();
   const [selectedMode, setSelectedMode] = useState("gas_fees_");
-  const [selectedCategory, setSelectedCategory] = useState("nft");
+  const [selectedCategory, setSelectedCategory] = useState(
+    queryCategory ?? "nft",
+  );
   const [contractHover, setContractHover] = useState({});
 
   const [animationFinished, setAnimationFinished] = useState(true);
@@ -285,6 +293,24 @@ export default function CategoryMetrics({
   const updatedSubcategories = useMemo(() => {
     const initialSelectedSubcategories = {};
     Object.keys(categories).forEach((category) => {
+      if (
+        queryCategory === category &&
+        querySubcategories &&
+        querySubcategories.length > 0
+      ) {
+        const intersection = data[category].subcategories.list.filter(
+          (subcategory) => {
+            return querySubcategories.includes(subcategory);
+          },
+        );
+
+        if (intersection.length > 0) {
+          initialSelectedSubcategories[category] = intersection;
+          return;
+        }
+      }
+
+      // else use the default subcategories
       if (data[category]?.subcategories?.list) {
         initialSelectedSubcategories[category] = [
           ...data[category].subcategories.list,
@@ -294,7 +320,7 @@ export default function CategoryMetrics({
       }
     });
     return initialSelectedSubcategories;
-  }, [data, categories]);
+  }, [categories, queryCategory, data, querySubcategories]);
 
   const [selectedSubcategories, setSelectedSubcategories] =
     useState(updatedSubcategories);
@@ -1626,7 +1652,7 @@ export default function CategoryMetrics({
         </div>
       </Container>
       <Container className="xl:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-4">
-        <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[1020px] ">
+        <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[880px] ">
           <div className="flex exl:text-[14px] text-[12px] font-bold mb-[10px]">
             <div className="flex gap-x-[15px] w-[33%] ">
               <button

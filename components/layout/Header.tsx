@@ -72,7 +72,7 @@ export default function Header() {
             rel="noopener"
             className="w-6 h-6 dark:text-forest-200 text-forest-900"
           >
-            <Icon icon="gtp:gtp-farcaster" className="h-6 w-6" />
+            <Icon icon="gtp:farcaster" className="h-6 w-6" />
           </Link>
 
           <Link

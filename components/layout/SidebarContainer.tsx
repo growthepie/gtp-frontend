@@ -19,7 +19,7 @@ export default function SidebarContainer() {
   }, [isLargeScreen]);
 
   return (
-    <div className="pt-8 pl-0 bg-forest-50 dark:bg-[#1F2726] mix-h-screen max-h-screen sticky top-0 left-0 hidden md:flex flex-col overflow-hidden space-y-6 border-r-0 border-forest-500 dark:border-black/50">
+    <div className="pt-8 pl-0 bg-forest-50 dark:bg-[#1F2726] mix-h-screen max-h-screen sticky top-0 left-0 hidden md:flex flex-col overflow-y-hidden overflow-x-visible space-y-6 border-r-0 border-forest-500 dark:border-black/50">
       {isSidebarOpen ? (
         <div className="h-[45.07px] mb-[18px]">
           <div className="flex items-center mx-5 justify-between h-[45.07px]">

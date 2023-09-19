@@ -23,6 +23,7 @@ import { LandingURL, MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useLocalStorage } from "usehooks-ts";
+import { animated, useSpring } from "@react-spring/web";
 
 const DisabledStates: {
   [mode: string]: {
@@ -454,6 +455,10 @@ export default function OverviewMetrics({
   useEffect(() => {
     if (selectedMode.includes("gas_fees_share")) {
       setSelectedMode(showUsd ? "gas_fees_share_usd" : "gas_fees_share_eth");
+    } else if (selectedMode.includes("gas_fees")) {
+      setSelectedMode(
+        showUsd ? "gas_fees_usd_absolute" : "gas_fees_eth_absolute",
+      );
     }
   }, [selectedMode, showUsd]);
 
@@ -821,6 +826,167 @@ export default function OverviewMetrics({
       selectedTimespan,
     ],
   );
+
+  const chartMax = useMemo(() => {
+    let returnValue = 0;
+    let typeIndex = data["all_l2s"].daily["types"].indexOf(selectedMode);
+
+    if (selectedChain) {
+      for (
+        let i = 0;
+        i <
+        (selectedTimespan === "max"
+          ? data[selectedChain].daily[selectedCategory].data.length
+          : timespans[selectedTimespan].value);
+        i++
+      ) {
+        if (
+          data[selectedChain].daily[selectedCategory].data.length - (i + 1) >=
+          0
+        ) {
+          if (
+            data[selectedChain].daily[selectedCategory].data[
+              data[selectedChain].daily[selectedCategory].data.length - (i + 1)
+            ][typeIndex] > returnValue
+          ) {
+            returnValue =
+              data[selectedChain].daily[selectedCategory].data[
+                data[selectedChain].daily[selectedCategory].data.length -
+                  (i + 1)
+              ][typeIndex];
+          }
+        }
+      }
+    } else {
+      for (
+        let i = 0;
+        i <
+        (selectedTimespan === "max"
+          ? data["all_l2s"].daily[selectedCategory].data.length
+          : timespans[selectedTimespan].value);
+        i++
+      ) {
+        if (
+          data["all_l2s"].daily[selectedCategory].data.length - (i + 1) >=
+          0
+        ) {
+          if (
+            data["all_l2s"].daily[selectedCategory].data[
+              data["all_l2s"].daily[selectedCategory].data.length - (i + 1)
+            ][typeIndex] > returnValue
+          ) {
+            returnValue =
+              data["all_l2s"].daily[selectedCategory].data[
+                data["all_l2s"].daily[selectedCategory].data.length - (i + 1)
+              ][typeIndex];
+          }
+        }
+      }
+    }
+
+    let roundingFactor = selectedMode.includes("share") ? 0.05 : 1; // 0.05 for percentages, 1000 for absolute values
+    returnValue = returnValue / roundingFactor;
+    returnValue = Math.ceil(returnValue) * roundingFactor;
+
+    if (!selectedMode.includes("share") && returnValue > 10000) {
+      returnValue = Math.ceil(returnValue / 10000) * 10000;
+    }
+
+    return returnValue;
+  }, [selectedTimespan, selectedCategory, selectedMode, selectedChain]);
+
+  const chartAvg = useMemo(() => {
+    let typeIndex = data["all_l2s"].daily["types"].indexOf(selectedMode);
+    let overviewIndex = data.all_l2s["overview"]["types"].indexOf(selectedMode);
+
+    let returnValue = 0;
+
+    if (selectedMode.includes("absolute")) {
+      return null;
+    }
+
+    if (selectedChain) {
+      let sum = 0;
+      if (selectedMode.includes("share")) {
+        returnValue =
+          data[selectedChain].overview[selectedTimespan][selectedCategory].data[
+            overviewIndex
+          ];
+      } else {
+        for (
+          let i = 0;
+          i <
+          (selectedTimespan === "max"
+            ? data[selectedChain].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value);
+          i++
+        ) {
+          if (
+            data[selectedChain].daily[selectedCategory].data.length - (i + 1) >=
+            0
+          ) {
+            sum +=
+              data[selectedChain].daily[selectedCategory].data[
+                data[selectedChain].daily[selectedCategory].data.length -
+                  (i + 1)
+              ][typeIndex];
+          }
+        }
+        returnValue =
+          sum /
+          (selectedTimespan === "max"
+            ? data[selectedChain].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value >=
+              data[selectedChain].daily[selectedCategory].data.length
+            ? data[selectedChain].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value);
+      }
+    } else {
+      let sum = 0;
+      for (
+        let i = 0;
+        i <
+        (selectedTimespan === "max"
+          ? data["all_l2s"].daily[selectedCategory].data.length
+          : timespans[selectedTimespan].value);
+        i++
+      ) {
+        if (
+          data["all_l2s"].daily[selectedCategory].data.length - (i + 1) >=
+          0
+        ) {
+          sum +=
+            data["all_l2s"].daily[selectedCategory].data[
+              data["all_l2s"].daily[selectedCategory].data.length - (i + 1)
+            ][typeIndex];
+        }
+      }
+
+      returnValue =
+        sum /
+        (selectedTimespan === "max"
+          ? data["all_l2s"].daily[selectedCategory].data.length
+          : timespans[selectedTimespan].value >=
+            data["all_l2s"].daily[selectedCategory].data.length
+          ? data["all_l2s"].daily[selectedCategory].data.length
+          : timespans[selectedTimespan].value);
+    }
+
+    return returnValue;
+  }, [selectedTimespan, selectedMode, selectedCategory, selectedChain]);
+
+  const avgHeight = useSpring({
+    y: chartAvg
+      ? -1 *
+        (163 * (chartAvg / chartMax) +
+          (chartAvg / chartMax > 0.45
+            ? chartAvg / chartMax > 0.5
+              ? 7
+              : 10
+            : 14))
+      : 0,
+    config: { mass: 1, tension: 70, friction: 20 },
+  });
 
   function formatNumber(number: number): string {
     if (number === 0) {
@@ -1361,20 +1527,46 @@ export default function OverviewMetrics({
             : {categories[selectedCategory]}
           </h2>
         </div>
-        <Chart
-          types={
-            selectedChain === null
-              ? data.all_l2s.daily.types
-              : data[selectedChain].daily.types
-          }
-          chartType="area"
-          stack
-          timespan={selectedTimespan}
-          series={chartSeries}
-          yScale={selectedValue === "share" ? "percentage" : "linear"}
-          chartHeight="196px"
-          chartWidth="100%"
-        />
+        <div className="flex items-center w-full ">
+          <Chart
+            types={
+              selectedChain === null
+                ? data.all_l2s.daily.types
+                : data[selectedChain].daily.types
+            }
+            chartType="area"
+            stack
+            timespan={selectedTimespan}
+            series={chartSeries}
+            yScale={selectedValue === "share" ? "percentage" : "linear"}
+            chartHeight="196px"
+            chartWidth="100%"
+            maxY={chartMax}
+            chartAvg={chartAvg || undefined}
+          />
+          {chartAvg && (
+            <div className="flex items-end relative top-[2px] h-[180px] min-w-[50px] lg:min-w-[70px] ">
+              <animated.div
+                className="flex h-[28px] relative items-center justify-center rounded-full w-full px-2.5 lg:text-base text-sm font-medium"
+                style={{
+                  backgroundColor:
+                    AllChainsByKeys[selectedChain ? selectedChain : "all_l2s"]
+                      ?.colors[theme ?? "dark"][0],
+                  color: selectedChain
+                    ? selectedChain === "arbitrum"
+                      ? "black"
+                      : "white"
+                    : "black",
+                  ...avgHeight,
+                }}
+              >
+                {selectedMode.includes("share")
+                  ? (chartAvg * 100).toFixed(2) + "%"
+                  : (showUsd ? "$ " : "Ξ ") + formatNumber(chartAvg)}
+              </animated.div>
+            </div>
+          )}
+        </div>
       </Container>
       <Container className="w-[98%] ml-4">
         <div className="flex flex-wrap items-center w-[100%] gap-y-2 invisible lg:visible">
@@ -1400,7 +1592,7 @@ export default function OverviewMetrics({
       </Container>
       <Container>
         {" "}
-        <div className="flex flex-row w-[98%] mx-auto justify-center md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
+        <div className="flex flex-row w-[100%] mx-auto justify-center md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
           {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
           {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
           {/* toggle ETH */}
@@ -1463,7 +1655,7 @@ export default function OverviewMetrics({
       </Container>
 
       <Container className="lg:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-4">
-        <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[1020px]  ">
+        <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[880px]  ">
           <div className="flex exl:text-[14px] text-[12px] font-bold mb-[10px]">
             <div className="flex gap-x-[15px] w-[33%] ">
               <button
