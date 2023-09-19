@@ -14,22 +14,21 @@ export default function Header() {
       <div className="flex justify-between items-center w-full">
         <div className="flex space-x-0 xl:space-x-6 w-full">
           {/* Donation Banner XL screen */}
-          {/* <Link
-            href="https://explorer.gitcoin.co/#/round/10/0x8de918f0163b2021839a8d84954dd7e8e151326d/0x8de918f0163b2021839a8d84954dd7e8e151326d-48"
+          <Link
+            href="https://explorer.gitcoin.co/#/round/42161/0x59d79b22595b17af659ce9b03907615f53742c57/0x59d79b22595b17af659ce9b03907615f53742c57-16"
             target="_blank"
             rel="noopener"
             className="hidden xl:flex items-center dark:bg-[#FFE28A] dark:text-[#1B0DB9] bg-[#1B0DB9] text-white p-1 justify-between rounded-full text-sm font-bold mr-auto"
           >
-            <div className="bg-white text-[#1B0DB9] dark:bg-[#1B0DB9] dark:text-white rounded-full py-0.5 px-1.5">
-              #GG18
-            </div>
-            <div className=" ml-1.5 mr-8 flex space-x-0.5">
-              <div>We are part of Gitcoin.</div>
+            <div className=" ml-3 mr-4 flex space-x-0.5">
+              <div>
+                We are part of Arbitrum&apos;s Gitcoin Grant Funding Fest.{" "}
+              </div>
               <div className="animate-bounce text-sm">🎉</div>{" "}
-              <div>Help us by donating to our project.</div>
+              <div>Support us here.</div>
             </div>
             <Icon icon="feather:arrow-right-circle" className="h-6 w-6" />
-          </Link> */}
+          </Link>
           {/* Logo */}
 
           <div className="flex justify-between items-end md:hidden relative w-full">
