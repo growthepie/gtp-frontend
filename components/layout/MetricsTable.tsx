@@ -143,25 +143,45 @@ const MetricsTable = ({
     },
   );
 
+  function formatNumber(number: number): string {
+    if (number === 0) {
+      return "0";
+    } else if (Math.abs(number) >= 1e9) {
+      if (Math.abs(number) >= 1e12) {
+        return (number / 1e12).toFixed(2) + "T";
+      } else if (Math.abs(number) >= 1e9) {
+        return (number / 1e9).toFixed(2) + "B";
+      }
+    } else if (Math.abs(number) >= 1e6) {
+      return (number / 1e6).toFixed(2) + "M";
+    } else if (Math.abs(number) >= 1e3) {
+      const rounded = (number / 1e3).toFixed(2);
+      return `${rounded}${Math.abs(number) >= 10000 ? "K" : "K"}`;
+    } else if (Math.abs(number) >= 100) {
+      return number.toFixed(2);
+    } else if (Math.abs(number) >= 10) {
+      return number.toFixed(2);
+    } else {
+      return number.toFixed(2);
+    }
+
+    // Default return if none of the conditions are met
+    return "";
+  }
+
   const getDisplayValue = useCallback(
     (item: any) => {
       let prefix = "";
       let suffix = "";
-      let value = Intl.NumberFormat(undefined, {
-        notation: "compact",
-        maximumFractionDigits: 2,
-        minimumFractionDigits: 2,
-      }).format(item.data.daily.data[item.data.daily.data.length - 1][1]);
+      let value = formatNumber(
+        item.data.daily.data[item.data.daily.data.length - 1][1],
+      );
 
       if (item.data.daily.types.includes("eth")) {
         if (!showUsd) {
           prefix = "Ξ";
 
-          value = Intl.NumberFormat(undefined, {
-            notation: "compact",
-            maximumFractionDigits: 2,
-            minimumFractionDigits: 2,
-          }).format(
+          value = formatNumber(
             item.data.daily.data[item.data.daily.data.length - 1][
               item.data.daily.types.indexOf("eth")
             ],
@@ -174,11 +194,7 @@ const MetricsTable = ({
           if (navItem && navItem.page?.showGwei) {
             prefix = "";
             suffix = " Gwei";
-            value = Intl.NumberFormat(undefined, {
-              notation: "compact",
-              maximumFractionDigits: 2,
-              minimumFractionDigits: 2,
-            }).format(
+            value = formatNumber(
               item.data.daily.data[item.data.daily.data.length - 1][
                 item.data.daily.types.indexOf("eth")
               ] * 1000000000,
@@ -186,11 +202,7 @@ const MetricsTable = ({
           }
         } else {
           prefix = "$";
-          value = Intl.NumberFormat(undefined, {
-            notation: "compact",
-            maximumFractionDigits: 2,
-            minimumFractionDigits: 2,
-          }).format(
+          value = formatNumber(
             item.data.daily.data[item.data.daily.data.length - 1][
               item.data.daily.types.indexOf("usd")
             ],
