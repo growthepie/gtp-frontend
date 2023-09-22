@@ -22,12 +22,15 @@ import d3 from "d3";
 import { AllChainsByKeys } from "@/lib/chains";
 import { debounce, forEach } from "lodash";
 import Link from "next/link";
+import useSWR from "swr";
 
 import { navigationItems } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import { ChainsData } from "@/types/api/ChainResponse";
+import { MasterResponse } from "@/types/api/MasterResponse";
+import { LandingURL, MasterURL } from "@/lib/urls";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -62,6 +65,13 @@ export default function ContractCard({
   const { theme } = useTheme();
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+
+  const {
+    data: master,
+    error: masterError,
+    isLoading: masterLoading,
+    isValidating: masterValidating,
+  } = useSWR<MasterResponse>(MasterURL);
 
   return (
     <Link
@@ -136,10 +146,21 @@ export default function ContractCard({
         </div>
         <div className="flex flex-row justify-between items-center w-full">
           <div className="flex flex-row items-center space-x-1 text-xs md:text-sm">
-            <div className="flex flex-row items-center space-x-1">
-              {data[types.indexOf("main_category_key")]} &gt;{" "}
-              {data[types.indexOf("sub_category_key")]}
-            </div>
+            {master && (
+              <div className="flex flex-row items-center space-x-1">
+                {
+                  master.blockspace_categories.main_categories[
+                    data[types.indexOf("main_category_key")]
+                  ]
+                }{" "}
+                &gt;{" "}
+                {
+                  master.blockspace_categories.sub_categories[
+                    data[types.indexOf("sub_category_key")]
+                  ]
+                }
+              </div>
+            )}
           </div>
           <Icon
             icon="feather:info"

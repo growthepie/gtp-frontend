@@ -127,6 +127,13 @@ export const Supporters = [
     url: "https://ethereum.org",
   },
   {
+    name: "Optimism",
+    image: "/contributors/optimism-logo.png",
+    width: 192,
+    height: 27,
+    url: "https://optimism.io",
+  },
+  {
     name: "FJ Labs",
     image: "/contributors/fj-labs-logo.png",
     width: 204,

@@ -260,9 +260,14 @@ export default function SidebarMenuGroup({
                     }`}
                     href={`/${item.name.toLowerCase()}/${option.urlKey}`}
                   >
-                    {!sidebarOpen && (
-                      <div className="absolute top-0 left-[24px] w-[44px] h-[28px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726]"></div>
-                    )}
+                    <div
+                      className={`absolute top-0 left-[4px] w-[64px] h-[28px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726] transition-opacity  ease-in-out ${
+                        sidebarOpen
+                          ? "opacity-0 duration-0"
+                          : "opacity-100 duration-500"
+                      }`}
+                    ></div>
+
                     <div
                       className={`w-6 absolute left-[13px]  ${
                         urlParts[1].trim().localeCompare(option.urlKey) === 0

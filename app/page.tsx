@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import Image from "next/image";
 import { useMediaQuery } from "@react-hook/media-query";
 import Heading from "@/components/layout/Heading";
@@ -24,6 +24,7 @@ import { ChainURLs, BlockspaceURLs } from "@/lib/urls";
 import ContractCard from "@/components/layout/ContractCard";
 import { ChainResponse } from "@/types/api/ChainResponse";
 import { ChainOverviewResponse } from "@/types/api/ChainOverviewResponse";
+import Swiper from "@/components/layout/Swiper";
 
 export default function Home() {
   const isLargeScreen = useMediaQuery("(min-width: 768px)");
@@ -39,7 +40,8 @@ export default function Home() {
     error: landingError,
     isLoading: landingLoading,
     isValidating: landingValidating,
-  } = useSWR<LandingPageMetricsResponse>(LandingURL);
+    // } = useSWR<LandingPageMetricsResponse>(LandingURL);
+  } = useSWR<LandingPageMetricsResponse>("/mock/landing_page.json");
 
   const {
     data: master,
@@ -48,19 +50,12 @@ export default function Home() {
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
-  // const {
-  //   data: chainData,
-  //   error: chainError,
-  //   isValidating: chainValidating,
-  //   isLoading: chainLoading,
-  // } = useSWR<ChainResponse>(ChainURLs["arbitrum"]);
-
-  // const {
-  //   data: blockspaceData,
-  //   error: blockspaceError,
-  //   isValidating: blockspaceValidating,
-  //   isLoading: blockspaceLoading,
-  // } = useSWR<any>(BlockspaceURLs["chain-overview"]);
+  const {
+    data: blockspaceData,
+    error: blockspaceError,
+    isValidating: blockspaceValidating,
+    isLoading: blockspaceLoading,
+  } = useSWR<any>(BlockspaceURLs["chain-overview"]);
 
   const [data, setData] = useState<any>(null);
 
@@ -93,6 +88,39 @@ export default function Home() {
     AllChains.map((chain) => chain.key),
   );
 
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+
+  // the required distance between touchStart and touchEnd to be detected as a swipe
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e) => {
+    setTouchEnd(null); // otherwise the swipe is fired even with usual touch events
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+
+    if (Math.abs(distance) >= minSwipeDistance) {
+      if (distance > 0) {
+        // swipe left
+        scrollerRef.current?.scrollLeft
+          ? (scrollerRef.current.scrollLeft -= 431)
+          : null;
+      } else {
+        // swipe right
+        scrollerRef.current?.scrollRight
+          ? (scrollerRef.current.scrollRight += 431)
+          : null;
+      }
+    }
+  };
   return (
     <>
       <ShowLoading
@@ -101,63 +129,36 @@ export default function Home() {
         fullScreen={true}
       />
       {/* )} */}
+
       <Container className="flex flex-col flex-1 w-full mt-[65px]">
-        <Heading className="font-bold text-[30px] leading-snug md:text-[36px] mb-[28px] lg:mb-[30px] max-w-[900px]">
-          Growing Ethereum’s Ecosystem Together
-        </Heading>
         {/* <Heading className="font-bold text-[30px] leading-snug md:text-[36px] mb-[28px] lg:mb-[30px] max-w-[900px]">
+          Growing Ethereum’s Ecosystem Together
+        </Heading> */}
+        <Heading className="font-bold text-[30px] leading-snug md:text-[36px] mb-[28px] lg:mb-[30px] max-w-[900px]">
           Mastering Ethereum Layer-2s: Your Gateway to Curated Analytics and
           Knowledge
-        </Heading> */}
+        </Heading>
       </Container>
-      {/* <Container className="flex flex-col flex-1 w-full">
-        <div className="flex space-x-2 mt-[30px] items-center">
+      <Container className="flex flex-col flex-1 w-full">
+        <div className="flex space-x-2 mt-[25px] lg:mt-[70px] mb-[25px] md:mb-[32px] items-center">
           <Icon
             icon="gtp:fundamentals"
             className="w-[30px] h-[30px] md:w-9 md:h-9"
           />
-          <Heading className="text-[20px] md:text-[30px] leading-snug font-bold">
+          <Heading
+            id="most-recent-metrics-title"
+            className="text-[20px] md:text-[30px] leading-snug font-bold"
+          >
             Most Recent Metrics
           </Heading>
         </div>
       </Container>
-      {chainData && (
-        <Container className="mt-[30px] relative">
-          <div className="grid grid-flow-col grid-rows-1 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-x-[10px] overflow-y-hidden overflow-x-hidden 2xl:overflow-x-hidden w-full p-0 pb-9 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
-            <ChainComponent
-              data={chainData.data}
-              chain={"arbitrum"}
-              category={"txcount"}
-              selectedTimespan={"90d"}
-              selectedScale="linear"
-            />
-            <ChainComponent
-              data={chainData.data}
-              chain={"arbitrum"}
-              category={"stables_mcap"}
-              selectedTimespan={"90d"}
-              selectedScale="linear"
-            />
-            <ChainComponent
-              data={chainData.data}
-              chain={"arbitrum"}
-              category={"fees"}
-              selectedTimespan={"90d"}
-              selectedScale="linear"
-            />
-          </div>
-          <div className="absolute bottom-2 2xl:bottom-2 left-[40px] md:left-[70px]">
-            <Link
-              className="flex space-x-2 items-center"
-              href="/chains/arbitrum"
-            >
-              Compare <Icon icon="feather:chevron-right" className="w-6 h-6" />{" "}
-            </Link>
-          </div>
-        </Container>
-      )} */}
+
+      <Container className="">
+        <Swiper ariaId={"most-recent-metrics-title"} />
+      </Container>
       <Container className="flex flex-col flex-1 w-full">
-        {data && landing && master && <TopAnimation />}
+        {/* {data && landing && master && <TopAnimation />} */}
         {/* <Subheading className="text-sm leading-snug">
               Compare Ethereum&apos;s Layer-2 solutions and better understand
               the metrics to grow the ecosystem.
@@ -214,7 +215,7 @@ export default function Home() {
           </Container>
         </>
       )}
-      {/* <Container className="flex flex-col flex-1 w-full">
+      <Container className="flex flex-col flex-1 w-full">
         <div className="flex space-x-2 mt-[30px] items-center">
           <Icon
             icon="gtp:package"
@@ -244,7 +245,7 @@ export default function Home() {
             ))}
           </div>
         )}
-      </Container> */}
+      </Container>
       <Container>
         <div className="flex gap-x-0 md:gap-x-12 w-full ml-0 mt-[15px] md:mt-[90px]">
           <div className="flex flex-col md:w-1/2 lg:w-2/3">

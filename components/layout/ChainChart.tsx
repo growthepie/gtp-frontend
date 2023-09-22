@@ -932,8 +932,6 @@ export default function ChainChart({
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
-  const delayPromises = [];
-
   const resituateChart = debounce(() => {
     if (chartComponents.current && !zoomed) {
       chartComponents.current.forEach((chart) => {
@@ -950,7 +948,7 @@ export default function ChainChart({
           });
       });
     }
-  }, 50);
+  }, 100);
 
   useEffect(() => {
     resituateChart();

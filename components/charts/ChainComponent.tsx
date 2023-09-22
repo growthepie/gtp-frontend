@@ -50,6 +50,11 @@ export default function ChainComponent({
   selectedTimespan: string;
   selectedScale: string;
 }) {
+  // Keep track of the mounted state
+  const isMounted = useIsMounted();
+  const { isSidebarOpen } = useUIContext();
+  const { width, height } = useWindowSize();
+
   const chartComponents = useRef<Highcharts.Chart[]>([]);
   const zoomedMargin = [1, 15, 0, 0];
   const defaultMargin = [1, 15, 0, 0];
@@ -548,7 +553,11 @@ export default function ChainComponent({
             ? pointX + distance
             : pointX - tooltipWidth - distance;
 
-        const tooltipY = pointY - tooltipHeight / 2;
+        let tooltipY = pointY - tooltipHeight / 2;
+
+        if (tooltipY > plotTop + plotHeight - tooltipHeight) {
+          tooltipY = plotTop + plotHeight - tooltipHeight;
+        }
 
         if (isMobile) {
           if (tooltipX < plotLeft) {
@@ -685,8 +694,9 @@ export default function ChainComponent({
       spacingBottom: 0,
       panning: { enabled: true },
       panKey: "shift",
+      animation: false,
       zooming: {
-        type: "x",
+        type: undefined,
         resetButton: {
           theme: {
             zIndex: -10,
@@ -895,8 +905,43 @@ export default function ChainComponent({
     },
   };
 
+  const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
+  const delayPromises = [];
+
+  const resituateChart = debounce(() => {
+    if (chartComponents.current && !zoomed) {
+      chartComponents.current.forEach((chart) => {
+        isMounted() && chart && chart.setSize(null, null, false);
+        isMounted() && chart && chart.reflow();
+        isMounted() && chart && resetXAxisExtremes();
+
+        // delay(0)
+        //   .then(() => {
+        //     isMounted() && chart && chart.setSize(null, null, false);
+        //     // chart.reflow();
+        //   })
+        //   .then(() => {
+        //     isMounted() && chart && chart.reflow();
+        //   })
+        //   .then(() => {
+        //     isMounted() && chart && resetXAxisExtremes();
+        //   });
+      });
+    }
+  }, 500);
+
+  useEffect(() => {
+    resituateChart();
+
+    // cancel the debounced function on component unmount
+    return () => {
+      resituateChart.cancel();
+    };
+  }, [width, height, isSidebarOpen, resituateChart]);
+
   return (
-    <div key={category} className="w-full h-fit relative">
+    <div key={category} className="w-full h-fit relative z-10">
       <div className="w-full h-[176px] relative">
         <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] rounded-[15px]"></div>
         <div className="absolute w-full h-[142px] top-[49px]">
