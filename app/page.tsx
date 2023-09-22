@@ -153,7 +153,6 @@ export default function Home() {
           </Heading>
         </div>
       </Container>
-
       <Container className="">
         <Swiper ariaId={"most-recent-metrics-title"} />
       </Container>

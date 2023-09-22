@@ -248,7 +248,7 @@ export default function ComparisonChart({
   const [valuePrefix, setValuePrefix] = useState("");
 
   const isMobile = useMediaQuery("(max-width: 767px)");
-
+  console.log(metric_id);
   const SourcesDisplay = useMemo(() => {
     return sources && sources.length > 0 ? (
       sources
@@ -765,7 +765,7 @@ export default function ComparisonChart({
         //   ? "linear"
         //   : "logarithmic",
         // reversed: reversePerformer ?? false,
-        min: 0,
+        min: metric_id === "profit" ? null : 0,
         max: selectedScale === "percentage" ? 100 : undefined,
         labels: {
           y: 5,
