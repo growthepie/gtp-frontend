@@ -40,8 +40,8 @@ export default function Home() {
     error: landingError,
     isLoading: landingLoading,
     isValidating: landingValidating,
-    // } = useSWR<LandingPageMetricsResponse>(LandingURL);
-  } = useSWR<LandingPageMetricsResponse>("/mock/landing_page.json");
+  } = useSWR<LandingPageMetricsResponse>(LandingURL);
+  // } = useSWR<LandingPageMetricsResponse>("/mock/landing_page.json");
 
   const {
     data: master,
