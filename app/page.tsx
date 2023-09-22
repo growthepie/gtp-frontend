@@ -120,36 +120,61 @@ export default function Home() {
       </Container>
       {chainData && (
         <Container className="mt-[30px] relative">
-          <div className="grid grid-flow-col grid-rows-1 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-x-[10px] overflow-y-hidden overflow-x-hidden 2xl:overflow-x-hidden w-full p-0 pb-9 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
-            <ChainComponent
-              data={chainData.data}
-              chain={"arbitrum"}
-              category={"txcount"}
-              selectedTimespan={"90d"}
-              selectedScale="linear"
-            />
-            <ChainComponent
-              data={chainData.data}
-              chain={"arbitrum"}
-              category={"stables_mcap"}
-              selectedTimespan={"90d"}
-              selectedScale="linear"
-            />
-            <ChainComponent
-              data={chainData.data}
-              chain={"arbitrum"}
-              category={"fees"}
-              selectedTimespan={"90d"}
-              selectedScale="linear"
-            />
-          </div>
-          <div className="absolute bottom-2 2xl:bottom-2 left-[40px] md:left-[70px]">
-            <Link
-              className="flex space-x-2 items-center"
-              href="/chains/arbitrum"
-            >
-              Compare <Icon icon="feather:chevron-right" className="w-6 h-6" />{" "}
-            </Link>
+          <div className="grid grid-flow-col grid-rows-1 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-x-[10px] overflow-y-hidden overflow-x-hidden 2xl:overflow-x-hidden w-full p-0 pb-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full  ">
+            <div className="group flex flex-col justify-between h-full ">
+              <ChainComponent
+                data={chainData.data}
+                chain={"arbitrum"}
+                category={"txcount"}
+                selectedTimespan={"90d"}
+                selectedScale="linear"
+              />
+              <div className="invisible group-hover:visible pt-2 pl-[40px] h-6">
+                <Link
+                  className="flex space-x-2 items-center"
+                  href="/chains/arbitrum"
+                >
+                  Compare{" "}
+                  <Icon icon="feather:chevron-right" className="w-6 h-6" />{" "}
+                </Link>
+              </div>
+            </div>
+            <div className="group flex flex-col justify-between h-full ">
+              <ChainComponent
+                data={chainData.data}
+                chain={"arbitrum"}
+                category={"stables_mcap"}
+                selectedTimespan={"90d"}
+                selectedScale="linear"
+              />
+              <div className="invisible group-hover:visible pt-2 pl-[40px] h-6">
+                <Link
+                  className="flex space-x-2 items-center"
+                  href="/chains/arbitrum"
+                >
+                  Compare{" "}
+                  <Icon icon="feather:chevron-right" className="w-6 h-6" />{" "}
+                </Link>
+              </div>
+            </div>
+            <div className="group flex flex-col justify-between h-full ">
+              <ChainComponent
+                data={chainData.data}
+                chain={"arbitrum"}
+                category={"fees"}
+                selectedTimespan={"90d"}
+                selectedScale="linear"
+              />
+              <div className="invisible group-hover:visible pt-2 pl-[40px] h-6">
+                <Link
+                  className="flex space-x-2 items-center"
+                  href="/chains/arbitrum"
+                >
+                  Compare{" "}
+                  <Icon icon="feather:chevron-right" className="w-6 h-6" />{" "}
+                </Link>
+              </div>
+            </div>
           </div>
         </Container>
       )}

@@ -38,15 +38,8 @@ export default function OptimismComp({
     <div className="relative w-[218px]">
       <div
         className={`w-[99%] justify-center bg-[#CDD8D3] rounded-b-2xl rounded-t-none absolute top-1/2 -translate-y-1/50 left-1/2 transform -translate-x-1/2 -translate-y-[5px] z-10 ${
-          optOpen
-            ? `max-h-[${
-                ((Object.keys(ChainsList).length - 1) * 55).toString() + "px"
-              }]`
-            : "max-h-0 "
+          optOpen ? `opacity-100` : "opacity-0 "
         } transition-all ease-in-out duration-500`}
-        style={{
-          height: ((Object.keys(ChainsList).length - 1) * 55).toString() + "px",
-        }}
       >
         <div className="flex flex-col gap-y-[10px]  w-[170px] items-center text-sm text-forest-900 mt-[40px] mb-[10px] ml-[45px]">
           {Object.keys(ChainsList).map((stack, i) => {
@@ -56,7 +49,6 @@ export default function OptimismComp({
                   className={`flex w-full gap-x-2   opacity-${
                     optOpen ? "100" : "0"
                   }`}
-                  style={{ transition: "opacity 0.2s ease-in-out" }}
                   onClick={() => {
                     setSelectedStack(stack);
                   }}
