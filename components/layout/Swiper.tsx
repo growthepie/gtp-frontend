@@ -30,7 +30,7 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
     isLoading: landingLoading,
     isValidating: landingValidating,
     // } = useSWR<LandingPageMetricsResponse>(LandingURL);
-  } = useSWR<LandingPageMetricsResponse>("/mock/landing_page.json");
+  } = useSWR<any>("/mock/landing_page.json");
 
   const { isSidebarOpen } = useUIContext();
 

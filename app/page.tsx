@@ -88,39 +88,6 @@ export default function Home() {
     AllChains.map((chain) => chain.key),
   );
 
-  const scrollerRef = useRef<HTMLDivElement>(null);
-
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
-
-  // the required distance between touchStart and touchEnd to be detected as a swipe
-  const minSwipeDistance = 50;
-
-  const onTouchStart = (e) => {
-    setTouchEnd(null); // otherwise the swipe is fired even with usual touch events
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-
-    if (Math.abs(distance) >= minSwipeDistance) {
-      if (distance > 0) {
-        // swipe left
-        scrollerRef.current?.scrollLeft
-          ? (scrollerRef.current.scrollLeft -= 431)
-          : null;
-      } else {
-        // swipe right
-        scrollerRef.current?.scrollRight
-          ? (scrollerRef.current.scrollRight += 431)
-          : null;
-      }
-    }
-  };
   return (
     <>
       <ShowLoading
@@ -149,9 +116,12 @@ export default function Home() {
             id="most-recent-metrics-title"
             className="text-[20px] md:text-[30px] leading-snug font-bold"
           >
-            Most Recent Metrics
+            Layer 2 Traction
           </Heading>
         </div>
+        <Subheading className="text-base leading-normal md:leading-snug mb-[15px] px-[5px] lg:px-[45px]">
+          Aggregated metrics across all Layer 2s we track.
+        </Subheading>
       </Container>
       <Container className="">
         <Swiper ariaId={"most-recent-metrics-title"} />

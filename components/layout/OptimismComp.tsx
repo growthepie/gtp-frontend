@@ -1,7 +1,7 @@
 "use client";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
-import { animated, useSpring } from "@react-spring/web";
+import { animated, useSpring, easings } from "@react-spring/web";
 
 type Chains = {
   name: string;
@@ -37,8 +37,8 @@ export default function OptimismComp({
   const chainHeight = (Object.keys(ChainsList).length - 1) * 60;
 
   const heightAnimate = useSpring({
-    height: optOpen ? chainHeight : 0,
-    config: { mass: 1, tension: 70, friction: 20 },
+    height: optOpen ? chainHeight : 43,
+    config: { easing: easings.easeInOutBack },
   });
 
   return (
@@ -48,17 +48,19 @@ export default function OptimismComp({
         style={{ height: chainHeight + "px" }}
       >
         <animated.div
-          className={`w-full justify-center rounded-b-2xl bg-[#CDD8D3] absolute top-1/2 -translate-y-1/50 left-1/2 transform -translate-x-1/2 -translate-y-[60px] overflow-clip z-10`}
+          className={`w-full justify-center rounded-b-2xl ${
+            optOpen ? "bg-forest-900 dark:bg-[#CDD8D3] " : "bg-transparent"
+          } absolute top-1/2 -translate-y-1/50 left-1/2 transform -translate-x-1/2 -translate-y-[60px] overflow-clip z-10`}
           style={{ ...heightAnimate }}
         >
-          <div className="flex flex-col gap-y-[11px] w-[170px] items-center text-sm text-forest-900 mt-[55px] mb-[10px] ml-[45px]">
+          <div className="flex flex-col items-center text-sm text-forest-50 dark:text-forest-900 pt-[45px] pb-[10px]">
             {Object.keys(ChainsList).map((stack, i) => {
               return (
                 stack !== selectedStack && (
                   <button
-                    className={`flex w-full gap-x-2 opacity-${
+                    className={`pl-[42px] py-[8px] flex w-full gap-x-2 opacity-${
                       optOpen ? "100" : "0"
-                    }`}
+                    } hover:bg-white/10 hover:dark:bg-black/10`}
                     onClick={() => {
                       setSelectedStack(stack);
                       setOptOpen(false);
@@ -82,10 +84,10 @@ export default function OptimismComp({
       </div>
 
       <div
-        className={`w-full flex justify-center h-[44px] overflow-hidden ${
+        className={`w-full flex justify-center h-[44px] overflow-hidden transition-all ${
           optOpen
-            ? "bg-[#CDD8D3] border-forest-900 transition-colors delay-0"
-            : "bg-transparent border-forest-50 transition-colors delay-750"
+            ? " bg-forest-900 dark:bg-[#CDD8D3] border-forest-50 dark:border-forest-900 transition-colors delay-0"
+            : "bg-transparent border-forest-900 dark:border-forest-50 transition-colors delay-750"
         }  border-[1px]  rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20`}
       >
         <button
@@ -96,10 +98,10 @@ export default function OptimismComp({
         >
           <Icon
             icon={"tabler:chevron-right"}
-            className={` font-light h-[24px] w-[24px] transform ${
+            className={`font-light h-[24px] w-[24px] transform ${
               optOpen
-                ? "rotate-90 transition-transform duration-300 ease-in-out text-forest-900"
-                : "rotate-0 transition-transform duration-300 ease-in-out text-forest-50"
+                ? "rotate-90 transition-transform duration-300 ease-in-out text-forest-50 dark:text-forest-900"
+                : "rotate-0 transition-transform duration-300 ease-in-out text-forest-900 dark:text-forest-50"
             }`}
           />
 
@@ -113,7 +115,9 @@ export default function OptimismComp({
           />
           <p
             className={`text-sm  ${
-              optOpen ? "text-forest-900" : "text-forest-50"
+              optOpen
+                ? "text-forest-50 dark:text-forest-900"
+                : "text-forest-900 dark:text-forest-50"
             }`}
           >
             {ChainsList[selectedStack].name}

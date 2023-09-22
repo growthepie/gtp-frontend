@@ -47,10 +47,12 @@ export default function CategoryMetrics({
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
+  const searchParams = useSearchParams();
+
   // get the category from the url
-  const queryCategory = useSearchParams().get("category");
+  const queryCategory = searchParams?.get("category");
   // subcategories is an array of strings
-  const querySubcategories = useSearchParams().get("subcategories")?.split(",");
+  const querySubcategories = searchParams?.get("subcategories")?.split(",");
 
   type ContractInfo = {
     address: string;
@@ -293,7 +295,11 @@ export default function CategoryMetrics({
   const updatedSubcategories = useMemo(() => {
     const initialSelectedSubcategories = {};
     Object.keys(categories).forEach((category) => {
-      if (queryCategory === category && querySubcategories.length > 0) {
+      if (
+        queryCategory === category &&
+        querySubcategories &&
+        querySubcategories.length > 0
+      ) {
         const intersection = data[category].subcategories.list.filter(
           (subcategory) => {
             return querySubcategories.includes(subcategory);
@@ -418,11 +424,13 @@ export default function CategoryMetrics({
     return chainArray;
   }, [
     selectedSubcategories,
-    selectedCategory,
-    data,
     selectedChains,
+    data,
+    selectedCategory,
     dailyKey,
     selectedMode,
+    selectedValue,
+    showUsd,
     selectedType,
   ]);
 
