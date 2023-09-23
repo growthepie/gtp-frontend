@@ -34,6 +34,8 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
 
   const { isSidebarOpen } = useUIContext();
 
+  const [isDragging, setIsDragging] = React.useState(false);
+
   return (
     <div className="wrapper">
       <Splide
@@ -61,12 +63,23 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
         }}
         aria-labelledby={ariaId}
         hasTrack={false}
+        onDrag={(e) => {
+          setIsDragging(true);
+        }}
+        onDragged={(e) => {
+          setIsDragging(false);
+        }}
       >
         <SplideTrack>
           {landing && (
             <>
               <SplideSlide>
-                <div className="group w-full h-[176px] chain">
+                <div
+                  className="group w-full h-[176px] chain relative"
+                  style={{
+                    pointerEvents: isDragging ? "none" : "all",
+                  }}
+                >
                   <ChainComponent
                     data={landing.data.all_l2s}
                     chain={"all_l2s"}
@@ -75,16 +88,24 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
                     selectedScale="linear"
                   />
                   <Link
-                    className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 -z-10"
+                    className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 -z-10"
                     href="/fundamentals/transaction-count"
                   >
                     Compare{" "}
-                    <Icon icon="feather:chevron-right" className="w-6 h-6" />{" "}
+                    <Icon
+                      icon="feather:chevron-right"
+                      className="w-4 h-4 md:w-6 md:h-6"
+                    />{" "}
                   </Link>
                 </div>
               </SplideSlide>
               <SplideSlide>
-                <div className="group w-full h-[176px] chain">
+                <div
+                  className="group w-full h-[176px] chain"
+                  style={{
+                    pointerEvents: isDragging ? "none" : "all",
+                  }}
+                >
                   <ChainComponent
                     data={landing.data.all_l2s}
                     chain={"all_l2s"}
@@ -93,16 +114,24 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
                     selectedScale="linear"
                   />
                   <Link
-                    className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 -z-10"
+                    className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 -z-10"
                     href="/fundamentals/stablecoin-market-cap"
                   >
                     Compare{" "}
-                    <Icon icon="feather:chevron-right" className="w-6 h-6" />{" "}
+                    <Icon
+                      icon="feather:chevron-right"
+                      className="w-4 h-4 md:w-6 md:h-6"
+                    />{" "}
                   </Link>
                 </div>
               </SplideSlide>
               <SplideSlide>
-                <div className="group w-full h-[176px] chain">
+                <div
+                  className="group w-full h-[176px] chain"
+                  style={{
+                    pointerEvents: isDragging ? "none" : "all",
+                  }}
+                >
                   <ChainComponent
                     data={landing.data.all_l2s}
                     chain={"all_l2s"}
@@ -111,16 +140,24 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
                     selectedScale="linear"
                   />
                   <Link
-                    className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 -z-10"
+                    className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 -z-10"
                     href="/fundamentals/fees-paid-by-users"
                   >
                     Compare{" "}
-                    <Icon icon="feather:chevron-right" className="w-6 h-6" />{" "}
+                    <Icon
+                      icon="feather:chevron-right"
+                      className="w-4 h-4 md:w-6 md:h-6"
+                    />{" "}
                   </Link>
                 </div>
               </SplideSlide>
               <SplideSlide>
-                <div className="group w-full h-[176px] chain">
+                <div
+                  className="group w-full h-[176px] chain"
+                  style={{
+                    pointerEvents: isDragging ? "none" : "all",
+                  }}
+                >
                   <ChainComponent
                     data={landing.data.all_l2s}
                     chain={"all_l2s"}
@@ -129,11 +166,14 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
                     selectedScale="linear"
                   />
                   <Link
-                    className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 -z-10"
+                    className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 -z-10"
                     href="/fundamentals/rent-paid"
                   >
                     Compare{" "}
-                    <Icon icon="feather:chevron-right" className="w-6 h-6" />{" "}
+                    <Icon
+                      icon="feather:chevron-right"
+                      className="w-4 h-4 md:w-6 md:h-6"
+                    />{" "}
                   </Link>
                 </div>
               </SplideSlide>
