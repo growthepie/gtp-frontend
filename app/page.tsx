@@ -21,7 +21,7 @@ import Container from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
 import ChainComponent from "@/components/charts/ChainComponent";
 import { ChainURLs, BlockspaceURLs } from "@/lib/urls";
-import ContractCard from "@/components/layout/ContractCard";
+import LandingTopContracts from "@/components/layout/LandingTopContracts";
 import { ChainResponse } from "@/types/api/ChainResponse";
 import { ChainOverviewResponse } from "@/types/api/ChainOverviewResponse";
 import Swiper from "@/components/layout/Swiper";
@@ -197,23 +197,7 @@ export default function Home() {
         <Subheading className="text-base leading-normal md:leading-snug mt-[30px] mb-[15px] px-[5px] lg:px-[45px]">
           Top 6 gas-consuming contracts across all tracked Layer-2s.
         </Subheading>
-        {blockspaceData && (
-          <div className="grid grid-rows-6 grid-cols-1 lg:grid-rows-3 lg:grid-cols-2 xl:grid-rows-2 xl:grid-cols-3 gap-x-[10px] gap-y-[15px]">
-            {new Array(6).fill(0).map((_, i) => (
-              <ContractCard
-                key={i}
-                data={
-                  blockspaceData.data.chains.all_l2s.overview.max.defi.contracts
-                    .data[i]
-                }
-                types={
-                  blockspaceData.data.chains.all_l2s.overview.max.defi.contracts
-                    .types
-                }
-              />
-            ))}
-          </div>
-        )}
+        <LandingTopContracts />
       </Container>
       <Container>
         <div className="flex gap-x-0 md:gap-x-12 w-full ml-0 mt-[15px] md:mt-[90px]">
