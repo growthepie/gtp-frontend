@@ -120,7 +120,7 @@ export default function Home() {
           </Heading>
         </div>
         <Subheading className="text-base leading-normal md:leading-snug mb-[15px] px-[5px] lg:px-[45px]">
-          Aggregated metrics across all Layer 2s we track.
+          Aggregated metrics across all tracked Layer-2s.
         </Subheading>
       </Container>
       <Container className="">

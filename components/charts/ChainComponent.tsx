@@ -3,7 +3,6 @@
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts";
 import highchartsAnnotations from "highcharts/modules/annotations";
-
 import {
   useState,
   useEffect,
@@ -11,6 +10,7 @@ import {
   useRef,
   useCallback,
   useLayoutEffect,
+  ReactNode,
 } from "react";
 import { useLocalStorage, useWindowSize, useIsMounted } from "usehooks-ts";
 import fullScreen from "highcharts/modules/full-screen";
@@ -674,11 +674,7 @@ export default function ChainComponent({
   );
 
   const lastPointLines = useMemo<{
-    [key: string]: Highcharts.SVGElement;
-  }>(() => ({}), []);
-
-  const lastPointCircles = useMemo<{
-    [key: string]: Highcharts.SVGElement;
+    [key: string]: Highcharts.SVGElement[];
   }>(() => ({}), []);
 
   const resetXAxisExtremes = useCallback(() => {
@@ -961,7 +957,7 @@ export default function ChainComponent({
   const SourcesDisplay = useMemo(() => {
     return data.metrics[category].source &&
       data.metrics[category].source.length > 0 ? (
-      data.metrics[category].source
+      (data.metrics[category].source as string[])
         .map<ReactNode>((s) => (
           <Link
             key={s}
@@ -991,7 +987,7 @@ export default function ChainComponent({
               chart: {
                 ...options.chart,
 
-                margin: zoomed ? zoomedMargin : defaultMargin,
+                margin: zoomed ? zoomMargin : defaultMargin,
                 events: {
                   load: function () {
                     const chart = this;
@@ -1025,18 +1021,19 @@ export default function ChainComponent({
                       textContent: "",
                     });
                     const stop1 = document.getElementById("stop1");
+                    const stop2 = document.getElementById("stop2");
 
-                    stop1.setAttribute(
+                    stop1?.setAttribute(
                       "stop-color",
                       AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1],
                     );
-                    stop1.setAttribute("stop-opacity", "1");
-                    const stop2 = document.getElementById("stop2");
-                    stop2.setAttribute(
+                    stop1?.setAttribute("stop-opacity", "1");
+
+                    stop2?.setAttribute(
                       "stop-color",
                       AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
                     );
-                    stop2.setAttribute("stop-opacity", "0.33");
+                    stop2?.setAttribute("stop-opacity", "0.33");
                   },
                   render: function () {
                     // only 1 chart so setting const for i to = 0
@@ -1057,40 +1054,17 @@ export default function ChainComponent({
                       lastPointLines[i] = [];
                     }
 
-                    // if (lastPointCircles[0]) {
-                    //   lastPointCircles[0].destroy();
-                    // }
                     // calculate the fraction that 15px is in relation to the pixel width of the chart
                     const fraction = 15 / chart.chartWidth;
-
-                    // chart.renderer
-                    //   .stop(0, def)
-                    //   .attr({
-                    //     offset: "0%",
-                    //     "stop-color":
-                    //       AllChainsByKeys[data.chain_id].colors[
-                    //         theme ?? "dark"
-                    //       ][1],
-                    //   })
-                    //   .add();
-
-                    // chart.renderer
-                    //   .stop(1, def)
-                    //   .attr({
-                    //     offset: "100%",
-                    //     "stop-color":
-                    //       AllChainsByKeys[data.chain_id].colors[
-                    //         theme ?? "dark"
-                    //       ][0],
-                    //   })
-                    //   .add();
 
                     // create a bordered line from the last point to the top of the chart's container
                     lastPointLines[i][lastPointLines[i].length] = chart.renderer
                       .createElement("line")
                       .attr({
                         x1: chart.chartWidth * (1 - fraction) + 0.00005,
-                        y1: lastPoint.plotY + chart.plotTop,
+                        y1: lastPoint.plotY
+                          ? lastPoint.plotY + chart.plotTop
+                          : 0,
                         x2: chart.chartWidth * (1 - fraction),
                         y2: chart.plotTop / 2,
                         stroke: "url('#gradient0')",
@@ -1099,25 +1073,7 @@ export default function ChainComponent({
                         rendering: "crispEdges",
                       })
                       .add();
-                    // .path(
-                    //   chart.renderer.crispLine(
-                    //     [
-                    //       //@ts-ignore
-                    //       "M",
-                    //       //@ts-ignore
-                    //       chart.chartWidth * (1 - fraction),
-                    //       //@ts-ignore
-                    //       lastPoint.plotY + chart.plotTop,
-                    //       //@ts-ignore
-                    //       "L",
-                    //       //@ts-ignore
-                    //       chart.chartWidth * (1 - fraction),
-                    //       //@ts-ignore
-                    //       chart.plotTop / 2,
-                    //     ],
-                    //     0.5,
-                    //   ),
-                    // )
+
                     lastPointLines[i][lastPointLines[i].length] = chart.renderer
                       .createElement("line")
                       .attr({
@@ -1134,32 +1090,6 @@ export default function ChainComponent({
                         rendering: "crispEdges",
                       })
                       .add();
-                    // .path(
-                    //   chart.renderer.crispLine(
-                    //     [
-                    //       //@ts-ignore
-                    //       "M",
-                    //       //@ts-ignore
-                    //       chart.chartWidth * (1 - fraction) + 1,
-                    //       //@ts-ignore
-                    //       chart.plotTop / 2,
-                    //       //@ts-ignore
-                    //       "L",
-                    //       //@ts-ignore
-                    //       chart.chartWidth * (1 - fraction) - 8,
-                    //       //@ts-ignore
-                    //       chart.plotTop / 2,
-                    //     ],
-                    //     0.5,
-                    //   ),
-                    // )
-                    // .attr({
-                    //   stroke:
-                    //     AllChainsByKeys[data.chain_id].colors[
-                    //       theme ?? "dark"
-                    //     ][0],
-                    //   "stroke-dasharray": "2",
-                    // })
 
                     // create a circle at the end of the line
                     lastPointLines[i][lastPointLines[i].length] = chart.renderer
@@ -1182,7 +1112,7 @@ export default function ChainComponent({
                     lastPointLines[i][lastPointLines[i].length] = chart.renderer
                       .circle(
                         lastPoint.plotX,
-                        lastPoint.plotY + chart.plotTop,
+                        lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
                         2,
                       )
                       .attr({
