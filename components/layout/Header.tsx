@@ -18,9 +18,9 @@ export default function Header() {
             href="https://explorer.gitcoin.co/#/round/42161/0x59d79b22595b17af659ce9b03907615f53742c57/0x59d79b22595b17af659ce9b03907615f53742c57-16"
             target="_blank"
             rel="noopener"
-            className="hidden xl:flex items-center dark:bg-[#FFE28A] dark:text-[#1B0DB9] bg-[#1B0DB9] text-white p-1 justify-between rounded-full text-sm font-bold mr-auto"
+            className="hidden xl:flex absolute top-[50px] items-center dark:bg-[#FFE28A] dark:text-[#1B0DB9] bg-[#1B0DB9] text-white p-1 justify-between rounded-full text-sm font-bold mr-auto"
           >
-            <div className=" ml-3 mr-4 flex space-x-0.5">
+            <div className="ml-3 mr-4 flex space-x-0.5">
               <div>
                 We are part of Arbitrum&apos;s Gitcoin Grant Funding Fest.{" "}
               </div>
@@ -92,23 +92,27 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Donation Banner <XL screen */}
-      {/* <Link
+      {/* Donation Banner smaller than XL screen */}
+      <Link
         href="https://explorer.gitcoin.co/#/round/10/0x8de918f0163b2021839a8d84954dd7e8e151326d/0x8de918f0163b2021839a8d84954dd7e8e151326d-48"
         target="_blank"
         rel="noopener"
-        className="flex xl:hidden items-center dark:bg-[#FFE28A] dark:text-[#1B0DB9] bg-[#1B0DB9] text-white p-1 justify-between rounded-full text-[13px] md:text-sm font-bold mr-auto w-full mt-6"
+        className="flex xl:hidden items-center dark:bg-[#FFE28A] dark:text-[#1B0DB9] bg-[#1B0DB9] text-white px-1 py-0.5 justify-between rounded-full text-[13px] md:text-sm font-bold mr-auto w-full mt-6"
       >
-        <div className="bg-white text-[#1B0DB9] dark:bg-[#1B0DB9] dark:text-white rounded-full py-0.5 px-1.5">
-          #GG18
+        <div
+        // className="bg-white text-[#1B0DB9] dark:bg-[#1B0DB9] dark:text-white rounded-full py-0.5 px-1.5"
+        >
+          {/* #GG18 */}
         </div>
         <div className="flex space-x-0.5">
-          <div className="hidden sm:block">We are part of Gitcoin.</div>
+          <div className="hidden sm:block">
+            Arbitrum&apos;s Gitcoin Grant Fest.
+          </div>
           <div className="animate-bounce">🎉</div>{" "}
           <div>Help us by donating to our project.</div>
         </div>
         <Icon icon="feather:arrow-right-circle" className="h-6 w-6" />
-      </Link> */}
+      </Link>
     </header>
   );
 }
