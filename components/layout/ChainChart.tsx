@@ -666,11 +666,64 @@ export default function ChainChart({
     [chartComponents],
   );
 
+  const [isVisible, setIsVisible] = useState(true);
+  const resizeTimeout = useRef<null | ReturnType<typeof setTimeout>>(null);
+  const [isAnimate, setIsAnimate] = useState(false);
+  const animationTimeout = useRef<null | ReturnType<typeof setTimeout>>(null);
+
+  const handleResize = () => {
+    // Hide the element
+    setIsVisible(false);
+
+    // Set animation to false
+    setIsAnimate(false);
+
+    // Clear any existing timeouts
+    if (resizeTimeout.current) {
+      clearTimeout(resizeTimeout.current);
+    }
+
+    if (animationTimeout.current) {
+      clearTimeout(animationTimeout.current);
+    }
+
+    // Set a timeout to show the element again after 500ms of no resizing
+    resizeTimeout.current = setTimeout(() => {
+      setIsVisible(true);
+    }, 200);
+
+    // Set a timeout to show the element again after 500ms of no resizing
+    animationTimeout.current = setTimeout(() => {
+      setIsAnimate(true);
+    }, 500);
+  };
+
+  useEffect(() => {
+    window.addEventListener("resize", handleResize);
+
+    animationTimeout.current = setTimeout(() => {
+      setIsAnimate(true);
+    }, 500);
+
+    return () => {
+      // Cleanup
+      window.removeEventListener("resize", handleResize);
+      if (resizeTimeout.current) {
+        clearTimeout(resizeTimeout.current);
+      }
+
+      if (animationTimeout.current) {
+        clearTimeout(animationTimeout.current);
+      }
+    };
+  }, []);
+
   const options: Highcharts.Options = {
     accessibility: { enabled: false },
     exporting: { enabled: false },
     chart: {
       type: "area",
+      animation: isAnimate,
       height: 142 - 15,
       backgroundColor: undefined,
       margin: [1, 0, 0, 0],
@@ -753,10 +806,10 @@ export default function ChainChart({
         color: COLORS.PLOT_LINE,
         snap: false,
       },
-      min: zoomed
-        ? zoomMin
-        : timespans[selectedTimespan].xMin - 1000 * 60 * 60 * 24 * 7,
-      max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
+      // min: zoomed
+      //   ? zoomMin
+      //   : timespans[selectedTimespan].xMin - 1000 * 60 * 60 * 24 * 7,
+      // max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
       tickPositions: getTickPositions(
         timespans[selectedTimespan].xMin,
         timespans[selectedTimespan].xMax,
@@ -921,53 +974,67 @@ export default function ChainChart({
         // 15px padding on each side
         const paddingMilliseconds = (15 / pixelsPerDay) * 24 * 60 * 60 * 1000;
 
+        // if (!zoomed) {
         chart.xAxis[0].setExtremes(
           timespans[selectedTimespan].xMin - paddingMilliseconds,
           timespans[selectedTimespan].xMax,
-          true,
+          isAnimate,
         );
+        // } else {
+        // const currentXMin = chart.xAxis[0].getExtremes().min;
+        // const currentXMax = chart.xAxis[0].getExtremes().max;
+
+        // chart.xAxis[0].setExtremes(currentXMin, currentXMax, isAnimate);
+        // }
       });
     }
-  }, [selectedTimespan, timespans, zoomed]);
+  }, [isAnimate, selectedTimespan, timespans, zoomed]);
+
+  const resituateChartDebounceRef = useRef(null);
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
-  const delayPromises = [];
-
-  const resituateChart = debounce(() => {
-    if (chartComponents.current && !zoomed) {
-      chartComponents.current.forEach((chart) => {
-        delay(50)
+  const resituateChart = useCallback(async () => {
+    if (chartComponents.current) {
+      await chartComponents.current.forEach(async (chart) => {
+        await delay(0)
           .then(() => {
-            isMounted() && chart && chart.setSize(null, null, true);
+            chart?.setSize(null, null, isAnimate);
             // chart.reflow();
           })
           .then(() => {
-            delay(50).then(() => isMounted() && chart && chart.reflow());
-          })
-          .then(() => {
-            delay(50).then(() => isMounted() && chart && resetXAxisExtremes());
+            delay(0).then(() => chart.reflow());
           });
       });
+      resetXAxisExtremes();
     }
-  }, 50);
+  }, [isAnimate, resetXAxisExtremes]);
+
+  // useEffect(() => {
+  //   // if (resituateChartDebounceRef.current)
+  //   //   resituateChartDebounceRef.current.cancel();
+  //   // resituateChartDebounceRef.current = debounce(resituateChart, 50);
+  //   // // cancel the debounced function on component unmount
+  //   // return () => {
+  //   //   if (resituateChartDebounceRef.current)
+  //   //     resituateChartDebounceRef.current.cancel();
+  //   // };
+  // }, [
+  //   chartComponents,
+  //   selectedTimespan,
+  //   timespans,
+  //   resituateChart,
+  //   isSidebarOpen,
+  //   zoomed,
+  // ]);
 
   useEffect(() => {
-    resituateChart();
+    resetXAxisExtremes();
+  }, [resetXAxisExtremes, selectedTimespan]);
 
-    // cancel the debounced function on component unmount
-    return () => {
-      resituateChart.cancel();
-    };
-  }, [
-    chartComponents,
-    selectedTimespan,
-    timespans,
-    width,
-    height,
-    isSidebarOpen,
-    resituateChart,
-  ]);
+  useEffect(() => {
+    handleResize();
+  }, [isSidebarOpen]);
 
   const enabledFundamentalsKeys = useMemo<string[]>(() => {
     return navigationItems[1].options.map((option) => option.key ?? "");
@@ -981,7 +1048,6 @@ export default function ChainChart({
     );
   }
 
-  console.log(data);
   return (
     <div className="w-full">
       <style>
@@ -994,7 +1060,7 @@ export default function ChainChart({
         `}
       </style>
       <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 mb-[32px]">
-        <div className="flex justify-center items-center">
+        <div className="flex items-center">
           <div className="hidden md:flex justify-center items-center space-x-[8px]">
             <Image
               src="/GTP-Metrics.png"
@@ -1026,7 +1092,7 @@ export default function ChainChart({
               </button>
             ))
           ) : (
-            <div className="flex">
+            <div className="flex w-full">
               <button
                 className={`rounded-full flex items-center space-x-3 px-[15px] py-[7px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium border-[0.5px] border-forest-400`}
                 onClick={() => {
@@ -1035,10 +1101,12 @@ export default function ChainChart({
                   //</div>timespans[selectedTimespan].xMax,
                   //);
                   setZoomed(false);
+                  resituateChart();
                 }}
               >
-                <Icon icon="feather:zoom-out" className="w-6 h-6" />
-                <div>Reset Zoom</div>
+                <Icon icon="feather:zoom-out" className="w-5 h-5" />
+                <div className="hidden md:block">Reset Zoom</div>
+                <div className="block md:hidden">Reset</div>
               </button>
               <button
                 className={`rounded-full px-[16px] py-[8px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4  bg-forest-100 dark:bg-forest-1000`}
@@ -1217,11 +1285,23 @@ export default function ChainChart({
                     <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] rounded-[15px]"></div>
                     <div className="absolute w-full h-[142px] top-[49px]">
                       <HighchartsReact
+                        // containerProps={{
+                        //   className: isVisible
+                        //     ? "w-full h-[127px]"
+                        //     : "w-full h-[127px] hidden",
+                        // }}
                         highcharts={Highcharts}
                         options={{
                           ...options,
                           chart: {
                             ...options.chart,
+                            animation: isAnimate
+                              ? {
+                                  duration: 500,
+                                  delay: 0,
+                                  easing: "easeOutQuint",
+                                }
+                              : false,
                             index: i,
                             margin: zoomed ? zoomedMargin : defaultMargin,
                             events: {
@@ -1304,6 +1384,15 @@ export default function ChainChart({
                                 return formatNumber(key, t.value, true);
                               },
                             },
+                          },
+                          xAxis: {
+                            ...options.xAxis,
+                            min: zoomed
+                              ? zoomMin
+                              : timespans[selectedTimespan].xMin,
+                            max: zoomed
+                              ? zoomMax
+                              : timespans[selectedTimespan].xMax,
                           },
 
                           series: [

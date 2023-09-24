@@ -293,7 +293,6 @@ const MetricsTable = ({
                       setSelectedChains([...selectedChains, item.chain.key]);
                     }
                   }
-                  console.log(item);
                 }}
               >
                 <div

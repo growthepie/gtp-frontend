@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import Image from "next/image";
 import { useMediaQuery } from "@react-hook/media-query";
 import Heading from "@/components/layout/Heading";
@@ -21,9 +21,10 @@ import Container from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
 import ChainComponent from "@/components/charts/ChainComponent";
 import { ChainURLs, BlockspaceURLs } from "@/lib/urls";
-import ContractCard from "@/components/layout/ContractCard";
+import LandingTopContracts from "@/components/layout/LandingTopContracts";
 import { ChainResponse } from "@/types/api/ChainResponse";
 import { ChainOverviewResponse } from "@/types/api/ChainOverviewResponse";
+import Swiper from "@/components/layout/Swiper";
 
 export default function Home() {
   const isLargeScreen = useMediaQuery("(min-width: 768px)");
@@ -40,6 +41,7 @@ export default function Home() {
     isLoading: landingLoading,
     isValidating: landingValidating,
   } = useSWR<LandingPageMetricsResponse>(LandingURL);
+  // } = useSWR<LandingPageMetricsResponse>("/mock/landing_page.json");
 
   const {
     data: master,
@@ -47,20 +49,6 @@ export default function Home() {
     isLoading: masterLoading,
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
-
-  // const {
-  //   data: chainData,
-  //   error: chainError,
-  //   isValidating: chainValidating,
-  //   isLoading: chainLoading,
-  // } = useSWR<ChainResponse>(ChainURLs["arbitrum"]);
-
-  // const {
-  //   data: blockspaceData,
-  //   error: blockspaceError,
-  //   isValidating: blockspaceValidating,
-  //   isLoading: blockspaceLoading,
-  // } = useSWR<any>(BlockspaceURLs["chain-overview"]);
 
   const [data, setData] = useState<any>(null);
 
@@ -101,6 +89,7 @@ export default function Home() {
         fullScreen={true}
       />
       {/* )} */}
+
       <Container className="flex flex-col flex-1 w-full mt-[65px]">
         <Heading className="font-bold text-[30px] leading-snug md:text-[36px] mb-[28px] lg:mb-[30px] max-w-[900px]">
           Growing Ethereum’s Ecosystem Together
@@ -111,51 +100,25 @@ export default function Home() {
         </Heading> */}
       </Container>
       {/* <Container className="flex flex-col flex-1 w-full">
-        <div className="flex space-x-2 mt-[30px] items-center">
+        <div className="flex space-x-2 mt-[25px] lg:mt-[70px] mb-[25px] md:mb-[32px] items-center">
           <Icon
             icon="gtp:fundamentals"
             className="w-[30px] h-[30px] md:w-9 md:h-9"
           />
-          <Heading className="text-[20px] md:text-[30px] leading-snug font-bold">
-            Most Recent Metrics
+          <Heading
+            id="most-recent-metrics-title"
+            className="text-[20px] md:text-[30px] leading-snug font-bold"
+          >
+            Layer 2 Traction
           </Heading>
         </div>
-      </Container>
-      {chainData && (
-        <Container className="mt-[30px] relative">
-          <div className="grid grid-flow-col grid-rows-1 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-x-[10px] overflow-y-hidden overflow-x-hidden 2xl:overflow-x-hidden w-full p-0 pb-9 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
-            <ChainComponent
-              data={chainData.data}
-              chain={"arbitrum"}
-              category={"txcount"}
-              selectedTimespan={"90d"}
-              selectedScale="linear"
-            />
-            <ChainComponent
-              data={chainData.data}
-              chain={"arbitrum"}
-              category={"stables_mcap"}
-              selectedTimespan={"90d"}
-              selectedScale="linear"
-            />
-            <ChainComponent
-              data={chainData.data}
-              chain={"arbitrum"}
-              category={"fees"}
-              selectedTimespan={"90d"}
-              selectedScale="linear"
-            />
-          </div>
-          <div className="absolute bottom-2 2xl:bottom-2 left-[40px] md:left-[70px]">
-            <Link
-              className="flex space-x-2 items-center"
-              href="/chains/arbitrum"
-            >
-              Compare <Icon icon="feather:chevron-right" className="w-6 h-6" />{" "}
-            </Link>
-          </div>
-        </Container>
-      )} */}
+        <Subheading className="text-base leading-normal md:leading-snug mb-[15px] px-[5px] lg:px-[45px]">
+          Aggregated metrics across all tracked Layer-2s.
+        </Subheading>
+      </Container> */}
+      {/* <Container className="">
+        <Swiper ariaId={"most-recent-metrics-title"} />
+      </Container> */}
       <Container className="flex flex-col flex-1 w-full">
         {data && landing && master && <TopAnimation />}
         {/* <Subheading className="text-sm leading-snug">
@@ -227,23 +190,7 @@ export default function Home() {
         <Subheading className="text-base leading-normal md:leading-snug mt-[30px] mb-[15px] px-[5px] lg:px-[45px]">
           Top 6 gas-consuming contracts across all tracked Layer-2s.
         </Subheading>
-        {blockspaceData && (
-          <div className="grid grid-rows-6 grid-cols-1 lg:grid-rows-3 lg:grid-cols-2 xl:grid-rows-2 xl:grid-cols-3 gap-x-[10px] gap-y-[15px]">
-            {new Array(6).fill(0).map((_, i) => (
-              <ContractCard
-                key={i}
-                data={
-                  blockspaceData.data.chains.all_l2s.overview.max.defi.contracts
-                    .data[i]
-                }
-                types={
-                  blockspaceData.data.chains.all_l2s.overview.max.defi.contracts
-                    .types
-                }
-              />
-            ))}
-          </div>
-        )}
+        <LandingTopContracts />
       </Container> */}
       <Container>
         <div className="flex gap-x-0 md:gap-x-12 w-full ml-0 mt-[15px] md:mt-[90px]">

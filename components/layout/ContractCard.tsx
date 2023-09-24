@@ -22,12 +22,15 @@ import d3 from "d3";
 import { AllChainsByKeys } from "@/lib/chains";
 import { debounce, forEach } from "lodash";
 import Link from "next/link";
+import useSWR from "swr";
 
 import { navigationItems } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import { ChainsData } from "@/types/api/ChainResponse";
+import { MasterResponse } from "@/types/api/MasterResponse";
+import { LandingURL, MasterURL } from "@/lib/urls";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -55,13 +58,22 @@ type ContractInfo = {
 export default function ContractCard({
   data,
   types,
+  metric,
 }: {
   data: any[];
   types: string[];
+  metric: string;
 }) {
   const { theme } = useTheme();
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+
+  const {
+    data: master,
+    error: masterError,
+    isLoading: masterLoading,
+    isValidating: masterValidating,
+  } = useSWR<MasterResponse>(MasterURL);
 
   return (
     <Link
@@ -70,7 +82,7 @@ export default function ContractCard({
       }&subcategories=${data[types.indexOf("sub_category_key")]}`}
     >
       <div className="group flex flex-col px-[22px] py-[14px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] hover:cursor-pointer hover:bg-forest-100 hover:dark:bg-forest-800">
-        <div className="flex flex-row justify-between items-center w-full">
+        <div className="flex flex-row justify-between items-center w-full relative">
           <div className="flex flex-row items-center">
             <div className="flex flex-col">
               <div className="flex items-center space-x-1.5">
@@ -102,33 +114,79 @@ export default function ContractCard({
               </div>
             </div>
           </div>
-          <div className="flex flex-row items-center space-x-1 text-sm">
+          <div className="flex flex-col items-end space-x-3 justify-end absolute right-0 top-0">
             <>
-              {showUsd ? (
-                <>
-                  <div>$</div>
+              {metric.includes("gas_fees") && (
+                <div className="flex flex-row items-center space-x-1 text-sm">
+                  <div>{metric.includes("_usd") ? "$" : "Ξ"}</div>
                   <div>
                     {Intl.NumberFormat(undefined, {
                       maximumFractionDigits: 2,
                       minimumFractionDigits: 2,
-                    }).format(data[types.indexOf("gas_fees_absolute_usd")])}
+                    }).format(data[types.indexOf(metric)])}
                   </div>
-                </>
-              ) : (
-                <>
-                  <div>Ξ</div>
+                </div>
+              )}
+              {metric.includes("daa") && (
+                <div className="flex flex-row items-end space-x-1 text-sm">
+                  <div>
+                    <Icon icon="feather:users" className="w-4 h-4" />
+                  </div>
                   <div>
                     {Intl.NumberFormat(undefined, {
-                      maximumFractionDigits: 2,
-                      minimumFractionDigits: 2,
-                    }).format(
-                      data[types.indexOf("gas_fees_absolute_eth")],
-                    )}{" "}
-                    ETH
+                      maximumFractionDigits: 0,
+                      minimumFractionDigits: 0,
+                    }).format(data[types.indexOf(metric)])}
                   </div>
-                </>
+                </div>
+              )}
+              {metric.includes("txcount") && (
+                <div className="flex flex-row items-end space-x-1 text-sm">
+                  <div>
+                    <Icon icon="feather:activity" className="w-4 h-4" />
+                  </div>
+                  <div>
+                    {Intl.NumberFormat(undefined, {
+                      maximumFractionDigits: 0,
+                      minimumFractionDigits: 0,
+                    }).format(data[types.indexOf(metric)])}
+                  </div>
+                </div>
               )}
             </>
+            {data[types.indexOf(`${metric}_change_percent`)] ? (
+              <div
+                className={`flex flex-row items-center space-x-1 text-xs font-semibold ${
+                  data[types.indexOf(`${metric}_change_percent`)] >= 0
+                    ? "text-green-500"
+                    : "text-red-500"
+                }`}
+              >
+                {data[types.indexOf(`${metric}_change_percent`)] >= 0 ? (
+                  <>
+                    {/* <Icon
+                      icon="feather:arrow-up"
+                      className="w-3 h-3 transform rotate-45"
+                    /> */}
+                    +
+                  </>
+                ) : (
+                  // <Icon
+                  //   icon="feather:arrow-down"
+                  //   className="w-3 h-3 transform -rotate-45"
+                  // />
+                  <></>
+                )}
+                {Math.round(
+                  data[types.indexOf(`${metric}_change_percent`)] * 10000.0,
+                ) / 100.0}
+                %
+              </div>
+            ) : (
+              <div className="flex flex-row items-center space-x-1 text-xs md:text-sm">
+                -
+              </div>
+            )}
           </div>
         </div>
         <div className="w-full text-[30px] font-bold">
@@ -136,10 +194,21 @@ export default function ContractCard({
         </div>
         <div className="flex flex-row justify-between items-center w-full">
           <div className="flex flex-row items-center space-x-1 text-xs md:text-sm">
-            <div className="flex flex-row items-center space-x-1">
-              {data[types.indexOf("main_category_key")]} &gt;{" "}
-              {data[types.indexOf("sub_category_key")]}
-            </div>
+            {master && (
+              <div className="flex flex-row items-center space-x-1">
+                {
+                  master.blockspace_categories.main_categories[
+                    data[types.indexOf("main_category_key")]
+                  ]
+                }{" "}
+                &gt;{" "}
+                {
+                  master.blockspace_categories.sub_categories[
+                    data[types.indexOf("sub_category_key")]
+                  ]
+                }
+              </div>
+            )}
           </div>
           <Icon
             icon="feather:info"

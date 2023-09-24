@@ -519,8 +519,6 @@ export const getTickPositions = (
   const xMinDate = new Date(xMin);
   const xMaxDate = new Date(xMax);
 
-  console.log({ xMinDate, xMaxDate });
-
   const xMinMonth = xMinDate.getUTCMonth();
   const xMaxMonth = xMaxDate.getUTCMonth();
 

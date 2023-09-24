@@ -765,7 +765,7 @@ export default function ComparisonChart({
         //   ? "linear"
         //   : "logarithmic",
         // reversed: reversePerformer ?? false,
-        min: 0,
+        min: metric_id === "profit" ? null : 0,
         max: selectedScale === "percentage" ? 100 : undefined,
         labels: {
           y: 5,

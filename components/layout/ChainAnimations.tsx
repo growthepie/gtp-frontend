@@ -35,7 +35,6 @@ export default function ChainAnimations({
       let minWidth = 205;
 
       const relativeWidth = 205 + (sortedValues[index][1] / largestValue) * 150;
-      console.log(relativeWidth);
 
       const percentage = (value / largestValue) * 99;
       const newWidth = `max(${percentage}%, ${relativeWidth}px)`;
@@ -53,7 +52,6 @@ export default function ChainAnimations({
       let minWidth = 205;
 
       const relativeWidth = 205 + (sortedValues[index][1] / largestValue) * 150;
-      console.log(relativeWidth);
 
       const percentage = (value / largestValue) * 99;
       const newWidth = `max(${percentage}%, ${relativeWidth}px)`;

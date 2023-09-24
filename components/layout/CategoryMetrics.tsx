@@ -47,10 +47,12 @@ export default function CategoryMetrics({
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
+  const searchParams = useSearchParams();
+
   // get the category from the url
-  const queryCategory = useSearchParams().get("category");
+  const queryCategory = searchParams?.get("category");
   // subcategories is an array of strings
-  const querySubcategories = useSearchParams().get("subcategories")?.split(",");
+  const querySubcategories = searchParams?.get("subcategories")?.split(",");
 
   type ContractInfo = {
     address: string;
@@ -118,7 +120,7 @@ export default function CategoryMetrics({
     imx: true,
     base: true,
   });
-  console.log(isSidebarOpen);
+
   const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
     {},
   );
@@ -324,22 +326,33 @@ export default function CategoryMetrics({
 
   const [selectedSubcategories, setSelectedSubcategories] =
     useState(updatedSubcategories);
-  console.log(data);
+
+  // const chartData = useMemo(() => {
+  //   if (!selectedSubcategories) return [];
+
+  //   let chartData = [];
+
+  //   return chartData;
+  // }, [selectedSubcategories]);
 
   const chartReturn = useMemo(() => {
     const chainArray: ChainData[] = [];
 
     if (!selectedSubcategories) return [];
 
-    for (let i in selectedChains) {
+    // get list of selectedSubcategories for the selected category
+    const selectedSubcategoriesList = selectedSubcategories[selectedCategory];
+
+    for (const currChain in selectedChains) {
       if (
-        selectedChains[i] === true &&
-        data[selectedCategory][dailyKey][String(i)]
+        selectedChains[currChain] === true &&
+        data[selectedCategory][dailyKey][String(currChain)]
       ) {
-        if (selectedMode.includes("gas_fees") && String(i) === "imx") {
+        if (selectedMode.includes("gas_fees") && String(currChain) === "imx") {
           // Skip this iteration
           continue;
         }
+
         let selectedFilter =
           selectedMode +
           selectedValue +
@@ -348,85 +361,87 @@ export default function CategoryMetrics({
               ? "_usd"
               : "_eth"
             : "");
-        let chartData = data[selectedCategory][dailyKey][String(i)];
 
-        let maxSubcategoryLength = 0;
-        let dataIndex =
-          data[selectedCategory][dailyKey].types.indexOf(selectedFilter);
+        let chartData = data[selectedCategory][dailyKey][String(currChain)];
 
-        for (let j in data[selectedCategory].subcategories) {
-          if (
-            String(j) !== "list" &&
-            selectedSubcategories[selectedCategory].indexOf(String(j)) !== -1 &&
-            data[selectedCategory].subcategories[j][dailyKey][i]
-          ) {
-            const subcategoryData =
-              data[selectedCategory].subcategories[j][dailyKey][i];
+        const dataCategorySubcategoriesList =
+          data[selectedCategory].subcategories.list;
 
-            console.log("Processing subcategory:", j);
-            console.log(
-              "subcategoryData:",
-              data[selectedCategory].subcategories[j],
-            );
-            console.log("subcategoryData:", subcategoryData);
+        // if we have the number of selectedSubcategories don't match the number of subcategories in the data
+        // we need to merge the data for the dailyKey data for the selected subcategories
+        if (
+          selectedSubcategoriesList.length !==
+          dataCategorySubcategoriesList.length
+        ) {
+          // get the data for the selected subcategories and filter out the undefined values
+          const selectedSubcategoriesData: any[][] = selectedSubcategoriesList
+            .map((subcategory) => {
+              return data[selectedCategory].subcategories[subcategory][
+                dailyKey
+              ][currChain];
+            })
+            .filter((item) => item);
 
-            maxSubcategoryLength = Math.max(
-              maxSubcategoryLength,
-              subcategoryData.length,
-            );
-          }
+          // get a sorted list of all the unix timestamps with duplicates removed
+          const unixList = selectedSubcategoriesData
+            .reduce((acc, curr) => {
+              return [...acc, ...curr.map((item) => item[0])];
+            }, [])
+            .sort((a, b) => a - b)
+            .filter((item, i, arr) => {
+              return i === 0 || item !== arr[i - 1];
+            });
+
+          // create a new array of arrays with the unix timestamp as the key and the values for each subcategory as the value
+          const unixData = unixList
+            .map((unix) => {
+              const unixValues = selectedSubcategoriesData.map((data) => {
+                const index = data.findIndex((item) => item[0] === unix);
+                return index !== -1 ? data[index] : null;
+              });
+
+              return unixValues;
+            })
+            .map((unixValues) => unixValues.filter((item) => item));
+
+          chartData = unixData.map((unixDataList, unixIndex) => {
+            const unix = unixList[unixIndex];
+            const unixDataListFiltered = unixDataList.filter((item) => item);
+
+            // add up the values for each subcategory (ignore first item which is the unix timestamp)
+            return unixDataListFiltered.reduce((acc, curr) => {
+              if (acc.length === 0) return curr;
+
+              return acc.map((col, i) => {
+                return i === 0 ? col : col + curr[i];
+              });
+            }, []);
+          });
         }
 
-        let hasDataForSelectedSubcategories = false;
-
-        for (let subRows = 0; subRows < maxSubcategoryLength; subRows++) {
-          let sum = 0;
-
-          // Iterate over selected subcategories only
-          for (let j of selectedSubcategories[selectedCategory]) {
-            if (
-              j !== "list" &&
-              data[selectedCategory].subcategories[j][dailyKey][i]
-            ) {
-              const subcategoryData =
-                data[selectedCategory].subcategories[j][dailyKey][i];
-              if (subcategoryData.length > subRows) {
-                sum +=
-                  subcategoryData[subcategoryData.length - (1 + subRows)][
-                    dataIndex
-                  ];
-                hasDataForSelectedSubcategories = true;
-              }
-            }
-          }
-
-          // Update the corresponding value in chartData
-          chartData[chartData.length - (1 + subRows)][dataIndex] = sum;
-        }
-
-        if (hasDataForSelectedSubcategories) {
+        if (chartData.length > 0) {
           const obj = {
-            id: [String(i), selectedCategory, selectedType].join("_"),
-            name: String(i),
+            id: [String(currChain), selectedType].join("_"),
+            name: String(currChain),
             unixKey: "unix",
             dataKey: selectedType,
             data: chartData,
           };
+
           chainArray.push(obj);
         }
       }
     }
-
-    // ...
-
     return chainArray;
   }, [
     selectedSubcategories,
-    selectedCategory,
-    data,
     selectedChains,
+    data,
+    selectedCategory,
     dailyKey,
     selectedMode,
+    selectedValue,
+    showUsd,
     selectedType,
   ]);
 

@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import Heading from "@/components/layout/Heading";
 import Container from "@/components/layout/Container";
 import OverviewMetrics from "@/components/layout/OverviewMetrics";
+import OptimismComp from "@/components/layout/OptimismComp";
 import Image from "next/image";
 import { useSessionStorage } from "usehooks-ts";
 import { ChainOverviewResponse } from "@/types/api/ChainOverviewResponse";
@@ -33,7 +34,8 @@ const ChainOverview = () => {
     false,
   );
 
-  console.log("usageData", usageData);
+  const [optOpen, setOptOpen] = useState(false);
+  const [selectedStack, setSelectedStack] = useState("all-chains");
 
   const pageData = navigationItems[2]?.options.find(
     (item) => item.urlKey === "chain-overview",
@@ -46,9 +48,17 @@ const ChainOverview = () => {
   return (
     <>
       <Container className="flex flex-col w-full mt-[65px] md:mt-[75px]">
-        <Heading className="text-[30px] leading-snug md:text-[36px] mb-[15px] md:mb-[30px]">
-          Chain Overview
-        </Heading>
+        <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] md:mb-[30px]">
+          <Heading className="text-[30px] leading-snug md:text-[36px]">
+            Chain Overview
+          </Heading>
+          {/* <OptimismComp
+            optOpen={optOpen}
+            setOptOpen={setOptOpen}
+            selectedStack={selectedStack}
+            setSelectedStack={setSelectedStack}
+          /> */}
+        </div>
         <Subheading
           className="text-[16px]"
           leftIcon={

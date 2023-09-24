@@ -1,8 +1,8 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;700;900&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;700;900&display=swap");
 
 :root {
   /* Your default theme */
@@ -48,6 +48,33 @@
   width: 50px;
   display: block;
   background: transparent;
+}
+
+.splide__track {
+  overflow: visible !important;
+}
+.splide__pagination {
+  bottom: -15px !important;
+}
+.splide__pagination__page {
+  width: 6px !important;
+  height: 6px !important;
+}
+
+.splide__pagination__page {
+  @apply !bg-forest-400;
+}
+
+.dark .splide__pagination__page {
+  @apply !bg-forest-400;
+}
+
+.splide__pagination__page.is-active {
+  @apply !bg-forest-900;
+}
+
+.dark .splide__pagination__page.is-active {
+  @apply !bg-forest-50;
 }
 
 @media (max-width: 767px) {

@@ -16,7 +16,7 @@ export interface Metrics {
 export interface MetricData {
   metric_name: string;
   unit: string;
-  source: string;
+  source: string[];
   changes: Changes;
   daily: Daily;
   avg: boolean;

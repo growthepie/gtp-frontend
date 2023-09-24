@@ -132,8 +132,6 @@ export function Blog({ params }: { params: any }) {
       }
     }
 
-    console.log("tags", tags);
-
     return _.uniqBy(tags, "originalContentDigest");
     // return tags;
   }, [data]);
