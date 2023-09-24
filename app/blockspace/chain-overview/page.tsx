@@ -37,8 +37,6 @@ const ChainOverview = () => {
   const [optOpen, setOptOpen] = useState(false);
   const [selectedStack, setSelectedStack] = useState("all-chains");
 
-  console.log("usageData", usageData);
-
   const pageData = navigationItems[2]?.options.find(
     (item) => item.urlKey === "chain-overview",
   )?.page ?? {
@@ -51,15 +49,15 @@ const ChainOverview = () => {
     <>
       <Container className="flex flex-col w-full mt-[65px] md:mt-[75px]">
         <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] md:mb-[30px]">
-          <Heading className="text-[30px] leading-snug ">
+          <Heading className="text-[30px] leading-snug md:text-[36px]">
             Chain Overview
           </Heading>
-          <OptimismComp
+          {/* <OptimismComp
             optOpen={optOpen}
             setOptOpen={setOptOpen}
             selectedStack={selectedStack}
             setSelectedStack={setSelectedStack}
-          />
+          /> */}
         </div>
         <Subheading
           className="text-[16px]"

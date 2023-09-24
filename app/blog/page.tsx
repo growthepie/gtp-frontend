@@ -134,8 +134,6 @@ export default function Blog() {
       }
     }
 
-    console.log("tags", tags);
-
     return _.uniqBy(tags, "originalContentDigest");
     // return tags;
   }, [data]);

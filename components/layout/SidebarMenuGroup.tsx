@@ -109,8 +109,6 @@ export default function SidebarMenuGroup({
       </div>
     );
 
-  console.log(item.name);
-
   if (
     ["API Documentation", "Wiki", "Contributors", "Home", "Blog"].includes(
       item.name,

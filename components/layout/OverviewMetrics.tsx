@@ -462,8 +462,6 @@ export default function OverviewMetrics({
     }
   }, [selectedMode, showUsd]);
 
-  // console.log(data["optimism"].overview.types.indexOf("gas_fees_share"));
-  // console.log(relativePercentage);
   useEffect(() => {
     if (!contracts) {
       return;
@@ -1307,12 +1305,6 @@ export default function OverviewMetrics({
                               </div>
                             )} */}
                             {Object.keys(categories).map((categoryKey, i) => {
-                              // console.log(
-                              //   "data[chainKey].overview[selectedTimespan][categoryKey]",
-                              //   data[chainKey].overview[selectedTimespan][
-                              //     categoryKey
-                              //   ],
-                              // );
                               const rawChainCategories = Object.keys(
                                 data[chainKey].overview[selectedTimespan],
                               );

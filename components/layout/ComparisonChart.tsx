@@ -248,7 +248,7 @@ export default function ComparisonChart({
   const [valuePrefix, setValuePrefix] = useState("");
 
   const isMobile = useMediaQuery("(max-width: 767px)");
-  console.log(metric_id);
+
   const SourcesDisplay = useMemo(() => {
     return sources && sources.length > 0 ? (
       sources

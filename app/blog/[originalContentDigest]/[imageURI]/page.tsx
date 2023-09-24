@@ -133,8 +133,6 @@ export default function BlogEntry({ params }: { params: any }) {
       }
     }
 
-    console.log("tags", tags);
-
     return _.uniqBy(tags, "originalContentDigest");
     // return tags;
   }, [data]);

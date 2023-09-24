@@ -50,13 +50,6 @@ export default function Home() {
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
-  const {
-    data: blockspaceData,
-    error: blockspaceError,
-    isValidating: blockspaceValidating,
-    isLoading: blockspaceLoading,
-  } = useSWR<any>(BlockspaceURLs["chain-overview"]);
-
   const [data, setData] = useState<any>(null);
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("weekly");
@@ -98,15 +91,15 @@ export default function Home() {
       {/* )} */}
 
       <Container className="flex flex-col flex-1 w-full mt-[65px]">
-        {/* <Heading className="font-bold text-[30px] leading-snug md:text-[36px] mb-[28px] lg:mb-[30px] max-w-[900px]">
-          Growing Ethereum’s Ecosystem Together
-        </Heading> */}
         <Heading className="font-bold text-[30px] leading-snug md:text-[36px] mb-[28px] lg:mb-[30px] max-w-[900px]">
+          Growing Ethereum’s Ecosystem Together
+        </Heading>
+        {/* <Heading className="font-bold text-[30px] leading-snug md:text-[36px] mb-[28px] lg:mb-[30px] max-w-[900px]">
           Mastering Ethereum Layer-2s: Your Gateway to Curated Analytics and
           Knowledge
-        </Heading>
+        </Heading> */}
       </Container>
-      <Container className="flex flex-col flex-1 w-full">
+      {/* <Container className="flex flex-col flex-1 w-full">
         <div className="flex space-x-2 mt-[25px] lg:mt-[70px] mb-[25px] md:mb-[32px] items-center">
           <Icon
             icon="gtp:fundamentals"
@@ -122,12 +115,12 @@ export default function Home() {
         <Subheading className="text-base leading-normal md:leading-snug mb-[15px] px-[5px] lg:px-[45px]">
           Aggregated metrics across all tracked Layer-2s.
         </Subheading>
-      </Container>
-      <Container className="">
+      </Container> */}
+      {/* <Container className="">
         <Swiper ariaId={"most-recent-metrics-title"} />
-      </Container>
+      </Container> */}
       <Container className="flex flex-col flex-1 w-full">
-        {/* {data && landing && master && <TopAnimation />} */}
+        {data && landing && master && <TopAnimation />}
         {/* <Subheading className="text-sm leading-snug">
               Compare Ethereum&apos;s Layer-2 solutions and better understand
               the metrics to grow the ecosystem.
@@ -184,7 +177,7 @@ export default function Home() {
           </Container>
         </>
       )}
-      <Container className="flex flex-col flex-1 w-full">
+      {/* <Container className="flex flex-col flex-1 w-full">
         <div className="flex space-x-2 mt-[30px] items-center">
           <Icon
             icon="gtp:package"
@@ -198,7 +191,7 @@ export default function Home() {
           Top 6 gas-consuming contracts across all tracked Layer-2s.
         </Subheading>
         <LandingTopContracts />
-      </Container>
+      </Container> */}
       <Container>
         <div className="flex gap-x-0 md:gap-x-12 w-full ml-0 mt-[15px] md:mt-[90px]">
           <div className="flex flex-col md:w-1/2 lg:w-2/3">
