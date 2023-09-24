@@ -52,12 +52,12 @@ const ChainOverview = () => {
           <Heading className="text-[30px] leading-snug md:text-[36px]">
             Chain Overview
           </Heading>
-          {/* <OptimismComp
+          <OptimismComp
             optOpen={optOpen}
             setOptOpen={setOptOpen}
             selectedStack={selectedStack}
             setSelectedStack={setSelectedStack}
-          /> */}
+          />
         </div>
         <Subheading
           className="text-[16px]"
