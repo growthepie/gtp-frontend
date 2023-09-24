@@ -100,7 +100,7 @@
   }
 }
 
-div.blog {
+/* div.blog {
   h2 {
     @apply text-3xl pb-3 pt-6;
   }
@@ -113,9 +113,7 @@ div.blog {
   p {
     @apply text-lg py-3;
   }
-  /* p > img {
-    @apply mx-auto py-3 w-full rounded-lg;
-  } */
+ 
   img {
     @apply mx-auto w-full rounded-xl;
   }
@@ -125,9 +123,7 @@ div.blog {
   ol {
     @apply list-decimal py-3;
   }
-  /* li {
-    @apply my-2;
-  } */
+
   blockquote {
     @apply border-l-4 border-gray-400 pl-4 py-3;
   }
@@ -146,4 +142,4 @@ div.blog {
   hr {
     @apply my-12;
   }
-}
+} */
