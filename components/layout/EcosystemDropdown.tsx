@@ -36,7 +36,7 @@ export default function EcosystemDropdown({}: // optOpen,
   };
 
   const [optOpen, setOptOpen] = useState(false);
-  const [selectedStack, setSelectedStack] = useState<null | string>(null);
+  const [selectedStack, setSelectedStack] = useState<string | null>(null);
 
   const [chainEcosystemFilter, setChainEcosystemFilter] = useLocalStorage(
     "chainEcosystemFilter",
@@ -48,7 +48,9 @@ export default function EcosystemDropdown({}: // optOpen,
   }, []);
 
   useEffect(() => {
-    setChainEcosystemFilter(selectedStack);
+    if (selectedStack !== null) {
+      setChainEcosystemFilter(selectedStack);
+    }
   }, [selectedStack, setChainEcosystemFilter]);
 
   const chainHeight = (Object.keys(ChainsList).length - 1) * 60;

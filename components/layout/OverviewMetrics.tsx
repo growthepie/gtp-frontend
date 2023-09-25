@@ -12,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
-import { Chains } from "@/types/api/ChainOverviewResponse";
+import { FilteredChain } from "@/types/api/ChainOverviewResponse";
 import { AllChainsByKeys } from "@/lib/chains";
 import { color } from "highcharts";
 import { useHover, useMediaQuery } from "usehooks-ts";
@@ -89,7 +89,7 @@ export default function OverviewMetrics({
   selectedTimespan,
   setSelectedTimespan,
 }: {
-  data: Chains;
+  data: FilteredChain;
   showEthereumMainnet: boolean;
   setShowEthereumMainnet: (show: boolean) => void;
   selectedTimespan: string;
@@ -345,13 +345,6 @@ export default function OverviewMetrics({
   }, [data, selectedCategory, selectedTimespan]);
 
   const [selectedChain, setSelectedChain] = useState<string | null>(null);
-
-  const [relativePercentage, setRelativePercentage] = useState(
-    100 -
-      (Object.keys(data["arbitrum"].overview[selectedTimespan]).length - 1) * 2,
-    // For right now determine the amount of categories  based on gasfees length
-    // In the future if different categories have different amount of value will refactor.
-  );
 
   const relativePercentageByChain = useMemo(() => {
     return Object.keys(data).reduce((acc, chainKey) => {
