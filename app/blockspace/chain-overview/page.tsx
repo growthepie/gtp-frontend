@@ -14,6 +14,7 @@ import { Icon } from "@iconify/react";
 import { navigationItems } from "@/lib/navigation";
 import Subheading from "@/components/layout/Subheading";
 import { useUIContext } from "@/contexts/UIContext";
+import { AllChainsByKeys } from "@/lib/chains";
 
 const ChainOverview = () => {
   const {
@@ -50,10 +51,28 @@ const ChainOverview = () => {
     icon: "",
   };
 
-  // const chainFilter = useMemo(() => {
-  //   // AllChainsByKeys.filter((chain) => chain.ecosystem.includes(chainEcosystemFilter)).map((chain) => usageData.data.chains[chain.key];
-  // }, [second]);
+  console.log(usageData?.data.chains);
+  const chainFilter = useMemo(() => {
+    const filteredChains = Object.keys(AllChainsByKeys)
+      .filter((chain) =>
+        AllChainsByKeys[chain].ecosystem.includes(chainEcosystemFilter),
+      )
+      .reduce((result, chain) => {
+        const chainKey = AllChainsByKeys[chain].key;
+        const chainData = usageData?.data.chains[chainKey];
 
+        if (chainData) {
+          result[chainKey] = chainData;
+        }
+
+        return result;
+      }, {});
+
+    return filteredChains;
+  }, [chainEcosystemFilter, usageData]);
+
+  // console.log(chainFilter);
+  console.log(chainFilter);
   return (
     <>
       <Container className="flex flex-col w-full mt-[65px] md:mt-[75px]">
@@ -104,7 +123,7 @@ const ChainOverview = () => {
           setShowEthereumMainnet={setShowEthereumMainnet}
           selectedTimespan={selectedTimespan}
           setSelectedTimespan={setSelectedTimespan}
-          data={usageData.data.chains}
+          data={chainFilter}
           // data={!chainEcosystemFilter || chainEcosystemFilter=== "all-chains" ? usageData.data.chains : )}
         />
       )}

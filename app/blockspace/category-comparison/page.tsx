@@ -4,11 +4,12 @@ import Heading from "@/components/layout/Heading";
 import Container from "@/components/layout/Container";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { useSessionStorage } from "usehooks-ts";
+import { useSessionStorage, useLocalStorage } from "usehooks-ts";
 import CategoryMetrics from "@/components/layout/CategoryMetrics";
 import { BlockspaceURLs } from "@/lib/urls";
 import useSWR from "swr";
 import { CategoryComparisonResponse } from "@/types/api/CategoryComparisonResponse";
+import EcosystemDropdown from "@/components/layout/EcosystemDropdown";
 
 const CategoryComparison = () => {
   const {
@@ -30,9 +31,17 @@ const CategoryComparison = () => {
   return (
     <>
       <Container className="flex flex-col w-full mt-[65px] md:mt-[75px]">
-        <Heading className="text-[30px] leading-snug md:text-[36px] mb-[15px] md:mb-[30px]">
-          Category Comparison
-        </Heading>
+        <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] md:mb-[30px]">
+          <Heading className="text-[30px] leading-snug md:text-[36px]">
+            Category Comparison
+          </Heading>
+          <EcosystemDropdown
+          // optOpen={optOpen}
+          // setOptOpen={setOptOpen}
+          // selectedStack={selectedStack}
+          // setSelectedStack={setSelectedStack}
+          />
+        </div>
         <div className="flex items-center w-[92%]  mb-[30px]">
           <Image
             src="/GTP-Package.svg"
