@@ -711,13 +711,13 @@ export default function ChainComponent({
           }
 
           chart.xAxis[0].hideCrosshair();
-          if (chart.HoverBox) {
-            try {
-              chart.HoverBox.attr("visibility", "hidden");
-            } catch (e) {
-              console.log(e);
-            }
-          }
+          // if (chart.HoverBox) {
+          //   try {
+          //     chart.HoverBox.attr("visibility", "hidden");
+          //   } catch (e) {
+          //     console.log(e);
+          //   }
+          // }
           if (chart.index !== hoveredChart.index)
             chart.series[hoveredSeries.index].points.forEach((point) => {
               point.setState();

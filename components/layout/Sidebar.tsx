@@ -32,7 +32,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
     }
   }, [isMobile, pathname, searchParams]);
 
-  const [scrollHeight, setScrollHeight] = useState(false);
+  const [scrollHeight, setScrollHeight] = useState(0);
 
   // detect scroll position on mobile and add bg and shadow to menu button
   useEffect(() => {

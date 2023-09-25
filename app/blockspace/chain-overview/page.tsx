@@ -15,6 +15,7 @@ import { navigationItems } from "@/lib/navigation";
 import Subheading from "@/components/layout/Subheading";
 import { useUIContext } from "@/contexts/UIContext";
 import { AllChainsByKeys } from "@/lib/chains";
+import { Chains } from "@/types/api/ChainOverviewResponse";
 
 const ChainOverview = () => {
   const {
@@ -53,7 +54,7 @@ const ChainOverview = () => {
 
   console.log(usageData?.data.chains);
   const chainFilter = useMemo(() => {
-    const filteredChains = Object.keys(AllChainsByKeys)
+    const filteredChains: Chains = Object.keys(AllChainsByKeys)
       .filter((chain) =>
         AllChainsByKeys[chain].ecosystem.includes(chainEcosystemFilter),
       )

@@ -8,9 +8,7 @@ export interface Data {
 }
 
 export interface Chains {
-  arbitrum: ChainData;
-  optimism: ChainData;
-  all_l2s: AllChainsData;
+  [key: string]: ChainData;
 }
 
 export interface AllChainsData {

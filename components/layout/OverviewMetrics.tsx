@@ -12,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
-import { FilteredChain } from "@/types/api/ChainOverviewResponse";
+import { Chains } from "@/types/api/ChainOverviewResponse";
 import { AllChainsByKeys } from "@/lib/chains";
 import { color } from "highcharts";
 import { useHover, useMediaQuery } from "usehooks-ts";
@@ -89,7 +89,7 @@ export default function OverviewMetrics({
   selectedTimespan,
   setSelectedTimespan,
 }: {
-  data: FilteredChain;
+  data: Chains;
   showEthereumMainnet: boolean;
   setShowEthereumMainnet: (show: boolean) => void;
   selectedTimespan: string;
