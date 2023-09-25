@@ -65,9 +65,9 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
   return (
     <>
       {landing && (
-        <>
-          <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs xl:text-base xl:flex xl:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 xl:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px] mb-4">
-            <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center space-x-[4px] xl:space-x-1">
+        <div className="lg:-mt-14 flex flex-col">
+          <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row justify-end items-center w-auto ml-0 lg:ml-auto lg:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px] mb-4">
+            {/* <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center space-x-[4px] xl:space-x-1">
               <button
                 className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
                   "gas_fees" === selectedMetric
@@ -107,15 +107,15 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
             </div>
             <div className="block xl:hidden w-[70%] mx-auto my-[10px]">
               <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
-            </div>
-            <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
+            </div> */}
+            <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
               {Object.keys(landing.data.top_contracts)
                 .filter((timespan) => Object.keys(timespans).includes(timespan))
                 .map((timespan) => (
                   <button
                     key={timespan}
                     //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                    className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
+                    className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
                       selectedTimespan === timespan
                         ? "bg-forest-500 dark:bg-forest-1000"
                         : "hover:bg-forest-500/10"
@@ -137,10 +137,15 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
                 data={landing.data.top_contracts[selectedTimespan].data[i]}
                 types={landing.data.top_contracts[selectedTimespan].types}
                 metric={metrics[selectedMetric].key}
+                changeSuffix={`in last ${
+                  selectedTimespan === "1d"
+                    ? "1 day"
+                    : `${parseInt(selectedTimespan)} days`
+                }`}
               />
             ))}
           </div>
-        </>
+        </div>
       )}
     </>
   );

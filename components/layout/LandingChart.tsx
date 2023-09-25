@@ -1747,7 +1747,7 @@ export default function LandingChart({
             />
             <div className="flex flex-col items-center justify-center">
               <div className="text-xs font-medium leading-tight">
-                Layer-2 Dominance
+                Layer 2 Dominance
               </div>
               <div className="text-3xl font-[650]">
                 {l2_dominance.toFixed(2)}x

@@ -1,7 +1,7 @@
 "use client";
 
 import HighchartsReact from "highcharts-react-official";
-import Highcharts from "highcharts";
+import Highcharts from "highcharts/highstock";
 import highchartsAnnotations from "highcharts/modules/annotations";
 import {
   useState,
@@ -50,12 +50,15 @@ export default function ChainComponent({
   category,
   selectedTimespan,
   selectedScale,
+  // 2022-09-01
+  xMin = new Date("2022-09-01").getTime(),
 }: {
   data: ChainsData;
   chain: string;
   category: string;
   selectedTimespan: string;
   selectedScale: string;
+  xMin?: number | null;
 }) {
   // Keep track of the mounted state
   const isMounted = useIsMounted();
@@ -93,7 +96,7 @@ export default function ChainComponent({
 
   const timespans = useMemo(() => {
     let max = 0;
-    let min = Infinity;
+    let min = xMin ? xMin : Infinity;
     const now = Date.now();
 
     Object.keys(data.metrics).forEach((key) => {
@@ -102,10 +105,11 @@ export default function ChainComponent({
         ...data.metrics[key].daily.data.map((d: any) => d[0]),
       );
 
-      min = Math.min(
-        min,
-        ...data.metrics[key].daily.data.map((d: any) => d[0]),
-      );
+      if (!xMin)
+        min = Math.min(
+          min,
+          ...data.metrics[key].daily.data.map((d: any) => d[0]),
+        );
     });
 
     return {
@@ -138,7 +142,7 @@ export default function ChainComponent({
         daysDiff: Math.round((now - min) / (1000 * 60 * 60 * 24)),
       },
     };
-  }, [data]);
+  }, [data.metrics, xMin]);
 
   const showGwei = useCallback((metric_id: string) => {
     const item = navigationItems[1].options.find(
@@ -633,15 +637,19 @@ export default function ChainComponent({
       const { series: hoveredSeries, index: hoveredPointIndex } = this;
       const hoveredChart = hoveredSeries.chart;
 
-      if (chartComponents.current && chartComponents.current.length > 1) {
+      if (chartComponents.current && chartComponents.current.length > 0) {
         chartComponents.current.forEach((chart) => {
-          if (!chart || chart.index === hoveredChart.index) return;
+          if (!chart) return;
+
+          // if (chart.index === hoveredChart.index) {
+          // }
 
           if (event.type === "mouseOver" || event.type === "mouseMove") {
             if (chart.series[hoveredSeries.index]) {
               if (event.target !== null) {
                 const pointerEvent =
                   event.target as unknown as Highcharts.PointerEventObject;
+
                 const point =
                   chart.series[hoveredSeries.index].points.find(
                     (p) =>
@@ -649,23 +657,71 @@ export default function ChainComponent({
                       (event.target as unknown as Highcharts.PointerEventObject)
                         .x,
                   ) || null;
+
                 if (point !== null) {
                   const simulatedPointerEvent: any = {
                     chartX: point.plotX ?? 0,
                     chartY: point.plotY ?? 0,
                   };
-                  point.setState("hover");
-                  chart.xAxis[0].drawCrosshair(simulatedPointerEvent);
+                  // if this is the chart we are hovering
+                  if (chart.index === hoveredChart.index) {
+                    // // render rectangular hover box for datagrouping
+                    // if (chart.HoverBox) {
+                    //   try {
+                    //     chart.HoverBox.attr("visibility", "hidden");
+                    //   } catch (e) {
+                    //     console.log(e);
+                    //   }
+                    // }
+                    // // calculate width if weekly or monthly
+                    // const boxWidth =
+                    //   chart.plotWidth /
+                    //   (timespans[selectedTimespan].daysDiff / 7);
+                    // if (!chart.HoverBox) {
+                    //   chart.HoverBox = chart.renderer
+                    //     .rect(0, chart.plotTop, boxWidth, chart.plotHeight, 0)
+                    //     .attr({
+                    //       fill:
+                    //         AllChainsByKeys[data.chain_id].colors[theme][0] +
+                    //         "11",
+                    //       zIndex: 100,
+                    //     })
+                    //     .add()
+                    //     .toFront();
+                    // } else {
+                    //   chart.HoverBox.attr("visibility", "visible");
+                    //   chart.HoverBox.attr(
+                    //     "x",
+                    //     simulatedPointerEvent.chartX - boxWidth / 2,
+                    //   );
+                    //   chart.HoverBox.attr("width", boxWidth);
+                    // }
+                  }
+
+                  // else if this is not the chart we are hovering
+                  else {
+                    point.setState("hover");
+                    chart.xAxis[0].drawCrosshair(simulatedPointerEvent);
+                  }
                 }
+
                 return;
               }
             }
           }
 
           chart.xAxis[0].hideCrosshair();
-          chart.series[hoveredSeries.index].points.forEach((point) => {
-            point.setState();
-          });
+          if (chart.HoverBox) {
+            try {
+              chart.HoverBox.attr("visibility", "hidden");
+            } catch (e) {
+              console.log(e);
+            }
+          }
+          if (chart.index !== hoveredChart.index)
+            chart.series[hoveredSeries.index].points.forEach((point) => {
+              point.setState();
+            });
         });
       }
     },
@@ -689,7 +745,7 @@ export default function ChainComponent({
         const paddingMilliseconds = (15 / pixelsPerDay) * 24 * 60 * 60 * 1000;
 
         chart.xAxis[0].setExtremes(
-          timespans[selectedTimespan].xMin - paddingMilliseconds,
+          timespans[selectedTimespan].xMin, //- paddingMilliseconds,
           timespans[selectedTimespan].xMax,
           true,
         );
@@ -905,15 +961,22 @@ export default function ChainComponent({
           radius: 0,
           symbol: "circle",
         },
-        states: {
-          inactive: {
-            enabled: true,
-            opacity: 0.6,
-          },
-        },
       },
     },
-
+    navigator: {
+      enabled: false,
+    },
+    rangeSelector: {
+      enabled: false,
+    },
+    stockTools: {
+      gui: {
+        enabled: false,
+      },
+    },
+    scrollbar: {
+      enabled: false,
+    },
     credits: {
       enabled: false,
     },
@@ -982,6 +1045,7 @@ export default function ChainComponent({
         <div className="absolute w-full h-[146px] md:h-[176px]">
           <HighchartsReact
             highcharts={Highcharts}
+            constructorType={"stockChart"}
             options={{
               ...options,
               chart: {
@@ -1170,10 +1234,53 @@ export default function ChainComponent({
                   marker: {
                     enabled: false,
                   },
+                  // states: {
+                  //   marker: {
+                  //     hover: {
+                  //       enabled: true,
+                  //     },
+                  //   },
+                  // },
                   point: {
                     events: {
                       mouseOver: pointHover,
                       mouseOut: pointHover,
+                    },
+                  },
+                  step: "center",
+                  // dataGrouping: {
+                  //   enabled: true,
+                  //   forced: true,
+                  //   approximation: "sum",
+                  //   anchor: "middle",
+                  //   units: [["week", [1]]],
+                  // },
+                  states: {
+                    hover: {
+                      enabled: true,
+                      halo: {
+                        size: 5,
+                        opacity: 1,
+                        attributes: {
+                          fill:
+                            AllChainsByKeys[data.chain_id]?.colors[
+                              theme ?? "dark"
+                            ][0] + "99",
+                          stroke:
+                            AllChainsByKeys[data.chain_id]?.colors[
+                              theme ?? "dark"
+                            ][0] + "66",
+                          strokeWidth: 0,
+                        },
+                      },
+                      brightness: 0.3,
+                    },
+                    inactive: {
+                      enabled: true,
+                      opacity: 0.6,
+                    },
+                    selection: {
+                      enabled: false,
                     },
                   },
                 },
@@ -1223,7 +1330,7 @@ export default function ChainComponent({
       <div className="absolute -bottom-[2px] right-[6px]">
         <Tooltip placement="left" allowInteract>
           <TooltipTrigger>
-            <div className="p-0 -mr-0.5 z-30">
+            <div className="p-0 -mr-0.5 z-30 opacity-40 hover:opacity-80">
               <Icon icon="feather:info" className="w-6 h-6" />
             </div>
           </TooltipTrigger>

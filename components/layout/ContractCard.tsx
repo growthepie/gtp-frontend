@@ -59,10 +59,12 @@ export default function ContractCard({
   data,
   types,
   metric,
+  changeSuffix = "",
 }: {
   data: any[];
   types: string[];
   metric: string;
+  changeSuffix?: string;
 }) {
   const { theme } = useTheme();
 
@@ -81,7 +83,7 @@ export default function ContractCard({
         data[types.indexOf("main_category_key")]
       }&subcategories=${data[types.indexOf("sub_category_key")]}`}
     >
-      <div className="group flex flex-col px-[22px] py-[14px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] hover:cursor-pointer hover:bg-forest-100 hover:dark:bg-forest-800">
+      <div className="group flex flex-col px-[22px] py-[14px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] hover:cursor-pointer hover:bg-forest-100 hover:dark:bg-forest-800 transition-colors duration-200">
         <div className="flex flex-row justify-between items-center w-full relative">
           <div className="flex flex-row items-center">
             <div className="flex flex-col">
@@ -114,7 +116,7 @@ export default function ContractCard({
               </div>
             </div>
           </div>
-          <div className="flex flex-col items-end space-x-3 justify-end absolute right-0 top-0">
+          <div className="flex flex-col items-end space-x-3 space-y-1 justify-end absolute right-0 top-0">
             <>
               {metric.includes("gas_fees") && (
                 <div className="flex flex-row items-center space-x-1 text-sm">
@@ -155,32 +157,37 @@ export default function ContractCard({
               )}
             </>
             {data[types.indexOf(`${metric}_change_percent`)] ? (
-              <div
-                className={`flex flex-row items-center space-x-1 text-xs font-semibold ${
-                  data[types.indexOf(`${metric}_change_percent`)] >= 0
-                    ? "text-green-500"
-                    : "text-red-500"
-                }`}
-              >
-                {data[types.indexOf(`${metric}_change_percent`)] >= 0 ? (
-                  <>
-                    {/* <Icon
+              <div className="flex space-x-1 text-[0.6rem] items-end justify-end ">
+                <div
+                  className={`flex flex-row space-x-1 text-xs font-semibold transition-colors duration-200 ${
+                    data[types.indexOf(`${metric}_change_percent`)] >= 0
+                      ? " text-green-500 dark:group-hover:text-green-400"
+                      : " text-red-500 dark:group-hover:text-red-400"
+                  }`}
+                >
+                  {data[types.indexOf(`${metric}_change_percent`)] >= 0 ? (
+                    <>
+                      {/* <Icon
                       icon="feather:arrow-up"
                       className="w-3 h-3 transform rotate-45"
                     /> */}
-                    +
-                  </>
-                ) : (
-                  // <Icon
-                  //   icon="feather:arrow-down"
-                  //   className="w-3 h-3 transform -rotate-45"
-                  // />
-                  <></>
-                )}
-                {Math.round(
-                  data[types.indexOf(`${metric}_change_percent`)] * 10000.0,
-                ) / 100.0}
-                %
+                      +
+                    </>
+                  ) : (
+                    // <Icon
+                    //   icon="feather:arrow-down"
+                    //   className="w-3 h-3 transform -rotate-45"
+                    // />
+                    <></>
+                  )}
+                  {Math.round(
+                    data[types.indexOf(`${metric}_change_percent`)] * 10000.0,
+                  ) / 100.0}
+                  %
+                </div>
+                <div className="text-forest-900 dark:text-forest-300">
+                  {changeSuffix}
+                </div>
               </div>
             ) : (
               <div className="flex flex-row items-center space-x-1 text-xs md:text-sm">

@@ -43,6 +43,10 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
           gap: "15px",
           autoHeight: true,
           width: "100%",
+          padding: {
+            left: "62px",
+            right: "62px",
+          },
           breakpoints: {
             640: {
               perPage: 1,
@@ -88,7 +92,7 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
                     selectedScale="linear"
                   />
                   <Link
-                    className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 -z-10"
+                    className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 delay-[0] group-hover:delay-[2000] -z-10"
                     href="/fundamentals/transaction-count"
                   >
                     Compare{" "}
@@ -181,11 +185,11 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
           )}
         </SplideTrack>
 
-        <div className="splide__arrows">
-          <button className="splide__arrow splide__arrow--prev rounded-full bg-white dark:bg-[#1F2726] -ml-8">
+        <div className="splide__arrows -mt-8 md:-mt-0">
+          <button className="splide__arrow splide__arrow--prev rounded-full text-forest-400 bg-white dark:bg-forest-700 ml-6">
             <Icon icon="feather:chevron-right" className="w-6 h-6 z-50" />
           </button>
-          <button className="splide__arrow splide__arrow--next rounded-full bg-white dark:bg-[#1F2726] -mr-8">
+          <button className="splide__arrow splide__arrow--next rounded-full text-forest-400 bg-white dark:bg-forest-700 mr-6">
             <Icon icon="feather:chevron-right" className="w-6 h-6 z-50" />
           </button>
         </div>

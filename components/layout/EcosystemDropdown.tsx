@@ -36,7 +36,7 @@ export default function EcosystemDropdown({}: // optOpen,
   };
 
   const [optOpen, setOptOpen] = useState(false);
-  const [selectedStack, setSelectedStack] = useState(null);
+  const [selectedStack, setSelectedStack] = useState<null | string>(null);
 
   const [chainEcosystemFilter, setChainEcosystemFilter] = useLocalStorage(
     "chainEcosystemFilter",

@@ -95,7 +95,7 @@ export default function Home() {
           Growing Ethereum’s Ecosystem Together
         </Heading> */}
         <Heading className="font-bold text-[30px] leading-snug md:text-[36px] mb-[28px] lg:mb-[30px] max-w-[900px]">
-          Mastering Ethereum Layer-2s: Your Gateway to Curated Analytics and
+          Mastering Ethereum Layer 2s: Your Gateway to Curated Analytics and
           Knowledge
         </Heading>
       </Container>
@@ -112,17 +112,20 @@ export default function Home() {
             Layer 2 Traction
           </Heading>
         </div>
-        <Subheading className="text-base leading-normal md:leading-snug mb-[15px] px-[5px] lg:px-[45px]">
-          Aggregated metrics across all tracked Layer-2s.
+        <Subheading className="text-base leading-normal md:leading-snug mb-[15px] pl-[5px] lg:pl-[45px] flex justify-between items-end space-x-2">
+          <div>Aggregated metrics across all tracked Layer 2s.</div>
+          <div className="text-[0.6rem] md:text-xs font-medium px-1.5 py-0.5 border dark:border-forest-50 rounded-md select-none">
+            7d rolling avg
+          </div>
         </Subheading>
       </Container>
-      <Container className="">
+      <Container className="!px-0 fade-edge-div">
         <Swiper ariaId={"layer-2-traction-title"} />
       </Container>
       <Container className="flex flex-col flex-1 w-full">
         {/* {data && landing && master && <TopAnimation />} */}
         {/* <Subheading className="text-sm leading-snug">
-              Compare Ethereum&apos;s Layer-2 solutions and better understand
+              Compare Ethereum&apos;s Layer 2 solutions and better understand
               the metrics to grow the ecosystem.
             </Subheading> */}
         <div className="flex mt-[25px] lg:mt-[70px] mb-[25px] md:mb-[32px] space-x-2 items-center">
@@ -187,8 +190,8 @@ export default function Home() {
             Blockspace
           </Heading>
         </div>
-        <Subheading className="text-base leading-normal md:leading-snug mt-[30px] mb-[15px] px-[5px] lg:px-[45px]">
-          Top 6 gas-consuming contracts across all tracked Layer-2s.
+        <Subheading className="text-base leading-normal md:leading-snug mt-[30px] mb-[15px] px-[5px] w-full lg:w-3/5 lg:px-[45px]">
+          Top 6 gas-consuming contracts across all tracked Layer 2s.
         </Subheading>
         <LandingTopContracts />
       </Container>
