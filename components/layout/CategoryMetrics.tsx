@@ -94,7 +94,7 @@ export default function CategoryMetrics({
   const [animationFinished, setAnimationFinished] = useState(true);
   const [exitAnimation, setExitAnimation] = useState(false);
 
-  const [openSub, setOpenSub] = useState(false);
+  const [openSub, setOpenSub] = useState(querySubcategories ? true : false);
   const [selectedValue, setSelectedValue] = useState("absolute");
 
   const [maxDisplayedContracts, setMaxDisplayedContracts] = useState(10);

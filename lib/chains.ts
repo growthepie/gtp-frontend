@@ -5,6 +5,7 @@ export const AllChains = [
     key: "ethereum",
     urlKey: "ethereum",
     chainType: "L1",
+    ecosystem: [],
     description:
       "Ethereum was proposed by Vitalik Buterin in 2013 and launched in 2015. It is arguably the most decentralized smart contract platform to date. The goal is to scale Ethereum through the usage of Layer 2s.",
     border: {
@@ -26,6 +27,7 @@ export const AllChains = [
     key: "arbitrum",
     urlKey: "arbitrum",
     chainType: "L2",
+    ecosystem: [],
     description:
       "Arbitrum One is developed by Offchain Labs and its mainnet launched in September 2021. It uses an optimistic rollup approach and is fully compatible with the Ethereum Virtual Machine (EVM), making it developer-friendly.",
     border: {
@@ -47,6 +49,7 @@ export const AllChains = [
     key: "aztecv2",
     urlKey: "aztec-v2",
     chainType: "L2",
+    ecosystem: [],
     description: "",
     border: {
       light: ["border-[#000000]", "border-[#000000]"],
@@ -65,6 +68,7 @@ export const AllChains = [
     key: "imx",
     urlKey: "immutable-x",
     chainType: "L2",
+    ecosystem: [],
     description:
       "Immutable X is an optimized game-specific zk rollup. It is designed to mint, transfer, and trade tokens and NFTs at higher volumes and zero gas fees. It is not EVM compatible but its easy-to-use APIs and SDKs aim to make development for game devs as easy as possible. It launched in April 2021.",
     border: {
@@ -86,6 +90,7 @@ export const AllChains = [
     key: "polygon_zkevm",
     urlKey: "polygon-zkevm",
     chainType: "L2",
+    ecosystem: [],
     description:
       "Polygon zkEVM uses zero-knowledge proofs to enable faster and cheaper transactions. It allows users to build and run EVM-compatible smart contracts, achieving up to 100x lower gas fees and up to 2,000x faster transaction speeds than the Ethereum mainnet. It's fully compatible with the Ethereum Virtual Machine, making it easy for developers to migrate their applications to the Polygon network. It launched in March 2023.",
     border: {
@@ -107,6 +112,7 @@ export const AllChains = [
     key: "loopring",
     urlKey: "loopring",
     chainType: "L2",
+    ecosystem: [],
     description: "",
     border: {
       light: ["border-[#000000]", "border-[#000000]"],
@@ -127,6 +133,7 @@ export const AllChains = [
     key: "optimism",
     urlKey: "optimism",
     chainType: "L2",
+    ecosystem: ["OP Stack", "Superchain"],
     description:
       "OP Mainnet (formerly Optimism) uses an optimistic rollup approach, where transactions are assumed to be valid unless proven otherwise, and only invalid transactions are rolled back. OP Mainnet launched in August 2021, making it one of the first rollups. It is fully compatible with the Ethereum Virtual Machine (EVM), making it easy for developers to migrate their applications to the OP Mainnet network.",
     border: {
@@ -148,6 +155,7 @@ export const AllChains = [
     key: "zksync_era",
     urlKey: "zksync-era",
     chainType: "L2",
+    ecosystem: ["Hyperchain"],
     description:
       "zkSync Era is a Layer-2 protocol that scales Ethereum with cutting-edge ZK tech. Their mission isn't to merely increase Ethereum's throughput, but to fully preserve its foundational values – freedom, self-sovereignty, decentralization – at scale.",
     border: {
@@ -169,8 +177,31 @@ export const AllChains = [
     key: "base",
     urlKey: "base",
     chainType: "L2",
+    ecosystem: ["OP Stack", "Superchain"],
     description:
       "Base is an fully EVM compatible optimistic rollup built on the OP Stack. It is incubated inside of Coinbase. Public mainnet launch was on August 9th 2023.",
+    border: {
+      light: ["border-[#2151F5]", "border-[#2151F5]"],
+      dark: ["border-[#2151F5]", "border-[#2151F5]"],
+    },
+    colors: {
+      light: ["#2151F5", "#2151F5"], // dark purple
+      dark: ["#2151F5", "#2151F5"], // dark purple
+    },
+    backgrounds: {
+      light: ["bg-[#2151F5]", "bg-[#2151F5]"],
+      dark: ["bg-[#2151F5]", "bg-[#2151F5]"],
+    },
+  },
+  {
+    label: "Public Goods Network",
+    icon: "/icons/Base.png",
+    key: "pgn",
+    urlKey: "public-goods-network",
+    chainType: "L2",
+    ecosystem: ["OP Stack"],
+    description:
+      "Public Goods Network is a fully EVM compatible optimistic rollup built on the OP Stack. It is incubated inside of Coinbase. Public mainnet launch was on August 9th 2023.",
     border: {
       light: ["border-[#2151F5]", "border-[#2151F5]"],
       dark: ["border-[#2151F5]", "border-[#2151F5]"],
@@ -190,7 +221,7 @@ export const AllChains = [
     key: "multiple",
     urlKey: "multiple",
     chainType: "all-L2",
-
+    ecosystem: [],
     border: {
       light: ["border-[#cdd8d3]", "border-[#cdd8d3]"],
       dark: ["border-[#cdd8d3]", "border-[#cdd8d3]"],
@@ -213,6 +244,7 @@ export const AllChains = [
     key: "all_l2s",
     urlKey: "all-l2s",
     chainType: null,
+    ecosystem: [],
     border: {
       light: ["border-[#FFDF27]", "border-[#FE5468]"],
       dark: ["border-[#FFDF27]", "border-[#FE5468]"],

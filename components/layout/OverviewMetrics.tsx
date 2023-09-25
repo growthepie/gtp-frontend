@@ -112,6 +112,12 @@ export default function OverviewMetrics({
   const [contractHover, setContractHover] = useState({});
   const [selectedValue, setSelectedValue] = useState("share");
   const [copyContract, setCopyContract] = useState(false);
+
+  const [chainEcosystemFilter, setChainEcosystemFilter] = useLocalStorage(
+    "chainEcosystemFilter",
+    "all-chains",
+  );
+
   // const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
   //   {},
   // );

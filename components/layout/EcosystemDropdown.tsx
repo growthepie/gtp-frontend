@@ -1,23 +1,24 @@
 "use client";
+import { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import { animated, useSpring, easings } from "@react-spring/web";
+import { useLocalStorage } from "usehooks-ts";
 
 type Chains = {
   name: string;
   icon: string;
 };
 
-export default function OptimismComp({
-  optOpen,
-  setOptOpen,
-  selectedStack,
-  setSelectedStack,
-}: {
-  optOpen: boolean;
-  setOptOpen: (show: boolean) => void;
-  selectedStack: string;
-  setSelectedStack: (show: string) => void;
+export default function EcosystemDropdown({}: // optOpen,
+// setOptOpen,
+// selectedStack,
+// setSelectedStack,
+{
+  // optOpen: boolean;
+  // setOptOpen: (show: boolean) => void;
+  // selectedStack: string;
+  // setSelectedStack: (show: string) => void;
 }) {
   const ChainsList: { [key: string]: Chains } = {
     "all-chains": {
@@ -33,6 +34,22 @@ export default function OptimismComp({
       icon: "/Optimism-super-logo.svg",
     },
   };
+
+  const [optOpen, setOptOpen] = useState(false);
+  const [selectedStack, setSelectedStack] = useState(null);
+
+  const [chainEcosystemFilter, setChainEcosystemFilter] = useLocalStorage(
+    "chainEcosystemFilter",
+    "all-chains",
+  );
+
+  useEffect(() => {
+    if (chainEcosystemFilter) setSelectedStack(chainEcosystemFilter);
+  }, []);
+
+  useEffect(() => {
+    setChainEcosystemFilter(selectedStack);
+  }, [selectedStack, setChainEcosystemFilter]);
 
   const chainHeight = (Object.keys(ChainsList).length - 1) * 60;
 
@@ -96,32 +113,36 @@ export default function OptimismComp({
             setOptOpen(!optOpen);
           }}
         >
-          <Icon
-            icon={"tabler:chevron-right"}
-            className={`font-light h-[24px] w-[24px] transform ${
-              optOpen
-                ? "rotate-90 transition-transform duration-300 ease-in-out text-forest-50 dark:text-forest-900"
-                : "rotate-0 transition-transform duration-300 ease-in-out text-forest-900 dark:text-forest-50"
-            }`}
-          />
+          {selectedStack && (
+            <>
+              <Icon
+                icon={"tabler:chevron-right"}
+                className={`font-light h-[24px] w-[24px] transform ${
+                  optOpen
+                    ? "rotate-90 transition-transform duration-300 ease-in-out text-forest-50 dark:text-forest-900"
+                    : "rotate-0 transition-transform duration-300 ease-in-out text-forest-900 dark:text-forest-50"
+                }`}
+              />
 
-          <Image
-            src={ChainsList[selectedStack].icon}
-            alt="Forest"
-            className="flex"
-            height={22}
-            width={22}
-            quality={100}
-          />
-          <p
-            className={`text-sm  ${
-              optOpen
-                ? "text-forest-50 dark:text-forest-900"
-                : "text-forest-900 dark:text-forest-50"
-            }`}
-          >
-            {ChainsList[selectedStack].name}
-          </p>
+              <Image
+                src={ChainsList[selectedStack].icon}
+                alt="Forest"
+                className="flex"
+                height={22}
+                width={22}
+                quality={100}
+              />
+              <p
+                className={`text-sm  ${
+                  optOpen
+                    ? "text-forest-50 dark:text-forest-900"
+                    : "text-forest-900 dark:text-forest-50"
+                }`}
+              >
+                {ChainsList[selectedStack].name}
+              </p>
+            </>
+          )}
         </button>
       </div>
     </div>

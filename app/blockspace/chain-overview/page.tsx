@@ -3,9 +3,9 @@ import { useMemo, useState } from "react";
 import Heading from "@/components/layout/Heading";
 import Container from "@/components/layout/Container";
 import OverviewMetrics from "@/components/layout/OverviewMetrics";
-import OptimismComp from "@/components/layout/OptimismComp";
+import EcosystemDropdown from "@/components/layout/EcosystemDropdown";
 import Image from "next/image";
-import { useSessionStorage } from "usehooks-ts";
+import { useSessionStorage, useLocalStorage } from "usehooks-ts";
 import { ChainOverviewResponse } from "@/types/api/ChainOverviewResponse";
 import { BlockspaceURLs } from "@/lib/urls";
 import ReactJson from "react-json-view";
@@ -34,8 +34,13 @@ const ChainOverview = () => {
     false,
   );
 
-  const [optOpen, setOptOpen] = useState(false);
-  const [selectedStack, setSelectedStack] = useState("all-chains");
+  // const [optOpen, setOptOpen] = useState(false);
+  // const [selectedStack, setSelectedStack] = useState("all-chains");
+
+  const [chainEcosystemFilter, setChainEcosystemFilter] = useLocalStorage(
+    "chainEcosystemFilter",
+    "all-chains",
+  );
 
   const pageData = navigationItems[2]?.options.find(
     (item) => item.urlKey === "chain-overview",
@@ -45,6 +50,10 @@ const ChainOverview = () => {
     icon: "",
   };
 
+  // const chainFilter = useMemo(() => {
+  //   // AllChainsByKeys.filter((chain) => chain.ecosystem.includes(chainEcosystemFilter)).map((chain) => usageData.data.chains[chain.key];
+  // }, [second]);
+
   return (
     <>
       <Container className="flex flex-col w-full mt-[65px] md:mt-[75px]">
@@ -52,11 +61,11 @@ const ChainOverview = () => {
           <Heading className="text-[30px] leading-snug md:text-[36px]">
             Chain Overview
           </Heading>
-          <OptimismComp
-            optOpen={optOpen}
-            setOptOpen={setOptOpen}
-            selectedStack={selectedStack}
-            setSelectedStack={setSelectedStack}
+          <EcosystemDropdown
+          // optOpen={optOpen}
+          // setOptOpen={setOptOpen}
+          // selectedStack={selectedStack}
+          // setSelectedStack={setSelectedStack}
           />
         </div>
         <Subheading
@@ -96,6 +105,7 @@ const ChainOverview = () => {
           selectedTimespan={selectedTimespan}
           setSelectedTimespan={setSelectedTimespan}
           data={usageData.data.chains}
+          // data={!chainEcosystemFilter || chainEcosystemFilter=== "all-chains" ? usageData.data.chains : )}
         />
       )}
     </>
