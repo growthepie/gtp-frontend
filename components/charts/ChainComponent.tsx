@@ -51,7 +51,7 @@ export default function ChainComponent({
   selectedTimespan,
   selectedScale,
   // 2022-09-01
-  xMin = new Date("2022-09-01").getTime(),
+  xMin = new Date("2021-09-01").getTime(),
 }: {
   data: ChainsData;
   chain: string;
