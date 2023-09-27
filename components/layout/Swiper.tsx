@@ -6,6 +6,7 @@ import { Icon } from "@iconify/react";
 import { useMediaQuery } from "usehooks-ts";
 import { Splide, SplideSlide, SplideTrack } from "@splidejs/react-splide";
 import { useUIContext } from "@/contexts/UIContext";
+import { LandingURL } from "@/lib/urls";
 
 import "@splidejs/splide/css";
 
@@ -29,8 +30,7 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
     error: landingError,
     isLoading: landingLoading,
     isValidating: landingValidating,
-    // } = useSWR<LandingPageMetricsResponse>(LandingURL);
-  } = useSWR<any>("/mock/landing_page.json");
+  } = useSWR<any>(LandingURL);
 
   const { isSidebarOpen } = useUIContext();
 

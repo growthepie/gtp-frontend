@@ -8,6 +8,7 @@ import { Splide, SplideSlide, SplideTrack } from "@splidejs/react-splide";
 import { useUIContext } from "@/contexts/UIContext";
 import ContractCard from "@/components/layout/ContractCard";
 import { useLocalStorage } from "usehooks-ts";
+import { LandingURL } from "@/lib/urls";
 
 export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
   const {
@@ -15,8 +16,7 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
     error: landingError,
     isLoading: landingLoading,
     isValidating: landingValidating,
-    // } = useSWR<LandingPageMetricsResponse>(LandingURL);
-  } = useSWR<any>("/mock/landing_page.json");
+  } = useSWR<any>(LandingURL);
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 

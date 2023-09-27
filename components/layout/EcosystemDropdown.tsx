@@ -77,6 +77,7 @@ export default function EcosystemDropdown({}: // optOpen,
               return (
                 stack !== selectedStack && (
                   <button
+                    key={i}
                     className={`pl-[42px] py-[8px] flex w-full gap-x-2 opacity-${
                       optOpen ? "100" : "0"
                     } hover:bg-white/10 hover:dark:bg-black/10`}

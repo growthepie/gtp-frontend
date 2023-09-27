@@ -8,6 +8,60 @@ import SidebarContainer from "@/components/layout/SidebarContainer";
 import Backgrounds from "@/components/layout/Backgrounds";
 import { Metadata } from "next";
 import Head from "./head";
+import { Graph } from "schema-dts";
+
+const jsonLd: Graph = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://www.growthepie.xyz/#organization",
+      name: "growthepie",
+      url: "https://www.growthepie.xyz",
+      logo: "https://www.growthepie.xyz/logo_full.png",
+      sameAs: [
+        "https://twitter.com/growthepie_eth",
+        "https://mirror.xyz/blog.growthepie.eth",
+        "https://github.com/growthepie",
+      ],
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://www.growthepie.xyz/#website",
+      url: "https://www.growthepie.xyz",
+      name: "growthepie",
+      description:
+        "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
+      publisher: {
+        "@type": "Organization",
+        name: "growthepie",
+        logo: {
+          "@type": "ImageObject",
+          url: "https://www.growthepie.xyz/logo_full.png",
+        },
+      },
+    },
+  ],
+};
+
+// const jsonLdWebSite: WithContext<WebSite> = {
+//   "@context": "https://schema.org",
+//   "@type": "WebSite",
+//   url: "https://www.growthepie.xyz",
+//   name: "growthepie",
+//   description:
+//     "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
+//   publisher: {
+//     "@type": "Organization",
+//     name: "growthepie",
+//     logo: {
+//       "@type": "ImageObject",
+//       url: "https://www.growthepie.xyz/logo_full.png",
+//     },
+//   },
+// };
+
+// const jsonLd = [jsonLdOrg, jsonLdWebSite];
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.growthepie.xyz"),
@@ -90,6 +144,10 @@ export default function RootLayout({
     >
       <Head />
       <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway overflow-x-hidden overflow-y-auto">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <Providers>
           <div className="flex h-fit w-full justify-center">
             <div className="flex w-full max-w-[1680px] min-h-screen">

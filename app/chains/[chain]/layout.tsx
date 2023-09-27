@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (res && key && res.chains[key]) {
     return {
       title: res.chains[key].name,
-      description: res.chains[key].description,
+      description: res.chains[key].symbol,
     };
   }
 

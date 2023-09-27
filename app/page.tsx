@@ -41,7 +41,6 @@ export default function Home() {
     isLoading: landingLoading,
     isValidating: landingValidating,
   } = useSWR<LandingPageMetricsResponse>(LandingURL);
-  // } = useSWR<LandingPageMetricsResponse>("/mock/landing_page.json");
 
   const {
     data: master,
