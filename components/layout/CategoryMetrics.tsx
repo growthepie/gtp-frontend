@@ -107,6 +107,15 @@ export default function CategoryMetrics({
   const [showMore, setShowMore] = useState(false);
   const [copyContract, setCopyContract] = useState(false);
   const isMobile = useMediaQuery("(max-width: 1023px)");
+  const [chainEcosystemFilter, setChainEcosystemFilter] = useLocalStorage(
+    "chainEcosystemFilter",
+    "all-chains",
+  );
+
+  const stackIndex = {
+    op_stack: ["base", "optimism"],
+    op_super: ["base", "optimism"],
+  };
 
   const { theme } = useTheme();
 
@@ -201,7 +210,12 @@ export default function CategoryMetrics({
     if (!chainValues || !selectedChains) return null;
 
     return chainValues
-      .filter(([item]) => item !== "types")
+      .filter(([item]) => {
+        const filterChains =
+          AllChainsByKeys[item].ecosystem.includes(chainEcosystemFilter);
+
+        return item !== "types" && filterChains;
+      })
       .sort((a, b) => b[1] - a[1])
       .sort(([itemA], [itemB]) =>
         selectedChains[itemA] === selectedChains[itemB]
@@ -210,7 +224,7 @@ export default function CategoryMetrics({
           ? -1
           : 1,
       );
-  }, [chainValues, selectedChains]);
+  }, [chainValues, selectedChains, chainEcosystemFilter]);
 
   const timespans = useMemo(() => {
     return {
@@ -345,6 +359,7 @@ export default function CategoryMetrics({
 
     for (const currChain in selectedChains) {
       if (
+        AllChainsByKeys[currChain].ecosystem.includes(chainEcosystemFilter) &&
         selectedChains[currChain] === true &&
         data[selectedCategory][dailyKey][String(currChain)]
       ) {
@@ -443,6 +458,7 @@ export default function CategoryMetrics({
     selectedValue,
     showUsd,
     selectedType,
+    chainEcosystemFilter,
   ]);
 
   const chartSeries = useMemo(() => {
@@ -663,8 +679,17 @@ export default function CategoryMetrics({
               );
         const isCategoryMatched =
           contract.main_category_key === selectedCategory;
+        const filterChains =
+          AllChainsByKeys[contract.chain].ecosystem.includes(
+            chainEcosystemFilter,
+          );
 
-        return isChainSelected && isSubcategorySelected && isCategoryMatched;
+        return (
+          isChainSelected &&
+          isSubcategorySelected &&
+          isCategoryMatched &&
+          filterChains
+        );
       })
       .reduce((filtered, [key, contract]) => {
         filtered[key] = contract;
@@ -737,6 +762,7 @@ export default function CategoryMetrics({
     selectedSubcategories,
     selectedMode,
     showUsd,
+    chainEcosystemFilter,
   ]);
 
   const largestContractValue = useMemo(() => {
