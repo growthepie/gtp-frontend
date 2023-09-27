@@ -473,8 +473,9 @@ export default function OverviewMetrics({
           isAllChainsSelected || contract.chain === selectedChain;
         const isCategoryMatched =
           contract.main_category_key === selectedCategory;
+        const isEcosystemSelected = Object.keys(data).includes(contract.chain);
 
-        return isChainSelected && isCategoryMatched;
+        return isChainSelected && isCategoryMatched && isEcosystemSelected;
       })
       .reduce((filtered, [key, contract]) => {
         filtered[key] = contract;
