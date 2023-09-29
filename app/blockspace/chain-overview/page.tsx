@@ -51,7 +51,6 @@ const ChainOverview = () => {
     icon: "",
   };
 
-  console.log(usageData?.data.chains);
   const chainFilter = useMemo(() => {
     const filteredChains: Chains = Object.keys(AllChainsByKeys)
       .filter((chain) =>
@@ -71,8 +70,6 @@ const ChainOverview = () => {
     return filteredChains;
   }, [chainEcosystemFilter, usageData]);
 
-  // console.log(chainFilter);
-  console.log(chainFilter);
   return (
     <>
       <Container className="flex flex-col w-full mt-[65px] md:mt-[75px]">

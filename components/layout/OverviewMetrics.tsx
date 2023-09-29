@@ -404,6 +404,52 @@ export default function OverviewMetrics({
       },
     };
   }, []);
+  const chartStack = useMemo(() => {
+    let ecosystemData: any[][] = [];
+    for (const chain in data) {
+      if (chain !== "all_l2s") {
+        const ecosystemFilter: any[][] =
+          data[chain].daily[selectedCategory].data;
+        ecosystemData.push(ecosystemFilter);
+      }
+    }
+
+    const unixList = ecosystemData
+      .reduce((acc, curr) => {
+        return [...acc, ...curr.map((item) => item[0])];
+      }, [])
+      .sort((a, b) => a - b)
+      .filter((item, i, arr) => {
+        return i === 0 || item !== arr[i - 1];
+      });
+
+    const unixData = unixList
+      .map((unix) => {
+        const unixValues = ecosystemData.map((data) => {
+          const index = data.findIndex((item) => item[0] === unix);
+          return index !== -1 ? data[index] : null;
+        });
+
+        return unixValues;
+      })
+      .map((unixValues) => unixValues.filter((item) => item));
+
+    const chartData = unixData.map((unixDataList, unixIndex) => {
+      const unix = unixList[unixIndex];
+      const unixDataListFiltered = unixDataList.filter((item) => item);
+
+      // add up the values for each subcategory (ignore first item which is the unix timestamp)
+      return unixDataListFiltered.reduce((acc, curr) => {
+        if (acc.length === 0) return curr;
+
+        return acc.map((col, i) => {
+          return i === 0 ? col : col + curr[i];
+        });
+      }, []);
+    });
+
+    return chartData;
+  }, [selectedCategory, chainEcosystemFilter]);
 
   const chartSeries = useMemo(() => {
     const dataKey = selectedMode;
@@ -446,7 +492,10 @@ export default function OverviewMetrics({
         name: "all_l2s",
         unixKey: "unix",
         dataKey: selectedMode,
-        data: data.all_l2s.daily[selectedCategory].data,
+        data:
+          chainEcosystemFilter === "all-chains"
+            ? data.all_l2s.daily[selectedCategory].data
+            : chartStack,
       },
     ];
   }, [selectedMode, selectedChain, data, selectedCategory]);
@@ -856,27 +905,46 @@ export default function OverviewMetrics({
         }
       }
     } else {
-      for (
-        let i = 0;
-        i <
-        (selectedTimespan === "max"
-          ? data["all_l2s"].daily[selectedCategory].data.length
-          : timespans[selectedTimespan].value);
-        i++
-      ) {
-        if (
-          data["all_l2s"].daily[selectedCategory].data.length - (i + 1) >=
-          0
+      if (chainEcosystemFilter === "all-chains") {
+        for (
+          let i = 0;
+          i <
+          (selectedTimespan === "max"
+            ? data["all_l2s"].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value);
+          i++
         ) {
           if (
-            data["all_l2s"].daily[selectedCategory].data[
-              data["all_l2s"].daily[selectedCategory].data.length - (i + 1)
-            ][typeIndex] > returnValue
+            data["all_l2s"].daily[selectedCategory].data.length - (i + 1) >=
+            0
           ) {
-            returnValue =
+            if (
               data["all_l2s"].daily[selectedCategory].data[
                 data["all_l2s"].daily[selectedCategory].data.length - (i + 1)
-              ][typeIndex];
+              ][typeIndex] > returnValue
+            ) {
+              returnValue =
+                data["all_l2s"].daily[selectedCategory].data[
+                  data["all_l2s"].daily[selectedCategory].data.length - (i + 1)
+                ][typeIndex];
+            }
+          }
+        }
+      } else {
+        for (
+          let i = 0;
+          i <
+          (selectedTimespan === "max"
+            ? chartStack.length
+            : timespans[selectedTimespan].value);
+          i++
+        ) {
+          if (chartStack.length - (i + 1) >= 0) {
+            if (
+              chartStack[chartStack.length - (i + 1)][typeIndex] > returnValue
+            ) {
+              returnValue = chartStack[chartStack.length - (i + 1)][typeIndex];
+            }
           }
         }
       }
@@ -940,34 +1008,58 @@ export default function OverviewMetrics({
             : timespans[selectedTimespan].value);
       }
     } else {
-      let sum = 0;
-      for (
-        let i = 0;
-        i <
-        (selectedTimespan === "max"
-          ? data["all_l2s"].daily[selectedCategory].data.length
-          : timespans[selectedTimespan].value);
-        i++
-      ) {
-        if (
-          data["all_l2s"].daily[selectedCategory].data.length - (i + 1) >=
-          0
+      if (chainEcosystemFilter === "all-chains") {
+        let sum = 0;
+        for (
+          let i = 0;
+          i <
+          (selectedTimespan === "max"
+            ? data["all_l2s"].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value);
+          i++
         ) {
-          sum +=
-            data["all_l2s"].daily[selectedCategory].data[
-              data["all_l2s"].daily[selectedCategory].data.length - (i + 1)
-            ][typeIndex];
+          if (
+            data["all_l2s"].daily[selectedCategory].data.length - (i + 1) >=
+            0
+          ) {
+            sum +=
+              data["all_l2s"].daily[selectedCategory].data[
+                data["all_l2s"].daily[selectedCategory].data.length - (i + 1)
+              ][typeIndex];
+          }
+        }
+
+        returnValue =
+          sum /
+          (selectedTimespan === "max"
+            ? data["all_l2s"].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value >=
+              data["all_l2s"].daily[selectedCategory].data.length
+            ? data["all_l2s"].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value);
+      } else {
+        let sum = 0;
+        for (
+          let i = 0;
+          i <
+          (selectedTimespan === "max"
+            ? chartStack.length
+            : timespans[selectedTimespan].value);
+          i++
+        ) {
+          if (chartStack.length - (i + 1) >= 0) {
+            sum += chartStack[chartStack.length - (i + 1)][typeIndex];
+          }
+
+          returnValue =
+            sum /
+            (selectedTimespan === "max"
+              ? chartStack.length
+              : timespans[selectedTimespan].value >= chartStack.length
+              ? chartStack.length
+              : timespans[selectedTimespan].value);
         }
       }
-
-      returnValue =
-        sum /
-        (selectedTimespan === "max"
-          ? data["all_l2s"].daily[selectedCategory].data.length
-          : timespans[selectedTimespan].value >=
-            data["all_l2s"].daily[selectedCategory].data.length
-          ? data["all_l2s"].daily[selectedCategory].data.length
-          : timespans[selectedTimespan].value);
     }
 
     return returnValue;
