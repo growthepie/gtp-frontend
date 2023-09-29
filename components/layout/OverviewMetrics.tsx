@@ -434,18 +434,24 @@ export default function OverviewMetrics({
       })
       .map((unixValues) => unixValues.filter((item) => item));
 
-    const chartData = unixData.map((unixDataList, unixIndex) => {
-      const unix = unixList[unixIndex];
-      const unixDataListFiltered = unixDataList.filter((item) => item);
+    const chartData = unixData.map((unixDataList: any[][]) => {
+      const numArrays = unixDataList.length;
+      const averagedData: any[] = [];
 
-      // add up the values for each subcategory (ignore first item which is the unix timestamp)
-      return unixDataListFiltered.reduce((acc, curr) => {
-        if (acc.length === 0) return curr;
+      for (let i = 0; i < unixDataList[0].length; i++) {
+        if (i === 0) {
+          averagedData.push(unixDataList[0][i]);
+        } else {
+          const sum = unixDataList.reduce(
+            (acc, curr) => acc + (curr[i] || 0),
+            0,
+          );
+          const average = sum / numArrays;
+          averagedData.push(average);
+        }
+      }
 
-        return acc.map((col, i) => {
-          return i === 0 ? col : col + curr[i];
-        });
-      }, []);
+      return averagedData;
     });
 
     return chartData;
@@ -498,7 +504,13 @@ export default function OverviewMetrics({
             : chartStack,
       },
     ];
-  }, [selectedMode, selectedChain, data, selectedCategory]);
+  }, [
+    selectedMode,
+    selectedChain,
+    data,
+    selectedCategory,
+    chainEcosystemFilter,
+  ]);
 
   useEffect(() => {
     if (selectedMode.includes("gas_fees_share")) {
@@ -959,7 +971,13 @@ export default function OverviewMetrics({
     }
 
     return returnValue;
-  }, [selectedTimespan, selectedCategory, selectedMode, selectedChain]);
+  }, [
+    selectedTimespan,
+    selectedCategory,
+    selectedMode,
+    selectedChain,
+    chainEcosystemFilter,
+  ]);
 
   const chartAvg = useMemo(() => {
     let typeIndex = data["all_l2s"].daily["types"].indexOf(selectedMode);
@@ -1063,7 +1081,13 @@ export default function OverviewMetrics({
     }
 
     return returnValue;
-  }, [selectedTimespan, selectedMode, selectedCategory, selectedChain]);
+  }, [
+    selectedTimespan,
+    selectedMode,
+    selectedCategory,
+    selectedChain,
+    chainEcosystemFilter,
+  ]);
 
   const avgHeight = useSpring({
     y: chartAvg
@@ -1607,7 +1631,11 @@ export default function OverviewMetrics({
           <h2 className="text-[20px] font-bold">
             {selectedChain
               ? AllChainsByKeys[selectedChain].label
-              : "All Chains"}
+              : chainEcosystemFilter === "all-chains"
+              ? "All Chains"
+              : chainEcosystemFilter === "op-stack"
+              ? "OP Stack Chains"
+              : "OP Superchain"}
             : {categories[selectedCategory]}
           </h2>
         </div>
