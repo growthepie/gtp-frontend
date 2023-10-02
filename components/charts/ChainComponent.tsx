@@ -729,6 +729,58 @@ export default function ChainComponent({
     [chartComponents],
   );
 
+  const [isVisible, setIsVisible] = useState(true);
+  const resizeTimeout = useRef<null | ReturnType<typeof setTimeout>>(null);
+  const [isAnimate, setIsAnimate] = useState(false);
+  const animationTimeout = useRef<null | ReturnType<typeof setTimeout>>(null);
+
+  const handleResize = () => {
+    // Hide the element
+    setIsVisible(false);
+
+    // Set animation to false
+    setIsAnimate(false);
+
+    // Clear any existing timeouts
+    if (resizeTimeout.current) {
+      clearTimeout(resizeTimeout.current);
+    }
+
+    if (animationTimeout.current) {
+      clearTimeout(animationTimeout.current);
+    }
+
+    // Set a timeout to show the element again after 500ms of no resizing
+    resizeTimeout.current = setTimeout(() => {
+      setIsVisible(true);
+    }, 200);
+
+    // Set a timeout to show the element again after 500ms of no resizing
+    animationTimeout.current = setTimeout(() => {
+      setIsAnimate(true);
+    }, 500);
+  };
+
+  useEffect(() => {
+    window.addEventListener("resize", handleResize);
+
+    animationTimeout.current = setTimeout(() => {
+      setIsAnimate(true);
+    }, 500);
+
+    return () => {
+      // Cleanup
+      window.removeEventListener("resize", handleResize);
+      if (resizeTimeout.current) {
+        clearTimeout(resizeTimeout.current);
+      }
+
+      if (animationTimeout.current) {
+        clearTimeout(animationTimeout.current);
+      }
+    };
+  }, []);
+
   const lastPointLines = useMemo<{
     [key: string]: Highcharts.SVGElement[];
   }>(() => ({}), []);
@@ -747,11 +799,11 @@ export default function ChainComponent({
         chart.xAxis[0].setExtremes(
           timespans[selectedTimespan].xMin, //- paddingMilliseconds,
           timespans[selectedTimespan].xMax,
-          true,
+          isAnimate,
         );
       });
     }
-  }, [selectedTimespan, timespans, zoomed]);
+  }, [isAnimate, selectedTimespan, timespans, zoomed]);
 
   const options: Highcharts.Options = {
     accessibility: { enabled: false },
@@ -764,7 +816,13 @@ export default function ChainComponent({
       spacingBottom: 0,
       panning: { enabled: true },
       panKey: "shift",
-      animation: false,
+      animation: isAnimate
+        ? {
+            duration: 500,
+            delay: 0,
+            easing: "easeOutQuint",
+          }
+        : false,
       zooming: {
         type: undefined,
         resetButton: {
@@ -1044,6 +1102,9 @@ export default function ChainComponent({
         <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] rounded-[15px]"></div>
         <div className="absolute w-full h-[146px] md:h-[176px]">
           <HighchartsReact
+            containerProps={{
+              className: isVisible ? "" : "hidden",
+            }}
             highcharts={Highcharts}
             constructorType={"stockChart"}
             options={{

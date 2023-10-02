@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import Image from "next/image";
 import { useMediaQuery } from "@react-hook/media-query";
 import Heading from "@/components/layout/Heading";
@@ -118,7 +118,7 @@ export default function Home() {
           </div> */}
         </Subheading>
       </Container>
-      <Container className="!px-0 fade-edge-div pb-[24px] -mb-[24px]">
+      <Container className="!px-0 fade-edge-div h-[calc(146px + 24px)] md:h-[calc(176px + 24px)] pb-[24px] -mb-[24px]">
         <Swiper ariaId={"layer-2-traction-title"} />
       </Container>
       <Container className="flex flex-col flex-1 w-full">
