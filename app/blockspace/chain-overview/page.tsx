@@ -77,12 +77,6 @@ const ChainOverview = () => {
           <Heading className="text-[30px] leading-snug md:text-[36px]" as="h1">
             Chain Overview
           </Heading>
-          <EcosystemDropdown
-          // optOpen={optOpen}
-          // setOptOpen={setOptOpen}
-          // selectedStack={selectedStack}
-          // setSelectedStack={setSelectedStack}
-          />
         </div>
         <Subheading
           className="text-[16px]"

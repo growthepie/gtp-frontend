@@ -14,7 +14,7 @@ export default function Header() {
       <div className="flex justify-between items-center w-full">
         <div className="flex space-x-0 xl:space-x-6 w-full">
           {/* Donation Banner XL screen */}
-          <Link
+          {/* <Link
             href="https://explorer.gitcoin.co/#/round/42161/0x59d79b22595b17af659ce9b03907615f53742c57/0x59d79b22595b17af659ce9b03907615f53742c57-16"
             target="_blank"
             rel="noopener"
@@ -28,7 +28,7 @@ export default function Header() {
               <div>Support us here.</div>
             </div>
             <Icon icon="feather:arrow-right-circle" className="h-6 w-6" />
-          </Link>
+          </Link> */}
           {/* Logo */}
 
           <div className="flex justify-between items-end md:hidden relative w-full">
@@ -93,8 +93,8 @@ export default function Header() {
       </div>
 
       {/* Donation Banner smaller than XL screen */}
-      <Link
-        href="https://explorer.gitcoin.co/#/round/10/0x8de918f0163b2021839a8d84954dd7e8e151326d/0x8de918f0163b2021839a8d84954dd7e8e151326d-48"
+      {/* <Link
+        href="https://explorer.gitcoin.co/#/round/42161/0x59d79b22595b17af659ce9b03907615f53742c57/0x59d79b22595b17af659ce9b03907615f53742c57-16"
         target="_blank"
         rel="noopener"
         className="flex xl:hidden items-center dark:bg-[#FFE28A] dark:text-[#1B0DB9] bg-[#1B0DB9] text-white px-1 py-0.5 justify-between rounded-full text-[13px] md:text-sm font-bold mr-auto w-full mt-6"
@@ -102,7 +102,7 @@ export default function Header() {
         <div
         // className="bg-white text-[#1B0DB9] dark:bg-[#1B0DB9] dark:text-white rounded-full py-0.5 px-1.5"
         >
-          {/* #GG18 */}
+          {/* #GG18 
         </div>
         <div className="flex space-x-0.5">
           <div className="hidden sm:block">
@@ -112,7 +112,7 @@ export default function Header() {
           <div>Help us by donating to our project.</div>
         </div>
         <Icon icon="feather:arrow-right-circle" className="h-6 w-6" />
-      </Link>
+      </Link> */}
     </header>
   );
 }
