@@ -54,7 +54,7 @@ addCollection({
       <stop stop-color="#FE5468"/>
       <stop offset="1" stop-color="#FFDF27"/>
       </linearGradient>
-      </defs>`
+      </defs>`,
     },
     team: {
       body: `<path fill-rule="evenodd" clip-rule="evenodd" d="M6.57756 22.08C7.46166 21.1959 8.66076 20.6992 9.91106 20.6992H17.4539C18.7042 20.6992 19.9033 21.1959 20.7874 22.08C21.6715 22.9641 22.1682 24.1632 22.1682 25.4135V27.2992C22.1682 27.8199 21.7461 28.2421 21.2253 28.2421C20.7046 28.2421 20.2825 27.8199 20.2825 27.2992V25.4135C20.2825 24.6633 19.9845 23.9439 19.454 23.4134C18.9236 22.8829 18.2041 22.5849 17.4539 22.5849H9.91106C9.16088 22.5849 8.44142 22.8829 7.91096 23.4134C7.3805 23.9439 7.08249 24.6633 7.08249 25.4135V27.2992C7.08249 27.8199 6.66036 28.2421 6.13963 28.2421C5.61891 28.2421 5.19678 27.8199 5.19678 27.2992V25.4135C5.19678 24.1632 5.69346 22.9641 6.57756 22.08Z" fill="url(#paint0_linear_998_12415)"/>
@@ -81,7 +81,6 @@ addCollection({
       </defs>
       `,
     },
-
   },
   width: 36,
   height: 36,
@@ -90,7 +89,7 @@ addCollection({
 export default function ContributorsPage() {
   return (
     <Container className="mx-auto mt-[25px] flex flex-col">
-      <Heading className="text-[48px] mb-[30px] leading-snug">
+      <Heading className="text-[48px] mb-[30px] leading-snug" as="h1">
         Contributors
       </Heading>
       <Subheading className="text-base mb-[45px] leading-snug">
@@ -134,7 +133,7 @@ export default function ContributorsPage() {
       <div className="bg-forest-50 dark:bg-forest-900 rounded-full px-5 py-3 flex space-x-2 mb-[45px]">
         <Icon icon="gtp:data-sources" className="w-9 h-9" />
         <Heading className="text-3xl font-semibold leading-snug">
-            Data Sources
+          Data Sources
         </Heading>
       </div>
 
@@ -164,8 +163,6 @@ export default function ContributorsPage() {
           ))}
         </div>
       </div>
-
-
 
       <div className="mb-[30px] bg-forest-50 dark:bg-forest-900 rounded-full px-5 py-3 flex space-x-2">
         <Icon icon="gtp:team" className="w-9 h-9" />

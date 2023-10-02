@@ -45,7 +45,10 @@ const Chain = ({ params }: { params: any }) => {
           <div className="flex flex-col w-full">
             <div className="flex flex-col md:flex-row justify-between items-start w-full">
               <div className="flex flex-col md:flex-row mb-[15px] md:mb-[19px] items-start">
-                <Heading className="text-2xl leading-snug text-[36px] break-inside-avoid">
+                <Heading
+                  className="text-2xl leading-snug text-[36px] break-inside-avoid"
+                  as="h1"
+                >
                   {AllChainsByKeys[chainKey].label}
                 </Heading>
                 <div className="hidden md:flex items-start space-x-[7px] font-inter uppercase">

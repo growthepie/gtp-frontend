@@ -77,11 +77,23 @@
   @apply !bg-forest-50;
 }
 
+.splide__arrow {
+  @apply !opacity-90;
+}
+
+.splide__arrow:hover {
+  @apply !opacity-100;
+}
+
+.splide__arrow:disabled {
+  @apply !opacity-50;
+}
+
 .fade-edge-div {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   /* mask fade distance, for use in mask calculations */
-  --mask-height: 50px;
+  --mask-height: 30px;
   /* The content mask is a linear gradient from top to bottom */
   --mask-image-content: linear-gradient(
     to right,

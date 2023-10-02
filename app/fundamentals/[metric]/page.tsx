@@ -86,7 +86,10 @@ const Chain = ({ params }: { params: any }) => {
       <Container className="flex flex-col w-full mt-[65px] md:mt-[75px]">
         <div className="flex justify-between items-start w-full">
           <div className="flex items-start">
-            <Heading className="text-[30px] leading-snug md:text-[36px] mb-[15px] md:mb-[30px]">
+            <Heading
+              className="text-[30px] leading-snug md:text-[36px] mb-[15px] md:mb-[30px]"
+              as="h1"
+            >
               {pageData.title}
             </Heading>
           </div>

@@ -93,13 +93,18 @@ export default function Home() {
         {/* <Heading className="font-bold text-[30px] leading-snug md:text-[36px] mb-[28px] lg:mb-[30px] max-w-[900px]">
           Growing Ethereum’s Ecosystem Together
         </Heading> */}
-        <Heading className="font-bold text-[30px] leading-snug md:text-[36px] mb-[28px] lg:mb-[30px] max-w-[900px]">
-          Mastering Ethereum Layer 2s: Your Gateway to Curated Analytics and
-          Knowledge
+        <Heading
+          className="font-bold leading-snug text-[24px] sm:text-[32px] md:text-[36px] max-w-[900px]"
+          as="h1"
+        >
+          Mastering Ethereum Layer 2s
         </Heading>
+        <Subheading className="text-xs sm:text-sm md:text-xl font-medium">
+          Your Gateway to Curated Analytics and Knowledge
+        </Subheading>
       </Container>
       <Container className="flex flex-col flex-1 w-full">
-        <div className="flex space-x-2 mt-[25px] lg:mt-[70px] mb-[25px] md:mb-[32px] items-center">
+        <div className="flex space-x-2 mt-[30px] md:mt-[60px] mb-[25px] md:mb-[32px] items-center">
           <Icon
             icon="gtp:fundamentals"
             className="w-[30px] h-[30px] md:w-9 md:h-9"
@@ -113,12 +118,12 @@ export default function Home() {
         </div>
         <Subheading className="text-base leading-normal md:leading-snug mb-[15px] pl-[5px] lg:pl-[45px] flex justify-between items-end space-x-2">
           <div>Aggregated metrics across all tracked Layer 2s.</div>
-          <div className="text-[0.6rem] md:text-xs font-medium px-1.5 py-0.5 border dark:border-forest-50 rounded-md select-none">
+          {/* <div className="text-[0.6rem] md:text-xs font-medium px-1.5 py-0.5 border dark:border-forest-50 rounded-md select-none">
             7d rolling avg
-          </div>
+          </div> */}
         </Subheading>
       </Container>
-      <Container className="!px-0 fade-edge-div">
+      <Container className="!px-0 fade-edge-div pb-[24px] -mb-[24px]">
         <Swiper ariaId={"layer-2-traction-title"} />
       </Container>
       <Container className="flex flex-col flex-1 w-full">
@@ -127,7 +132,7 @@ export default function Home() {
               Compare Ethereum&apos;s Layer 2 solutions and better understand
               the metrics to grow the ecosystem.
             </Subheading> */}
-        <div className="flex mt-[25px] lg:mt-[70px] mb-[25px] md:mb-[32px] space-x-2 items-center">
+        <div className="flex mt-[30px] md:mt-[60px] mb-[25px] md:mb-[32px] space-x-2 items-center">
           <Icon
             icon="gtp:gtp-pie"
             className="w-[30px] h-[30px] md:w-9 md:h-9"
@@ -180,7 +185,7 @@ export default function Home() {
         </>
       )}
       <Container className="flex flex-col flex-1 w-full">
-        <div className="flex space-x-2 mt-[30px] items-center">
+        <div className="flex space-x-2 mt-[30px] md:mt-[60px] items-center">
           <Icon
             icon="gtp:package"
             className="w-[30px] h-[30px] md:w-9 md:h-9"
@@ -195,7 +200,7 @@ export default function Home() {
         <LandingTopContracts />
       </Container>
       <Container>
-        <div className="flex gap-x-0 md:gap-x-12 w-full ml-0 mt-[15px] md:mt-[90px]">
+        <div className="flex gap-x-0 md:gap-x-12 w-full ml-0 mt-[30px] md:mt-[60px]">
           <div className="flex flex-col md:w-1/2 lg:w-2/3">
             <div className="flex space-x-2 mb-[30px] items-center">
               <Icon
@@ -236,7 +241,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex mt-[25px] md:mt-[90px] mb-[25px] md:mb-[30px] ml-1.5 md:ml-0 space-x-2 items-center">
+        <div className="flex mt-[25px] md:mt-[60px] mb-[25px] md:mb-[30px] ml-1.5 md:ml-0 space-x-2 items-center">
           <Icon
             icon="gtp:gtp-faq"
             className="w-[30px] h-[30px] md:w-9 md:h-9"

@@ -5,7 +5,9 @@ import React from "react";
 const Imprint = () => {
   return (
     <Container className="mt-[65px]">
-      <Heading className="text-[48px] mb-[30px] leading-snug">Imprint</Heading>
+      <Heading className="text-[48px] mb-[30px] leading-snug" as="h1">
+        Imprint
+      </Heading>
       <div className="text-lg mb-6">
         Information in accordance with Section 5 TMG:
       </div>

@@ -32,7 +32,7 @@ const CategoryComparison = () => {
     <>
       <Container className="flex flex-col w-full mt-[65px] md:mt-[75px]">
         <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] md:mb-[30px]">
-          <Heading className="text-[30px] leading-snug md:text-[36px]">
+          <Heading className="text-[30px] leading-snug md:text-[36px]" as="h1">
             Category Comparison
           </Heading>
           <EcosystemDropdown
@@ -50,14 +50,14 @@ const CategoryComparison = () => {
             height={32}
             width={32}
           />
-          <h1 className="text-[16px]">
+          <div className="text-[16px]">
             We measure the gas fees spent and the number of transactions sent to
             smart contracts. The smart contracts are mapped to distinct
             categories. The chart below allows to compare the usage of these
             categories across different chains. Each category is made up of
             multiple subcategories. You can click on the category dropdown in
             order to see and filter its subcategories.
-          </h1>
+          </div>
         </div>
       </Container>
 
