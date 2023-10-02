@@ -816,13 +816,7 @@ export default function ChainComponent({
       spacingBottom: 0,
       panning: { enabled: true },
       panKey: "shift",
-      animation: isAnimate
-        ? {
-            duration: 500,
-            delay: 0,
-            easing: "easeOutQuint",
-          }
-        : false,
+      animation: isAnimate,
       zooming: {
         type: undefined,
         resetButton: {
