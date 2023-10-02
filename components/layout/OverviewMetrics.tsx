@@ -404,6 +404,8 @@ export default function OverviewMetrics({
       },
     };
   }, []);
+  console.log(data);
+  console.log(selectedMode);
   const chartStack = useMemo(() => {
     let ecosystemData: any[][] = [];
     for (const chain in data) {
@@ -435,27 +437,72 @@ export default function OverviewMetrics({
       .map((unixValues) => unixValues.filter((item) => item));
 
     const chartData = unixData.map((unixDataList: any[][]) => {
+      const txIndex = data["all_l2s"].daily.types.findIndex(
+        (item) => item === "txcount_absolute",
+      );
+      const gasIndex = data["all_l2s"].daily.types.findIndex(
+        (item) =>
+          item ===
+          (selectedMode.includes("usd")
+            ? "gas_fees_usd_absolute"
+            : "gas_fees_share_eth"),
+      );
+
+      console.log(gasIndex + " gas index");
+      //Get absolute index for share calculation
       const numArrays = unixDataList.length;
-      const averagedData: any[] = [];
+      const calculatedData: any[] = [];
 
       for (let i = 0; i < unixDataList[0].length; i++) {
         if (i === 0) {
-          averagedData.push(unixDataList[0][i]);
+          calculatedData.push(unixDataList[0][i]);
         } else {
+          let retValue;
           const sum = unixDataList.reduce(
             (acc, curr) => acc + (curr[i] || 0),
             0,
           );
-          const average = sum / numArrays;
-          averagedData.push(average);
+
+          if (selectedMode.includes("share")) {
+            let txTotal = 0;
+            let findUnix = unixDataList[0][0];
+            for (let j = 0; j < numArrays; j++) {
+              txTotal +=
+                unixDataList[j][
+                  selectedMode.includes("txcount") ? txIndex : gasIndex
+                ];
+            }
+            console.log(txTotal + " tx total");
+
+            let allTotal =
+              data["all_l2s"].daily[selectedCategory].data[
+                data["all_l2s"].daily[selectedCategory].data.findIndex(
+                  (item) => item[0] === findUnix,
+                )
+              ][selectedMode.includes("txcount") ? txIndex : gasIndex];
+
+            retValue = txTotal / allTotal;
+            console.log(allTotal + " all total");
+          } else {
+            retValue = sum;
+          }
+          console.log(retValue);
+          calculatedData.push(retValue);
         }
       }
 
-      return averagedData;
+      return calculatedData;
     });
 
     return chartData;
-  }, [selectedCategory, chainEcosystemFilter, chainEcosystemFilter]);
+  }, [
+    data,
+    selectedCategory,
+    chainEcosystemFilter,
+    chainEcosystemFilter,
+    showUsd,
+    selectedMode,
+  ]);
 
   const chartSeries = useMemo(() => {
     const dataKey = selectedMode;
