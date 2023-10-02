@@ -455,7 +455,7 @@ export default function OverviewMetrics({
     });
 
     return chartData;
-  }, [selectedCategory, chainEcosystemFilter]);
+  }, [selectedCategory, chainEcosystemFilter, chainEcosystemFilter]);
 
   const chartSeries = useMemo(() => {
     const dataKey = selectedMode;
