@@ -1404,6 +1404,9 @@ export default function ChainComponent({
                 <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
                   {SourcesDisplay}
                 </div>
+                <div className="flex space-x-1 flex-wrap font-medium text-[0.6rem]">
+                  Displaying 7-day average
+                </div>
               </div>
             </div>
           </TooltipContent>
