@@ -77,6 +77,7 @@ const ChainOverview = () => {
           <Heading className="text-[30px] leading-snug md:text-[36px]" as="h1">
             Chain Overview
           </Heading>
+          <EcosystemDropdown />
         </div>
         <Subheading
           className="text-[16px]"
