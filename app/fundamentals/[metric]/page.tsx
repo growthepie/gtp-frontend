@@ -83,7 +83,7 @@ const Chain = ({ params }: { params: any }) => {
         dataLoading={[metricLoading]}
         dataValidating={[metricValidating]}
       />
-      <Container className="flex flex-col w-full mt-[65px] md:mt-[75px]">
+      <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
         <div className="flex justify-between items-start w-full">
           <div className="flex items-start">
             <Heading

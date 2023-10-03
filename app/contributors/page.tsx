@@ -88,7 +88,7 @@ addCollection({
 
 export default function ContributorsPage() {
   return (
-    <Container className="mx-auto mt-[25px] flex flex-col">
+    <Container className="mx-auto mt-[65px] md:mt-[45px] flex flex-col">
       <Heading className="text-[48px] mb-[30px] leading-snug" as="h1">
         Contributors
       </Heading>

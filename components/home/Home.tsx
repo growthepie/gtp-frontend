@@ -84,7 +84,7 @@ export default function Home() {
       />
       {/* )} */}
 
-      <Container className="flex flex-col flex-1 w-full mt-[65px]">
+      <Container className="flex flex-col flex-1 w-full mt-[65px] md:mt-[45px]">
         {/* <Heading className="font-bold text-[30px] leading-snug md:text-[36px] mb-[28px] lg:mb-[30px] max-w-[900px]">
           Growing Ethereum’s Ecosystem Together
         </Heading> */}

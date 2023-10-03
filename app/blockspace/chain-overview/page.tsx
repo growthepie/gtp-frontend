@@ -72,7 +72,7 @@ const ChainOverview = () => {
 
   return (
     <>
-      <Container className="flex flex-col w-full mt-[65px] md:mt-[75px]">
+      <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
         <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] md:mb-[30px]">
           <Heading className="text-[30px] leading-snug md:text-[36px]" as="h1">
             Chain Overview
