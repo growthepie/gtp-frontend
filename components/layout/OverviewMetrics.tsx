@@ -473,7 +473,7 @@ export default function OverviewMetrics({
                 ];
             }
 
-            for (category in data["all_l2s"].daily) {
+            for (let category in data["all_l2s"].daily) {
               if (category !== "types") {
                 let checkIndex = data["all_l2s"].daily[category].data.findIndex(
                   (item) => item[0] === findUnix,
