@@ -36,6 +36,8 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
 
   const [isDragging, setIsDragging] = React.useState(false);
 
+  const isMobile = useMediaQuery("(max-width: 640px)");
+
   return (
     <div className="wrapper">
       <Splide
@@ -44,8 +46,8 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
           autoHeight: true,
           width: "100%",
           padding: {
-            left: "62px",
-            right: "62px",
+            left: isMobile ? "30px" : "50px",
+            right: isMobile ? "30px" : "50px",
           },
           breakpoints: {
             640: {
@@ -79,7 +81,7 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
             <>
               <SplideSlide>
                 <div
-                  className="group w-full h-[176px] chain relative"
+                  className="group w-full chain relative"
                   style={{
                     pointerEvents: isDragging ? "none" : "all",
                   }}
@@ -92,7 +94,7 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
                     selectedScale="linear"
                   />
                   <Link
-                    className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 delay-[0] group-hover:delay-[2000] -z-10"
+                    className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 delay-[1000ms] group-hover:delay-[0ms] -z-10"
                     href="/fundamentals/transaction-count"
                   >
                     Compare{" "}
@@ -105,7 +107,7 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
               </SplideSlide>
               <SplideSlide>
                 <div
-                  className="group w-full h-[176px] chain"
+                  className="group w-full chain"
                   style={{
                     pointerEvents: isDragging ? "none" : "all",
                   }}
@@ -118,7 +120,7 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
                     selectedScale="linear"
                   />
                   <Link
-                    className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 -z-10"
+                    className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 delay-[1000ms] group-hover:delay-[0ms] -z-10"
                     href="/fundamentals/stablecoin-market-cap"
                   >
                     Compare{" "}
@@ -131,7 +133,7 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
               </SplideSlide>
               <SplideSlide>
                 <div
-                  className="group w-full h-[176px] chain"
+                  className="group w-full chain"
                   style={{
                     pointerEvents: isDragging ? "none" : "all",
                   }}
@@ -144,7 +146,7 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
                     selectedScale="linear"
                   />
                   <Link
-                    className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 -z-10"
+                    className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 delay-[1000ms] group-hover:delay-[0ms] -z-10"
                     href="/fundamentals/fees-paid-by-users"
                   >
                     Compare{" "}
@@ -157,7 +159,7 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
               </SplideSlide>
               <SplideSlide>
                 <div
-                  className="group w-full h-[176px] chain"
+                  className="group w-full chain"
                   style={{
                     pointerEvents: isDragging ? "none" : "all",
                   }}
@@ -170,7 +172,7 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
                     selectedScale="linear"
                   />
                   <Link
-                    className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 -z-10"
+                    className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 delay-[1000ms] group-hover:delay-[0ms] -z-10"
                     href="/fundamentals/rent-paid"
                   >
                     Compare{" "}
@@ -186,14 +188,20 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
         </SplideTrack>
 
         <div className="splide__arrows -mt-8 md:-mt-0">
-          <button className="splide__arrow splide__arrow--prev rounded-full text-forest-400 bg-white dark:bg-forest-700 ml-6">
-            <Icon icon="feather:chevron-right" className="w-6 h-6 z-50" />
+          <button className="splide__arrow splide__arrow--prev rounded-full text-forest-400 bg-white dark:bg-forest-700 ml-1 md:ml-6 !w-5 md:!w-8 !h-5 md:!h-8">
+            <Icon
+              icon="feather:chevron-right"
+              className="w-3 h-3 md:w-6 md:h-6 z-50"
+            />
           </button>
-          <button className="splide__arrow splide__arrow--next rounded-full text-forest-400 bg-white dark:bg-forest-700 mr-6">
-            <Icon icon="feather:chevron-right" className="w-6 h-6 z-50" />
+          <button className="splide__arrow splide__arrow--next rounded-full text-forest-400 bg-white dark:bg-forest-700 mr-1 md:mr-6 !w-5 md:!w-8 !h-5 md:!h-8">
+            <Icon
+              icon="feather:chevron-right"
+              className="w-3 h-3 md:w-6 md:h-6 z-50"
+            />
           </button>
         </div>
-        <div className="splide__progress">
+        <div className="splide__progress -mt-8">
           <div className="splide__progress__bar" />
         </div>
       </Splide>

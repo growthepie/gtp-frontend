@@ -134,7 +134,7 @@ export default function LandingMetricsTable({
 
   return (
     <>
-      <div className="flex flex-col mt-3 lg:mt-32 space-y-[5px] overflow-x-scroll lg:overflow-x-hidden z-100 w-full p-0 pt-3 pb-5 md:px-2 md:pt-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
+      <div className="flex flex-col mt-3 lg:mt-32 space-y-[5px] overflow-x-scroll lg:overflow-x-hidden z-100 w-full p-0 pt-3 pb-0 md:px-2 md:pt-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
         <div
           className={`min-w-[820px] md:min-w-[850px] pr-[20px] md:pr-[50px] w-full ${
             interactable ? "pointer-events-auto" : "pointer-events-none"

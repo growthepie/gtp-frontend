@@ -17,18 +17,18 @@ const Subheading = ({
     return (
       <div className={`flex ${iconContainerClassName}`}>
         {leftIcon && leftIcon}
-        <h2 className={className} {...props}>
+        <div className={className} {...props}>
           {children}
-        </h2>
+        </div>
         {rightIcon && rightIcon}
       </div>
     );
   }
 
   return (
-    <h2 className={className} {...props}>
+    <div className={className} {...props}>
       {children}
-    </h2>
+    </div>
   );
 };
 

@@ -5,7 +5,7 @@ import React from "react";
 const Imprint = () => {
   return (
     <Container className="mt-[65px]">
-      <Heading className="text-[48px] mb-[30px] leading-snug">
+      <Heading className="text-[48px] mb-[30px] leading-snug" as="h1">
         Privacy Policy &amp; Data Protection
       </Heading>
       <p className="mb-4">
