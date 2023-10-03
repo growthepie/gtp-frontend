@@ -405,9 +405,20 @@ export default function OverviewMetrics({
     };
   }, []);
   console.log(data);
-  console.log(selectedMode);
   const chartStack = useMemo(() => {
     let ecosystemData: any[][] = [];
+
+    const txIndex = data["all_l2s"].daily.types.findIndex(
+      (item) => item === "txcount_absolute",
+    );
+    const gasIndex = data["all_l2s"].daily.types.findIndex(
+      (item) =>
+        item ===
+        (selectedMode.includes("usd")
+          ? "gas_fees_usd_absolute"
+          : "gas_fees_share_eth"),
+    );
+
     for (const chain in data) {
       if (chain !== "all_l2s") {
         const ecosystemFilter: any[][] =
@@ -437,18 +448,6 @@ export default function OverviewMetrics({
       .map((unixValues) => unixValues.filter((item) => item));
 
     const chartData = unixData.map((unixDataList: any[][]) => {
-      const txIndex = data["all_l2s"].daily.types.findIndex(
-        (item) => item === "txcount_absolute",
-      );
-      const gasIndex = data["all_l2s"].daily.types.findIndex(
-        (item) =>
-          item ===
-          (selectedMode.includes("usd")
-            ? "gas_fees_usd_absolute"
-            : "gas_fees_share_eth"),
-      );
-
-      console.log(gasIndex + " gas index");
       //Get absolute index for share calculation
       const numArrays = unixDataList.length;
       const calculatedData: any[] = [];
@@ -458,6 +457,7 @@ export default function OverviewMetrics({
           calculatedData.push(unixDataList[0][i]);
         } else {
           let retValue;
+          let allTotal = 0;
           const sum = unixDataList.reduce(
             (acc, curr) => acc + (curr[i] || 0),
             0,
@@ -472,21 +472,25 @@ export default function OverviewMetrics({
                   selectedMode.includes("txcount") ? txIndex : gasIndex
                 ];
             }
-            console.log(txTotal + " tx total");
 
-            let allTotal =
-              data["all_l2s"].daily[selectedCategory].data[
-                data["all_l2s"].daily[selectedCategory].data.findIndex(
+            for (category in data["all_l2s"].daily) {
+              if (category !== "types") {
+                let checkIndex = data["all_l2s"].daily[category].data.findIndex(
                   (item) => item[0] === findUnix,
-                )
-              ][selectedMode.includes("txcount") ? txIndex : gasIndex];
-
+                );
+                allTotal +=
+                  data["all_l2s"].daily[selectedCategory].data[
+                    data["all_l2s"].daily[selectedCategory].data.findIndex(
+                      (item) => item[0] === findUnix,
+                    )
+                  ][selectedMode.includes("txcount") ? txIndex : gasIndex];
+              }
+            }
             retValue = txTotal / allTotal;
-            console.log(allTotal + " all total");
           } else {
             retValue = sum;
           }
-          console.log(retValue);
+
           calculatedData.push(retValue);
         }
       }

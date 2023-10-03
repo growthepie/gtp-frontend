@@ -35,12 +35,7 @@ const CategoryComparison = () => {
           <Heading className="text-[30px] leading-snug md:text-[36px]">
             Category Comparison
           </Heading>
-          <EcosystemDropdown
-          // optOpen={optOpen}
-          // setOptOpen={setOptOpen}
-          // selectedStack={selectedStack}
-          // setSelectedStack={setSelectedStack}
-          />
+          {/* <EcosystemDropdown /> */}
         </div>
         <div className="flex items-center w-[92%]  mb-[30px]">
           <Image
