@@ -479,11 +479,13 @@ export default function OverviewMetrics({
                   (item) => item[0] === findUnix,
                 );
                 allTotal +=
-                  data["all_l2s"].daily[selectedCategory].data[
-                    data["all_l2s"].daily[selectedCategory].data.findIndex(
-                      (item) => item[0] === findUnix,
-                    )
-                  ][selectedMode.includes("txcount") ? txIndex : gasIndex];
+                  checkIndex !== -1
+                    ? data["all_l2s"].daily[selectedCategory].data[
+                        data["all_l2s"].daily[selectedCategory].data.findIndex(
+                          (item) => item[0] === findUnix,
+                        )
+                      ][selectedMode.includes("txcount") ? txIndex : gasIndex]
+                    : 0;
               }
             }
             retValue = txTotal / allTotal;

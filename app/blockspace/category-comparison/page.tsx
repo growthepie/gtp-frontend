@@ -35,7 +35,7 @@ const CategoryComparison = () => {
           <Heading className="text-[30px] leading-snug md:text-[36px]" as="h1">
             Category Comparison
           </Heading>
-          {/* <EcosystemDropdown /> */}
+          <EcosystemDropdown />
         </div>
         <div className="flex items-center w-[92%]  mb-[30px]">
           <Image
