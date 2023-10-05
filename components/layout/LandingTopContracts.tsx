@@ -62,6 +62,26 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
     // },
   };
 
+  const sortedContracts = useMemo(() => {
+    if (landing) {
+      const originalData = landing.data.top_contracts[selectedTimespan].data;
+
+      // Create an array of indices from 0 to the length of the original data
+      const indices = Array.from(
+        { length: originalData.length },
+        (_, index) => index,
+      );
+
+      // Sort the indices based on the values at the 7th index of the original data in descending order
+      indices.sort((a, b) => originalData[b][7] - originalData[a][7]);
+
+      return indices;
+    }
+
+    // Return a default value if landing is falsy
+    return [];
+  }, [landing, selectedTimespan, selectedMetric]);
+
   return (
     <>
       {landing && (
@@ -131,10 +151,14 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
           </div>
 
           <div className="grid grid-rows-6 grid-cols-1 lg:grid-rows-3 lg:grid-cols-2 xl:grid-rows-2 xl:grid-cols-3 gap-x-[10px] gap-y-[15px]">
-            {new Array(6).fill(0).map((_, i) => (
+            {sortedContracts.map((contractIndex, i) => (
               <ContractCard
                 key={i}
-                data={landing.data.top_contracts[selectedTimespan].data[i]}
+                data={
+                  landing.data.top_contracts[selectedTimespan].data[
+                    contractIndex
+                  ]
+                }
                 types={landing.data.top_contracts[selectedTimespan].types}
                 metric={metrics[selectedMetric].key}
                 changeSuffix={`in last ${
