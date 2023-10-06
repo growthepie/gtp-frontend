@@ -44,7 +44,9 @@ export default function LandingMetricsTable({
             (chain) =>
               Object.keys(AllChainsByKeys).includes(chain) &&
               AllChainsByKeys[chain].chainType != null &&
-              AllChainsByKeys[chain].chainType != "L1",
+              AllChainsByKeys[chain].chainType != "L1" &&
+              chain !== "zora" &&
+              chain !== "gitcoin_pgn",
           )
           .map((chain) => {
             return data.chains[chain].data.data[
@@ -58,8 +60,14 @@ export default function LandingMetricsTable({
   const rows = useCallback(() => {
     if (!data) return [];
     return Object.keys(data.chains)
-      .filter((chain) => Object.keys(AllChainsByKeys).includes(chain))
+      .filter((chain) => {
+        return (
+          Object.keys(AllChainsByKeys).includes(chain) &&
+          chain !== ("zora" || "gitcoin_pgn")
+        );
+      })
       .map((chain: any) => {
+        console.log(chain);
         return {
           data: data[chain],
           chain: AllChainsByKeys[chain],
