@@ -71,7 +71,8 @@ const MetricsTable = ({
         (chain) =>
           chain !== "ethereum" &&
           Object.keys(AllChainsByKeys).includes(chain) &&
-          chain !== "zora",
+          chain !== "zora" &&
+          chain !== "gitcoin_pgn",
       )
       .map((chain: any) => {
         const lastVal =

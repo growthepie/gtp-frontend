@@ -63,7 +63,8 @@ export default function LandingMetricsTable({
       .filter((chain) => {
         return (
           Object.keys(AllChainsByKeys).includes(chain) &&
-          chain !== ("zora" || "gitcoin_pgn")
+          chain !== "zora" &&
+          chain !== "gitcoin_pgn"
         );
       })
       .map((chain: any) => {
