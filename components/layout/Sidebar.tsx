@@ -3,7 +3,11 @@ import { ReactNode, useEffect, useState } from "react";
 import SidebarMenuGroup from "./SidebarMenuGroup";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { navigationItems, contributorsItem } from "@/lib/navigation";
+import {
+  navigationItems,
+  contributorsItem,
+  apiDocsItem,
+} from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
 import { Icon } from "@iconify/react";
 import EthUsdSwitch from "./EthUsdSwitch";
@@ -86,11 +90,45 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                 />
               </Link>
               <div className="flex space-x-[20px] items-end">
-                <div className="flex flex-1 justify-between items-end space-x-[16px]">
-                  <div className="items-end z-10 flex space-x-[15px] mb-[1px]">
-                    <DarkModeSwitch isMobile />
-                    <EthUsdSwitch isMobile />
-                  </div>
+                <div className="z-10 flex items-center space-x-[16px] mb-0.5 w-full px-2">
+                  <Link
+                    href="https://twitter.com/growthepie_eth"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    <Icon icon="gtp:twitter" className="h-[19px] w-[19px]" />
+                  </Link>
+                  <Link
+                    href="https://share.lens.xyz/u/growthepie.lens"
+                    target="_blank"
+                    rel="noopener"
+                    className=" dark:text-forest-200 text-forest-900"
+                  >
+                    <Icon icon="gtp:lens" className="h-[19px] w-[24px]" />
+                  </Link>
+
+                  <Link
+                    href="https://warpcast.com/growthepie"
+                    target="_blank"
+                    rel="noopener"
+                    className=" dark:text-forest-200 text-forest-900"
+                  >
+                    <Icon icon="gtp:farcaster" className="h-[19px] w-[19px]" />
+                  </Link>
+                  <Link
+                    href="https://discord.gg/fxjJFe7QyN"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    <Icon icon="cib:discord" className="h-[19px] w-[19px]" />
+                  </Link>
+                  <Link
+                    href="https://www.github.com/growthepie"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    <Icon icon="cib:github" className="h-[19px] w-[19px]" />
+                  </Link>
                 </div>
                 <button
                   className="!-mb-1  !-mr-1"
@@ -110,36 +148,19 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                   />
                 ))}
               </div>
-              <div className="flex flex-col justify-end py-6 relative mb-[30px]">
+
+              <div className="flex flex-col justify-end py-6 relative mt-[20px] mb-[17px] ">
+                <SidebarMenuGroup
+                  key={apiDocsItem.name + "_item"}
+                  item={apiDocsItem}
+                  sidebarOpen={isMobileSidebarOpen}
+                />
                 <SidebarMenuGroup
                   key={contributorsItem.name + "_item"}
                   item={contributorsItem}
                   sidebarOpen={isMobileSidebarOpen}
                 />
-                <div className="z-10 flex space-x-[16px] mb-0.5 w-full px-2">
-                  <Link
-                    href="https://twitter.com/growthepie_eth"
-                    target="_blank"
-                    rel="noopener"
-                  >
-                    <Icon icon="cib:twitter" className="h-[19px] w-[19px]" />
-                  </Link>
-                  <Link
-                    href="https://discord.gg/fxjJFe7QyN"
-                    target="_blank"
-                    rel="noopener"
-                  >
-                    <Icon icon="cib:discord" className="h-[19px] w-[19px]" />
-                  </Link>
-                  <Link
-                    href="https://www.github.com/growthepie"
-                    target="_blank"
-                    rel="noopener"
-                  >
-                    <Icon icon="cib:github" className="h-[19px] w-[19px]" />
-                  </Link>
-                </div>
-                <div className="text-[0.7rem] flex justify-between w-full text-inherit leading-[1] px-2 mt-[30px]">
+                <div className="text-[0.7rem] flex justify-evenly w-full gap-x-12 text-inherit leading-[1] px-2  mb-[17px]">
                   <Link href="/privacy-policy">Privacy Policy</Link>
                   <Link href="/imprint">Imprint</Link>
                   <Link
@@ -149,6 +170,10 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                   >
                     Feedback
                   </Link>
+                </div>
+                <div className="items-end justify-center z-10 flex space-x-[15px] mt-[2px] mb-[17px]">
+                  <DarkModeSwitch isMobile />
+                  <EthUsdSwitch isMobile />
                 </div>
               </div>
               <div className="mt-24 w-full text-center py-6 absolute bottom-0">
