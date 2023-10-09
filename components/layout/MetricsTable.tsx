@@ -321,19 +321,19 @@ const MetricsTable = ({
                   </div>
                 </div>
                 <div
-                  className={`flex !ml-1 ${
+                  className={`flex !ml-0 ${
                     isSidebarOpen ? "w-1/4 2xl:basis-1/3" : "basis-1/3"
                   } items-center space-x-2`}
                 >
-                  <div className="relative ml-0">
-                    <div
-                      className={`w-[29px] h-[29px] rounded-full ${
+                  <div className="relative">
+                    {/* <div
+                      className={`w-[34px] h-[29px] rounded-full ${
                         item.chain.border[theme ?? "dark"][1]
                       } ${selectedChains.includes(item.chain.key) ? "" : ""}`}
-                    ></div>
+                    ></div> */}
                     <Icon
                       icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
-                      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[29px] h-[29px]"
+                      className="w-[29px] h-[29px]"
                       style={{
                         color: item.chain.colors[theme ?? "dark"][1],
                       }}
@@ -347,7 +347,7 @@ const MetricsTable = ({
                     /> */}
                   </div>
                   <div className="w-full break-inside-avoid">
-                    <div className="w-full flex flex-col">
+                    <div className="w-full flex flex-col pl-2 lg:pl-1">
                       <div className="flex w-full items-baseline text-sm font-bold leading-snug">
                         {/* {item.data.daily.types.includes("usd") && (
                           <> */}
