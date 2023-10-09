@@ -63,14 +63,23 @@ export default function Header() {
             target="_blank"
             rel="noopener"
           >
-            <Icon icon="cib:twitter" className="h-6 w-6" />
+            <Icon icon="gtp:twitter" className="h-6 w-6" />
+          </Link>
+
+          <Link
+            href="https://share.lens.xyz/u/growthepie.lens"
+            target="_blank"
+            rel="noopener"
+            className="w-7 h-6 dark:text-forest-200 text-forest-900"
+          >
+            <Icon icon="gtp:lens" className="h-6 w-7" />
           </Link>
 
           <Link
             href="https://warpcast.com/growthepie"
             target="_blank"
             rel="noopener"
-            className="w-6 h-6 dark:text-forest-200 text-forest-900"
+            className="w-[28px] h-[24px] dark:text-forest-200 text-forest-900"
           >
             <Icon icon="gtp:farcaster" className="h-6 w-6" />
           </Link>
@@ -80,7 +89,7 @@ export default function Header() {
             target="_blank"
             rel="noopener"
           >
-            <Icon icon="cib:discord" className="h-6 w-6" />
+            <Icon icon="cib:discord" className="h-6 w-6 pt-[2px]" />
           </Link>
           <Link
             href="https://www.github.com/growthepie"
