@@ -129,8 +129,8 @@ const MetricsTable = ({
   const transitions = useTransition(
     rows().map((data) => ({
       ...data,
-      y: (height += isMobile ? 42 : 54) - (isMobile ? 42 : 54),
-      height: isMobile ? 42 : 54,
+      y: (height += isMobile ? 44 : 59) - (isMobile ? 44 : 59),
+      height: isMobile ? 44 : 59,
     })),
     {
       key: (d) => d.chain.key,
@@ -225,7 +225,7 @@ const MetricsTable = ({
     <div className="flex flex-col mt-3 md:mt-0 font-semibold space-y-[5px] overflow-x-scroll md:overflow-x-visible z-100 w-full py-5 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
       <div className="min-w-[570px] md:min-w-[600px] lg:min-w-full pr-[20px] md:pr-[50px] lg:pr-0 w-full">
         <div
-          className={`flex space-x-5 items-center py-1 pl-2 pr-4 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-2 xl:mt-0`}
+          className={`flex space-x-5 items-center py-1 pl-2 pr-4 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
         >
           <div
             className={`${
@@ -277,7 +277,7 @@ const MetricsTable = ({
             >
               <div
                 key={item.chain.key}
-                className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[10px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] group relative
+                className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[10.5px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] group relative
               ${
                 item.chain.key === "ethereum"
                   ? showEthereumMainnet
@@ -408,7 +408,7 @@ const MetricsTable = ({
                         )}
                       </div> */}
                       <div
-                        className={`font-medium leading-snug ${
+                        className={`font-medium leading-snug text-ellipsis overflow-hidden ${
                           isSidebarOpen ? "text-[10px] 2xl:text-xs" : "text-xs"
                         }`}
                       >
