@@ -129,8 +129,8 @@ const MetricsTable = ({
   const transitions = useTransition(
     rows().map((data) => ({
       ...data,
-      y: (height += isMobile ? 56 : 71) - (isMobile ? 56 : 71),
-      height: isMobile ? 56 : 71,
+      y: (height += isMobile ? 42 : 54) - (isMobile ? 42 : 54),
+      height: isMobile ? 42 : 54,
     })),
     {
       key: (d) => d.chain.key,
@@ -225,14 +225,14 @@ const MetricsTable = ({
     <div className="flex flex-col mt-3 md:mt-0 font-semibold space-y-[5px] overflow-x-scroll md:overflow-x-visible z-100 w-full py-5 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
       <div className="min-w-[570px] md:min-w-[600px] lg:min-w-full pr-[20px] md:pr-[50px] lg:pr-0 w-full">
         <div
-          className={`flex space-x-5 items-center py-1 pl-2 pr-4 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm`}
+          className={`flex space-x-5 items-center py-1 pl-2 pr-4 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-2 xl:mt-0`}
         >
           <div
             className={`${
               isSidebarOpen ? "w-1/4 2xl:basis-1/3" : "basis-1/3"
-            } pl-12`}
+            } pl-11`}
           >
-            Chain
+            Yesterday
           </div>
           <div
             className={`${
@@ -259,7 +259,17 @@ const MetricsTable = ({
             ))}
           </div>
         </div>
-        <div className="w-full relative" style={{ height }}>
+        {/* <div
+          className="h-auto overflow-y-hidden lg:h-[426px] lg:overflow-y-scroll overflow-x-visible relative  scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller"
+          style={{
+            direction: "rtl",
+          }}
+        > */}
+        <div
+          className="w-full relative"
+          style={{ height: height }}
+          // style={{ height: height, direction: "ltr" }}
+        >
           {transitions((style, item, t, index) => (
             <animated.div
               className="absolute w-full"
@@ -267,7 +277,7 @@ const MetricsTable = ({
             >
               <div
                 key={item.chain.key}
-                className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[11.5px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] group
+                className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[10px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] group relative
               ${
                 item.chain.key === "ethereum"
                   ? showEthereumMainnet
@@ -295,28 +305,50 @@ const MetricsTable = ({
                   }
                 }}
               >
+                <div className="w-full h-full absolute left-0 bottom-0 rounded-full overflow-clip">
+                  <div className="relative w-full h-full">
+                    {item.chain.key !== "ethereum" && (
+                      <>
+                        <div
+                          className={`absolute left-0 bottom-[0px] h-[1px] lg:h-[2px] rounded-none font-semibold transition-width duration-300 `}
+                          style={{
+                            background: item.chain.colors[theme ?? "dark"][1],
+                            width: item.barWidth,
+                          }}
+                        ></div>
+                      </>
+                    )}
+                  </div>
+                </div>
                 <div
-                  className={`flex ${
+                  className={`flex !ml-1 ${
                     isSidebarOpen ? "w-1/4 2xl:basis-1/3" : "basis-1/3"
                   } items-center space-x-2`}
                 >
-                  <div className="relative">
+                  <div className="relative ml-0">
                     <div
-                      className={`w-9 h-9 rounded-full border-[5px] ${
+                      className={`w-[29px] h-[29px] rounded-full ${
                         item.chain.border[theme ?? "dark"][1]
                       } ${selectedChains.includes(item.chain.key) ? "" : ""}`}
                     ></div>
                     <Icon
                       icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
-                      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5 h-5"
+                      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[29px] h-[29px]"
                       style={{
                         color: item.chain.colors[theme ?? "dark"][1],
                       }}
                     />
+                    {/* <Icon
+                      icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
+                      className="w-[29px] h-[29px]"
+                      style={{
+                        color: item.chain.colors[theme ?? "dark"][1],
+                      }}
+                    /> */}
                   </div>
                   <div className="w-full break-inside-avoid">
-                    <div className="w-full flex flex-col space-y-0.5">
-                      <div className="flex w-full items-baseline text-sm font-bold pb-0.5">
+                    <div className="w-full flex flex-col">
+                      <div className="flex w-full items-baseline text-sm font-bold leading-snug">
                         {/* {item.data.daily.types.includes("usd") && (
                           <> */}
                         {/* {showUsd ? (
@@ -325,7 +357,7 @@ const MetricsTable = ({
                               <div className="text-[13px] font-normal">Ξ</div>
                             )} */}
                         {getDisplayValue(item).prefix && (
-                          <div className="text-[13px] font-normal mr-[1px]">
+                          <div className="text-[13px] font-normal mr-[1px] leading-snug">
                             {getDisplayValue(item).prefix}
                           </div>
                         )}
@@ -357,12 +389,12 @@ const MetricsTable = ({
                             )} */}
                         {getDisplayValue(item).value}
                         {getDisplayValue(item).suffix && (
-                          <div className="text-[13px] font-normal ml-0.5">
+                          <div className="text-[13px] font-normal ml-0.5 leading-snug">
                             {getDisplayValue(item).suffix}
                           </div>
                         )}
                       </div>
-                      <div className="relative w-full">
+                      {/* <div className="relative w-full">
                         {item.chain.key !== "ethereum" && (
                           <>
                             <div className="absolute left-0 -top-[3px] w-full h-1 bg-black/10"></div>
@@ -374,9 +406,9 @@ const MetricsTable = ({
                             ></div>
                           </>
                         )}
-                      </div>
+                      </div> */}
                       <div
-                        className={`font-medium ${
+                        className={`font-medium leading-snug ${
                           isSidebarOpen ? "text-[10px] 2xl:text-xs" : "text-xs"
                         }`}
                       >
@@ -510,6 +542,7 @@ const MetricsTable = ({
             </animated.div>
           ))}
         </div>
+        {/* </div> */}
       </div>
     </div>
   );
