@@ -54,7 +54,7 @@ export default function Header() {
           </div>
         </div>
       </div>
-      <div className="items-center z-10 hidden md:flex md:space-x-[34px] self-end">
+      <div className="items-center z-10 hidden md:flex md:space-x-[34px] self-end ">
         <EthUsdSwitch />
         <DarkModeSwitch />
         <div className="flex space-x-[22px] items-center">
@@ -81,7 +81,7 @@ export default function Header() {
             rel="noopener"
             className="w-[28px] h-[24px] dark:text-forest-200 text-forest-900"
           >
-            <Icon icon="gtp:farcaster" className="h-6 w-6" />
+            <Icon icon="gtp:farcaster" className="h-[24px] w-[26px]" />
           </Link>
 
           <Link
