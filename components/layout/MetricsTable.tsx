@@ -310,7 +310,7 @@ const MetricsTable = ({
                     {item.chain.key !== "ethereum" && (
                       <>
                         <div
-                          className={`absolute left-0 bottom-[0px] h-[1px] lg:h-[2px] rounded-none font-semibold transition-width duration-300 `}
+                          className={`absolute left-[15px] right-[15px] lg:left-[18px] lg:right-[18px] bottom-[0px] h-[1px] lg:h-[2px] rounded-none font-semibold transition-width duration-300 `}
                           style={{
                             background: item.chain.colors[theme ?? "dark"][1],
                             width: item.barWidth,
