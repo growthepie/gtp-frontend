@@ -196,23 +196,45 @@ export const AllChains = [
   {
     label: "Public Goods Network",
     icon: "/icons/Base.png",
-    key: "pgn",
+    key: "gitcoin_pgn",
     urlKey: "public-goods-network",
     chainType: "L2",
     ecosystem: ["op-stack"],
     description:
       "Public Goods Network is a fully EVM compatible optimistic rollup built on the OP Stack. It is incubated inside of Coinbase. Public mainnet launch was on August 9th 2023.",
     border: {
-      light: ["border-[#2151F5]", "border-[#2151F5]"],
-      dark: ["border-[#2151F5]", "border-[#2151F5]"],
+      light: ["border-[#B9EE75]", "border-[#B9EE75]"],
+      dark: ["border-[#D7FD7B]", "border-[#D7FD7B]"],
     },
     colors: {
-      light: ["#2151F5", "#2151F5"], // dark purple
-      dark: ["#2151F5", "#2151F5"], // dark purple
+      light: ["#B9EE75", "#B9EE75"], // dark purple
+      dark: ["#D7FD7B", "#D7FD7B"], // dark purple
     },
     backgrounds: {
-      light: ["bg-[#2151F5]", "bg-[#2151F5]"],
-      dark: ["bg-[#2151F5]", "bg-[#2151F5]"],
+      light: ["bg-[#B9EE75]", "bg-[#B9EE75]"],
+      dark: ["bg-[#D7FD7B]", "bg-[#D7FD7B]"],
+    },
+  },
+  {
+    label: "Zora",
+    icon: "/icons/Zora.png",
+    key: "zora",
+    urlKey: "zora",
+    chainType: "L2",
+    ecosystem: ["op-stack"],
+    description:
+      "Zora is a fully EVM compatible optimistic rollup built on the OP Stack. It is incubated inside of Coinbase. Public mainnet launch was on August 9th 2023.",
+    border: {
+      light: ["border-[#2FB9F4]", "border-[#2FB9F4]"],
+      dark: ["border-[#2FB9F4]", "border-[#2FB9F4]"],
+    },
+    colors: {
+      light: ["#2FB9F4", "#2FB9F4"], // dark purple
+      dark: ["#2FB9F4", "#2FB9F4"], // dark purple
+    },
+    backgrounds: {
+      light: ["bg-[#2FB9F4]", "bg-[#2FB9F4]"],
+      dark: ["bg-[#2FB9F4]", "bg-[#2FB9F4]"],
     },
   },
   {

@@ -29,6 +29,8 @@ export const ChainURLs = {
   imx: "https://api.growthepie.xyz/v1/chains/imx.json",
   zksync_era: "https://api.growthepie.xyz/v1/chains/zksync_era.json",
   base: "https://api.growthepie.xyz/v1/chains/base.json",
+  gitcoin_pgn: "https://api.growthepie.xyz/v1/chains/gitcoin_pgn.json",
+  zora: "https://api.growthepie.xyz/v1/chains/zora.json",
 
   // mock urls
   // ethereum: "http://localhost:3000/mock/v1/chains/ethereum.json",

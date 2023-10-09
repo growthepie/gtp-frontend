@@ -354,6 +354,26 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "chainsOptimism",
         urlKey: "zksync-era",
       },
+      {
+        label: "Public Goods Network",
+        page: {
+          description: "",
+        },
+        icon: "gtp:public-goods-network-logo-monochrome",
+        key: "gitcoin_pgn",
+        rootKey: "chainsOptimism",
+        urlKey: "public-goods-network",
+      },
+      {
+        label: "Zora Network",
+        page: {
+          description: "",
+        },
+        icon: "gtp:zora-logo-monochrome",
+        key: "zora",
+        rootKey: "chainsOptimism",
+        urlKey: "zora",
+      },
 
       // {
       //   label: "Loopring",
