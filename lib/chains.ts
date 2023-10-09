@@ -201,7 +201,7 @@ export const AllChains = [
     chainType: "L2",
     ecosystem: ["op-stack"],
     description:
-      "Public Goods Network is a fully EVM compatible optimistic rollup built on the OP Stack. It is incubated inside of Coinbase. Public mainnet launch was on August 9th 2023.",
+      "Public Goods Network is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in July 2023.",
     border: {
       light: ["border-[#B9EE75]", "border-[#B9EE75]"],
       dark: ["border-[#D7FD7B]", "border-[#D7FD7B]"],
@@ -216,14 +216,14 @@ export const AllChains = [
     },
   },
   {
-    label: "Zora",
+    label: "Zora Network",
     icon: "/icons/Zora.png",
     key: "zora",
     urlKey: "zora",
     chainType: "L2",
     ecosystem: ["op-stack"],
     description:
-      "Zora is a fully EVM compatible optimistic rollup built on the OP Stack. It is incubated inside of Coinbase. Public mainnet launch was on August 9th 2023.",
+      "Zora Network is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in June 2023.",
     border: {
       light: ["border-[#2FB9F4]", "border-[#2FB9F4]"],
       dark: ["border-[#2FB9F4]", "border-[#2FB9F4]"],
