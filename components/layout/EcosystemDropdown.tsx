@@ -60,8 +60,6 @@ export default function EcosystemDropdown({}: // optOpen,
     config: { easing: easings.easeInOutBack },
   });
 
-  return null;
-
   return (
     <div className="relative w-[218px]">
       <div
