@@ -103,8 +103,8 @@ export default function LandingMetricsTable({
       .filter((row) => row.chain.key != "multiple")
       .map((data) => ({
         ...data,
-        y: (height += isMobile ? 50 : 66) - (isMobile ? 50 : 66),
-        height: isMobile ? 50 : 66,
+        y: (height += isMobile ? 44 : 59) - (isMobile ? 44 : 59),
+        height: isMobile ? 44 : 59,
       })),
     {
       key: (d) => d.chain.key,
@@ -137,23 +137,23 @@ export default function LandingMetricsTable({
 
   return (
     <>
-      <div className="flex flex-col mt-3 lg:mt-32 space-y-[5px] overflow-x-scroll lg:overflow-x-hidden z-100 w-full p-0 pt-3 pb-0 md:px-2 md:pt-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
+      <div className="flex flex-col mt-3 lg:mt-32 space-y-[5px] overflow-y-hidden overflow-x-scroll lg:overflow-x-hidden z-100 w-full p-0 pt-3 pb-2 md:pb-0 md:px-2 md:pt-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
         <div
           className={`min-w-[820px] md:min-w-[850px] pr-[20px] md:pr-[50px] w-full ${
             interactable ? "pointer-events-auto" : "pointer-events-none"
           }`}
         >
           <div
-            className={`flex space-x-5 items-end rounded-full font-semibold text-[0.6rem] lg:text-sm pr-2 py-1 pl-2`}
+            className={`flex space-x-5 items-end rounded-full font-semibold text-[0.6rem] lg:text-sm pr-3 py-1 pl-10`}
           >
-            <div className="w-[22.5%] pl-14">Chain</div>
+            <div className="w-[22.5%] pl-5 lg:pl-6">Chain</div>
             <div className="w-1/12">Age</div>
             <div className="w-1/5">Purpose</div>
-            <div className="w-2/12">Technology</div>
+            <div className="w-2/12 pl-1">Technology</div>
             <div className="flex-1 text-right capitalize">
               Weekly Active Addresses
             </div>
-            <div className="w-[10%] text-right pr-14">User Share</div>
+            <div className="w-[10%] pr-14 text-right">User Share</div>
           </div>
           <div className="flex flex-col">
             <div className="w-full relative" style={{ height }}>
@@ -162,13 +162,13 @@ export default function LandingMetricsTable({
                   <animated.div
                     className="absolute w-full"
                     style={{
-                      zIndex: Object.keys(data).length - index,
+                      zIndex: rows().length - index,
                       ...style,
                     }}
                   >
                     <div
                       key={item.chain.key}
-                      className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[11.5px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] ${
+                      className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[10px] lg:p-3 lg:py-[11.5px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${
                         index > 0 ? "-mt-[1px]" : ""
                       } ${
                         selectedChains.includes(item.chain.key)
@@ -188,26 +188,69 @@ export default function LandingMetricsTable({
                         }
                       }}
                     >
-                      <div className="flex w-[22.5%] items-center space-x-4">
-                        <div className="relative">
-                          <div
+                      {/* <div
+                        className={`absolute -bottom-[6px] right-0 h-1 bg-forest-900 dark:bg-forest-50 rounded-none`}
+                        style={{
+                          background: item.chain.colors[theme ?? "dark"][1],
+                          width: `${
+                            (data.chains[item.chain.key].data.data[
+                              data.chains[item.chain.key].data.data.length - 1
+                            ][1] /
+                              maxVal) *
+                            100
+                          }%`,
+                        }}
+                      ></div> */}
+                      <div className="w-full h-full absolute inset-0 rounded-full overflow-clip">
+                        <div className="relative w-full h-full">
+                          {item.chain.key !== "ethereum" && (
+                            <>
+                              <div
+                                className={`absolute left-[15px] right-[15px] lg:left-[18px] lg:right-[18px] bottom-[0px] h-[1px] lg:h-[2px] rounded-none font-semibold transition-width duration-300 `}
+                                style={{
+                                  background:
+                                    item.chain.colors[theme ?? "dark"][1],
+                                  width: `${
+                                    (data.chains[item.chain.key].data.data[
+                                      data.chains[item.chain.key].data.data
+                                        .length - 1
+                                    ][1] /
+                                      maxVal) *
+                                    100
+                                  }%`,
+                                }}
+                              ></div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex w-[22.5%] items-center">
+                        <div className="relative h-full">
+                          {/* <div
                             className={`w-9 h-9 rounded-full border-[5px] ${
                               item.chain.border[theme ?? "dark"][1]
                             }`}
-                          ></div>
+                          ></div> */}
                           <Icon
+                            icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
+                            className="absolute -left-[14.5px] -top-[14.5px] w-[29px] h-[29px]"
+                            style={{
+                              color: item.chain.colors[theme ?? "dark"][1],
+                            }}
+                          />
+                          {/* <Icon
                             icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
                             className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5 h-5"
                             style={{
                               color: item.chain.colors[theme ?? "dark"][1],
                             }}
-                          />
+                          /> */}
                         </div>
-                        <div className="break-inside-avoid text-xs md:text-sm lg:text-lg">
+                        <div className="break-inside-avoid text-xs md:text-sm lg:text-lg pl-8">
                           {item.chain.label}
                         </div>
                       </div>
-                      <div className="w-1/12 flex">
+                      <div className="w-1/12 text-right flex">
                         {/* format as 1 year 2 months */}
 
                         {item.chain.chainType === "L2" && (
@@ -260,10 +303,10 @@ export default function LandingMetricsTable({
                       </div>
                       <div className="w-1/5 capitalize">
                         {master && master.chains[item.chain.key].purpose && (
-                          <span>{master.chains[item.chain.key].purpose}</span>
+                          <>{master.chains[item.chain.key].purpose}</>
                         )}
                       </div>
-                      <div className="w-2/12 capitalize">
+                      <div className="w-2/12 capitalize text-left">
                         {item.chain.chainType === "L2" &&
                         master &&
                         master.chains[item.chain.key].rollup === "-" ? (
@@ -272,12 +315,8 @@ export default function LandingMetricsTable({
                           <>
                             {item.chain.chainType === "L2" && (
                               <>
-                                <span>
-                                  {master.chains[item.chain.key].rollup}
-                                </span>{" "}
-                                <span className="">
-                                  {master.chains[item.chain.key].technology}
-                                </span>
+                                {master.chains[item.chain.key].rollup}{" "}
+                                {master.chains[item.chain.key].technology}
                               </>
                             )}
                           </>
@@ -286,50 +325,48 @@ export default function LandingMetricsTable({
 
                       <div className="flex-1 flex justify-end items-center">
                         {/* <div className="flex flex-1 align-middle items-center"> */}
-                        <div className={`relative w-full`}>
-                          <div className="flex w-full justify-end">
-                            {data.chains[item.chain.key].data.types.includes(
-                              "usd",
-                            ) && (
-                              <>
-                                {showUsd ? (
-                                  <div className="">$</div>
-                                ) : (
-                                  <div className="">Ξ</div>
-                                )}
-                              </>
-                            )}
-                            {data.chains[item.chain.key].data.types.includes(
-                              "usd",
-                            )
-                              ? Intl.NumberFormat(undefined, {
-                                  notation: "compact",
-                                  maximumFractionDigits: 2,
-                                  minimumFractionDigits: 2,
-                                }).format(
-                                  data.chains[item.chain.key].data.data[
-                                    data[item.chain.key].data.data.length - 1
-                                  ][
-                                    !showUsd &&
-                                    data.chains[
-                                      item.chain.key
-                                    ].data.types.includes("usd")
-                                      ? 2
-                                      : 1
-                                  ],
-                                )
-                              : Intl.NumberFormat(undefined, {
-                                  notation: "compact",
-                                  maximumFractionDigits: 2,
-                                  minimumFractionDigits: 2,
-                                }).format(
-                                  data.chains[item.chain.key].data.data[
-                                    data.chains[item.chain.key].data.data
-                                      .length - 1
-                                  ][1],
-                                )}
-                          </div>
-                          <div className="absolute -bottom-[6px] right-0 w-full h-1 bg-black/10 rounded-none"></div>
+                        <div className="flex w-full justify-end">
+                          {data.chains[item.chain.key].data.types.includes(
+                            "usd",
+                          ) && (
+                            <>
+                              {showUsd ? (
+                                <div className="">$</div>
+                              ) : (
+                                <div className="">Ξ</div>
+                              )}
+                            </>
+                          )}
+                          {data.chains[item.chain.key].data.types.includes(
+                            "usd",
+                          )
+                            ? Intl.NumberFormat(undefined, {
+                                notation: "compact",
+                                maximumFractionDigits: 2,
+                                minimumFractionDigits: 2,
+                              }).format(
+                                data.chains[item.chain.key].data.data[
+                                  data[item.chain.key].data.data.length - 1
+                                ][
+                                  !showUsd &&
+                                  data.chains[
+                                    item.chain.key
+                                  ].data.types.includes("usd")
+                                    ? 2
+                                    : 1
+                                ],
+                              )
+                            : Intl.NumberFormat(undefined, {
+                                notation: "compact",
+                                maximumFractionDigits: 2,
+                                minimumFractionDigits: 2,
+                              }).format(
+                                data.chains[item.chain.key].data.data[
+                                  data.chains[item.chain.key].data.data.length -
+                                    1
+                                ][1],
+                              )}
+                          {/* <div className="absolute -bottom-[6px] right-0 w-full h-1 bg-black/10 rounded-none"></div>
                           <div
                             className={`absolute -bottom-[6px] right-0 h-1 bg-forest-900 dark:bg-forest-50 rounded-none`}
                             style={{
@@ -342,7 +379,7 @@ export default function LandingMetricsTable({
                                 100
                               }%`,
                             }}
-                          ></div>
+                          ></div> */}
                         </div>
                       </div>
                       <div className="w-[10%] text-right pr-14">
@@ -438,7 +475,7 @@ export default function LandingMetricsTable({
                 .map((item, index) => (
                   <div
                     key={item.chain.key}
-                    className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[11.5px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${
+                    className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[10px] lg:p-3 lg:py-[11.5px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${
                       selectedChains.includes(item.chain.key)
                         ? " hover:bg-forest-500/10"
                         : "opacity-50 grayscale hover:opacity-70 hover:grayscale-20 transition-all duration-100"
@@ -455,7 +492,7 @@ export default function LandingMetricsTable({
                   >
                     <div className="flex w-[22.5%] items-center space-x-4">
                       <div className="relative">
-                        <div
+                        {/* <div
                           className={`w-9 h-9 rounded-full border-[5px] ${
                             item.chain.border[theme ?? "dark"][1]
                           }`}
@@ -463,6 +500,13 @@ export default function LandingMetricsTable({
                         <Icon
                           icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
                           className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5 h-5"
+                          style={{
+                            color: item.chain.colors[theme ?? "dark"][1],
+                          }}
+                        /> */}
+                        <Icon
+                          icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
+                          className="w-[29px] h-[29px]"
                           style={{
                             color: item.chain.colors[theme ?? "dark"][1],
                           }}
@@ -548,7 +592,7 @@ export default function LandingMetricsTable({
                                 ][1],
                               )}
                         </div>
-                        <div className="absolute -bottom-[6px] right-0 w-full h-1 bg-black/10 rounded-none"></div>
+                        {/* <div className="absolute -bottom-[6px] right-0 w-full h-1 bg-black/10 rounded-none"></div>
                         <div
                           className={`absolute -bottom-[6px] right-0 h-1 bg-forest-900 dark:bg-forest-50 rounded-none`}
                           style={{
@@ -560,7 +604,7 @@ export default function LandingMetricsTable({
                               100
                             }%`,
                           }}
-                        ></div>
+                        ></div> */}
                       </div>
                     </div>
                     <div className="w-[10%] text-right pr-14">

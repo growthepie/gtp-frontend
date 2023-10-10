@@ -225,19 +225,19 @@ const MetricsTable = ({
     <div className="flex flex-col mt-3 md:mt-0 font-semibold space-y-[5px] overflow-x-scroll md:overflow-x-visible z-100 w-full py-5 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
       <div className="min-w-[570px] md:min-w-[600px] lg:min-w-full pr-[20px] md:pr-[50px] lg:pr-0 w-full">
         <div
-          className={`flex space-x-5 items-center py-1 pl-2 pr-4 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
+          className={`flex space-x-5 items-center py-1 pl-2 pr-2 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
         >
           <div
             className={`${
               isSidebarOpen ? "w-1/4 2xl:basis-1/3" : "basis-1/3"
-            } pl-11`}
+            } pl-[44px] lg:pl-[52px]`}
           >
             Yesterday
           </div>
           <div
             className={`${
               isSidebarOpen ? "w-3/4 2xl:basis-2/3" : "basis-2/3"
-            } flex pr-4`}
+            } flex pr-4 pl-2`}
           >
             {/* <div className={`basis-1/5 text-right capitalize`}>
               Current
@@ -321,7 +321,7 @@ const MetricsTable = ({
                   </div>
                 </div>
                 <div
-                  className={`flex !ml-0 ${
+                  className={`flex ${
                     isSidebarOpen ? "w-1/4 2xl:basis-1/3" : "basis-1/3"
                   } items-center space-x-2`}
                 >
@@ -333,7 +333,7 @@ const MetricsTable = ({
                     ></div> */}
                     <Icon
                       icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
-                      className="w-[29px] h-[29px]"
+                      className="absolute -left-[14.5px] -top-[14.5px] w-[29px] h-[29px]"
                       style={{
                         color: item.chain.colors[theme ?? "dark"][1],
                       }}
@@ -346,8 +346,8 @@ const MetricsTable = ({
                       }}
                     /> */}
                   </div>
-                  <div className="w-full break-inside-avoid">
-                    <div className="w-full flex flex-col pl-2 lg:pl-1">
+                  <div className="flex-1 break-inside-avoid">
+                    <div className="flex-1 flex flex-col pl-4 lg:pl-5">
                       <div className="flex w-full items-baseline text-sm font-bold leading-snug">
                         {/* {item.data.daily.types.includes("usd") && (
                           <> */}
