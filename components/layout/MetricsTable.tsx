@@ -69,7 +69,10 @@ const MetricsTable = ({
     return Object.keys(data)
       .filter(
         (chain) =>
-          chain !== "ethereum" && Object.keys(AllChainsByKeys).includes(chain),
+          chain !== "ethereum" &&
+          Object.keys(AllChainsByKeys).includes(chain) &&
+          chain !== "zora" &&
+          chain !== "gitcoin_pgn",
       )
       .map((chain: any) => {
         const lastVal =

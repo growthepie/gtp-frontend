@@ -1187,21 +1187,24 @@ export default function ChainChart({
                           {data.chain_id === "ethereum" && (
                             <>
                               {["tvl", "rent_paid", "profit"].includes(key) && (
-                                <>Data is not available for Ethereum</>
+                                <>Data is not available for {data.chain_name}</>
                               )}
                             </>
                           )}
                           {data.chain_id === "imx" && (
                             <>
                               {["rent_paid", "profit"].includes(key) && (
-                                <>Data is not available for Ethereum</>
+                                <>Data is not available for {data.chain_name}</>
                               )}
                             </>
                           )}
                           {data.chain_id === "imx" && (
                             <>
                               {key === "txcosts" && (
-                                <>IMX does not charge Transaction Costs</>
+                                <>
+                                  {data.chain_name} does not charge Transaction
+                                  Costs
+                                </>
                               )}
                             </>
                           )}

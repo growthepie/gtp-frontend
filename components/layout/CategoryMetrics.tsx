@@ -211,6 +211,7 @@ export default function CategoryMetrics({
 
     return chainValues
       .filter(([item]) => {
+        console.log(item);
         const filterChains =
           AllChainsByKeys[item].ecosystem.includes(chainEcosystemFilter);
 

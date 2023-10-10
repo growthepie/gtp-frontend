@@ -280,6 +280,51 @@ export const AllChains = [
       dark: ["bg-[#FFDF27]", "bg-[#FE5468]"],
     },
   },
+  {
+    label: "Zora",
+    icon: "/icons/ethereum.png",
+    key: "zora",
+    urlKey: "zora",
+    chainType: "L2",
+    ecosystem: ["op-stack"],
+    description:
+      "Ethereum was proposed by Vitalik Buterin in 2013 and launched in 2015. It is arguably the most decentralized smart contract platform to date. The goal is to scale Ethereum through the usage of Layer 2s.",
+    border: {
+      light: ["border-[#293305]", "border-[#293305]"],
+      dark: ["border-[#C1C1C1]", "border-[#C1C1C1]"],
+    },
+    colors: {
+      light: ["#293305", "#293305"], // text color
+      dark: ["#C1C1C1", "#C1C1C1"], // text color
+    }, // yellow-orange
+    backgrounds: {
+      light: ["bg-[#293305]", "bg-[#293305]"],
+      dark: ["bg-[#C1C1C1]", "bg-[#C1C1C1]"],
+    },
+  },
+
+  {
+    label: "Gitcoin PGN",
+    icon: "/icons/ethereum.png",
+    key: "gitcoin_pgn",
+    urlKey: "gitcoin_pgn",
+    chainType: "L2",
+    ecosystem: ["op-stack"],
+    description:
+      "Ethereum was proposed by Vitalik Buterin in 2013 and launched in 2015. It is arguably the most decentralized smart contract platform to date. The goal is to scale Ethereum through the usage of Layer 2s.",
+    border: {
+      light: ["border-[#293305]", "border-[#293305]"],
+      dark: ["border-[#C1C1C1]", "border-[#C1C1C1]"],
+    },
+    colors: {
+      light: ["#293305", "#293305"], // text color
+      dark: ["#C1C1C1", "#C1C1C1"], // text color
+    }, // yellow-orange
+    backgrounds: {
+      light: ["bg-[#293305]", "bg-[#293305]"],
+      dark: ["bg-[#C1C1C1]", "bg-[#C1C1C1]"],
+    },
+  },
 ];
 
 export const AllChainsByKeys = AllChains.reduce((acc, chain) => {

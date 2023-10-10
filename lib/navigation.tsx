@@ -405,13 +405,7 @@ export const navigationItems: NavigationItem[] = [
     options: [],
     href: "https://docs.growthepie.xyz/",
   },
-  {
-    name: "API Documentation",
-    label: "API Documentation",
-    icon: "gtp:file-text",
-    options: [],
-    href: "https://docs.growthepie.xyz/api",
-  },
+
   // // put navigation items that we want to hide in production here
   // ...(IS_PREVIEW
   //   ? [
@@ -432,4 +426,12 @@ export const contributorsItem: NavigationItem = {
   icon: "gtp:compass",
   options: [],
   href: "/contributors",
+};
+
+export const apiDocsItem: NavigationItem = {
+  name: "API Documentation",
+  label: "API Documentation",
+  icon: "gtp:file-text",
+  options: [],
+  href: "https://docs.growthepie.xyz/api",
 };
