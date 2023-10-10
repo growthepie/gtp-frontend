@@ -303,7 +303,7 @@ export default function SidebarMenuGroup({
                 </TooltipTrigger>
                 {!sidebarOpen && (
                   <TooltipContent
-                    className={`bg-forest-900 text-forest-900 dark:bg-forest-50 dark:text-forest-50 py-1 px-4 text-base break-inside-auto shadow-md z-50 pointer-events-none ml-[8px] mt-[36px] flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
+                    className={`text-forest-900 dark:text-forest-50 py-1 px-4 text-base break-inside-auto shadow-md z-50 pointer-events-none ml-[8px] mt-[36px] flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
                       urlParts[1].trim().localeCompare(option.urlKey) === 0
                         ? "bg-[#CDD8D3] dark:bg-forest-1000"
                         : "bg-[#F0F5F3] dark:bg-[#5A6462]"
