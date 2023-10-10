@@ -417,11 +417,7 @@ const MetricsTable = ({
                     </div>
                   </div>
                 </div>
-                <div
-                  className={`${
-                    isSidebarOpen ? "w-3/4 2xl:basis-2/3" : "basis-2/3"
-                  } pr-4 flex font-medium`}
-                >
+                <div className={`basis-2/3 pr-4 flex font-medium`}>
                   {["1d", "7d", "30d", "365d"].map((timespan) => (
                     <div
                       key={timespan}
@@ -434,7 +430,7 @@ const MetricsTable = ({
                       ${
                         isSidebarOpen && timespan === "7d"
                           ? "hidden 2xl:block"
-                          : "block"
+                          : ""
                       }`}
                     >
                       {item.data.changes[timespan][0] === null ? (
@@ -446,7 +442,13 @@ const MetricsTable = ({
                           {(reversePerformer ? -1.0 : 1.0) *
                             item.data.changes[timespan][0] >=
                           0 ? (
-                            <span className="text-[#45AA6F] dark:text-[#4CFF7E]">
+                            <div
+                              className={`text-[#45AA6F] dark:text-[#4CFF7E] ${
+                                Math.abs(item.data.changes[timespan][0]) >= 10
+                                  ? "lg:text-[13px] lg:font-[550] 2xl:text-[14px] 2xl:font-[600]"
+                                  : ""
+                              }`}
+                            >
                               {reversePerformer ? "-" : "+"}
                               {(() => {
                                 const rawPercentage = Math.abs(
@@ -458,8 +460,12 @@ const MetricsTable = ({
                                 const percentage = parseFloat(rawPercentage);
 
                                 if (!isNaN(percentage)) {
+                                  // if (Math.abs(percentage) >= 1000)
+                                  //   return formatNumber(percentage);
+
                                   const formattedPercentage =
                                     percentage.toFixed(1);
+
                                   return formattedPercentage.length >= 4
                                     ? Math.floor(percentage)
                                     : formattedPercentage;
@@ -468,17 +474,34 @@ const MetricsTable = ({
                                 }
                               })()}
                               %
-                            </span>
+                            </div>
                           ) : (
-                            <span className="text-[#DD3408] dark:text-[#FF3838]">
+                            <div
+                              className={`text-[#DD3408] dark:text-[#FF3838] ${
+                                Math.abs(item.data.changes[timespan][0]) >= 10
+                                  ? "lg:text-[13px] lg:font-[550]  2xl:text-[14px] 2xl:font-[600]"
+                                  : ""
+                              }`}
+                            >
                               {reversePerformer ? "+" : "-"}
-                              {Math.abs(
-                                Math.round(
-                                  item.data.changes[timespan][0] * 1000,
-                                ) / 10,
-                              ).toFixed(1)}
+                              {
+                                // Math.abs(item.data.changes[timespan][0]) >= 10
+                                //   ? formatNumber(
+                                //       Math.abs(
+                                //         Math.round(
+                                //           item.data.changes[timespan][0] * 1000,
+                                //         ) / 10,
+                                //       ),
+                                //     )
+                                //   :
+                                Math.abs(
+                                  Math.round(
+                                    item.data.changes[timespan][0] * 1000,
+                                  ) / 10,
+                                ).toFixed(1)
+                              }
                               %
-                            </span>
+                            </div>
                           )}
                         </>
                       )}
