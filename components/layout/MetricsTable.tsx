@@ -84,7 +84,7 @@ const MetricsTable = ({
           data: data[chain],
           chain: AllChainsByKeys[chain],
           lastVal: lastVal,
-          barWidth: `${(lastVal / maxVal) * 100}%`,
+          barWidth: `${(Math.max(lastVal, 0) / maxVal) * 100}%`,
         };
       })
       .sort((a, b) => {

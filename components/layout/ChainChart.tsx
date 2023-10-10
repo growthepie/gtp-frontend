@@ -1282,6 +1282,11 @@ export default function ChainChart({
                   </div>
                 );
               }
+
+              const isAllZeroValues = data.metrics[key].daily.data.every(
+                (d) => d[1] === 0,
+              );
+
               return (
                 <div key={key} className="w-full h-fit relative">
                   <div className="w-full h-[176px] relative">
@@ -1378,6 +1383,10 @@ export default function ChainChart({
                           },
                           yAxis: {
                             ...options.yAxis,
+                            // if all values are 0, set the min to 0
+                            min: isAllZeroValues ? 0 : undefined,
+                            max: isAllZeroValues ? 1 : undefined,
+
                             labels: {
                               ...(options.yAxis as Highcharts.YAxisOptions)
                                 .labels,
