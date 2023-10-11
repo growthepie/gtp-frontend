@@ -50,9 +50,13 @@ export default function SidebarMenuGroup({
   }, [pathname]);
 
   useEffect(() => {
-    setIsOpen(
-      urlParts[0].toLowerCase() == item.name.toLowerCase() ? true : false,
-    );
+    if (urlParts[0].length === 0 && item.name === "Fundamentals") {
+      setIsOpen(true);
+    } else {
+      setIsOpen(
+        urlParts[0].toLowerCase() == item.name.toLowerCase() ? true : false,
+      );
+    }
   }, [item.name, urlParts]);
 
   const handleToggle = () => {

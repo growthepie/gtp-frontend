@@ -490,29 +490,52 @@ export default function LandingMetricsTable({
                       }
                     }}
                   >
-                    <div className="flex w-[22.5%] items-center space-x-4">
+                    <div className="w-full h-full absolute inset-0 rounded-full overflow-clip">
+                      <div className="relative w-full h-full">
+                        {item.chain.key !== "ethereum" && (
+                          <>
+                            <div
+                              className={`absolute left-[15px] right-[15px] lg:left-[18px] lg:right-[18px] bottom-[0px] h-[1px] lg:h-[2px] rounded-none font-semibold transition-width duration-300 `}
+                              style={{
+                                background:
+                                  item.chain.colors[theme ?? "dark"][1],
+                                width: `${
+                                  (data.chains[item.chain.key].data.data[
+                                    data.chains[item.chain.key].data.data
+                                      .length - 1
+                                  ][1] /
+                                    maxVal) *
+                                  100
+                                }%`,
+                              }}
+                            ></div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex w-[22.5%] items-center">
                       <div className="relative">
-                        {/* <div
-                          className={`w-9 h-9 rounded-full border-[5px] ${
+                        <div
+                          className={`absolute -left-[14.5px] -top-[14.5px] w-[29px] h-[29px] rounded-full border-[5px] ${
                             item.chain.border[theme ?? "dark"][1]
                           }`}
                         ></div>
-                        <Icon
+                        {/* <Icon
                           icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
                           className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5 h-5"
                           style={{
                             color: item.chain.colors[theme ?? "dark"][1],
                           }}
                         /> */}
-                        <Icon
+                        {/* <Icon
                           icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
                           className="w-[29px] h-[29px]"
                           style={{
                             color: item.chain.colors[theme ?? "dark"][1],
                           }}
-                        />
+                        /> */}
                       </div>
-                      <div className="break-inside-avoid text-xs md:text-sm lg:text-lg">
+                      <div className="break-inside-avoid text-xs md:text-sm lg:text-lg pl-8">
                         {item.chain.label}
                       </div>
                     </div>
