@@ -1532,10 +1532,10 @@ export default function OverviewMetrics({
                                           isCategoryHovered[categoryKey]
                                           ? isCategoryHovered[categoryKey] &&
                                             selectedCategory !== categoryKey
-                                            ? `py-[23px] -my-[0px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
+                                            ? `py-[23px] -my-[3px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
                                             : `py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
                                           : `z-[1]`
-                                        : "py-[23px] -my-[0px] z-[2] shadow-lg"
+                                        : "py-[23px] -my-[3px] z-[2] shadow-lg"
                                     } 
                                     ${
                                       categoryIndex ===
