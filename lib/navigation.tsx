@@ -365,7 +365,7 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "public-goods-network",
       },
       {
-        label: "Zora Network",
+        label: "Zora",
         page: {
           description: "",
         },

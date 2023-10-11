@@ -216,14 +216,14 @@ export const AllChains = [
     },
   },
   {
-    label: "Zora Network",
+    label: "Zora",
     icon: "/icons/Zora.png",
     key: "zora",
     urlKey: "zora",
     chainType: "L2",
     ecosystem: ["op-stack"],
     description:
-      "Zora Network is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in June 2023.",
+      "Zora is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in June 2023.",
     border: {
       light: ["border-[#2FB9F4]", "border-[#2FB9F4]"],
       dark: ["border-[#2FB9F4]", "border-[#2FB9F4]"],
