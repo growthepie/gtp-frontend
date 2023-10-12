@@ -15,6 +15,7 @@
     "@react-spring/web": "^9.7.2",
     "@splidejs/react-splide": "^0.7.12",
     "@vercel/analytics": "^1.0.1",
+    "airtable": "^0.12.2",
     "cookies-next": "^2.1.1",
     "framer-motion": "^10.3.2",
     "graphql": "^16.7.1",
