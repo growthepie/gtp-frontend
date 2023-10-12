@@ -80,6 +80,8 @@ const ContractUrls = {
   polygon_zkevm: "https://zkevm.polygonscan.com/address/",
   imx: "https://immutascan.io/address/",
   base: "https://basescan.org/address/",
+  zora: "https://explorer.zora.energy/address/",
+  gitcoin_pgn: "https://explorer.publicgoods.network/address/",
 };
 
 export default function OverviewMetrics({
@@ -1381,7 +1383,12 @@ export default function OverviewMetrics({
                         <>
                           <div
                             className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${
-                              ["arbitrum", "imx", "all_l2s"].includes(chainKey)
+                              [
+                                "arbitrum",
+                                "imx",
+                                "gitcoin_pgn",
+                                "all_l2s",
+                              ].includes(chainKey)
                                 ? "text-white dark:text-black"
                                 : "text-white"
                             } ${
@@ -1430,7 +1437,12 @@ export default function OverviewMetrics({
                       ) : (
                         <div
                           className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${
-                            ["arbitrum", "imx", "all_l2s"].includes(chainKey)
+                            [
+                              "arbitrum",
+                              "imx",
+                              "gitcoin_pgn",
+                              "all_l2s",
+                            ].includes(chainKey)
                               ? "text-white dark:text-black"
                               : "text-white"
                           } ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`}
@@ -1567,6 +1579,7 @@ export default function OverviewMetrics({
                                             [
                                               "arbitrum",
                                               "imx",
+                                              "gitcoin_pgn",
                                               "all_l2s",
                                             ].includes(chainKey)
                                               ? "text-black"
@@ -1575,6 +1588,7 @@ export default function OverviewMetrics({
                                         : [
                                             "arbitrum",
                                             "imx",
+                                            "gitcoin_pgn",
                                             "all_l2s",
                                           ].includes(chainKey)
                                         ? i > 4

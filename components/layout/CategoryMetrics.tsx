@@ -83,6 +83,8 @@ export default function CategoryMetrics({
     polygon_zkevm: "https://zkevm.polygonscan.com/address/",
     imx: "https://immutascan.io/address/",
     base: "https://basescan.org/address/",
+    zora: "https://explorer.zora.energy/address/",
+    gitcoin_pgn: "https://explorer.publicgoods.network/address/",
   };
   const { isSidebarOpen } = useUIContext();
   const [selectedMode, setSelectedMode] = useState("gas_fees_");
@@ -128,6 +130,8 @@ export default function CategoryMetrics({
     polygon_zkevm: true,
     imx: true,
     base: true,
+    zora: true,
+    gitcoin_pgn: true,
   });
 
   const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
@@ -466,6 +470,20 @@ export default function CategoryMetrics({
     const today = new Date().getTime();
 
     if (selectedCategory && data) return chartReturn;
+    return Object.keys(data["native_transfers"][dailyKey]).map((chain) => ({
+      id: [chain, "native_transfers", selectedType].join("_"),
+      name: chain,
+      unixKey: "unix",
+      dataKey: selectedType,
+      data: data["native_transfers"][dailyKey][chain]
+        .map((item, i) => {
+          // remap date keys so first is today and each day is subtracted from there
+          const date = today - i * 24 * 60 * 60 * 1000;
+          item[0] = date;
+          return item;
+        })
+        .reverse(),
+    }));
     return [
       {
         id: ["arbitrum", "native_transfers", selectedType].join("_"),

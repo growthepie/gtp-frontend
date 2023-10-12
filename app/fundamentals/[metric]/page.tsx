@@ -53,7 +53,7 @@ const Chain = ({ params }: { params: any }) => {
 
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "fundamentalsTimespan",
-    "180d",
+    "365d",
   );
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
