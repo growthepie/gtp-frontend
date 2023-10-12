@@ -123,6 +123,79 @@ export default function OverviewMetrics({
   // const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
   //   {},
   // );
+  // const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
+  //   {},
+  // );
+
+  //   import Airtable from "airtable";
+
+  // //connect to table
+  // const base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(
+  //   "appZWDvjvDmVnOici",
+  // );
+
+  // //state managers
+  // const [projectName, setProjectName] = useState("");
+  // const [contractName, setContractName] = useState("");
+
+  // //send data
+  //   function sendRow(contract: ContractInfo) {
+  //     let dataToInsert: ContractSubmission = {
+  //       address: contract.address,
+  //       origin_key: contract.chain,
+  //       gas_eth: contract.gas_fees_absolute_eth,
+  //       txcount: contract.txcount_absolute,
+  //       project_name: projectName,
+  //       contract_name: contractName,
+  //     };
+
+  //     base("tblU8WV0sxYUz6Kcp").create(dataToInsert, function (err, record) {
+  //       if (err) {
+  //         console.error("Error inserting record:", err);
+  //         return;
+  //       }
+
+  //       console.log("Inserted Record:", record);
+  //     });
+  //   }
+
+  //   <div
+  //     className={`border-forest-50 text-forest-50 border-[1px] rounded-b-full mx-auto h-[50px] w-[95%] items-center justify-center ${
+  //       optOpen ? "flex " : "hidden"
+  //     }`}
+  //   >
+  //     <div className="flex justify-between mx-auto w-[94%]">
+  //       <div className="flex gap-x-[170px]">
+  //         <input
+  //           type="text"
+  //           className="w-full px-3 py-[2px] bg-forest-900 border-forest-200 border-b-[1px] rounded-t-md shadow-sm focus:ring focus:ring-forest-300"
+  //           placeholder="Project Name"
+  //           onChange={(e) => setProjectName(e.target.value)}
+  //         />
+  //         <input
+  //           type="text"
+  //           className="w-full px-3 py-[2px] bg-forest-900 border-forest-200 border-b-[1px] rounded-t-md shadow-sm focus:ring focus:ring-forest-300"
+  //           placeholder="Contract Name"
+  //           onChange={(e) =>
+  //             setContractName(e.target.value)
+  //           }
+  //         />
+  //       </div>
+
+  //       <button
+  //         className="w-8 h-8 bg-forest-900 hover:bg-forest-700  rounded-full flex items-center justify-center"
+  //         onClick={() => {
+  //           sendRow(sortedContracts[key]);
+  //         }}
+  //       >
+  //         <Icon
+  //           icon="tabler:check"
+  //           className="w-4 h-4 text-forest-100 hover:text-forest-200"
+  //         />
+  //       </button>
+  //     </div>
+  //   </div>
+
   const isMobile = useMediaQuery("(max-width: 1023px)");
 
   const [sortedContracts, setSortedContracts] = useState<{
