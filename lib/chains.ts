@@ -195,7 +195,7 @@ export const AllChains = [
   },
   {
     label: "Public Goods Network",
-    icon: "/icons/Base.png",
+    icon: "/icons/PGN.png",
     key: "gitcoin_pgn",
     urlKey: "public-goods-network",
     chainType: "L2",
