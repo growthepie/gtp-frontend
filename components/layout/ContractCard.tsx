@@ -197,14 +197,13 @@ export default function ContractCard({
           </div>
         </div>
         <div className="w-full my-2.5">
-          <div className="flex items-center text-forest-600 dark:text-forest-400">
-            <div className="text-md font-bold">
-              {data[types.indexOf("project_name")]}
-            </div>
-            <Icon icon="feather:chevron-right" className="w-4 h-4" />
+          <div className="text-[30px] font-bold">
+            {data[types.indexOf("project_name")]}
           </div>
-          <div className="text-[30px] font-bold leading-snug">
-            {data[types.indexOf("name")]}
+          <div className="flex items-center text-forest-600 dark:text-forest-400">
+            <div className="text-md leading-snug">
+              {data[types.indexOf("name")]}
+            </div>
           </div>
         </div>
         <div className="flex flex-row justify-between items-center w-full">
