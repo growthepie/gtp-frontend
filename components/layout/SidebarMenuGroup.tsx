@@ -8,7 +8,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "./Tooltip";
 import { MasterURL } from "@/lib/urls";
 import { NavigationItem } from "@/lib/navigation";
 import { IS_PREVIEW } from "@/lib/helpers";
-import { navigationCategories } from "@/lib/navigation";
+import { navigationCategories, chainGroup } from "@/lib/navigation";
 
 type SidebarProps = {
   item: NavigationItem;
@@ -50,7 +50,10 @@ export default function SidebarMenuGroup({
   }, [pathname]);
 
   useEffect(() => {
-    if (urlParts[0].length === 0 && item.name === "Fundamentals") {
+    if (
+      urlParts[0].length === 0 &&
+      (item.name === "Fundamentals" || item.name === "Chains")
+    ) {
       setIsOpen(true);
     } else {
       setIsOpen(
@@ -161,7 +164,7 @@ export default function SidebarMenuGroup({
     );
 
   return (
-    <div key={item.key} className="flex flex-col" suppressHydrationWarning>
+    <div key={item.key} className="flex flex-col " suppressHydrationWarning>
       <Tooltip placement="right">
         <TooltipTrigger className="h-6 pl-0 md:pl-8 overflow-visible">
           <div
@@ -214,7 +217,7 @@ export default function SidebarMenuGroup({
       </Tooltip>
 
       <div
-        className={`flex flex-col overflow-hidden mb-8 w-full md:w-80 transition-all duration-300 ease-out ${
+        className={`flex flex-col overflow-hidden mb-8 w-full md:w-80 transition-all duration-300 ease-out  ${
           isOpen ? "h-auto mt-4" : "h-0 mt-0"
         }`}
       >
@@ -239,12 +242,64 @@ export default function SidebarMenuGroup({
                             }
                           />
                         )}
+                        {/* {chainGroup[option.category].icon && (
+                          <Icon
+                            icon={chainGroup[option.category].icon}
+                            className={
+                              item.name === "Chains"
+                                ? "h-4 w-4 mx-auto"
+                                : "h-[15px] w-[15px] mx-auto"
+                            }
+                          />
+                        )} */}
                       </div>
                       <div
                         className={`text-[10px] w-48 font-medium break-inside-auto text-left ml-12 uppercase`}
                       >
                         {sidebarOpen ? (
                           navigationCategories[option.category].label
+                        ) : (
+                          <span>&nbsp;</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+              {option.category &&
+                Object.keys(chainGroup).includes(option.category) &&
+                (i === 0 ||
+                  (i > 0 &&
+                    item.options[i - 1].category != option.category)) && (
+                  <div className="px-0 md:px-5 mt-[7px] mb-[2px] overflow-visible text-forest-800">
+                    <div className="flex items-center justify-items-center rounded-full md:rounded-l-full relative">
+                      <div className={`w-6 absolute left-[13px]`}>
+                        {chainGroup[option.category].icon && (
+                          <Icon
+                            icon={chainGroup[option.category].icon}
+                            className={
+                              item.name === "Chains"
+                                ? "h-4 w-4 mx-auto"
+                                : "h-[15px] w-[15px] mx-auto"
+                            }
+                          />
+                        )}
+                        {/* {chainGroup[option.category].icon && (
+                          <Icon
+                            icon={chainGroup[option.category].icon}
+                            className={
+                              item.name === "Chains"
+                                ? "h-4 w-4 mx-auto"
+                                : "h-[15px] w-[15px] mx-auto"
+                            }
+                          />
+                        )} */}
+                      </div>
+                      <div
+                        className={`text-[10px] w-48 font-medium break-inside-auto text-left ml-12 uppercase`}
+                      >
+                        {sidebarOpen ? (
+                          chainGroup[option.category].label
                         ) : (
                           <span>&nbsp;</span>
                         )}
@@ -277,14 +332,14 @@ export default function SidebarMenuGroup({
                           : "text-[#5A6462] group-hover:text-inherit"
                       }`}
                     >
-                      {["Chains", "Blockspace"].includes(item.name) && (
+                      {["Blockspace"].includes(item.name) && (
                         <Icon
                           icon={option.icon}
-                          className={
+                          className={`${
                             item.name === "Fundamentals"
                               ? "h-4 w-4 mx-auto"
                               : "h-[15px] w-[15px] mx-auto"
-                          }
+                          } `}
                         />
                       )}
                     </div>

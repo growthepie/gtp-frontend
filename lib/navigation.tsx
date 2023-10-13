@@ -52,6 +52,29 @@ export const navigationCategories = {
   },
 };
 
+export const chainGroup = {
+  "layer-1": {
+    label: "LAYER 1",
+    icon: "feather:clock",
+  },
+  "opstack-superchain": {
+    label: "OP STACK/SUPERCHAIN",
+    icon: "feather:clock",
+  },
+  "other-optimistic": {
+    label: "OTHER OPTIMISTIC",
+    icon: "feather:clock",
+  },
+  "zk-rollup": {
+    label: "ZK-ROLLUP",
+    icon: "feather:clock",
+  },
+  validium: {
+    label: "VALIDIUM",
+    icon: "feather:clock",
+  },
+};
+
 export const navigationItems: NavigationItem[] = [
   {
     name: "Home",
@@ -280,6 +303,7 @@ export const navigationItems: NavigationItem[] = [
     options: [
       {
         label: "Ethereum",
+        category: "layer-1",
         page: {
           description:
             "Ethereum serves as the base layer (Layer 1 or L1) for various Layer 2 (L2) scaling solutions, which aim to improve transaction throughput and reduce costs. As the foundational layer, Ethereum anchors these L2 networks, ensuring they inherit its robust security and trustlessness.",
@@ -290,18 +314,8 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "ethereum",
       },
       {
-        label: "Arbitrum",
-        page: {
-          description:
-            "Arbitrum One is developed by Offchain Labs and its mainnet launched in September 2021. It uses an optimistic rollup approach and is fully compatible with the Ethereum Virtual Machine (EVM), making it developer-friendly.",
-        },
-        icon: "gtp:arbitrum-logo-monochrome",
-        key: "arbitrum",
-        rootKey: "chainsArbitrum",
-        urlKey: "arbitrum",
-      },
-      {
         label: "Base",
+        category: "opstack-superchain",
         page: {
           description:
             "Base is an fully EVM compatible optimistic rollup built on the OP Stack. It is incubated inside of Coinbase. Public mainnet launch was on August 9th 2023.",
@@ -312,29 +326,8 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "base",
       },
       {
-        label: "Immutable X",
-        page: {
-          description:
-            "Immutable X is an optimized game-specific zk rollup. It is designed to mint, transfer, and trade tokens and NFTs at higher volumes and zero gas fees. It is not EVM compatible but its easy-to-use APIs and SDKs aim to make development for game devs as easy as possible. It launched in April 2021.",
-        },
-        icon: "gtp:immutable-x-logo-monochrome",
-        key: "imx",
-        rootKey: "chainsImmutableX",
-        urlKey: "immutable-x",
-      },
-      {
-        label: "Polygon zkEVM",
-        page: {
-          description:
-            "Polygon zkEVM uses zero-knowledge proofs to enable faster and cheaper transactions. It allows users to build and run EVM-compatible smart contracts, achieving up to 100x lower gas fees and up to 2,000x faster transaction speeds than the Ethereum mainnet. It's fully compatible with the Ethereum Virtual Machine, making it easy for developers to migrate their applications to the Polygon network. It launched in March 2023.",
-        },
-        icon: "gtp:polygon-zkevm-logo-monochrome",
-        key: "polygon_zkevm",
-        rootKey: "chainsPolygon",
-        urlKey: "polygon-zkevm",
-      },
-      {
         label: "OP Mainnet",
+        category: "opstack-superchain",
         page: {
           description:
             "OP Mainnet (formerly Optimism) uses an optimistic rollup approach, where transactions are assumed to be valid unless proven otherwise, and only invalid transactions are rolled back. OP Mainnet launched in August 2021, making it one of the first rollups. It is fully compatible with the Ethereum Virtual Machine (EVM), making it easy for developers to migrate their applications to the OP Mainnet network.",
@@ -345,17 +338,8 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "optimism",
       },
       {
-        label: "zkSync Era",
-        page: {
-          description: "",
-        },
-        icon: "gtp:zksync-era-logo-monochrome",
-        key: "zksync_era",
-        rootKey: "chainsOptimism",
-        urlKey: "zksync-era",
-      },
-      {
         label: "Public Goods Network",
+        category: "opstack-superchain",
         page: {
           description: "",
         },
@@ -366,6 +350,7 @@ export const navigationItems: NavigationItem[] = [
       },
       {
         label: "Zora",
+        category: "opstack-superchain",
         page: {
           description: "",
         },
@@ -373,6 +358,55 @@ export const navigationItems: NavigationItem[] = [
         key: "zora",
         rootKey: "chainsOptimism",
         urlKey: "zora",
+      },
+      {
+        label: "Arbitrum",
+        category: "other-optimistic",
+        page: {
+          description:
+            "Arbitrum One is developed by Offchain Labs and its mainnet launched in September 2021. It uses an optimistic rollup approach and is fully compatible with the Ethereum Virtual Machine (EVM), making it developer-friendly.",
+        },
+        icon: "gtp:arbitrum-logo-monochrome",
+        key: "arbitrum",
+        rootKey: "chainsArbitrum",
+        urlKey: "arbitrum",
+      },
+
+      {
+        label: "Polygon zkEVM",
+        category: "zk-rollup",
+        page: {
+          description:
+            "Polygon zkEVM uses zero-knowledge proofs to enable faster and cheaper transactions. It allows users to build and run EVM-compatible smart contracts, achieving up to 100x lower gas fees and up to 2,000x faster transaction speeds than the Ethereum mainnet. It's fully compatible with the Ethereum Virtual Machine, making it easy for developers to migrate their applications to the Polygon network. It launched in March 2023.",
+        },
+        icon: "gtp:polygon-zkevm-logo-monochrome",
+        key: "polygon_zkevm",
+        rootKey: "chainsPolygon",
+        urlKey: "polygon-zkevm",
+      },
+
+      {
+        label: "zkSync Era",
+        category: "zk-rollup",
+        page: {
+          description: "",
+        },
+        icon: "gtp:zksync-era-logo-monochrome",
+        key: "zksync_era",
+        rootKey: "chainsOptimism",
+        urlKey: "zksync-era",
+      },
+      {
+        label: "Immutable X",
+        category: "validium",
+        page: {
+          description:
+            "Immutable X is an optimized game-specific zk rollup. It is designed to mint, transfer, and trade tokens and NFTs at higher volumes and zero gas fees. It is not EVM compatible but its easy-to-use APIs and SDKs aim to make development for game devs as easy as possible. It launched in April 2021.",
+        },
+        icon: "gtp:immutable-x-logo-monochrome",
+        key: "imx",
+        rootKey: "chainsImmutableX",
+        urlKey: "immutable-x",
       },
 
       // {
