@@ -2,7 +2,7 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import { Providers } from "./providers";
 import CookieConsent from "@/components/layout/CookieConsent";
-import { Raleway, Inter } from "next/font/google";
+import { Raleway, Inter, Roboto_Mono } from "next/font/google";
 import Header from "@/components/layout/Header";
 import SidebarContainer from "@/components/layout/SidebarContainer";
 import Backgrounds from "@/components/layout/Backgrounds";
@@ -131,6 +131,12 @@ const inter = Inter({
   display: "swap",
 });
 
+const robotoMono = Roboto_Mono({
+  subsets: ["latin"],
+  variable: "--font-roboto-mono",
+  display: "swap",
+});
+
 export default function RootLayout({
   children,
 }: {
@@ -139,7 +145,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${raleway.variable} ${inter.variable}`}
+      className={`${raleway.variable} ${inter.variable} ${robotoMono.variable}`}
       suppressHydrationWarning
     >
       <Head />
@@ -154,13 +160,6 @@ export default function RootLayout({
               <SidebarContainer />
               <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
                 <div className="w-full relative min-h-full">
-                  {/* <div
-                    style={{
-                      pointerEvents: "none",
-                      background: `radial-gradient(75.11% 75.11% at 69.71% 24.89%, #1B2524 0%, #364240 100%) fixed`,
-                    }}
-                    className="absolute z-0 mouse-events-none overflow-hidden w-full h-full hidden dark:block"
-                  ></div> */}
                   <Backgrounds />
                   <Header />
                   <main className="flex-1 w-full mx-auto z-10 mb-[165px]">
