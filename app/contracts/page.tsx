@@ -1,11 +1,61 @@
 "use client";
-import { useMemo, useCallback } from "react";
-import { ContractsURL } from "../../lib/urls";
+import {
+  useMemo,
+  useCallback,
+  useReducer,
+  useState,
+  useRef,
+  useEffect,
+} from "react";
+import { ContractsURL, MasterURL } from "../../lib/urls";
 import { Contract } from "../../types/api/ContractsResponse";
 import { ContractsResponse } from "../../types/api/ContractsResponse";
+import { MasterResponse } from "../../types/api/MasterResponse";
 import ShowLoading from "@/components/layout/ShowLoading";
 import useSWR from "swr";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  Row,
+  SortingState,
+  useReactTable,
+} from "@tanstack/react-table";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import Icon from "@/components/layout/Icon";
+import { AllChainsByKeys } from "@/lib/chains";
+import Link from "next/link";
+// import { theme as customTheme } from "../../tailwind.config";
+
+// const columnHelper = createColumnHelper<Contract>();
+
+// const columns = [
+//   columnHelper.accessor("address", {
+//     cell: (info) => info.getValue(),
+//     footer: (info) => info.column.id,
+//   }),
+//   columnHelper.accessor((row) => row.origin_key, {
+//     id: "chain",
+//     cell: (info) => <i>{info.getValue()}</i>,
+//     header: () => <span>Chain</span>,
+//     footer: (info) => info.column.id,
+//   }),
+//   columnHelper.accessor("project_name", {
+//     header: () => "Project Name",
+//     cell: (info) => info.renderValue(),
+//     footer: (info) => info.column.id,
+//   }),
+//   columnHelper.accessor("contract_name", {
+//     header: () => <span>Visits</span>,
+//     footer: (info) => info.column.id,
+//   }),
+//   columnHelper.accessor("sub_category_key", {
+//     header: "Status",
+//     footer: (info) => info.column.id,
+//   }),
+// ];
 
 export default function ContractsPage({ params }: { params: any }) {
   const {
@@ -13,7 +63,14 @@ export default function ContractsPage({ params }: { params: any }) {
     error: contractsError,
     isLoading: contractsLoading,
     isValidating: contractsValidating,
-  } = useSWR<ContractsResponse>(ContractsURL);
+  } = useSWR<Contract[]>(ContractsURL);
+
+  const {
+    data: master,
+    error: masterError,
+    isLoading: masterLoading,
+    isValidating: masterValidating,
+  } = useSWR<MasterResponse>(MasterURL);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -32,170 +89,453 @@ export default function ContractsPage({ params }: { params: any }) {
   );
 
   const address = searchParams.get("address");
-  const page = searchParams.get("page");
+  // const page = searchParams.get("page");
   const chain = searchParams.get("chain");
+  const projectName = searchParams.get("project_name");
+  const contractName = searchParams.get("contract_name");
+  const category = searchParams.get("category");
 
-  const pageSize = 10;
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [data, setData] = useState(contracts ?? []);
 
-  const queryPage = page ? parseInt(page) : 1;
+  const categories = useMemo(() => {
+    if (!category) return [];
 
-  const queryAddress = address ? address.toString() : "";
+    return category.split(",");
+  }, [category]);
 
-  const queryChain = chain ? chain.toString() : "all";
-
-  const results = useMemo(() => {
-    if (!contracts) return [];
-    if (address && chain && chain !== "all") {
+  const filterContracts = useCallback(
+    (contracts: Contract[]) => {
+      if (!contracts) return [];
       return contracts.filter((c) => {
-        return (
-          c.address.toLowerCase().includes(address.toLowerCase()) &&
-          c.origin_key.toLowerCase().includes(chain.toLowerCase())
-        );
+        if (address && !c.address.toLowerCase().includes(address.toLowerCase()))
+          return false;
+        if (
+          chain &&
+          chain != "all" &&
+          !c.origin_key.toLowerCase().includes(chain.toLowerCase())
+        )
+          return false;
+        if (
+          projectName &&
+          (!c.project_name ||
+            !c.project_name.toLowerCase().includes(projectName.toLowerCase()))
+        )
+          return false;
+        if (
+          contractName &&
+          (!c.contract_name ||
+            !c.contract_name.toLowerCase().includes(contractName.toLowerCase()))
+        )
+          return false;
+        if (
+          categories.length > 0 &&
+          (!c.sub_category_key ||
+            !categories.includes(c.sub_category_key.toLowerCase()))
+        )
+          return false;
+        return true;
       });
-    }
-    if (chain && chain !== "all") {
-      return contracts.filter((c) => {
-        return c.origin_key.toLowerCase().includes(chain.toLowerCase());
-      });
-    }
-    if (address) {
-      return contracts.filter((c) => {
-        return c.address.toLowerCase().includes(address.toLowerCase());
-      });
-    }
-    return contracts;
-  }, [contracts, address, chain]);
+    },
+    [address, chain, projectName, contractName, categories],
+  );
 
-  interface Contract {
-    address: string;
-    contract_name: string;
-    project_name: string;
-    sub_category_key: string;
-    origin_key: string;
-  }
+  useEffect(() => {
+    if (contracts && contracts.length > 0) {
+      setData(filterContracts(contracts));
+    }
+  }, [contracts, filterContracts]);
+
+  const getSubcategoryLabel = useCallback(
+    (sub_category_key: string) => {
+      if (!master) return sub_category_key;
+      return sub_category_key
+        ? master.blockspace_categories.sub_categories[sub_category_key]
+        : sub_category_key;
+    },
+    [master],
+  );
+
+  const getMainCategoryLabel = useCallback(
+    (sub_category_key: string) => {
+      if (!master) return sub_category_key;
+
+      const main_category_key = Object.keys(
+        master.blockspace_categories.mapping,
+      ).find((main_category) => {
+        if (
+          master.blockspace_categories.mapping[main_category].includes(
+            sub_category_key,
+          )
+        )
+          return main_category;
+      });
+
+      return main_category_key
+        ? master.blockspace_categories.main_categories[main_category_key]
+        : sub_category_key;
+    },
+    [master],
+  );
+
+  const columns = useMemo<ColumnDef<Contract>[]>(
+    () => [
+      {
+        accessorKey: "origin_key",
+        header: "Chain",
+        size: 15,
+        cell: (info: any) => {
+          return (
+            <div className="flex space-x-2 w-full items-center overflow-hidden whitespace-nowrap text-ellipsis">
+              <Icon
+                icon={`gtp:${info
+                  .getValue()
+                  .replace("_", "-")}-logo-monochrome`}
+                style={{
+                  color: AllChainsByKeys[info.getValue()].colors["dark"][1],
+                }}
+              />
+              <div>{AllChainsByKeys[info.getValue()]?.label}</div>
+            </div>
+          );
+        },
+        meta: {
+          headerStyle: { textAlign: "left" },
+        },
+      },
+      {
+        header: "Address",
+        accessorKey: "address",
+        cell: (info: any) => {
+          return (
+            <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis">
+              {info.getValue()}
+            </div>
+          );
+        },
+        size: 35,
+        meta: {
+          headerStyle: { textAlign: "left" },
+        },
+        footer: (info) => info.column.id,
+      },
+
+      {
+        accessorKey: "project_name",
+        header: "Project Name",
+        cell: (info: any) => {
+          return (
+            <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis">
+              {info.getValue()}
+            </div>
+          );
+        },
+        size: 15,
+        meta: {
+          headerStyle: { textAlign: "left" },
+        },
+      },
+      {
+        accessorKey: "contract_name",
+        header: "Contract Name",
+        cell: (info: any) => {
+          return (
+            <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis">
+              {info.getValue()}
+            </div>
+          );
+        },
+        size: 15,
+        meta: {
+          headerStyle: { textAlign: "left" },
+        },
+      },
+      // {
+      //   id: "main_category",
+      //   accessorKey: "sub_category_key",
+      //   header: "Main Category",
+      //   cell: (info: any) => {
+      //     return (
+      //       <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis">
+      //         {getMainCategoryLabel(info.getValue())}
+      //       </div>
+      //     );
+      //   },
+      //   size: 40,
+      //   meta: {
+      //     style: { textAlign: "left" },
+      //   },
+      // },
+      {
+        id: "sub_category",
+        accessorKey: "sub_category_key",
+        header: "Category > Subcategory",
+        cell: (info: any) => {
+          return (
+            <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis">
+              {getMainCategoryLabel(info.getValue())} {" > "}{" "}
+              {getSubcategoryLabel(info.getValue())}
+            </div>
+          );
+        },
+        size: 20,
+        meta: {
+          style: { textAlign: "left" },
+        },
+      },
+    ],
+    [getMainCategoryLabel, getSubcategoryLabel],
+  );
+
+  const table = useReactTable<Contract>({
+    data,
+    columns,
+    state: {
+      sorting,
+    },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
+
+  const { rows } = table.getRowModel();
+
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const virtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 34,
+    overscan: 20,
+  });
+
+  const exportCSV = useCallback(() => {
+    const headers = Object.keys(data[0]);
+
+    const rows = [
+      headers,
+      ...data.map((row) => {
+        return headers.map((fieldName) => {
+          return row[fieldName];
+        });
+      }),
+    ];
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," + rows.map((e) => e.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+
+    return encodedUri;
+  }, [data]);
 
   return (
-    <>
+    <div className="flex flex-col items-center justify-center w-full h-full pt-4">
       <ShowLoading
-        dataLoading={[contractsLoading]}
-        dataValidating={[contractsValidating]}
+        dataLoading={[contractsLoading, masterLoading]}
+        dataValidating={[contractsValidating, masterValidating]}
       />
-
-      <table className="table-fixed w-full mt-4">
-        <thead>
-          <tr>
-            <th className="pl-8 text-left w-[30%]">Address</th>
-            <th className="pl-2 text-left w-[20%]">Contract Name</th>
-            <th className="pl-2 text-left w-[20%]">Project Name</th>
-            <th className="pl-2 text-left w-[20%]">Subcategory Key</th>
-            <th className="pl-2 pr-8 text-left w-[10%]">Chain</th>
-          </tr>
-        </thead>
-        <tbody>
-          {contracts &&
-            results
-              .slice(
-                (queryPage - 1) * pageSize,
-                (queryPage - 1) * pageSize + pageSize,
-              )
-              .map((contract) => (
-                <tr key={contract.address}>
-                  <td className="px-0 pb-[5px] w-[30%]">
-                    <div className="p-2 pl-8 rounded-l-full border-l border-t border-b border-forest-400 h-[42px] block w-full whitespace-nowrap overflow-hidden text-ellipsis">
-                      {contract.address}
-                    </div>
-                  </td>
-                  <td className="px-0 pb-[5px] w-[20%]">
-                    <div className="p-2 border-t border-b border-forest-400 h-[42px] block w-full whitespace-nowrap overflow-hidden text-ellipsis">
-                      {contract.contract_name}
-                    </div>
-                  </td>
-                  <td className="px-0 pb-[5px] w-[20%]">
-                    <div className="p-2 border-t border-b border-forest-400 h-[42px] block w-full whitespace-nowrap overflow-hidden text-ellipsis">
-                      {contract.project_name}
-                    </div>
-                  </td>
-                  <td className="px-0 pb-[5px] w-[20%]">
-                    <div className="p-2 border-t border-b border-forest-400 h-[42px]">
-                      {contract.sub_category_key}
-                    </div>
-                  </td>
-                  <td className="px-0 pb-[5px] w-[10%]">
-                    <div className="p-2 pr-8 rounded-r-full border-r border-t border-b border-forest-400 h-[42px]">
-                      {contract.origin_key}
-                    </div>
-                  </td>
+      <style>
+        {/* rounded table rows */}
+        {`
+          table {
+              border-collapse:separate;
+              border-spacing:0 5px;
+              margin-top:-5px;
+          }
+          
+          td {
+              border-color: var(--color-forest-700);
+              border-width:1px;
+              border-style:solid none;
+          }
+          
+          td:first-child {
+              border-left-style:solid;
+              border-top-left-radius:999px;
+              border-bottom-left-radius:999px;
+          }
+          
+          td:last-child {
+              border-right-style:solid;
+              border-bottom-right-radius:999px;
+              border-top-right-radius:999px;
+          }
+        `}
+      </style>
+      <div className="pr-4">
+        <table className="table-fixed w-full">
+          {/* <thead className="sticky top-0 z-50"> */}
+          <thead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map((header, i) => {
+                  return (
+                    <th
+                      key={header.id}
+                      colSpan={header.colSpan}
+                      style={{
+                        width: header.getSize(),
+                        paddingLeft: i === 0 ? "20px" : 0,
+                        ...(header.column.columnDef.meta as any)?.headerStyle,
+                      }}
+                      className={`${
+                        i === 0
+                          ? "sticky top-0 z-20"
+                          : "sticky top-0 left-0 z-30"
+                      } whitespace-nowrap`}
+                    >
+                      {header.isPlaceholder ? null : (
+                        <div
+                          {...{
+                            className: header.column.getCanSort()
+                              ? "cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold"
+                              : "",
+                            onClick: header.column.getToggleSortingHandler(),
+                          }}
+                        >
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                          {{
+                            asc: (
+                              <Icon
+                                icon="feather:arrow-up"
+                                className="w-3 h-3"
+                              />
+                            ),
+                            desc: (
+                              <Icon
+                                icon="feather:arrow-down"
+                                className="w-3 h-3"
+                              />
+                            ),
+                          }[header.column.getIsSorted() as string] ?? null}
+                        </div>
+                      )}
+                    </th>
+                  );
+                })}
+              </tr>
+            ))}
+          </thead>
+        </table>
+      </div>
+      <div
+        ref={parentRef}
+        className="h-[500px] overflow-auto pr-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller"
+      >
+        <div
+          style={{ height: `${virtualizer.getTotalSize()}px` }}
+          className="w-full"
+        >
+          {/* <div className="absolute top-10 left-0 right-0 h-5 z-10 bg-white dark:bg-forest-1000" /> */}
+          <table className="table-fixed w-full">
+            {/* <thead className="sticky top-0 z-50"> */}
+            <thead>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header, i) => {
+                    return (
+                      <th
+                        key={header.id}
+                        colSpan={header.colSpan}
+                        style={{
+                          height: "0px",
+                          overflow: "hidden",
+                          width: header.getSize(),
+                          paddingLeft: i === 0 ? "20px" : 0,
+                          ...(header.column.columnDef.meta as any)?.headerStyle,
+                        }}
+                        className={`${
+                          // i === 0
+                          //   ? "sticky top-0 z-20"
+                          //   : "sticky top-0 left-0 z-30"
+                          ""
+                        } bg-white dark:bg-forest-1000 whitespace-nowrap`}
+                      >
+                        {header.isPlaceholder ? null : (
+                          <div
+                            {...{
+                              className: header.column.getCanSort()
+                                ? "cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold h-0"
+                                : "",
+                              onClick: header.column.getToggleSortingHandler(),
+                            }}
+                          >
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                            {{
+                              asc: (
+                                <Icon
+                                  icon="feather:arrow-up"
+                                  className="w-3 h-3"
+                                />
+                              ),
+                              desc: (
+                                <Icon
+                                  icon="feather:arrow-down"
+                                  className="w-3 h-3"
+                                />
+                              ),
+                            }[header.column.getIsSorted() as string] ?? null}
+                          </div>
+                        )}
+                      </th>
+                    );
+                  })}
                 </tr>
               ))}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colSpan={5}>
-              <div className="flex justify-center text-xs text-gray-400">
-                {contracts && results.length > 0
-                  ? `Showing ${queryPage * pageSize - pageSize + 1} to ${
-                      queryPage * pageSize
-                    } of ${results.length} results`
-                  : "No results found for search"}
-              </div>
-              <div className="flex justify-center">
-                <div className="flex rounded-md mt-2">
-                  {contracts && (
-                    <div className="flex items-center">
-                      <button
-                        disabled={queryPage <= 1}
-                        className="px-3 py-2 border border-gray-300 rounded-l-md bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                        onClick={() => {
-                          if (queryPage > 1) {
-                            router.push(
-                              pathname +
-                                "?" +
-                                createQueryString(
-                                  "page",
-                                  (queryPage - 1).toString(),
-                                ),
-                              { scroll: false },
-                            );
-                          }
-                        }}
-                      >
-                        Previous
-                      </button>
-                      <div className="px-3 py-2 border-t border-b border-gray-300 bg-white text-sm font-medium text-gray-700">
-                        Page{" "}
-                        {results.length > 0
-                          ? `${queryPage} of ${Math.ceil(
-                              results.length / pageSize,
-                            )}`
-                          : "0 of 0"}
-                      </div>
-                      <button
-                        disabled={queryPage >= results.length / pageSize}
-                        className="px-3 py-2 border border-gray-300 rounded-r-md bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                        onClick={() => {
-                          if (queryPage < results.length / pageSize) {
-                            router.push(
-                              pathname +
-                                "?" +
-                                createQueryString(
-                                  "page",
-                                  (queryPage + 1).toString(),
-                                ),
-                              { scroll: false },
-                            );
-                          }
-                        }}
-                      >
-                        Next
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </td>
-          </tr>
-        </tfoot>
-      </table>
-    </>
+            </thead>
+            <tbody className="text-xs">
+              {master &&
+                virtualizer.getVirtualItems().map((virtualRow, index) => {
+                  const row = rows[virtualRow.index] as Row<Contract>;
+                  return (
+                    <tr
+                      key={row.id}
+                      style={{
+                        height: `${virtualRow.size}px`,
+                        transform: `translateY(${
+                          virtualRow.start - index * virtualRow.size
+                        }px)`,
+                      }}
+                    >
+                      {row.getVisibleCells().map((cell, i) => {
+                        return (
+                          <td
+                            key={cell.id}
+                            style={{ paddingLeft: i === 0 ? "20px" : 0 }}
+                            className={i === 0 ? "sticky left-0 z-10" : ""}
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div className="flex justify-end w-full mt-4">
+        <button
+          className="flex items-center gap-x-2 underline text-sm"
+          onClick={() => {
+            window.open(exportCSV());
+          }}
+        >
+          <Icon icon="feather:download" className="w-5 h-5" />
+          Export CSV
+        </button>
+      </div>
+    </div>
   );
 }
