@@ -16,6 +16,7 @@ import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import { navigationItems } from "@/lib/navigation";
 import Container from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
+import Image from "next/image";
 
 const Chain = ({ params }: { params: any }) => {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -84,26 +85,23 @@ const Chain = ({ params }: { params: any }) => {
         dataValidating={[metricValidating]}
       />
       <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
-        <div className="flex justify-between items-start w-full">
-          <div className="flex items-start">
-            <Heading
-              className="text-[30px] leading-snug md:text-[36px] mb-[15px] md:mb-[30px]"
-              as="h1"
-            >
+        <div className="flex justify-between items-start w-full mb-[15px]">
+          <div className="flex items-center ">
+            <Image
+              src="/GTP-Fundamentals.svg"
+              alt="GTP Chain"
+              className="object-contain w-[32px] h-[32px] mr-[8px]"
+              height={36}
+              width={36}
+            />
+            <Heading className="text-[36px] leading-snug " as="h1">
               {pageData.title}
             </Heading>
           </div>
         </div>
         <Subheading
-          className="text-[16px]"
-          leftIcon={
-            pageData.icon && (
-              <div className="self-start md:self-center pr-[7px] pl-[0px] pt-0.5 md:pt-0 md:pr-[10px] md:pl-[30px]">
-                <Icon icon={pageData.icon} className="w-5 h-5 md:w-6 md:h-6" />
-              </div>
-            )
-          }
-          iconContainerClassName="items-center mb-[22px] md:mb-[32px] relative"
+          className="text-[16px] mb-[30px] w-[99.5%] mx-auto"
+          iconContainerClassName="items-center mb-[15px] md:mb-[32px] relative"
         >
           {pageData.description.includes("L2Beat.com.") ? (
             <div>

@@ -73,40 +73,30 @@ const ChainOverview = () => {
   return (
     <>
       <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
-        <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] md:mb-[30px]">
-          <Heading className="text-[30px] leading-snug md:text-[36px]" as="h1">
-            Chain Overview
-          </Heading>
+        <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] ">
+          <div className="flex gap-x-[8px] items-center">
+            <Image
+              src="/GTP-Package.svg"
+              alt="GTP Chain"
+              className="object-contain w-[32px] h-[32px] "
+              height={36}
+              width={36}
+            />
+            <Heading
+              className="text-[30px] leading-snug md:text-[36px]"
+              as="h1"
+            >
+              Chain Overview
+            </Heading>
+          </div>
           <EcosystemDropdown />
         </div>
-        <Subheading
-          className="text-[16px]"
-          leftIcon={
-            pageData.icon && (
-              <div className="self-start md:self-center pr-[7px] pl-[0px] pt-0.5 md:pt-0 md:pr-[10px] md:pl-[0px]">
-                <Icon
-                  icon={pageData.icon}
-                  className={`relative  w-5 h-5 md:w-6 md:h-6 ${
-                    isSidebarOpen
-                      ? "bottom-8"
-                      : "bottom-[0px] xs:bottom-[0px] sm:bottom-0 md:bottom-[70px] lg:bottom-6 "
-                  }`}
-                />
-              </div>
-            )
-          }
-          iconContainerClassName="items-center mb-[22px] md:mb-[32px] relative"
-        >
-          <p>{pageData.description}</p>
-          {pageData.note && (
-            <div className="absolute text-xs">
-              <span className="font-semibold text-forest-200 dark:text-forest-400">
-                Note:{" "}
-              </span>
-              {pageData.note}
-            </div>
-          )}
-        </Subheading>
+        <div className="flex items-center w-[99%] mx-auto  mb-[30px]">
+          <div className="text-[16px]">
+            An overview of chains high-level blockspace usage. All expressed in
+            share of chain usage.
+          </div>
+        </div>
       </Container>
 
       {usageData && (

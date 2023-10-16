@@ -31,27 +31,27 @@ const CategoryComparison = () => {
   return (
     <>
       <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
-        <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] md:mb-[30px]">
-          <Heading className="text-[30px] leading-snug md:text-[36px]" as="h1">
-            Category Comparison
-          </Heading>
+        <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] ">
+          <div className="flex items-center gap-x-[8px]">
+            <Image
+              src="/GTP-Package.svg"
+              alt="GTP Chain"
+              className="object-contain w-[32px] h-[32px] "
+              height={36}
+              width={36}
+            />
+            <Heading
+              className="text-[30px] leading-snug md:text-[36px]"
+              as="h1"
+            >
+              Category Comparison
+            </Heading>
+          </div>
           <EcosystemDropdown />
         </div>
-        <div className="flex items-center w-[92%]  mb-[30px]">
-          <Image
-            src="/GTP-Package.svg"
-            alt="GTP Chain"
-            className="object-contain w-[32px] h-[32px] mr-2 relative bottom-[100px] xs:bottom-[60px] sm:bottom-4 md:bottom-6 lg:bottom-4"
-            height={32}
-            width={32}
-          />
+        <div className="flex items-center w-[99%] mx-auto  mb-[30px]">
           <div className="text-[16px]">
-            We measure the gas fees spent and the number of transactions sent to
-            smart contracts. The smart contracts are mapped to distinct
-            categories. The chart below allows to compare the usage of these
-            categories across different chains. Each category is made up of
-            multiple subcategories. You can click on the category dropdown in
-            order to see and filter its subcategories.
+            How are certain blockspace categories used on different chains?
           </div>
         </div>
       </Container>
