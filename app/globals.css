@@ -79,6 +79,7 @@
 
 .splide__arrow {
   @apply !opacity-90;
+  @apply transition-opacity duration-200;
 }
 
 .splide__arrow:hover {
@@ -86,7 +87,7 @@
 }
 
 .splide__arrow:disabled {
-  @apply !opacity-50;
+  @apply !opacity-0;
 }
 
 .fade-edge-div {

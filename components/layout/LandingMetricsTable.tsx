@@ -103,8 +103,8 @@ export default function LandingMetricsTable({
       .filter((row) => row.chain.key != "multiple")
       .map((data) => ({
         ...data,
-        y: (height += isMobile ? 44 : 59) - (isMobile ? 44 : 59),
-        height: isMobile ? 44 : 59,
+        y: (height += isMobile ? 44 : 50) - (isMobile ? 44 : 50),
+        height: isMobile ? 44 : 50,
       })),
     {
       key: (d) => d.chain.key,
@@ -137,7 +137,7 @@ export default function LandingMetricsTable({
 
   return (
     <>
-      <div className="flex flex-col mt-3 lg:mt-32 space-y-[5px] overflow-y-hidden overflow-x-scroll lg:overflow-x-hidden z-100 w-full p-0 pt-3 pb-2 md:pb-0 md:px-2 md:pt-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
+      <div className="flex flex-col mt-3 lg:mt-32 space-y-[5px] overflow-y-hidden overflow-x-scroll lg:overflow-x-hidden z-100 w-full p-0 pt-3 pb-2 md:pb-0 md:px-0 md:pt-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
         <div
           className={`min-w-[820px] md:min-w-[850px] pr-[20px] md:pr-[50px] w-full ${
             interactable ? "pointer-events-auto" : "pointer-events-none"
@@ -168,7 +168,7 @@ export default function LandingMetricsTable({
                   >
                     <div
                       key={item.chain.key}
-                      className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[10px] lg:p-3 lg:py-[11.5px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${
+                      className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[10px] lg:p-3 lg:py-[8px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${
                         index > 0 ? "-mt-[1px]" : ""
                       } ${
                         selectedChains.includes(item.chain.key)
@@ -475,7 +475,7 @@ export default function LandingMetricsTable({
                 .map((item, index) => (
                   <div
                     key={item.chain.key}
-                    className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[10px] lg:p-3 lg:py-[11.5px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${
+                    className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[10px] lg:p-3 lg:py-[8px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${
                       selectedChains.includes(item.chain.key)
                         ? " hover:bg-forest-500/10"
                         : "opacity-50 grayscale hover:opacity-70 hover:grayscale-20 transition-all duration-100"
