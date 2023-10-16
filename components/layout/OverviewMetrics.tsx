@@ -1986,8 +1986,8 @@ export default function OverviewMetrics({
                 />
               </button>
             </div>
-            <div className="flex w-[43%]">
-              <button className="flex w-[40%] -ml-2">Category</button>
+            <div className="flex w-[37%] ">
+              <button className="flex w-[46%] -ml-2 ">Category</button>
               <button
                 className="flex gap-x-1"
                 onClick={() => {
@@ -2016,9 +2016,9 @@ export default function OverviewMetrics({
                 />
               </button>
             </div>
-            <div className="flex w-[23%]">
+            <div className="flex w-[29%]">
               <button
-                className="flex gap-x-1 w-[38%] justify-end whitespace-nowrap -ml-2.5"
+                className="flex gap-x-1 w-[49%] justify-end whitespace-nowrap "
                 onClick={() => {
                   if (contractCategory !== "value") {
                     setSortOrder(true);
@@ -2048,7 +2048,7 @@ export default function OverviewMetrics({
                 />
               </button>
 
-              <div className="flex w-[57%] justify-end -ml-2">
+              <div className="flex w-[51%] justify-end -ml-2 ">
                 Block Explorer
               </div>
             </div>
