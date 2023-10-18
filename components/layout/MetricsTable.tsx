@@ -7,6 +7,7 @@ import { Icon } from "@iconify/react";
 import { useTransition, animated } from "@react-spring/web";
 import { useUIContext } from "@/contexts/UIContext";
 import { navigationItems } from "@/lib/navigation";
+import { CorporateContactJsonLd } from "next-seo";
 
 const MetricsTable = ({
   data,
@@ -43,6 +44,38 @@ const MetricsTable = ({
 
   const { isSidebarOpen } = useUIContext();
 
+  const dataKey = useMemo(() => {
+    if (!data) return;
+
+    const sampleChainDataTypes = data[Object.keys(data)[0]].daily.types;
+
+    if (sampleChainDataTypes.includes("usd")) {
+      if (showUsd) {
+        return sampleChainDataTypes.indexOf("usd");
+      } else {
+        return sampleChainDataTypes.indexOf("eth");
+      }
+    } else {
+      return 1;
+    }
+  }, [data, showUsd]);
+
+  const changesKey = useMemo(() => {
+    if (!data) return;
+
+    const sampleChainChangesTypes = data[Object.keys(data)[0]].changes.types;
+
+    if (sampleChainChangesTypes.includes("usd")) {
+      if (showUsd) {
+        return sampleChainChangesTypes.indexOf("usd");
+      } else {
+        return sampleChainChangesTypes.indexOf("eth");
+      }
+    } else {
+      return 0;
+    }
+  }, [data, showUsd]);
+
   // set maxVal
   useEffect(() => {
     if (!data) return;
@@ -53,16 +86,12 @@ const MetricsTable = ({
           .filter((chain) => chain !== "ethereum")
           .map((chain) => {
             return data[chain].daily.data[data[chain].daily.data.length - 1][
-              data[chain].daily.types.length > 2
-                ? showUsd && data[chain].daily.types.includes("usd")
-                  ? data[chain].daily.types.indexOf("usd")
-                  : data[chain].daily.types.indexOf("eth")
-                : 1
+              dataKey
             ];
           }),
       ),
     );
-  }, [data, showUsd]);
+  }, [data, dataKey, showUsd]);
 
   const rows = useCallback(() => {
     if (!data || maxVal === null) return [];
@@ -73,13 +102,7 @@ const MetricsTable = ({
       )
       .map((chain: any) => {
         const lastVal =
-          data[chain].daily.data[data[chain].daily.data.length - 1][
-            data[chain].daily.types.length > 2
-              ? showUsd && data[chain].daily.types.includes("usd")
-                ? data[chain].daily.types.indexOf("usd")
-                : data[chain].daily.types.indexOf("eth")
-              : 1
-          ];
+          data[chain].daily.data[data[chain].daily.data.length - 1][dataKey];
         return {
           data: data[chain],
           chain: AllChainsByKeys[chain],
@@ -123,7 +146,7 @@ const MetricsTable = ({
           }
         }
       });
-  }, [data, maxVal, showUsd, reversePerformer, selectedChains]);
+  }, [data, maxVal, dataKey, reversePerformer, selectedChains]);
 
   let height = 0;
   const transitions = useTransition(
@@ -433,18 +456,20 @@ const MetricsTable = ({
                           : ""
                       }`}
                     >
-                      {item.data.changes[timespan][0] === null ? (
+                      {item.data.changes[timespan][changesKey] === null ? (
                         <span className="text-gray-500 text-center mx-4 inline-block">
                           —
                         </span>
                       ) : (
                         <>
                           {(reversePerformer ? -1.0 : 1.0) *
-                            item.data.changes[timespan][0] >=
+                            item.data.changes[timespan][changesKey] >=
                           0 ? (
                             <div
                               className={`text-[#45AA6F] dark:text-[#4CFF7E] ${
-                                Math.abs(item.data.changes[timespan][0]) >= 10
+                                Math.abs(
+                                  item.data.changes[timespan][changesKey],
+                                ) >= 10
                                   ? "lg:text-[13px] lg:font-[550] 2xl:text-[14px] 2xl:font-[600]"
                                   : ""
                               }`}
@@ -453,7 +478,8 @@ const MetricsTable = ({
                               {(() => {
                                 const rawPercentage = Math.abs(
                                   Math.round(
-                                    item.data.changes[timespan][0] * 1000,
+                                    item.data.changes[timespan][changesKey] *
+                                      1000,
                                   ) / 10,
                                 ).toFixed(1);
 
@@ -478,7 +504,9 @@ const MetricsTable = ({
                           ) : (
                             <div
                               className={`text-[#DD3408] dark:text-[#FF3838] ${
-                                Math.abs(item.data.changes[timespan][0]) >= 10
+                                Math.abs(
+                                  item.data.changes[timespan][changesKey],
+                                ) >= 10
                                   ? "lg:text-[13px] lg:font-[550]  2xl:text-[14px] 2xl:font-[600]"
                                   : ""
                               }`}
@@ -496,7 +524,8 @@ const MetricsTable = ({
                                 //   :
                                 Math.abs(
                                   Math.round(
-                                    item.data.changes[timespan][0] * 1000,
+                                    item.data.changes[timespan][changesKey] *
+                                      1000,
                                   ) / 10,
                                 ).toFixed(1)
                               }
