@@ -2109,8 +2109,6 @@ export default function OverviewMetrics({
                               //   formData.entries(),
                               // );
 
-                              console.log(e);
-
                               setIsFormSubmitting(true);
 
                               // send POST to /api/contracts
@@ -2123,8 +2121,6 @@ export default function OverviewMetrics({
                                   setIsFormSubmitting(false);
                                   setSelectedContract(null);
                                 });
-
-                              console.log(res);
                             }}
                           >
                             <input
