@@ -2034,7 +2034,7 @@ export default function CategoryMetrics({
                                 </div>
                                 <div className="relative w-[16%]">
                                   <select
-                                    className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-[16%] px-[15px] py-[4px]"
+                                    className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[4px]"
                                     placeholder="Subcategory"
                                     name="sub_category_key"
                                   >
