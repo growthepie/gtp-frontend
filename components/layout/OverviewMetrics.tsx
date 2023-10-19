@@ -2094,9 +2094,9 @@ export default function OverviewMetrics({
                                 className="w-[34px] h-[34px]"
                               />
                             </div>
-                            <div>
+                            <div className="text-[16px]">
                               Suggested label for contract{" "}
-                              {selectedContract.address}
+                              <i>{selectedContract.address}</i>
                             </div>
                           </div>
                           <form
@@ -2147,7 +2147,7 @@ export default function OverviewMetrics({
                                 }}
                               />
                               <div className="flex space-x-[15px] items-center w-full">
-                                <div className="relative w-full">
+                                <div className="relative w-[33%]">
                                   <input
                                     type="text"
                                     className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[2px]"
@@ -2177,7 +2177,7 @@ export default function OverviewMetrics({
                                     </Tooltip>
                                   </div>
                                 </div>
-                                <div className="relative w-full">
+                                <div className="relative w-[33%]">
                                   <input
                                     type="text"
                                     className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[2px]"
@@ -2207,9 +2207,9 @@ export default function OverviewMetrics({
                                     </Tooltip>
                                   </div>
                                 </div>
-                                <div className="relative w-full">
+                                <div className="relative w-[16%]">
                                   <select
-                                    className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[2px]"
+                                    className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[4px]"
                                     placeholder="Category"
                                     name="main_category_key"
                                     onChange={(e) => {
@@ -2236,9 +2236,9 @@ export default function OverviewMetrics({
                                       ))}
                                   </select>
                                 </div>
-                                <div className="relative w-full">
+                                <div className="relative w-[16%]">
                                   <select
-                                    className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[2px]"
+                                    className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-[16%] px-[15px] py-[4px]"
                                     placeholder="Subcategory"
                                     name="sub_category_key"
                                   >
@@ -2259,7 +2259,7 @@ export default function OverviewMetrics({
                                 </div>
                               </div>
                             </div>
-                            <div className="pl-[50px] flex flex-col space-y-[5px] items-start justify-center w-full">
+                            <div className="pl-[50px] flex flex-col space-y-[5px] text-[14px] items-start justify-center w-full ml-2 pt-[15px]">
                               <div>
                                 Please add your details to participate in ...
                               </div>
@@ -2278,7 +2278,7 @@ export default function OverviewMetrics({
                                 />
                               </div>
                             </div>
-                            <div className="flex space-x-[15px] items-start justify-center w-full font-medium">
+                            <div className="flex space-x-[15px] items-start justify-center w-full font-medium pt-[15px]">
                               <button
                                 className="px-[16px] py-[6px] rounded-full border border-forest-900 dark:border-forest-500 text-forest-900 dark:text-forest-500"
                                 onClick={() => setSelectedContract(null)}
