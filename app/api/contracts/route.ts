@@ -1,9 +1,5 @@
-import Airtable from "airtable";
-
-// //connect to table
-const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(
-  "appZWDvjvDmVnOici",
-);
+const baseId = "appZWDvjvDmVnOici";
+const table = "tblU8WV0sxYUz6Kcp";
 
 type ContractSubmission = {
   address: string;
@@ -16,21 +12,27 @@ type ContractSubmission = {
 };
 
 // //send data
-function sendRow(dataToInsert: ContractSubmission) {
-  return base("tblU8WV0sxYUz6Kcp").create(
-    [
+async function sendRow(dataToInsert: ContractSubmission) {
+  const url = `https://api.airtable.com/v0/${baseId}/${table}`;
+
+  const body = {
+    records: [
       {
         fields: dataToInsert,
       },
     ],
-    function (err, records) {
-      if (err) {
-        console.error(err);
-        return err;
-      }
-      return records;
+  };
+
+  return await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
     },
-  );
+    body: JSON.stringify(body),
+  })
+    .then((response) => response.json())
+    .then((data) => data);
 }
 
 export async function POST(request: Request): Promise<Response> {
