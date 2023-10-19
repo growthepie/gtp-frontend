@@ -222,10 +222,10 @@ const MetricsTable = ({
   };
 
   return (
-    <div className="flex flex-col mt-3 md:mt-0 font-semibold space-y-[5px] overflow-x-scroll md:overflow-x-visible z-100 w-full py-5 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
+    <div className="flex flex-col mt-3 md:mt-0 ml-0 lg:-ml-6 font-semibold space-y-[5px] overflow-x-scroll md:overflow-x-visible z-100 w-full py-5 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
       <div className="min-w-[570px] md:min-w-[600px] lg:min-w-full pr-[20px] md:pr-[50px] lg:pr-0 w-full">
         <div
-          className={`flex space-x-5 items-center py-1 pl-2 pr-2 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
+          className={`flex space-x-5 items-center py-1 pl-4 pr-7 lg:pl-6 lg:pr-8 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
         >
           <div
             className={`${
@@ -266,7 +266,7 @@ const MetricsTable = ({
           }}
         > */}
         <div
-          className="lg:max-h-[354px] overflow-x-visible lg:overflow-y-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller"
+          className="lg:max-h-[354px] overflow-x-visible lg:overflow-y-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pl-2 pr-5"
           style={{ direction: "rtl" }}
         >
           <div

@@ -130,7 +130,7 @@ const Chain = ({ params }: { params: any }) => {
           )}
         </Subheading>
       </Container>
-      <div className="flex flex-col-reverse xl:flex-row space-x-0 xl:space-x-8">
+      <div className="flex flex-col-reverse xl:flex-row space-x-0 xl:space-x-2">
         {metricData && (
           <ComparisonChart
             data={Object.keys(metricData.data.chains)
