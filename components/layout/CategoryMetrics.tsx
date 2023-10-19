@@ -1725,6 +1725,16 @@ export default function CategoryMetrics({
         </div>
       </Container>
       <Container className="xl:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-4">
+        <div
+          className={`fixed inset-0 z-[90] flex items-center justify-center transition-opacity duration-200  ${
+            selectedContract ? "opacity-80" : "opacity-0 pointer-events-none"
+          }`}
+        >
+          <div
+            className={`absolute inset-0 bg-white dark:bg-black`}
+            onClick={() => setSelectedContract(null)}
+          ></div>
+        </div>
         <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[880px] ">
           <div className="flex exl:text-[14px] text-[12px] font-bold mb-[10px]">
             <div className="flex gap-x-[15px] w-[33%] ">
@@ -1866,7 +1876,7 @@ export default function CategoryMetrics({
                 ) {
                   return (
                     <div key={key + "" + sortOrder}>
-                      <div className="flex rounded-[27px] bg-forest-50 dark:bg-[#1F2726] border-forest-200 dark:border-forest-500 border mt-[7.5px] group relative z-[100]">
+                      <div className="flex rounded-[27px] bg-forest-50 dark:bg-forest-1000 border-forest-200 dark:border-forest-500 border mt-[7.5px] group relative z-[100]">
                         <div className="absolute top-0 left-0 right-0 bottom-[-1px] pointer-events-none">
                           <div className="w-full h-full rounded-[27px] overflow-clip">
                             <div className="relative w-full h-full">
