@@ -57,8 +57,8 @@ export const chainGroup = {
     label: "LAYER 1",
     icon: "feather:clock",
   },
-  "opstack-superchain": {
-    label: "OP STACK/SUPERCHAIN",
+  opstack: {
+    label: "OP STACK",
     icon: "feather:clock",
   },
   "other-optimistic": {
@@ -315,7 +315,7 @@ export const navigationItems: NavigationItem[] = [
       },
       {
         label: "Base",
-        category: "opstack-superchain",
+        category: "opstack",
         page: {
           description:
             "Base is an fully EVM compatible optimistic rollup built on the OP Stack. It is incubated inside of Coinbase. Public mainnet launch was on August 9th 2023.",
@@ -327,7 +327,7 @@ export const navigationItems: NavigationItem[] = [
       },
       {
         label: "OP Mainnet",
-        category: "opstack-superchain",
+        category: "opstack",
         page: {
           description:
             "OP Mainnet (formerly Optimism) uses an optimistic rollup approach, where transactions are assumed to be valid unless proven otherwise, and only invalid transactions are rolled back. OP Mainnet launched in August 2021, making it one of the first rollups. It is fully compatible with the Ethereum Virtual Machine (EVM), making it easy for developers to migrate their applications to the OP Mainnet network.",
@@ -339,7 +339,7 @@ export const navigationItems: NavigationItem[] = [
       },
       {
         label: "Public Goods Network",
-        category: "opstack-superchain",
+        category: "opstack",
         page: {
           description: "",
         },
@@ -350,7 +350,7 @@ export const navigationItems: NavigationItem[] = [
       },
       {
         label: "Zora",
-        category: "opstack-superchain",
+        category: "opstack",
         page: {
           description: "",
         },

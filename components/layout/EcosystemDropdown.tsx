@@ -29,10 +29,6 @@ export default function EcosystemDropdown({}: // optOpen,
       name: "OP Stack Chains",
       icon: "/Optimism-logo.svg",
     },
-    "op-super": {
-      name: "OP Superchain",
-      icon: "/Optimism-super-logo.svg",
-    },
   };
 
   const [optOpen, setOptOpen] = useState(false);
@@ -53,7 +49,7 @@ export default function EcosystemDropdown({}: // optOpen,
     }
   }, [selectedStack, setChainEcosystemFilter]);
 
-  const chainHeight = (Object.keys(ChainsList).length - 1) * 60;
+  const chainHeight = (Object.keys(ChainsList).length - 1) * 100;
 
   const heightAnimate = useSpring({
     height: optOpen ? chainHeight : 43,
@@ -72,13 +68,13 @@ export default function EcosystemDropdown({}: // optOpen,
           } absolute top-1/2 -translate-y-1/50 left-1/2 transform -translate-x-1/2 -translate-y-[60px] overflow-clip z-10`}
           style={{ ...heightAnimate }}
         >
-          <div className="flex flex-col items-center text-sm text-forest-50 dark:text-forest-900 pt-[45px] pb-[10px]">
+          <div className="flex flex-col items-center text-sm text-forest-50 dark:text-forest-900 pt-[45px] ">
             {Object.keys(ChainsList).map((stack, i) => {
               return (
                 stack !== selectedStack && (
                   <button
                     key={i}
-                    className={`pl-[42px] py-[8px] flex w-full gap-x-2 opacity-${
+                    className={`pl-[42px] pt-[20px] pb-[12px] flex w-full gap-x-2 opacity-${
                       optOpen ? "100" : "0"
                     } hover:bg-white/10 hover:dark:bg-black/10`}
                     onClick={() => {
