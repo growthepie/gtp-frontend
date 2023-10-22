@@ -73,17 +73,17 @@ const ChainOverview = () => {
   return (
     <>
       <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
-        <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] ">
+        <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] relative">
           <div className="flex gap-x-[8px] items-center">
             <Image
               src="/GTP-Package.svg"
               alt="GTP Chain"
-              className="object-contain w-[32px] h-[32px] "
+              className="object-contain w-[32px] h-[32px]"
               height={36}
               width={36}
             />
             <Heading
-              className="text-[30px] leading-snug md:text-[36px]"
+              className="text-[26px] leading-snug lg:text-[36px]"
               as="h1"
             >
               Chain Overview
@@ -91,7 +91,7 @@ const ChainOverview = () => {
           </div>
           <EcosystemDropdown />
         </div>
-        <div className="flex items-center w-[99%] mx-auto  mb-[30px]">
+        <div className="flex items-center w-[99%] mx-auto mb-[30px]">
           <div className="text-[16px]">
             An overview of chains high-level blockspace usage. All expressed in
             share of chain usage.
