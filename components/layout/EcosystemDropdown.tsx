@@ -66,7 +66,7 @@ export default function EcosystemDropdown({}: // optOpen,
         <ul
           className={`relative z-[30] transition-[width] duration-300 ease-in-out ${
             optOpen
-              ? "border-l border-r border-b rounded-2xl lg:rounded-3xl bg-[#1F2726] border-forest-900 dark:border-forest-500 transition-colors"
+              ? "border-l border-r border-b rounded-2xl lg:rounded-3xl dark:bg-[#1F2726] bg-white  border-forest-900 dark:border-forest-500 transition-colors"
               : ""
           }`}
         >
@@ -122,9 +122,9 @@ export default function EcosystemDropdown({}: // optOpen,
                 stack !== selectedStack && (
                   <li
                     key={i}
-                    className={`flex justify-start items-center cursor-pointer py-[6px] px-[10px] space-x-[5px] lg:py-[10px] lg:px-[15px] lg:space-x-[10px] text-sm w-full ${
+                    className={`flex justify-start items-center cursor-pointer  rounded-full py-[6px] px-[10px] space-x-[5px] lg:py-[10px] lg:px-[15px] lg:space-x-[10px] text-sm w-full ${
                       optOpen ? "opacity-100" : "opacity-0"
-                    } hover:bg-white/10 hover:dark:bg-black/10`}
+                    } hover:bg-forest-100 hover:dark:bg-black/10`}
                     onClick={() => {
                       setSelectedStack(stack);
                       setOptOpen(false);
