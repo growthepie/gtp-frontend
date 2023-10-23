@@ -26,6 +26,7 @@ import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import ChainAnimations from "./ChainAnimations";
 import { useUIContext } from "@/contexts/UIContext";
+import ContractLabelModal from "./ContractLabelModal";
 
 export default function CategoryMetrics({
   data,
@@ -83,6 +84,8 @@ export default function CategoryMetrics({
     polygon_zkevm: "https://zkevm.polygonscan.com/address/",
     imx: "https://immutascan.io/address/",
     base: "https://basescan.org/address/",
+    zora: "https://explorer.zora.energy/address/",
+    gitcoin_pgn: "https://explorer.publicgoods.network/address/",
   };
   const { isSidebarOpen } = useUIContext();
   const [selectedMode, setSelectedMode] = useState("gas_fees_");
@@ -112,6 +115,18 @@ export default function CategoryMetrics({
     "all-chains",
   );
 
+  const [selectedContract, setSelectedContract] = useState<ContractInfo | null>(
+    null,
+  );
+  const [isContractLabelModalOpen, setIsContractLabelModalOpen] =
+    useState(false);
+
+  const [isFormSubmitting, setIsFormSubmitting] = useState(false);
+
+  const [labelFormMainCategoryKey, setLabelFormMainCategoryKey] = useState<
+    string | null
+  >("nft");
+
   const stackIndex = {
     op_stack: ["base", "optimism"],
     op_super: ["base", "optimism"],
@@ -128,6 +143,8 @@ export default function CategoryMetrics({
     polygon_zkevm: true,
     imx: true,
     base: true,
+    zora: true,
+    gitcoin_pgn: true,
   });
 
   const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
@@ -466,6 +483,20 @@ export default function CategoryMetrics({
     const today = new Date().getTime();
 
     if (selectedCategory && data) return chartReturn;
+    return Object.keys(data["native_transfers"][dailyKey]).map((chain) => ({
+      id: [chain, "native_transfers", selectedType].join("_"),
+      name: chain,
+      unixKey: "unix",
+      dataKey: selectedType,
+      data: data["native_transfers"][dailyKey][chain]
+        .map((item, i) => {
+          // remap date keys so first is today and each day is subtracted from there
+          const date = today - i * 24 * 60 * 60 * 1000;
+          item[0] = date;
+          return item;
+        })
+        .reverse(),
+    }));
     return [
       {
         id: ["arbitrum", "native_transfers", selectedType].join("_"),
@@ -1694,6 +1725,16 @@ export default function CategoryMetrics({
         </div>
       </Container>
       <Container className="xl:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-4">
+        <div
+          className={`fixed inset-0 z-[90] flex items-center justify-center transition-opacity duration-200  ${
+            selectedContract ? "opacity-80" : "opacity-0 pointer-events-none"
+          }`}
+        >
+          <div
+            className={`absolute inset-0 bg-white dark:bg-black`}
+            onClick={() => setSelectedContract(null)}
+          ></div>
+        </div>
         <div className="flex flex-col mt-[30px] w-[99%] mx-auto min-w-[880px] ">
           <div className="flex exl:text-[14px] text-[12px] font-bold mb-[10px]">
             <div className="flex gap-x-[15px] w-[33%] ">
@@ -1818,100 +1859,387 @@ export default function CategoryMetrics({
               </div>
             </div>
           </div>
-          {!sortOrder
-            ? Object.keys(sortedContracts).map((key, i) => {
-                if (i >= maxDisplayedContracts) {
-                  return null;
+          <div>
+            {(!sortOrder
+              ? Object.keys(sortedContracts)
+              : Object.keys(sortedContracts).reverse()
+            )
+              .slice(0, maxDisplayedContracts)
+              .map((key, i) => {
+                // if (i >= maxDisplayedContracts) {
+                //   return null;
+                // }
+
+                if (
+                  selectedContract &&
+                  selectedContract.address === sortedContracts[key].address
+                ) {
+                  return (
+                    <div key={key + "" + sortOrder}>
+                      <div className="flex rounded-[27px] bg-forest-50 dark:bg-forest-1000 border-forest-200 dark:border-forest-500 border mt-[7.5px] group relative z-[100]">
+                        <div className="absolute top-0 left-0 right-0 bottom-[-1px] pointer-events-none">
+                          <div className="w-full h-full rounded-[27px] overflow-clip">
+                            <div className="relative w-full h-full">
+                              <div
+                                className={`absolute left-[1px] right-[1px] bottom-[0px] h-[2px] rounded-none font-semibold transition-width duration-300 z-20`}
+                                style={{
+                                  background:
+                                    AllChainsByKeys[sortedContracts[key].chain]
+                                      .colors[theme][1],
+                                  width: getWidth(sortedContracts[key]),
+                                }}
+                              ></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-center justify-center w-full h-full pl-[15px] pr-[30px] py-[10px] space-y-[15px]">
+                          <div className="flex space-x-[26px] items-center w-full">
+                            <div>
+                              <Icon
+                                icon="gtp:add-tag"
+                                className="w-[34px] h-[34px]"
+                              />
+                            </div>
+                            <div className="text-[16px]">
+                              Suggested label for contract{" "}
+                              <i>{selectedContract.address}</i>
+                            </div>
+                          </div>
+                          <form
+                            className="flex flex-col space-y-[5px] items-start justify-center w-full"
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              const formData = new FormData(e.target as any);
+
+                              // const data = Object.fromEntries(
+                              //   formData.entries(),
+                              // );
+
+                              setIsFormSubmitting(true);
+
+                              // send POST to /api/contracts
+                              const res = fetch("/api/contracts", {
+                                method: "POST",
+                                body: formData,
+                              })
+                                .then((res) => res.json())
+                                .finally(() => {
+                                  setIsFormSubmitting(false);
+                                  setSelectedContract(null);
+                                });
+                            }}
+                          >
+                            <input
+                              type="hidden"
+                              name="address"
+                              value={selectedContract.address}
+                            />
+                            <input
+                              type="hidden"
+                              name="chain"
+                              value={selectedContract.chain}
+                            />
+                            <div className="flex space-x-[26px] items-center w-full">
+                              <Icon
+                                icon={`gtp:${selectedContract.chain.replace(
+                                  "_",
+                                  "-",
+                                )}-logo-monochrome`}
+                                className="w-[34px] h-[34px]"
+                                style={{
+                                  color:
+                                    AllChainsByKeys[selectedContract.chain]
+                                      .colors[theme][1],
+                                }}
+                              />
+                              <div className="flex space-x-[15px] items-center w-full">
+                                <div className="relative w-[33%]">
+                                  <input
+                                    type="text"
+                                    className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[2px]"
+                                    placeholder="Contract Name"
+                                    name="name"
+                                  />
+                                  <div className="absolute right-0.5 top-0.5">
+                                    <Tooltip placement="top">
+                                      <TooltipTrigger>
+                                        <Icon
+                                          icon="feather:info"
+                                          className="w-6 h-6 text-forest-900 dark:text-forest-500"
+                                        />
+                                      </TooltipTrigger>
+                                      <TooltipContent className="z-[110]">
+                                        <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
+                                          <div className="font-medium">
+                                            This is the Contract name.
+                                          </div>
+                                          <div>
+                                            It should be the name of the
+                                            contract, not the name of the
+                                            project.
+                                          </div>
+                                        </div>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </div>
+                                </div>
+                                <div className="relative w-[33%]">
+                                  <input
+                                    type="text"
+                                    className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[2px]"
+                                    placeholder="Project Name"
+                                    name="project_name"
+                                  />
+                                  <div className="absolute right-0.5 top-0.5">
+                                    <Tooltip placement="top">
+                                      <TooltipTrigger>
+                                        <Icon
+                                          icon="feather:info"
+                                          className="w-6 h-6 text-forest-900 dark:text-forest-500"
+                                        />
+                                      </TooltipTrigger>
+                                      <TooltipContent className="z-[110]">
+                                        <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
+                                          <div className="font-medium">
+                                            This is the Project name.
+                                          </div>
+                                          <div>
+                                            It should be the name of the
+                                            project, not the name of the
+                                            contract.
+                                          </div>
+                                        </div>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </div>
+                                </div>
+                                <div className="relative w-[16%]">
+                                  <select
+                                    className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[4px]"
+                                    placeholder="Category"
+                                    name="main_category_key"
+                                    onChange={(e) => {
+                                      setLabelFormMainCategoryKey(
+                                        e.target.value,
+                                      );
+                                    }}
+                                  >
+                                    {master &&
+                                      Object.keys(
+                                        master.blockspace_categories
+                                          .main_categories,
+                                      ).map((key) => (
+                                        <option
+                                          key={key}
+                                          value={key}
+                                          className="bg-forest-50 dark:bg-[#1F2726]"
+                                        >
+                                          {
+                                            master.blockspace_categories
+                                              .main_categories[key]
+                                          }
+                                        </option>
+                                      ))}
+                                  </select>
+                                </div>
+                                <div className="relative w-[16%]">
+                                  <select
+                                    className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[4px]"
+                                    placeholder="Subcategory"
+                                    name="sub_category_key"
+                                  >
+                                    {labelFormMainCategoryKey &&
+                                      master &&
+                                      master.blockspace_categories["mapping"][
+                                        labelFormMainCategoryKey
+                                      ].map((key) => (
+                                        <option
+                                          key={key}
+                                          value={key}
+                                          className="bg-forest-50 dark:bg-[#1F2726]"
+                                        >
+                                          {formatSubcategories(key)}
+                                        </option>
+                                      ))}
+                                  </select>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="pl-[50px] flex flex-col space-y-[5px] text-[14px] items-start justify-center w-full ml-2 pt-[15px]">
+                              <div>
+                                Please add your details to participate in ...
+                              </div>
+                              <div className="flex space-x-[15px] items-center w-full">
+                                <input
+                                  type="text"
+                                  className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[2px]"
+                                  placeholder="X Handle (formerly Twitter)"
+                                  name="twitter_handle"
+                                />
+                                <input
+                                  type="text"
+                                  className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[2px]"
+                                  placeholder="Source (optional)"
+                                  name="source"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex space-x-[15px] items-start justify-center w-full font-medium pt-[15px]">
+                              <button
+                                className="px-[16px] py-[6px] rounded-full border border-forest-900 dark:border-forest-500 text-forest-900 dark:text-forest-500"
+                                onClick={() => setSelectedContract(null)}
+                                disabled={isFormSubmitting}
+                              >
+                                Cancel
+                              </button>
+                              <button className="px-[16px] py-[6px] rounded-full bg-[#F0995A] text-forest-900">
+                                {isFormSubmitting ? (
+                                  <Icon
+                                    icon="feather:loader"
+                                    className="w-4 h-4 animate-spin"
+                                  />
+                                ) : (
+                                  "Submit"
+                                )}
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  );
                 }
 
                 return (
                   <div key={key + "" + sortOrder}>
-                    <div className="flex rounded-full border-forest-200 dark:border-forest-100 border-[1px] h-[60px] mt-[7.5px] group">
-                      <div className="flex w-[100%] ml-4 mr-8 items-center ">
-                        <div className="flex items-center h-10 w-[34%] gap-x-[20px] pl-1  ">
-                          <div className=" w-[40px]">
+                    <div className="flex rounded-full border-forest-200 dark:border-forest-500 border h-[60px] mt-[7.5px] group hover:bg-forest-300 hover:dark:bg-forest-800 relative">
+                      <div className="absolute top-0 left-0 right-0 bottom-[-1px] pointer-events-none">
+                        <div className="w-full h-full rounded-full overflow-clip">
+                          <div className="relative w-full h-full">
                             <div
-                              className={`flex min-w-9 min-h-9 w-9 h-9 rounded-full items-center justify-center border-[5px] ${
-                                AllChainsByKeys[sortedContracts[key].chain]
-                                  .border[theme][1]
-                              }`}
-                              key={key + "title" + sortOrder}
-                            >
-                              <Icon
-                                icon={`gtp:${sortedContracts[key].chain.replace(
-                                  "_",
-                                  "-",
-                                )}-logo-monochrome`}
-                                className="min-w-5 min-h-5 w-5 h-5"
-                                style={{
-                                  color:
-                                    AllChainsByKeys[sortedContracts[key].chain]
-                                      .colors[theme][1],
-                                }}
-                              />
-                            </div>
+                              className={`absolute left-[1px] right-[1px] bottom-[0px] h-[2px] rounded-none font-semibold transition-width duration-300 z-20`}
+                              style={{
+                                background:
+                                  AllChainsByKeys[sortedContracts[key].chain]
+                                    .colors[theme][1],
+                                width: getWidth(sortedContracts[key]),
+                              }}
+                            ></div>
                           </div>
-
-                          <div
-                            key={sortedContracts[key].address}
-                            className={`flex flex-col flex-1 h-full items-start justify-center ${
-                              contractHover[key] && !sortedContracts[key].name
-                                ? ""
-                                : ""
-                            } `}
-                            onMouseEnter={() => {
-                              setContractHover((prevHover) => ({
-                                ...prevHover,
-                                [key]: true,
-                              }));
-                            }}
-                            onMouseLeave={() => {
-                              setContractHover((prevHover) => ({
-                                ...prevHover,
-                                [key]: false,
-                              }));
-                              setCopyContract(false);
-                            }}
-                          >
-                            {sortedContracts[key].name
-                              ? !contractHover[key]
-                                ? `${
-                                    sortedContracts[key].project_name
-                                      ? sortedContracts[key].project_name + ": "
-                                      : ""
-                                  } ${sortedContracts[key].name}`
-                                : `${
-                                    (
-                                      sortedContracts[key].project_name +
-                                      ": " +
-                                      sortedContracts[key].name
-                                    ).length >= 40
-                                      ? (
-                                          sortedContracts[key].project_name +
-                                          ": " +
-                                          sortedContracts[key].name
-                                        ).substring(0, 38) + "..."
-                                      : sortedContracts[key].project_name
-                                      ? sortedContracts[key].project_name +
-                                        ": " +
-                                        sortedContracts[key].name
-                                      : sortedContracts[key].name
-                                  }`
-                              : sortedContracts[key].address.substring(0, 6) +
-                                "..." +
-                                sortedContracts[key].address.substring(
-                                  36,
-                                  42,
-                                )}{" "}
-                            {sortedContracts[key].name ||
-                            sortedContracts[key].address ? (
+                        </div>
+                      </div>
+                      <div className="flex w-[100%] items-center ml-4 mr-8">
+                        <div className="flex items-center h-10 !w-[34%] relative">
+                          <div className="absolute right-0 top-0 bottom-0 w-0 group-hover:w-4 bg-gradient-to-r from-transparent to-forest-300 dark:to-forest-800 z-10"></div>
+                          <div className="flex-none mr-[36px]">
+                            <Icon
+                              icon={`gtp:${sortedContracts[key].chain.replace(
+                                "_",
+                                "-",
+                              )}-logo-monochrome`}
+                              className="w-[29px] h-[29px]"
+                              style={{
+                                color:
+                                  AllChainsByKeys[sortedContracts[key].chain]
+                                    .colors[theme][1],
+                              }}
+                            />
+                            {/* </div> */}
+                          </div>
+                          <div className="flex flex-grow">
+                            <div
+                              className={`flex flex-none items-center space-x-2 w-0 ${
+                                copyContract ? " delay-1000" : ""
+                              } overflow-clip transition-all duration-200 ease-in-out ${
+                                sortedContracts[key].name &&
+                                sortedContracts[key].project_name
+                                  ? "group-hover:w-[48px]"
+                                  : "group-hover:w-[96px]"
+                              }`}
+                            >
+                              {!(
+                                sortedContracts[key].name &&
+                                sortedContracts[key].project_name
+                              ) && (
+                                <div
+                                  className="rounded-full p-2 bg-forest-50 dark:bg-forest-1000 text-black dark:text-white cursor-pointer"
+                                  onClick={() => {
+                                    setSelectedContract(sortedContracts[key]);
+                                    setIsContractLabelModalOpen(true);
+                                  }}
+                                >
+                                  <Icon
+                                    icon="gtp:add-tag"
+                                    className="w-6 h-6"
+                                  />
+                                  {/* <Icon
+                                      icon="feather:plus"
+                                      className="absolute right-0 top-2 stroke-2 stroke-forest-900"
+                                    /> */}
+                                </div>
+                              )}
                               <div
-                                className="group-hover:flex hidden space-x-2 items-center bg-black/50 px-0.5 rounded-xl text-[12px]"
+                                className={`rounded-full p-2 ${
+                                  copyContract
+                                    ? "bg-forest-50/60 dark:bg-forest-1000/60"
+                                    : "bg-forest-50 dark:bg-forest-1000"
+                                } text-white cursor-pointer`}
                                 onClick={() => {
+                                  navigator.clipboard.writeText(
+                                    sortedContracts[key].address,
+                                  );
                                   setCopyContract(true);
+                                  setTimeout(() => {
+                                    setCopyContract(false);
+                                  }, 1000);
                                 }}
                               >
-                                <div>
+                                {!copyContract && (
+                                  <Icon
+                                    icon="feather:copy"
+                                    className="w-5 h-5"
+                                  />
+                                )}
+                                {copyContract && (
+                                  <Icon
+                                    icon="feather:check"
+                                    className="w-5 h-5"
+                                  />
+                                )}
+                              </div>
+                            </div>
+                            <div
+                              className={`flex flex-col flex-grow h-full justify-start text-ellipsis overflow-hidden whitespace-nowrap `}
+                            >
+                              {sortedContracts[key].name ||
+                              sortedContracts[key].project_name ? (
+                                <>
+                                  <div
+                                    className={`min-w-full max-w-full text-base ${
+                                      sortedContracts[key].project_name
+                                        ? "font-bold"
+                                        : "opacity-30 italic"
+                                    }`}
+                                  >
+                                    {sortedContracts[key].project_name
+                                      ? sortedContracts[key].project_name
+                                      : "Project Label Missing"}
+                                  </div>
+
+                                  <div
+                                    className={`min-w-full max-w-full text-sm ${
+                                      sortedContracts[key].name
+                                        ? ""
+                                        : "opacity-30 italic"
+                                    }`}
+                                  >
+                                    {sortedContracts[key].name
+                                      ? sortedContracts[key].name
+                                      : "Contract Label Missing"}
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="min-w-full max-w-full text-base opacity-30 italic">
                                   {sortedContracts[key].address.substring(
                                     0,
                                     6,
@@ -1922,25 +2250,12 @@ export default function CategoryMetrics({
                                       42,
                                     )}
                                 </div>
-                                <Icon
-                                  icon={`${
-                                    !copyContract
-                                      ? "feather:copy"
-                                      : "feather:check"
-                                  }`}
-                                  onClick={() => {
-                                    navigator.clipboard.writeText(
-                                      sortedContracts[key].address,
-                                    );
-                                  }}
-                                  className="w-3 h-3 cursor-pointer"
-                                />
-                              </div>
-                            ) : null}
+                              )}
+                            </div>
                           </div>
                         </div>
-                        <div className="flex items-center text-[14px] w-[43%]  justify-start  h-full ">
-                          <div className="flex w-[40%] ">
+                        <div className="flex items-center text-[14px] !w-[43%] justify-start h-full group-hover:bg-forest-300 group-hover:dark:bg-forest-800 z-10">
+                          <div className="flex w-[40%]">
                             {master &&
                               master.blockspace_categories.main_categories[
                                 sortedContracts[key].main_category_key
@@ -1958,18 +2273,18 @@ export default function CategoryMetrics({
                               : "Unlabeled"}
                           </div>
                         </div>
-                        <div className="flex items-center w-[24.5%]  mr-4  ">
+                        <div className="flex items-center !w-[23%]  mr-4">
                           <div className="flex flex-col w-[38%] items-end ">
                             <div className="flex gap-x-1 w-[110px] justify-end  ">
                               <div className="flex">
                                 {" "}
-                                {selectedMode === "gas_fees_"
+                                {selectedMode.includes("gas_fees_")
                                   ? showUsd
                                     ? `$`
                                     : `Ξ`
                                   : ""}
                               </div>
-                              {selectedMode === "gas_fees_"
+                              {selectedMode.includes("gas_fees_")
                                 ? showUsd
                                   ? Number(
                                       sortedContracts[
@@ -1988,18 +2303,18 @@ export default function CategoryMetrics({
                                   ).toLocaleString("en-US")}
                             </div>
 
-                            <div className="h-[3px] w-[110px] bg-forest-50 dark:bg-forest-900 flex justify-end">
-                              <div
-                                className={`h-full bg-forest-900 dark:bg-forest-50`}
-                                style={{
-                                  width: getWidth(sortedContracts[key]),
-                                }}
-                              ></div>
-                            </div>
+                            {/* <div className="h-[3px] w-[110px] bg-forest-100 dark:bg-forest-900 flex justify-end">
+                                  <div
+                                    className={`h-full bg-forest-900 dark:bg-forest-50`}
+                                    style={{
+                                      width: getWidth(sortedContracts[key]),
+                                    }}
+                                  ></div>
+                                </div> */}
                           </div>
 
                           <div className="flex items-center w-[57%] justify-end ">
-                            <a
+                            <Link
                               href={
                                 ContractUrls[sortedContracts[key].chain] +
                                 "" +
@@ -2011,240 +2326,40 @@ export default function CategoryMetrics({
                                 icon="material-symbols:link"
                                 className="w-[30px] h-[30px]"
                               />
-                            </a>
+                            </Link>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 );
-              })
-            : Object.keys(sortedContracts)
-                .reverse()
-                .map((key, i) => {
-                  if (i >= maxDisplayedContracts) {
-                    return null;
+              })}
+            <div className="w-full flex justify-center mb-2">
+              <button
+                className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${
+                  Object.keys(sortedContracts).length <= 10
+                    ? "hidden"
+                    : "visible"
+                } ${
+                  Object.keys(sortedContracts).length <=
+                    maxDisplayedContracts || maxDisplayedContracts >= 50
+                    ? "hidden"
+                    : "visible"
+                }`}
+                onClick={() => {
+                  setShowMore(!showMore);
+                  if (
+                    Object.keys(sortedContracts).length > maxDisplayedContracts
+                  ) {
+                    setMaxDisplayedContracts(maxDisplayedContracts + 10);
+                  } else {
+                    setMaxDisplayedContracts(10);
                   }
-
-                  return (
-                    <div key={key + "" + sortOrder}>
-                      <div className="flex rounded-full border-forest-200 dark:border-forest-100 border-[1px] h-[60px] mt-[7.5px] group">
-                        <div className="flex w-[100%] ml-4 mr-8 items-center ">
-                          <div className="flex items-center h-10 w-[34%] gap-x-[20px] pl-1  ">
-                            <div className=" w-[40px]">
-                              <div
-                                className={`flex min-w-9 min-h-9 w-9 h-9 rounded-full items-center justify-center border-[5px] ${
-                                  AllChainsByKeys[sortedContracts[key].chain]
-                                    .border[theme][1]
-                                }`}
-                                key={key + "title" + sortOrder}
-                              >
-                                <Icon
-                                  icon={`gtp:${sortedContracts[
-                                    key
-                                  ].chain.replace("_", "-")}-logo-monochrome`}
-                                  className="min-w-5 min-h-5 w-5 h-5"
-                                  style={{
-                                    color:
-                                      AllChainsByKeys[
-                                        sortedContracts[key].chain
-                                      ].colors[theme][1],
-                                  }}
-                                />
-                              </div>
-                            </div>
-
-                            <div
-                              key={sortedContracts[key].address}
-                              className={`flex flex-col flex-1 h-full items-start justify-center ${
-                                contractHover[key] && !sortedContracts[key].name
-                                  ? ""
-                                  : ""
-                              } `}
-                              onMouseEnter={() => {
-                                setContractHover((prevHover) => ({
-                                  ...prevHover,
-                                  [key]: true,
-                                }));
-                              }}
-                              onMouseLeave={() => {
-                                setContractHover((prevHover) => ({
-                                  ...prevHover,
-                                  [key]: false,
-                                }));
-                                setCopyContract(false);
-                              }}
-                            >
-                              {sortedContracts[key].name
-                                ? !contractHover[key]
-                                  ? `${
-                                      sortedContracts[key].project_name
-                                        ? sortedContracts[key].project_name +
-                                          ": "
-                                        : ""
-                                    } ${sortedContracts[key].name}`
-                                  : `${
-                                      (
-                                        sortedContracts[key].project_name +
-                                        ": " +
-                                        sortedContracts[key].name
-                                      ).length >= 40
-                                        ? (
-                                            sortedContracts[key].project_name +
-                                            ": " +
-                                            sortedContracts[key].name
-                                          ).substring(0, 38) + "..."
-                                        : sortedContracts[key].project_name
-                                        ? sortedContracts[key].project_name +
-                                          ": " +
-                                          sortedContracts[key].name
-                                        : sortedContracts[key].name
-                                    }`
-                                : sortedContracts[key].address.substring(0, 6) +
-                                  "..." +
-                                  sortedContracts[key].address.substring(
-                                    36,
-                                    42,
-                                  )}{" "}
-                              {sortedContracts[key].name ||
-                              sortedContracts[key].address ? (
-                                <div
-                                  className="group-hover:flex hidden space-x-2 items-center bg-black/50 px-0.5 rounded-xl text-[12px]"
-                                  onClick={() => {
-                                    setCopyContract(true);
-                                  }}
-                                >
-                                  <div>
-                                    {sortedContracts[key].address.substring(
-                                      0,
-                                      6,
-                                    ) +
-                                      "..." +
-                                      sortedContracts[key].address.substring(
-                                        36,
-                                        42,
-                                      )}
-                                  </div>
-                                  <Icon
-                                    icon={`${
-                                      !copyContract
-                                        ? "feather:copy"
-                                        : "feather:check"
-                                    }`}
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(
-                                        sortedContracts[key].address,
-                                      );
-                                    }}
-                                    className="w-3 h-3 cursor-pointer"
-                                  />
-                                </div>
-                              ) : null}
-                            </div>
-                          </div>
-                          <div className="flex items-center text-[14px] w-[43%]  justify-start  h-full ">
-                            <div className="flex w-[40%] ">
-                              {master &&
-                                master.blockspace_categories.main_categories[
-                                  sortedContracts[key].main_category_key
-                                ]}
-                            </div>
-                            <div className="flex ">
-                              {" "}
-                              {master &&
-                              master.blockspace_categories.sub_categories[
-                                sortedContracts[key].sub_category_key
-                              ]
-                                ? master.blockspace_categories.sub_categories[
-                                    sortedContracts[key].sub_category_key
-                                  ]
-                                : "Unlabeled"}
-                            </div>
-                          </div>
-                          <div className="flex items-center w-[24.5%]  mr-4  ">
-                            <div className="flex flex-col w-[38%] items-end ">
-                              <div className="flex gap-x-1 w-[110px] justify-end  ">
-                                <div className="flex">
-                                  {" "}
-                                  {selectedMode === "gas_fees_"
-                                    ? showUsd
-                                      ? `$`
-                                      : `Ξ`
-                                    : ""}
-                                </div>
-                                {selectedMode === "gas_fees_"
-                                  ? showUsd
-                                    ? Number(
-                                        sortedContracts[
-                                          key
-                                        ].gas_fees_absolute_usd.toFixed(0),
-                                      ).toLocaleString("en-US")
-                                    : Number(
-                                        sortedContracts[
-                                          key
-                                        ].gas_fees_absolute_eth.toFixed(2),
-                                      ).toLocaleString("en-US")
-                                  : Number(
-                                      sortedContracts[
-                                        key
-                                      ].txcount_absolute.toFixed(0),
-                                    ).toLocaleString("en-US")}
-                              </div>
-
-                              <div className="h-[3px] w-[110px] bg-forest-50 dark:bg-forest-900 flex justify-end">
-                                <div
-                                  className={`h-full bg-forest-900 dark:bg-forest-50`}
-                                  style={{
-                                    width: getWidth(sortedContracts[key]),
-                                  }}
-                                ></div>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center w-[57%] justify-end ">
-                              <a
-                                href={
-                                  ContractUrls[sortedContracts[key].chain] +
-                                  "" +
-                                  sortedContracts[key].address
-                                }
-                                target="_blank"
-                              >
-                                <Icon
-                                  icon="material-symbols:link"
-                                  className="w-[30px] h-[30px]"
-                                />
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-          <div className="w-full flex justify-center mb-2">
-            <button
-              className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${
-                Object.keys(sortedContracts).length <= 10 ? "hidden" : "visible"
-              } ${
-                Object.keys(sortedContracts).length <= maxDisplayedContracts ||
-                maxDisplayedContracts >= 50
-                  ? "hidden"
-                  : "visible"
-              }`}
-              onClick={() => {
-                setShowMore(!showMore);
-                if (
-                  Object.keys(sortedContracts).length > maxDisplayedContracts
-                ) {
-                  setMaxDisplayedContracts(maxDisplayedContracts + 10);
-                } else {
-                  setMaxDisplayedContracts(10);
-                }
-              }}
-            >
-              Show More
-            </button>
+                }}
+              >
+                Show More
+              </button>
+            </div>
           </div>
         </div>
       </Container>

@@ -245,10 +245,10 @@ const MetricsTable = ({
   };
 
   return (
-    <div className="flex flex-col mt-3 md:mt-0 font-semibold space-y-[5px] overflow-x-scroll md:overflow-x-visible z-100 w-full py-5 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
-      <div className="min-w-[570px] md:min-w-[600px] lg:min-w-full pr-[20px] md:pr-[50px] lg:pr-0 w-full">
+    <div className="flex flex-col mt-3 md:mt-0 ml-0 lg:-ml-2 font-semibold space-y-[5px] overflow-x-scroll md:overflow-x-visible z-100 w-full py-5 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
+      <div className="min-w-[570px] md:min-w-[600px] lg:min-w-full pr-[20px] md:pr-[50px] lg:pr-2 w-full">
         <div
-          className={`flex space-x-5 items-center py-1 pl-2 pr-2 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
+          className={`flex space-x-5 items-center py-1 pl-4 pr-7 lg:pl-2 lg:pr-12 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
         >
           <div
             className={`${
@@ -289,18 +289,22 @@ const MetricsTable = ({
           }}
         > */}
         <div
-          className="w-full relative"
-          style={{ height: height }}
-          // style={{ height: height, direction: "ltr" }}
+          className="lg:max-h-[354px] overflow-x-visible lg:overflow-y-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pr-8"
+          style={{ direction: "ltr" }}
         >
-          {transitions((style, item, t, index) => (
-            <animated.div
-              className="absolute w-full"
-              style={{ zIndex: Object.keys(data).length - index, ...style }}
-            >
-              <div
-                key={item.chain.key}
-                className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[10.5px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] group relative
+          <div
+            className="w-full relative"
+            style={{ height: height, direction: "ltr" }}
+            // style={{ height: height, direction: "ltr" }}
+          >
+            {transitions((style, item, t, index) => (
+              <animated.div
+                className="absolute w-full"
+                style={{ zIndex: Object.keys(data).length - index, ...style }}
+              >
+                <div
+                  key={item.chain.key}
+                  className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[10.5px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] group relative
               ${
                 item.chain.key === "ethereum"
                   ? showEthereumMainnet
@@ -310,83 +314,83 @@ const MetricsTable = ({
                   ? " hover:bg-forest-500/10"
                   : "opacity-50 grayscale hover:opacity-70 hover:grayscale-20 transition-all duration-100"
               } `}
-                onClick={() => {
-                  if (item.chain.key === "ethereum") {
-                    if (showEthereumMainnet) {
-                      setShowEthereumMainnet(false);
+                  onClick={() => {
+                    if (item.chain.key === "ethereum") {
+                      if (showEthereumMainnet) {
+                        setShowEthereumMainnet(false);
+                      } else {
+                        setShowEthereumMainnet(true);
+                      }
                     } else {
-                      setShowEthereumMainnet(true);
+                      if (selectedChains.includes(item.chain.key)) {
+                        setSelectedChains(
+                          selectedChains.filter((c) => c !== item.chain.key),
+                        );
+                      } else {
+                        setSelectedChains([...selectedChains, item.chain.key]);
+                      }
                     }
-                  } else {
-                    if (selectedChains.includes(item.chain.key)) {
-                      setSelectedChains(
-                        selectedChains.filter((c) => c !== item.chain.key),
-                      );
-                    } else {
-                      setSelectedChains([...selectedChains, item.chain.key]);
-                    }
-                  }
-                }}
-              >
-                <div className="w-full h-full absolute left-0 bottom-0 rounded-full overflow-clip">
-                  <div className="relative w-full h-full">
-                    {item.chain.key !== "ethereum" && (
-                      <>
-                        <div
-                          className={`absolute left-[15px] right-[15px] lg:left-[18px] lg:right-[18px] bottom-[0px] h-[1px] lg:h-[2px] rounded-none font-semibold transition-width duration-300 `}
-                          style={{
-                            background: item.chain.colors[theme ?? "dark"][1],
-                            width: item.barWidth,
-                          }}
-                        ></div>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <div
-                  className={`flex ${
-                    isSidebarOpen ? "w-1/4 2xl:basis-1/3" : "basis-1/3"
-                  } items-center space-x-2`}
+                  }}
                 >
-                  <div className="relative">
-                    {/* <div
+                  <div className="w-full h-full absolute left-0 bottom-0 rounded-full overflow-clip">
+                    <div className="relative w-full h-full">
+                      {item.chain.key !== "ethereum" && (
+                        <>
+                          <div
+                            className={`absolute left-[15px] right-[15px] lg:left-[18px] lg:right-[18px] bottom-[0px] h-[1px] lg:h-[2px] rounded-none font-semibold transition-width duration-300 `}
+                            style={{
+                              background: item.chain.colors[theme ?? "dark"][1],
+                              width: item.barWidth,
+                            }}
+                          ></div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div
+                    className={`flex ${
+                      isSidebarOpen ? "w-1/4 2xl:basis-1/3" : "basis-1/3"
+                    } items-center space-x-2`}
+                  >
+                    <div className="relative">
+                      {/* <div
                       className={`w-[34px] h-[29px] rounded-full ${
                         item.chain.border[theme ?? "dark"][1]
                       } ${selectedChains.includes(item.chain.key) ? "" : ""}`}
                     ></div> */}
-                    <Icon
-                      icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
-                      className="absolute -left-[14.5px] -top-[14.5px] w-[29px] h-[29px]"
-                      style={{
-                        color: item.chain.colors[theme ?? "dark"][1],
-                      }}
-                    />
-                    {/* <Icon
+                      <Icon
+                        icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
+                        className="absolute -left-[14.5px] -top-[14.5px] w-[29px] h-[29px]"
+                        style={{
+                          color: item.chain.colors[theme ?? "dark"][1],
+                        }}
+                      />
+                      {/* <Icon
                       icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
                       className="w-[29px] h-[29px]"
                       style={{
                         color: item.chain.colors[theme ?? "dark"][1],
                       }}
                     /> */}
-                  </div>
-                  <div className="flex-1 break-inside-avoid">
-                    <div className="flex-1 flex flex-col pl-4 lg:pl-5">
-                      <div className="flex w-full items-baseline text-sm font-bold leading-snug">
-                        {/* {item.data.daily.types.includes("usd") && (
+                    </div>
+                    <div className="flex-1 break-inside-avoid">
+                      <div className="flex-1 flex flex-col pl-4 lg:pl-5">
+                        <div className="flex w-full items-baseline text-sm font-bold leading-snug">
+                          {/* {item.data.daily.types.includes("usd") && (
                           <> */}
-                        {/* {showUsd ? (
+                          {/* {showUsd ? (
                               <div className="text-[13px] font-normal">$</div>
                             ) : (
                               <div className="text-[13px] font-normal">Ξ</div>
                             )} */}
-                        {getDisplayValue(item).prefix && (
-                          <div className="text-[13px] font-normal mr-[1px] leading-snug">
-                            {getDisplayValue(item).prefix}
-                          </div>
-                        )}
-                        {/* </> */}
-                        {/* )} */}
-                        {/* {item.data.daily.types.includes("usd")
+                          {getDisplayValue(item).prefix && (
+                            <div className="text-[13px] font-normal mr-[1px] leading-snug">
+                              {getDisplayValue(item).prefix}
+                            </div>
+                          )}
+                          {/* </> */}
+                          {/* )} */}
+                          {/* {item.data.daily.types.includes("usd")
                           ? Intl.NumberFormat(undefined, {
                               notation: "compact",
                               maximumFractionDigits: 2,
@@ -410,14 +414,14 @@ const MetricsTable = ({
                                 item.data.daily.data.length - 1
                               ][1],
                             )} */}
-                        {getDisplayValue(item).value}
-                        {getDisplayValue(item).suffix && (
-                          <div className="text-[13px] font-normal ml-0.5 leading-snug">
-                            {getDisplayValue(item).suffix}
-                          </div>
-                        )}
-                      </div>
-                      {/* <div className="relative w-full">
+                          {getDisplayValue(item).value}
+                          {getDisplayValue(item).suffix && (
+                            <div className="text-[13px] font-normal ml-0.5 leading-snug">
+                              {getDisplayValue(item).suffix}
+                            </div>
+                          )}
+                        </div>
+                        {/* <div className="relative w-full">
                         {item.chain.key !== "ethereum" && (
                           <>
                             <div className="absolute left-0 -top-[3px] w-full h-1 bg-black/10"></div>
@@ -430,21 +434,23 @@ const MetricsTable = ({
                           </>
                         )}
                       </div> */}
-                      <div
-                        className={`font-medium leading-snug text-ellipsis overflow-hidden ${
-                          isSidebarOpen ? "text-[10px] 2xl:text-xs" : "text-xs"
-                        }`}
-                      >
-                        {item.chain.label}
+                        <div
+                          className={`font-medium leading-snug text-ellipsis overflow-hidden ${
+                            isSidebarOpen
+                              ? "text-[10px] 2xl:text-xs"
+                              : "text-xs"
+                          }`}
+                        >
+                          {item.chain.label}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className={`basis-2/3 pr-4 flex font-medium`}>
-                  {["1d", "7d", "30d", "365d"].map((timespan) => (
-                    <div
-                      key={timespan}
-                      className={`text-right  
+                  <div className={`basis-2/3 pr-4 flex font-medium`}>
+                    {["1d", "7d", "30d", "365d"].map((timespan) => (
+                      <div
+                        key={timespan}
+                        className={`text-right  
                       ${
                         isSidebarOpen
                           ? "basis-1/3 text-sm 2xl:text-base 2xl:basis-1/4"
@@ -455,6 +461,7 @@ const MetricsTable = ({
                           ? "hidden 2xl:block"
                           : ""
                       }`}
+<<<<<<< HEAD
                     >
                       {item.data.changes[timespan][changesKey] === null ? (
                         <span className="text-gray-500 text-center mx-4 inline-block">
@@ -482,22 +489,77 @@ const MetricsTable = ({
                                       1000,
                                   ) / 10,
                                 ).toFixed(1);
+=======
+                      >
+                        {item.data.changes[timespan][0] === null ? (
+                          <span className="text-gray-500 text-center mx-4 inline-block">
+                            —
+                          </span>
+                        ) : (
+                          <>
+                            {(reversePerformer ? -1.0 : 1.0) *
+                              item.data.changes[timespan][0] >=
+                            0 ? (
+                              <div
+                                className={`text-[#45AA6F] dark:text-[#4CFF7E] ${
+                                  Math.abs(item.data.changes[timespan][0]) >= 10
+                                    ? "lg:text-[13px] lg:font-[550] 2xl:text-[14px] 2xl:font-[600]"
+                                    : ""
+                                }`}
+                              >
+                                {reversePerformer ? "-" : "+"}
+                                {(() => {
+                                  const rawPercentage = Math.abs(
+                                    Math.round(
+                                      item.data.changes[timespan][0] * 1000,
+                                    ) / 10,
+                                  ).toFixed(1);
+>>>>>>> dev
 
-                                const percentage = parseFloat(rawPercentage);
+                                  const percentage = parseFloat(rawPercentage);
 
-                                if (!isNaN(percentage)) {
-                                  // if (Math.abs(percentage) >= 1000)
-                                  //   return formatNumber(percentage);
+                                  if (!isNaN(percentage)) {
+                                    // if (Math.abs(percentage) >= 1000)
+                                    //   return formatNumber(percentage);
 
-                                  const formattedPercentage =
-                                    percentage.toFixed(1);
+                                    const formattedPercentage =
+                                      percentage.toFixed(1);
 
-                                  return formattedPercentage.length >= 4
-                                    ? Math.floor(percentage)
-                                    : formattedPercentage;
-                                } else {
-                                  return "Invalid Percentage";
+                                    return formattedPercentage.length >= 4
+                                      ? Math.floor(percentage)
+                                      : formattedPercentage;
+                                  } else {
+                                    return "Invalid Percentage";
+                                  }
+                                })()}
+                                %
+                              </div>
+                            ) : (
+                              <div
+                                className={`text-[#DD3408] dark:text-[#FF3838] ${
+                                  Math.abs(item.data.changes[timespan][0]) >= 10
+                                    ? "lg:text-[13px] lg:font-[550]  2xl:text-[14px] 2xl:font-[600]"
+                                    : ""
+                                }`}
+                              >
+                                {reversePerformer ? "+" : "-"}
+                                {
+                                  // Math.abs(item.data.changes[timespan][0]) >= 10
+                                  //   ? formatNumber(
+                                  //       Math.abs(
+                                  //         Math.round(
+                                  //           item.data.changes[timespan][0] * 1000,
+                                  //         ) / 10,
+                                  //       ),
+                                  //     )
+                                  //   :
+                                  Math.abs(
+                                    Math.round(
+                                      item.data.changes[timespan][0] * 1000,
+                                    ) / 10,
+                                  ).toFixed(1)
                                 }
+<<<<<<< HEAD
                               })()}
                               %
                             </div>
@@ -560,39 +622,73 @@ const MetricsTable = ({
                       className={`w-6 h-6 ${
                         item.chain.key === "ethereum"
                           ? showEthereumMainnet
+=======
+                                %
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <div
+                    className={`absolute  ${
+                      item.chain.key === "ethereum"
+                        ? showEthereumMainnet
+                          ? "-right-[19px] group-hover:-right-[20px]"
+                          : "-right-[19px]"
+                        : "-right-[20px]"
+                    }`}
+                  >
+                    <div className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className={`w-6 h-6 ${
+                          item.chain.key === "ethereum"
+                            ? showEthereumMainnet
+                              ? "opacity-0"
+                              : "opacity-100"
+                            : selectedChains.includes(item.chain.key)
+>>>>>>> dev
                             ? "opacity-0"
                             : "opacity-100"
-                          : selectedChains.includes(item.chain.key)
-                          ? "opacity-0"
-                          : "opacity-100"
-                      }`}
-                    >
-                      <circle
-                        xmlns="http://www.w3.org/2000/svg"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                      />
-                    </svg>
-                  </div>
-                  <div className="p-1 rounded-full bg-forest-50 dark:bg-forest-900">
-                    <Icon
-                      icon="feather:check-circle"
-                      className={`w-6 h-6 ${
-                        item.chain.key === "ethereum"
-                          ? showEthereumMainnet
+                        }`}
+                      >
+                        <circle
+                          xmlns="http://www.w3.org/2000/svg"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                        />
+                      </svg>
+                    </div>
+                    <div className="p-1 rounded-full bg-forest-50 dark:bg-forest-900">
+                      <Icon
+                        icon="feather:check-circle"
+                        className={`w-6 h-6 ${
+                          item.chain.key === "ethereum"
+                            ? showEthereumMainnet
+                              ? "opacity-100"
+                              : "opacity-0"
+                            : selectedChains.includes(item.chain.key)
                             ? "opacity-100"
                             : "opacity-0"
-                          : selectedChains.includes(item.chain.key)
-                          ? "opacity-100"
-                          : "opacity-0"
-                      }`}
-                    />
+                        }`}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </animated.div>
-          ))}
+              </animated.div>
+            ))}
+          </div>
         </div>
         {/* </div> */}
       </div>

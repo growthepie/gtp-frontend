@@ -70,7 +70,9 @@ export default function ChainAnimations({
       <animated.div
         key={chain}
         className={`relative flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium hover:cursor-pointer z-0 ${
-          ["arbitrum", "imx", "zkSync Era", "all_l2s"].includes(chain)
+          ["arbitrum", "imx", "gitcoin_pgn", "zkSync Era", "all_l2s"].includes(
+            chain,
+          )
             ? "text-white dark:text-black"
             : "text-white"
         } ${
@@ -83,6 +85,14 @@ export default function ChainAnimations({
           bottom: `${index * 45}px`,
         }}
         onClick={() => {
+          if (
+            Object.keys(selectedChains).filter(
+              (sc) => selectedChains[sc] === true,
+            ).length === 1 &&
+            selectedChains[chain]
+          )
+            return;
+
           setSelectedChains((prevSelectedChains) => ({
             ...prevSelectedChains,
             [chain]: !prevSelectedChains[chain],

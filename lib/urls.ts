@@ -59,5 +59,7 @@ export const LandingURL = "https://api.growthepie.xyz/v1/landing_page.json";
 
 export const MasterURL = "https://api.growthepie.xyz/v1/master.json";
 
+export const ContractsURL = "https://api.growthepie.xyz/v1/contracts.json";
+
 // mock urls
 // "http://localhost:3000/mock/v1/master.json";

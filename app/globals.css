@@ -79,6 +79,7 @@
 
 .splide__arrow {
   @apply !opacity-90;
+  @apply transition-opacity duration-200;
 }
 
 .splide__arrow:hover {
@@ -86,7 +87,7 @@
 }
 
 .splide__arrow:disabled {
-  @apply !opacity-50;
+  @apply !opacity-0;
 }
 
 .fade-edge-div {
@@ -106,6 +107,54 @@
   mask-image: var(--mask-image-content);
   mask-size: var(--mask-size-content);
   /* Position the content gradient in the top left, and the 
+  scroll gradient in the top right */
+  mask-position: 0 0, 100% 0;
+
+  /* We don't repeat our mask images */
+  mask-repeat: no-repeat, no-repeat;
+}
+
+.fade-edge-div-vertical {
+  position: relative;
+  overflow: visible;
+  /* mask fade distance, for use in mask calculations */
+  --mask-height: 10px;
+  /* The content mask is a linear gradient from top to bottom */
+  --mask-image-content: linear-gradient(
+    to bottom,
+    transparent 5px,
+    black var(--mask-height),
+    black calc(100% - var(--mask-height)),
+    transparent calc(100% - 5px)
+  );
+  /* Apply the mask image and mask size variables */
+  mask-image: var(--mask-image-content);
+  mask-size: var(--mask-size-content);
+  /* Position the content gradient in the top left, and the
+  scroll gradient in the top right */
+  mask-position: 0 0, 100% 0;
+
+  /* We don't repeat our mask images */
+  mask-repeat: no-repeat, no-repeat;
+}
+
+.fade-edge-div-vertical-hidden {
+  position: relative;
+  overflow: visible;
+  /* mask fade distance, for use in mask calculations */
+  --mask-height: 0px;
+  /* The content mask is a linear gradient from top to bottom */
+  --mask-image-content: linear-gradient(
+    to bottom,
+    transparent 5px,
+    black var(--mask-height),
+    black calc(100% - var(--mask-height)),
+    transparent calc(100% - 5px)
+  );
+  /* Apply the mask image and mask size variables */
+  mask-image: var(--mask-image-content);
+  mask-size: var(--mask-size-content);
+  /* Position the content gradient in the top left, and the
   scroll gradient in the top right */
   mask-position: 0 0, 100% 0;
 

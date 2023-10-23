@@ -195,11 +195,11 @@ export const AllChains = [
   },
   {
     label: "Public Goods Network",
-    icon: "/icons/Base.png",
+    icon: "/icons/PGN.png",
     key: "gitcoin_pgn",
     urlKey: "public-goods-network",
     chainType: "L2",
-    ecosystem: ["op-stack"],
+    ecosystem: ["op-stack", "op-super", "all-chains"],
     description:
       "Public Goods Network is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in July 2023.",
     border: {
@@ -221,7 +221,7 @@ export const AllChains = [
     key: "zora",
     urlKey: "zora",
     chainType: "L2",
-    ecosystem: ["op-stack"],
+    ecosystem: ["op-stack", "op-super", "all-chains"],
     description:
       "Zora is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in June 2023.",
     border: {

@@ -139,7 +139,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
               </div>
             </div>
             <div className="z-20 mt-[30px] h-[calc(100vh-100px)] w-full flex flex-col justify-between overflow-hidden relative">
-              <div className="flex-1 w-full overflow-x-hidden relative overflow-y-scroll scrollbar-none">
+              <div className="flex-1 w-full overflow-x-hidden relative overflow-y-scroll scrollbar-thin scrollbar-thumb-forest-1000/50 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
                 {navigationItems.map((item) => (
                   <SidebarMenuGroup
                     key={item.name + "_item"}
@@ -149,7 +149,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                 ))}
               </div>
 
-              <div className="flex flex-col justify-end py-6 relative mt-[20px] mb-[17px] ">
+              <div className="flex flex-col justify-end pt-3 pb-6 relative mb-[17px]">
                 <SidebarMenuGroup
                   key={apiDocsItem.name + "_item"}
                   item={apiDocsItem}

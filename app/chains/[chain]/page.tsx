@@ -11,6 +11,7 @@ import { ChainResponse } from "@/types/api/ChainResponse";
 import { ChainURLs, MasterURL } from "@/lib/urls";
 import Container from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
+import Image from "next/image";
 
 const Chain = ({ params }: { params: any }) => {
   const { chain } = params;
@@ -45,12 +46,21 @@ const Chain = ({ params }: { params: any }) => {
           <div className="flex flex-col w-full">
             <div className="flex flex-col md:flex-row justify-between items-start w-full">
               <div className="flex flex-col md:flex-row mb-[15px] md:mb-[19px] items-start">
-                <Heading
-                  className="text-2xl leading-snug text-[36px] break-inside-avoid"
-                  as="h1"
-                >
-                  {AllChainsByKeys[chainKey].label}
-                </Heading>
+                <div className="flex">
+                  <Image
+                    src="/GTP-Link.svg"
+                    alt="GTP Chain"
+                    className="object-contain w-[32px] h-[32px] self-center mr-[8px]"
+                    height={36}
+                    width={36}
+                  />
+                  <Heading
+                    className="text-2xl leading-snug text-[36px] break-inside-avoid"
+                    as="h1"
+                  >
+                    {AllChainsByKeys[chainKey].label}
+                  </Heading>
+                </div>
                 <div className="hidden md:flex items-start space-x-[7px] font-inter uppercase">
                   <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm ml-[19px]">
                     {master.chains[chainKey].technology}
@@ -110,24 +120,14 @@ const Chain = ({ params }: { params: any }) => {
                 </Link>
               </div>
             </div>
-            <Subheading
-              className="text-[16px] w-10/12 md:w-auto"
-              leftIcon={
-                AllChainsByKeys[chainKey].icon && (
-                  <div className="self-start md:self-center pr-[7px] pl-[0px] pt-0.5 md:pt-0 md:pr-[10px] md:pl-[30px]">
-                    <Icon
-                      icon={`gtp:${AllChainsByKeys[chainKey].urlKey}-logo-monochrome`}
-                      className="w-5 h-5 md:w-6 md:h-6"
-                    />
-                  </div>
-                )
-              }
-              iconContainerClassName="items-center mb-[15px] md:mb-[32px]"
-            >
-              {AllChainsByKeys[chainKey].description
-                ? AllChainsByKeys[chainKey].description
-                : ""}
-            </Subheading>
+            <div className="flex items-center w-[99%] mx-auto  mb-[30px]">
+              <div className="text-[16px]">
+                {AllChainsByKeys[chainKey].description
+                  ? AllChainsByKeys[chainKey].description
+                  : ""}
+              </div>
+            </div>
+
             <div className="flex md:hidden items-start space-x-[7px] font-inter uppercase px-[7px] mb-[21px]">
               <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm ml-[19px]">
                 {master.chains[chainKey].technology}
