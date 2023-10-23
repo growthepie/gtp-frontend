@@ -58,7 +58,7 @@ export const chainGroup = {
     icon: "feather:clock",
   },
   opstack: {
-    label: "OP STACK",
+    label: "OP CHAINS",
     icon: "feather:clock",
   },
   "other-optimistic": {
