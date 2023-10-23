@@ -112,7 +112,7 @@ export default function Home() {
           </Heading>
         </div>
         <Subheading className="text-base leading-normal md:leading-snug mb-[15px] pl-[5px] lg:pl-[45px] flex justify-between items-end space-x-2">
-          <div>Aggregated metrics across all tracked Layer 2s.</div>
+          <div>Aggregated daily metrics across all tracked Layer 2s.</div>
           {/* <div className="text-[0.6rem] md:text-xs font-medium px-1.5 py-0.5 border dark:border-forest-50 rounded-md select-none">
             7d rolling avg
           </div> */}
