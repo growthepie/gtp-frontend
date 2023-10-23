@@ -461,48 +461,21 @@ const MetricsTable = ({
                           ? "hidden 2xl:block"
                           : ""
                       }`}
-<<<<<<< HEAD
-                    >
-                      {item.data.changes[timespan][changesKey] === null ? (
-                        <span className="text-gray-500 text-center mx-4 inline-block">
-                          —
-                        </span>
-                      ) : (
-                        <>
-                          {(reversePerformer ? -1.0 : 1.0) *
-                            item.data.changes[timespan][changesKey] >=
-                          0 ? (
-                            <div
-                              className={`text-[#45AA6F] dark:text-[#4CFF7E] ${
-                                Math.abs(
-                                  item.data.changes[timespan][changesKey],
-                                ) >= 10
-                                  ? "lg:text-[13px] lg:font-[550] 2xl:text-[14px] 2xl:font-[600]"
-                                  : ""
-                              }`}
-                            >
-                              {reversePerformer ? "-" : "+"}
-                              {(() => {
-                                const rawPercentage = Math.abs(
-                                  Math.round(
-                                    item.data.changes[timespan][changesKey] *
-                                      1000,
-                                  ) / 10,
-                                ).toFixed(1);
-=======
                       >
-                        {item.data.changes[timespan][0] === null ? (
+                        {item.data.changes[timespan][changesKey] === null ? (
                           <span className="text-gray-500 text-center mx-4 inline-block">
                             —
                           </span>
                         ) : (
                           <>
                             {(reversePerformer ? -1.0 : 1.0) *
-                              item.data.changes[timespan][0] >=
+                              item.data.changes[timespan][changesKey] >=
                             0 ? (
                               <div
                                 className={`text-[#45AA6F] dark:text-[#4CFF7E] ${
-                                  Math.abs(item.data.changes[timespan][0]) >= 10
+                                  Math.abs(
+                                    item.data.changes[timespan][changesKey],
+                                  ) >= 10
                                     ? "lg:text-[13px] lg:font-[550] 2xl:text-[14px] 2xl:font-[600]"
                                     : ""
                                 }`}
@@ -511,10 +484,10 @@ const MetricsTable = ({
                                 {(() => {
                                   const rawPercentage = Math.abs(
                                     Math.round(
-                                      item.data.changes[timespan][0] * 1000,
+                                      item.data.changes[timespan][changesKey] *
+                                        1000,
                                     ) / 10,
                                   ).toFixed(1);
->>>>>>> dev
 
                                   const percentage = parseFloat(rawPercentage);
 
@@ -537,7 +510,9 @@ const MetricsTable = ({
                             ) : (
                               <div
                                 className={`text-[#DD3408] dark:text-[#FF3838] ${
-                                  Math.abs(item.data.changes[timespan][0]) >= 10
+                                  Math.abs(
+                                    item.data.changes[timespan][changesKey],
+                                  ) >= 10
                                     ? "lg:text-[13px] lg:font-[550]  2xl:text-[14px] 2xl:font-[600]"
                                     : ""
                                 }`}
@@ -555,74 +530,11 @@ const MetricsTable = ({
                                   //   :
                                   Math.abs(
                                     Math.round(
-                                      item.data.changes[timespan][0] * 1000,
+                                      item.data.changes[timespan][changesKey] *
+                                        1000,
                                     ) / 10,
                                   ).toFixed(1)
                                 }
-<<<<<<< HEAD
-                              })()}
-                              %
-                            </div>
-                          ) : (
-                            <div
-                              className={`text-[#DD3408] dark:text-[#FF3838] ${
-                                Math.abs(
-                                  item.data.changes[timespan][changesKey],
-                                ) >= 10
-                                  ? "lg:text-[13px] lg:font-[550]  2xl:text-[14px] 2xl:font-[600]"
-                                  : ""
-                              }`}
-                            >
-                              {reversePerformer ? "+" : "-"}
-                              {
-                                // Math.abs(item.data.changes[timespan][0]) >= 10
-                                //   ? formatNumber(
-                                //       Math.abs(
-                                //         Math.round(
-                                //           item.data.changes[timespan][0] * 1000,
-                                //         ) / 10,
-                                //       ),
-                                //     )
-                                //   :
-                                Math.abs(
-                                  Math.round(
-                                    item.data.changes[timespan][changesKey] *
-                                      1000,
-                                  ) / 10,
-                                ).toFixed(1)
-                              }
-                              %
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <div
-                  className={`absolute  ${
-                    item.chain.key === "ethereum"
-                      ? showEthereumMainnet
-                        ? "-right-[19px] group-hover:-right-[20px]"
-                        : "-right-[19px]"
-                      : "-right-[20px]"
-                  }`}
-                >
-                  <div className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className={`w-6 h-6 ${
-                        item.chain.key === "ethereum"
-                          ? showEthereumMainnet
-=======
                                 %
                               </div>
                             )}
@@ -657,7 +569,6 @@ const MetricsTable = ({
                               ? "opacity-0"
                               : "opacity-100"
                             : selectedChains.includes(item.chain.key)
->>>>>>> dev
                             ? "opacity-0"
                             : "opacity-100"
                         }`}
