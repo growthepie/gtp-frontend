@@ -9,6 +9,7 @@ import Backgrounds from "@/components/layout/Backgrounds";
 import { Metadata } from "next";
 import Head from "./head";
 import { Graph } from "schema-dts";
+import Notification from "@/components/Notification";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",
@@ -164,6 +165,9 @@ export default function RootLayout({
                   <Header />
                   <main className="flex-1 w-full mx-auto z-10 mb-[165px]">
                     {children}
+                    <div className="fixed bottom-[120px] right-[120px]">
+                      <Notification />
+                    </div>
                   </main>
                   <div className="mt-24 w-full text-center py-6 absolute bottom-0">
                     <div className="text-[0.7rem] text-inherit dark:text-forest-400 leading-[2] ml-8 z-20">
