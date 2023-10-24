@@ -62,7 +62,6 @@ export default function LandingMetricsTable({
         return Object.keys(AllChainsByKeys).includes(chain);
       })
       .map((chain: any) => {
-        console.log(chain);
         return {
           data: data[chain],
           chain: AllChainsByKeys[chain],
