@@ -4,6 +4,11 @@ import { useSpring, animated, config } from "react-spring";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 
+interface ID {
+  id: string; // Adjust the type according to your actual data structure
+  // Add other properties if necessary
+}
+
 const Notification = () => {
   const [circleDisappear, setCircleDisappear] = useState(false);
   const [data, setData] = useState<Array<object> | null>(null);
@@ -11,7 +16,7 @@ const Notification = () => {
   const [isEnabled, setIsEnabled] = useState(false);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [currentTuple, setCurrentTuple] = useState<object | null>(null);
-  const [loadedMessages, setLoadedMessages] = useState([]);
+  const [loadedMessages, setLoadedMessages] = useState<ID[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
