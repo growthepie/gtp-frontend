@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
-import { useSpring, animated, config } from "react-spring";
+import { useEffect, useMemo, useState, useRef } from "react";
+import { useSpring, animated, config, useTransition } from "react-spring";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 
@@ -18,6 +18,7 @@ const Notification = () => {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [currentTuple, setCurrentTuple] = useState<object | null>(null);
   const [loadedMessages, setLoadedMessages] = useState<ID[]>([]);
+  const leaveRef = useRef();
 
   function isoDateTimeToUnix(
     dateString: string,
@@ -126,92 +127,135 @@ const Notification = () => {
     }
   }, [data, isEnabled, currentBannerIndex]);
 
+  useEffect(() => {
+    const animationDuration = 7800; // Time to stay in position
+    const leaveDuration = 200;
+
+    if (isEnabled && !loadedMessages.includes(data[currentBannerIndex]["id"])) {
+      const timer = setTimeout(() => {
+        if (currentBannerIndex < data.length - 1) {
+          setCurrentBannerIndex(currentBannerIndex + 1);
+          setCircleDisappear(false);
+        } else {
+          setCircleDisappear(true);
+        }
+
+        // Mark the current item as loaded
+        const currentItem = data[currentBannerIndex];
+        setLoadedMessages((prevLoadedMessages) => [
+          ...prevLoadedMessages,
+          currentItem.id,
+        ]);
+
+        // Check if the current item should leave immediately
+        if (loadedMessages.includes(currentItem.id)) {
+          setCircleDisappear(true);
+          leaveRef.current = setTimeout(() => {
+            // Remove the item from loadedMessages after leaveDuration
+            setLoadedMessages(
+              loadedMessages.filter((id) => id !== currentItem.id),
+            );
+          }, leaveDuration);
+        } else {
+          // Clear any pending leave animation
+          clearTimeout(leaveRef.current);
+        }
+      }, animationDuration);
+
+      // Clear the timer to leave after the animationDuration
+      return () => {
+        clearTimeout(timer);
+        // Clear any pending leave animation on unmount
+        clearTimeout(leaveRef.current);
+      };
+    }
+  }, [currentBannerIndex, data, isEnabled, loadedMessages]);
+
+  const transitions = useTransition(
+    data ? (isEnabled ? [data[currentBannerIndex]] : []) : [],
+    {
+      from: { right: "0px", bottom: "120px", opacity: 1 },
+      enter: { right: "120px", bottom: "120px", opacity: 1 },
+      leave: { right: "120px", bottom: "200px", opacity: 0 }, // Leave in 200 milliseconds
+      config: { duration: 500 }, // Custom duration for "from" and "enter"
+    },
+  );
+
   return (
-    data && (
-      <div>
-        {data.map((tuple, index) => {
-          // Only render the current banner
-
-          if (
-            index !== currentBannerIndex ||
-            loadedMessages.includes(data[index]["id"]) ||
-            data[index]["fields"]["Status"] !== "Enabled"
-          ) {
-            return null;
-          }
-
-          return (
-            <div
-              key={index}
-              className={`w-full z-999 ${
-                circleDisappear ? "opacity-0" : "opacity-100"
-              }`}
-            >
-              <div className="flex items-center dark:border-forest-200 border-[1px] dark:bg-forest-900 bg-white w-[500px] h-[50px] rounded-full px-[12px] relative">
-                <div className="w-[90%]"> {tuple["fields"]["Description"]}</div>
-                <div
-                  className={`w-[10%] h-[90%] relative flex items-center justify-center  ${
-                    circleDisappear
-                      ? "hover:cursor-default"
-                      : "hover:cursor-pointer"
-                  }`}
-                  onClick={() => {
-                    // Check if there are more items in the queue
-                    setLoadedMessages([...loadedMessages, data[index]["id"]]);
-                    if (currentBannerIndex < data.length - 1) {
-                      // Increment the current banner index to move to the next item
-                      setCurrentBannerIndex(currentBannerIndex + 1);
-                      // Reset the animation
-                      setCircleDisappear(false);
-                    } else {
-                      // If this is the last item, close the current banner
-                      setCircleDisappear(true);
-                    }
-                  }}
+    <div className=" ">
+      {transitions((props, item, key) => {
+        return (
+          <animated.div
+            style={props}
+            key={key}
+            className="fixed right-[120px] bottom-[120px] z-999"
+          >
+            <div className="flex items-center dark:border-forest-400 border-b-[1px] dark:bg-[#1F2726] bg-white w-[500px] h-[50px] rounded-full px-[12px] relative">
+              <div className="w-[90%] text-[16px]">
+                {" "}
+                {item["fields"]["Description"]}
+              </div>
+              <div
+                className={`w-[10%] h-[90%] hover:bg-forest-700 rounded-full relative flex items-center justify-center ${
+                  circleDisappear
+                    ? "hover:cursor-default"
+                    : "hover:cursor-pointer"
+                }`}
+                onClick={() => {
+                  // Check if there are more items in the queue
+                  if (loadedMessages.includes(item.id)) {
+                    setCircleDisappear(true);
+                    // Clear any pending leave animation
+                    clearTimeout(leaveRef.current);
+                    // Remove the item from loadedMessages after leaveDuration
+                    setLoadedMessages(
+                      loadedMessages.filter((id) => id !== item.id),
+                    );
+                  }
+                }}
+              >
+                <Icon icon="ph:x" className="absolute w-[30px] h-[30px]" />
+                <svg
+                  id="circle-svg"
+                  width="100%"
+                  height="100%"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 124 124"
                 >
-                  <Icon icon="ph:x" className="absolute w-[30px] h-[30px]" />
-                  <svg
-                    id="circle-svg"
-                    width="100%"
-                    height="100%"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 124 124"
-                  >
-                    <circle
-                      cx="62"
-                      cy="62"
-                      r="50"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="8"
-                      strokeDasharray="392"
-                      strokeDashoffset="392"
-                      className="animate-circle-disappear"
-                    />
-                  </svg>
-                  <style>
-                    {`
-                        @keyframes circleDisappear {
-                          0% {
-                            stroke-dashoffset: 0;
-                          }
-                          100% {
-                            stroke-dashoffset: 392; // Matched to the strokeDasharray
-                          }
-                        }
-  
-                        .animate-circle-disappear {
-                          animation: circleDisappear 8s linear;
-                        }
-                      `}
-                  </style>
-                </div>
+                  <circle
+                    cx="62"
+                    cy="62"
+                    r="50"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="8"
+                    strokeDasharray="392"
+                    strokeDashoffset="392"
+                    className="animate-circle-disappear"
+                  />
+                </svg>
+                <style>
+                  {`
+                  @keyframes circleDisappear {
+                    0% {
+                      stroke-dashoffset: 0;
+                    }
+                    100% {
+                      stroke-dashoffset: 392; // Matched to the strokeDasharray
+                    }
+                  }
+
+                  .animate-circle-disappear {
+                    animation: circleDisappear 8s linear;
+                  }
+                `}
+                </style>
               </div>
             </div>
-          );
-        })}
-      </div>
-    )
+          </animated.div>
+        );
+      })}
+    </div>
   );
 };
 

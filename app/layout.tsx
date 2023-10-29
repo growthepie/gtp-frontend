@@ -165,7 +165,7 @@ export default function RootLayout({
                   <Header />
                   <main className="flex-1 w-full mx-auto z-10 mb-[165px]">
                     {children}
-                    <div className="fixed bottom-[120px] right-[120px]">
+                    <div className="">
                       <Notification />
                     </div>
                   </main>
