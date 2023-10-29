@@ -9,14 +9,48 @@ interface ID {
   // Add other properties if necessary
 }
 
+const currentDateTime = new Date().getTime();
+
 const Notification = () => {
   const [circleDisappear, setCircleDisappear] = useState(false);
   const [data, setData] = useState<Array<object> | null>(null);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
-  const [isEnabled, setIsEnabled] = useState(false);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [currentTuple, setCurrentTuple] = useState<object | null>(null);
   const [loadedMessages, setLoadedMessages] = useState<ID[]>([]);
+
+  function isoDateTimeToUnix(
+    dateString: string,
+    timeString: string,
+  ): number | null {
+    if (typeof dateString !== "string" || typeof timeString !== "string") {
+      console.error("Invalid date or time type");
+      return null;
+    }
+
+    const dateParts = dateString.split("-").map(Number);
+    const timeParts = timeString.split(":").map(Number);
+
+    if (dateParts.length !== 3 || timeParts.length !== 3) {
+      console.error("Invalid date or time length");
+      return null;
+    }
+
+    // Create a JavaScript Date object with the parsed date and time, and set it to the local time zone
+    const localDate = new Date(
+      dateParts[0],
+      dateParts[1] - 1, // Month is 0-based in JavaScript
+      dateParts[2],
+      timeParts[0],
+      timeParts[1],
+      timeParts[2],
+    );
+
+    // Get the Unix timestamp (milliseconds since January 1, 1970)
+    const unixTimestamp = localDate.getTime();
+
+    return unixTimestamp;
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,10 +62,6 @@ const Notification = () => {
         setData(result.records);
 
         // Determine whether to set isEnabled based on the data
-        const shouldEnable = result.records.some(
-          (tuple) => tuple.fields.Status === "Enabled",
-        );
-        setIsEnabled(shouldEnable);
       } catch (error) {
         console.error("Error fetching data: ", error);
       }
@@ -40,21 +70,62 @@ const Notification = () => {
     fetchData();
   }, []);
 
+  const datePass = useMemo(() => {
+    if (data) {
+      const startDateTime = isoDateTimeToUnix(
+        data[currentBannerIndex]["fields"]["Start Date"],
+        data[currentBannerIndex]["fields"]["Start Time"],
+      );
+      const endDateTime = isoDateTimeToUnix(
+        data[currentBannerIndex]["fields"]["End Date"],
+        data[currentBannerIndex]["fields"]["End Time"],
+      );
+
+      if (endDateTime && startDateTime) {
+        if (currentDateTime < endDateTime && currentDateTime > startDateTime) {
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }, [data, currentBannerIndex]);
+
+  const isEnabled = useMemo(() => {
+    if (data) {
+      if (data[currentBannerIndex]["fields"]["Status"] === "Enabled") {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }, [data, currentBannerIndex]);
+
   useEffect(() => {
-    if (data && isEnabled) {
+    if (data && isEnabled && datePass) {
       const timer = setTimeout(() => {
         setCurrentBannerIndex((currentBannerIndex + 1) % data.length);
         setCircleDisappear(false);
         setLoadedMessages([...loadedMessages, data[currentBannerIndex]["id"]]);
       }, 8000);
+
       return () => {
         clearTimeout(timer);
       };
+    } else if (data) {
+      // If isEnabled is false, immediately move to the next banner
+      setCurrentBannerIndex((currentBannerIndex + 1) % data.length);
+      setCircleDisappear(false);
+      setLoadedMessages([...loadedMessages, data[currentBannerIndex]["id"]]);
     }
   }, [data, isEnabled, currentBannerIndex]);
-  console.log(data ? data : "No Data");
-  console.log(loadedMessages ? loadedMessages : "No messages");
-  console.log(currentBannerIndex);
+
   return (
     data && (
       <div>
@@ -63,7 +134,8 @@ const Notification = () => {
 
           if (
             index !== currentBannerIndex ||
-            loadedMessages.includes(data[index]["id"])
+            loadedMessages.includes(data[index]["id"]) ||
+            data[index]["fields"]["Status"] !== "Enabled"
           ) {
             return null;
           }
