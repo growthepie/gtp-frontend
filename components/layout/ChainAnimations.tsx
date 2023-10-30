@@ -26,7 +26,7 @@ export default function ChainAnimations({
 }) {
   const { theme } = useTheme();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-
+  const [isShaking, setIsShaking] = useState(false);
   const [width, setWidth] = useState(() => {
     if (sortedValues && value) {
       const largestValue = Math.max(
@@ -79,7 +79,8 @@ export default function ChainAnimations({
           selectedChains[chain]
             ? AllChainsByKeys[chain].backgrounds[theme][1]
             : `${AllChainsByKeys[chain].backgrounds[theme][1]} `
-        }`}
+        }
+        ${isShaking ? "animate-shake " : ""}`}
         style={{
           width: width,
           bottom: `${index * 45}px`,
@@ -101,6 +102,12 @@ export default function ChainAnimations({
               ...prevSelectedChains,
               [chain]: !prevSelectedChains[chain],
             }));
+          } else {
+            console.log("Here we are");
+            setIsShaking(true);
+            setTimeout(() => {
+              setIsShaking(false);
+            }, 500);
           }
         }}
       >
@@ -166,8 +173,8 @@ export default function ChainAnimations({
             >
               <Icon
                 icon="feather:check-circle"
-                className={`w-[24px] h-[24px] opacity-100 text-white ${
-                  !selectedChains[chain] ? "opacity-0" : ""
+                className={`w-[24px] h-[24px] text-white ${
+                  !selectedChains[chain] ? "opacity-0" : "opacity-100"
                 }`}
               />
             </div>
