@@ -92,11 +92,16 @@ export default function ChainAnimations({
             selectedChains[chain]
           )
             return;
-
-          setSelectedChains((prevSelectedChains) => ({
-            ...prevSelectedChains,
-            [chain]: !prevSelectedChains[chain],
-          }));
+          if (
+            Object.keys(selectedChains).filter((chain) => selectedChains[chain])
+              .length > 2 ||
+            !selectedChains[chain]
+          ) {
+            setSelectedChains((prevSelectedChains) => ({
+              ...prevSelectedChains,
+              [chain]: !prevSelectedChains[chain],
+            }));
+          }
         }}
       >
         <div

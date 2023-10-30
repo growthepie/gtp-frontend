@@ -228,7 +228,6 @@ export default function CategoryMetrics({
 
     return chainValues
       .filter(([item]) => {
-        console.log(item);
         const filterChains =
           AllChainsByKeys[item].ecosystem.includes(chainEcosystemFilter);
 
@@ -414,7 +413,7 @@ export default function CategoryMetrics({
               ][currChain];
             })
             .filter((item) => item);
-          console.log(selectedSubcategoriesData);
+
           // get a sorted list of all the unix timestamps with duplicates removed
           const unixList = selectedSubcategoriesData
             .reduce((acc, curr) => {
@@ -424,7 +423,7 @@ export default function CategoryMetrics({
             .filter((item, i, arr) => {
               return i === 0 || item !== arr[i - 1];
             });
-          console.log(unixList);
+
           // create a new array of arrays with the unix timestamp as the key and the values for each subcategory as the value
           const unixData = unixList
             .map((unix) => {
