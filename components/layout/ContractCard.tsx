@@ -84,7 +84,7 @@ export default function ContractCard({
       }&subcategories=${data[types.indexOf("sub_category_key")]}`}
     >
       <div className="group flex flex-col px-[22px] py-[14px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] hover:cursor-pointer hover:bg-forest-100 hover:dark:bg-forest-800 transition-colors duration-200 min-h-[156px]">
-        <div className="flex flex-row justify-between items-center w-full relative">
+        <div className="flex flex-row justify-between items-center w-full relative ">
           <div className="flex flex-row items-center">
             <div className="flex flex-col">
               <div className="flex items-center space-x-1.5">
@@ -206,8 +206,12 @@ export default function ContractCard({
             </div>
           </div>
         </div>
-        <div className="flex flex-row justify-between items-center w-full">
-          <div className="flex flex-row items-center space-x-1 text-xs md:text-sm">
+        <div className="flex flex-row justify-between items-end  w-full">
+          <div
+            className={`flex flex-row items-center space-x-1 text-xs md:text-sm ${
+              data[types.indexOf("name")] ? "pt-0" : " pt-[22px]"
+            }`}
+          >
             {master && (
               <div className="flex flex-row items-center space-x-1">
                 {
