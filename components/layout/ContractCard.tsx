@@ -83,7 +83,7 @@ export default function ContractCard({
         data[types.indexOf("main_category_key")]
       }&subcategories=${data[types.indexOf("sub_category_key")]}`}
     >
-      <div className="group flex flex-col px-[22px] py-[14px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] hover:cursor-pointer hover:bg-forest-100 hover:dark:bg-forest-800 transition-colors duration-200">
+      <div className="group flex flex-col px-[22px] py-[14px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] hover:cursor-pointer hover:bg-forest-100 hover:dark:bg-forest-800 transition-colors duration-200 min-h-[156px]">
         <div className="flex flex-row justify-between items-center w-full relative">
           <div className="flex flex-row items-center">
             <div className="flex flex-col">
