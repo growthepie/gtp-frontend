@@ -19,6 +19,7 @@ const Notification = () => {
   const [currentTuple, setCurrentTuple] = useState<object | null>(null);
   const [loadedMessages, setLoadedMessages] = useState<ID[]>([]);
   const [currentMessage, setCurrentMessage] = useState<string | null>(null);
+  const [dataLength, setDataLength] = useState(0);
   const leaveRef = useRef();
 
   function isoDateTimeToUnix(
@@ -119,7 +120,7 @@ const Notification = () => {
         const leaveTimer = setTimeout(() => {
           setLoadedMessages((prevLoadedMessages) => [
             ...prevLoadedMessages,
-            currentItem.id,
+            currentItem["id"],
           ]);
         }, leaveDuration);
       }, 8000);
@@ -138,7 +139,11 @@ const Notification = () => {
     const animationDuration = 8000; // Time to stay in position
     const leaveDuration = 400;
 
-    if (isEnabled && !loadedMessages.includes(data[currentBannerIndex]["id"])) {
+    if (
+      data &&
+      isEnabled &&
+      !loadedMessages.includes(data[currentBannerIndex]["id"])
+    ) {
       const timer = setTimeout(() => {
         const currentItem = data[currentBannerIndex];
 
@@ -147,7 +152,7 @@ const Notification = () => {
         const leaveTimer = setTimeout(() => {
           setLoadedMessages((prevLoadedMessages) => [
             ...prevLoadedMessages,
-            currentItem.id,
+            currentItem["id"],
           ]);
         }, leaveDuration);
 
@@ -174,63 +179,66 @@ const Notification = () => {
   );
   console.log(loadedMessages);
   return (
-    <div className=" ">
-      {transitions((props, item, key) => {
-        if (loadedMessages.includes(item.id)) {
-          return null;
-        }
-        return (
-          <animated.div
-            style={props}
-            key={key}
-            className="fixed right-[120px] bottom-[120px] z-999"
-          >
-            <div className="flex items-center dark:border-forest-400 border-b-[1px] dark:bg-[#1F2726] bg-white w-[500px] h-[50px] rounded-full px-[12px] relative">
-              <div className="w-[90%] text-[16px]">
-                {" "}
-                {item["fields"]["Description"]}
-              </div>
-              <div
-                className={`w-[10%] h-[90%] hover:bg-forest-700 rounded-full relative flex items-center justify-center ${
-                  circleDisappear
-                    ? "hover:cursor-default"
-                    : "hover:cursor-pointer"
-                }`}
-                onClick={() => {
-                  const leaveDuration = 400;
+    data && (
+      <div className=" ">
+        {transitions((props, item, key) => {
+          if (loadedMessages.includes(item["id"])) {
+            return null;
+          }
+          return (
+            <animated.div
+              style={props}
+              key={item["id"]}
+              className="fixed right-[120px] bottom-[120px] z-999"
+            >
+              <div className="flex items-center dark:border-forest-400 border-b-[1px] dark:bg-[#1F2726] bg-white w-[500px] h-[50px] rounded-full px-[12px] relative">
+                <div className="w-[90%] text-[16px]">
+                  {" "}
+                  {item["fields"]["Description"]}
+                </div>
+                <div
+                  className={`w-[10%] h-[90%] hover:bg-forest-700 rounded-full relative flex items-center justify-center ${
+                    circleDisappear
+                      ? "hover:cursor-default"
+                      : "hover:cursor-pointer"
+                  }`}
+                  onClick={() => {
+                    const leaveDuration = 400;
 
-                  setCurrentBannerIndex((currentBannerIndex + 1) % data.length);
-                  setCircleDisappear(false);
-                  const leaveTimer = setTimeout(() => {
-                    setLoadedMessages((prevLoadedMessages) => [
-                      ...prevLoadedMessages,
-                      item.id,
-                    ]);
-                  }, leaveDuration);
-                }}
-              >
-                <Icon icon="ph:x" className="absolute w-[30px] h-[30px]" />
-                <svg
-                  id="circle-svg"
-                  width="100%"
-                  height="100%"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 124 124"
+                    setCurrentBannerIndex(
+                      (currentBannerIndex + 1) % data.length,
+                    );
+                    setCircleDisappear(false);
+                    const leaveTimer = setTimeout(() => {
+                      setLoadedMessages((prevLoadedMessages) => [
+                        ...prevLoadedMessages,
+                        item["id"],
+                      ]);
+                    }, leaveDuration);
+                  }}
                 >
-                  <circle
-                    cx="62"
-                    cy="62"
-                    r="50"
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="8"
-                    strokeDasharray="392"
-                    strokeDashoffset="392"
-                    className="animate-circle-disappear"
-                  />
-                </svg>
-                <style>
-                  {`
+                  <Icon icon="ph:x" className="absolute w-[30px] h-[30px]" />
+                  <svg
+                    id="circle-svg"
+                    width="100%"
+                    height="100%"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 124 124"
+                  >
+                    <circle
+                      cx="62"
+                      cy="62"
+                      r="50"
+                      fill="none"
+                      stroke="white"
+                      strokeWidth="8"
+                      strokeDasharray="392"
+                      strokeDashoffset="392"
+                      className="animate-circle-disappear"
+                    />
+                  </svg>
+                  <style>
+                    {`
                   @keyframes circleDisappear {
                     0% {
                       stroke-dashoffset: 0;
@@ -244,13 +252,14 @@ const Notification = () => {
                     animation: circleDisappear 8s linear;
                   }
                 `}
-                </style>
+                  </style>
+                </div>
               </div>
-            </div>
-          </animated.div>
-        );
-      })}
-    </div>
+            </animated.div>
+          );
+        })}
+      </div>
+    )
   );
 };
 
