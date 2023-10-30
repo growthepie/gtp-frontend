@@ -18,6 +18,7 @@ const Notification = () => {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [currentTuple, setCurrentTuple] = useState<object | null>(null);
   const [loadedMessages, setLoadedMessages] = useState<ID[]>([]);
+  const [currentMessage, setCurrentMessage] = useState<string | null>(null);
   const leaveRef = useRef();
 
   function isoDateTimeToUnix(
@@ -110,12 +111,19 @@ const Notification = () => {
 
   useEffect(() => {
     if (data && isEnabled && datePass) {
+      const leaveDuration = 400;
+      const currentItem = data[currentBannerIndex];
       const timer = setTimeout(() => {
         setCurrentBannerIndex((currentBannerIndex + 1) % data.length);
         setCircleDisappear(false);
-        setLoadedMessages([...loadedMessages, data[currentBannerIndex]["id"]]);
+        const leaveTimer = setTimeout(() => {
+          setLoadedMessages((prevLoadedMessages) => [
+            ...prevLoadedMessages,
+            currentItem.id,
+          ]);
+        }, leaveDuration);
       }, 8000);
-
+      console.log(currentBannerIndex);
       return () => {
         clearTimeout(timer);
       };
@@ -123,43 +131,27 @@ const Notification = () => {
       // If isEnabled is false, immediately move to the next banner
       setCurrentBannerIndex((currentBannerIndex + 1) % data.length);
       setCircleDisappear(false);
-      setLoadedMessages([...loadedMessages, data[currentBannerIndex]["id"]]);
     }
   }, [data, isEnabled, currentBannerIndex]);
 
   useEffect(() => {
-    const animationDuration = 7800; // Time to stay in position
-    const leaveDuration = 200;
+    const animationDuration = 8000; // Time to stay in position
+    const leaveDuration = 400;
 
     if (isEnabled && !loadedMessages.includes(data[currentBannerIndex]["id"])) {
       const timer = setTimeout(() => {
-        if (currentBannerIndex < data.length - 1) {
-          setCurrentBannerIndex(currentBannerIndex + 1);
-          setCircleDisappear(false);
-        } else {
-          setCircleDisappear(true);
-        }
+        const currentItem = data[currentBannerIndex];
+
+        setCurrentBannerIndex((currentBannerIndex + 1) % data.length);
+        setCircleDisappear(false);
+        const leaveTimer = setTimeout(() => {
+          setLoadedMessages((prevLoadedMessages) => [
+            ...prevLoadedMessages,
+            currentItem.id,
+          ]);
+        }, leaveDuration);
 
         // Mark the current item as loaded
-        const currentItem = data[currentBannerIndex];
-        setLoadedMessages((prevLoadedMessages) => [
-          ...prevLoadedMessages,
-          currentItem.id,
-        ]);
-
-        // Check if the current item should leave immediately
-        if (loadedMessages.includes(currentItem.id)) {
-          setCircleDisappear(true);
-          leaveRef.current = setTimeout(() => {
-            // Remove the item from loadedMessages after leaveDuration
-            setLoadedMessages(
-              loadedMessages.filter((id) => id !== currentItem.id),
-            );
-          }, leaveDuration);
-        } else {
-          // Clear any pending leave animation
-          clearTimeout(leaveRef.current);
-        }
       }, animationDuration);
 
       // Clear the timer to leave after the animationDuration
@@ -180,10 +172,13 @@ const Notification = () => {
       config: { duration: 500 }, // Custom duration for "from" and "enter"
     },
   );
-
+  console.log(loadedMessages);
   return (
     <div className=" ">
       {transitions((props, item, key) => {
+        if (loadedMessages.includes(item.id)) {
+          return null;
+        }
         return (
           <animated.div
             style={props}
@@ -202,16 +197,16 @@ const Notification = () => {
                     : "hover:cursor-pointer"
                 }`}
                 onClick={() => {
-                  // Check if there are more items in the queue
-                  if (loadedMessages.includes(item.id)) {
-                    setCircleDisappear(true);
-                    // Clear any pending leave animation
-                    clearTimeout(leaveRef.current);
-                    // Remove the item from loadedMessages after leaveDuration
-                    setLoadedMessages(
-                      loadedMessages.filter((id) => id !== item.id),
-                    );
-                  }
+                  const leaveDuration = 400;
+
+                  setCurrentBannerIndex((currentBannerIndex + 1) % data.length);
+                  setCircleDisappear(false);
+                  const leaveTimer = setTimeout(() => {
+                    setLoadedMessages((prevLoadedMessages) => [
+                      ...prevLoadedMessages,
+                      item.id,
+                    ]);
+                  }, leaveDuration);
                 }}
               >
                 <Icon icon="ph:x" className="absolute w-[30px] h-[30px]" />
