@@ -1654,6 +1654,7 @@ export default function CategoryMetrics({
                       selectedMode={selectedMode}
                       selectedChains={selectedChains}
                       setSelectedChains={setSelectedChains}
+                      selectedCategory={selectedCategory}
                     />
                   </animated.div>
                 ))}

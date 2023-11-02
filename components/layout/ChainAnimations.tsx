@@ -14,6 +14,7 @@ export default function ChainAnimations({
   selectedMode,
   selectedChains,
   setSelectedChains,
+  selectedCategory,
 }: {
   chain: string;
   value: number;
@@ -23,10 +24,12 @@ export default function ChainAnimations({
   selectedMode: string;
   selectedChains: Object;
   setSelectedChains: (show: Object) => void;
+  selectedCategory: string;
 }) {
   const { theme } = useTheme();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [isShaking, setIsShaking] = useState(false);
+
   const [width, setWidth] = useState(() => {
     if (sortedValues && value) {
       const largestValue = Math.max(
@@ -44,13 +47,26 @@ export default function ChainAnimations({
     }
   });
 
-  const chainSize = useMemo(() => {
-    if (selectedMode === "gas_fees_" && selectedChains["imx"]) {
-      return 2;
+  const availableSelectedChains = useMemo(() => {
+    let counter = 0;
+    Object.keys(sortedValues).forEach((chain) => {
+      if (selectedChains[sortedValues[chain][0]]) {
+        counter++;
+      }
+    });
+
+    if (
+      selectedMode === "gas_fees_" &&
+      selectedChains["imx"] &&
+      Object.keys(sortedValues).some(
+        (chain) => sortedValues[chain][0] === "imx",
+      )
+    ) {
+      return counter - 1;
     } else {
-      return 1;
+      return counter;
     }
-  }, [selectedChains, selectedMode]);
+  }, [selectedChains, selectedMode, selectedMode]);
 
   const changeMode = useMemo(() => {
     if (
@@ -68,14 +84,21 @@ export default function ChainAnimations({
         return updatedSelectedChains;
       });
     }
-  }, [selectedMode, selectedChains]);
+  }, [selectedMode]);
 
   const changeCategory = useMemo(() => {
     let allFalse = true;
 
     for (const key in sortedValues) {
       const element = sortedValues[key];
+
       if (selectedChains[element[0]]) {
+        console.log("--------------");
+        console.log(element[0]);
+        console.log(selectedCategory);
+        console.log(element);
+        console.log(selectedChains);
+        console.log("--------------");
         allFalse = false;
       }
     }
@@ -110,7 +133,6 @@ export default function ChainAnimations({
     }
   }, [value, sortedValues]);
 
-  console.log(chainSize);
   if (chain === "imx" && selectedMode === "gas_fees_") {
     return null;
   } else {
@@ -134,18 +156,12 @@ export default function ChainAnimations({
           bottom: `${index * 45}px`,
         }}
         onClick={() => {
-          if (
-            Object.keys(selectedChains).filter((chain) => selectedChains[chain])
-              .length > chainSize ||
-            !selectedChains[chain]
-          ) {
-            console.log("In pass");
+          if (availableSelectedChains > 1 || !selectedChains[chain]) {
             setSelectedChains((prevSelectedChains) => ({
               ...prevSelectedChains,
               [chain]: !prevSelectedChains[chain],
             }));
           } else {
-            console.log("In fail");
             setIsShaking(true);
             setTimeout(() => {
               setIsShaking(false);
