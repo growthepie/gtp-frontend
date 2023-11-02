@@ -44,6 +44,53 @@ export default function ChainAnimations({
     }
   });
 
+  const chainSize = useMemo(() => {
+    if (selectedMode === "gas_fees_" && selectedChains["imx"]) {
+      return 2;
+    } else {
+      return 1;
+    }
+  }, [selectedChains, selectedMode]);
+
+  const changeMode = useMemo(() => {
+    if (
+      selectedMode === "gas_fees_" &&
+      selectedChains["imx"] &&
+      Object.keys(selectedChains).filter((chain) => selectedChains[chain])
+        .length === 1
+    ) {
+      setSelectedChains((prevSelectedChains) => {
+        // Create a copy of the previous selectedChains with all chains set to true
+        const updatedSelectedChains = { ...prevSelectedChains };
+        for (const chain in updatedSelectedChains) {
+          updatedSelectedChains[chain] = true;
+        }
+        return updatedSelectedChains;
+      });
+    }
+  }, [selectedMode, selectedChains]);
+
+  const changeCategory = useMemo(() => {
+    let allFalse = true;
+
+    for (const key in sortedValues) {
+      const element = sortedValues[key];
+      if (selectedChains[element[0]]) {
+        allFalse = false;
+      }
+    }
+
+    if (allFalse) {
+      for (const key in sortedValues) {
+        const element = sortedValues[key];
+        setSelectedChains((prevSelectedChains) => ({
+          ...prevSelectedChains,
+          [element[0]]: true,
+        }));
+      }
+    }
+  }, [sortedValues]);
+
   useEffect(() => {
     if (sortedValues && value) {
       const largestValue = Math.max(
@@ -63,6 +110,7 @@ export default function ChainAnimations({
     }
   }, [value, sortedValues]);
 
+  console.log(chainSize);
   if (chain === "imx" && selectedMode === "gas_fees_") {
     return null;
   } else {
@@ -87,23 +135,17 @@ export default function ChainAnimations({
         }}
         onClick={() => {
           if (
-            Object.keys(selectedChains).filter(
-              (sc) => selectedChains[sc] === true,
-            ).length === 1 &&
-            selectedChains[chain]
-          )
-            return;
-          if (
             Object.keys(selectedChains).filter((chain) => selectedChains[chain])
-              .length > 2 ||
+              .length > chainSize ||
             !selectedChains[chain]
           ) {
+            console.log("In pass");
             setSelectedChains((prevSelectedChains) => ({
               ...prevSelectedChains,
               [chain]: !prevSelectedChains[chain],
             }));
           } else {
-            console.log("Here we are");
+            console.log("In fail");
             setIsShaking(true);
             setTimeout(() => {
               setIsShaking(false);
