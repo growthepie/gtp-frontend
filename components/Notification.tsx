@@ -4,10 +4,10 @@ import { useSpring, animated, config, useTransition } from "react-spring";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 
-interface ID {
-  id: string; // Adjust the type according to your actual data structure
-  // Add other properties if necessary
-}
+type AirtableRow = {
+  id: string;
+  body: string;
+};
 
 const currentDateTime = new Date().getTime();
 
@@ -17,8 +17,9 @@ const Notification = () => {
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [currentTuple, setCurrentTuple] = useState<object | null>(null);
-  const [loadedMessages, setLoadedMessages] = useState<ID[]>([]);
-  const [currentMessage, setCurrentMessage] = useState<string | null>(null);
+  const [loadedMessages, setLoadedMessages] = useState<string[]>([]);
+
+  const [exitAnimation, setExitAnimation] = useState<string | null>(null);
   const [dataLength, setDataLength] = useState(0);
   const leaveRef = useRef();
 
@@ -73,6 +74,46 @@ const Notification = () => {
     fetchData();
   }, []);
 
+  function DateEnabled(startTime, startDate, endTime, endDate) {
+    const startDateTime = isoDateTimeToUnix(startDate, startTime);
+    const endDateTime = isoDateTimeToUnix(endDate, endTime);
+    if (endDateTime && startDateTime) {
+      if (currentDateTime < endDateTime && currentDateTime > startDateTime) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+  const filteredData = useMemo(() => {
+    const returnArray: AirtableRow[] = [];
+
+    if (data) {
+      Object.keys(data).forEach((item) => {
+        let passingDate = DateEnabled(
+          data[item]["fields"]["Start Time"],
+          data[item]["fields"]["Start Date"],
+          data[item]["fields"]["End Time"],
+          data[item]["fields"]["End Date"],
+        );
+        let enabled = data[item]["fields"]["Status"] === "Enabled";
+
+        if (enabled && passingDate) {
+          let newEntry: AirtableRow = {
+            id: data[item]["id"],
+            body: data[item]["fields"]["Body"],
+          };
+
+          returnArray.push(newEntry);
+        }
+      });
+    }
+
+    return returnArray;
+  }, [data]);
+
   const datePass = useMemo(() => {
     if (data) {
       const startDateTime = isoDateTimeToUnix(
@@ -111,91 +152,58 @@ const Notification = () => {
   }, [data, currentBannerIndex]);
 
   useEffect(() => {
-    if (data && isEnabled && datePass) {
-      const leaveDuration = 400;
-      const currentItem = data[currentBannerIndex];
-      const timer = setTimeout(() => {
-        setCurrentBannerIndex((currentBannerIndex + 1) % data.length);
-        setCircleDisappear(false);
-        const leaveTimer = setTimeout(() => {
-          setLoadedMessages((prevLoadedMessages) => [
-            ...prevLoadedMessages,
-            currentItem["id"],
-          ]);
-        }, leaveDuration);
-      }, 8000);
-      console.log(currentBannerIndex);
-      return () => {
-        clearTimeout(timer);
-      };
-    } else if (data) {
-      // If isEnabled is false, immediately move to the next banner
-      setCurrentBannerIndex((currentBannerIndex + 1) % data.length);
-      setCircleDisappear(false);
-    }
-  }, [data, isEnabled, currentBannerIndex]);
-
-  useEffect(() => {
-    const animationDuration = 8000; // Time to stay in position
+    const animationDuration = 7900; // Time to stay in position
     const leaveDuration = 400;
 
-    if (
-      data &&
-      isEnabled &&
-      !loadedMessages.includes(data[currentBannerIndex]["id"])
-    ) {
-      const timer = setTimeout(() => {
-        const currentItem = data[currentBannerIndex];
+    const timer = setTimeout(() => {
+      const currentItem = filteredData[currentBannerIndex];
 
-        setCurrentBannerIndex((currentBannerIndex + 1) % data.length);
-        setCircleDisappear(false);
-        const leaveTimer = setTimeout(() => {
-          setLoadedMessages((prevLoadedMessages) => [
-            ...prevLoadedMessages,
-            currentItem["id"],
-          ]);
-        }, leaveDuration);
+      setCurrentBannerIndex((currentBannerIndex + 1) % filteredData.length);
+      setCircleDisappear(false);
+      setExitAnimation(currentItem.id);
+      const leaveTimer = setTimeout(() => {
+        setLoadedMessages((prevLoadedMessages) => [
+          ...prevLoadedMessages,
+          currentItem.id,
+        ]);
+      }, leaveDuration);
+    }, animationDuration);
 
-        // Mark the current item as loaded
-      }, animationDuration);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [data, isEnabled, datePass, currentBannerIndex, loadedMessages]);
 
-      // Clear the timer to leave after the animationDuration
-      return () => {
-        clearTimeout(timer);
-        // Clear any pending leave animation on unmount
-        clearTimeout(leaveRef.current);
-      };
-    }
-  }, [currentBannerIndex, data, isEnabled, loadedMessages]);
-
-  const transitions = useTransition(
-    data ? (isEnabled ? [data[currentBannerIndex]] : []) : [],
-    {
-      from: { right: "0px", bottom: "120px", opacity: 1 },
-      enter: { right: "120px", bottom: "120px", opacity: 1 },
-      leave: { right: "120px", bottom: "200px", opacity: 0 }, // Leave in 200 milliseconds
-      config: { duration: 500 }, // Custom duration for "from" and "enter"
-    },
-  );
-  console.log(loadedMessages);
+  console.log(exitAnimation);
   return (
-    data && (
-      <div className=" ">
-        {transitions((props, item, key) => {
-          if (loadedMessages.includes(item["id"])) {
+    filteredData && (
+      <div className="">
+        {filteredData.map((item) => {
+          if (loadedMessages.includes(item.id)) {
             return null;
           }
+
           return (
-            <animated.div
-              style={props}
-              key={item["id"]}
-              className="fixed right-[120px] bottom-[120px] z-999"
+            <div
+              key={item.id}
+              className={`fixed bottom-12 z-50`}
+              style={{
+                right:
+                  item.id !== filteredData[currentBannerIndex]["id"] &&
+                  exitAnimation !== item.id
+                    ? "-500px"
+                    : "100px", // Adjust the values as needed
+                transform:
+                  exitAnimation === item.id
+                    ? "translateY(-100px)"
+                    : "translateY(0)",
+                opacity: exitAnimation === item.id ? 0 : 1, // Transition from 1 to 0 opacity
+                transition:
+                  "right 400ms ease-in-out, transform 300ms ease-in-out, opacity 400ms ease-in-out", // Adjust duration and easing as needed
+              }}
             >
               <div className="flex items-center dark:border-forest-400 border-b-[1px] dark:bg-[#1F2726] bg-white w-[500px] h-[50px] rounded-full px-[12px] relative">
-                <div className="w-[90%] text-[16px]">
-                  {" "}
-                  {item["fields"]["Description"]}
-                </div>
+                <div className="w-[90%] text-[16px]"> {item.body}</div>
                 <div
                   className={`w-[10%] h-[90%] hover:bg-forest-700 rounded-full relative flex items-center justify-center ${
                     circleDisappear
@@ -206,9 +214,9 @@ const Notification = () => {
                     const leaveDuration = 400;
 
                     setCurrentBannerIndex(
-                      (currentBannerIndex + 1) % data.length,
+                      (currentBannerIndex + 1) % filteredData.length,
                     );
-                    setCircleDisappear(false);
+                    setExitAnimation(item.id);
                     const leaveTimer = setTimeout(() => {
                       setLoadedMessages((prevLoadedMessages) => [
                         ...prevLoadedMessages,
@@ -234,7 +242,12 @@ const Notification = () => {
                       strokeWidth="8"
                       strokeDasharray="392"
                       strokeDashoffset="392"
-                      className="animate-circle-disappear"
+                      className={`
+                      ${
+                        item.id === filteredData[currentBannerIndex]["id"]
+                          ? "animate-circle-disappear"
+                          : ""
+                      } `}
                     />
                   </svg>
                   <style>
@@ -255,7 +268,7 @@ const Notification = () => {
                   </style>
                 </div>
               </div>
-            </animated.div>
+            </div>
           );
         })}
       </div>
