@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import { useSpring, animated, config, useTransition } from "react-spring";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
+import Markdown from "react-markdown";
 
 type AirtableRow = {
   id: string;
@@ -21,7 +22,7 @@ const Notification = () => {
 
   const [exitAnimation, setExitAnimation] = useState<string | null>(null);
   const [dataLength, setDataLength] = useState(0);
-  const leaveRef = useRef();
+  const [currentURL, setCurrentURL] = useState<string | null>(null);
 
   function isoDateTimeToUnix(
     dateString: string,
@@ -57,6 +58,10 @@ const Notification = () => {
   }
 
   useEffect(() => {
+    setCurrentURL(window.location.href);
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch("/api/contracts", {
@@ -87,6 +92,19 @@ const Notification = () => {
       return false;
     }
   }
+
+  function urlEnabled(url) {
+    let retValue = true;
+
+    if (url !== "" && currentURL) {
+      if (!currentURL.includes(url[0])) {
+        retValue = false;
+      }
+    }
+
+    return retValue;
+  }
+
   const filteredData = useMemo(() => {
     const returnArray: AirtableRow[] = [];
 
@@ -99,8 +117,14 @@ const Notification = () => {
           data[item]["fields"]["End Date"],
         );
         let enabled = data[item]["fields"]["Status"] === "Enabled";
+        let passingURL = urlEnabled(
+          data[item]["fields"]["Display Page"]
+            ? data[item]["fields"]["Display Page"]
+            : "",
+        );
+        //Check if notification is enabled, available/current date range and selected url
 
-        if (enabled && passingDate) {
+        if (enabled && passingDate && passingURL) {
           let newEntry: AirtableRow = {
             id: data[item]["id"],
             body: data[item]["fields"]["Body"],
@@ -174,7 +198,6 @@ const Notification = () => {
     };
   }, [data, isEnabled, datePass, currentBannerIndex, loadedMessages]);
 
-  console.log(exitAnimation);
   return (
     filteredData && (
       <div className="">
@@ -203,7 +226,9 @@ const Notification = () => {
               }}
             >
               <div className="flex items-center dark:border-forest-400 border-b-[1px] dark:bg-[#1F2726] bg-white w-[500px] h-[50px] rounded-full px-[12px] relative">
-                <div className="w-[90%] text-[16px]"> {item.body}</div>
+                <div className="w-[90%] text-[16px]">
+                  <Markdown>{item.body}</Markdown>
+                </div>
                 <div
                   className={`w-[10%] h-[90%] hover:bg-forest-700 rounded-full relative flex items-center justify-center ${
                     circleDisappear
