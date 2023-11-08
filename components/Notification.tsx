@@ -4,6 +4,7 @@ import { useSpring, animated, config, useTransition } from "react-spring";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 import Markdown from "react-markdown";
+import { useMediaQuery } from "usehooks-ts";
 
 type AirtableRow = {
   id: string;
@@ -19,10 +20,13 @@ const Notification = () => {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [currentTuple, setCurrentTuple] = useState<object | null>(null);
   const [loadedMessages, setLoadedMessages] = useState<string[]>([]);
-
+  const [circleStart, setCircleStart] = useState(false);
   const [exitAnimation, setExitAnimation] = useState<string | null>(null);
   const [dataLength, setDataLength] = useState(0);
   const [currentURL, setCurrentURL] = useState<string | null>(null);
+  const [pathname, setPathname] = useState<string | null>(null);
+
+  const isMobile = useMediaQuery("(max-width: 767px)");
 
   function isoDateTimeToUnix(
     dateString: string,
@@ -62,6 +66,10 @@ const Notification = () => {
   }, []);
 
   useEffect(() => {
+    setPathname(window.location.pathname);
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch("/api/contracts", {
@@ -96,9 +104,11 @@ const Notification = () => {
   function urlEnabled(url) {
     let retValue = true;
 
-    if (url !== "" && currentURL) {
-      if (!currentURL.includes(url[0])) {
-        retValue = false;
+    if (url !== "" && currentURL && pathname) {
+      if (!(pathname === "/") && url[0] === "home") {
+        if (!currentURL.includes(url[0]) && url[0] !== "all") {
+          retValue = false;
+        }
       }
     }
 
@@ -122,6 +132,7 @@ const Notification = () => {
             ? data[item]["fields"]["Display Page"]
             : "",
         );
+
         //Check if notification is enabled, available/current date range and selected url
 
         if (enabled && passingDate && passingURL) {
@@ -138,66 +149,33 @@ const Notification = () => {
     return returnArray;
   }, [data]);
 
-  const datePass = useMemo(() => {
-    if (data) {
-      const startDateTime = isoDateTimeToUnix(
-        data[currentBannerIndex]["fields"]["Start Date"],
-        data[currentBannerIndex]["fields"]["Start Time"],
-      );
-      const endDateTime = isoDateTimeToUnix(
-        data[currentBannerIndex]["fields"]["End Date"],
-        data[currentBannerIndex]["fields"]["End Time"],
-      );
-
-      if (endDateTime && startDateTime) {
-        if (currentDateTime < endDateTime && currentDateTime > startDateTime) {
-          return true;
-        } else {
-          return false;
-        }
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  }, [data, currentBannerIndex]);
-
-  const isEnabled = useMemo(() => {
-    if (data) {
-      if (data[currentBannerIndex]["fields"]["Status"] === "Enabled") {
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  }, [data, currentBannerIndex]);
-
   useEffect(() => {
-    const animationDuration = 7900; // Time to stay in position
-    const leaveDuration = 400;
+    if (Object.keys(filteredData).length > 0) {
+      const animationDuration = 7900; // Time to stay in position
+      const leaveDuration = 400;
 
-    const timer = setTimeout(() => {
-      const currentItem = filteredData[currentBannerIndex];
+      setCircleStart(true);
+      const timer = setTimeout(() => {
+        const currentItem = filteredData[currentBannerIndex];
 
-      setCurrentBannerIndex((currentBannerIndex + 1) % filteredData.length);
-      setCircleDisappear(false);
-      setExitAnimation(currentItem.id);
-      const leaveTimer = setTimeout(() => {
-        setLoadedMessages((prevLoadedMessages) => [
-          ...prevLoadedMessages,
-          currentItem.id,
-        ]);
-      }, leaveDuration);
-    }, animationDuration);
+        setCurrentBannerIndex((currentBannerIndex + 1) % filteredData.length);
+        setCircleStart(false);
+        setExitAnimation(currentItem.id);
+        const leaveTimer = setTimeout(() => {
+          setLoadedMessages((prevLoadedMessages) => [
+            ...prevLoadedMessages,
+            currentItem.id,
+          ]);
+        }, leaveDuration);
+      }, animationDuration);
 
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [data, isEnabled, datePass, currentBannerIndex, loadedMessages]);
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+  }, [data, filteredData, currentBannerIndex, loadedMessages]);
 
+  console.log(pathname);
   return (
     filteredData && (
       <div className="">
@@ -209,13 +187,17 @@ const Notification = () => {
           return (
             <div
               key={item.id}
-              className={`fixed bottom-12 z-50`}
+              className={`fixed ${
+                !isMobile ? "bottom-12" : "bottom-[100px]"
+              } z-50`}
               style={{
                 right:
                   item.id !== filteredData[currentBannerIndex]["id"] &&
                   exitAnimation !== item.id
                     ? "-500px"
-                    : "100px", // Adjust the values as needed
+                    : !isMobile
+                    ? "100px"
+                    : "10px", // Adjust the values as needed
                 transform:
                   exitAnimation === item.id
                     ? "translateY(-100px)"
@@ -225,8 +207,12 @@ const Notification = () => {
                   "right 400ms ease-in-out, transform 300ms ease-in-out, opacity 400ms ease-in-out", // Adjust duration and easing as needed
               }}
             >
-              <div className="flex items-center dark:border-forest-400 border-b-[1px] dark:bg-[#1F2726] bg-white w-[500px] h-[50px] rounded-full px-[12px] relative">
-                <div className="w-[90%] text-[16px]">
+              <div
+                className={`flex items-center dark:border-forest-400 border-b-[1px] dark:bg-[#1F2726] bg-white min-h-[50px] max-h-[75px] rounded-full px-[12px] relative ${
+                  isMobile ? "w-[400px]" : "w-[500px]"
+                }`}
+              >
+                <div className="w-[85%] text-[16px]">
                   <Markdown>{item.body}</Markdown>
                 </div>
                 <div
@@ -250,7 +236,12 @@ const Notification = () => {
                     }, leaveDuration);
                   }}
                 >
-                  <Icon icon="ph:x" className="absolute w-[30px] h-[30px]" />
+                  <Icon
+                    icon="ph:x"
+                    className={`absolute  ${
+                      !isMobile ? "w-[30px] h-[30px]" : "w-[25px] h-[25px]"
+                    }`}
+                  />
                   <svg
                     id="circle-svg"
                     width="100%"
@@ -269,7 +260,8 @@ const Notification = () => {
                       strokeDashoffset="392"
                       className={`
                       ${
-                        item.id === filteredData[currentBannerIndex]["id"]
+                        item.id === filteredData[currentBannerIndex]["id"] &&
+                        circleStart
                           ? "animate-circle-disappear"
                           : ""
                       } `}
