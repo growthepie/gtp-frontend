@@ -7,26 +7,14 @@ import EthUsdSwitch from "./EthUsdSwitch";
 import DarkModeSwitch from "./DarkModeSwitch";
 import { useUIContext } from "@/contexts/UIContext";
 import { useSpring, animated, config } from "react-spring";
+import Banner from "@/components/Banner";
 
 export default function Header() {
   return (
     <header className="flex flex-col xl:flex-row justify-between space-x-0 xl:space-x-6 items-center max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[50px] md:pt-[50px]">
       <div className="flex justify-between items-center w-full">
         <div className="flex space-x-0 xl:space-x-6 w-full">
-          <Link
-            href="https://vote.optimism.io/retropgf/3/application/0x849e164d1b8cc2b51bd3313d007ac58acb816660492336d2498615551ec75f02"
-            target="_blank"
-            rel="noopener"
-            className="hidden xl:flex absolute top-[50px] items-center dark:bg-[#FFE28A] text-black bg-forest-100 p-1 justify-between rounded-full text-sm font-bold mr-auto"
-          >
-            <div className="ml-3 mr-4 flex space-x-0.5">
-              <div>
-                We are listed for Retroactive Public Goods Funding. Spread the
-                word!{" "}
-              </div>
-            </div>
-            <Icon icon="feather:arrow-right-circle" className="h-6 w-6" />
-          </Link>
+          <Banner />
 
           <div className="flex justify-between items-end md:hidden relative w-full">
             <Link href="/" className="">
