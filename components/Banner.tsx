@@ -26,7 +26,7 @@ export default function Banner() {
       }
       target="_blank"
       rel="noopener"
-      className={`hidden overflow-hidden xl:flex absolute top-[50px] items-center dark:bg-[#FFE28A]  text-black bg-forest-100 p-1 justify-between rounded-full text-sm font-bold mr-auto ${
+      className={`hidden overflow-hidden xl:flex absolute top-[50px] items-center text-black bg-forest-100 p-1 justify-between rounded-full text-sm font-bold mr-auto ${
         isFirstText ? "dark:bg-[#FFE28A]" : "dark:bg-[#1DF7EF]"
       }`}
     >
