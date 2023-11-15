@@ -72,10 +72,11 @@ const Notification = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/api/contracts", {
+        const response = await fetch("/api/notifications", {
           method: "GET",
         });
         const result = await response.json();
+
         setData(result.records);
 
         // Determine whether to set isEnabled based on the data
@@ -175,7 +176,7 @@ const Notification = () => {
     }
   }, [data, filteredData, currentBannerIndex, loadedMessages]);
 
-  console.log(pathname);
+  console.log(data);
   return (
     filteredData && (
       <div className="">
