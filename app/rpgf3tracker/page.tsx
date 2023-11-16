@@ -61,8 +61,11 @@ const ProjectsComponent = () => {
               </thead>
               <tbody className="text-xs divide-y divide-gray-200 dark:divide-gray-700">
                 {projects
-                  .sort((a, b) => b.includedInBallots - a.includedInBallots)
-                  .map((project) => (
+                  .sort(
+                    (a: any, b: any) =>
+                      b.includedInBallots - a.includedInBallots,
+                  )
+                  .map((project: any) => (
                     <tr key={project.id}>
                       <td className="text-left py-1 px-2">
                         {project.displayName}

@@ -39,12 +39,12 @@ const fetchProjects = async (skip: number) => {
 
 const fetchData = async () => {
   try {
-    let allProjects = [];
+    let allProjects: any[] = [];
     let skip = 0;
     let hasNextPage = false;
 
     do {
-      const data = await fetchProjects(skip);
+      const data: any = await fetchProjects(skip);
       allProjects = [
         ...allProjects,
         ...data.retroPGF.projects.edges.map((edge) => edge.node),
