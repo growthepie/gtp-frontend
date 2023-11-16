@@ -31,6 +31,7 @@ export default function SidebarContainer() {
                   className="mb-6 -ml-[9px] z-10 crisp-edges hidden dark:block"
                   fill={true}
                   quality={100}
+                  sizes="33vw"
                 />
                 <Image
                   src="/logo_full_light.png"
@@ -38,6 +39,7 @@ export default function SidebarContainer() {
                   className="mb-6 -ml-[9px] z-10 crisp-edges block dark:hidden"
                   fill={true}
                   quality={100}
+                  sizes="33vw"
                 />
               </div>
             </Link>
