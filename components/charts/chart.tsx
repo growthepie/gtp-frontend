@@ -338,6 +338,7 @@ export const Chart = ({
   }, [chartComponent, timespan, timespans, resituateChart]);
 
   const chartColor =
+    series[0]?.name &&
     AllChainsByKeys[series[0].name]?.colors[theme ?? "dark"][0];
 
   function useYAxisTicks(maxY, yScale) {

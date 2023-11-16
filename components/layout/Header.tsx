@@ -1,13 +1,11 @@
-"use client";
 import Image from "next/image";
 import Link from "next/link";
 import Sidebar from "./Sidebar";
-import { Icon } from "@iconify/react";
+import Icon from "./Icon";
 import EthUsdSwitch from "./EthUsdSwitch";
 import DarkModeSwitch from "./DarkModeSwitch";
-import { useUIContext } from "@/contexts/UIContext";
-import { useSpring, animated, config } from "react-spring";
 import Banner from "@/components/Banner";
+import SupportUsBanner from "./SupportUsBanner";
 
 export default function Header() {
   return (
@@ -25,6 +23,7 @@ export default function Header() {
                   className="hidden dark:block"
                   fill={true}
                   quality={100}
+                  sizes="33vw"
                 />
                 <Image
                   src="/logo_full_light.png"
@@ -32,6 +31,7 @@ export default function Header() {
                   className="block dark:hidden"
                   fill={true}
                   quality={100}
+                  sizes="33vw"
                 />
               </div>
             </Link>
@@ -85,7 +85,7 @@ export default function Header() {
           </Link>
         </div>
       </div>
-
+      <SupportUsBanner />
       {/* Donation Banner smaller than XL screen */}
       {/* <Link
         href="https://explorer.gitcoin.co/#/round/42161/0x59d79b22595b17af659ce9b03907615f53742c57/0x59d79b22595b17af659ce9b03907615f53742c57-16"

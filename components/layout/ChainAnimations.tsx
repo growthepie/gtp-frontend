@@ -14,6 +14,7 @@ export default function ChainAnimations({
   selectedMode,
   selectedChains,
   setSelectedChains,
+  selectedCategory,
 }: {
   chain: string;
   value: number;
@@ -23,9 +24,11 @@ export default function ChainAnimations({
   selectedMode: string;
   selectedChains: Object;
   setSelectedChains: (show: Object) => void;
+  selectedCategory: string;
 }) {
   const { theme } = useTheme();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const [isShaking, setIsShaking] = useState(false);
 
   const [width, setWidth] = useState(() => {
     if (sortedValues && value) {
@@ -43,6 +46,73 @@ export default function ChainAnimations({
       return "auto";
     }
   });
+
+  const availableSelectedChains = useMemo(() => {
+    let counter = 0;
+    Object.keys(sortedValues).forEach((chain) => {
+      if (selectedChains[sortedValues[chain][0]]) {
+        counter++;
+      }
+    });
+
+    if (
+      selectedMode === "gas_fees_" &&
+      selectedChains["imx"] &&
+      Object.keys(sortedValues).some(
+        (chain) => sortedValues[chain][0] === "imx",
+      )
+    ) {
+      return counter - 1;
+    } else {
+      return counter;
+    }
+  }, [selectedChains, selectedMode, selectedMode]);
+
+  const changeMode = useMemo(() => {
+    if (
+      selectedMode === "gas_fees_" &&
+      selectedChains["imx"] &&
+      Object.keys(selectedChains).filter((chain) => selectedChains[chain])
+        .length === 1
+    ) {
+      setSelectedChains((prevSelectedChains) => {
+        // Create a copy of the previous selectedChains with all chains set to true
+        const updatedSelectedChains = { ...prevSelectedChains };
+        for (const chain in updatedSelectedChains) {
+          updatedSelectedChains[chain] = true;
+        }
+        return updatedSelectedChains;
+      });
+    }
+  }, [selectedMode]);
+
+  const changeCategory = useMemo(() => {
+    let allFalse = true;
+
+    for (const key in sortedValues) {
+      const element = sortedValues[key];
+
+      if (selectedChains[element[0]]) {
+        // console.log("--------------");
+        // console.log(element[0]);
+        // console.log(selectedCategory);
+        // console.log(element);
+        // console.log(selectedChains);
+        // console.log("--------------");
+        allFalse = false;
+      }
+    }
+
+    if (allFalse) {
+      for (const key in sortedValues) {
+        const element = sortedValues[key];
+        setSelectedChains((prevSelectedChains) => ({
+          ...prevSelectedChains,
+          [element[0]]: true,
+        }));
+      }
+    }
+  }, [sortedValues]);
 
   useEffect(() => {
     if (sortedValues && value) {
@@ -79,24 +149,24 @@ export default function ChainAnimations({
           selectedChains[chain]
             ? AllChainsByKeys[chain].backgrounds[theme][1]
             : `${AllChainsByKeys[chain].backgrounds[theme][1]} `
-        }`}
+        }
+        ${isShaking ? "animate-shake " : ""}`}
         style={{
           width: width,
           bottom: `${index * 45}px`,
         }}
         onClick={() => {
-          if (
-            Object.keys(selectedChains).filter(
-              (sc) => selectedChains[sc] === true,
-            ).length === 1 &&
-            selectedChains[chain]
-          )
-            return;
-
-          setSelectedChains((prevSelectedChains) => ({
-            ...prevSelectedChains,
-            [chain]: !prevSelectedChains[chain],
-          }));
+          if (availableSelectedChains > 1 || !selectedChains[chain]) {
+            setSelectedChains((prevSelectedChains) => ({
+              ...prevSelectedChains,
+              [chain]: !prevSelectedChains[chain],
+            }));
+          } else {
+            setIsShaking(true);
+            setTimeout(() => {
+              setIsShaking(false);
+            }, 500);
+          }
         }}
       >
         <div
@@ -161,8 +231,8 @@ export default function ChainAnimations({
             >
               <Icon
                 icon="feather:check-circle"
-                className={`w-[24px] h-[24px] opacity-100 text-white ${
-                  !selectedChains[chain] ? "opacity-0" : ""
+                className={`w-[24px] h-[24px] text-white ${
+                  !selectedChains[chain] ? "opacity-0" : "opacity-100"
                 }`}
               />
             </div>

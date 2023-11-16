@@ -13,7 +13,7 @@ import Heading from "@/components/layout/Heading";
 import _ from "lodash";
 import Image from "next/image";
 import Link from "next/link";
-import { ReactMarkdown } from "react-markdown/lib/react-markdown";
+
 import { Digest } from "@/components/layout/Blog";
 
 const fetcher: any = (query: string) =>

@@ -491,7 +491,7 @@ export default function OverviewMetrics({
       },
     };
   }, []);
-  console.log(data);
+  // console.log(data);
   const chartStack = useMemo(() => {
     let ecosystemData: any[][] = [];
 
