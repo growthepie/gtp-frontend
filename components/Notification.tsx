@@ -76,9 +76,9 @@ const Notification = () => {
           method: "GET",
         });
         const result = await response.json();
-        console.log("Pass 4");
+        // console.log("Pass 4");
         setData(result.records);
-        console.log("Pass 5");
+        // console.log("Pass 5");
         // Determine whether to set isEnabled based on the data
       } catch (error) {
         console.error("Error fetching data: ", error);
@@ -176,7 +176,7 @@ const Notification = () => {
     }
   }, [data, filteredData, currentBannerIndex, loadedMessages]);
 
-  console.log(data);
+  // console.log(data);
   return (
     filteredData && (
       <div className="">

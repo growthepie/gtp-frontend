@@ -22,9 +22,9 @@ async function fetchData() {
         `Failed to fetch data: ${response.status} - ${response.statusText}`,
       );
     }
-    console.log("Pass 1");
+    // console.log("Pass 1");
     const data = await response.json();
-    console.log("Pass 2");
+    // console.log("Pass 2");
     return data;
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -34,7 +34,7 @@ async function fetchData() {
 
 export async function GET() {
   const result = await fetchData();
-  console.log("Pass 3");
+  // console.log("Pass 3");
   return new Response(JSON.stringify(result), {
     headers: { "content-type": "application/json" },
   });
