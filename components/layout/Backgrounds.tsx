@@ -31,8 +31,10 @@ export default function Backgrounds({ isMobileMenu }: BackgroundsProps) {
               right: "-6px",
               top: "0px",
               bottom: "602px",
-              background: `-webkit-radial-gradient(45% 45% at 50% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
+              backgroundImage: `-webkit-radial-gradient(45% 45% at 50% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
               background: `radial-gradient(45% 45% at 50% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
+              webkitMaskImage: `-webkit-radial-gradient(45% 45% at 50% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
+              maskImage: `radial-gradient(45% 45% at 50% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
             }}
             className="absolute z-0 mouse-events-none"
           ></div>
@@ -44,8 +46,10 @@ export default function Backgrounds({ isMobileMenu }: BackgroundsProps) {
               right: "-475px",
               top: "0px",
               bottom: "466px",
-              background: `-webkit-radial-gradient(45% 45% at 50% 50%, #0DF6B9 0%, rgba(217, 217, 217, 0) 100%, rgba(13, 246, 185, 0) 100%)`,
+              backgroundImage: `-webkit-radial-gradient(45% 45% at 50% 50%, #0DF6B9 0%, rgba(217, 217, 217, 0) 100%, rgba(13, 246, 185, 0) 100%)`,
               background: `radial-gradient(45% 45% at 50% 50%, #0DF6B9 0%, rgba(217, 217, 217, 0) 100%, rgba(13, 246, 185, 0) 100%)`,
+              webkitMaskImage: `-webkit-radial-gradient(45% 45% at 50% 50%, #0DF6B9 0%, rgba(217, 217, 217, 0) 100%, rgba(13, 246, 185, 0) 100%)`,
+              maskImage: `radial-gradient(45% 45% at 50% 50%, #0DF6B9 0%, rgba(217, 217, 217, 0) 100%, rgba(13, 246, 185, 0) 100%)`,
             }}
             className="absolute z-0 mouse-events-none"
           ></div>
@@ -79,8 +83,10 @@ export default function Backgrounds({ isMobileMenu }: BackgroundsProps) {
             right: "-6px",
             top: "-90px",
             bottom: "602px",
-            background: `-webkit-radial-gradient(45% 45% at 50% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
+            backgroundImage: `-webkit-radial-gradient(45% 45% at 50% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
             background: `radial-gradient(45% 45% at 50% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
+            webkitMaskImage: `-webkit-radial-gradient(45% 45% at 50% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
+            maskImage: `radial-gradient(45% 45% at 50% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
           }}
           className="absolute z-0 mouse-events-none"
         ></div>
@@ -92,8 +98,10 @@ export default function Backgrounds({ isMobileMenu }: BackgroundsProps) {
             right: "-475px",
             top: "-90px",
             bottom: "466px",
-            background: `-webkit-radial-gradient(45% 45% at 50% 50%, #0DF6B9 0%, rgba(217, 217, 217, 0) 100%, rgba(13, 246, 185, 0) 100%)`,
+            backgroundImage: `-webkit-radial-gradient(45% 45% at 50% 50%, #0DF6B9 0%, rgba(217, 217, 217, 0) 100%, rgba(13, 246, 185, 0) 100%)`,
             background: `radial-gradient(45% 45% at 50% 50%, #0DF6B9 0%, rgba(217, 217, 217, 0) 100%, rgba(13, 246, 185, 0) 100%)`,
+            webkitMaskImage: `-webkit-radial-gradient(45% 45% at 50% 50%, #0DF6B9 0%, rgba(217, 217, 217, 0) 100%, rgba(13, 246, 185, 0) 100%)`,
+            maskImage: `radial-gradient(45% 45% at 50% 50%, #0DF6B9 0%, rgba(217, 217, 217, 0) 100%, rgba(13, 246, 185, 0) 100%)`,
           }}
           className="absolute z-0 mouse-events-none"
         ></div>
