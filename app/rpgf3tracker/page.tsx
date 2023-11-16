@@ -5,23 +5,49 @@ import { GraphQLClient } from "graphql-request";
 const graphQLClient = new GraphQLClient("https://vote.optimism.io/graphql");
 
 const ProjectsComponent = () => {
-  const [projects, setProjects] = useState([]);
+  const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [skip, setSkip] = useState(0);
 
   // inside your ProjectsComponent
   useEffect(() => {
     const loadProjects = async () => {
+      let data: any;
+      let first = 20;
+      let skip = 0;
       setLoading(true);
-      try {
-        const res = await fetch("/api/rpgf3tracker");
-        const { projects } = await res.json();
-        setProjects(projects);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-      } finally {
-        setLoading(false);
-      }
+      do {
+        const query = `{
+          projects(first: ${first}, skip: ${skip}) {
+            id
+            displayName
+            impactCategory
+            includedInBallots
+            lists {
+              listName
+              impactEvaluationLink
+              impactEvaluationDescription
+            }
+            websiteUrl
+          }
+        }`;
+        try {
+          const res = await fetch(
+            "/api/rpgf3tracker?first=" + first + "&skip=" + skip,
+            {
+              method: "GET",
+            },
+          );
+
+          data = await res.json();
+
+          setProjects([...projects, ...data.projects]);
+          skip += first;
+        } catch (error) {
+          console.error("Error fetching projects:", error);
+        }
+      } while (data.hasNextPage);
+      setLoading(false);
     };
 
     loadProjects();
