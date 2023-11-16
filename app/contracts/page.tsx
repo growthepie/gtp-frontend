@@ -85,6 +85,7 @@ export default function ContractsPage({ params }: { params: any }) {
   // searchParams with a provided key/value pair
   const createQueryString = useCallback(
     (name: string, value: string) => {
+      //@ts-ignore
       const params = new URLSearchParams(searchParams);
       params.set(name, value);
 
@@ -93,13 +94,13 @@ export default function ContractsPage({ params }: { params: any }) {
     [searchParams],
   );
 
-  const address = searchParams.get("address");
+  const address = searchParams ? searchParams.get("address") : null;
   // const page = searchParams.get("page");
-  const chain = searchParams.get("chain");
-  const projectName = searchParams.get("project_name");
-  const contractName = searchParams.get("contract_name");
-  const hasCategory = searchParams.has("category");
-  const category = searchParams.get("category");
+  const chain = searchParams ? searchParams.get("chain") : null;
+  const projectName = searchParams ? searchParams.get("project_name") : null;
+  const contractName = searchParams ? searchParams.get("contract_name") : null;
+  const hasCategory = searchParams ? searchParams.has("category") : null;
+  const category = searchParams ? searchParams.get("category") : null;
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [data, setData] = useState(contracts ?? []);
