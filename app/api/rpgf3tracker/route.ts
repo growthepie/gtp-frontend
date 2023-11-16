@@ -31,7 +31,7 @@ const fetchProjects = async (skip: number) => {
       }
     `;
   const variables = {
-    first: 100,
+    first: 10,
     skip,
   };
   return await graphQLClient.request(query, variables);
@@ -50,7 +50,7 @@ const fetchData = async () => {
         ...data.retroPGF.projects.edges.map((edge) => edge.node),
       ];
       hasNextPage = data.retroPGF.projects.pageInfo.hasNextPage;
-      skip += 100;
+      skip += 10;
     } while (hasNextPage);
 
     return { projects: allProjects };
