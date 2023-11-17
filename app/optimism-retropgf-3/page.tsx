@@ -5,6 +5,8 @@ const URL =
     ? `http://${process.env.NEXT_PUBLIC_VERCEL_URL}/api/optimism-retropgf-3/projects`
     : `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/api/optimism-retropgf-3/projects`;
 
+console.log("URL", URL);
+
 const getProjects = async () => {
   console.log("URL", URL);
   /*
