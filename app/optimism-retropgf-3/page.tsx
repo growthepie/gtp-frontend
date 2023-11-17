@@ -5,8 +5,9 @@ const URL =
     ? `http://${process.env.NEXT_PUBLIC_VERCEL_URL}/api/optimism-retropgf-3/projects`
     : `/api/optimism-retropgf-3/projects`;
 
-const getProjects = async (): Promise<ProjectsResponse> => {
+const getProjects = async () => {
   console.log("URL", URL);
+  /*
   const res = await fetch(URL, {
     method: "GET",
     headers: {
@@ -17,6 +18,8 @@ const getProjects = async (): Promise<ProjectsResponse> => {
   const data = await res.json();
 
   return data;
+  */
+  return null;
 };
 
 export default async function RetroPGF3Projects() {
