@@ -701,6 +701,8 @@ export default function CategoryMetrics({
 
     const filteredContracts = Object.entries(contracts)
       .filter(([key, contract]) => {
+        if (!AllChainsByKeys.hasOwnProperty(contract.chain)) return false;
+
         const isChainSelected = selectedChains[contract.chain];
         const isSubcategorySelected =
           selectedCategory === "unlabeled" && contract.sub_category_key === null
@@ -891,7 +893,7 @@ export default function CategoryMetrics({
             subcategoryData.aggregated[timespan].data["types"].indexOf(type);
 
           Object.keys(subcategoryChains).forEach((chain) => {
-            if (chain !== "types") {
+            if (chain !== "types" && AllChainsByKeys.hasOwnProperty(chain)) {
               const chainValue =
                 subcategoryData.aggregated[timespan].data[chain][index];
 

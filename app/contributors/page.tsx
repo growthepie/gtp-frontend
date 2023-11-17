@@ -104,7 +104,7 @@ export default function ContributorsPage() {
       </div>
 
       <div className="mb-[90px]">
-        <div className="grid grid-cols-2 lg:grid-cols-4 items-center justify-items-center gap-x-[45px] gap-y-[30px] mx-5">
+        <div className="grid grid-cols-2 lg:grid-cols-2 items-center justify-items-center gap-x-[45px] gap-y-[30px] mx-5">
           {Supporters.map((s) => (
             <Link
               key={s.name}

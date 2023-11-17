@@ -93,12 +93,14 @@ export default function ChainAnimations({
       const element = sortedValues[key];
 
       if (selectedChains[element[0]]) {
+        /*
         console.log("--------------");
         console.log(element[0]);
         console.log(selectedCategory);
         console.log(element);
         console.log(selectedChains);
         console.log("--------------");
+        */
         allFalse = false;
       }
     }
