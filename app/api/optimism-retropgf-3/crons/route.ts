@@ -21,6 +21,10 @@ const PAGE_SIZE = 100;
 const fetchProjects = async (skip, retries = 3) => {
   const endpoint = process.env.OPTIMISM_VOTE_ENDPOINT;
 
+  if (!endpoint) {
+    throw new Error("OPTIMISM_VOTE_ENDPOINT is not set");
+  }
+
   const graphQLQuery = gql`
     query MyQuery($skip: Int, $first: Int!) {
       retroPGF {
@@ -293,133 +297,38 @@ const processAllProjects = async () => {
         (edge) => edge.node,
       );
 
-      // for (const project of projects) {
-      //   await insertOrUpdateProjects(project);
-      // }
       await insertOrUpdateProjects(projects);
     }
 
     skip += PAGE_SIZE;
 
     hasNextPage = projectsResp.retroPGF.projects.pageInfo.hasNextPage;
-
-    // if (projectsResp.retroPGF.projects.edges.length < PAGE_SIZE) {
-    //   // If we received less than PAGE_SIZE projects, it means we're on the last page
-    //   hasNextPage = false;
-    // } else {
-    //   // Update the cursor to the last item's cursor for the next query
-    //   cursor =
-    //     projectsResp.retroPGF.projects.edges[
-    //       projectsResp.retroPGF.projects.edges.length - 1
-    //     ].cursor;
-    // }
   }
   console.log("processAllProjects done");
 };
 
-createTableIfNotExists();
-processAllProjects();
+const processCron = async () => {
+  console.log("processCron started");
+  createTableIfNotExists().then(() => {
+    console.log("processCron::createTableIfNotExists done");
+    processAllProjects().then(() => {
+      console.log("processCron::processAllProjects done");
+    });
+  });
+  console.log("processCron done");
+};
 
-export function GET(req: NextRequest) {
-  return new Response("Hello world!");
+export function GET(req: NextRequest, res: Response) {
+  const authHeader = req.headers.get("authorization");
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return new Response("Unauthorized", {
+      status: 401,
+    });
+  }
+
+  processCron();
+
+  return new Response("OK", {
+    status: 200,
+  });
 }
-
-// query MyQuery {
-//   retroPGF {
-//     projects(
-//       first: 10
-//       orderBy: alphabeticalAZ
-//       after: "0xdefith|0x22524ed382560f233db327f8a15688699606d15e0be81b104d6a71c78c44211c"
-//     ) {
-//       edges {
-//         node {
-//           id
-//           includedInBallots
-//           displayName
-//           applicant {
-//             address {
-//               isContract
-//               resolvedName {
-//                 address
-//                 name
-//               }
-//               address
-//             }
-//             amountOwned {
-//               amount {
-//                 amount
-//                 currency
-//                 decimals
-//               }
-//               bpsOfDelegatedSupply
-//               bpsOfQuorum
-//               bpsOfTotal
-//             }
-//           }
-//           applicantType
-//           bio
-//           certifiedNotBarredFromParticipating
-//           certifiedNotDesignatedOrSanctionedOrBlocked
-//           certifiedNotSponsoredByPoliticalFigureOrGovernmentEntity
-//           contributionDescription
-//           contributionLinks {
-//             description
-//             type
-//             url
-//           }
-//           fundingSources {
-//             amount
-//             currency
-//             description
-//             type
-//           }
-//           impactCategory
-//           impactDescription
-//           impactMetrics {
-//             description
-//             number
-//             url
-//           }
-//           lists {
-//             categories
-//             author {
-//               address
-//               isContract
-//               resolvedName {
-//                 address
-//                 name
-//               }
-//             }
-//             id
-//             impactEvaluationDescription
-//             impactEvaluationLink
-//             likes
-//             listDescription
-//             listName
-//           }
-//           understoodFundClaimPeriod
-//           understoodKYCRequirements
-//           websiteUrl
-//           profile {
-//             bannerImageUrl
-//             id
-//             bio
-//             name
-//             profileImageUrl
-//             uid
-//             websiteUrl
-//           }
-//           payoutAddress {
-//             address
-//             isContract
-//             resolvedName {
-//               address
-//               name
-//             }
-//           }
-//         }
-//         cursor
-//       }
-//     }
-//   }
-// }
