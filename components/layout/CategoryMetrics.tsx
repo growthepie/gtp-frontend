@@ -77,16 +77,6 @@ export default function CategoryMetrics({
     data: any[];
   };
 
-  const ContractUrls = {
-    arbitrum: "https://arbiscan.io/address/",
-    optimism: "https://optimistic.etherscan.io/address/",
-    zksync_era: "https://explorer.zksync.io/address/",
-    polygon_zkevm: "https://zkevm.polygonscan.com/address/",
-    imx: "https://immutascan.io/address/",
-    base: "https://basescan.org/address/",
-    zora: "https://explorer.zora.energy/address/",
-    gitcoin_pgn: "https://explorer.publicgoods.network/address/",
-  };
   const { isSidebarOpen } = useUIContext();
   const [selectedMode, setSelectedMode] = useState("gas_fees_");
   const [selectedCategory, setSelectedCategory] = useState(
@@ -136,16 +126,12 @@ export default function CategoryMetrics({
 
   const [selectedChains, setSelectedChains] = useState<{
     [key: string]: boolean;
-  }>({
-    arbitrum: true,
-    zksync_era: true,
-    optimism: true,
-    polygon_zkevm: true,
-    imx: true,
-    base: true,
-    zora: true,
-    gitcoin_pgn: true,
-  });
+  }>(
+    Object.entries(AllChainsByKeys).reduce((acc, [key, chain]) => {
+      if (AllChainsByKeys[key].chainType === "L2") acc[key] = true;
+      return acc;
+    }, {}),
+  );
 
   const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
     {},
@@ -701,6 +687,8 @@ export default function CategoryMetrics({
 
     const filteredContracts = Object.entries(contracts)
       .filter(([key, contract]) => {
+        if (!AllChainsByKeys.hasOwnProperty(contract.chain)) return false;
+
         const isChainSelected = selectedChains[contract.chain];
         const isSubcategorySelected =
           selectedCategory === "unlabeled" && contract.sub_category_key === null
@@ -891,7 +879,7 @@ export default function CategoryMetrics({
             subcategoryData.aggregated[timespan].data["types"].indexOf(type);
 
           Object.keys(subcategoryChains).forEach((chain) => {
-            if (chain !== "types") {
+            if (chain !== "types" && AllChainsByKeys.hasOwnProperty(chain)) {
               const chainValue =
                 subcategoryData.aggregated[timespan].data[chain][index];
 
@@ -2314,19 +2302,22 @@ export default function CategoryMetrics({
                           </div>
 
                           <div className="flex items-center w-[57%] justify-end ">
-                            <Link
-                              href={
-                                ContractUrls[sortedContracts[key].chain] +
-                                "" +
-                                sortedContracts[key].address
-                              }
-                              target="_blank"
-                            >
-                              <Icon
-                                icon="material-symbols:link"
-                                className="w-[30px] h-[30px]"
-                              />
-                            </Link>
+                            {master && (
+                              <Link
+                                href={
+                                  master.chains[sortedContracts[key].chain]
+                                    .block_explorer +
+                                  "address/" +
+                                  sortedContracts[key].address
+                                }
+                                target="_blank"
+                              >
+                                <Icon
+                                  icon="material-symbols:link"
+                                  className="w-[30px] h-[30px]"
+                                />
+                              </Link>
+                            )}
                           </div>
                         </div>
                       </div>

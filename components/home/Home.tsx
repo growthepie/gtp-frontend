@@ -6,7 +6,7 @@ import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { AllChains } from "@/lib/chains";
+import { AllChains, AllChainsByKeys } from "@/lib/chains";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import LandingChart from "@/components/layout/LandingChart";
 import LandingMetricsTable from "@/components/layout/LandingMetricsTable";
@@ -59,7 +59,11 @@ export default function Home() {
   useEffect(() => {
     if (!data) return;
 
-    setSelectedChains(Object.keys(data.chains).map((chain) => chain));
+    setSelectedChains(
+      Object.keys(data.chains)
+        .filter((chainKey) => AllChainsByKeys.hasOwnProperty(chainKey))
+        .map((chain) => chain),
+    );
   }, [data, landing, selectedMetric, selectedTimeInterval]);
 
   const chains = useMemo(() => {

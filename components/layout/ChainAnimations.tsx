@@ -93,12 +93,14 @@ export default function ChainAnimations({
       const element = sortedValues[key];
 
       if (selectedChains[element[0]]) {
+        /*
         // console.log("--------------");
         // console.log(element[0]);
         // console.log(selectedCategory);
         // console.log(element);
         // console.log(selectedChains);
         // console.log("--------------");
+        */
         allFalse = false;
       }
     }
@@ -140,9 +142,7 @@ export default function ChainAnimations({
       <animated.div
         key={chain}
         className={`relative flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium hover:cursor-pointer z-0 ${
-          ["arbitrum", "imx", "gitcoin_pgn", "zkSync Era", "all_l2s"].includes(
-            chain,
-          )
+          AllChainsByKeys[chain].darkTextOnBackground === true
             ? "text-white dark:text-black"
             : "text-white"
         } ${
