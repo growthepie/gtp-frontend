@@ -1,20 +1,23 @@
-const getProjects = async () => {
-  console.log("process.env.NEXT_PUBLIC_VERCEL_URL", process.env.NEXT_PUBLIC_VERCEL_URL)
-  const res = await fetch(process.env.NEXT_PUBLIC_VERCEL_URL + "/api/optimism-retropgf-3/projects",
-    // {
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     "Accept": "application/json",
-    //     'Accept-Encoding': 'br',
-    //   }
-    // }
-  );
+import { ProjectsResponse } from "@/types/api/RetroPGF3";
+
+const URL =
+  process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
+    ? `http://${process.env.NEXT_PUBLIC_VERCEL_URL}/api/optimism-retropgf-3/projects`
+    : `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/api/optimism-retropgf-3/projects`;
+
+const getProjects = async (): Promise<ProjectsResponse> => {
+  console.log("URL", URL);
+  const res = await fetch(URL, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
   const data = await res.json();
 
-  console.log(data);
-
   return data;
-}
+};
 
 export default async function RetroPGF3Projects() {
   const projects = await getProjects();
@@ -30,5 +33,4 @@ export default async function RetroPGF3Projects() {
       </ul>
     </div>
   );
-
 }

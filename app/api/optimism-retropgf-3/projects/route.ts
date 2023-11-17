@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { ProjectsResponse } from "@/types/api/RetroPGF3";
 import { Pool } from "pg";
 
 const pool = new Pool({
@@ -8,15 +8,13 @@ const pool = new Pool({
   },
 });
 
-export async function GET(request: NextRequest) {
-  const res = await pool
-    .query("SELECT * FROM rpgf3_projects")
-    .then((res) => res.rows)
-    .then((rows) => JSON.stringify(rows));
+export async function GET() {
+  try {
+    const result = await pool.query("SELECT * FROM rpgf3_projects");
+    const data = result.rows;
 
-  return new Response(res, {
-    headers: {
-      "content-type": "application/json",
-    },
-  });
+    return Response.json(data);
+  } catch (error) {
+    return Response.json({ error });
+  }
 }
