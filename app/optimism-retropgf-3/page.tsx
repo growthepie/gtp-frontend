@@ -20,7 +20,7 @@ const getProjects = async (): Promise<ProjectsResponse> => {
 };
 
 export default async function RetroPGF3Projects() {
-  //const projects = await getProjects();
+  const projects = await getProjects();
 
   return (
     <div>
@@ -29,7 +29,7 @@ export default async function RetroPGF3Projects() {
         {/* {projects.map((project) => (
           <li key={project.id}>{project.id}</li>
         ))} */}
-        {/* <li>{projects && JSON.stringify(projects)}</li> */}
+        <li>{projects && JSON.stringify(projects)}</li>
       </ul>
     </div>
   );
