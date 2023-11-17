@@ -9,13 +9,15 @@ console.log("projectsURL", projectsURL);
 
 const getProjects = async () => {
   console.log("projectsURL", projectsURL);
-  const response = await fetch(projectsURL);
-  const projects = await response.json();
+  const res = await fetch(projectsURL);
+  if (!res.ok) {
+    throw new Error(res.statusText);
+  }
 
-  return projects;
+  return res.json();
 };
 
-export default async function RetroPGF3Projects() {
+export default async function Page() {
   const projects = await getProjects();
 
   return (
