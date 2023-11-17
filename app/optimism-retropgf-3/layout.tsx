@@ -36,9 +36,7 @@ export default async function Layout({
 
       <Container className="mt-[30px] !pr-0 2xl:!pr-[50px]">
         <div className="w-full overflow-x-scroll 2xl:overflow-x-visible z-100 py-5 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pr-[50px] 2xl:pr-0">
-          <div className="min-w-[1330px] ">
-            <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
-          </div>
+          <div className="min-w-[1330px] ">{children}</div>
         </div>
       </Container>
     </>

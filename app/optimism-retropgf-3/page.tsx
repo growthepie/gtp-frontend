@@ -1,24 +1,20 @@
-// import { ProjectsResponse } from "@/types/api/RetroPGF3";
+"use client";
+import { ProjectsResponse } from "@/types/api/RetroPGF3";
+import useSWR from "swr";
 
-const projectsURL =
+const baseURL =
   process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
-    ? `http://${process.env.NEXT_PUBLIC_VERCEL_URL}/api/optimism-retropgf-3/projects`
-    : `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/api/optimism-retropgf-3/projects`;
+    ? `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+    : `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
 
-console.log("projectsURL", projectsURL);
-
-const getProjects = async () => {
-  console.log("projectsURL", projectsURL);
-  const res = await fetch(projectsURL);
-  if (!res.ok) {
-    throw new Error(res.statusText);
-  }
-
-  return res.json();
-};
-
-export default async function Page() {
-  const projects = await getProjects();
+export default function Page() {
+  const {
+    data: projects,
+    isLoading,
+    isValidating,
+  } = useSWR<ProjectsResponse>(baseURL + "/api/optimism-retropgf-3/projects", {
+    refreshInterval: 300,
+  });
 
   return (
     <div>

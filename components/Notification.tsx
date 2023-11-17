@@ -69,10 +69,15 @@ const Notification = () => {
     setPathname(window.location.pathname);
   }, []);
 
+  const baseURL =
+    process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
+      ? `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+      : `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/api/notifications", {
+        const response = await fetch(baseURL + "/api/notifications", {
           method: "GET",
         });
         const result = await response.json();
