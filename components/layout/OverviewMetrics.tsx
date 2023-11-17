@@ -74,17 +74,6 @@ type ContractInfo = {
   txcount_share: number;
 };
 
-const ContractUrls = {
-  arbitrum: "https://arbiscan.io/address/",
-  optimism: "https://optimistic.etherscan.io/address/",
-  zksync_era: "https://explorer.zksync.io/address/",
-  polygon_zkevm: "https://zkevm.polygonscan.com/address/",
-  imx: "https://immutascan.io/address/",
-  base: "https://basescan.org/address/",
-  zora: "https://explorer.zora.energy/address/",
-  gitcoin_pgn: "https://explorer.publicgoods.network/address/",
-};
-
 export default function OverviewMetrics({
   data,
   showEthereumMainnet,
@@ -1468,12 +1457,8 @@ export default function OverviewMetrics({
                         <>
                           <div
                             className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${
-                              [
-                                "arbitrum",
-                                "imx",
-                                "gitcoin_pgn",
-                                "all_l2s",
-                              ].includes(chainKey)
+                              AllChainsByKeys[chainKey].darkTextOnBackground ===
+                              true
                                 ? "text-white dark:text-black"
                                 : "text-white"
                             } ${
@@ -1522,12 +1507,8 @@ export default function OverviewMetrics({
                       ) : (
                         <div
                           className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${
-                            [
-                              "arbitrum",
-                              "imx",
-                              "gitcoin_pgn",
-                              "all_l2s",
-                            ].includes(chainKey)
+                            AllChainsByKeys[chainKey].darkTextOnBackground ===
+                            true
                               ? "text-white dark:text-black"
                               : "text-white"
                           } ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`}
@@ -1661,21 +1642,13 @@ export default function OverviewMetrics({
                                               ? "text-xs"
                                               : "text-sm font-semibold"
                                           } ${
-                                            [
-                                              "arbitrum",
-                                              "imx",
-                                              "gitcoin_pgn",
-                                              "all_l2s",
-                                            ].includes(chainKey)
+                                            AllChainsByKeys[chainKey]
+                                              .darkTextOnBackground === true
                                               ? "text-black"
                                               : "text-white"
                                           }`
-                                        : [
-                                            "arbitrum",
-                                            "imx",
-                                            "gitcoin_pgn",
-                                            "all_l2s",
-                                          ].includes(chainKey)
+                                        : AllChainsByKeys[chainKey]
+                                            .darkTextOnBackground === true
                                         ? i > 4
                                           ? "text-white/60 text-xs"
                                           : "text-black text-xs"
@@ -2508,19 +2481,22 @@ export default function OverviewMetrics({
                           </div>
 
                           <div className="flex items-center w-[57%] justify-end ">
-                            <Link
-                              href={
-                                ContractUrls[sortedContracts[key].chain] +
-                                "" +
-                                sortedContracts[key].address
-                              }
-                              target="_blank"
-                            >
-                              <Icon
-                                icon="material-symbols:link"
-                                className="w-[30px] h-[30px]"
-                              />
-                            </Link>
+                            {master && (
+                              <Link
+                                href={
+                                  master.chains[sortedContracts[key].chain]
+                                    .block_explorer +
+                                  "address/" +
+                                  sortedContracts[key].address
+                                }
+                                target="_blank"
+                              >
+                                <Icon
+                                  icon="material-symbols:link"
+                                  className="w-[30px] h-[30px]"
+                                />
+                              </Link>
+                            )}
                           </div>
                         </div>
                       </div>
