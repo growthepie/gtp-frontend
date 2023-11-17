@@ -1,27 +1,18 @@
-import { ProjectsResponse } from "@/types/api/RetroPGF3";
+// import { ProjectsResponse } from "@/types/api/RetroPGF3";
 
-const URL =
+const projectsURL =
   process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
     ? `http://${process.env.NEXT_PUBLIC_VERCEL_URL}/api/optimism-retropgf-3/projects`
     : `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/api/optimism-retropgf-3/projects`;
 
-console.log("URL", URL);
+console.log("projectsURL", projectsURL);
 
 const getProjects = async () => {
-  console.log("URL", URL);
-  /*
-  const res = await fetch(URL, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  console.log("projectsURL", projectsURL);
+  const response = await fetch(projectsURL);
+  const projects = await response.json();
 
-  const data = await res.json();
-
-  return data;
-  */
-  return null;
+  return projects;
 };
 
 export default async function RetroPGF3Projects() {
