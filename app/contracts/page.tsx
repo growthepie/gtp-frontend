@@ -199,8 +199,8 @@ export default function ContractsPage({ params }: { params: any }) {
   const columns = useMemo<ColumnDef<Contract>[]>(
     () => [
       {
-        accessorKey: "origin_key",
         header: "Chain",
+        accessorKey: "origin_key",
         size: 15,
         cell: (info: any) => {
           return (
@@ -263,8 +263,8 @@ export default function ContractsPage({ params }: { params: any }) {
       },
 
       {
-        accessorKey: "project_name",
         header: `Project Name`,
+        accessorKey: "project_name",
         cell: (info: any) => {
           return (
             <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis">
@@ -278,8 +278,8 @@ export default function ContractsPage({ params }: { params: any }) {
         },
       },
       {
-        accessorKey: "contract_name",
         header: "Contract Name",
+        accessorKey: "contract_name",
         cell: (info: any) => {
           return (
             <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis">
@@ -397,43 +397,49 @@ export default function ContractsPage({ params }: { params: any }) {
     return encodedUri;
   }, [data]);
 
+  const Style = useMemo(
+    () => (
+      <style>
+        {`
+        table {
+            border-collapse:separate;
+            border-spacing:0 5px;
+            margin-top:-5px;
+        }
+        
+        td {
+            border-color: ${
+              theme === "light" ? "rgba(0,0,0,0.16)" : "rgba(255,255,255,0.16)"
+            };
+            border-width:1px;
+            border-style:solid none;
+            padding:5px 10px;
+        }
+        
+        td:first-child {
+            border-left-style:solid;
+            border-top-left-radius:999px;
+            border-bottom-left-radius:999px;
+        }
+        
+        td:last-child {
+            border-right-style:solid;
+            border-bottom-right-radius:999px;
+            border-top-right-radius:999px;
+        }
+      `}
+      </style>
+    ),
+    [theme],
+  );
+
   return (
     <div className="flex flex-col items-center justify-center w-full h-full pt-4 relative">
       <ShowLoading
         dataLoading={[contractsLoading, masterLoading]}
         dataValidating={[contractsValidating, masterValidating]}
       />
-      <style>
-        {/* rounded table rows */}
-        {`
-          table {
-              border-collapse:separate;
-              border-spacing:0 5px;
-              margin-top:-5px;
-          }
-          
-          td {
-              border-color: ${
-                theme == "dark" ? "rgba(255,255,255,0.16)" : "rgba(0,0,0,0.16)"
-              };
-              border-width:1px;
-              border-style:solid none;
-              padding:5px 10px;
-          }
-          
-          td:first-child {
-              border-left-style:solid;
-              border-top-left-radius:999px;
-              border-bottom-left-radius:999px;
-          }
-          
-          td:last-child {
-              border-right-style:solid;
-              border-bottom-right-radius:999px;
-              border-top-right-radius:999px;
-          }
-        `}
-      </style>
+      {Style}
       <div className="pr-4">
         <table className="table-fixed w-full">
           {/* <thead className="sticky top-0 z-50"> */}

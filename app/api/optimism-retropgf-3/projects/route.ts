@@ -13,7 +13,7 @@ export async function GET() {
     const result = await pool.query("SELECT * FROM rpgf3_projects");
     const data = result.rows;
 
-    return Response.json(data);
+    return Response.json({ projects: data });
   } catch (error) {
     return Response.json({ error });
   }

@@ -16,7 +16,7 @@ export default async function Layout({
               className="text-[30px] leading-snug md:text-[36px] mb-[15px] md:mb-[30px]"
               as="h1"
             >
-              Optimism RetroPGF 3 Tracker
+              Optimism RetroPGF 3 Ballot Tracker
             </Heading>
           </div>
         </div>

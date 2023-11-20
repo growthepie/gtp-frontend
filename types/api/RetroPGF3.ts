@@ -52,33 +52,29 @@ export type ProjectProfile = {
 
 export type Project = {
   id: string;
-  includedInBallots: number;
-  displayName: string;
+  included_in_ballots: number;
+  display_name: string;
   applicant: ProjectApplicant;
-  applicantType: string;
+  applicant_type: string;
   bio: string;
-  certifiedNotBarredFromParticipating: boolean;
-  certifiedNotDesignatedOrSanctionedOrBlocked: boolean;
-  certifiedNotSponsoredByPoliticalFigureOrGovernmentEntity: boolean;
-  contributionDescription: string;
-  contributionLinks: ProjectContributionLink[];
-  fundingSources: ProjectFundingSource[];
-  impactCategory: string[];
-  impactDescription: string;
-  impactMetrics: ProjectImpactMetric[];
+  certified_not_barred_from_participating: boolean;
+  certified_not_designated_or_sanctioned_or_blocked: boolean;
+  certified_not_sponsored_by_political_figure_or_government_entit: boolean;
+  contribution_description: string;
+  contribution_links: ProjectContributionLink[];
+  funding_sources: ProjectFundingSource[];
+  impact_category: string[];
+  impact_description: string;
+  impact_metrics: ProjectImpactMetric[];
   lists: any[]; // Specify further if you have details about the lists structure
-  understoodFundClaimPeriod: boolean;
-  understoodKYCRequirements: boolean;
-  websiteUrl: string;
+  understood_fund_claim_period: boolean;
+  understood_kyc_requirements: boolean;
+  website_url: string;
   profile: ProjectProfile;
-  payoutAddress: {
+  payout_address: {
     address: string;
-    isContract: boolean;
-    resolvedName: {
-      address: string;
-      name: string;
-    };
   };
+  last_updated: string;
 };
 
 export type ProjectsResponse = {
