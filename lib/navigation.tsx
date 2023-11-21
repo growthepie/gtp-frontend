@@ -473,6 +473,14 @@ export const contributorsItem: NavigationItem = {
   href: "/contributors",
 };
 
+export const rpgfItem: NavigationItem = {
+  name: "RPGF3 Tracker",
+  label: "RPGF3 Tracker",
+  icon: "rpgf",
+  options: [],
+  href: "/contributors",
+};
+
 export const apiDocsItem: NavigationItem = {
   name: "API Documentation",
   label: "API Documentation",
