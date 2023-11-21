@@ -9,6 +9,8 @@ import { MasterURL } from "@/lib/urls";
 import { NavigationItem } from "@/lib/navigation";
 import { IS_PREVIEW } from "@/lib/helpers";
 import { navigationCategories, chainGroup } from "@/lib/navigation";
+import rpgf from "@/icons/svg/rpgf.svg";
+import Image from "next/image";
 
 type SidebarProps = {
   item: NavigationItem;
@@ -114,9 +116,14 @@ export default function SidebarMenuGroup({
     );
 
   if (
-    ["API Documentation", "Wiki", "Contributors", "Home", "Blog"].includes(
-      item.name,
-    )
+    [
+      "API Documentation",
+      "Wiki",
+      "Contributors",
+      "Home",
+      "Blog",
+      "RPGF3 Tracker",
+    ].includes(item.name)
   )
     return (
       <div key={item.name} className="group flex flex-col">
@@ -170,7 +177,17 @@ export default function SidebarMenuGroup({
           >
             <div className="w-6 mx-0">
               <div className="w-6 mx-auto">
-                <Icon icon={item.icon} className="h-7 w-7 p-0.5 mx-auto" />
+                {!item.name.includes("RPGF3 Tracker") ? (
+                  <Icon icon={item.icon} className="h-7 w-7 p-0.5 mx-auto" />
+                ) : (
+                  <Image
+                    src={rpgf}
+                    alt="RPGF"
+                    width={28}
+                    height={28}
+                    className="h-7 w-7 p-0.5 mx-auto"
+                  />
+                )}
               </div>
             </div>
             {/* {sidebarOpen ? (
