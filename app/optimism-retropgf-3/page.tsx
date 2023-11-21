@@ -68,6 +68,8 @@ const baseURL =
     ? `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`
     : `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
 
+const multiplierOPToken = 1.35;
+
 export default function Page() {
   const {
     data: projectsResponse,
@@ -105,7 +107,7 @@ export default function Page() {
       projectsResponse.projects.forEach((project) => {
         project.funding_sources.forEach((fundingSource) => {
           tFA[fundingSource.currency] = fundingSource.amount;
-          tFA["TOTAL"] += fundingSource.amount;
+          tFA["TOTAL"] += fundingSource.currency === "OP" ? multiplierOPToken * fundingSource.amount : fundingSource.amount;
         });
       });
 
@@ -140,7 +142,7 @@ export default function Page() {
 
       fundingSources.forEach((fundingSource) => {
         combinedFundingSources[fundingSource.currency] += fundingSource.amount;
-        combinedFundingSources["TOTAL"] += fundingSource.amount;
+        combinedFundingSources["TOTAL"] += fundingSource.currency === "OP" ? multiplierOPToken * fundingSource.amount : fundingSource.amount;
       });
 
       return combinedFundingSources;
@@ -335,7 +337,7 @@ export default function Page() {
             <Link
               rel="noopener noreferrer"
               target="_blank"
-              href={`https://etherscan.io/address/${info.row.original.applicant.address.address}`}
+              href={`https://optimistic.etherscan.io/address/${info.row.original.applicant.address.address}`}
               className={`rounded-full px-1 py-0 border border-forest-900/20 dark:border-forest-500/20 font-mono text-[10px] ${info.row.original.applicant.address.resolvedName.name
                 ? "text-forest-900 dark:text-forest-500"
                 : "text-forest-900/50 dark:text-forest-500/50"

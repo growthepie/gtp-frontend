@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { Pool } from "pg";
 import { request, gql } from "graphql-request";
 
-export const maxDuration = 660; // This function can run for a maximum of 10 minutes
+export const maxDuration = 300; // This function can run for a maximum of 10 minutes
 export const dynamic = "force-dynamic";
 
 const pool = new Pool({
