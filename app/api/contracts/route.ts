@@ -1,5 +1,6 @@
 const baseId = "appZWDvjvDmVnOici";
 const table = "tblU8WV0sxYUz6Kcp";
+const notificationTable = "tblA4NwUahsIldb6x";
 
 type ContractSubmission = {
   address: string;
@@ -33,6 +34,40 @@ async function sendRow(dataToInsert: ContractSubmission) {
   })
     .then((response) => response.json())
     .then((data) => data);
+}
+
+async function fetchData() {
+  const url = `https://api.airtable.com/v0/${baseId}/${notificationTable}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch data: ${response.status} - ${response.statusText}`,
+      );
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    throw error;
+  }
+}
+
+export async function GET() {
+  const result = await fetchData();
+
+  return new Response(JSON.stringify(result), {
+    headers: { "content-type": "application/json" },
+  });
 }
 
 export async function POST(request: Request): Promise<Response> {

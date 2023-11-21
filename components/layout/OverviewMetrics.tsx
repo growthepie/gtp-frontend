@@ -2421,14 +2421,14 @@ export default function OverviewMetrics({
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center text-[14px] !w-[43%] justify-start h-full group-hover:bg-forest-300 group-hover:dark:bg-forest-800 z-10">
+                        <div className="flex items-center text-[14px] !w-[43%] justify-start h-full z-10">
                           <div className="flex w-[40%]">
                             {master &&
                               master.blockspace_categories.main_categories[
                                 sortedContracts[key].main_category_key
                               ]}
                           </div>
-                          <div className="flex ">
+                          <div className="flex">
                             {" "}
                             {master &&
                             master.blockspace_categories.sub_categories[

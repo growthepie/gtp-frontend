@@ -218,6 +218,7 @@ export default function Home() {
                 fill={true}
                 alt="About growthepie"
                 className="object-contain"
+                sizes="25vw"
               />
             </div>
             <div className="text-base md:text-sm lg:text-base">
@@ -238,6 +239,7 @@ export default function Home() {
               fill={true}
               alt="About growthepie"
               className="object-contain"
+              sizes="25vw"
             />
           </div>
         </div>

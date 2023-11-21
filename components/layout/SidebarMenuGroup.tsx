@@ -9,6 +9,8 @@ import { MasterURL } from "@/lib/urls";
 import { NavigationItem } from "@/lib/navigation";
 import { IS_PREVIEW } from "@/lib/helpers";
 import { navigationCategories, chainGroup } from "@/lib/navigation";
+import rpgf from "@/icons/svg/rpgf.svg";
+import Image from "next/image";
 
 type SidebarProps = {
   item: NavigationItem;
@@ -114,9 +116,14 @@ export default function SidebarMenuGroup({
     );
 
   if (
-    ["API Documentation", "Wiki", "Contributors", "Home", "Blog"].includes(
-      item.name,
-    )
+    [
+      "API Documentation",
+      "Wiki",
+      "Contributors",
+      "Home",
+      "Blog",
+      "RPGF3 Tracker",
+    ].includes(item.name)
   )
     return (
       <div key={item.name} className="group flex flex-col">
@@ -139,13 +146,29 @@ export default function SidebarMenuGroup({
             >
               <div className="w-6 mx-0">
                 <div className="w-6 mx-auto">
-                  <Icon icon={item.icon} className="h-7 w-7 p-0.5 mx-auto" />
+                  {!item.name.includes("RPGF3 Tracker") ? (
+                    <Icon icon={item.icon} className="h-7 w-7 p-0.5 mx-auto" />
+                  ) : (
+                    <Icon icon={item.icon} className="h-7 w-7 p-1 mx-auto fill-[#FF0420] text-[#FF0420]" />
+                  )}
                 </div>
               </div>
               <div className="">
                 {sidebarOpen && (
-                  <div className="text-base font-bold mx-3 w-80 flex">
-                    {item.label}
+                  <div className="text-base font-bold mx-3 w-80 flex space-x-1">
+                    {item.name === "RPGF3 Tracker" ? (
+                      <div className="flex space-x-1 relative">
+                        <div className="text-[#FF0420]">RetroPGF 3</div>{" "}<div className="text-inherit">Tracker</div>
+                        <Icon
+                          icon="material-symbols:star"
+                          className={`text-[#FF0420] self-center animate-bounce visible h-[8px] w-[8px] absolute -left-3`}
+                        />
+                        <Icon
+                          icon="material-symbols:star"
+                          className={`text-[#FF0420] self-center animate-bounce visible h-[8px] w-[8px] absolute -right-2.5`}
+                        />
+                      </div>)
+                      : item.label}
                   </div>
                 )}
               </div>
@@ -153,7 +176,11 @@ export default function SidebarMenuGroup({
           </TooltipTrigger>
           {!sidebarOpen && (
             <TooltipContent className="bg-forest-900 text-forest-50 dark:bg-forest-50 dark:text-forest-900 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md flex z-50">
-              {item.label}
+              {item.name === "RPGF3 Tracker" ? (
+                <div className="flex space-x-1">
+                  <div className="text-[#FF0420]">RetroPGF 3</div> <div className="">Tracker</div>
+                </div>)
+                : item.label}
             </TooltipContent>
           )}
         </Tooltip>
@@ -170,7 +197,12 @@ export default function SidebarMenuGroup({
           >
             <div className="w-6 mx-0">
               <div className="w-6 mx-auto">
-                <Icon icon={item.icon} className="h-7 w-7 p-0.5 mx-auto" />
+
+                {!item.name.includes("RPGF3 Tracker") ? (
+                  <Icon icon={item.icon} className="h-7 w-7 p-0.5 mx-auto" />
+                ) : (
+                  <Icon icon={item.icon} className="h-7 w-7 p-0 mx-auto fill-[#FF0420] text-[#FF0420]" />
+                )}
               </div>
             </div>
             {/* {sidebarOpen ? (
@@ -185,11 +217,10 @@ export default function SidebarMenuGroup({
               </div>
             ) : ( */}
             <div
-              className={`absolute flex-1 flex items-center transition-all duration-300 origin-[-10px_10px]  ${
-                isOpen
-                  ? "rotate-90 bottom-[12px] left-[20px]"
-                  : "rotate-0 bottom-[7px] left-[22px]"
-              }`}
+              className={`absolute flex-1 flex items-center transition-all duration-300 origin-[-10px_10px]  ${isOpen
+                ? "rotate-90 bottom-[12px] left-[20px]"
+                : "rotate-0 bottom-[7px] left-[22px]"
+                }`}
             >
               <Icon
                 icon={"feather:chevron-right"}
@@ -199,7 +230,10 @@ export default function SidebarMenuGroup({
             {sidebarOpen && (
               <div className={`flex-1 flex items-start justify-between`}>
                 <div className="text-base font-bold mx-3 py-0.5 break-inside-avoid">
-                  {item.label}
+                  {item.name === "RPGF3 Tracker" ? (<>
+                    <span className="text-[#FF0420]">RetroPGF 3</span> <span className="text-black">Tracker</span>
+                  </>)
+                    : item.label}
                 </div>
               </div>
             )}
@@ -214,9 +248,8 @@ export default function SidebarMenuGroup({
       </Tooltip>
 
       <div
-        className={`flex flex-col overflow-hidden mb-8 w-full md:w-80 transition-all duration-300 ease-out  ${
-          isOpen ? "h-auto mt-4" : "h-0 mt-0"
-        }`}
+        className={`flex flex-col overflow-hidden mb-8 w-full md:w-80 transition-all duration-300 ease-out  ${isOpen ? "h-auto mt-4" : "h-0 mt-0"
+          }`}
       >
         {item.options.map((option, i) => {
           return (
@@ -307,44 +340,39 @@ export default function SidebarMenuGroup({
               <Tooltip placement="top-start">
                 <TooltipTrigger className="px-0 md:px-5">
                   <Link
-                    className={`group flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
-                      urlParts[1].trim().localeCompare(option.urlKey) === 0
-                        ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
-                        : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
-                    }`}
+                    className={`group flex items-center justify-items-center rounded-full md:rounded-l-full relative ${urlParts[1].trim().localeCompare(option.urlKey) === 0
+                      ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                      : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                      }`}
                     href={`/${item.name.toLowerCase()}/${option.urlKey}`}
                   >
                     <div
-                      className={`absolute top-0 left-[4px] w-[64px] h-[28px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726] transition-opacity  ease-in-out ${
-                        sidebarOpen
-                          ? "opacity-0 duration-0"
-                          : "opacity-100 duration-500"
-                      }`}
+                      className={`absolute top-0 left-[4px] w-[64px] h-[28px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726] transition-opacity  ease-in-out ${sidebarOpen
+                        ? "opacity-0 duration-0"
+                        : "opacity-100 duration-500"
+                        }`}
                     ></div>
 
                     <div
-                      className={`w-6 absolute left-[13px]  ${
-                        urlParts[1].trim().localeCompare(option.urlKey) === 0
-                          ? "text-inherit"
-                          : "text-[#5A6462] group-hover:text-inherit"
-                      }`}
+                      className={`w-6 absolute left-[13px]  ${urlParts[1].trim().localeCompare(option.urlKey) === 0
+                        ? "text-inherit"
+                        : "text-[#5A6462] group-hover:text-inherit"
+                        }`}
                     >
                       {["Blockspace"].includes(item.name) && (
                         <Icon
                           icon={option.icon}
-                          className={`${
-                            item.name === "Fundamentals"
-                              ? "h-4 w-4 mx-auto"
-                              : "h-[15px] w-[15px] mx-auto"
-                          } `}
+                          className={`${item.name === "Fundamentals"
+                            ? "h-4 w-4 mx-auto"
+                            : "h-[15px] w-[15px] mx-auto"
+                            } `}
                         />
                       )}
                     </div>
                     {option.category ? (
                       <div
-                        className={`text-sm py-1 w-48 font-normal break-inside-auto transition-all duration-300 ease-in text-left ${
-                          sidebarOpen ? "ml-12" : "ml-4"
-                        }`}
+                        className={`text-sm py-1 w-48 font-normal break-inside-auto transition-all duration-300 ease-in text-left ${sidebarOpen ? "ml-12" : "ml-4"
+                          }`}
                       >
                         {option.label}
                       </div>
@@ -359,11 +387,10 @@ export default function SidebarMenuGroup({
                 </TooltipTrigger>
                 {!sidebarOpen && (
                   <TooltipContent
-                    className={`text-forest-900 dark:text-forest-50 py-1 px-4 text-base break-inside-auto shadow-md z-50 pointer-events-none ml-[8px] mt-[36px] flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
-                      urlParts[1].trim().localeCompare(option.urlKey) === 0
-                        ? "bg-[#CDD8D3] dark:bg-forest-1000"
-                        : "bg-[#F0F5F3] dark:bg-[#5A6462]"
-                    }`}
+                    className={`text-forest-900 dark:text-forest-50 py-1 px-4 text-base break-inside-auto shadow-md z-50 pointer-events-none ml-[8px] mt-[36px] flex items-center justify-items-center rounded-full md:rounded-l-full relative ${urlParts[1].trim().localeCompare(option.urlKey) === 0
+                      ? "bg-[#CDD8D3] dark:bg-forest-1000"
+                      : "bg-[#F0F5F3] dark:bg-[#5A6462]"
+                      }`}
                   >
                     {option.label}
                   </TooltipContent>

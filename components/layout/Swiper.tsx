@@ -54,16 +54,22 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
               perPage: 1,
             },
             900: {
-              perPage: 1,
-            },
-            1100: {
               perPage: isSidebarOpen ? 1 : 2,
             },
-            1600: {
+            1100: {
               perPage: 2,
             },
-            6000: {
+            1250: {
+              perPage: isSidebarOpen ? 2 : 3,
+            },
+            1450: {
               perPage: 3,
+            },
+            1600: {
+              perPage: 3,
+            },
+            6000: {
+              perPage: isSidebarOpen ? 3 : 4,
             },
           },
         }}

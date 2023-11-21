@@ -44,17 +44,18 @@ export default function DarkModeSwitch({ isMobile }: DarkModeSwitchProps) {
           </div>
           <div className="relative" onClick={handleToggle}>
             <div
-              className={`block 
-                        ${isMobile ? "w-[40px] h-[22px]" : "w-[3.25rem] h-7"}
-                        rounded-full transition duration-200 ease-in-out bg-forest-500`}
+              className={`${
+                isMobile ? "w-[40px] h-[22px]" : "w-[3.25rem] h-7"
+              } rounded-full transition duration-200 ease-in-out bg-forest-500`}
             ></div>
             <div
-              className={`dot absolute left-0.5 top-0.5
-                        ${isMobile ? "w-[18px] h-[18px]" : "w-6 h-6"}
-                        rounded-full transition duration-200 ease-in-out
-                        bg-[#1F2726] text-forest-500 
-                        ${theme === "dark" ? "transform translate-x-full" : ""}
-                        rounded-full`}
+              className={`absolute left-0.5 top-0.5 ${
+                isMobile ? "w-[18px] h-[18px]" : "w-6 h-6"
+              } rounded-full transition-transform duration-200 ease-in-out bg-[#1F2726] text-forest-500 ${
+                theme === "dark"
+                  ? "transform translate-x-full"
+                  : "translate-x-0"
+              }`}
             ></div>
           </div>
         </label>
