@@ -744,7 +744,7 @@ export default function LandingChart({
   const filteredData = useMemo(() => {
     if (!data) return null;
 
-    const l2s = data.filter((d) => ["all_l2s"].includes(d.name))[0];
+    const l2s = data.filter((d) => "all_l2s" === d.name)[0];
 
     setTotalUsersIncrease(
       (l2s.data[l2s.data.length - 1][1] - l2s.data[l2s.data.length - 2][1]) /

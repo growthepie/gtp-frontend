@@ -396,6 +396,17 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "chainsOptimism",
         urlKey: "zksync-era",
       },
+      // {
+      //   label: "Linea",
+      //   category: "zk-rollup",
+      //   page: {
+      //     description: "",
+      //   },
+      //   icon: "gtp:linea-logo-monochrome",
+      //   key: "linea",
+      //   rootKey: "chainsLinea",
+      //   urlKey: "linea",
+      // },
       {
         label: "Immutable X",
         category: "validium",

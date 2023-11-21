@@ -28,14 +28,6 @@ export const Contributors = [
     linkedin: "https://www.linkedin.com/in/michael-may-3008a1261",
   },
   {
-    name: "Chris Keshian",
-    image: "/contributors/chris.png",
-    role: "Product",
-    twitter: "https://www.twitter.com/chriskeshian",
-    linkedin: "https://www.linkedin.com/in/chriskeshian",
-  },
-
-  {
     name: "Lorenz Lehmann",
     image: "/contributors/lorenz.png",
     role: "Research",
@@ -132,12 +124,5 @@ export const Supporters = [
     width: 192,
     height: 27,
     url: "https://optimism.io",
-  },
-  {
-    name: "FJ Labs",
-    image: "/contributors/fj-labs-logo.png",
-    width: 204,
-    height: 30,
-    url: "https://fjlabs.com",
   },
 ];

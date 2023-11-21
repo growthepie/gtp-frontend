@@ -20,6 +20,7 @@ export const AllChains = [
       light: ["bg-[#293305]", "bg-[#293305]"],
       dark: ["bg-[#C1C1C1]", "bg-[#C1C1C1]"],
     },
+    darkTextOnBackground: false,
   },
   {
     label: "Arbitrum",
@@ -42,6 +43,7 @@ export const AllChains = [
       light: ["bg-[#2ECEE8]", "bg-[#2ECEE8]"],
       dark: ["bg-[#1DF7EF]", "bg-[#1DF7EF]"],
     },
+    darkTextOnBackground: true,
   },
   {
     label: "Aztec V2",
@@ -60,8 +62,8 @@ export const AllChains = [
       light: ["bg-[#000000]", "bg-[#000000]"],
       dark: ["bg-[#000000]", "bg-[#000000]"],
     },
+    darkTextOnBackground: false,
   },
-
   {
     label: "Immutable X",
     icon: "/icons/immutablex.png",
@@ -83,6 +85,7 @@ export const AllChains = [
       light: ["bg-[#08373C]", "bg-[#08373C]"],
       dark: ["bg-[#3AFCC9]", "bg-[#3AFCC9]"],
     },
+    darkTextOnBackground: true,
   },
   {
     label: "Polygon zkEVM",
@@ -105,6 +108,7 @@ export const AllChains = [
       light: ["bg-[#800094]", "bg-[#800094]"],
       dark: ["bg-[#AD0DC5]", "bg-[#AD0DC5]"],
     },
+    darkTextOnBackground: false,
   },
   {
     label: "Loopring",
@@ -126,6 +130,7 @@ export const AllChains = [
       light: ["bg-[#000000]", "bg-[#000000]"],
       dark: ["bg-[#000000]", "bg-[#000000]"],
     },
+    darkTextOnBackground: false,
   },
   {
     label: "OP Mainnet",
@@ -148,6 +153,7 @@ export const AllChains = [
       light: ["bg-[#DD3408]", "bg-[#DD3408]"],
       dark: ["bg-[#FE5468]", "bg-[#FE5468]"],
     },
+    darkTextOnBackground: false,
   },
   {
     label: "zkSync Era",
@@ -170,6 +176,7 @@ export const AllChains = [
       light: ["bg-[#390094]", "bg-[#390094]"],
       dark: ["bg-[#7C32F4]", "bg-[#7C32F4]"],
     },
+    darkTextOnBackground: false,
   },
   {
     label: "Base",
@@ -192,6 +199,7 @@ export const AllChains = [
       light: ["bg-[#2151F5]", "bg-[#2151F5]"],
       dark: ["bg-[#2151F5]", "bg-[#2151F5]"],
     },
+    darkTextOnBackground: false,
   },
   {
     label: "Public Goods Network",
@@ -214,6 +222,7 @@ export const AllChains = [
       light: ["bg-[#B9EE75]", "bg-[#B9EE75]"],
       dark: ["bg-[#D7FD7B]", "bg-[#D7FD7B]"],
     },
+    darkTextOnBackground: true,
   },
   {
     label: "Zora",
@@ -236,7 +245,31 @@ export const AllChains = [
       light: ["bg-[#2FB9F4]", "bg-[#2FB9F4]"],
       dark: ["bg-[#2FB9F4]", "bg-[#2FB9F4]"],
     },
+    darkTextOnBackground: false,
   },
+  // {
+  //   label: "Linea",
+  //   icon: "/icons/linea.png",
+  //   key: "linea",
+  //   urlKey: "linea",
+  //   chainType: "L2",
+  //   ecosystem: ["all-chains"],
+  //   description:
+  //     "Linea is a developer-friendly ZK Rollup, marked as the next stage of ConsenSys zkEVM, which aims to enhance the Ethereum network by facilitating a new wave of decentralized applications. Public launch was in August 2023.",
+  //   border: {
+  //     light: ["border-[#9CE5FF]", "border-[#9CE5FF]"],
+  //     dark: ["border-[#A9E9FF]", "border-[#A9E9FF]"],
+  //   },
+  //   colors: {
+  //     light: ["#9CE5FF", "#9CE5FF"], // dark purple
+  //     dark: ["#A9E9FF", "#A9E9FF"], // dark purple
+  //   },
+  //   backgrounds: {
+  //     light: ["bg-[#9CE5FF]", "bg-[#9CE5FF]"],
+  //     dark: ["bg-[#A9E9FF]", "bg-[#A9E9FF]"],
+  //   },
+  //   darkTextOnBackground: true,
+  // },
   {
     label: "Multiple",
     icon: null,
@@ -258,6 +291,7 @@ export const AllChains = [
       light: ["bg-[#cdd8d3]", "bg-[#cdd8d3]"],
       dark: ["bg-[#cdd8d3]", "bg-[#cdd8d3]"],
     },
+    darkTextOnBackground: false,
   },
   {
     label: "All L2s",
@@ -279,6 +313,7 @@ export const AllChains = [
       light: ["bg-[#FFDF27]", "bg-[#FE5468]"],
       dark: ["bg-[#FFDF27]", "bg-[#FE5468]"],
     },
+    darkTextOnBackground: false,
   },
 ];
 
