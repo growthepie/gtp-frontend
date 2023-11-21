@@ -25,6 +25,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { OsoTaggedProjects } from "./osoTaggedProjects";
 import { formatNumber } from "@/lib/chartUtils";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/layout/Tooltip";
 
 const OsoTaggedProjectsMap = OsoTaggedProjects.reduce((prev, curr) => {
   prev[curr["Project ID"]] = curr;
@@ -57,9 +58,9 @@ const ImpactCategoriesMap = {
   },
   OP_STACK: {
     label: "OP-STACK",
-    bg: "bg-red-600/40",
-    border: "border-red-600",
-    textColor: "text-red-100",
+    bg: "bg-[#ff0000]/40",
+    border: "border-[#ff0000]-600",
+    textColor: "text-white",
   },
 };
 
@@ -297,7 +298,7 @@ export default function Page() {
       {
         header: "Project",
         accessorKey: "display_name",
-        size: 160,
+        // size: 160,
         cell: (info) => (
           <div className="w-full flex pr-5 space-x-2 items-center">
             <div className="flex items-center">
@@ -316,8 +317,8 @@ export default function Page() {
               </div>
             </div>
             <div
-              className="w-full overflow-hidden text-ellipsis font-bold"
-              style={{ whiteSpace: "pre-wrap" }}
+              className="w-full overflow-hidden text-ellipsis font-bold whitespace-nowrap"
+            // style={{ whiteSpace: "pre-wrap" }}
             >
               {info.row.original.display_name}
             </div>
@@ -412,7 +413,7 @@ export default function Page() {
       {
         header: "In Ballots",
         accessorKey: "included_in_ballots",
-        size: 60,
+        // size: 60,
         cell: (info) => (
           <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis flex justify-end items-center space-x-2">
             {/* <div
@@ -584,9 +585,33 @@ export default function Page() {
       //   },
       // },
       {
-        header: "Total Funding",
+        header: () => (
+          <>
+
+            <div>
+              <div className="flex">
+                Total Funding
+                <div className="relative">
+                  <Tooltip placement="left">
+                    <TooltipTrigger>
+                      <Icon icon="feather:info" className="w-4 h-4 absolute left-2 top-0" />
+                    </TooltipTrigger>
+                    <TooltipContent className="pr-0 z-50 flex items-center justify-center">
+                      <div className="px-3 py-1.5 w-56 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
+                        <div className="text-xs space-x-1">
+                          <span className="font-bold">Total Funding</span>
+                          <span className="font-light">is calculated based on the reported USD and OP amount.<br /><br />For OP tokens we calculated with $1.35 (OP price when RPGF applications were closed).<br /><br /><span className="font-bold">Note:</span> Projects only had to report funding they received from the collective, many didn&apos;t include VC funding and other funding sources.</span>
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </div>
+            </div>
+          </>
+        ),
         accessorKey: "funding_sources",
-        size: 120,
+        // size: 120,
         cell: (info) => {
           return (
             <div className="w-full whitespace-nowrap text-ellipsis relative">
@@ -715,8 +740,8 @@ export default function Page() {
         accessorKey: "impact_category",
         // size: 500,
         cell: (info) => (
-          <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis">
-            <div className="flex flex-wrap gap-x-0.5 gap-y-0.5">
+          <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis pr-8">
+            <div className="flex gap-x-0.5">
               {Object.keys(ImpactCategoriesMap).map((d) => (
                 <div key={d} className="w-[35px]">
                   {info.row.original.impact_category.includes(d) ? (
@@ -961,7 +986,7 @@ export default function Page() {
         dataValidating={[projectsValidating]}
         fullScreen
       />
-      <div className="w-full flex justify-end items-start mt-[30px]">
+      <div className="w-full flex justify-end items-start mt-[10px] mb-[10px]">
         <span className="text-xs font-normal text-forest-200 dark:text-forest-400">
           Last updated {lastUpdatedString}
         </span>
@@ -1208,47 +1233,6 @@ export default function Page() {
             </table>
           </div>
         </div>
-      </div>
-      <div className="w-full mt-4 hidden lg:flex space-x-[10px] text-sm md:text-sm xl:text-sm justify-end items-start">
-        <div className="flex items-center leading-[2] font-bold">
-          Links
-        </div>
-        <Link
-          href={"https://vote.optimism.io/retropgf/3/"}
-          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-2 py-1"
-          rel="noreferrer"
-          target="_blank"
-        >
-          <Icon icon="feather:external-link" className="w-4 h-4" />
-          <div>Optimism Agora</div>
-        </Link>
-        <Link
-          href={"https://retropgfhub.com/retropgf3/"}
-          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-2 py-1"
-          rel="noreferrer"
-          target="_blank"
-        >
-          <Icon icon="feather:external-link" className="w-4 h-4" />
-          <div>RetroPGF Hub</div>
-        </Link>
-        <Link
-          href={"https://www.pairwise.vote/"}
-          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-2 py-1"
-          rel="noreferrer"
-          target="_blank"
-        >
-          <Icon icon="feather:external-link" className="w-4 h-4" />
-          <div>Pairwise</div>
-        </Link>
-        <Link
-          href={"https://www.opensource.observer/explore/"}
-          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-2 py-1"
-          rel="noreferrer"
-          target="_blank"
-        >
-          <Icon icon="feather:external-link" className="w-4 h-4" />
-          <div>Open Source Observer</div>
-        </Link>
       </div>
     </div>
   );

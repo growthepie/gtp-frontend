@@ -39,10 +39,53 @@ export default async function Layout({
         </Subheading>
       </Container>
 
-      <Container className="mt-[0px] -mb-[100px] !pr-0 2xl:!pr-[50px]">
-        <div className="w-full overflow-x-scroll 2xl:overflow-x-visible z-100 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pr-[50px] 2xl:pr-0">
-          <div className="min-w-[1330px]">{children}</div>
+      <Container className="mt-[0px] !pr-0 min-[1037px]:!pr-[50px]">
+        <div className="w-full overflow-x-scroll min-[1037px]:overflow-x-visible z-100 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pr-[50px] min-[1037px]:pr-0">
+          <div className="min-w-[850px]">{children}</div>
         </div>
+      </Container>
+      <Container className="-mb-[100px] pt-4 md:w-full flex flex-col md:flex-row space-y-[10px] md:space-x-[10px] text-sm md:text-sm xl:text-sm justify-end items-start">
+        <div className="flex items-center justify-center mt-3">
+          <div className="font-bold">
+            Links
+          </div>
+        </div>
+        <Link
+          href={"https://vote.optimism.io/retropgf/3/"}
+          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-2 py-1"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <Icon icon="feather:external-link" className="w-4 h-4" />
+          <div>Optimism Agora</div>
+        </Link>
+        <Link
+          href={"https://retropgfhub.com/retropgf3/"}
+          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-2 py-1"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <Icon icon="feather:external-link" className="w-4 h-4" />
+          <div>RetroPGF Hub</div>
+        </Link>
+        <Link
+          href={"https://www.pairwise.vote/"}
+          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-2 py-1"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <Icon icon="feather:external-link" className="w-4 h-4" />
+          <div>Pairwise</div>
+        </Link>
+        <Link
+          href={"https://www.opensource.observer/explore/"}
+          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-2 py-1"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <Icon icon="feather:external-link" className="w-4 h-4" />
+          <div>Open Source Observer</div>
+        </Link>
       </Container>
     </>
   );
