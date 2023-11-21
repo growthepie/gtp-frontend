@@ -19,7 +19,7 @@ import Icon from "@/components/layout/Icon";
 import { useTheme } from "next-themes";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { uniq } from "lodash";
+import { last, uniq } from "lodash";
 import moment from "moment";
 import Image from "next/image";
 import Link from "next/link";
@@ -114,6 +114,19 @@ export default function Page() {
   }, [data, projects.length, projectsResponse]);
 
   const { theme } = useTheme();
+
+  const lastUpdatedString = useMemo(() => {
+    if (!projectsResponse) return null;
+
+    const oldest = projectsResponse.projects.reduce((prev, curr) => {
+      return prev.last_updated < curr.last_updated ? prev : curr;
+    });
+
+    const lastUpdated = oldest.last_updated;
+
+    return moment(lastUpdated).fromNow();
+  }, [projectsResponse]);
+
 
   const getProjectsCombinedFundingSourcesByCurrency = useCallback(
     (fundingSources: ProjectFundingSource[]) => {
@@ -323,11 +336,10 @@ export default function Page() {
               rel="noopener noreferrer"
               target="_blank"
               href={`https://etherscan.io/address/${info.row.original.applicant.address.address}`}
-              className={`rounded-full px-1 py-0 border border-forest-900/20 dark:border-forest-500/20 font-mono text-[10px] ${
-                info.row.original.applicant.address.resolvedName.name
-                  ? "text-forest-900 dark:text-forest-500"
-                  : "text-forest-900/50 dark:text-forest-500/50"
-              } hover:bg-forest-900/10 dark:hover:bg-forest-500/10`}
+              className={`rounded-full px-1 py-0 border border-forest-900/20 dark:border-forest-500/20 font-mono text-[10px] ${info.row.original.applicant.address.resolvedName.name
+                ? "text-forest-900 dark:text-forest-500"
+                : "text-forest-900/50 dark:text-forest-500/50"
+                } hover:bg-forest-900/10 dark:hover:bg-forest-500/10`}
             >
               {info.row.original.applicant.address.resolvedName.name ? (
                 <>{info.row.original.applicant.address.resolvedName.name}</>
@@ -465,15 +477,14 @@ export default function Page() {
                   className="relative"
                   style={{
                     height: "2px",
-                    width: `${
-                      (getProjectsCombinedFundingSourcesByCurrency(
+                    width: `${(getProjectsCombinedFundingSourcesByCurrency(
+                      info.row.original.funding_sources,
+                    )["TOTAL"] /
+                      getProjectsCombinedFundingSourcesByCurrency(
                         info.row.original.funding_sources,
-                      )["TOTAL"] /
-                        getProjectsCombinedFundingSourcesByCurrency(
-                          info.row.original.funding_sources,
-                        )["TOTAL"]) *
+                      )["TOTAL"]) *
                       100.0
-                    }%`,
+                      }%`,
                   }}
                 >
                   <div
@@ -481,15 +492,14 @@ export default function Page() {
                     style={{
                       height: "2px",
 
-                      width: `${
-                        (getProjectsCombinedFundingSourcesByCurrency(
+                      width: `${(getProjectsCombinedFundingSourcesByCurrency(
+                        info.row.original.funding_sources,
+                      )["USD"] /
+                        getProjectsCombinedFundingSourcesByCurrency(
                           info.row.original.funding_sources,
-                        )["USD"] /
-                          getProjectsCombinedFundingSourcesByCurrency(
-                            info.row.original.funding_sources,
-                          )["TOTAL"]) *
+                        )["TOTAL"]) *
                         100.0
-                      }%`,
+                        }%`,
                     }}
                   ></div>
                   <div
@@ -500,25 +510,23 @@ export default function Page() {
                         getProjectsCombinedFundingSourcesByCurrency(
                           info.row.original.funding_sources,
                         )["USD"] !== 0
-                          ? `${
-                              (getProjectsCombinedFundingSourcesByCurrency(
-                                info.row.original.funding_sources,
-                              )["USD"] /
-                                getProjectsCombinedFundingSourcesByCurrency(
-                                  info.row.original.funding_sources,
-                                )["TOTAL"]) *
-                              100.0
-                            }%`
-                          : 0,
-                      width: `${
-                        (getProjectsCombinedFundingSourcesByCurrency(
-                          info.row.original.funding_sources,
-                        )["OP"] /
-                          getProjectsCombinedFundingSourcesByCurrency(
+                          ? `${(getProjectsCombinedFundingSourcesByCurrency(
                             info.row.original.funding_sources,
-                          )["TOTAL"]) *
+                          )["USD"] /
+                            getProjectsCombinedFundingSourcesByCurrency(
+                              info.row.original.funding_sources,
+                            )["TOTAL"]) *
+                          100.0
+                          }%`
+                          : 0,
+                      width: `${(getProjectsCombinedFundingSourcesByCurrency(
+                        info.row.original.funding_sources,
+                      )["OP"] /
+                        getProjectsCombinedFundingSourcesByCurrency(
+                          info.row.original.funding_sources,
+                        )["TOTAL"]) *
                         100.0
-                      }%`,
+                        }%`,
                     }}
                   ></div>
                 </div>
@@ -628,13 +636,12 @@ export default function Page() {
                     style={{
                       height: "2px",
 
-                      width: `${
-                        (getProjectsCombinedFundingSourcesByCurrency(
-                          info.row.original.funding_sources,
-                        )["TOTAL"] /
-                          totalFundingAmounts["TOTAL"]) *
+                      width: `${(getProjectsCombinedFundingSourcesByCurrency(
+                        info.row.original.funding_sources,
+                      )["TOTAL"] /
+                        totalFundingAmounts["TOTAL"]) *
                         100.0
-                      }%`,
+                        }%`,
                       // right with bases on bottom and right
                     }}
                   ></div>
@@ -779,32 +786,32 @@ export default function Page() {
           // },
         },
       },
-      {
-        header: "Last Updated",
-        accessorKey: "last_updated",
-        // size: 15,
-        cell: (info) => (
-          <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis text-right">
-            {moment(info.row.original.last_updated).fromNow(true)}
-          </div>
-        ),
-        meta: {
-          headerAlign: {
-            marginLeft: "auto",
-            flexDirection: "row-reverse",
-          },
-        },
-        sortingFn: (rowA, rowB) => {
-          const a = moment(rowA.original.last_updated).unix();
-          const b = moment(rowB.original.last_updated).unix();
+      // {
+      //   header: "Last Updated",
+      //   accessorKey: "last_updated",
+      //   // size: 15,
+      //   cell: (info) => (
+      //     <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis text-right">
+      //       {moment(info.row.original.last_updated).fromNow(true)}
+      //     </div>
+      //   ),
+      //   meta: {
+      //     headerAlign: {
+      //       marginLeft: "auto",
+      //       flexDirection: "row-reverse",
+      //     },
+      //   },
+      //   sortingFn: (rowA, rowB) => {
+      //     const a = moment(rowA.original.last_updated).unix();
+      //     const b = moment(rowB.original.last_updated).unix();
 
-          // If both are equal, return 0.
-          if (a === b) return 0;
+      //     // If both are equal, return 0.
+      //     if (a === b) return 0;
 
-          // Otherwise, sort by whether a is greater than or less than b.
-          return a > b ? 1 : -1;
-        },
-      },
+      //     // Otherwise, sort by whether a is greater than or less than b.
+      //     return a > b ? 1 : -1;
+      //   },
+      // },
     ],
 
     [
@@ -826,7 +833,7 @@ export default function Page() {
         projects.map(
           (d) =>
             getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)[
-              "USD"
+            "USD"
             ],
         ),
       ).length,
@@ -834,7 +841,7 @@ export default function Page() {
         projects.map(
           (d) =>
             getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)[
-              "OP"
+            "OP"
             ],
         ),
       ).length,
@@ -854,7 +861,7 @@ export default function Page() {
         data.map(
           (d) =>
             getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)[
-              "USD"
+            "USD"
             ],
         ),
       ).length,
@@ -862,7 +869,7 @@ export default function Page() {
         data.map(
           (d) =>
             getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)[
-              "OP"
+            "OP"
             ],
         ),
       ).length,
@@ -905,9 +912,8 @@ export default function Page() {
         }
         
         td {
-            border-color: ${
-              theme === "light" ? "rgba(0,0,0,0.16)" : "rgba(255,255,255,0.16)"
-            };
+            border-color: ${theme === "light" ? "rgba(0,0,0,0.16)" : "rgba(255,255,255,0.16)"
+          };
             border-width:1px;
             border-style:solid none;
             padding:5px 10px;
@@ -937,6 +943,15 @@ export default function Page() {
         dataValidating={[projectsValidating]}
         fullScreen
       />
+      <div className="">
+        <div className="flex items-center justify-between w-full px-4">
+          {lastUpdatedString && (
+            <div className="text-forest-900/50 dark:text-forest-500/50 text-[0.6rem] font-light leading-[1.2]">
+              Last Updated: {lastUpdatedString}
+            </div>
+          )}
+        </div>
+      </div>
       {Style}
       <div className="pr-4">
         <table className="table-fixed w-full">
@@ -962,9 +977,8 @@ export default function Page() {
                           <div
                             className={
                               header.column.getCanSort()
-                                ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold w-fit ${
-                                    i === 0 ? "pl-[10px]" : ""
-                                  }`
+                                ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold w-fit ${i === 0 ? "pl-[10px]" : ""
+                                }`
                                 : ""
                             }
                             style={{
@@ -999,7 +1013,7 @@ export default function Page() {
                               dataUniqueValues?.hasOwnProperty(header.id) && (
                                 <div className="text-[11px] font-normal w-full text-right pr-3 font-inter">
                                   {dataUniqueValues[header.id] ===
-                                  projectsUniqueValues[header.id] ? (
+                                    projectsUniqueValues[header.id] ? (
                                     projectsUniqueValues[
                                       header.id
                                     ].toLocaleString()
@@ -1022,21 +1036,19 @@ export default function Page() {
                           {projectsUniqueValues?.hasOwnProperty(header.id) &&
                             dataUniqueValues?.hasOwnProperty(header.id) && (
                               <div
-                                className={`absolute -bottom-1.5 ${
-                                  i === 0
-                                    ? "left-[30px] right-3"
-                                    : "left-0 right-3"
-                                } text-xs font-normal text-right`}
+                                className={`absolute -bottom-1.5 ${i === 0
+                                  ? "left-[30px] right-3"
+                                  : "left-0 right-3"
+                                  } text-xs font-normal text-right`}
                               >
                                 <div
                                   className="bg-forest-900 dark:bg-forest-500"
                                   style={{
                                     height: "1px",
-                                    width: `${
-                                      (dataUniqueValues[header.id] /
-                                        projectsUniqueValues[header.id]) *
+                                    width: `${(dataUniqueValues[header.id] /
+                                      projectsUniqueValues[header.id]) *
                                       100.0
-                                    }%`,
+                                      }%`,
                                   }}
                                 />
                                 <div
@@ -1062,15 +1074,15 @@ export default function Page() {
         className={` 
         transition-[mask-size] duration-300 ease-in-out
           ${
-            // if scroll is at top or bottom, don't show the fade
-            parentRef.current &&
+          // if scroll is at top or bottom, don't show the fade
+          parentRef.current &&
             (parentRef.current.scrollTop < 30 ||
               parentRef.current.scrollTop >
-                parentRef.current.scrollHeight -
-                  parentRef.current.clientHeight -
-                  30)
-              ? "fade-edge-div-vertical-hidden"
-              : "fade-edge-div-vertical"
+              parentRef.current.scrollHeight -
+              parentRef.current.clientHeight -
+              30)
+            ? "fade-edge-div-vertical-hidden"
+            : "fade-edge-div-vertical"
           }
       }`}
       >
@@ -1110,15 +1122,14 @@ export default function Page() {
                             //   ? "sticky top-0 z-20"
                             //   : "sticky top-0 left-0 z-30"
                             ""
-                          } bg-white dark:bg-forest-1000 whitespace-nowrap`}
+                            } bg-white dark:bg-forest-1000 whitespace-nowrap`}
                         >
                           {header.isPlaceholder ? null : (
                             <div
                               {...{
                                 className: header.column.getCanSort()
-                                  ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold h-0 ${
-                                      i === 0 ? "pl-[10px]" : ""
-                                    }`
+                                  ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold h-0 ${i === 0 ? "pl-[10px]" : ""
+                                  }`
                                   : "",
                                 onClick:
                                   header.column.getToggleSortingHandler(),
@@ -1158,9 +1169,8 @@ export default function Page() {
                       key={row.id}
                       style={{
                         height: `${virtualRow.size}px`,
-                        transform: `translateY(${
-                          virtualRow.start - index * virtualRow.size
-                        }px)`,
+                        transform: `translateY(${virtualRow.start - index * virtualRow.size
+                          }px)`,
                       }}
                     >
                       {row.getVisibleCells().map((cell, i) => {

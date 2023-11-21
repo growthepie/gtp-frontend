@@ -309,9 +309,9 @@ const processAllProjects = async () => {
 
 const processCron = async () => {
   console.log("processCron started");
-  createTableIfNotExists().then(() => {
+  await createTableIfNotExists().then(async () => {
     console.log("processCron::createTableIfNotExists done");
-    processAllProjects().then(() => {
+    await processAllProjects().then(() => {
       console.log("processCron::processAllProjects done");
     });
   });
