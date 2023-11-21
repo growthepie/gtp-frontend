@@ -63,10 +63,18 @@ const ImpactCategoriesMap = {
   },
 };
 
-const baseURL =
-  process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
-    ? `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-    : `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+// const baseURL =
+//   process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
+//     ? `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+//     : `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+
+const baseURL = {
+  "development": `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`,
+  "preview": "https://dev.growthepie.xyz",
+  "production": `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+}
+
+const environment = process.env.NEXT_PUBLIC_VERCEL_ENV || "development";
 
 const multiplierOPToken = 1.35;
 
@@ -75,7 +83,7 @@ export default function Page() {
     data: projectsResponse,
     isLoading: projectsLoading,
     isValidating: projectsValidating,
-  } = useSWR<ProjectsResponse>(baseURL + "/api/optimism-retropgf-3/projects", {
+  } = useSWR<ProjectsResponse>(baseURL[environment] + "/api/optimism-retropgf-3/projects", {
     refreshInterval: 5 * 1000 * 60, // 5 minutes,
   });
 
@@ -189,6 +197,18 @@ export default function Page() {
       projects,
     ],
   );
+
+  const getMaxTotalFundingAmount = useCallback(() => {
+    const allCombinedFundingSources =
+      getAllProjectsCombinedFundingSourcesByCurrency(projects);
+
+    const maxTotalFundingAmount = Math.max(
+      ...allCombinedFundingSources.map((d) => d["TOTAL"]),
+    );
+
+    return maxTotalFundingAmount;
+  }, [getAllProjectsCombinedFundingSourcesByCurrency, projects]);
+
 
   const getValuesInOrdersOfMagnitude = useCallback((value: number) => {
     const ordersOfMagnitude = [
@@ -418,155 +438,155 @@ export default function Page() {
           headerAlign: { marginLeft: "auto", flexDirection: "row-reverse" },
         },
       },
-      {
-        header: () => (
-          <>
-            <div className="absolute left-1.5 bottom-0 text-forest-900/50 dark:text-forest-500/50 text-[0.6rem] font-light leading-[1.2]">
-              USD
-            </div>
-            <div className="absolute right-1.5 bottom-0 text-forest-900/50 dark:text-forest-500/50 text-[0.6rem] font-light leading-[1.2]">
-              OP
-            </div>
-            <div className="ml-14 mr-auto">Funding Split</div>
-          </>
-        ),
+      // {
+      //   header: () => (
+      //     <>
+      //       <div className="absolute left-1.5 bottom-0 text-forest-900/50 dark:text-forest-500/50 text-[0.6rem] font-light leading-[1.2]">
+      //         USD
+      //       </div>
+      //       <div className="absolute right-1.5 bottom-0 text-forest-900/50 dark:text-forest-500/50 text-[0.6rem] font-light leading-[1.2]">
+      //         OP
+      //       </div>
+      //       <div className="ml-14 mr-auto">Funding Split</div>
+      //     </>
+      //   ),
 
-        id: "funding_split",
-        accessorKey: "funding_sources",
-        // size: 15,
-        cell: (info) => {
-          return (
-            <div className="w-full overflow-x whitespace-nowrap text-ellipsis relative">
-              <div className="text-[11px] font-normal w-full flex justify-between font-inter mt-1">
-                <div className="w-full flex justify-between">
-                  {["USD", "OP"]
-                    .map((currency) => [
-                      currency,
-                      getProjectsCombinedFundingSourcesByCurrency(
-                        info.row.original.funding_sources,
-                      )[currency],
-                    ])
-                    // .filter(([currency, value]) => value !== 0)
-                    .map(([currency, value]) => (
-                      <div
-                        key={currency}
-                        className="flex space-x-1 text-[0.6rem] font-light"
-                      >
-                        {(value as number) > 0 ? (
-                          <>
-                            <div
-                              className={
-                                currency === "OP"
-                                  ? "text-red-300 leading-[1.6]"
-                                  : "text-green-300 leading-[1.6]"
-                              }
-                            >
-                              {currency === "USD" && "$"}
-                              {parseInt(value as string).toLocaleString()}
-                            </div>
-                          </>
-                        ) : (
-                          <div className="text-forest-900/30 dark:text-forest-500/30">
-                            0
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                </div>
-              </div>
-              <div className="absolute -bottom-1 left-0 right-0 text-xs font-normal text-right">
-                <div
-                  className="relative"
-                  style={{
-                    height: "2px",
-                    width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                      info.row.original.funding_sources,
-                    )["TOTAL"] /
-                      getProjectsCombinedFundingSourcesByCurrency(
-                        info.row.original.funding_sources,
-                      )["TOTAL"]) *
-                      100.0
-                      }%`,
-                  }}
-                >
-                  <div
-                    className="absolute bg-green-400"
-                    style={{
-                      height: "2px",
+      //   id: "funding_split",
+      //   accessorKey: "funding_sources",
+      //   // size: 15,
+      //   cell: (info) => {
+      //     return (
+      //       <div className="w-full overflow-x whitespace-nowrap text-ellipsis relative">
+      //         <div className="text-[11px] font-normal w-full flex justify-between font-inter mt-1">
+      //           <div className="w-full flex justify-between">
+      //             {["USD", "OP"]
+      //               .map((currency) => [
+      //                 currency,
+      //                 getProjectsCombinedFundingSourcesByCurrency(
+      //                   info.row.original.funding_sources,
+      //                 )[currency],
+      //               ])
+      //               // .filter(([currency, value]) => value !== 0)
+      //               .map(([currency, value]) => (
+      //                 <div
+      //                   key={currency}
+      //                   className="flex space-x-1 text-[0.6rem] font-light"
+      //                 >
+      //                   {(value as number) > 0 ? (
+      //                     <>
+      //                       <div
+      //                         className={
+      //                           currency === "OP"
+      //                             ? "text-red-300 leading-[1.6]"
+      //                             : "text-green-300 leading-[1.6]"
+      //                         }
+      //                       >
+      //                         {currency === "USD" && "$"}
+      //                         {parseInt(value as string).toLocaleString()}
+      //                       </div>
+      //                     </>
+      //                   ) : (
+      //                     <div className="text-forest-900/30 dark:text-forest-500/30">
+      //                       0
+      //                     </div>
+      //                   )}
+      //                 </div>
+      //               ))}
+      //           </div>
+      //         </div>
+      //         <div className="absolute -bottom-1 left-0 right-0 text-xs font-normal text-right">
+      //           <div
+      //             className="relative"
+      //             style={{
+      //               height: "2px",
+      //               width: `${(getProjectsCombinedFundingSourcesByCurrency(
+      //                 info.row.original.funding_sources,
+      //               )["TOTAL"] /
+      //                 getProjectsCombinedFundingSourcesByCurrency(
+      //                   info.row.original.funding_sources,
+      //                 )["TOTAL"]) *
+      //                 100.0
+      //                 }%`,
+      //             }}
+      //           >
+      //             <div
+      //               className="absolute bg-green-400"
+      //               style={{
+      //                 height: "2px",
 
-                      width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                        info.row.original.funding_sources,
-                      )["USD"] /
-                        getProjectsCombinedFundingSourcesByCurrency(
-                          info.row.original.funding_sources,
-                        )["TOTAL"]) *
-                        100.0
-                        }%`,
-                    }}
-                  ></div>
-                  <div
-                    className="absolute bg-red-400"
-                    style={{
-                      height: "2px",
-                      left:
-                        getProjectsCombinedFundingSourcesByCurrency(
-                          info.row.original.funding_sources,
-                        )["USD"] !== 0
-                          ? `${(getProjectsCombinedFundingSourcesByCurrency(
-                            info.row.original.funding_sources,
-                          )["USD"] /
-                            getProjectsCombinedFundingSourcesByCurrency(
-                              info.row.original.funding_sources,
-                            )["TOTAL"]) *
-                          100.0
-                          }%`
-                          : 0,
-                      width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                        info.row.original.funding_sources,
-                      )["OP"] /
-                        getProjectsCombinedFundingSourcesByCurrency(
-                          info.row.original.funding_sources,
-                        )["TOTAL"]) *
-                        100.0
-                        }%`,
-                    }}
-                  ></div>
-                </div>
-                <div
-                  className="bg-forest-900/30 dark:bg-forest-500/30"
-                  style={{
-                    height: "2px",
-                    width: `100%`,
-                  }}
-                />
-              </div>
-            </div>
-          );
-        },
-        meta: {
-          headerAlign: { textAlign: "left" },
-        },
-        enableSorting: true,
-        sortingFn: (rowA, rowB) => {
-          const a = getProjectsCombinedFundingSourcesByCurrency(
-            rowA.original.funding_sources,
-          )["TOTAL"];
+      //                 width: `${(getProjectsCombinedFundingSourcesByCurrency(
+      //                   info.row.original.funding_sources,
+      //                 )["USD"] /
+      //                   getProjectsCombinedFundingSourcesByCurrency(
+      //                     info.row.original.funding_sources,
+      //                   )["TOTAL"]) *
+      //                   100.0
+      //                   }%`,
+      //               }}
+      //             ></div>
+      //             <div
+      //               className="absolute bg-red-400"
+      //               style={{
+      //                 height: "2px",
+      //                 left:
+      //                   getProjectsCombinedFundingSourcesByCurrency(
+      //                     info.row.original.funding_sources,
+      //                   )["USD"] !== 0
+      //                     ? `${(getProjectsCombinedFundingSourcesByCurrency(
+      //                       info.row.original.funding_sources,
+      //                     )["USD"] /
+      //                       getProjectsCombinedFundingSourcesByCurrency(
+      //                         info.row.original.funding_sources,
+      //                       )["TOTAL"]) *
+      //                     100.0
+      //                     }%`
+      //                     : 0,
+      //                 width: `${(getProjectsCombinedFundingSourcesByCurrency(
+      //                   info.row.original.funding_sources,
+      //                 )["OP"] /
+      //                   getProjectsCombinedFundingSourcesByCurrency(
+      //                     info.row.original.funding_sources,
+      //                   )["TOTAL"]) *
+      //                   100.0
+      //                   }%`,
+      //               }}
+      //             ></div>
+      //           </div>
+      //           <div
+      //             className="bg-forest-900/30 dark:bg-forest-500/30"
+      //             style={{
+      //               height: "2px",
+      //               width: `100%`,
+      //             }}
+      //           />
+      //         </div>
+      //       </div>
+      //     );
+      //   },
+      //   meta: {
+      //     headerAlign: { textAlign: "left" },
+      //   },
+      //   enableSorting: true,
+      //   sortingFn: (rowA, rowB) => {
+      //     const a = getProjectsCombinedFundingSourcesByCurrency(
+      //       rowA.original.funding_sources,
+      //     )["TOTAL"];
 
-          const b = getProjectsCombinedFundingSourcesByCurrency(
-            rowB.original.funding_sources,
-          )["TOTAL"];
+      //     const b = getProjectsCombinedFundingSourcesByCurrency(
+      //       rowB.original.funding_sources,
+      //     )["TOTAL"];
 
-          // If both are equal, return 0.
-          if (a === b) return 0;
+      //     // If both are equal, return 0.
+      //     if (a === b) return 0;
 
-          // Otherwise, sort by whether a is greater than or less than b.
-          return a > b ? 1 : -1;
-        },
-      },
+      //     // Otherwise, sort by whether a is greater than or less than b.
+      //     return a > b ? 1 : -1;
+      //   },
+      // },
       {
         header: "Total Funding",
         accessorKey: "funding_sources",
-        size: 168,
+        size: 120,
         cell: (info) => {
           return (
             <div className="w-full whitespace-nowrap text-ellipsis relative">
@@ -641,7 +661,7 @@ export default function Page() {
                       width: `${(getProjectsCombinedFundingSourcesByCurrency(
                         info.row.original.funding_sources,
                       )["TOTAL"] /
-                        totalFundingAmounts["TOTAL"]) *
+                        getMaxTotalFundingAmount()) *
                         100.0
                         }%`,
                       // right with bases on bottom and right
@@ -816,11 +836,7 @@ export default function Page() {
       // },
     ],
 
-    [
-      getProjectsCombinedFundingSourcesByCurrency,
-      getProjectsTotalFundingRank,
-      totalFundingAmounts,
-    ],
+    [getMaxTotalFundingAmount, getProjectsCombinedFundingSourcesByCurrency, getProjectsTotalFundingRank, totalFundingAmounts],
   );
 
   const projectsUniqueValues = useMemo(() => {
@@ -939,20 +955,16 @@ export default function Page() {
   );
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full pt-4 relative">
+    <div className="flex flex-col items-center justify-center w-full h-full relative">
       <ShowLoading
         dataLoading={[projectsLoading]}
         dataValidating={[projectsValidating]}
         fullScreen
       />
-      <div className="">
-        <div className="flex items-center justify-between w-full px-4">
-          {lastUpdatedString && (
-            <div className="text-forest-900/50 dark:text-forest-500/50 text-[0.6rem] font-light leading-[1.2]">
-              Last Updated: {lastUpdatedString}
-            </div>
-          )}
-        </div>
+      <div className="w-full flex justify-end items-start mt-[30px]">
+        <span className="text-xs font-normal text-forest-200 dark:text-forest-400">
+          Last updated {lastUpdatedString}
+        </span>
       </div>
       {Style}
       <div className="pr-4">
@@ -968,7 +980,7 @@ export default function Page() {
                       colSpan={header.colSpan}
                       style={{
                         width: header.getSize(),
-                        paddingLeft: i === 0 ? "20px" : "0px",
+                        paddingLeft: i === 0 ? "20px" : "20px",
                         paddingRight:
                           i === headerGroup.headers.length ? "20px" : "10px",
                       }}
@@ -1090,7 +1102,7 @@ export default function Page() {
       >
         <div
           ref={parentRef}
-          className="min-h-[300px] max-h-[calc(100vh-330px)] md:max-h-[calc(100vh-380px)] -mb-[100px] md:-mb-[50px] overflow-auto pr-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller"
+          className="min-h-[300px] max-h-[calc(100vh-330px)] md:max-h-[calc(100vh-380px)] overflow-auto pr-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller"
         >
           <div
             style={{ height: `${virtualizer.getTotalSize()}px` }}
@@ -1111,7 +1123,7 @@ export default function Page() {
                             height: "0px",
                             overflow: "hidden",
                             width: header.getSize(),
-                            paddingLeft: i === 0 ? "20px" : "0px",
+                            paddingLeft: i === 0 ? "20px" : "20px",
                             paddingRight:
                               i === headerGroup.headers.length
                                 ? "20px"
@@ -1179,7 +1191,7 @@ export default function Page() {
                         return (
                           <td
                             key={cell.id}
-                            style={{ paddingLeft: i === 0 ? "10px" : 0 }}
+                            style={{ paddingLeft: i === 0 ? "10px" : "20px" }}
                             className={i === 0 ? "sticky left-0 z-10" : ""}
                           >
                             {flexRender(
@@ -1196,6 +1208,47 @@ export default function Page() {
             </table>
           </div>
         </div>
+      </div>
+      <div className="w-full mt-4 hidden lg:flex space-x-[10px] text-sm md:text-sm xl:text-sm justify-end items-start">
+        <div className="flex items-center leading-[2] font-bold">
+          Links
+        </div>
+        <Link
+          href={"https://vote.optimism.io/retropgf/3/"}
+          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-2 py-1"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <Icon icon="feather:external-link" className="w-4 h-4" />
+          <div>Optimism Agora</div>
+        </Link>
+        <Link
+          href={"https://retropgfhub.com/retropgf3/"}
+          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-2 py-1"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <Icon icon="feather:external-link" className="w-4 h-4" />
+          <div>RetroPGF Hub</div>
+        </Link>
+        <Link
+          href={"https://www.pairwise.vote/"}
+          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-2 py-1"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <Icon icon="feather:external-link" className="w-4 h-4" />
+          <div>Pairwise</div>
+        </Link>
+        <Link
+          href={"https://www.opensource.observer/explore/"}
+          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-2 py-1"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <Icon icon="feather:external-link" className="w-4 h-4" />
+          <div>Open Source Observer</div>
+        </Link>
       </div>
     </div>
   );
