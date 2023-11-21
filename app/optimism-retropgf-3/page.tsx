@@ -72,7 +72,7 @@ const ImpactCategoriesMap = {
 const baseURL = {
   "development": `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`,
   "preview": "https://dev.growthepie.xyz",
-  "production": `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+  "production": `https://www.growthepie.xyz`
 }
 
 const environment = process.env.NEXT_PUBLIC_VERCEL_ENV || "development";
