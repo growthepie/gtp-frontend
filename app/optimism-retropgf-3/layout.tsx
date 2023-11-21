@@ -17,14 +17,15 @@ export default async function Layout({
           <div className="flex flex-col">
             <div className="flex flex-col md:flex-row mb-[15px] md:mb-[19px] items-start">
               <div className="flex items-center ">
-                <Image
+                {/* <Image
                   src="/GTP-Fundamentals.svg"
                   alt="GTP Chain"
                   className="object-contain w-[32px] h-[32px] mr-[8px]"
                   height={36}
                   width={36}
-                />
-                <Heading className="text-[36px] leading-snug " as="h1">
+                /> */}
+                <Icon icon="gtp:optimism-logo-monochrome" className="w-9 h-9 mr-2 fill-[#FF0420] text-[#FF0420]" />
+                <Heading className="text-[36px] leading-snug" as="h1">
                   RetroPGF 3 Tracker
                 </Heading>
               </div>

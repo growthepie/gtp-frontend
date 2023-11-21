@@ -476,9 +476,9 @@ export const contributorsItem: NavigationItem = {
 export const rpgfItem: NavigationItem = {
   name: "RPGF3 Tracker",
   label: "RPGF3 Tracker",
-  icon: "rpgf",
+  icon: "gtp:optimism-logo-monochrome",
   options: [],
-  href: "/contributors",
+  href: "/optimism-retropgf-3",
 };
 
 export const apiDocsItem: NavigationItem = {

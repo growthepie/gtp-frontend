@@ -58,8 +58,8 @@ const ImpactCategoriesMap = {
   },
   OP_STACK: {
     label: "OP-STACK",
-    bg: "bg-[#ff0000]/40",
-    border: "border-[#ff0000]-600",
+    bg: "bg-[#FF0420]/40",
+    border: "border-[#FF0420]-600",
     textColor: "text-white",
   },
 };
