@@ -318,7 +318,7 @@ const processCron = async () => {
   console.log("processCron done");
 };
 
-export function GET(req: NextRequest, res: Response) {
+export async function GET(req: NextRequest, res: Response) {
   const authHeader = req.headers.get("authorization");
   // if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
   //   return new Response("Unauthorized", {
@@ -326,7 +326,7 @@ export function GET(req: NextRequest, res: Response) {
   //   });
   // }
 
-  processCron();
+  await processCron();
 
   return new Response("OK", {
     status: 200,
