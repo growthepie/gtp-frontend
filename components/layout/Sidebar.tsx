@@ -7,6 +7,7 @@ import {
   navigationItems,
   contributorsItem,
   apiDocsItem,
+  rpgfItem,
 } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
 import { Icon } from "@iconify/react";
@@ -15,6 +16,7 @@ import DarkModeSwitch from "./DarkModeSwitch";
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import Backgrounds from "./Backgrounds";
+import rpgf from "@/icons/svg/rpgf.svg";
 
 type SidebarProps = {
   className?: string;
@@ -155,6 +157,61 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                   item={apiDocsItem}
                   sidebarOpen={isMobileSidebarOpen}
                 />
+                <div
+                  className={`flex w-[94%] h-[25px] rounded-full mb-3 z-10 ${
+                    isMobileSidebarOpen ? "bg-[#FF0420]  " : "bg-inherit "
+                  }`}
+                >
+                  <Image
+                    src={rpgf}
+                    alt="RPGF"
+                    width={30}
+                    height={30}
+                    className={` absolute  self-center ${
+                      isMobileSidebarOpen
+                        ? " left-[4px] h-[25px] w-[25px]"
+                        : "left-[32px] h-[30px] w-[30px]"
+                    }`}
+                  />
+                  <Icon
+                    icon="material-symbols:star"
+                    className={` absolute  self-center ${
+                      isMobileSidebarOpen
+                        ? "animate-bounce visible left-[220px] h-[8px] w-[8px]"
+                        : "animate-none invisible left-[32px] h-[5px] w-[5px]"
+                    }`}
+                  />
+                  <Icon
+                    icon="material-symbols:star"
+                    className={` absolute  self-center ${
+                      isMobileSidebarOpen
+                        ? "animate-bounce visible left-[230px] h-[8px] w-[8px]"
+                        : "animate-none invisible left-[32px] h-[5px] w-[5px]"
+                    }`}
+                  />
+                  <Icon
+                    icon="material-symbols:star"
+                    className={` absolute  self-center ${
+                      isMobileSidebarOpen
+                        ? "animate-bounce visible left-[240px] h-[8px] w-[8px] "
+                        : "animate-none invisible left-[32px] h-[5px] w-[5px]"
+                    }`}
+                  />
+                  <Icon
+                    icon="material-symbols:star"
+                    className={` absolute  self-center ${
+                      isMobileSidebarOpen
+                        ? "animate-bounce visible left-[250px] h-[8px] w-[8px] "
+                        : "animate-none invisible left-[32px] h-[5px] w-[5px]"
+                    }`}
+                  />
+
+                  <SidebarMenuGroup
+                    key={rpgfItem.name + "_item"}
+                    item={rpgfItem}
+                    sidebarOpen={isMobileSidebarOpen}
+                  />
+                </div>
                 <SidebarMenuGroup
                   key={contributorsItem.name + "_item"}
                   item={contributorsItem}
@@ -210,11 +267,68 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
         ))}
       </div>
       <div className="flex flex-col justify-end py-6 relative">
+        <div
+          className={`flex w-[94%] h-[25px] rounded-full mb-3 z-10 ${
+            isSidebarOpen ? "bg-[#FF0420]  " : "bg-inherit "
+          }`}
+        >
+          <Image
+            src={rpgf}
+            alt="RPGF"
+            width={30}
+            height={30}
+            className={` absolute  self-center ${
+              isSidebarOpen
+                ? " left-[30px] h-[30px] w-[30px]"
+                : "left-[32px] h-[30px] w-[30px]"
+            }`}
+          />
+          <Icon
+            icon="material-symbols:star"
+            className={` absolute  self-center ${
+              isSidebarOpen
+                ? "animate-bounce visible left-[220px] h-[8px] w-[8px]"
+                : "animate-none invisible left-[32px] h-[5px] w-[5px]"
+            }`}
+          />
+          <Icon
+            icon="material-symbols:star"
+            className={` absolute  self-center ${
+              isSidebarOpen
+                ? "animate-bounce visible left-[230px] h-[8px] w-[8px]"
+                : "animate-none invisible left-[32px] h-[5px] w-[5px]"
+            }`}
+          />
+          <Icon
+            icon="material-symbols:star"
+            className={` absolute  self-center ${
+              isSidebarOpen
+                ? "animate-bounce visible left-[240px] h-[8px] w-[8px] "
+                : "animate-none invisible left-[32px] h-[5px] w-[5px]"
+            }`}
+          />
+          <Icon
+            icon="material-symbols:star"
+            className={` absolute  self-center ${
+              isSidebarOpen
+                ? "animate-bounce visible left-[250px] h-[8px] w-[8px] "
+                : "animate-none invisible left-[32px] h-[5px] w-[5px]"
+            }`}
+          />
+
+          <SidebarMenuGroup
+            key={rpgfItem.name + "_item"}
+            item={rpgfItem}
+            sidebarOpen={isSidebarOpen}
+          />
+        </div>
+
         <SidebarMenuGroup
           key={contributorsItem.name + "_item"}
           item={contributorsItem}
           sidebarOpen={isSidebarOpen}
         />
+
         {isSidebarOpen ? (
           <div className="text-[0.7rem] flex justify-between w-48 text-inherit dark:text-forest-400 leading-[1] ml-8">
             <Link href="/privacy-policy">Privacy Policy</Link>
