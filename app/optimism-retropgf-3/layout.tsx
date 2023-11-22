@@ -12,7 +12,7 @@ export default async function Layout({
 }) {
   return (
     <>
-      <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
+      <Container className="flex flex-col w-full mt-[25px] md:mt-[45px]">
         <div className="flex justify-between items-start w-full mb-[0px]">
           <div className="flex flex-col">
             <div className="flex flex-col md:flex-row mb-[15px] md:mb-[19px] items-start">
@@ -25,12 +25,20 @@ export default async function Layout({
                   width={36}
                 /> */}
                 <Icon icon="gtp:optimism-logo-monochrome" className="w-9 h-9 mr-2 fill-[#FF0420] text-[#FF0420]" />
-                <Heading className="text-[36px] leading-snug" as="h1">
+                <Heading className="text-[24px] md:text-[28px] lg:text-[36px] leading-snug" as="h1">
                   RetroPGF 3 Tracker
                 </Heading>
               </div>
             </div>
           </div>
+          <Link href="https://app.powerbi.com/view?r=eyJrIjoiNGM0YjEyYjEtMzc2ZS00NDBiLTgxNjItOTgzZDY0MGQxNmNmIiwidCI6IjRjYThhMzQ5LThiMmEtNDY1Yy05MTdlLWM1ZThhMjdjMzhjNCIsImMiOjN9"
+            className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-3 py-1.5 text-sm md:text-base md:px-4 md:py-2"
+            rel="noreferrer"
+            target="_blank"
+          >
+            <Icon icon="feather:external-link" className="w-4 h-4" />
+            <div>RPGF3 Analytics <span className="hidden md:inline-block">Dashboard</span></div>
+          </Link>
         </div>
         <Subheading
           className="text-[14px] mb-0"
@@ -45,7 +53,7 @@ export default async function Layout({
           <div className="min-w-[850px]">{children}</div>
         </div>
       </Container>
-      <Container className="-mb-[100px] pt-4 md:w-full flex flex-col md:flex-row space-y-[10px] md:space-x-[10px] text-sm md:text-sm xl:text-sm justify-end items-start">
+      <Container className="-mb-[120px] pt-4 md:w-full flex flex-col md:flex-row space-y-[10px] md:space-x-[10px] text-sm md:text-sm xl:text-sm justify-end items-start">
         <div className="flex items-center justify-center mt-3">
           <div className="font-bold">
             Links

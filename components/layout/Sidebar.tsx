@@ -257,7 +257,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           />
         ))}
       </div>
-      <div className="flex flex-col justify-end py-6 relative">
+      <div className="flex flex-col justify-end pt-6 pb-3 relative">
         <div
           className={`flex w-[94%] h-[25px] mb-3 z-10 rounded-full bg-inherit
             }`}

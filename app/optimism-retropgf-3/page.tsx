@@ -102,6 +102,8 @@ export default function Page() {
     [currency: string]: number;
   }>({});
 
+  const [displayNameFilter, setDisplayNameFilter] = useState<string>("");
+
   useEffect(() => {
     if (projectsResponse) {
       if (data.length === 0 && projects.length === 0)
@@ -122,7 +124,23 @@ export default function Page() {
 
       setTotalFundingAmounts(tFA);
     }
-  }, [data, projects.length, projectsResponse]);
+  }, [data, projects.length, projectsResponse, displayNameFilter]);
+
+  useEffect(() => {
+    if (projects.length > 0) {
+      if (displayNameFilter === "") {
+        setData(projects);
+      } else {
+        setData(
+          projects.filter((project) =>
+            project.display_name
+              .toLowerCase()
+              .includes(displayNameFilter.toLowerCase()),
+          ),
+        );
+      }
+    }
+  }, [displayNameFilter, projects]);
 
   const { theme } = useTheme();
 
@@ -300,24 +318,23 @@ export default function Page() {
         accessorKey: "display_name",
         // size: 160,
         cell: (info) => (
-          <div className="w-full flex pr-5 space-x-2 items-center">
-            <div className="flex items-center">
-              <div className="w-4 h-4">
-                {info.row.original.profile.websiteUrl && (
-                  <Link
-                    href={info.row.original.profile.websiteUrl}
-                    target="_blank"
-                  >
-                    <Icon
-                      icon="feather:external-link"
-                      className="w-4 h-4 text-forest-900/80 dark:text-forest-500/80"
-                    />
-                  </Link>
-                )}
-              </div>
+          <div className="w-full flex items-center  space-x-2">
+            <div className="w-4 h-4">
+              {info.row.original.profile.websiteUrl && (
+                <Link
+                  href={info.row.original.profile.websiteUrl}
+                  target="_blank"
+                >
+                  <Icon
+                    icon="feather:external-link"
+                    className="w-4 h-4 text-forest-900/80 dark:text-forest-500/80"
+                  />
+                </Link>
+              )}
             </div>
+
             <div
-              className="w-full overflow-hidden text-ellipsis font-bold whitespace-nowrap"
+              className="flex-1 overflow-hidden text-ellipsis font-bold whitespace-nowrap"
             // style={{ whiteSpace: "pre-wrap" }}
             >
               {info.row.original.display_name}
@@ -339,9 +356,24 @@ export default function Page() {
         },
       },
       {
+        header: "",
+        id: "links",
+        size: 30,
+        cell: (info) => (
+          <div className="w-full flex justify-between items-center">
+
+            <div className="border-2 rounded-md border-forest-900/20 dark:border-forest-500/20 p-1 hover:bg-forest-900/10 dark:hover:bg-forest-500/10">
+              <Link href={`https://vote.optimism.io/retropgf/3/application/${info.row.original.id.split('|')[1]}`} rel="noopener noreferrer" target="_blank">
+                <Icon icon="gtp:agora" className="w-3 h-3 text-forest-900/80 dark:text-forest-500/80" />
+              </Link>
+            </div>
+          </div>
+        ),
+      },
+      {
         header: "Applicant",
         accessorKey: "applicant",
-        // size: 15,
+        size: 200,
         cell: (info) => (
           <div className="w-full flex space-x-2 items-center overflow-hidden whitespace-nowrap text-ellipsis">
             {info.row.original.applicant_type === "PROJECT" ? (
@@ -415,7 +447,7 @@ export default function Page() {
         accessorKey: "included_in_ballots",
         // size: 60,
         cell: (info) => (
-          <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis flex justify-end items-center space-x-2">
+          <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis flex justify-end items-center">
             {/* <div
               className="grid grid-cols-10 justify-end gap-x-1 gap-y-1"
               style={{ direction: "rtl" }}
@@ -424,14 +456,22 @@ export default function Page() {
                 <Icon icon="feather:circle" className="w-1 h-1" />,
               )}
             </div> */}
-            <div className="text-[0.9rem] font-light leading-[1.2] font-inter">
-              {info.row.original.included_in_ballots}
-            </div>
-            <div className="w-4 h-4">
-              <Icon
+            {/* <div className="w-4 h-4">
+              {info.row.original.included_in_ballots >= 12 && <Icon
                 icon={"feather:check-square"}
                 className="w-4 h-4 text-forest-900/80 dark:text-forest-500/80 fill-current"
-              />
+              />}
+            </div> */}
+            <div className="flex items-center space-x-2">
+              <div className="text-[0.9rem] font-light leading-[1.2] font-inter">
+                {info.row.original.included_in_ballots}
+              </div>
+              <div className="w-4 h-4">
+                <Icon
+                  icon={"feather:check-square"}
+                  className={`w-4 h-4  fill-current ${info.row.original.included_in_ballots >= 17 ? "text-green-500 dark:text-green-500" : "text-forest-900/80 dark:text-forest-500/80"}`}
+                />
+              </div>
             </div>
           </div>
         ),
@@ -590,11 +630,11 @@ export default function Page() {
 
             <div>
               <div className="flex">
-                Total Funding
+                Funding Reported
                 <div className="relative">
                   <Tooltip placement="left">
                     <TooltipTrigger>
-                      <Icon icon="feather:info" className="w-4 h-4 absolute left-2 top-0" />
+                      <Icon icon="feather:info" className="w-4 h-4 absolute left-3 top-0" />
                     </TooltipTrigger>
                     <TooltipContent className="pr-0 z-50 flex items-center justify-center">
                       <div className="px-3 py-1.5 w-56 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
@@ -631,7 +671,6 @@ export default function Page() {
                         info.row.original.funding_sources,
                       )[currency],
                     ])
-                    .filter(([currency, value]) => value !== 0)
                     .map(([currency, value]) => (
                       <div key={currency}>{`$${formatNumber(
                         parseInt(value as string),
@@ -645,9 +684,9 @@ export default function Page() {
                     }, [])}
                   <div className="w-4"></div>
                 </div>
-                <div className="text-forest-900/30 dark:text-forest-500/30">
+                {/* <div className="text-forest-900/30 dark:text-forest-500/30">
                   {"/ "}${formatNumber(totalFundingAmounts["TOTAL"], true)}
-                </div>
+                </div> */}
               </div>
               <div className="relative -bottom-[2px] left-0 right-0 text-xs font-normal text-right h-[2px]">
                 <div
@@ -986,12 +1025,32 @@ export default function Page() {
         dataValidating={[projectsValidating]}
         fullScreen
       />
-      <div className="w-full flex justify-end items-start mt-[10px] mb-[10px]">
-        <span className="text-xs font-normal text-forest-200 dark:text-forest-400">
+      <div className="w-full flex justify-between items-center mt-[10px] mb-[10px]">
+        <div className="w-96">
+          <div className="relative">
+            <input
+              className="block rounded-full pl-6 pr-3 py-1.5 w-full z-20 text-xs text-forest-900  bg-forest-100 dark:bg-forest-1000 dark:text-forest-500 border border-forest-500 dark:border-forest-700 focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
+              placeholder="Project Filter"
+              value={displayNameFilter}
+              onChange={(e) => {
+                setDisplayNameFilter(e.target.value);
+                // router.push("/contracts/" + e.target.value);
+                // debouncedSearch();
+              }}
+
+            />
+            <Icon
+              icon="feather:search"
+              className="w-4 h-4 absolute left-1.5 top-1.5"
+            />
+          </div>
+        </div>
+        <div className="text-xs font-normal text-forest-200 dark:text-forest-400">
           Last updated {lastUpdatedString}
-        </span>
+        </div>
       </div>
       {Style}
+
       <div className="pr-4">
         <table className="table-fixed w-full">
           {/* <thead className="sticky top-0 z-50"> */}
@@ -1127,7 +1186,7 @@ export default function Page() {
       >
         <div
           ref={parentRef}
-          className="min-h-[300px] max-h-[calc(100vh-330px)] md:max-h-[calc(100vh-380px)] overflow-auto pr-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller"
+          className="min-h-[300px] h-[calc(100vh-330px)] md:h-[calc(100vh-380px)] overflow-auto pr-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller"
         >
           <div
             style={{ height: `${virtualizer.getTotalSize()}px` }}
