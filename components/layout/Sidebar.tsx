@@ -55,13 +55,14 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
     return (
       <>
         <button
-          className={`z-[40] transition-colors duration-500 ${isMobileSidebarOpen ? "hidden" : "block"
-            } ${
+          className={`z-[40] transition-colors duration-500 ${
+            isMobileSidebarOpen ? "hidden" : "block"
+          } ${
             // if scroll position is 20px or more from top, add bg and shadow
             scrollHeight > 0
               ? "fixed bg-white dark:bg-forest-1000 shadow-md rounded-full border-2 border-forest-900 dark:border-forest-200 p-2 right-[6px] top-[18px]"
               : `fixed right-[16px] top-[28px] border-transparent`
-            }`}
+          }`}
           // style={{
           //   top: scrollHeight >= 15 ? "20px" : `calc(28px - ${scrollHeight}px)`,
           // }}
@@ -72,10 +73,11 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
         {/* {isMobileSidebarOpen && ( */}
         <div
           suppressHydrationWarning
-          className={`transition-all z-50 ${isMobileSidebarOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-            }`}
+          className={`transition-all z-50 ${
+            isMobileSidebarOpen
+              ? "opacity-100 pointer-events-auto"
+              : "opacity-0 pointer-events-none"
+          }`}
         >
           <Backgrounds isMobileMenu />
           <div className="fixed inset-0 p-[20px] z-[60] flex flex-col justify-items-start select-none overflow-hidden">
@@ -156,48 +158,10 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                   sidebarOpen={isMobileSidebarOpen}
                 />
                 <div
-                  className={`flex w-[94%] h-[25px] rounded-full mb-3 z-10 ${isMobileSidebarOpen ? "" : "bg-inherit "
-                    }`}
+                  className={`flex w-[94%] h-[25px] rounded-full mb-3 z-10 ${
+                    isMobileSidebarOpen ? "" : "bg-inherit "
+                  }`}
                 >
-                  <Image
-                    src={rpgf}
-                    alt="RPGF"
-                    width={30}
-                    height={30}
-                    className={` absolute  self-center ${isMobileSidebarOpen
-                      ? " left-[4px] h-[25px] w-[25px]"
-                      : "left-[32px] h-[30px] w-[30px]"
-                      }`}
-                  />
-                  <Icon
-                    icon="material-symbols:star"
-                    className={` absolute  self-center ${isMobileSidebarOpen
-                      ? "animate-bounce visible left-[220px] h-[8px] w-[8px]"
-                      : "animate-none invisible left-[32px] h-[5px] w-[5px]"
-                      }`}
-                  />
-                  <Icon
-                    icon="material-symbols:star"
-                    className={` absolute  self-center ${isMobileSidebarOpen
-                      ? "animate-bounce visible left-[230px] h-[8px] w-[8px]"
-                      : "animate-none invisible left-[32px] h-[5px] w-[5px]"
-                      }`}
-                  />
-                  <Icon
-                    icon="material-symbols:star"
-                    className={` absolute  self-center ${isMobileSidebarOpen
-                      ? "animate-bounce visible left-[240px] h-[8px] w-[8px] "
-                      : "animate-none invisible left-[32px] h-[5px] w-[5px]"
-                      }`}
-                  />
-                  <Icon
-                    icon="material-symbols:star"
-                    className={` absolute  self-center ${isMobileSidebarOpen
-                      ? "animate-bounce visible left-[250px] h-[8px] w-[8px] "
-                      : "animate-none invisible left-[32px] h-[5px] w-[5px]"
-                      }`}
-                  />
-
                   <SidebarMenuGroup
                     key={rpgfItem.name + "_item"}
                     item={rpgfItem}
@@ -239,8 +203,9 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
 
   return (
     <motion.div
-      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden  ${isSidebarOpen ? "w-[18rem]" : ""
-        }`}
+      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden  ${
+        isSidebarOpen ? "w-[18rem]" : ""
+      }`}
       animate={{
         width: isSidebarOpen ? "18rem" : "5.5rem",
       }}
@@ -293,7 +258,6 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
               : "animate-none invisible left-[32px] h-[5px] w-[5px]"
               }`}
           /> */}
-
 
           <SidebarMenuGroup
             key={rpgfItem.name + "_item"}
