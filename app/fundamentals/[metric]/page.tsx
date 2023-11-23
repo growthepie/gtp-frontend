@@ -35,7 +35,7 @@ const Chain = ({ params }: { params: any }) => {
     return AllChains.filter(
       (chain) =>
         Object.keys(metricData.data.chains).includes(chain.key) &&
-        chain.key != "ethereum",
+        chain.key != "ethereum" && chain.ecosystem.includes("All Chains")
     );
   }, [metricData]);
 
@@ -135,7 +135,7 @@ const Chain = ({ params }: { params: any }) => {
           <ComparisonChart
             data={Object.keys(metricData.data.chains)
               .filter(
-                (chain) => selectedChains.includes(chain) && chain !== "linea",
+                (chain) => selectedChains.includes(chain)
               )
               .map((chain) => {
                 return {

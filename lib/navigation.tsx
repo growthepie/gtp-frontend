@@ -400,7 +400,7 @@ export const navigationItems: NavigationItem[] = [
       //   label: "Linea",
       //   category: "zk-rollup",
       //   page: {
-      //     description: "",
+      //     description: "Linea is a developer-friendly ZK Rollup, marked as the next stage of ConsenSys zkEVM, which aims to enhance the Ethereum network by facilitating a new wave of decentralized applications. Public launch was in July 2023.",
       //   },
       //   icon: "gtp:linea-logo-monochrome",
       //   key: "linea",

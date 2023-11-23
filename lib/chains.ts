@@ -1,4 +1,27 @@
-export const AllChains = [
+export type Chain = {
+  label: string;
+  icon: string | null;
+  key: string;
+  urlKey: string;
+  chainType: string | null;
+  ecosystem: string[];
+  description: string;
+  border: {
+    light: string[];
+    dark: string[];
+  };
+  colors: {
+    light: string[];
+    dark: string[];
+  };
+  backgrounds: {
+    light: string[];
+    dark: string[];
+  };
+  darkTextOnBackground: boolean;
+};
+
+export const AllChains: Chain[] = [
   {
     label: "Ethereum",
     icon: "/icons/ethereum.png",
@@ -253,9 +276,9 @@ export const AllChains = [
     key: "linea",
     urlKey: "linea",
     chainType: "L2",
-    ecosystem: ["all-chains"],
+    ecosystem: [], // TODO: add ecosystems when unhiding from the UI
     description:
-      "Linea is a developer-friendly ZK Rollup, marked as the next stage of ConsenSys zkEVM, which aims to enhance the Ethereum network by facilitating a new wave of decentralized applications. Public launch was in August 2023.",
+      "Linea is a developer-friendly ZK Rollup, marked as the next stage of ConsenSys zkEVM, which aims to enhance the Ethereum network by facilitating a new wave of decentralized applications. Public launch was in July 2023.",
     border: {
       light: ["border-[#9CE5FF]", "border-[#9CE5FF]"],
       dark: ["border-[#A9E9FF]", "border-[#A9E9FF]"],
@@ -277,6 +300,7 @@ export const AllChains = [
     urlKey: "multiple",
     chainType: "all-L2",
     ecosystem: [],
+    description: "",
     border: {
       light: ["border-[#cdd8d3]", "border-[#cdd8d3]"],
       dark: ["border-[#cdd8d3]", "border-[#cdd8d3]"],
@@ -301,6 +325,7 @@ export const AllChains = [
     urlKey: "all-l2s",
     chainType: null,
     ecosystem: ["op-stack", "op-super", "all-chains"],
+    description: "",
     border: {
       light: ["border-[#FFDF27]", "border-[#FE5468]"],
       dark: ["border-[#FFDF27]", "border-[#FE5468]"],
