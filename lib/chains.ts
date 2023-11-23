@@ -247,29 +247,29 @@ export const AllChains = [
     },
     darkTextOnBackground: false,
   },
-  // {
-  //   label: "Linea",
-  //   icon: "/icons/linea.png",
-  //   key: "linea",
-  //   urlKey: "linea",
-  //   chainType: "L2",
-  //   ecosystem: ["all-chains"],
-  //   description:
-  //     "Linea is a developer-friendly ZK Rollup, marked as the next stage of ConsenSys zkEVM, which aims to enhance the Ethereum network by facilitating a new wave of decentralized applications. Public launch was in August 2023.",
-  //   border: {
-  //     light: ["border-[#9CE5FF]", "border-[#9CE5FF]"],
-  //     dark: ["border-[#A9E9FF]", "border-[#A9E9FF]"],
-  //   },
-  //   colors: {
-  //     light: ["#9CE5FF", "#9CE5FF"], // dark purple
-  //     dark: ["#A9E9FF", "#A9E9FF"], // dark purple
-  //   },
-  //   backgrounds: {
-  //     light: ["bg-[#9CE5FF]", "bg-[#9CE5FF]"],
-  //     dark: ["bg-[#A9E9FF]", "bg-[#A9E9FF]"],
-  //   },
-  //   darkTextOnBackground: true,
-  // },
+  {
+    label: "Linea",
+    icon: "/icons/linea.png",
+    key: "linea",
+    urlKey: "linea",
+    chainType: "L2",
+    ecosystem: ["all-chains"],
+    description:
+      "Linea is a developer-friendly ZK Rollup, marked as the next stage of ConsenSys zkEVM, which aims to enhance the Ethereum network by facilitating a new wave of decentralized applications. Public launch was in August 2023.",
+    border: {
+      light: ["border-[#9CE5FF]", "border-[#9CE5FF]"],
+      dark: ["border-[#A9E9FF]", "border-[#A9E9FF]"],
+    },
+    colors: {
+      light: ["#9CE5FF", "#9CE5FF"], // dark purple
+      dark: ["#A9E9FF", "#A9E9FF"], // dark purple
+    },
+    backgrounds: {
+      light: ["bg-[#9CE5FF]", "bg-[#9CE5FF]"],
+      dark: ["bg-[#A9E9FF]", "bg-[#A9E9FF]"],
+    },
+    darkTextOnBackground: true,
+  },
   {
     label: "Multiple",
     icon: null,

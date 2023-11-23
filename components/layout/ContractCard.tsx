@@ -77,6 +77,8 @@ export default function ContractCard({
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
+  console.log(data);
+
   return (
     <Link
       href={`/blockspace/category-comparison?category=${
