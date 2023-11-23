@@ -77,13 +77,12 @@ export default function ContractCard({
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
-  console.log(data);
+  // console.log(data);
 
   return (
     <Link
-      href={`/blockspace/category-comparison?category=${
-        data[types.indexOf("main_category_key")]
-      }&subcategories=${data[types.indexOf("sub_category_key")]}`}
+      href={`/blockspace/category-comparison?category=${data[types.indexOf("main_category_key")]
+        }&subcategories=${data[types.indexOf("sub_category_key")]}`}
     >
       <div className="group flex flex-col px-[22px] py-[14px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] hover:cursor-pointer hover:bg-forest-100 hover:dark:bg-forest-800 transition-colors duration-200 min-h-[156px]">
         <div className="flex flex-row justify-between items-center w-full relative ">
@@ -107,7 +106,7 @@ export default function ContractCard({
                     style={{
                       color:
                         AllChainsByKeys[data[types.indexOf("chain")]].colors[
-                          theme
+                        theme
                         ][0],
                     }}
                   />
@@ -161,11 +160,10 @@ export default function ContractCard({
             {data[types.indexOf(`${metric}_change_percent`)] ? (
               <div className="flex space-x-1 text-[0.6rem] items-end justify-end ">
                 <div
-                  className={`flex flex-row space-x-1 text-xs font-semibold transition-colors duration-200 ${
-                    data[types.indexOf(`${metric}_change_percent`)] >= 0
+                  className={`flex flex-row space-x-1 text-xs font-semibold transition-colors duration-200 ${data[types.indexOf(`${metric}_change_percent`)] >= 0
                       ? " text-green-500 dark:group-hover:text-green-400"
                       : " text-red-500 dark:group-hover:text-red-400"
-                  }`}
+                    }`}
                 >
                   {data[types.indexOf(`${metric}_change_percent`)] >= 0 ? (
                     <>
@@ -210,21 +208,20 @@ export default function ContractCard({
         </div>
         <div className="flex flex-row justify-between items-end  w-full">
           <div
-            className={`flex flex-row items-center space-x-1 text-xs md:text-sm ${
-              data[types.indexOf("name")] ? "pt-0" : " pt-[22px]"
-            }`}
+            className={`flex flex-row items-center space-x-1 text-xs md:text-sm ${data[types.indexOf("name")] ? "pt-0" : " pt-[22px]"
+              }`}
           >
             {master && (
               <div className="flex flex-row items-center space-x-1">
                 {
                   master.blockspace_categories.main_categories[
-                    data[types.indexOf("main_category_key")]
+                  data[types.indexOf("main_category_key")]
                   ]
                 }{" "}
                 &gt;{" "}
                 {
                   master.blockspace_categories.sub_categories[
-                    data[types.indexOf("sub_category_key")]
+                  data[types.indexOf("sub_category_key")]
                   ]
                 }
               </div>
