@@ -136,7 +136,7 @@ export default function SidebarMenuGroup({
                   ? "_blank"
                   : ""
               }
-              className="flex items-center justify-items-center mb-8"
+              className="flex items-center justify-items-center"
               href={item.href ?? ""}
               rel={
                 ["API Documentation", "Wiki", "Blog"].includes(item.name)

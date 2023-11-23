@@ -14,7 +14,6 @@ const URL =
     ? `http://${process.env.NEXT_PUBLIC_VERCEL_URL}/api/optimism-retropgf-3/projects`
     : `/api/optimism-retropgf-3/projects`;
 
-console.log("URL", URL);
 export default function Page() {
   return <Home />;
 }
