@@ -48,11 +48,8 @@ export default async function Layout({
         </Subheading>
       </Container>
 
-      <Container className="mt-[0px] !pr-0 min-[1037px]:!pr-[50px]">
-        <div className="w-full overflow-x-scroll min-[1037px]:overflow-x-visible z-100 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pr-[50px] min-[1037px]:pr-0">
-          <div className="min-w-[850px]">{children}</div>
-        </div>
-      </Container>
+      {children}
+
       <Container className="-mb-[120px] pt-4 md:w-full flex flex-col md:flex-row space-y-[10px] md:space-x-[10px] text-sm md:text-sm xl:text-sm justify-end items-start">
         <div className="flex items-center justify-center mt-3">
           <div className="font-bold">

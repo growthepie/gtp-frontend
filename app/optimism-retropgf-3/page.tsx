@@ -19,13 +19,15 @@ import Icon from "@/components/layout/Icon";
 import { useTheme } from "next-themes";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { last, uniq } from "lodash";
+import { last, uniq, debounce } from "lodash";
 import moment from "moment";
 import Image from "next/image";
 import Link from "next/link";
 import { OsoTaggedProjects } from "./osoTaggedProjects";
 import { formatNumber } from "@/lib/chartUtils";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/layout/Tooltip";
+import Container from "@/components/layout/Container";
+import { useUIContext } from "@/contexts/UIContext";
 
 const OsoTaggedProjectsMap = OsoTaggedProjects.reduce((prev, curr) => {
   prev[curr["Project ID"]] = curr;
@@ -104,6 +106,9 @@ export default function Page() {
 
   const [displayNameFilter, setDisplayNameFilter] = useState<string>("");
 
+  const { isSidebarOpen } = useUIContext();
+
+
   useEffect(() => {
     if (projectsResponse) {
       if (data.length === 0 && projects.length === 0)
@@ -124,23 +129,26 @@ export default function Page() {
 
       setTotalFundingAmounts(tFA);
     }
-  }, [data, projects.length, projectsResponse, displayNameFilter]);
+  }, [data, projects.length, projectsResponse]);
+
+  const debouncedFilter = debounce((filter, projects) => {
+    if (filter === "") {
+      setData(projects);
+    } else {
+      const filteredProjects = projects.filter((project) =>
+        project.display_name.toLowerCase().includes(filter.toLowerCase()),
+      );
+      setData(filteredProjects);
+    }
+  }, 250);
 
   useEffect(() => {
-    if (projects.length > 0) {
-      if (displayNameFilter === "") {
-        setData(projects);
-      } else {
-        setData(
-          projects.filter((project) =>
-            project.display_name
-              .toLowerCase()
-              .includes(displayNameFilter.toLowerCase()),
-          ),
-        );
-      }
-    }
-  }, [displayNameFilter, projects]);
+    debouncedFilter(displayNameFilter, projects);
+
+    return () => {
+      debouncedFilter.cancel();
+    };
+  }, [debouncedFilter, displayNameFilter, projects]);
 
   const { theme } = useTheme();
 
@@ -297,6 +305,7 @@ export default function Page() {
                     width={48}
                     height={48}
                     className="rounded-full"
+                    loading="lazy"
                   />
                 )}
               </div>
@@ -445,7 +454,7 @@ export default function Page() {
       {
         header: "In Ballots",
         accessorKey: "included_in_ballots",
-        // size: 60,
+        size: 70,
         cell: (info) => (
           <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis flex justify-end items-center">
             {/* <div
@@ -463,7 +472,7 @@ export default function Page() {
               />}
             </div> */}
             <div className="flex items-center space-x-2">
-              <div className="text-[0.9rem] font-light leading-[1.2] font-inter">
+              <div className="text-[0.9rem] font-medium leading-[1.2] font-inter">
                 {info.row.original.included_in_ballots}
               </div>
               <div className="w-4 h-4">
@@ -477,6 +486,43 @@ export default function Page() {
         ),
         meta: {
           headerAlign: { marginLeft: "auto", flexDirection: "row-reverse" },
+        },
+      },
+      {
+        header: "In Lists",
+        accessorKey: "lists",
+        size: 70,
+        cell: (info) => (
+          <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis flex justify-end items-center space-x-2 text-right text-[0.8rem] font-light leading-[1.2] font-inter">
+
+            <div>
+              {/* <div className="text-[0.9rem] font-light leading-[1.2] font-inter"> */}
+              {/* <div className="text-[0.6rem] text-forest-900/80 dark:text-forest-500/80 font-light">
+                  {info.row.original.included_in_ballots} Ballots on {info.row.original.lists.length} Lists
+                </div> */}
+              {info.row.original.lists.length}
+            </div>
+            <div className="w-4 h-4">
+              <Icon
+                icon={"feather:list"}
+                className={`w-4 h-4 text-forest-900/80 dark:text-forest-500/80 fill-current`}
+              />
+            </div>
+            {/* </div> */}
+          </div>
+        ),
+        meta: {
+          headerAlign: { marginLeft: "auto", flexDirection: "row-reverse" },
+        },
+        sortingFn: (rowA, rowB) => {
+          const a = rowA.original.included_in_ballots / rowA.original.lists.length;
+          const b = rowB.original.included_in_ballots / rowB.original.lists.length;
+
+          // If both are equal, return 0.
+          if (a === b) return 0;
+
+          // Otherwise, sort by whether a is greater than or less than b.
+          return a > b ? 1 : -1;
         },
       },
       // {
@@ -900,7 +946,7 @@ export default function Page() {
       // },
     ],
 
-    [getMaxTotalFundingAmount, getProjectsCombinedFundingSourcesByCurrency, getProjectsTotalFundingRank, totalFundingAmounts],
+    [getMaxTotalFundingAmount, getProjectsCombinedFundingSourcesByCurrency, getProjectsTotalFundingRank],
   );
 
   const projectsUniqueValues = useMemo(() => {
@@ -969,7 +1015,7 @@ export default function Page() {
     enableMultiSort: true,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: useMemo(() => getSortedRowModel(), [sorting, data]),
+    getSortedRowModel: useMemo(() => getSortedRowModel(), []),
   });
 
   const { rows } = table.getRowModel();
@@ -979,8 +1025,8 @@ export default function Page() {
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 34,
-    overscan: 20,
+    estimateSize: () => 50,
+    overscan: 10,
   });
 
   const Style = useMemo(
@@ -1019,221 +1065,234 @@ export default function Page() {
   );
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full relative">
-      <ShowLoading
-        dataLoading={[projectsLoading]}
-        dataValidating={[projectsValidating]}
-        fullScreen
-      />
-      <div className="w-full flex justify-between items-center mt-[10px] mb-[10px]">
-        <div className="w-96">
-          <div className="relative">
-            <input
-              className="block rounded-full pl-6 pr-3 py-1.5 w-full z-20 text-xs text-forest-900  bg-forest-100 dark:bg-forest-1000 dark:text-forest-500 border border-forest-500 dark:border-forest-700 focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
-              placeholder="Project Filter"
-              value={displayNameFilter}
-              onChange={(e) => {
-                setDisplayNameFilter(e.target.value);
-                // router.push("/contracts/" + e.target.value);
-                // debouncedSearch();
-              }}
-
+    <Container className={`mt-[0px] !pr-0 ${isSidebarOpen ? "min-[1450px]:!pr-[50px]" : "min-[1250px]:!pr-[50px]"}`}>
+      <div className={`w-full pr-[50px] overflow-x-scroll ${isSidebarOpen ? "min-[1450px]:pr-0 min-[1450px]:overflow-x-visible" : "min-[1250px]:pr-0 min-[1250px]:overflow-x-visible"} z-100 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}>
+        <div className="min-w-[1037px]">
+          <div className="flex flex-col items-center justify-center w-full h-full relative">
+            <ShowLoading
+              dataLoading={[projectsLoading]}
+              dataValidating={[projectsValidating]}
+              fullScreen
             />
-            <Icon
-              icon="feather:search"
-              className="w-4 h-4 absolute left-1.5 top-1.5"
-            />
-          </div>
-        </div>
-        <div className="text-xs font-normal text-forest-200 dark:text-forest-400">
-          Last updated {lastUpdatedString}
-        </div>
-      </div>
-      {Style}
+            <div className="w-full flex justify-between items-center mt-[10px] mb-[10px]">
+              <div className="w-96">
+                <div className="relative">
+                  <input
+                    className="block rounded-full pl-6 pr-3 py-1.5 w-full z-20 text-xs text-forest-900  bg-forest-100 dark:bg-forest-1000 dark:text-forest-500 border border-forest-500 dark:border-forest-700 focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
+                    placeholder="Project Filter"
+                    value={displayNameFilter}
+                    onChange={(e) => {
+                      setDisplayNameFilter(e.target.value);
+                      // setDisplayNameFilter(e.target.value);
+                      // router.push("/contracts/" + e.target.value);
+                      // debouncedSearch();
+                    }}
 
-      <div className="pr-4">
-        <table className="table-fixed w-full">
-          {/* <thead className="sticky top-0 z-50"> */}
-          <thead>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header, i) => {
-                  return (
-                    <th
-                      key={header.id}
-                      colSpan={header.colSpan}
-                      style={{
-                        width: header.getSize(),
-                        paddingLeft: i === 0 ? "20px" : "20px",
-                        paddingRight:
-                          i === headerGroup.headers.length ? "20px" : "10px",
-                      }}
-                      className="whitespace-nowrap relative"
-                    >
-                      {header.isPlaceholder ? null : (
-                        <div className="w-full relative">
-                          <div
-                            className={
-                              header.column.getCanSort()
-                                ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold w-fit ${i === 0 ? "pl-[10px]" : ""
-                                }`
-                                : ""
-                            }
+                  />
+                  <Icon
+                    icon="feather:search"
+                    className="w-4 h-4 absolute left-1.5 top-1.5"
+                  />
+                  {displayNameFilter.length > 0 && (
+                    <div
+                      className="absolute right-2.5 top-1.5 underline cursor-pointer text-forest-900 dark:text-forest-500 text-xs font-light leading-[1.2]"
+                      onClick={() => {
+                        setDisplayNameFilter("");
+                      }}>
+                      clear
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="text-xs font-normal text-forest-200 dark:text-forest-400">
+                Last updated {lastUpdatedString}
+              </div>
+            </div>
+            {Style}
+
+            <div className="pr-4">
+              <table className="table-fixed w-full">
+                {/* <thead className="sticky top-0 z-50"> */}
+                <thead>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map((header, i) => {
+                        return (
+                          <th
+                            key={header.id}
+                            colSpan={header.colSpan}
                             style={{
-                              ...(header.column.columnDef.meta as any)
-                                ?.headerAlign,
+                              width: header.getSize(),
+                              paddingLeft: i === 0 ? "20px" : "20px",
+                              paddingRight:
+                                i === headerGroup.headers.length ? "20px" : "10px",
                             }}
-                            onClick={(e) => {
-                              const handler =
-                                header.column.getToggleSortingHandler();
-                              handler && handler(e);
-                            }}
+                            className="whitespace-nowrap relative"
                           >
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
-                            {{
-                              asc: (
-                                <Icon
-                                  icon="feather:arrow-up"
-                                  className="w-3 h-3"
-                                />
-                              ),
-                              desc: (
-                                <Icon
-                                  icon="feather:arrow-down"
-                                  className="w-3 h-3"
-                                />
-                              ),
-                            }[header.column.getIsSorted() as string] ?? null}
-                            {projectsUniqueValues?.hasOwnProperty(header.id) &&
-                              dataUniqueValues?.hasOwnProperty(header.id) && (
-                                <div className="text-[11px] font-normal w-full text-right pr-3 font-inter">
-                                  {dataUniqueValues[header.id] ===
-                                    projectsUniqueValues[header.id] ? (
-                                    projectsUniqueValues[
-                                      header.id
-                                    ].toLocaleString()
-                                  ) : (
-                                    <>
-                                      {dataUniqueValues[
-                                        header.id
-                                      ].toLocaleString()}
-                                      <span className="text-forest-900/30 dark:text-forest-500/30">
-                                        {"/"}
-                                        {projectsUniqueValues[
-                                          header.id
-                                        ].toLocaleString()}
-                                      </span>
-                                    </>
+                            {header.isPlaceholder ? null : (
+                              <div className="w-full relative">
+                                <div
+                                  className={
+                                    header.column.getCanSort()
+                                      ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold w-fit ${i === 0 ? "pl-[10px]" : ""
+                                      }`
+                                      : ""
+                                  }
+                                  style={{
+                                    ...(header.column.columnDef.meta as any)
+                                      ?.headerAlign,
+                                  }}
+                                  onClick={(e) => {
+                                    const handler =
+                                      header.column.getToggleSortingHandler();
+                                    handler && handler(e);
+                                  }}
+                                >
+                                  {flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext(),
                                   )}
+                                  {{
+                                    asc: (
+                                      <Icon
+                                        icon="feather:arrow-up"
+                                        className="w-3 h-3"
+                                      />
+                                    ),
+                                    desc: (
+                                      <Icon
+                                        icon="feather:arrow-down"
+                                        className="w-3 h-3"
+                                      />
+                                    ),
+                                  }[header.column.getIsSorted() as string] ?? null}
+                                  {projectsUniqueValues?.hasOwnProperty(header.id) &&
+                                    dataUniqueValues?.hasOwnProperty(header.id) && (
+                                      <div className="text-[11px] font-normal w-full text-right pr-3 font-inter">
+                                        {dataUniqueValues[header.id] ===
+                                          projectsUniqueValues[header.id] ? (
+                                          projectsUniqueValues[
+                                            header.id
+                                          ].toLocaleString()
+                                        ) : (
+                                          <>
+                                            {dataUniqueValues[
+                                              header.id
+                                            ].toLocaleString()}
+                                            <span className="text-forest-900/30 dark:text-forest-500/30">
+                                              {"/"}
+                                              {projectsUniqueValues[
+                                                header.id
+                                              ].toLocaleString()}
+                                            </span>
+                                          </>
+                                        )}
+                                      </div>
+                                    )}
                                 </div>
-                              )}
-                          </div>
-                          {projectsUniqueValues?.hasOwnProperty(header.id) &&
-                            dataUniqueValues?.hasOwnProperty(header.id) && (
-                              <div
-                                className={`absolute -bottom-1.5 ${i === 0
-                                  ? "left-[30px] right-3"
-                                  : "left-0 right-3"
-                                  } text-xs font-normal text-right`}
-                              >
-                                <div
-                                  className="bg-forest-900 dark:bg-forest-500"
-                                  style={{
-                                    height: "1px",
-                                    width: `${(dataUniqueValues[header.id] /
-                                      projectsUniqueValues[header.id]) *
-                                      100.0
-                                      }%`,
-                                  }}
-                                />
-                                <div
-                                  className="bg-forest-900/30 dark:bg-forest-500/30"
-                                  style={{
-                                    height: "1px",
-                                    width: `100%`,
-                                  }}
-                                />
+                                {projectsUniqueValues?.hasOwnProperty(header.id) &&
+                                  dataUniqueValues?.hasOwnProperty(header.id) && (
+                                    <div
+                                      className={`absolute -bottom-1.5 ${i === 0
+                                        ? "left-[30px] right-3"
+                                        : "left-0 right-3"
+                                        } text-xs font-normal text-right`}
+                                    >
+                                      <div
+                                        className="bg-forest-900 dark:bg-forest-500"
+                                        style={{
+                                          height: "1px",
+                                          width: `${(dataUniqueValues[header.id] /
+                                            projectsUniqueValues[header.id]) *
+                                            100.0
+                                            }%`,
+                                        }}
+                                      />
+                                      <div
+                                        className="bg-forest-900/30 dark:bg-forest-500/30"
+                                        style={{
+                                          height: "1px",
+                                          width: `100%`,
+                                        }}
+                                      />
+                                    </div>
+                                  )}
                               </div>
                             )}
-                        </div>
-                      )}
-                    </th>
-                  );
-                })}
-              </tr>
-            ))}
-          </thead>
-        </table>
-      </div>
-      <div
-        className={` 
+                          </th>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </thead>
+              </table>
+            </div>
+            <div
+              className={` 
         transition-[mask-size] duration-300 ease-in-out
           ${
-          // if scroll is at top or bottom, don't show the fade
-          parentRef.current &&
-            (parentRef.current.scrollTop < 30 ||
-              parentRef.current.scrollTop >
-              parentRef.current.scrollHeight -
-              parentRef.current.clientHeight -
-              30)
-            ? "fade-edge-div-vertical-hidden"
-            : "fade-edge-div-vertical"
-          }
+                // if scroll is at top or bottom, don't show the fade
+                parentRef.current &&
+                  (parentRef.current.scrollTop < 30 ||
+                    parentRef.current.scrollTop >
+                    parentRef.current.scrollHeight -
+                    parentRef.current.clientHeight -
+                    30)
+                  ? "fade-edge-div-vertical-hidden"
+                  : "fade-edge-div-vertical"
+                }
       }`}
-      >
-        <div
-          ref={parentRef}
-          className="min-h-[300px] h-[calc(100vh-330px)] md:h-[calc(100vh-380px)] overflow-auto pr-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller"
-        >
-          <div
-            style={{ height: `${virtualizer.getTotalSize()}px` }}
-            className="w-full"
-          >
-            {/* <div className="absolute top-10 left-0 right-0 h-5 z-10 bg-white dark:bg-forest-1000" /> */}
-            <table className="table-fixed w-full">
-              {/* <thead className="sticky top-0 z-50"> */}
-              <thead>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map((header, i) => {
-                      return (
-                        <th
-                          key={header.id}
-                          colSpan={header.colSpan}
-                          style={{
-                            height: "0px",
-                            overflow: "hidden",
-                            width: header.getSize(),
-                            paddingLeft: i === 0 ? "20px" : "20px",
-                            paddingRight:
-                              i === headerGroup.headers.length
-                                ? "20px"
-                                : "10px",
-                            ...(header.column.columnDef.meta as any)
-                              ?.headerStyle,
-                          }}
-                          className={`${
-                            // i === 0
-                            //   ? "sticky top-0 z-20"
-                            //   : "sticky top-0 left-0 z-30"
-                            ""
-                            } bg-white dark:bg-forest-1000 whitespace-nowrap`}
-                        >
-                          {header.isPlaceholder ? null : (
-                            <div
-                              {...{
-                                className: header.column.getCanSort()
-                                  ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold h-0 ${i === 0 ? "pl-[10px]" : ""
-                                  }`
-                                  : "",
-                                onClick:
-                                  header.column.getToggleSortingHandler(),
-                              }}
-                            >
-                              {/* {flexRender(
+            >
+              <div
+                ref={parentRef}
+                className="min-h-[300px] h-[calc(100vh-330px)] md:h-[calc(100vh-380px)] overflow-auto pr-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller"
+              >
+                <div
+                  style={{ height: `${virtualizer.getTotalSize()}px` }}
+                  className="w-full"
+                >
+                  {/* <div className="absolute top-10 left-0 right-0 h-5 z-10 bg-white dark:bg-forest-1000" /> */}
+                  <table className="table-fixed w-full">
+                    {/* <thead className="sticky top-0 z-50"> */}
+                    <thead>
+                      {table.getHeaderGroups().map((headerGroup) => (
+                        <tr key={headerGroup.id}>
+                          {headerGroup.headers.map((header, i) => {
+                            return (
+                              <th
+                                key={header.id}
+                                colSpan={header.colSpan}
+                                style={{
+                                  height: "0px",
+                                  overflow: "hidden",
+                                  width: header.getSize(),
+                                  paddingLeft: i === 0 ? "20px" : "20px",
+                                  paddingRight:
+                                    i === headerGroup.headers.length
+                                      ? "20px"
+                                      : "10px",
+                                  ...(header.column.columnDef.meta as any)
+                                    ?.headerStyle,
+                                }}
+                                className={`${
+                                  // i === 0
+                                  //   ? "sticky top-0 z-20"
+                                  //   : "sticky top-0 left-0 z-30"
+                                  ""
+                                  } bg-white dark:bg-forest-1000 whitespace-nowrap`}
+                              >
+                                {header.isPlaceholder ? null : (
+                                  <div
+                                    {...{
+                                      className: header.column.getCanSort()
+                                        ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold h-0 ${i === 0 ? "pl-[10px]" : ""
+                                        }`
+                                        : "",
+                                      onClick:
+                                        header.column.getToggleSortingHandler(),
+                                    }}
+                                  >
+                                    {/* {flexRender(
                                 header.column.columnDef.header,
                                 header.getContext(),
                               )}
@@ -1251,49 +1310,52 @@ export default function Page() {
                                   />
                                 ),
                               }[header.column.getIsSorted() as string] ?? null} */}
-                            </div>
-                          )}
-                        </th>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </thead>
-              <tbody className="text-xs pb-4">
-                {virtualizer.getVirtualItems().map((virtualRow, index) => {
-                  const row = rows[virtualRow.index] as Row<Project>;
-                  return (
-                    <tr
-                      key={row.id}
-                      style={{
-                        height: `${virtualRow.size}px`,
-                        transform: `translateY(${virtualRow.start - index * virtualRow.size
-                          }px)`,
-                      }}
-                    >
-                      {row.getVisibleCells().map((cell, i) => {
+                                  </div>
+                                )}
+                              </th>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </thead>
+                    <tbody className="text-xs pb-4">
+                      {virtualizer.getVirtualItems().map((virtualRow, index) => {
+                        const row = rows[virtualRow.index] as Row<Project>;
                         return (
-                          <td
-                            key={cell.id}
-                            style={{ paddingLeft: i === 0 ? "10px" : "20px" }}
-                            className={i === 0 ? "sticky left-0 z-10" : ""}
+                          <tr
+                            key={row.id}
+                            style={{
+                              height: `${virtualRow.size}px`,
+                              transform: `translateY(${virtualRow.start - index * virtualRow.size
+                                }px)`,
+                            }}
                           >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext(),
-                            )}
-                          </td>
+                            {row.getVisibleCells().map((cell, i) => {
+                              return (
+                                <td
+                                  key={cell.id}
+                                  style={{ paddingLeft: i === 0 ? "10px" : "20px" }}
+                                  className={i === 0 ? "sticky left-0 z-10" : ""}
+                                >
+                                  {flexRender(
+                                    cell.column.columnDef.cell,
+                                    cell.getContext(),
+                                  )}
+                                </td>
+                              );
+                            })}
+                          </tr>
                         );
                       })}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Container>
   );
 }
 
