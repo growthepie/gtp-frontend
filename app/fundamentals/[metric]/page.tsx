@@ -134,7 +134,9 @@ const Chain = ({ params }: { params: any }) => {
         {metricData && (
           <ComparisonChart
             data={Object.keys(metricData.data.chains)
-              .filter((chain) => selectedChains.includes(chain))
+              .filter(
+                (chain) => selectedChains.includes(chain) && chain !== "linea",
+              )
               .map((chain) => {
                 return {
                   name: chain,
