@@ -356,3 +356,14 @@ export const AllChainsByUrlKey = AllChains.reduce((acc, chain) => {
   acc[chain.urlKey] = chain;
   return acc;
 }, {});
+
+export const EnabledChainsByKeys = AllChains.reduce((acc, chain) => {
+  if (chain.chainType === "L2") {
+    if (chain.ecosystem.includes("all-chains")) {
+      acc[chain.key] = chain;
+    }
+  } else {
+    acc[chain.key] = chain;
+  }
+  return acc;
+}, {});

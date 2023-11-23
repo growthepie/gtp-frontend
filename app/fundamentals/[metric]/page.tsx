@@ -35,7 +35,7 @@ const Chain = ({ params }: { params: any }) => {
     return AllChains.filter(
       (chain) =>
         Object.keys(metricData.data.chains).includes(chain.key) &&
-        chain.key != "ethereum" && chain.ecosystem.includes("All Chains")
+        chain.key != "ethereum" && chain.ecosystem.includes("all-chains")
     );
   }, [metricData]);
 
@@ -49,7 +49,9 @@ const Chain = ({ params }: { params: any }) => {
 
   const [selectedChains, setSelectedChains] = useSessionStorage(
     "fundamentalsChains",
-    AllChains.map((chain) => chain.key),
+    AllChains.filter(
+      chain => chain.ecosystem.includes("all-chains")
+    ).map((chain) => chain.key),
   );
 
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(

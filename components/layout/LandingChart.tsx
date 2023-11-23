@@ -11,7 +11,7 @@ import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { merge } from "lodash";
 import { Switch } from "../Switch";
-import { AllChainsByKeys } from "@/lib/chains";
+import { EnabledChainsByKeys } from "@/lib/chains";
 import d3 from "d3";
 import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
@@ -185,22 +185,22 @@ export default function LandingChart({
   metric,
   sources,
 }: // timeIntervals,
-// onTimeIntervalChange,
-// showTimeIntervals = true,
-{
-  data: any;
-  latest_total: number;
-  latest_total_comparison: number;
-  l2_dominance: number;
-  l2_dominance_comparison: number;
-  selectedMetric: string;
-  setSelectedMetric: (metric: string) => void;
-  metric: string;
-  sources: string[];
-  // timeIntervals: string[];
-  // onTimeIntervalChange: (interval: string) => void;
-  // showTimeIntervals: boolean;
-}) {
+  // onTimeIntervalChange,
+  // showTimeIntervals = true,
+  {
+    data: any;
+    latest_total: number;
+    latest_total_comparison: number;
+    l2_dominance: number;
+    l2_dominance_comparison: number;
+    selectedMetric: string;
+    setSelectedMetric: (metric: string) => void;
+    metric: string;
+    sources: string[];
+    // timeIntervals: string[];
+    // onTimeIntervalChange: (interval: string) => void;
+    // showTimeIntervals: boolean;
+  }) {
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
   const [isDragging, setIsDragging] = useState(false);
@@ -609,24 +609,24 @@ export default function LandingChart({
       const dateString = `
       <div>
         ${date.toLocaleDateString(undefined, {
-          timeZone: "UTC",
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })}
+        timeZone: "UTC",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })}
       </div>
       <div>-</div>
       <div>
         ${new Date(date.valueOf() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString(
-          //add 7 days to the date
-          undefined,
-          {
-            timeZone: "UTC",
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          },
-        )}
+        //add 7 days to the date
+        undefined,
+        {
+          timeZone: "UTC",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        },
+      )}
       </div>`;
 
       const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway"><div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-6 mb-2 flex justify-between">${dateString}</div>`;
@@ -639,22 +639,26 @@ export default function LandingChart({
 
       const tooltipPoints = points
         .sort((a: any, b: any) => b.y - a.y)
+        .filter((point: any) => {
+          const { series, y, percentage } = point;
+          const { name } = series;
+
+          return Object.keys(EnabledChainsByKeys).includes(name);
+        })
         .map((point: any) => {
           const { series, y, percentage } = point;
           const { name } = series;
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-                  AllChainsByKeys[name].colors[theme][0]
-                }"></div>
-                <div class="tooltip-point-name">${
-                  AllChainsByKeys[name].label
-                }</div>
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${EnabledChainsByKeys[name].colors[theme][0]
+              }"></div>
+                <div class="tooltip-point-name">${EnabledChainsByKeys[name].label
+              }</div>
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                  percentage,
-                  2,
-                )}%</div>
+                percentage,
+                2,
+              )}%</div>
               </div>
               <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
                 <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
@@ -662,26 +666,24 @@ export default function LandingChart({
                 <div class="h-[2px] rounded-none absolute right-0 -top-[3px] bg-forest-900 dark:bg-forest-50" 
                 style="
                   width: ${percentage}%;
-                  background-color: ${AllChainsByKeys[name].colors[theme][0]};
+                  background-color: ${EnabledChainsByKeys[name].colors[theme][0]};
                 "></div>
               </div>`;
 
           const value = formatNumber(y);
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-              AllChainsByKeys[name].colors[theme][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${EnabledChainsByKeys[name].colors[theme][0]
             }"></div>
-            <div class="tooltip-point-name text-md">${
-              AllChainsByKeys[name].label
+            <div class="tooltip-point-name text-md">${EnabledChainsByKeys[name].label
             }</div>
             <div class="flex-1 text-right justify-end font-inter flex">
               <div class="inline-block">${parseFloat(y).toLocaleString(
-                undefined,
-                {
-                  minimumFractionDigits: 0,
-                },
-              )}</div>
+              undefined,
+              {
+                minimumFractionDigits: 0,
+              },
+            )}</div>
             </div>
           </div>
           <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -690,7 +692,7 @@ export default function LandingChart({
             <div class="h-[2px] rounded-none absolute right-0 -top-[3px] bg-forest-900 dark:bg-forest-50" 
             style="
               width: ${(y / pointsSum) * 100}%;
-              background-color: ${AllChainsByKeys[name].colors[theme][0]};
+              background-color: ${EnabledChainsByKeys[name].colors[theme][0]};
             "></div>
           </div>`;
         })
@@ -748,7 +750,7 @@ export default function LandingChart({
 
     setTotalUsersIncrease(
       (l2s.data[l2s.data.length - 1][1] - l2s.data[l2s.data.length - 2][1]) /
-        l2s.data[l2s.data.length - 2][1],
+      l2s.data[l2s.data.length - 2][1],
     );
 
     if (showTotalUsers)
@@ -764,8 +766,8 @@ export default function LandingChart({
   const timespans = useMemo(() => {
     const maxDate = new Date(
       filteredData.length > 0 &&
-      filteredData[0].data.length > 0 &&
-      filteredData[0].data[filteredData[0].data.length - 1][0]
+        filteredData[0].data.length > 0 &&
+        filteredData[0].data[filteredData[0].data.length - 1][0]
         ? filteredData[0].data[filteredData[0].data.length - 1][0]
         : 0,
     );
@@ -1017,15 +1019,15 @@ export default function LandingChart({
             const pointsSettings =
               getSeriesType(series.name) === "column"
                 ? {
-                    pointPlacement: 0.5,
-                    pointPadding: 0.15,
-                    pointRange: timeIntervalToMilliseconds[metric],
-                  }
+                  pointPlacement: 0.5,
+                  pointPadding: 0.15,
+                  pointRange: timeIntervalToMilliseconds[metric],
+                }
                 : {
-                    pointPlacement: 0.5,
-                    // pointInterval: 7,
-                    // pointIntervalUnit: "day",
-                  };
+                  pointPlacement: 0.5,
+                  // pointInterval: 7,
+                  // pointIntervalUnit: "day",
+                };
 
             return {
               name: series.name,
@@ -1050,66 +1052,66 @@ export default function LandingChart({
                   [
                     0,
                     series.name && theme
-                      ? AllChainsByKeys[series.name]?.colors[theme][0] + "33"
+                      ? EnabledChainsByKeys[series.name]?.colors[theme][0] + "33"
                       : [],
                   ],
 
                   [
                     1,
                     series.name && theme
-                      ? AllChainsByKeys[series.name]?.colors[theme][1] + "33"
+                      ? EnabledChainsByKeys[series.name]?.colors[theme][1] + "33"
                       : [],
                   ],
                 ],
               },
               borderColor:
                 series.name && theme
-                  ? AllChainsByKeys[series.name]?.colors[theme][0]
+                  ? EnabledChainsByKeys[series.name]?.colors[theme][0]
                   : "transparent",
               borderWidth: 1,
               lineWidth: 2,
               ...(getSeriesType(series.name) !== "column"
                 ? {
-                    shadow: {
-                      color:
+                  shadow: {
+                    color:
+                      series.name && theme
+                        ? EnabledChainsByKeys[series.name]?.colors[theme][1] +
+                        "33"
+                        : "transparent",
+                    width: 10,
+                  },
+                  color: {
+                    linearGradient: {
+                      x1: 0,
+                      y1: 0,
+                      x2: 1,
+                      y2: 0,
+                    },
+                    stops: [
+                      [
+                        0,
                         series.name && theme
-                          ? AllChainsByKeys[series.name]?.colors[theme][1] +
-                            "33"
-                          : "transparent",
-                      width: 10,
-                    },
-                    color: {
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 1,
-                        y2: 0,
-                      },
-                      stops: [
-                        [
-                          0,
-                          series.name && theme
-                            ? AllChainsByKeys[series.name]?.colors[theme][0]
-                            : [],
-                        ],
-                        // [0.33, AllChainsByKeys[series.name].colors[1]],
-                        [
-                          1,
-                          series.name && theme
-                            ? AllChainsByKeys[series.name]?.colors[theme][1]
-                            : [],
-                        ],
+                          ? EnabledChainsByKeys[series.name]?.colors[theme][0]
+                          : [],
                       ],
-                    },
-                  }
+                      // [0.33, EnabledChainsByKeys[series.name].colors[1]],
+                      [
+                        1,
+                        series.name && theme
+                          ? EnabledChainsByKeys[series.name]?.colors[theme][1]
+                          : [],
+                      ],
+                    ],
+                  },
+                }
                 : series.name === "all_l2s"
-                ? {
+                  ? {
                     borderColor: "transparent",
 
                     shadow: {
                       color: "#CDD8D3" + "FF",
                       // color:
-                      //   AllChainsByKeys[series.name].colors[theme][1] + "33",
+                      //   EnabledChainsByKeys[series.name].colors[theme][1] + "33",
                       // width: 10,
                       offsetX: 0,
                       offsetY: 0,
@@ -1125,55 +1127,55 @@ export default function LandingChart({
                       stops:
                         theme === "dark"
                           ? [
-                              [
-                                0,
-                                series.name && theme
-                                  ? AllChainsByKeys[series.name]?.colors[
-                                      theme
-                                    ][0] + "E6"
-                                  : [],
-                              ],
-                              // [
-                              //   0.3,
-                              //   //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
-                              //   AllChainsByKeys[series.name].colors[theme][0] +
-                              //     "FF",
-                              // ],
-                              [
-                                1,
-                                series.name && theme
-                                  ? AllChainsByKeys[series.name]?.colors[
-                                      theme
-                                    ][1] + "E6"
-                                  : [],
-                              ],
-                            ]
-                          : [
-                              [
-                                0,
-                                series.name && theme
-                                  ? AllChainsByKeys[series.name]?.colors[
-                                      theme
-                                    ][0] + "E6"
-                                  : [],
-                              ],
-                              // [
-                              //   0.7,
-                              //   AllChainsByKeys[series.name].colors[theme][0] +
-                              //     "88",
-                              // ],
-                              [
-                                1,
-                                series.name && theme
-                                  ? AllChainsByKeys[series.name]?.colors[
-                                      theme
-                                    ][1] + "E6"
-                                  : [],
-                              ],
+                            [
+                              0,
+                              series.name && theme
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "E6"
+                                : [],
                             ],
+                            // [
+                            //   0.3,
+                            //   //   EnabledChainsByKeys[series.name].colors[theme][0] + "FF",
+                            //   EnabledChainsByKeys[series.name].colors[theme][0] +
+                            //     "FF",
+                            // ],
+                            [
+                              1,
+                              series.name && theme
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][1] + "E6"
+                                : [],
+                            ],
+                          ]
+                          : [
+                            [
+                              0,
+                              series.name && theme
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "E6"
+                                : [],
+                            ],
+                            // [
+                            //   0.7,
+                            //   EnabledChainsByKeys[series.name].colors[theme][0] +
+                            //     "88",
+                            // ],
+                            [
+                              1,
+                              series.name && theme
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][1] + "E6"
+                                : [],
+                            ],
+                          ],
                     },
                   }
-                : {
+                  : {
                     borderColor: "transparent",
                     shadow: {
                       color: "#CDD8D3" + "FF",
@@ -1191,57 +1193,57 @@ export default function LandingChart({
                       stops:
                         theme === "dark"
                           ? [
-                              [
-                                0,
-                                series.name && theme
-                                  ? AllChainsByKeys[series.name]?.colors[
-                                      theme
-                                    ][0] + "FF"
-                                  : [],
-                              ],
-                              [
-                                0.349,
-                                series.name && theme
-                                  ? AllChainsByKeys[series.name]?.colors[
-                                      theme
-                                    ][0] + "88"
-                                  : [],
-                              ],
-                              [
-                                1,
-                                series.name && theme
-                                  ? AllChainsByKeys[series.name]?.colors[
-                                      theme
-                                    ][0] + "00"
-                                  : [],
-                              ],
-                            ]
-                          : [
-                              [
-                                0,
-                                series.name && theme
-                                  ? AllChainsByKeys[series.name]?.colors[
-                                      theme
-                                    ][0] + "FF"
-                                  : [],
-                              ],
-                              [
-                                0.349,
-                                series.name && theme
-                                  ? AllChainsByKeys[series.name]?.colors[
-                                      theme
-                                    ][0] + "88"
-                                  : [],
-                              ],
-                              [
-                                1,
-                                series.name && theme
-                                  ? AllChainsByKeys[series.name]?.colors[
-                                      theme
-                                    ][0] + "00"
-                                  : [],
-                              ],
+                            [
+                              0,
+                              series.name && theme
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "FF"
+                                : [],
                             ],
+                            [
+                              0.349,
+                              series.name && theme
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "88"
+                                : [],
+                            ],
+                            [
+                              1,
+                              series.name && theme
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "00"
+                                : [],
+                            ],
+                          ]
+                          : [
+                            [
+                              0,
+                              series.name && theme
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "FF"
+                                : [],
+                            ],
+                            [
+                              0.349,
+                              series.name && theme
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "88"
+                                : [],
+                            ],
+                            [
+                              1,
+                              series.name && theme
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "00"
+                                : [],
+                            ],
+                          ],
                     },
                   }),
               states: {
@@ -1253,13 +1255,13 @@ export default function LandingChart({
                     attributes: {
                       fill:
                         series.name && theme
-                          ? AllChainsByKeys[series.name]?.colors[theme][0] +
-                            "99"
+                          ? EnabledChainsByKeys[series.name]?.colors[theme][0] +
+                          "99"
                           : "transparent",
                       stroke:
                         series.name && theme
-                          ? AllChainsByKeys[series.name]?.colors[theme][0] +
-                            "66"
+                          ? EnabledChainsByKeys[series.name]?.colors[theme][0] +
+                          "66"
                           : "transparent",
                       "stroke-width": 0,
                     },
@@ -1516,11 +1518,10 @@ export default function LandingChart({
       <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs xl:text-base xl:flex xl:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 xl:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
         <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center space-x-[4px] xl:space-x-1">
           <button
-            className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-              showTotalUsers
-                ? "bg-forest-500 dark:bg-forest-1000"
-                : "hover:bg-forest-500/10"
-            }`}
+            className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${showTotalUsers
+              ? "bg-forest-500 dark:bg-forest-1000"
+              : "hover:bg-forest-500/10"
+              }`}
             onClick={() => {
               setShowTotalUsers(true);
               setSelectedScale("absolute");
@@ -1530,11 +1531,10 @@ export default function LandingChart({
             Total Users
           </button>
           <button
-            className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-              "absolute" === selectedScale && !showTotalUsers
-                ? "bg-forest-500 dark:bg-forest-1000"
-                : "hover:bg-forest-500/10"
-            }`}
+            className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${"absolute" === selectedScale && !showTotalUsers
+              ? "bg-forest-500 dark:bg-forest-1000"
+              : "hover:bg-forest-500/10"
+              }`}
             onClick={() => {
               setShowTotalUsers(false);
               setSelectedScale("absolute");
@@ -1545,11 +1545,10 @@ export default function LandingChart({
           </button>
 
           <button
-            className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-              "percentage" === selectedScale
-                ? "bg-forest-500 dark:bg-forest-1000"
-                : "hover:bg-forest-500/10"
-            }`}
+            className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${"percentage" === selectedScale
+              ? "bg-forest-500 dark:bg-forest-1000"
+              : "hover:bg-forest-500/10"
+              }`}
             onClick={() => {
               setShowTotalUsers(false);
               setSelectedScale("percentage");
@@ -1568,11 +1567,10 @@ export default function LandingChart({
               <button
                 key={timespan}
                 //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                  selectedTimespan === timespan
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
+                className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${selectedTimespan === timespan
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
+                  }`}
                 onClick={() => {
                   setSelectedTimespan(timespan);
                   // setXAxis();
@@ -1623,36 +1621,36 @@ export default function LandingChart({
           <div className="w-full h-[16rem] md:h-[26rem] relative rounded-xl">
             <div
               className="absolute w-full h-[24rem] top-1 md:top-4"
-              // style={{
-              //   cursor: isDragging
-              //     ? "none"
-              //     : `url("/cursors/zoom.svg") 14.5 14.5, auto`,
-              // }}
-              // onClick={(e) => {
-              //   const chart = chartComponent?.current;
+            // style={{
+            //   cursor: isDragging
+            //     ? "none"
+            //     : `url("/cursors/zoom.svg") 14.5 14.5, auto`,
+            // }}
+            // onClick={(e) => {
+            //   const chart = chartComponent?.current;
 
-              //   if (!chart)
-              //     return console.error("chartComponent.current is null");
+            //   if (!chart)
+            //     return console.error("chartComponent.current is null");
 
-              //   if (chart.isInsidePlot(e.chartX - chart.plotLeft, e.chartY)) {
-              //     if (e.type === "mousedown") {
-              //       const x = e.chartX - chart.plotLeft;
-              //       const y = e.chartY - chart.plotTop;
+            //   if (chart.isInsidePlot(e.chartX - chart.plotLeft, e.chartY)) {
+            //     if (e.type === "mousedown") {
+            //       const x = e.chartX - chart.plotLeft;
+            //       const y = e.chartY - chart.plotTop;
 
-              //       // place vertical dotted line at the click position
-              //       chart.xAxis[0].addPlotLine({
-              //         id: "plot-line",
-              //         value: chart.xAxis[0].toValue(x, true),
-              //         color: "rgba(215, 223, 222, 0.5)",
-              //         width: 1,
-              //         dashStyle: "Dash",
-              //         zIndex: 100,
-              //       });
-              //     }
-              //     if (e.type === "mouseup") {
-              //     }
-              //   }
-              // }}
+            //       // place vertical dotted line at the click position
+            //       chart.xAxis[0].addPlotLine({
+            //         id: "plot-line",
+            //         value: chart.xAxis[0].toValue(x, true),
+            //         color: "rgba(215, 223, 222, 0.5)",
+            //         width: 1,
+            //         dashStyle: "Dash",
+            //         zIndex: 100,
+            //       });
+            //     }
+            //     if (e.type === "mouseup") {
+            //     }
+            //   }
+            // }}
             >
               <HighchartsReact
                 highcharts={Highcharts}
