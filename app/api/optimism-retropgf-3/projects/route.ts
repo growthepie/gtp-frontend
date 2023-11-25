@@ -12,7 +12,9 @@ const pool = new Pool({
 
 export async function GET() {
   try {
-    const result = await pool.query("SELECT * FROM rpgf3_projects");
+    const result = await pool.query(
+      "SELECT id, display_name, profile, applicant, applicant_type, included_in_ballots, lists, funding_sources, impact_category, last_updated  FROM rpgf3_projects",
+    );
     const data = result.rows;
 
     return Response.json({ projects: data });
