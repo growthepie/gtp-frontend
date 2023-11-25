@@ -18,7 +18,7 @@ const delay = (duration) =>
 
 const PAGE_SIZE = 50;
 
-const fetchProjects = async (skip, retries = 3) => {
+const fetchProjects = async (skip, retries = 6) => {
   const endpoint = process.env.OPTIMISM_VOTE_ENDPOINT;
 
   if (!endpoint) {
