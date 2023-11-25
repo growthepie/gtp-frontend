@@ -87,7 +87,7 @@ export default function Page() {
     isLoading: projectsLoading,
     isValidating: projectsValidating,
   } = useSWR<ProjectsResponse>(baseURL[environment] + "/api/optimism-retropgf-3/projects", {
-    refreshInterval: 5 * 1000 * 60, // 5 minutes,
+    refreshInterval: 2 * 1000 * 60, // 2 minutes,
   });
 
   const [projects, setProjects] = useState<Project[]>([]);

@@ -1,7 +1,7 @@
 import { ProjectsResponse } from "@/types/api/RetroPGF3";
 import { Pool } from "pg";
 
-export const revalidate = 60 * 5; // 5 minutes
+export const revalidate = 60 * 2; // 2 minutes
 
 const pool = new Pool({
   connectionString: process.env.FUN_DATABASE_URL,
