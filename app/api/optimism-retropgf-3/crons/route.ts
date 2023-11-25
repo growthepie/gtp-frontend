@@ -16,7 +16,7 @@ const pool = new Pool({
 const delay = (duration) =>
   new Promise((resolve) => setTimeout(resolve, duration));
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 50;
 
 const fetchProjects = async (skip, retries = 3) => {
   const endpoint = process.env.OPTIMISM_VOTE_ENDPOINT;
