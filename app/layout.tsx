@@ -9,7 +9,7 @@ import Backgrounds from "@/components/layout/Backgrounds";
 import { Metadata } from "next";
 import Head from "./head";
 import { Graph } from "schema-dts";
-// import Notification from "@/components/Notification";
+import Notification from "@/components/Notification";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",
@@ -151,7 +151,7 @@ export default function RootLayout({
     >
       <Head />
       <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway overflow-x-hidden overflow-y-auto">
-        {/*<Notification />*/}
+        <Notification />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
