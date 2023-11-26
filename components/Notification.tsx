@@ -87,15 +87,20 @@ const Notification = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const response = await fetch(baseURL + "/api/notifications", {
-          method: "GET",
-        });
-        const result = await response.json();
+      if (
+        process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ||
+        process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
+      ) {
+        try {
+          const response = await fetch(baseURL + "/api/notifications", {
+            method: "GET",
+          });
+          const result = await response.json();
 
-        setData(result.records);
-      } catch (error) {
-        console.error("Error fetching data: ", error);
+          setData(result.records);
+        } catch (error) {
+          console.error("Error fetching data: ", error);
+        }
       }
     };
 
