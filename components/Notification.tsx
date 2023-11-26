@@ -81,8 +81,7 @@ const Notification = () => {
   }, [currentPath]);
 
   const baseURL =
-    process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ||
-    process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
+    process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
       ? `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`
       : `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
 
