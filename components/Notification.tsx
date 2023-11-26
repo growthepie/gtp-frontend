@@ -119,10 +119,8 @@ const Notification = () => {
 
   function urlEnabled(url) {
     let retValue = true;
-    console.log(url);
 
     if (url !== "" && url[0] !== "all" && currentURL && pathname) {
-      console.log(pathname);
       if (!(pathname === "/") && url[0] === "home") {
         if (!currentURL.includes(url[0])) {
           retValue = false;
@@ -131,7 +129,6 @@ const Notification = () => {
         retValue = false;
       }
     }
-    console.log(retValue);
     return retValue;
   }
 
