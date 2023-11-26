@@ -81,7 +81,8 @@ const Notification = () => {
   }, [currentPath]);
 
   const baseURL =
-    process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
+    process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ||
+    process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
       ? `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`
       : `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
 
@@ -118,20 +119,19 @@ const Notification = () => {
 
   function urlEnabled(url) {
     let retValue = true;
-    console.log(url)
+    console.log(url);
 
     if (url !== "" && url[0] !== "all" && currentURL && pathname) {
       console.log(pathname);
       if (!(pathname === "/") && url[0] === "home") {
-
         if (!currentURL.includes(url[0])) {
           retValue = false;
         }
-      } else if (!currentURL.includes(url[0]) && url[0] !== "home"){
+      } else if (!currentURL.includes(url[0]) && url[0] !== "home") {
         retValue = false;
       }
     }
-    console.log(retValue)
+    console.log(retValue);
     return retValue;
   }
 
