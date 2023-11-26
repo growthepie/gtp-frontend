@@ -515,8 +515,8 @@ export default function Page() {
           headerAlign: { marginLeft: "auto", flexDirection: "row-reverse" },
         },
         sortingFn: (rowA, rowB) => {
-          const a = rowA.original.included_in_ballots / rowA.original.lists.length;
-          const b = rowB.original.included_in_ballots / rowB.original.lists.length;
+          const a = rowA.original.lists.length;
+          const b = rowB.original.lists.length;
 
           // If both are equal, return 0.
           if (a === b) return 0;
@@ -1025,7 +1025,7 @@ export default function Page() {
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 50,
+    estimateSize: () => 45,
     overscan: 10,
   });
 
@@ -1064,8 +1064,43 @@ export default function Page() {
     [theme],
   );
 
+
   return (
     <Container className={`mt-[0px] !pr-0 ${isSidebarOpen ? "min-[1450px]:!pr-[50px]" : "min-[1250px]:!pr-[50px]"}`}>
+      <div className={`w-full flex justify-between items-center mt-[10px] mb-[10px] ${isSidebarOpen ? "pr-[20px] md:pr-[50px] min-[1250px]:pr-[0px]" : "pr-[20px] md:pr-[50px] min-[1250px]:pr-[0px]"}`}>
+        <div className="w-1/2">
+          <div className="relative">
+            <input
+              className="block rounded-full pl-6 pr-3 py-1.5 w-full z-20 text-xs text-forest-900  bg-forest-100 dark:bg-forest-1000 dark:text-forest-500 border border-forest-500 dark:border-forest-700 focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
+              placeholder="Project Filter"
+              value={displayNameFilter}
+              onChange={(e) => {
+                setDisplayNameFilter(e.target.value);
+                // setDisplayNameFilter(e.target.value);
+                // router.push("/contracts/" + e.target.value);
+                // debouncedSearch();
+              }}
+
+            />
+            <Icon
+              icon="feather:search"
+              className="w-4 h-4 absolute left-1.5 top-1.5"
+            />
+            {displayNameFilter.length > 0 && (
+              <div
+                className="absolute right-2.5 top-1.5 underline cursor-pointer text-forest-900 dark:text-forest-500 text-xs font-light leading-[1.2]"
+                onClick={() => {
+                  setDisplayNameFilter("");
+                }}>
+                clear
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="text-xs font-normal text-forest-200 dark:text-forest-400">
+          Last updated {lastUpdatedString}
+        </div>
+      </div>
       <div className={`w-full pr-[50px] overflow-x-scroll ${isSidebarOpen ? "min-[1450px]:pr-0 min-[1450px]:overflow-x-visible" : "min-[1250px]:pr-0 min-[1250px]:overflow-x-visible"} z-100 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}>
         <div className="min-w-[1037px]">
           <div className="flex flex-col items-center justify-center w-full h-full relative">
@@ -1074,40 +1109,7 @@ export default function Page() {
               dataValidating={[projectsValidating]}
               fullScreen
             />
-            <div className="w-full flex justify-between items-center mt-[10px] mb-[10px]">
-              <div className="w-96">
-                <div className="relative">
-                  <input
-                    className="block rounded-full pl-6 pr-3 py-1.5 w-full z-20 text-xs text-forest-900  bg-forest-100 dark:bg-forest-1000 dark:text-forest-500 border border-forest-500 dark:border-forest-700 focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
-                    placeholder="Project Filter"
-                    value={displayNameFilter}
-                    onChange={(e) => {
-                      setDisplayNameFilter(e.target.value);
-                      // setDisplayNameFilter(e.target.value);
-                      // router.push("/contracts/" + e.target.value);
-                      // debouncedSearch();
-                    }}
 
-                  />
-                  <Icon
-                    icon="feather:search"
-                    className="w-4 h-4 absolute left-1.5 top-1.5"
-                  />
-                  {displayNameFilter.length > 0 && (
-                    <div
-                      className="absolute right-2.5 top-1.5 underline cursor-pointer text-forest-900 dark:text-forest-500 text-xs font-light leading-[1.2]"
-                      onClick={() => {
-                        setDisplayNameFilter("");
-                      }}>
-                      clear
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="text-xs font-normal text-forest-200 dark:text-forest-400">
-                Last updated {lastUpdatedString}
-              </div>
-            </div>
             {Style}
 
             <div className="pr-4">
