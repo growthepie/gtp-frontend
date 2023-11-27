@@ -66,7 +66,7 @@ export type Project = {
   impact_category: string[];
   impact_description: string;
   impact_metrics: ProjectImpactMetric[];
-  lists: any[]; // Specify further if you have details about the lists structure
+  lists: List[]; // Specify further if you have details about the lists structure
   understood_fund_claim_period: boolean;
   understood_kyc_requirements: boolean;
   website_url: string;
@@ -79,4 +79,24 @@ export type Project = {
 
 export type ProjectsResponse = {
   projects: Project[];
+};
+
+export type List = {
+  id: string;
+  listName: string;
+  listDescription: string;
+  author: ListAuthor;
+  categories: string;
+  impactEvaluationDescription: string;
+  impactEvaluationLink: string;
+  likes: string[];
+};
+
+export type ListAuthor = {
+  address: string;
+  isContract: boolean;
+  resolvedName: {
+    address: string;
+    name: string;
+  };
 };

@@ -5,10 +5,16 @@ import Image from "next/image";
 import { Icon } from "@iconify/react";
 import Markdown from "react-markdown";
 import { useMediaQuery } from "usehooks-ts";
+import { usePathname } from "next/navigation";
 
 type AirtableRow = {
   id: string;
   body: string;
+};
+
+type NotificationType = {
+  id: string;
+  key: string;
 };
 
 const currentDateTime = new Date().getTime();
@@ -25,8 +31,12 @@ const Notification = () => {
   const [dataLength, setDataLength] = useState(0);
   const [currentURL, setCurrentURL] = useState<string | null>(null);
   const [pathname, setPathname] = useState<string | null>(null);
+  const [sessionArray, setSessionArray] = useState<NotificationType[] | null>(
+    null,
+  );
 
   const isMobile = useMediaQuery("(max-width: 767px)");
+  const currentPath = usePathname();
 
   function isoDateTimeToUnix(
     dateString: string,
@@ -63,11 +73,12 @@ const Notification = () => {
 
   useEffect(() => {
     setCurrentURL(window.location.href);
-  }, []);
-
-  useEffect(() => {
     setPathname(window.location.pathname);
-  }, []);
+    const storedArray = JSON.parse(
+      window.sessionStorage.getItem("mySessionArray") || "[]",
+    ) as NotificationType[];
+    setSessionArray(storedArray);
+  }, [currentPath]);
 
   const baseURL =
     process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
@@ -76,17 +87,20 @@ const Notification = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const response = await fetch(baseURL + "/api/notifications", {
-          method: "GET",
-        });
-        const result = await response.json();
-        // console.log("Pass 4");
-        setData(result.records);
-        // console.log("Pass 5");
-        // Determine whether to set isEnabled based on the data
-      } catch (error) {
-        console.error("Error fetching data: ", error);
+      if (
+        process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ||
+        process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
+      ) {
+        try {
+          const response = await fetch(baseURL + "/api/notifications", {
+            method: "GET",
+          });
+          const result = await response.json();
+
+          setData(result.records);
+        } catch (error) {
+          console.error("Error fetching data: ", error);
+        }
       }
     };
 
@@ -110,21 +124,33 @@ const Notification = () => {
   function urlEnabled(url) {
     let retValue = true;
 
-    if (url !== "" && currentURL && pathname) {
+    if (url !== "" && url[0] !== "all" && currentURL && pathname) {
       if (!(pathname === "/") && url[0] === "home") {
-        if (!currentURL.includes(url[0]) && url[0] !== "all") {
+        if (!currentURL.includes(url[0])) {
           retValue = false;
         }
+      } else if (!currentURL.includes(url[0]) && url[0] !== "home") {
+        retValue = false;
       }
     }
-
     return retValue;
   }
+
+  const addItemToArray = (newData: string) => {
+    if (newData.trim() !== "") {
+      const newItem: NotificationType = {
+        id: "LoadedNotifications",
+        key: newData,
+      };
+
+      setSessionArray((prevArray) => [...(prevArray || []), newItem]);
+    }
+  };
 
   const filteredData = useMemo(() => {
     const returnArray: AirtableRow[] = [];
 
-    if (data) {
+    if (data && sessionArray) {
       Object.keys(data).forEach((item) => {
         let passingDate = DateEnabled(
           data[item]["fields"]["Start Time"],
@@ -139,9 +165,18 @@ const Notification = () => {
             : "",
         );
 
+        let prevLoaded = true;
+        //defaults to true if we find a prevLoaded value we set false
+
+        Object.keys(sessionArray).forEach((index) => {
+          if (sessionArray[index].key === data[item].id) {
+            prevLoaded = false;
+          }
+        });
+
         //Check if notification is enabled, available/current date range and selected url
 
-        if (enabled && passingDate && passingURL) {
+        if (enabled && passingDate && passingURL && prevLoaded) {
           let newEntry: AirtableRow = {
             id: data[item]["id"],
             body: data[item]["fields"]["Body"],
@@ -153,7 +188,7 @@ const Notification = () => {
     }
 
     return returnArray;
-  }, [data]);
+  }, [data, currentURL]);
 
   useEffect(() => {
     if (Object.keys(filteredData).length > 0) {
@@ -168,6 +203,7 @@ const Notification = () => {
         setCircleStart(false);
         setExitAnimation(currentItem.id);
         const leaveTimer = setTimeout(() => {
+          addItemToArray(currentItem.id);
           setLoadedMessages((prevLoadedMessages) => [
             ...prevLoadedMessages,
             currentItem.id,
@@ -181,7 +217,6 @@ const Notification = () => {
     }
   }, [data, filteredData, currentBannerIndex, loadedMessages]);
 
-  // console.log(data);
   return (
     filteredData && (
       <div className="">
@@ -233,6 +268,7 @@ const Notification = () => {
                     setCurrentBannerIndex(
                       (currentBannerIndex + 1) % filteredData.length,
                     );
+                    addItemToArray(item.id);
                     setExitAnimation(item.id);
                     const leaveTimer = setTimeout(() => {
                       setLoadedMessages((prevLoadedMessages) => [
