@@ -577,7 +577,6 @@ export default function Page() {
       {
         header: () => (
           <>
-
             <div>
               <div className="flex">
                 Funding Reported
@@ -760,15 +759,15 @@ export default function Page() {
                     .map(([currency, value]) => (
                       <div
                         key={currency}
-                        className="flex space-x-1 text-[0.6rem] font-light"
+                        className="flex space-x-1 text-[0.6rem]"
                       >
                         {(value as number) > 0 ? (
                           <>
                             <div
                               className={
                                 currency === "OP"
-                                  ? "text-red-300 leading-[1.6]"
-                                  : "text-green-300 leading-[1.6]"
+                                  ? "text-[#FE5468] leading-[1.6] font-[500]"
+                                  : "text-[#7fdcd6] leading-[1.6] font-[400]"
                               }
                             >
                               {currency === "USD" && (<span className="opacity-60 text-[0.55rem]">$</span>)}
@@ -788,7 +787,7 @@ export default function Page() {
               </div>
               <div className="absolute -bottom-1 left-0 right-0 text-xs font-normal text-right">
                 <div
-                  className="relative"
+                  className="relative z-10"
                   style={{
                     height: "2px",
                     width: `${(getProjectsCombinedFundingSourcesByCurrency(
@@ -802,10 +801,9 @@ export default function Page() {
                   }}
                 >
                   <div
-                    className="absolute bg-green-400"
+                    className="absolute bg-[#7fdcd6]"
                     style={{
                       height: "2px",
-
                       width: `${(getProjectsCombinedFundingSourcesByCurrency(
                         info.row.original.funding_sources,
                       )["USD"] /
@@ -817,7 +815,7 @@ export default function Page() {
                     }}
                   ></div>
                   <div
-                    className="absolute bg-red-400"
+                    className="absolute bg-[#FE5468]"
                     style={{
                       height: "2px",
                       left:
@@ -845,7 +843,7 @@ export default function Page() {
                   ></div>
                 </div>
                 <div
-                  className="bg-forest-900/30 dark:bg-forest-500/30"
+                  className="absolute inset-0 z-0 bg-forest-900/30 dark:bg-forest-500/30"
                   style={{
                     height: "2px",
                     width: `100%`,
