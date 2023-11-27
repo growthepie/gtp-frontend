@@ -1136,7 +1136,7 @@ export default function Page() {
 
 
   return (
-    <Container className={`mt-[0px] !pr-0 ${isSidebarOpen ? "min-[1450px]:!pr-[50px]" : "min-[1250px]:!pr-[50px]"}`}>
+    <Container className={`mt-[0px] !pr-0 ${isSidebarOpen ? "min-[1550px]:!pr-[50px]" : "min-[1350px]:!pr-[50px]"}`}>
       {/* <TreeMapChart data={data.sort((a, b) => b.included_in_ballots - a.included_in_ballots).reduce(
         (acc: any[], curr: Project) => {
           const categoriesStr = curr.impact_category.sort((a, b) => a.localeCompare(b)).join(", ");
@@ -1167,7 +1167,7 @@ export default function Page() {
         },
         [] as any[]
       )} /> */}
-      <div className={`w-full flex justify-between items-center mt-[10px] mb-[10px] ${isSidebarOpen ? "pr-[20px] md:pr-[50px] min-[1250px]:pr-[0px]" : "pr-[20px] md:pr-[50px] min-[1250px]:pr-[0px]"}`}>
+      <div className={`w-full flex justify-between items-center mt-[10px] mb-[10px] ${isSidebarOpen ? "pr-[20px] md:pr-[50px] min-[1550px]:pr-[0px]" : "pr-[20px] md:pr-[50px] min-[1350px]:pr-[0px]"}`}>
         <div className="w-1/2">
           <div className="relative">
             <input
@@ -1201,8 +1201,8 @@ export default function Page() {
           Last updated {lastUpdatedString}
         </div>
       </div>
-      <div className={`w-full pr-[50px] overflow-x-scroll ${isSidebarOpen ? "min-[1450px]:pr-0 min-[1450px]:overflow-x-visible" : "min-[1250px]:pr-0 min-[1250px]:overflow-x-visible"} z-100 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}>
-        <div className="min-w-[1250px]">
+      <div className={`w-full pr-[50px] overflow-x-scroll ${isSidebarOpen ? "min-[1550px]:pr-0 min-[1550px]:overflow-x-visible" : "min-[1350px]:pr-0 min-[1350px]:overflow-x-visible"} z-100 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}>
+        <div className="min-w-[1150px]">
           <div className="flex flex-col items-center justify-center w-full h-full relative">
             <ShowLoading
               dataLoading={[projectsLoading]}
@@ -1330,9 +1330,8 @@ export default function Page() {
               </table>
             </div>
             <div
-              className={` 
-        transition-[mask-size] duration-300 ease-in-out
-          ${
+              className={`transition-[mask-size] duration-300 ease-in-out
+                ${
                 // if scroll is at top or bottom, don't show the fade
                 parentRef.current &&
                   (parentRef.current.scrollTop < 30 ||
@@ -1342,8 +1341,7 @@ export default function Page() {
                     30)
                   ? "fade-edge-div-vertical-hidden"
                   : "fade-edge-div-vertical"
-                }
-      }`}
+                }}`}
             >
               <div
                 ref={parentRef}
