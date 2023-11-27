@@ -14,6 +14,7 @@ import {
   Project,
   ProjectFundingSource,
   ProjectsResponse,
+  List
 } from "@/types/api/RetroPGF3";
 import Icon from "@/components/layout/Icon";
 import { useTheme } from "next-themes";
@@ -28,6 +29,7 @@ import { formatNumber } from "@/lib/chartUtils";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/layout/Tooltip";
 import Container from "@/components/layout/Container";
 import { useUIContext } from "@/contexts/UIContext";
+// import { TreeMapChart } from "@/components/charts/treemapChart";
 
 const OsoTaggedProjectsMap = OsoTaggedProjects.reduce((prev, curr) => {
   prev[curr["Project ID"]] = curr;
@@ -118,12 +120,19 @@ export default function Page() {
       const tFA: { [currency: string]: number } = {};
       tFA["OP"] = 0;
       tFA["USD"] = 0;
+      tFA["OPUSD"] = 0;
       tFA["TOTAL"] = 0;
 
       projectsResponse.projects.forEach((project) => {
         project.funding_sources.forEach((fundingSource) => {
           tFA[fundingSource.currency] = fundingSource.amount;
-          tFA["TOTAL"] += fundingSource.currency === "OP" ? multiplierOPToken * fundingSource.amount : fundingSource.amount;
+
+          if (fundingSource.currency === "OP") {
+            tFA["OPUSD"] += multiplierOPToken * fundingSource.amount;
+            tFA["TOTAL"] += multiplierOPToken * fundingSource.amount
+          } else {
+            tFA["TOTAL"] += fundingSource.amount;
+          }
         });
       });
 
@@ -173,11 +182,19 @@ export default function Page() {
 
       combinedFundingSources["TOTAL"] = 0;
       combinedFundingSources["OP"] = 0;
+      combinedFundingSources["OPUSD"] = 0;
       combinedFundingSources["USD"] = 0;
+
 
       fundingSources.forEach((fundingSource) => {
         combinedFundingSources[fundingSource.currency] += fundingSource.amount;
-        combinedFundingSources["TOTAL"] += fundingSource.currency === "OP" ? multiplierOPToken * fundingSource.amount : fundingSource.amount;
+
+        if (fundingSource.currency === "OP") {
+          combinedFundingSources["OPUSD"] += multiplierOPToken * fundingSource.amount;
+          combinedFundingSources["TOTAL"] += multiplierOPToken * fundingSource.amount;
+        } else {
+          combinedFundingSources["TOTAL"] += fundingSource.amount;
+        }
       });
 
       return combinedFundingSources;
@@ -282,6 +299,37 @@ export default function Page() {
 
     return result;
   }, []);
+
+  const IncludeInBallotsByList = useMemo(() => {
+    const result: {
+      [listName: string]: {
+        list: List,
+        author: string,
+        totalBallotCount: number,
+        totalProjectCount: number,
+        avgBallotsPerProject: number,
+      }
+    } = {};
+
+    projects.forEach((project) => {
+      project.lists.forEach((list) => {
+        if (!result[list.listName])
+          result[list.listName] = {
+            list: list,
+            author: list.author.resolvedName.name ?? list.author.address,
+            totalBallotCount: 0,
+            totalProjectCount: 0,
+            avgBallotsPerProject: 0,
+          };
+
+        result[list.listName].totalBallotCount += project.included_in_ballots;
+        result[list.listName].totalProjectCount++;
+        result[list.listName].avgBallotsPerProject = result[list.listName].totalBallotCount / result[list.listName].totalProjectCount;
+      });
+    });
+
+    return result;
+  }, [projects]);
 
   const columns = useMemo<ColumnDef<Project>[]>(
     () => [
@@ -472,6 +520,7 @@ export default function Page() {
               />}
             </div> */}
             <div className="flex items-center space-x-2">
+
               <div className="text-[0.9rem] font-medium leading-[1.2] font-inter">
                 {info.row.original.included_in_ballots}
               </div>
@@ -525,151 +574,6 @@ export default function Page() {
           return a > b ? 1 : -1;
         },
       },
-      // {
-      //   header: () => (
-      //     <>
-      //       <div className="absolute left-1.5 bottom-0 text-forest-900/50 dark:text-forest-500/50 text-[0.6rem] font-light leading-[1.2]">
-      //         USD
-      //       </div>
-      //       <div className="absolute right-1.5 bottom-0 text-forest-900/50 dark:text-forest-500/50 text-[0.6rem] font-light leading-[1.2]">
-      //         OP
-      //       </div>
-      //       <div className="ml-14 mr-auto">Funding Split</div>
-      //     </>
-      //   ),
-
-      //   id: "funding_split",
-      //   accessorKey: "funding_sources",
-      //   // size: 15,
-      //   cell: (info) => {
-      //     return (
-      //       <div className="w-full overflow-x whitespace-nowrap text-ellipsis relative">
-      //         <div className="text-[11px] font-normal w-full flex justify-between font-inter mt-1">
-      //           <div className="w-full flex justify-between">
-      //             {["USD", "OP"]
-      //               .map((currency) => [
-      //                 currency,
-      //                 getProjectsCombinedFundingSourcesByCurrency(
-      //                   info.row.original.funding_sources,
-      //                 )[currency],
-      //               ])
-      //               // .filter(([currency, value]) => value !== 0)
-      //               .map(([currency, value]) => (
-      //                 <div
-      //                   key={currency}
-      //                   className="flex space-x-1 text-[0.6rem] font-light"
-      //                 >
-      //                   {(value as number) > 0 ? (
-      //                     <>
-      //                       <div
-      //                         className={
-      //                           currency === "OP"
-      //                             ? "text-red-300 leading-[1.6]"
-      //                             : "text-green-300 leading-[1.6]"
-      //                         }
-      //                       >
-      //                         {currency === "USD" && "$"}
-      //                         {parseInt(value as string).toLocaleString()}
-      //                       </div>
-      //                     </>
-      //                   ) : (
-      //                     <div className="text-forest-900/30 dark:text-forest-500/30">
-      //                       0
-      //                     </div>
-      //                   )}
-      //                 </div>
-      //               ))}
-      //           </div>
-      //         </div>
-      //         <div className="absolute -bottom-1 left-0 right-0 text-xs font-normal text-right">
-      //           <div
-      //             className="relative"
-      //             style={{
-      //               height: "2px",
-      //               width: `${(getProjectsCombinedFundingSourcesByCurrency(
-      //                 info.row.original.funding_sources,
-      //               )["TOTAL"] /
-      //                 getProjectsCombinedFundingSourcesByCurrency(
-      //                   info.row.original.funding_sources,
-      //                 )["TOTAL"]) *
-      //                 100.0
-      //                 }%`,
-      //             }}
-      //           >
-      //             <div
-      //               className="absolute bg-green-400"
-      //               style={{
-      //                 height: "2px",
-
-      //                 width: `${(getProjectsCombinedFundingSourcesByCurrency(
-      //                   info.row.original.funding_sources,
-      //                 )["USD"] /
-      //                   getProjectsCombinedFundingSourcesByCurrency(
-      //                     info.row.original.funding_sources,
-      //                   )["TOTAL"]) *
-      //                   100.0
-      //                   }%`,
-      //               }}
-      //             ></div>
-      //             <div
-      //               className="absolute bg-red-400"
-      //               style={{
-      //                 height: "2px",
-      //                 left:
-      //                   getProjectsCombinedFundingSourcesByCurrency(
-      //                     info.row.original.funding_sources,
-      //                   )["USD"] !== 0
-      //                     ? `${(getProjectsCombinedFundingSourcesByCurrency(
-      //                       info.row.original.funding_sources,
-      //                     )["USD"] /
-      //                       getProjectsCombinedFundingSourcesByCurrency(
-      //                         info.row.original.funding_sources,
-      //                       )["TOTAL"]) *
-      //                     100.0
-      //                     }%`
-      //                     : 0,
-      //                 width: `${(getProjectsCombinedFundingSourcesByCurrency(
-      //                   info.row.original.funding_sources,
-      //                 )["OP"] /
-      //                   getProjectsCombinedFundingSourcesByCurrency(
-      //                     info.row.original.funding_sources,
-      //                   )["TOTAL"]) *
-      //                   100.0
-      //                   }%`,
-      //               }}
-      //             ></div>
-      //           </div>
-      //           <div
-      //             className="bg-forest-900/30 dark:bg-forest-500/30"
-      //             style={{
-      //               height: "2px",
-      //               width: `100%`,
-      //             }}
-      //           />
-      //         </div>
-      //       </div>
-      //     );
-      //   },
-      //   meta: {
-      //     headerAlign: { textAlign: "left" },
-      //   },
-      //   enableSorting: true,
-      //   sortingFn: (rowA, rowB) => {
-      //     const a = getProjectsCombinedFundingSourcesByCurrency(
-      //       rowA.original.funding_sources,
-      //     )["TOTAL"];
-
-      //     const b = getProjectsCombinedFundingSourcesByCurrency(
-      //       rowB.original.funding_sources,
-      //     )["TOTAL"];
-
-      //     // If both are equal, return 0.
-      //     if (a === b) return 0;
-
-      //     // Otherwise, sort by whether a is greater than or less than b.
-      //     return a > b ? 1 : -1;
-      //   },
-      // },
       {
         header: () => (
           <>
@@ -697,7 +601,7 @@ export default function Page() {
           </>
         ),
         accessorKey: "funding_sources",
-        // size: 120,
+        size: 150,
         cell: (info) => {
           return (
             <div className="w-full whitespace-nowrap text-ellipsis relative">
@@ -718,10 +622,13 @@ export default function Page() {
                       )[currency],
                     ])
                     .map(([currency, value]) => (
-                      <div key={currency}>{`$${formatNumber(
-                        parseInt(value as string),
-                        false,
-                      ).toLocaleString()}`}</div>
+                      <div key={currency}>
+                        <span className="opacity-60 text-[0.55rem]">$</span>
+                        {`${formatNumber(
+                          parseInt(value as string),
+                          false,
+                        ).toLocaleString()}`}
+                      </div>
                     ))
                     .reduce((prev, curr) => {
                       return prev.length === 0
@@ -820,6 +727,155 @@ export default function Page() {
           return a > b ? 1 : -1;
         },
       },
+      {
+        // header: () => (
+        //   <>
+        //     <div className="absolute left-1.5 bottom-0 text-forest-900/50 dark:text-forest-500/50 text-[0.6rem] font-light leading-[1.2]">
+        //       USD
+        //     </div>
+        //     <div className="absolute right-1.5 bottom-0 text-forest-900/50 dark:text-forest-500/50 text-[0.6rem] font-light leading-[1.2]">
+        //       OP
+        //     </div>
+        //     <div className="ml-14 mr-auto">Funding Split</div>
+        //   </>
+        // ),
+        header: "Funding Split",
+
+        id: "funding_split",
+        accessorKey: "funding_sources",
+        size: 150,
+        cell: (info) => {
+          return (
+            <div className="w-full overflow-x whitespace-nowrap text-ellipsis relative">
+              <div className="text-[11px] font-normal w-full flex justify-between font-inter mt-1">
+                <div className="w-full flex justify-between">
+                  {["USD", "OP"]
+                    .map((currency) => [
+                      currency,
+                      getProjectsCombinedFundingSourcesByCurrency(
+                        info.row.original.funding_sources,
+                      )[currency],
+                    ])
+                    // .filter(([currency, value]) => value !== 0)
+                    .map(([currency, value]) => (
+                      <div
+                        key={currency}
+                        className="flex space-x-1 text-[0.6rem] font-light"
+                      >
+                        {(value as number) > 0 ? (
+                          <>
+                            <div
+                              className={
+                                currency === "OP"
+                                  ? "text-red-300 leading-[1.6]"
+                                  : "text-green-300 leading-[1.6]"
+                              }
+                            >
+                              {currency === "USD" && (<span className="opacity-60 text-[0.55rem]">$</span>)}
+                              {parseInt(value as string).toLocaleString()}
+                              {currency === "OP" && (<>{" "}<span className="opacity-60 text-[0.55rem]">OP</span></>)}
+
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-forest-900/30 dark:text-forest-500/30">
+                            0
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              </div>
+              <div className="absolute -bottom-1 left-0 right-0 text-xs font-normal text-right">
+                <div
+                  className="relative"
+                  style={{
+                    height: "2px",
+                    width: `${(getProjectsCombinedFundingSourcesByCurrency(
+                      info.row.original.funding_sources,
+                    )["TOTAL"] /
+                      getProjectsCombinedFundingSourcesByCurrency(
+                        info.row.original.funding_sources,
+                      )["TOTAL"]) *
+                      100.0
+                      }%`,
+                  }}
+                >
+                  <div
+                    className="absolute bg-green-400"
+                    style={{
+                      height: "2px",
+
+                      width: `${(getProjectsCombinedFundingSourcesByCurrency(
+                        info.row.original.funding_sources,
+                      )["USD"] /
+                        getProjectsCombinedFundingSourcesByCurrency(
+                          info.row.original.funding_sources,
+                        )["TOTAL"]) *
+                        100.0
+                        }%`,
+                    }}
+                  ></div>
+                  <div
+                    className="absolute bg-red-400"
+                    style={{
+                      height: "2px",
+                      left:
+                        getProjectsCombinedFundingSourcesByCurrency(
+                          info.row.original.funding_sources,
+                        )["USD"] !== 0
+                          ? `${(getProjectsCombinedFundingSourcesByCurrency(
+                            info.row.original.funding_sources,
+                          )["USD"] /
+                            getProjectsCombinedFundingSourcesByCurrency(
+                              info.row.original.funding_sources,
+                            )["TOTAL"]) *
+                          100.0
+                          }%`
+                          : 0,
+                      width: `${(getProjectsCombinedFundingSourcesByCurrency(
+                        info.row.original.funding_sources,
+                      )["OPUSD"] /
+                        getProjectsCombinedFundingSourcesByCurrency(
+                          info.row.original.funding_sources,
+                        )["TOTAL"]) *
+                        100.0
+                        }%`,
+                    }}
+                  ></div>
+                </div>
+                <div
+                  className="bg-forest-900/30 dark:bg-forest-500/30"
+                  style={{
+                    height: "2px",
+                    width: `100%`,
+                  }}
+                />
+              </div>
+            </div>
+          );
+        },
+        meta: {
+          headerAlign: { textAlign: "left" },
+        },
+        enableSorting: true,
+        sortingFn: (rowA, rowB) => {
+          const a = getProjectsCombinedFundingSourcesByCurrency(
+            rowA.original.funding_sources,
+          )["TOTAL"];
+
+          const b = getProjectsCombinedFundingSourcesByCurrency(
+            rowB.original.funding_sources,
+          )["TOTAL"];
+
+          // If both are equal, return 0.
+          if (a === b) return 0;
+
+          // Otherwise, sort by whether a is greater than or less than b.
+          return a > b ? 1 : -1;
+        },
+      },
+
       {
         header: "Categories",
         accessorKey: "impact_category",
@@ -1064,9 +1120,53 @@ export default function Page() {
     [theme],
   );
 
+  const maxIncludedInBallots = useMemo(() => {
+    if (!projects) return 0;
+    return Math.max(...projects.map((d) => d.included_in_ballots));
+  }, [projects]);
+
+  const stringToHexColor = (str: string) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++)
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    const c = (hash & 0x00ffffff).toString(16).toUpperCase();
+    return `#${"00000".substring(0, 6 - c.length)}${c}`;
+  }
+
+
 
   return (
     <Container className={`mt-[0px] !pr-0 ${isSidebarOpen ? "min-[1450px]:!pr-[50px]" : "min-[1250px]:!pr-[50px]"}`}>
+      {/* <TreeMapChart data={data.sort((a, b) => b.included_in_ballots - a.included_in_ballots).reduce(
+        (acc: any[], curr: Project) => {
+          const categoriesStr = curr.impact_category.sort((a, b) => a.localeCompare(b)).join(", ");
+          const ballots = curr.included_in_ballots;
+          const ballotsStr = ballots.toString();
+
+          if (!acc.find(d => d.id === categoriesStr)) {
+            acc.push({
+              id: categoriesStr,
+              name: categoriesStr.slice(0, 10),
+              // value: 1,
+              color: stringToHexColor(categoriesStr),
+            })
+          }
+
+          if (acc.find(d => d.parent === categoriesStr && d.name === ballotsStr)) {
+            acc.find(d => d.parent === categoriesStr && d.name === ballotsStr).value += 1;
+          } else {
+            acc.push({
+              name: ballotsStr,
+              parent: categoriesStr,
+              value: 1,
+              // max color is rgba(255, 4, 32, 1), 0 is rgba(255, 4, 32, 0.1), and anything in between is a gradient
+              // color: `rgba(255, 4, 32, ${(ballots + 1) / (maxIncludedInBallots + 1)})`
+            })
+          }
+          return acc;
+        },
+        [] as any[]
+      )} /> */}
       <div className={`w-full flex justify-between items-center mt-[10px] mb-[10px] ${isSidebarOpen ? "pr-[20px] md:pr-[50px] min-[1250px]:pr-[0px]" : "pr-[20px] md:pr-[50px] min-[1250px]:pr-[0px]"}`}>
         <div className="w-1/2">
           <div className="relative">
@@ -1102,7 +1202,7 @@ export default function Page() {
         </div>
       </div>
       <div className={`w-full pr-[50px] overflow-x-scroll ${isSidebarOpen ? "min-[1450px]:pr-0 min-[1450px]:overflow-x-visible" : "min-[1250px]:pr-0 min-[1250px]:overflow-x-visible"} z-100 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}>
-        <div className="min-w-[1037px]">
+        <div className="min-w-[1250px]">
           <div className="flex flex-col items-center justify-center w-full h-full relative">
             <ShowLoading
               dataLoading={[projectsLoading]}
