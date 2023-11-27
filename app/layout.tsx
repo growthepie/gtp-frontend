@@ -104,6 +104,16 @@ export const metadata: Metadata = {
     locale: "en_US",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "growthepie.xyz",
+    description: "Growing Ethereum’s Ecosystem Together",
+    site: "@growthepie_eth",
+    siteId: "1636391104689094656",
+    creator: "@growthepie_eth",
+    creatorId: "1636391104689094656",
+    images: ["https://www.growthepie.xyz/gtp_og.png"],
+  },
   robots: {
     index: true,
     follow: true,
