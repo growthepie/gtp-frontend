@@ -368,15 +368,15 @@ export default function Page() {
                   <Image
                     src={info.row.original.profile.profileImageUrl}
                     alt={info.row.original.display_name}
-                    width={48}
-                    height={48}
+                    width={32}
+                    height={32}
                     className="rounded-full"
                     loading="lazy"
                   />
                 )}
               </div>
 
-              <div className="text-[0.6rem] text-forest-900/80 dark:text-forest-500/80 font-light">
+              <div className="text-[0.6rem] text-forest-900/80 dark:text-forest-500/80 font-light w-0 overflow-visible">
                 {info.table
                   .getSortedRowModel()
                   .rows.findIndex((d) => d.id === info.row.id) + 1}
@@ -451,17 +451,19 @@ export default function Page() {
         size: 150,
         cell: (info) => (
           <div className="w-full flex space-x-2 items-center overflow-hidden whitespace-nowrap text-ellipsis">
-            {info.row.original.applicant_type === "PROJECT" ? (
-              <Icon
-                icon={"clarity:users-solid"}
-                className="w-6 h-6 text-forest-900/80 dark:text-forest-500/80 fill-current"
-              />
-            ) : (
-              <Icon
-                icon={"clarity:user-solid"}
-                className="w-6 h-4 text-forest-900/80 dark:text-forest-500/80 fill-current"
-              />
-            )}
+            <div className="w-6 h-6 flex items-center justify-center">
+              {info.row.original.applicant_type === "PROJECT" ? (
+                <Icon
+                  icon={"clarity:users-solid"}
+                  className="w-6 h-6 text-forest-900/80 dark:text-forest-500/80 fill-current"
+                />
+              ) : (
+                <Icon
+                  icon={"clarity:user-solid"}
+                  className="w-6 h-4 text-forest-900/80 dark:text-forest-500/80 fill-current"
+                />
+              )}
+            </div>
             <Link
               rel="noopener noreferrer"
               target="_blank"
