@@ -13,7 +13,11 @@ const pool = new Pool({
 export async function GET() {
   try {
     const result = await pool.query(
-      "SELECT id, display_name, profile, applicant, applicant_type, included_in_ballots, lists, funding_sources, impact_category, impact_metrics, last_updated FROM rpgf3_projects",
+      `SELECT 
+        p.id, p.display_name, p.profile, p.applicant, p.applicant_type, p.included_in_ballots, p.lists, p.funding_sources, p.impact_category, p.impact_metrics, p.last_updated, info.value_raised, info.has_token, info.note 
+      FROM rpgf3_projects p 
+      LEFT JOIN project_info info 
+        ON p.id = info.project_id`,
     );
     const data = result.rows;
 

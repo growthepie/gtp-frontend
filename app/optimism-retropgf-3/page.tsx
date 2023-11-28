@@ -14,7 +14,8 @@ import {
   Project,
   ProjectFundingSource,
   ProjectsResponse,
-  List
+  List,
+  ListContent
 } from "@/types/api/RetroPGF3";
 import Icon from "@/components/layout/Icon";
 import { useTheme } from "next-themes";
@@ -89,8 +90,24 @@ export default function Page() {
     isLoading: projectsLoading,
     isValidating: projectsValidating,
   } = useSWR<ProjectsResponse>(baseURL[environment] + "/api/optimism-retropgf-3/projects", {
-    refreshInterval: 2 * 1000 * 60, // 2 minutes,
+    refreshInterval: 1 * 1000 * 60, // 2 minutes,
   });
+
+  // const {
+  //   data: listAmountsByProjectId,
+  //   isLoading: listAmountsByProjectIdLoading,
+  //   isValidating: listAmountsByProjectIdValidating,
+  // } = useSWR<{
+  //   listAmounts: {
+  //     [key: string]: {
+  //       id: string;
+  //       listName: string;
+  //       listContent: ListContent[];
+  //     }[];
+  //   }
+  // }>(baseURL[environment] + "/api/optimism-retropgf-3/listAmountsByProjectId", {
+  //   refreshInterval: 1 * 1000 * 60, // 2 minutes,
+  // });
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [data, setData] = useState<Project[]>([]);
@@ -430,7 +447,7 @@ export default function Page() {
       {
         header: "Applicant",
         accessorKey: "applicant",
-        size: 200,
+        size: 150,
         cell: (info) => (
           <div className="w-full flex space-x-2 items-center overflow-hidden whitespace-nowrap text-ellipsis">
             {info.row.original.applicant_type === "PROJECT" ? (
@@ -574,30 +591,30 @@ export default function Page() {
           return a > b ? 1 : -1;
         },
       },
+
       {
         header: () => (
-          <>
-            <div>
-              <div className="flex">
-                Funding Reported
-                <div className="relative">
-                  <Tooltip placement="left">
-                    <TooltipTrigger>
-                      <Icon icon="feather:info" className="w-4 h-4 absolute left-3 top-0" />
-                    </TooltipTrigger>
-                    <TooltipContent className="pr-0 z-50 flex items-center justify-center">
-                      <div className="px-3 py-1.5 w-56 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
-                        <div className="text-xs space-x-1">
-                          <span className="font-bold">Total Funding</span>
-                          <span className="font-light">is calculated based on the reported USD and OP amount.<br /><br />For OP tokens we calculated with $1.35 (OP price when RPGF applications were closed).<br /><br /><span className="font-bold">Note:</span> Projects only had to report funding they received from the collective, many didn&apos;t include VC funding and other funding sources.</span>
-                        </div>
+          <div>
+            <div className="flex">
+              Reported Funding
+              <div className="relative">
+                <Tooltip placement="left" allowInteract>
+                  <TooltipTrigger>
+                    <Icon icon="feather:info" className="w-4 h-4 absolute left-3 top-0" />
+                  </TooltipTrigger>
+                  <TooltipContent className="pr-0 z-50 flex items-center justify-center">
+                    <div className="px-3 py-1.5 w-56 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
+                      <div className="text-xs space-x-1">
+                        <span className="font-light">Total</span>
+                        <span className="font-bold">Funding Reported</span>
+                        <span className="font-light">is calculated based on the reported USD and OP amount.<br /><br />For OP tokens we calculated with $1.35 (OP price when RPGF applications were closed).<br /><br /><span className="font-bold">Note:</span> Projects only had to report funding they received from the collective, many didn&apos;t include VC funding and other funding sources.</span>
                       </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </div>
-          </>
+          </div>
         ),
         accessorKey: "funding_sources",
         size: 150,
@@ -872,6 +889,114 @@ export default function Page() {
           // Otherwise, sort by whether a is greater than or less than b.
           return a > b ? 1 : -1;
         },
+      },
+      {
+        header: () => (
+          <div className="flex w-full justify-end">
+            <div className="relative">
+              <Tooltip placement="left" allowInteract>
+                <TooltipTrigger className="absolute right-3 top-0">
+                  <Icon icon="feather:info" className="w-4 h-4 " />
+                </TooltipTrigger>
+                <TooltipContent className="pr-0 z-50 flex items-center justify-center">
+                  <div className="px-3 py-1.5 w-56 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
+                    <div className="text-xs space-x-1">
+                      <span className="font-bold">VC Funding</span>
+                      <span className="font-light"> [and other funding] numbers are estimated and could be slightly more. Just going off of publicly available data from TracXn, Crunchbase, or press releases.<br /><br /><b>Source:</b> <Link rel="noopener noreferrer" target="_blank" href="https://twitter.com/zachxbt/status/1729290605711245573?t=QuUaMlTM1HHBDs_T4YAiNg&s=19" className="underline">@ZachXBT</Link></span>
+                      {/* <span className="font-light">is calculated based on the reported USD and OP amount.<br /><br />For OP tokens we calculated with $1.35 (OP price when RPGF applications were closed).<br /><br /><span className="font-bold">Note:</span> Projects only had to report funding they received from the collective, many didn&apos;t include VC funding and other funding sources.</span> */}
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            VC Funding
+          </div>
+        ),
+        accessorKey: "value_raised",
+        size: 100,
+        // id: "reported",
+        cell: (info) => (
+          <div className="w-full overflow-x whitespace-nowrap text-ellipsis relative flex justify-end font-inter text-sm">
+            {info.row.original.value_raised && <div className="flex items-end">
+              <div className="opacity-60 text-[0.65rem]">$</div>
+              {formatNumber(info.row.original.value_raised, true)}
+            </div>}
+          </div>
+        ),
+        meta: {
+          headerAlign: { marginLeft: "auto", flexDirection: "row-reverse" },
+        },
+        sortingFn: (rowA, rowB) => {
+          const a = rowA.original.value_raised;
+          const b = rowB.original.value_raised;
+
+          if (!a && !b) return 0;
+
+          if (!a) return -1;
+
+          if (!b) return 1;
+
+          // If both are equal, return 0.
+          if (a === b) return 0;
+
+          // Otherwise, sort by whether a is greater than or less than b.
+          return a > b ? 1 : -1;
+        },
+      },
+      {
+        header: () => (
+          <Tooltip placement="left" allowInteract>
+            <TooltipTrigger>
+              <Icon icon={"game-icons:two-coins"} className="w-6 h-6" />
+            </TooltipTrigger>
+            <TooltipContent className="pr-0 z-50 flex items-center justify-center">
+              <div className="px-3 py-1.5 w-56 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
+                <div className="text-xs space-x-1">
+                  <span className="font-bold">Has Token</span>
+                  <span className="font-light"> ... Just going off of publicly available data from TracXn, Crunchbase, or press releases.<br /><br /><b>Source:</b> <Link rel="noopener noreferrer" target="_blank" href="https://twitter.com/zachxbt/status/1729290605711245573?t=QuUaMlTM1HHBDs_T4YAiNg&s=19" className="underline">@ZachXBT</Link></span>
+                  {/* <span className="font-light">is calculated based on the reported USD and OP amount.<br /><br />For OP tokens we calculated with $1.35 (OP price when RPGF applications were closed).<br /><br /><span className="font-bold">Note:</span> Projects only had to report funding they received from the collective, many didn&apos;t include VC funding and other funding sources.</span> */}
+                </div>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        ),
+        accessorKey: "has_token",
+        size: 40,
+        cell: (info) => (
+          <div className="w-full flex justify-between items-center">
+
+            <div className="w-6 h-6">
+              {info.row.original.has_token &&
+                <Tooltip placement="left">
+                  <TooltipTrigger>
+                    <Icon
+                      icon={"game-icons:two-coins"}
+                      className={`w-6 h-6 dark:text-yellow-400/80 text-yellow-500/80 fill-current`}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent className="pr-0 z-50 flex items-center justify-center">
+                    <div className="px-3 py-1.5 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
+                      <div className="text-xs space-x-1">
+                        <span className="font-light">This project has a <span className="font-bold">token</span>.</span>
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              }
+            </div>
+          </div>
+        ),
+        sortingFn: (rowA, rowB) => {
+          const a = rowA.original.has_token;
+          const b = rowB.original.has_token;
+
+          // If both are equal, return 0.
+          if (a === b) return 0;
+
+          // Otherwise, sort by whether a is greater than or less than b.
+          return a ? 1 : -1;
+        },
+
       },
 
       {
