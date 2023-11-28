@@ -94,6 +94,12 @@ const fetchProjects = async (skip, retries = 6) => {
                 likes
                 listDescription
                 listName
+                listContent {
+                  project {
+                    id
+                  }
+                  OPAmount
+                }
               }
               understoodFundClaimPeriod
               understoodKYCRequirements
@@ -129,8 +135,8 @@ const fetchProjects = async (skip, retries = 6) => {
       console.error("Request failed, no retries left", error);
       return [];
     }
-    console.log(`Request failed, retrying in 10 seconds...`);
-    await delay(10000); // Wait for 5 seconds before retrying
+    console.log(`Request failed, retrying in 3 seconds...`);
+    await delay(3000); // Wait for 3 seconds before retrying
     return fetchProjects(skip, retries - 1); // Recursive call with decreased retries
   }
 };
