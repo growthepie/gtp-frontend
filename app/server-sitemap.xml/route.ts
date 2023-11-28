@@ -4,14 +4,18 @@ import { navigationItems } from "@/lib/navigation";
 
 export async function GET(request: Request) {
   const fundamentals = navigationItems[1];
+  const blockspace = navigationItems[2];
   const chains = navigationItems[3];
 
   const pages = [
     ...fundamentals.options.map(
-      (option) => `https://www.growthepie.xyz/fundamentals/${option.urlKey}`
+      (option) => `https://www.growthepie.xyz/fundamentals/${option.urlKey}`,
+    ),
+    ...blockspace.options.map(
+      (option) => `https://www.growthepie.xyz/blockspace/${option.urlKey}`,
     ),
     ...chains.options.map(
-      (option) => `https://www.growthepie.xyz/chains/${option.urlKey}`
+      (option) => `https://www.growthepie.xyz/chains/${option.urlKey}`,
     ),
   ];
 
@@ -32,7 +36,7 @@ export async function GET(request: Request) {
         lastmod: getDate(),
         changefreq: "daily",
         priority: 0.9,
-      })
+      }),
     ),
   ]);
 }
