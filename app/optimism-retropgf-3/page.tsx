@@ -20,7 +20,7 @@ import {
 import Icon from "@/components/layout/Icon";
 import { useTheme } from "next-themes";
 import ShowLoading from "@/components/layout/ShowLoading";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { last, uniq, debounce } from "lodash";
 import moment from "moment";
 import Image from "next/image";
@@ -31,6 +31,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/layout/Too
 import Container from "@/components/layout/Container";
 import { useUIContext } from "@/contexts/UIContext";
 // import { TreeMapChart } from "@/components/charts/treemapChart";
+import { useElementSize } from "usehooks-ts";
 
 const OsoTaggedProjectsMap = OsoTaggedProjects.reduce((prev, curr) => {
   prev[curr["Project ID"]] = curr;
@@ -741,7 +742,6 @@ export default function Page() {
         //   </>
         // ),
         header: "Funding Split",
-
         id: "funding_split",
         accessorKey: "funding_sources",
         size: 150,
@@ -884,11 +884,26 @@ export default function Page() {
                   <Icon icon="feather:info" className="w-4 h-4 " />
                 </TooltipTrigger>
                 <TooltipContent className="pr-0 z-50 flex items-center justify-center">
-                  <div className="px-3 py-1.5 w-56 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
-                    <div className="text-xs space-x-1">
-                      <span className="font-bold">VC Funding</span>
-                      <span className="font-light">... numbers are estimated and could be slightly more. Just going off of publicly available data from TracXn, Crunchbase, or press releases.<br /><br /><b>Source:</b> <Link rel="noopener noreferrer" target="_blank" href="https://twitter.com/zachxbt/status/1729290605711245573?t=QuUaMlTM1HHBDs_T4YAiNg&s=19" className="underline">@ZachXBT</Link></span>
-                      {/* <span className="font-light">is calculated based on the reported USD and OP amount.<br /><br />For OP tokens we calculated with $1.35 (OP price when RPGF applications were closed).<br /><br /><span className="font-bold">Note:</span> Projects only had to report funding they received from the collective, many didn&apos;t include VC funding and other funding sources.</span> */}
+                  <div className="px-3 py-1.5 w-64 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
+                    <div className="flex flex-col text-xs space-y-1">
+                      <div className="">
+                        <span className="font-bold">VC Funding</span>{" "}
+                        <span className="font-light">
+                          ... numbers are estimated and could be slightly more. Just going off of publicly available data from TracXn, Crunchbase, or press releases.
+                        </span>
+                      </div>
+
+                      <div className="flex flex-col">
+                        <span className="font-semibold">Sources:</span>
+                        <Link rel="noopener noreferrer" target="_blank" href="https://twitter.com/zachxbt/status/1729290605711245573?t=QuUaMlTM1HHBDs_T4YAiNg&s=19" className="underline font-light">
+                          @ZachXBT
+                        </Link>
+                        <Link rel="noopener noreferrer" target="_blank" href="https://defillama.com/raises" className="underline font-light">
+                          DefiLlama
+                        </Link>
+                      </div>
+                      <div className="text-[0.6rem] font-light">Contact us on Twitter or Discord if you have any feedback or suggestions.</div>
+
                     </div>
                   </div>
                 </TooltipContent>
@@ -902,7 +917,7 @@ export default function Page() {
         // id: "reported",
         cell: (info) => (
           <div className="w-full overflow-x whitespace-nowrap text-ellipsis relative flex justify-end font-inter text-sm">
-            {info.row.original.value_raised && <div className="flex items-end">
+            {info.row.original.value_raised ? <div className="flex items-end">
 
               <div className="flex items-center space-x-2">
 
@@ -918,7 +933,8 @@ export default function Page() {
                   />
                 </div>
               </div>
-            </div>}
+            </div> : <div className="text-forest-900/30 dark:text-forest-500/30 text-[0.6rem]">Unknown / DYOR</div>}
+
           </div>
         ),
         meta: {
@@ -948,10 +964,25 @@ export default function Page() {
               <Icon icon={"game-icons:two-coins"} className="w-6 h-6" />
             </TooltipTrigger>
             <TooltipContent className="pr-0 z-50 flex items-center justify-center">
-              <div className="px-3 py-1.5 w-56 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
-                <div className="text-xs space-x-1">
-                  <span className="font-bold">Has Token</span>
-                  <span className="font-light"> ... Just going off of publicly available data from TracXn, Crunchbase, or press releases.<br /><br /><b>Source:</b> <Link rel="noopener noreferrer" target="_blank" href="https://twitter.com/zachxbt/status/1729290605711245573?t=QuUaMlTM1HHBDs_T4YAiNg&s=19" className="underline">@ZachXBT</Link></span>
+              <div className="px-3 py-1.5 w-64 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
+                <div className="flex flex-col text-xs space-y-1">
+                  <div className="">
+                    <span className="font-bold">Has Token</span>{" "}
+                    <span className="font-light">
+                      ... Just going off of publicly available data from TracXn, Crunchbase, or press releases.
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <span className="font-semibold">Sources:</span>
+                    <Link rel="noopener noreferrer" target="_blank" href="https://twitter.com/zachxbt/status/1729290605711245573?t=QuUaMlTM1HHBDs_T4YAiNg&s=19" className="underline font-light">
+                      @ZachXBT
+                    </Link>
+                    <Link rel="noopener noreferrer" target="_blank" href="https://defillama.com/raises" className="underline font-light">
+                      DefiLlama
+                    </Link>
+                  </div>
+                  <div className="text-[0.6rem] font-light">Contact us on Twitter or Discord if you have any feedback or suggestions.</div>
                   {/* <span className="font-light">is calculated based on the reported USD and OP amount.<br /><br />For OP tokens we calculated with $1.35 (OP price when RPGF applications were closed).<br /><br /><span className="font-bold">Note:</span> Projects only had to report funding they received from the collective, many didn&apos;t include VC funding and other funding sources.</span> */}
                 </div>
               </div>
@@ -1126,62 +1157,53 @@ export default function Page() {
     [getMaxTotalFundingAmount, getProjectsCombinedFundingSourcesByCurrency, getProjectsTotalFundingRank],
   );
 
-  const projectsUniqueValues = useMemo(() => {
-    if (!projects) return null;
-    const uniqueValues = {
-      // display_name: uniq(projects.map((d) => d.display_name)).length,
-      // applicant_type: uniq(projects.map((d) => d.applicant_type)).length,
-      // applicant: uniq(projects.map((d) => d.applicant.address.address)).length,
-      // included_in_ballots: uniq(projects.map((d) => d.included_in_ballots))
-      //   .length,
-      usd_funding: uniq(
-        projects.map(
-          (d) =>
-            getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)[
-            "USD"
-            ],
-        ),
-      ).length,
-      op_funding: uniq(
-        projects.map(
-          (d) =>
-            getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)[
-            "OP"
-            ],
-        ),
-      ).length,
-    };
+  // const projectsUniqueValues = useMemo(() => {
+  //   if (!projects) return null;
+  //   const uniqueValues = {
+  //     usd_funding: uniq(
+  //       projects.map(
+  //         (d) =>
+  //           getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)[
+  //           "USD"
+  //           ],
+  //       ),
+  //     ).length,
+  //     op_funding: uniq(
+  //       projects.map(
+  //         (d) =>
+  //           getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)[
+  //           "OP"
+  //           ],
+  //       ),
+  //     ).length,
+  //   };
 
-    return uniqueValues;
-  }, [getProjectsCombinedFundingSourcesByCurrency, projects]);
+  //   return uniqueValues;
+  // }, [getProjectsCombinedFundingSourcesByCurrency, projects]);
 
-  const dataUniqueValues = useMemo(() => {
-    if (!data) return null;
-    const uniqueValues = {
-      // display_name: uniq(data.map((d) => d.display_name)).length,
-      // applicant_type: uniq(data.map((d) => d.applicant_type)).length,
-      // applicant: uniq(data.map((d) => d.applicant.address.address)).length,
-      // included_in_ballots: uniq(data.map((d) => d.included_in_ballots)).length,
-      usd_funding: uniq(
-        data.map(
-          (d) =>
-            getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)[
-            "USD"
-            ],
-        ),
-      ).length,
-      op_funding: uniq(
-        data.map(
-          (d) =>
-            getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)[
-            "OP"
-            ],
-        ),
-      ).length,
-    };
+  // const dataUniqueValues = useMemo(() => {
+  //   if (!data) return null;
+  //   const uniqueValues = {
+  //     usd_funding: uniq(
+  //       data.map(
+  //         (d) =>
+  //           getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)[
+  //           "USD"
+  //           ],
+  //       ),
+  //     ).length,
+  //     op_funding: uniq(
+  //       data.map(
+  //         (d) =>
+  //           getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)[
+  //           "OP"
+  //           ],
+  //       ),
+  //     ).length,
+  //   };
 
-    return uniqueValues;
-  }, [data, getProjectsCombinedFundingSourcesByCurrency]);
+  //   return uniqueValues;
+  // }, [data, getProjectsCombinedFundingSourcesByCurrency]);
 
   const table = useReactTable<Project>({
     data,
@@ -1254,142 +1276,125 @@ export default function Page() {
     return `#${"00000".substring(0, 6 - c.length)}${c}`;
   }
 
+  const tableMinWidthClass = "min-w-[1250px]";
 
+  const [contentRef, { width: contentWidth }] = useElementSize();
+  const [tableRef, { width: tableWidth }] = useElementSize();
+
+  const [isTableWidthWider, setIsTableWidthWider] = useState(false);
+
+  useLayoutEffect(() => {
+    setIsTableWidthWider(tableWidth > contentWidth);
+  }, [contentWidth, tableWidth]);
 
   return (
-    <Container className={`mt-[0px] !pr-0 ${isSidebarOpen ? "min-[1550px]:!pr-[50px]" : "min-[1350px]:!pr-[50px]"}`}>
-      {/* <TreeMapChart data={data.sort((a, b) => b.included_in_ballots - a.included_in_ballots).reduce(
-        (acc: any[], curr: Project) => {
-          const categoriesStr = curr.impact_category.sort((a, b) => a.localeCompare(b)).join(", ");
-          const ballots = curr.included_in_ballots;
-          const ballotsStr = ballots.toString();
+    <>
+      {/* <Container className={`mt-[0px] !pr-0 ${isSidebarOpen ? "min-[1550px]:!pr-[50px]" : "min-[1350px]:!pr-[50px]"}`} ref={containerRef}> */}
+      <Container>
+        <div className={`w-full flex justify-between items-center mt-[10px] mb-[10px]`} ref={contentRef}>
+          <div className="w-1/2">
+            <div className="relative">
+              <input
+                className="block rounded-full pl-6 pr-3 py-1.5 w-full z-20 text-xs text-forest-900  bg-forest-100 dark:bg-forest-1000 dark:text-forest-500 border border-forest-500 dark:border-forest-700 focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
+                placeholder="Project Filter"
+                value={displayNameFilter}
+                onChange={(e) => {
+                  setDisplayNameFilter(e.target.value);
+                  // setDisplayNameFilter(e.target.value);
+                  // router.push("/contracts/" + e.target.value);
+                  // debouncedSearch();
+                }}
 
-          if (!acc.find(d => d.id === categoriesStr)) {
-            acc.push({
-              id: categoriesStr,
-              name: categoriesStr.slice(0, 10),
-              // value: 1,
-              color: stringToHexColor(categoriesStr),
-            })
-          }
-
-          if (acc.find(d => d.parent === categoriesStr && d.name === ballotsStr)) {
-            acc.find(d => d.parent === categoriesStr && d.name === ballotsStr).value += 1;
-          } else {
-            acc.push({
-              name: ballotsStr,
-              parent: categoriesStr,
-              value: 1,
-              // max color is rgba(255, 4, 32, 1), 0 is rgba(255, 4, 32, 0.1), and anything in between is a gradient
-              // color: `rgba(255, 4, 32, ${(ballots + 1) / (maxIncludedInBallots + 1)})`
-            })
-          }
-          return acc;
-        },
-        [] as any[]
-      )} /> */}
-      <div className={`w-full flex justify-between items-center mt-[10px] mb-[10px] ${isSidebarOpen ? "pr-[20px] md:pr-[50px] min-[1550px]:pr-[0px]" : "pr-[20px] md:pr-[50px] min-[1350px]:pr-[0px]"}`}>
-        <div className="w-1/2">
-          <div className="relative">
-            <input
-              className="block rounded-full pl-6 pr-3 py-1.5 w-full z-20 text-xs text-forest-900  bg-forest-100 dark:bg-forest-1000 dark:text-forest-500 border border-forest-500 dark:border-forest-700 focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
-              placeholder="Project Filter"
-              value={displayNameFilter}
-              onChange={(e) => {
-                setDisplayNameFilter(e.target.value);
-                // setDisplayNameFilter(e.target.value);
-                // router.push("/contracts/" + e.target.value);
-                // debouncedSearch();
-              }}
-
-            />
-            <Icon
-              icon="feather:search"
-              className="w-4 h-4 absolute left-1.5 top-1.5"
-            />
-            {displayNameFilter.length > 0 && (
-              <div
-                className="absolute right-2.5 top-1.5 underline cursor-pointer text-forest-900 dark:text-forest-500 text-xs font-light leading-[1.2]"
-                onClick={() => {
-                  setDisplayNameFilter("");
-                }}>
-                clear
-              </div>
-            )}
+              />
+              <Icon
+                icon="feather:search"
+                className="w-4 h-4 absolute left-1.5 top-1.5"
+              />
+              {displayNameFilter.length > 0 && (
+                <div
+                  className="absolute right-2.5 top-1.5 underline cursor-pointer text-forest-900 dark:text-forest-500 text-xs font-light leading-[1.2]"
+                  onClick={() => {
+                    setDisplayNameFilter("");
+                  }}>
+                  clear
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="text-xs font-normal text-forest-200 dark:text-forest-400">
+            Last updated {lastUpdatedString}
           </div>
         </div>
-        <div className="text-xs font-normal text-forest-200 dark:text-forest-400">
-          Last updated {lastUpdatedString}
-        </div>
-      </div>
-      <div className={`w-full pr-[50px] overflow-x-scroll ${isSidebarOpen ? "min-[1550px]:pr-0 min-[1550px]:overflow-x-visible" : "min-[1350px]:pr-0 min-[1350px]:overflow-x-visible"} z-100 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}>
-        <div className="min-w-[1150px]">
-          <div className="flex flex-col items-center justify-center w-full h-full relative">
-            <ShowLoading
-              dataLoading={[projectsLoading]}
-              dataValidating={[projectsValidating]}
-              fullScreen
-            />
+      </Container>
+      <Container className={`w-full mt-[0px] h-100 ${isTableWidthWider ? "!px-0" : "!px-[20px] md:!px-[50px]"}`}>
+        <div className={`w-full ${isTableWidthWider ? "!px-[20px] md:!px-[50px] overflow-x-scroll" : "overflow-x-hidden"} z-100 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}>
+          <div className={tableMinWidthClass}>
+            <div className="flex flex-col items-center justify-center w-full h-full relative">
+              <ShowLoading
+                dataLoading={[projectsLoading]}
+                dataValidating={[projectsValidating]}
+                fullScreen
+              />
 
-            {Style}
+              {Style}
 
-            <div className="pr-4">
-              <table className="table-fixed w-full">
-                {/* <thead className="sticky top-0 z-50"> */}
-                <thead>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <tr key={headerGroup.id}>
-                      {headerGroup.headers.map((header, i) => {
-                        return (
-                          <th
-                            key={header.id}
-                            colSpan={header.colSpan}
-                            style={{
-                              width: header.getSize(),
-                              paddingLeft: i === 0 ? "20px" : "20px",
-                              paddingRight:
-                                i === headerGroup.headers.length ? "20px" : "10px",
-                            }}
-                            className="whitespace-nowrap relative"
-                          >
-                            {header.isPlaceholder ? null : (
-                              <div className="w-full relative">
-                                <div
-                                  className={
-                                    header.column.getCanSort()
-                                      ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold w-fit ${i === 0 ? "pl-[10px]" : ""
-                                      }`
-                                      : ""
-                                  }
-                                  style={{
-                                    ...(header.column.columnDef.meta as any)
-                                      ?.headerAlign,
-                                  }}
-                                  onClick={(e) => {
-                                    const handler =
-                                      header.column.getToggleSortingHandler();
-                                    handler && handler(e);
-                                  }}
-                                >
-                                  {flexRender(
-                                    header.column.columnDef.header,
-                                    header.getContext(),
-                                  )}
-                                  {{
-                                    asc: (
-                                      <Icon
-                                        icon="feather:arrow-up"
-                                        className="w-3 h-3"
-                                      />
-                                    ),
-                                    desc: (
-                                      <Icon
-                                        icon="feather:arrow-down"
-                                        className="w-3 h-3"
-                                      />
-                                    ),
-                                  }[header.column.getIsSorted() as string] ?? null}
-                                  {projectsUniqueValues?.hasOwnProperty(header.id) &&
+              <div className={`${tableMinWidthClass} pr-4`} >
+                <table className="table-fixed w-full" ref={tableRef}>
+                  {/* <thead className="sticky top-0 z-50"> */}
+                  <thead>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <tr key={headerGroup.id}>
+                        {headerGroup.headers.map((header, i) => {
+                          return (
+                            <th
+                              key={header.id}
+                              colSpan={header.colSpan}
+                              style={{
+                                width: header.getSize(),
+                                paddingLeft: i === 0 ? "20px" : "20px",
+                                paddingRight:
+                                  i === headerGroup.headers.length ? "20px" : "10px",
+                              }}
+                              className="whitespace-nowrap relative"
+                            >
+                              {header.isPlaceholder ? null : (
+                                <div className="w-full relative">
+                                  <div
+                                    className={
+                                      header.column.getCanSort()
+                                        ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold w-fit ${i === 0 ? "pl-[10px]" : ""
+                                        }`
+                                        : ""
+                                    }
+                                    style={{
+                                      ...(header.column.columnDef.meta as any)
+                                        ?.headerAlign,
+                                    }}
+                                    onClick={(e) => {
+                                      const handler =
+                                        header.column.getToggleSortingHandler();
+                                      handler && handler(e);
+                                    }}
+                                  >
+                                    {flexRender(
+                                      header.column.columnDef.header,
+                                      header.getContext(),
+                                    )}
+                                    {{
+                                      asc: (
+                                        <Icon
+                                          icon="feather:arrow-up"
+                                          className="w-3 h-3"
+                                        />
+                                      ),
+                                      desc: (
+                                        <Icon
+                                          icon="feather:arrow-down"
+                                          className="w-3 h-3"
+                                        />
+                                      ),
+                                    }[header.column.getIsSorted() as string] ?? null}
+                                    {/*projectsUniqueValues?.hasOwnProperty(header.id) &&
                                     dataUniqueValues?.hasOwnProperty(header.id) && (
                                       <div className="text-[11px] font-normal w-full text-right pr-3 font-inter">
                                         {dataUniqueValues[header.id] ===
@@ -1411,9 +1416,9 @@ export default function Page() {
                                           </>
                                         )}
                                       </div>
-                                    )}
-                                </div>
-                                {projectsUniqueValues?.hasOwnProperty(header.id) &&
+                                    )*/}
+                                  </div>
+                                  {/*projectsUniqueValues?.hasOwnProperty(header.id) &&
                                   dataUniqueValues?.hasOwnProperty(header.id) && (
                                     <div
                                       className={`absolute -bottom-1.5 ${i === 0
@@ -1439,81 +1444,81 @@ export default function Page() {
                                         }}
                                       />
                                     </div>
-                                  )}
-                              </div>
-                            )}
-                          </th>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </thead>
-              </table>
-            </div>
-            <div
-              className={`transition-[mask-size] duration-300 ease-in-out
-                ${
-                // if scroll is at top or bottom, don't show the fade
-                parentRef.current &&
-                  (parentRef.current.scrollTop < 30 ||
-                    parentRef.current.scrollTop >
-                    parentRef.current.scrollHeight -
-                    parentRef.current.clientHeight -
-                    30)
-                  ? "fade-edge-div-vertical-hidden"
-                  : "fade-edge-div-vertical"
-                }}`}
-            >
+                                      )*/}
+                                </div>
+                              )}
+                            </th>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </thead>
+                </table>
+              </div>
               <div
-                ref={parentRef}
-                className="min-h-[300px] h-[calc(100vh-330px)] md:h-[calc(100vh-380px)] overflow-auto pr-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller"
+                className={`transition-[mask-size] duration-300 ease-in-out
+                ${
+                  // if scroll is at top or bottom, don't show the fade
+                  parentRef.current &&
+                    (parentRef.current.scrollTop < 30 ||
+                      parentRef.current.scrollTop >
+                      parentRef.current.scrollHeight -
+                      parentRef.current.clientHeight -
+                      30)
+                    ? "fade-edge-div-vertical-hidden"
+                    : "fade-edge-div-vertical"
+                  }}`}
               >
                 <div
-                  style={{ height: `${virtualizer.getTotalSize()}px` }}
-                  className="w-full"
+                  ref={parentRef}
+                  className="min-h-[300px] h-[calc(100vh-330px)] md:h-[calc(100vh-380px)] overflow-auto pr-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller"
                 >
-                  {/* <div className="absolute top-10 left-0 right-0 h-5 z-10 bg-white dark:bg-forest-1000" /> */}
-                  <table className="table-fixed w-full">
-                    {/* <thead className="sticky top-0 z-50"> */}
-                    <thead>
-                      {table.getHeaderGroups().map((headerGroup) => (
-                        <tr key={headerGroup.id}>
-                          {headerGroup.headers.map((header, i) => {
-                            return (
-                              <th
-                                key={header.id}
-                                colSpan={header.colSpan}
-                                style={{
-                                  height: "0px",
-                                  overflow: "hidden",
-                                  width: header.getSize(),
-                                  paddingLeft: i === 0 ? "20px" : "20px",
-                                  paddingRight:
-                                    i === headerGroup.headers.length
-                                      ? "20px"
-                                      : "10px",
-                                  ...(header.column.columnDef.meta as any)
-                                    ?.headerStyle,
-                                }}
-                                className={`${
-                                  // i === 0
-                                  //   ? "sticky top-0 z-20"
-                                  //   : "sticky top-0 left-0 z-30"
-                                  ""
-                                  } bg-white dark:bg-forest-1000 whitespace-nowrap`}
-                              >
-                                {header.isPlaceholder ? null : (
-                                  <div
-                                    {...{
-                                      className: header.column.getCanSort()
-                                        ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold h-0 ${i === 0 ? "pl-[10px]" : ""
-                                        }`
-                                        : "",
-                                      onClick:
-                                        header.column.getToggleSortingHandler(),
-                                    }}
-                                  >
-                                    {/* {flexRender(
+                  <div
+                    style={{ height: `${virtualizer.getTotalSize()}px` }}
+                    className="w-full"
+                  >
+                    {/* <div className="absolute top-10 left-0 right-0 h-5 z-10 bg-white dark:bg-forest-1000" /> */}
+                    <table className="table-fixed w-full">
+                      {/* <thead className="sticky top-0 z-50"> */}
+                      <thead>
+                        {table.getHeaderGroups().map((headerGroup) => (
+                          <tr key={headerGroup.id}>
+                            {headerGroup.headers.map((header, i) => {
+                              return (
+                                <th
+                                  key={header.id}
+                                  colSpan={header.colSpan}
+                                  style={{
+                                    height: "0px",
+                                    overflow: "hidden",
+                                    width: header.getSize(),
+                                    paddingLeft: i === 0 ? "20px" : "20px",
+                                    paddingRight:
+                                      i === headerGroup.headers.length
+                                        ? "20px"
+                                        : "10px",
+                                    ...(header.column.columnDef.meta as any)
+                                      ?.headerStyle,
+                                  }}
+                                  className={`${
+                                    // i === 0
+                                    //   ? "sticky top-0 z-20"
+                                    //   : "sticky top-0 left-0 z-30"
+                                    ""
+                                    } bg-white dark:bg-forest-1000 whitespace-nowrap`}
+                                >
+                                  {header.isPlaceholder ? null : (
+                                    <div
+                                      {...{
+                                        className: header.column.getCanSort()
+                                          ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold h-0 ${i === 0 ? "pl-[10px]" : ""
+                                          }`
+                                          : "",
+                                        onClick:
+                                          header.column.getToggleSortingHandler(),
+                                      }}
+                                    >
+                                      {/* {flexRender(
                                 header.column.columnDef.header,
                                 header.getContext(),
                               )}
@@ -1531,52 +1536,53 @@ export default function Page() {
                                   />
                                 ),
                               }[header.column.getIsSorted() as string] ?? null} */}
-                                  </div>
-                                )}
-                              </th>
-                            );
-                          })}
-                        </tr>
-                      ))}
-                    </thead>
-                    <tbody className="text-xs pb-4">
-                      {virtualizer.getVirtualItems().map((virtualRow, index) => {
-                        const row = rows[virtualRow.index] as Row<Project>;
-                        return (
-                          <tr
-                            key={row.id}
-                            style={{
-                              height: `${virtualRow.size}px`,
-                              transform: `translateY(${virtualRow.start - index * virtualRow.size
-                                }px)`,
-                            }}
-                          >
-                            {row.getVisibleCells().map((cell, i) => {
-                              return (
-                                <td
-                                  key={cell.id}
-                                  style={{ paddingLeft: i === 0 ? "10px" : "20px" }}
-                                  className={i === 0 ? "sticky left-0 z-10" : ""}
-                                >
-                                  {flexRender(
-                                    cell.column.columnDef.cell,
-                                    cell.getContext(),
+                                    </div>
                                   )}
-                                </td>
+                                </th>
                               );
                             })}
                           </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                        ))}
+                      </thead>
+                      <tbody className="text-xs pb-4">
+                        {virtualizer.getVirtualItems().map((virtualRow, index) => {
+                          const row = rows[virtualRow.index] as Row<Project>;
+                          return (
+                            <tr
+                              key={row.id}
+                              style={{
+                                height: `${virtualRow.size}px`,
+                                transform: `translateY(${virtualRow.start - index * virtualRow.size
+                                  }px)`,
+                              }}
+                            >
+                              {row.getVisibleCells().map((cell, i) => {
+                                return (
+                                  <td
+                                    key={cell.id}
+                                    style={{ paddingLeft: i === 0 ? "10px" : "20px" }}
+                                    className={i === 0 ? "sticky left-0 z-10" : ""}
+                                  >
+                                    {flexRender(
+                                      cell.column.columnDef.cell,
+                                      cell.getContext(),
+                                    )}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </Container>
+      </Container>
+    </>
   );
 }
 
