@@ -522,22 +522,7 @@ export default function Page() {
         size: 70,
         cell: (info) => (
           <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis flex justify-end items-center">
-            {/* <div
-              className="grid grid-cols-10 justify-end gap-x-1 gap-y-1"
-              style={{ direction: "rtl" }}
-            >
-              {new Array(info.row.original.included_in_ballots * 10).fill(
-                <Icon icon="feather:circle" className="w-1 h-1" />,
-              )}
-            </div> */}
-            {/* <div className="w-4 h-4">
-              {info.row.original.included_in_ballots >= 12 && <Icon
-                icon={"feather:check-square"}
-                className="w-4 h-4 text-forest-900/80 dark:text-forest-500/80 fill-current"
-              />}
-            </div> */}
             <div className="flex items-center space-x-2">
-
               <div className="text-[0.9rem] font-medium leading-[1.2] font-inter">
                 {info.row.original.included_in_ballots}
               </div>
@@ -902,7 +887,7 @@ export default function Page() {
                   <div className="px-3 py-1.5 w-56 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
                     <div className="text-xs space-x-1">
                       <span className="font-bold">VC Funding</span>
-                      <span className="font-light"> [and other funding] numbers are estimated and could be slightly more. Just going off of publicly available data from TracXn, Crunchbase, or press releases.<br /><br /><b>Source:</b> <Link rel="noopener noreferrer" target="_blank" href="https://twitter.com/zachxbt/status/1729290605711245573?t=QuUaMlTM1HHBDs_T4YAiNg&s=19" className="underline">@ZachXBT</Link></span>
+                      <span className="font-light">... numbers are estimated and could be slightly more. Just going off of publicly available data from TracXn, Crunchbase, or press releases.<br /><br /><b>Source:</b> <Link rel="noopener noreferrer" target="_blank" href="https://twitter.com/zachxbt/status/1729290605711245573?t=QuUaMlTM1HHBDs_T4YAiNg&s=19" className="underline">@ZachXBT</Link></span>
                       {/* <span className="font-light">is calculated based on the reported USD and OP amount.<br /><br />For OP tokens we calculated with $1.35 (OP price when RPGF applications were closed).<br /><br /><span className="font-bold">Note:</span> Projects only had to report funding they received from the collective, many didn&apos;t include VC funding and other funding sources.</span> */}
                     </div>
                   </div>
@@ -918,8 +903,21 @@ export default function Page() {
         cell: (info) => (
           <div className="w-full overflow-x whitespace-nowrap text-ellipsis relative flex justify-end font-inter text-sm">
             {info.row.original.value_raised && <div className="flex items-end">
-              <div className="opacity-60 text-[0.65rem]">$</div>
-              {formatNumber(info.row.original.value_raised, true)}
+
+              <div className="flex items-center space-x-2">
+
+
+                <div className="text-[0.9rem] font-medium leading-[1.2] font-inter flex items-end">
+                  <div className="opacity-60 text-[0.65rem]">$</div>
+                  {formatNumber(info.row.original.value_raised, true).replace(".0", "")}
+                </div>
+                <div className="w-5 h-5">
+                  <Icon
+                    icon={"fluent:money-16-regular"}
+                    className={`w-5 h-5 fill-current text-forest-900/80 dark:text-forest-500/80`}
+                  />
+                </div>
+              </div>
             </div>}
           </div>
         ),
