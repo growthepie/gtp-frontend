@@ -91,7 +91,7 @@ export default function Page() {
     isLoading: projectsLoading,
     isValidating: projectsValidating,
   } = useSWR<ProjectsResponse>(baseURL[environment] + "/api/optimism-retropgf-3/projects", {
-    refreshInterval: 1 * 1000 * 60, // 2 minutes,
+    refreshInterval: 1 * 1000 * 60, // 1 minutes,
   });
 
   // const {
@@ -562,7 +562,14 @@ export default function Page() {
                 className={`w-4 h-4 text-forest-900/80 dark:text-forest-500/80 fill-current`}
               />
             </div>
-            {/* </div> */}
+            {/* {listAmountsByProjectId && listAmountsByProjectId.listAmounts[info.row.original.id] && listAmountsByProjectId.listAmounts[info.row.original.id].length > 0 && (
+              <div className="w-4 h-4">
+                <Icon
+                  icon={"feather:check-square"}
+                  className={`w-4 h-4 text-green-500 dark:text-green-500 fill-current`}
+                />
+              </div>
+            )} */}
           </div>
         ),
         meta: {
@@ -904,7 +911,7 @@ export default function Page() {
                           DefiLlama
                         </Link>
                       </div>
-                      <div className="text-[0.6rem] font-light">Contact us on Twitter or Discord if you have any feedback or suggestions.</div>
+                      <div className="text-[0.6rem] font-light leading-snug">Contact us on Twitter or Discord if you have any feedback or suggestions.</div>
 
                     </div>
                   </div>
@@ -919,24 +926,27 @@ export default function Page() {
         // id: "reported",
         cell: (info) => (
           <div className="w-full overflow-x whitespace-nowrap text-ellipsis relative flex justify-end font-inter text-sm">
-            {info.row.original.value_raised ? <div className="flex items-end">
-
+            {info.row.original.value_raised !== null ? <div className="flex items-end">
               <div className="flex items-center space-x-2">
 
+                {info.row.original.value_raised > 0 ?
+                  (<>
+                    <div className="text-[0.9rem] font-medium leading-[1.2] font-inter flex items-end">
+                      <div className="opacity-60 text-[0.65rem]">$</div>
+                      {formatNumber(info.row.original.value_raised, true).replace(".0", "")}
+                    </div>
+                    <div className="w-5 h-5">
+                      <Icon
+                        icon={"fluent:money-16-regular"}
+                        className={`w-5 h-5 fill-current text-forest-900/80 dark:text-forest-500/80`}
+                      />
+                    </div>
+                  </>) : (<div className="text-[0.7rem] font-medium leading-[1.2] font-inter flex items-end">No VC Funding</div>)
+                }
 
-                <div className="text-[0.9rem] font-medium leading-[1.2] font-inter flex items-end">
-                  <div className="opacity-60 text-[0.65rem]">$</div>
-                  {formatNumber(info.row.original.value_raised, true).replace(".0", "")}
-                </div>
-                <div className="w-5 h-5">
-                  <Icon
-                    icon={"fluent:money-16-regular"}
-                    className={`w-5 h-5 fill-current text-forest-900/80 dark:text-forest-500/80`}
-                  />
-                </div>
+
               </div>
             </div> : <div className="text-forest-900/30 dark:text-forest-500/30 text-[0.6rem]">Unknown / DYOR</div>}
-
           </div>
         ),
         meta: {
@@ -946,11 +956,11 @@ export default function Page() {
           const a = rowA.original.value_raised;
           const b = rowB.original.value_raised;
 
-          if (!a && !b) return 0;
+          if (a === null && b === null) return 0;
 
-          if (!a) return -1;
+          if (a === null) return -1;
 
-          if (!b) return 1;
+          if (b === null) return 1;
 
           // If both are equal, return 0.
           if (a === b) return 0;
@@ -984,7 +994,7 @@ export default function Page() {
                       DefiLlama
                     </Link>
                   </div>
-                  <div className="text-[0.6rem] font-light">Contact us on Twitter or Discord if you have any feedback or suggestions.</div>
+                  <div className="text-[0.6rem] font-light leading-snug">Contact us on Twitter or Discord if you have any feedback or suggestions.</div>
                   {/* <span className="font-light">is calculated based on the reported USD and OP amount.<br /><br />For OP tokens we calculated with $1.35 (OP price when RPGF applications were closed).<br /><br /><span className="font-bold">Note:</span> Projects only had to report funding they received from the collective, many didn&apos;t include VC funding and other funding sources.</span> */}
                 </div>
               </div>
