@@ -15,19 +15,30 @@ import {
   ProjectFundingSource,
   ProjectsResponse,
   List,
-  ListContent
+  ListContent,
 } from "@/types/api/RetroPGF3";
 import Icon from "@/components/layout/Icon";
 import { useTheme } from "next-themes";
 import ShowLoading from "@/components/layout/ShowLoading";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { last, uniq, debounce } from "lodash";
 import moment from "moment";
 import Image from "next/image";
 import Link from "next/link";
 import { OsoTaggedProjects } from "./osoTaggedProjects";
 import { formatNumber } from "@/lib/chartUtils";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/layout/Tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/layout/Tooltip";
 import Container from "@/components/layout/Container";
 import { useUIContext } from "@/contexts/UIContext";
 // import { TreeMapChart } from "@/components/charts/treemapChart";
@@ -76,10 +87,10 @@ const ImpactCategoriesMap = {
 //     : `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
 
 const baseURL = {
-  "development": `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`,
-  "preview": "https://dev.growthepie.xyz",
-  "production": `https://www.growthepie.xyz`
-}
+  development: `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`,
+  preview: "https://dev.growthepie.xyz",
+  production: `https://www.growthepie.xyz`,
+};
 
 const environment = process.env.NEXT_PUBLIC_VERCEL_ENV || "development";
 
@@ -90,9 +101,12 @@ export default function Page() {
     data: projectsResponse,
     isLoading: projectsLoading,
     isValidating: projectsValidating,
-  } = useSWR<ProjectsResponse>(baseURL[environment] + "/api/optimism-retropgf-3/projects", {
-    refreshInterval: 1 * 1000 * 60, // 1 minutes,
-  });
+  } = useSWR<ProjectsResponse>(
+    baseURL[environment] + "/api/optimism-retropgf-3/projects",
+    {
+      refreshInterval: 1 * 1000 * 60, // 1 minutes,
+    },
+  );
 
   const {
     data: listAmountsByProjectId,
@@ -105,7 +119,7 @@ export default function Page() {
         listName: string;
         listContent: ListContent[];
       }[];
-    }
+    };
   }>(baseURL[environment] + "/api/optimism-retropgf-3/listAmountsByProjectId", {
     refreshInterval: 1 * 1000 * 60, // 2 minutes,
   });
@@ -128,7 +142,6 @@ export default function Page() {
 
   const { isSidebarOpen } = useUIContext();
 
-
   useEffect(() => {
     if (projectsResponse) {
       if (data.length === 0 && projects.length === 0)
@@ -147,7 +160,7 @@ export default function Page() {
 
           if (fundingSource.currency === "OP") {
             tFA["OPUSD"] += multiplierOPToken * fundingSource.amount;
-            tFA["TOTAL"] += multiplierOPToken * fundingSource.amount
+            tFA["TOTAL"] += multiplierOPToken * fundingSource.amount;
           } else {
             tFA["TOTAL"] += fundingSource.amount;
           }
@@ -191,7 +204,6 @@ export default function Page() {
     return moment(lastUpdated).fromNow();
   }, [projectsResponse]);
 
-
   const getProjectsCombinedFundingSourcesByCurrency = useCallback(
     (fundingSources: ProjectFundingSource[]) => {
       const combinedFundingSources: {
@@ -203,13 +215,14 @@ export default function Page() {
       combinedFundingSources["OPUSD"] = 0;
       combinedFundingSources["USD"] = 0;
 
-
       fundingSources.forEach((fundingSource) => {
         combinedFundingSources[fundingSource.currency] += fundingSource.amount;
 
         if (fundingSource.currency === "OP") {
-          combinedFundingSources["OPUSD"] += multiplierOPToken * fundingSource.amount;
-          combinedFundingSources["TOTAL"] += multiplierOPToken * fundingSource.amount;
+          combinedFundingSources["OPUSD"] +=
+            multiplierOPToken * fundingSource.amount;
+          combinedFundingSources["TOTAL"] +=
+            multiplierOPToken * fundingSource.amount;
         } else {
           combinedFundingSources["TOTAL"] += fundingSource.amount;
         }
@@ -271,7 +284,6 @@ export default function Page() {
     return maxTotalFundingAmount;
   }, [getAllProjectsCombinedFundingSourcesByCurrency, projects]);
 
-
   const getValuesInOrdersOfMagnitude = useCallback((value: number) => {
     const ordersOfMagnitude = [
       { label: "", value: 1 },
@@ -321,12 +333,12 @@ export default function Page() {
   const IncludeInBallotsByList = useMemo(() => {
     const result: {
       [listName: string]: {
-        list: List,
-        author: string,
-        totalBallotCount: number,
-        totalProjectCount: number,
-        avgBallotsPerProject: number,
-      }
+        list: List;
+        author: string;
+        totalBallotCount: number;
+        totalProjectCount: number;
+        avgBallotsPerProject: number;
+      };
     } = {};
 
     projects.forEach((project) => {
@@ -342,7 +354,9 @@ export default function Page() {
 
         result[list.listName].totalBallotCount += project.included_in_ballots;
         result[list.listName].totalProjectCount++;
-        result[list.listName].avgBallotsPerProject = result[list.listName].totalBallotCount / result[list.listName].totalProjectCount;
+        result[list.listName].avgBallotsPerProject =
+          result[list.listName].totalBallotCount /
+          result[list.listName].totalProjectCount;
       });
     });
 
@@ -410,7 +424,7 @@ export default function Page() {
 
             <div
               className="flex-1 overflow-hidden text-ellipsis font-bold whitespace-nowrap"
-            // style={{ whiteSpace: "pre-wrap" }}
+              // style={{ whiteSpace: "pre-wrap" }}
             >
               {info.row.original.display_name}
             </div>
@@ -436,10 +450,18 @@ export default function Page() {
         size: 30,
         cell: (info) => (
           <div className="w-full flex justify-between items-center">
-
             <div className="border-2 rounded-md border-forest-900/20 dark:border-forest-500/20 p-1 hover:bg-forest-900/10 dark:hover:bg-forest-500/10">
-              <Link href={`https://vote.optimism.io/retropgf/3/application/${info.row.original.id.split('|')[1]}`} rel="noopener noreferrer" target="_blank">
-                <Icon icon="gtp:agora" className="w-3 h-3 text-forest-900/80 dark:text-forest-500/80" />
+              <Link
+                href={`https://vote.optimism.io/retropgf/3/application/${
+                  info.row.original.id.split("|")[1]
+                }`}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <Icon
+                  icon="gtp:agora"
+                  className="w-3 h-3 text-forest-900/80 dark:text-forest-500/80"
+                />
               </Link>
             </div>
           </div>
@@ -468,10 +490,11 @@ export default function Page() {
               rel="noopener noreferrer"
               target="_blank"
               href={`https://optimistic.etherscan.io/address/${info.row.original.applicant.address.address}`}
-              className={`rounded-full px-1 py-0 border border-forest-900/20 dark:border-forest-500/20 font-mono text-[10px] ${info.row.original.applicant.address.resolvedName.name
-                ? "text-forest-900 dark:text-forest-500"
-                : "text-forest-900/50 dark:text-forest-500/50"
-                } hover:bg-forest-900/10 dark:hover:bg-forest-500/10`}
+              className={`rounded-full px-1 py-0 border border-forest-900/20 dark:border-forest-500/20 font-mono text-[10px] ${
+                info.row.original.applicant.address.resolvedName.name
+                  ? "text-forest-900 dark:text-forest-500"
+                  : "text-forest-900/50 dark:text-forest-500/50"
+              } hover:bg-forest-900/10 dark:hover:bg-forest-500/10`}
             >
               {info.row.original.applicant.address.resolvedName.name ? (
                 <>{info.row.original.applicant.address.resolvedName.name}</>
@@ -532,7 +555,11 @@ export default function Page() {
               <div className="w-4 h-4">
                 <Icon
                   icon={"feather:check-square"}
-                  className={`w-4 h-4  fill-current ${info.row.original.included_in_ballots >= 17 ? "text-green-500 dark:text-green-500" : "text-forest-900/80 dark:text-forest-500/80"}`}
+                  className={`w-4 h-4  fill-current ${
+                    info.row.original.included_in_ballots >= 17
+                      ? "text-green-500 dark:text-green-500"
+                      : "text-forest-900/80 dark:text-forest-500/80"
+                  }`}
                 />
               </div>
             </div>
@@ -548,7 +575,6 @@ export default function Page() {
         size: 70,
         cell: (info) => (
           <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis flex justify-end items-center space-x-2 text-right text-[0.8rem] font-light leading-[1.2] font-inter">
-
             <div>
               {/* <div className="text-[0.9rem] font-light leading-[1.2] font-inter"> */}
               {/* <div className="text-[0.6rem] text-forest-900/80 dark:text-forest-500/80 font-light">
@@ -595,21 +621,36 @@ export default function Page() {
               <div className="relative">
                 <Tooltip placement="left" allowInteract>
                   <TooltipTrigger>
-                    <Icon icon="feather:info" className="w-4 h-4 absolute left-3 top-0" />
+                    <Icon
+                      icon="feather:info"
+                      className="w-4 h-4 absolute left-3 top-0"
+                    />
                   </TooltipTrigger>
                   <TooltipContent className="pr-0 z-50 flex items-center justify-center">
                     <div className="px-3 py-1.5 w-64 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
                       <div className="flex flex-col text-xs space-y-1">
                         <div className="font-light">
                           Total{" "}
-                          <span className="font-semibold">Funding Reported</span>{" "}
-                          is calculated based on the project&apos;s reported USD and OP amounts.
+                          <span className="font-semibold">
+                            Funding Reported
+                          </span>{" "}
+                          is calculated based on the project&apos;s reported USD
+                          and OP amounts.
                         </div>
                         <div className="flex flex-col">
-                          <div className="font-light">For OP tokens we calculated with $1.35</div>
-                          <div className="text-[0.65rem] leading-snug text-forest-900/80 dark:text-forest-500/80">(OP price when RPGF applications were closed).</div>
+                          <div className="font-light">
+                            For OP tokens we calculated with $1.35
+                          </div>
+                          <div className="text-[0.65rem] leading-snug text-forest-900/80 dark:text-forest-500/80">
+                            (OP price when RPGF applications were closed).
+                          </div>
                         </div>
-                        <div className="font-light text-[0.7rem] leading-tight pt-2"><span className="font-medium">Note:</span> The application requirements for RPGF3 specified disclosure of funding sources from the OP Collective only; VC and other sources were often not included.</div>
+                        <div className="font-light text-[0.7rem] leading-tight pt-2">
+                          <span className="font-medium">Note:</span> The
+                          application requirements for RPGF3 specified
+                          disclosure of funding sources from the OP Collective
+                          only; VC and other sources were often not included.
+                        </div>
                       </div>
                     </div>
                   </TooltipContent>
@@ -693,12 +734,13 @@ export default function Page() {
                     style={{
                       height: "2px",
 
-                      width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                        info.row.original.funding_sources,
-                      )["TOTAL"] /
-                        getMaxTotalFundingAmount()) *
+                      width: `${
+                        (getProjectsCombinedFundingSourcesByCurrency(
+                          info.row.original.funding_sources,
+                        )["TOTAL"] /
+                          getMaxTotalFundingAmount()) *
                         100.0
-                        }%`,
+                      }%`,
                       // right with bases on bottom and right
                     }}
                   ></div>
@@ -777,10 +819,20 @@ export default function Page() {
                                   : "text-[#7fdcd6] leading-[1.6] font-[400]"
                               }
                             >
-                              {currency === "USD" && (<span className="opacity-60 text-[0.55rem]">$</span>)}
+                              {currency === "USD" && (
+                                <span className="opacity-60 text-[0.55rem]">
+                                  $
+                                </span>
+                              )}
                               {parseInt(value as string).toLocaleString()}
-                              {currency === "OP" && (<>{" "}<span className="opacity-60 text-[0.55rem]">OP</span></>)}
-
+                              {currency === "OP" && (
+                                <>
+                                  {" "}
+                                  <span className="opacity-60 text-[0.55rem]">
+                                    OP
+                                  </span>
+                                </>
+                              )}
                             </div>
                           </>
                         ) : (
@@ -797,28 +849,30 @@ export default function Page() {
                   className="relative z-10"
                   style={{
                     height: "2px",
-                    width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                      info.row.original.funding_sources,
-                    )["TOTAL"] /
-                      getProjectsCombinedFundingSourcesByCurrency(
+                    width: `${
+                      (getProjectsCombinedFundingSourcesByCurrency(
                         info.row.original.funding_sources,
-                      )["TOTAL"]) *
+                      )["TOTAL"] /
+                        getProjectsCombinedFundingSourcesByCurrency(
+                          info.row.original.funding_sources,
+                        )["TOTAL"]) *
                       100.0
-                      }%`,
+                    }%`,
                   }}
                 >
                   <div
                     className="absolute bg-[#7fdcd6]"
                     style={{
                       height: "2px",
-                      width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                        info.row.original.funding_sources,
-                      )["USD"] /
-                        getProjectsCombinedFundingSourcesByCurrency(
+                      width: `${
+                        (getProjectsCombinedFundingSourcesByCurrency(
                           info.row.original.funding_sources,
-                        )["TOTAL"]) *
+                        )["USD"] /
+                          getProjectsCombinedFundingSourcesByCurrency(
+                            info.row.original.funding_sources,
+                          )["TOTAL"]) *
                         100.0
-                        }%`,
+                      }%`,
                     }}
                   ></div>
                   <div
@@ -829,23 +883,25 @@ export default function Page() {
                         getProjectsCombinedFundingSourcesByCurrency(
                           info.row.original.funding_sources,
                         )["USD"] !== 0
-                          ? `${(getProjectsCombinedFundingSourcesByCurrency(
-                            info.row.original.funding_sources,
-                          )["USD"] /
-                            getProjectsCombinedFundingSourcesByCurrency(
-                              info.row.original.funding_sources,
-                            )["TOTAL"]) *
-                          100.0
-                          }%`
+                          ? `${
+                              (getProjectsCombinedFundingSourcesByCurrency(
+                                info.row.original.funding_sources,
+                              )["USD"] /
+                                getProjectsCombinedFundingSourcesByCurrency(
+                                  info.row.original.funding_sources,
+                                )["TOTAL"]) *
+                              100.0
+                            }%`
                           : 0,
-                      width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                        info.row.original.funding_sources,
-                      )["OPUSD"] /
-                        getProjectsCombinedFundingSourcesByCurrency(
+                      width: `${
+                        (getProjectsCombinedFundingSourcesByCurrency(
                           info.row.original.funding_sources,
-                        )["TOTAL"]) *
+                        )["OPUSD"] /
+                          getProjectsCombinedFundingSourcesByCurrency(
+                            info.row.original.funding_sources,
+                          )["TOTAL"]) *
                         100.0
-                        }%`,
+                      }%`,
                     }}
                   ></div>
                 </div>
@@ -893,33 +949,49 @@ export default function Page() {
                     <div className="flex flex-col text-xs space-y-1">
                       <div className="font-light">
                         <span className="font-semibold">VC Funding</span>{" "}
-                        amounts are sourced from publicly available data and the community.
+                        amounts are sourced from publicly available data and the
+                        community.
                       </div>
                       <div className="flex flex-col">
                         <span className="font-semibold">Sources:</span>
-                        <Link rel="noopener noreferrer" target="_blank" href="https://twitter.com/zachxbt/status/1729290605711245573?t=QuUaMlTM1HHBDs_T4YAiNg&s=19" className="underline font-light">
+                        <Link
+                          rel="noopener noreferrer"
+                          target="_blank"
+                          href="https://twitter.com/zachxbt/status/1729290605711245573?t=QuUaMlTM1HHBDs_T4YAiNg&s=19"
+                          className="underline font-light"
+                        >
                           @ZachXBT
                         </Link>
-                        <Link rel="noopener noreferrer" target="_blank" href="https://defillama.com/raises" className="underline font-light">
+                        <Link
+                          rel="noopener noreferrer"
+                          target="_blank"
+                          href="https://defillama.com/raises"
+                          className="underline font-light"
+                        >
                           DefiLlama
                         </Link>
                       </div>
                       <div className="text-[0.7rem] font-light leading-snug pt-2">
-                        If you have any feedback or suggestions, please don't hesistate to contact us on
-                        {" "}
+                        If you have any feedback or suggestions, please
+                        don&apos;t hesistate to contact us on{" "}
                         <Link
                           href="https://twitter.com/growthepie_eth"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="underline"
-                        >X/Twitter</Link>
-                        {' or '}
+                        >
+                          X/Twitter
+                        </Link>
+                        {" or "}
                         <Link
                           href="https://discord.gg/fxjJFe7QyN"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="underline"
-                        >Discord</Link>.
+                        >
+                          Discord
+                        </Link>
+                        .
                       </div>
                     </div>
                   </div>
@@ -934,27 +1006,37 @@ export default function Page() {
         // id: "reported",
         cell: (info) => (
           <div className="w-full overflow-x whitespace-nowrap text-ellipsis relative flex justify-end font-inter text-sm">
-            {info.row.original.value_raised !== null ? <div className="flex items-end">
-              <div className="flex items-center space-x-2">
-
-                {info.row.original.value_raised > 0 ?
-                  (<>
-                    <div className="text-[0.9rem] font-medium leading-[1.2] font-inter flex items-end">
-                      <div className="opacity-60 text-[0.65rem]">$</div>
-                      {formatNumber(info.row.original.value_raised, true).replace(".0", "")}
+            {info.row.original.value_raised !== null ? (
+              <div className="flex items-end">
+                <div className="flex items-center space-x-2">
+                  {info.row.original.value_raised > 0 ? (
+                    <>
+                      <div className="text-[0.9rem] font-medium leading-[1.2] font-inter flex items-end">
+                        <div className="opacity-60 text-[0.65rem]">$</div>
+                        {formatNumber(
+                          info.row.original.value_raised,
+                          true,
+                        ).replace(".0", "")}
+                      </div>
+                      <div className="w-5 h-5">
+                        <Icon
+                          icon={"fluent:money-16-regular"}
+                          className={`w-5 h-5 fill-current text-forest-900/80 dark:text-forest-500/80`}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-[0.7rem] font-medium leading-[1.2] font-inter flex items-end">
+                      No VC Funding
                     </div>
-                    <div className="w-5 h-5">
-                      <Icon
-                        icon={"fluent:money-16-regular"}
-                        className={`w-5 h-5 fill-current text-forest-900/80 dark:text-forest-500/80`}
-                      />
-                    </div>
-                  </>) : (<div className="text-[0.7rem] font-medium leading-[1.2] font-inter flex items-end">No VC Funding</div>)
-                }
-
-
+                  )}
+                </div>
               </div>
-            </div> : <div className="text-forest-900/30 dark:text-forest-500/30 text-[0.6rem]">Unknown / DYOR</div>}
+            ) : (
+              <div className="text-forest-900/30 dark:text-forest-500/30 text-[0.6rem]">
+                Unknown / DYOR
+              </div>
+            )}
           </div>
         ),
         meta: {
@@ -989,20 +1071,34 @@ export default function Page() {
                   <div className="">
                     <span className="font-bold">Has Token</span>{" "}
                     <span className="font-light">
-                      ... Just going off of publicly available data from TracXn, Crunchbase, or press releases.
+                      ... Just going off of publicly available data from TracXn,
+                      Crunchbase, or press releases.
                     </span>
                   </div>
 
                   <div className="flex flex-col">
                     <span className="font-semibold">Sources:</span>
-                    <Link rel="noopener noreferrer" target="_blank" href="https://twitter.com/zachxbt/status/1729290605711245573?t=QuUaMlTM1HHBDs_T4YAiNg&s=19" className="underline font-light">
+                    <Link
+                      rel="noopener noreferrer"
+                      target="_blank"
+                      href="https://twitter.com/zachxbt/status/1729290605711245573?t=QuUaMlTM1HHBDs_T4YAiNg&s=19"
+                      className="underline font-light"
+                    >
                       @ZachXBT
                     </Link>
-                    <Link rel="noopener noreferrer" target="_blank" href="https://defillama.com/raises" className="underline font-light">
+                    <Link
+                      rel="noopener noreferrer"
+                      target="_blank"
+                      href="https://defillama.com/raises"
+                      className="underline font-light"
+                    >
                       DefiLlama
                     </Link>
                   </div>
-                  <div className="text-[0.6rem] font-light leading-snug">Contact us on Twitter or Discord if you have any feedback or suggestions.</div>
+                  <div className="text-[0.6rem] font-light leading-snug">
+                    Contact us on Twitter or Discord if you have any feedback or
+                    suggestions.
+                  </div>
                   {/* <span className="font-light">is calculated based on the reported USD and OP amount.<br /><br />For OP tokens we calculated with $1.35 (OP price when RPGF applications were closed).<br /><br /><span className="font-bold">Note:</span> Projects only had to report funding they received from the collective, many didn&apos;t include VC funding and other funding sources.</span> */}
                 </div>
               </div>
@@ -1013,9 +1109,8 @@ export default function Page() {
         size: 40,
         cell: (info) => (
           <div className="w-full flex justify-between items-center">
-
             <div className="w-6 h-6">
-              {info.row.original.has_token &&
+              {info.row.original.has_token && (
                 <Tooltip placement="left">
                   <TooltipTrigger>
                     <Icon
@@ -1026,12 +1121,15 @@ export default function Page() {
                   <TooltipContent className="pr-0 z-50 flex items-center justify-center">
                     <div className="px-3 py-1.5 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
                       <div className="text-xs space-x-1">
-                        <span className="font-light">This project has a <span className="font-bold">token</span>.</span>
+                        <span className="font-light">
+                          This project has a{" "}
+                          <span className="font-bold">token</span>.
+                        </span>
                       </div>
                     </div>
                   </TooltipContent>
                 </Tooltip>
-              }
+              )}
             </div>
           </div>
         ),
@@ -1045,7 +1143,6 @@ export default function Page() {
           // Otherwise, sort by whether a is greater than or less than b.
           return a ? 1 : -1;
         },
-
       },
 
       {
@@ -1174,7 +1271,11 @@ export default function Page() {
       // },
     ],
 
-    [getMaxTotalFundingAmount, getProjectsCombinedFundingSourcesByCurrency, getProjectsTotalFundingRank],
+    [
+      getMaxTotalFundingAmount,
+      getProjectsCombinedFundingSourcesByCurrency,
+      getProjectsTotalFundingRank,
+    ],
   );
 
   // const projectsUniqueValues = useMemo(() => {
@@ -1259,8 +1360,9 @@ export default function Page() {
         }
         
         td {
-            border-color: ${theme === "light" ? "rgba(0,0,0,0.16)" : "rgba(255,255,255,0.16)"
-          };
+            border-color: ${
+              theme === "light" ? "rgba(0,0,0,0.16)" : "rgba(255,255,255,0.16)"
+            };
             border-width:1px;
             border-style:solid none;
             padding:5px 10px;
@@ -1294,7 +1396,7 @@ export default function Page() {
       hash = str.charCodeAt(i) + ((hash << 5) - hash);
     const c = (hash & 0x00ffffff).toString(16).toUpperCase();
     return `#${"00000".substring(0, 6 - c.length)}${c}`;
-  }
+  };
 
   const tableMinWidthClass = "min-w-[1250px]";
 
@@ -1311,7 +1413,10 @@ export default function Page() {
     <>
       {/* <Container className={`mt-[0px] !pr-0 ${isSidebarOpen ? "min-[1550px]:!pr-[50px]" : "min-[1350px]:!pr-[50px]"}`} ref={containerRef}> */}
       <Container>
-        <div className={`w-full flex justify-between items-center mt-[10px] mb-[10px]`} ref={contentRef}>
+        <div
+          className={`w-full flex justify-between items-center mt-[10px] mb-[10px]`}
+          ref={contentRef}
+        >
           <div className="w-1/2">
             <div className="relative">
               <input
@@ -1324,7 +1429,6 @@ export default function Page() {
                   // router.push("/contracts/" + e.target.value);
                   // debouncedSearch();
                 }}
-
               />
               <Icon
                 icon="feather:search"
@@ -1335,7 +1439,8 @@ export default function Page() {
                   className="absolute right-2.5 top-1.5 underline cursor-pointer text-forest-900 dark:text-forest-500 text-xs font-light leading-[1.2]"
                   onClick={() => {
                     setDisplayNameFilter("");
-                  }}>
+                  }}
+                >
                   clear
                 </div>
               )}
@@ -1346,8 +1451,18 @@ export default function Page() {
           </div>
         </div>
       </Container>
-      <Container className={`w-full mt-[0px] h-100 ${isTableWidthWider ? "!px-0" : "!px-[20px] md:!px-[50px]"}`}>
-        <div className={`w-full ${isTableWidthWider ? "!px-[20px] md:!px-[50px] overflow-x-scroll" : "overflow-x-hidden"} z-100 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}>
+      <Container
+        className={`w-full mt-[0px] h-100 ${
+          isTableWidthWider ? "!px-0" : "!px-[20px] md:!px-[50px]"
+        }`}
+      >
+        <div
+          className={`w-full ${
+            isTableWidthWider
+              ? "!px-[20px] md:!px-[50px] overflow-x-scroll"
+              : "overflow-x-hidden"
+          } z-100 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}
+        >
           <div className={tableMinWidthClass}>
             <div className="flex flex-col items-center justify-center w-full h-full relative">
               <ShowLoading
@@ -1358,7 +1473,7 @@ export default function Page() {
 
               {Style}
 
-              <div className={`${tableMinWidthClass} pr-4`} >
+              <div className={`${tableMinWidthClass} pr-4`}>
                 <table className="table-fixed w-full" ref={tableRef}>
                   {/* <thead className="sticky top-0 z-50"> */}
                   <thead>
@@ -1373,7 +1488,9 @@ export default function Page() {
                                 width: header.getSize(),
                                 paddingLeft: i === 0 ? "20px" : "20px",
                                 paddingRight:
-                                  i === headerGroup.headers.length ? "20px" : "10px",
+                                  i === headerGroup.headers.length
+                                    ? "20px"
+                                    : "10px",
                               }}
                               className="whitespace-nowrap relative"
                             >
@@ -1382,8 +1499,9 @@ export default function Page() {
                                   <div
                                     className={
                                       header.column.getCanSort()
-                                        ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold w-fit ${i === 0 ? "pl-[10px]" : ""
-                                        }`
+                                        ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold w-fit ${
+                                            i === 0 ? "pl-[10px]" : ""
+                                          }`
                                         : ""
                                     }
                                     style={{
@@ -1413,7 +1531,8 @@ export default function Page() {
                                           className="w-3 h-3"
                                         />
                                       ),
-                                    }[header.column.getIsSorted() as string] ?? null}
+                                    }[header.column.getIsSorted() as string] ??
+                                      null}
                                     {/*projectsUniqueValues?.hasOwnProperty(header.id) &&
                                     dataUniqueValues?.hasOwnProperty(header.id) && (
                                       <div className="text-[11px] font-normal w-full text-right pr-3 font-inter">
@@ -1480,14 +1599,14 @@ export default function Page() {
                 ${
                   // if scroll is at top or bottom, don't show the fade
                   parentRef.current &&
-                    (parentRef.current.scrollTop < 30 ||
-                      parentRef.current.scrollTop >
+                  (parentRef.current.scrollTop < 30 ||
+                    parentRef.current.scrollTop >
                       parentRef.current.scrollHeight -
-                      parentRef.current.clientHeight -
-                      30)
+                        parentRef.current.clientHeight -
+                        30)
                     ? "fade-edge-div-vertical-hidden"
                     : "fade-edge-div-vertical"
-                  }}`}
+                }}`}
               >
                 <div
                   ref={parentRef}
@@ -1525,14 +1644,15 @@ export default function Page() {
                                     //   ? "sticky top-0 z-20"
                                     //   : "sticky top-0 left-0 z-30"
                                     ""
-                                    } bg-white dark:bg-forest-1000 whitespace-nowrap`}
+                                  } bg-white dark:bg-forest-1000 whitespace-nowrap`}
                                 >
                                   {header.isPlaceholder ? null : (
                                     <div
                                       {...{
                                         className: header.column.getCanSort()
-                                          ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold h-0 ${i === 0 ? "pl-[10px]" : ""
-                                          }`
+                                          ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold h-0 ${
+                                              i === 0 ? "pl-[10px]" : ""
+                                            }`
                                           : "",
                                         onClick:
                                           header.column.getToggleSortingHandler(),
@@ -1565,34 +1685,41 @@ export default function Page() {
                         ))}
                       </thead>
                       <tbody className="text-xs pb-4">
-                        {virtualizer.getVirtualItems().map((virtualRow, index) => {
-                          const row = rows[virtualRow.index] as Row<Project>;
-                          return (
-                            <tr
-                              key={row.id}
-                              style={{
-                                height: `${virtualRow.size}px`,
-                                transform: `translateY(${virtualRow.start - index * virtualRow.size
+                        {virtualizer
+                          .getVirtualItems()
+                          .map((virtualRow, index) => {
+                            const row = rows[virtualRow.index] as Row<Project>;
+                            return (
+                              <tr
+                                key={row.id}
+                                style={{
+                                  height: `${virtualRow.size}px`,
+                                  transform: `translateY(${
+                                    virtualRow.start - index * virtualRow.size
                                   }px)`,
-                              }}
-                            >
-                              {row.getVisibleCells().map((cell, i) => {
-                                return (
-                                  <td
-                                    key={cell.id}
-                                    style={{ paddingLeft: i === 0 ? "10px" : "20px" }}
-                                    className={i === 0 ? "sticky left-0 z-10" : ""}
-                                  >
-                                    {flexRender(
-                                      cell.column.columnDef.cell,
-                                      cell.getContext(),
-                                    )}
-                                  </td>
-                                );
-                              })}
-                            </tr>
-                          );
-                        })}
+                                }}
+                              >
+                                {row.getVisibleCells().map((cell, i) => {
+                                  return (
+                                    <td
+                                      key={cell.id}
+                                      style={{
+                                        paddingLeft: i === 0 ? "10px" : "20px",
+                                      }}
+                                      className={
+                                        i === 0 ? "sticky left-0 z-10" : ""
+                                      }
+                                    >
+                                      {flexRender(
+                                        cell.column.columnDef.cell,
+                                        cell.getContext(),
+                                      )}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            );
+                          })}
                       </tbody>
                     </table>
                   </div>
