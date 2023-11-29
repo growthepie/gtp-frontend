@@ -6,11 +6,11 @@ import { Icon } from "@iconify/react";
 import Markdown from "react-markdown";
 import { useMediaQuery } from "usehooks-ts";
 import { usePathname } from "next/navigation";
-import { Icon } from "@iconify/react";
 
 type AirtableRow = {
   id: string;
   body: string;
+  desc: string;
 };
 
 type NotificationType = {
@@ -188,7 +188,7 @@ const Notification = () => {
 
     return returnArray;
   }, [data, currentURL]);
-  console.log(data);
+
   return (
     filteredData && (
       <>
