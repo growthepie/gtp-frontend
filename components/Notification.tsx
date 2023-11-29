@@ -189,6 +189,7 @@ const Notification = () => {
     return returnArray;
   }, [data, currentURL]);
 
+  console.log(data);
   return (
     filteredData && (
       <>

@@ -869,7 +869,7 @@ export default function Page() {
                         </Link>
                       </div>
                       <div className="text-[0.7rem] font-light leading-snug pt-2">
-                        If you have any feedback or suggestions, please don't hesistate to contact us on
+                        If you have any feedback or suggestions, please don&apos;t hesistate to contact us on
                         {" "}
                         <Link
                           href="https://twitter.com/growthepie_eth"
