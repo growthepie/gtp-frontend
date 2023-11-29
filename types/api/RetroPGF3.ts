@@ -74,6 +74,9 @@ export type Project = {
   payout_address: {
     address: string;
   };
+  note: string | null;
+  has_token: boolean;
+  value_raised: number | null;
   last_updated: string;
 };
 
@@ -90,6 +93,14 @@ export type List = {
   impactEvaluationDescription: string;
   impactEvaluationLink: string;
   likes: string[];
+  listContent?: ListContent[];
+};
+
+export type ListContent = {
+  project: {
+    id: string;
+  };
+  OPAmount: number;
 };
 
 export type ListAuthor = {
@@ -99,4 +110,28 @@ export type ListAuthor = {
     address: string;
     name: string;
   };
+};
+
+export type ListAmountsByProjectIdResponse = {
+  listAmounts: ListAmountsByProjectId;
+};
+
+export type ListAmountsByProjectId = {
+  [key: string]: {
+    id: string;
+    listName: string;
+    listAuthor: ListAuthor;
+    listContent: ListContent[];
+  }[];
+};
+
+export type ProjectInfoResponse = {
+  projectInfo: ProjectInfo[];
+};
+
+export type ProjectInfo = {
+  project_id: string;
+  value_raised: string;
+  has_token: boolean;
+  note: string;
 };
