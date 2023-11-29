@@ -94,21 +94,21 @@ export default function Page() {
     refreshInterval: 1 * 1000 * 60, // 1 minutes,
   });
 
-  // const {
-  //   data: listAmountsByProjectId,
-  //   isLoading: listAmountsByProjectIdLoading,
-  //   isValidating: listAmountsByProjectIdValidating,
-  // } = useSWR<{
-  //   listAmounts: {
-  //     [key: string]: {
-  //       id: string;
-  //       listName: string;
-  //       listContent: ListContent[];
-  //     }[];
-  //   }
-  // }>(baseURL[environment] + "/api/optimism-retropgf-3/listAmountsByProjectId", {
-  //   refreshInterval: 1 * 1000 * 60, // 2 minutes,
-  // });
+  const {
+    data: listAmountsByProjectId,
+    isLoading: listAmountsByProjectIdLoading,
+    isValidating: listAmountsByProjectIdValidating,
+  } = useSWR<{
+    listAmounts: {
+      [key: string]: {
+        id: string;
+        listName: string;
+        listContent: ListContent[];
+      }[];
+    }
+  }>(baseURL[environment] + "/api/optimism-retropgf-3/listAmountsByProjectId", {
+    refreshInterval: 1 * 1000 * 60, // 2 minutes,
+  });
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [data, setData] = useState<Project[]>([]);
@@ -591,18 +591,25 @@ export default function Page() {
         header: () => (
           <div>
             <div className="flex">
-              Reported Funding
+              Funding Reported
               <div className="relative">
                 <Tooltip placement="left" allowInteract>
                   <TooltipTrigger>
                     <Icon icon="feather:info" className="w-4 h-4 absolute left-3 top-0" />
                   </TooltipTrigger>
                   <TooltipContent className="pr-0 z-50 flex items-center justify-center">
-                    <div className="px-3 py-1.5 w-56 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
-                      <div className="text-xs space-x-1">
-                        <span className="font-light">Total</span>
-                        <span className="font-bold">Funding Reported</span>
-                        <span className="font-light">is calculated based on the reported USD and OP amount.<br /><br />For OP tokens we calculated with $1.35 (OP price when RPGF applications were closed).<br /><br /><span className="font-bold">Note:</span> Projects only had to report funding they received from the collective, many didn&apos;t include VC funding and other funding sources.</span>
+                    <div className="px-3 py-1.5 w-64 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
+                      <div className="flex flex-col text-xs space-y-1">
+                        <div className="font-light">
+                          Total{" "}
+                          <span className="font-semibold">Funding Reported</span>{" "}
+                          is calculated based on the project&apos;s reported USD and OP amounts.
+                        </div>
+                        <div className="flex flex-col">
+                          <div className="font-light">For OP tokens we calculated with $1.35</div>
+                          <div className="text-[0.65rem] leading-snug text-forest-900/80 dark:text-forest-500/80">(OP price when RPGF applications were closed).</div>
+                        </div>
+                        <div className="font-light text-[0.7rem] leading-tight pt-2"><span className="font-medium">Note:</span> The application requirements for RPGF3 specified disclosure of funding sources from the OP Collective only; VC and other sources were often not included.</div>
                       </div>
                     </div>
                   </TooltipContent>
@@ -739,17 +746,6 @@ export default function Page() {
         },
       },
       {
-        // header: () => (
-        //   <>
-        //     <div className="absolute left-1.5 bottom-0 text-forest-900/50 dark:text-forest-500/50 text-[0.6rem] font-light leading-[1.2]">
-        //       USD
-        //     </div>
-        //     <div className="absolute right-1.5 bottom-0 text-forest-900/50 dark:text-forest-500/50 text-[0.6rem] font-light leading-[1.2]">
-        //       OP
-        //     </div>
-        //     <div className="ml-14 mr-auto">Funding Split</div>
-        //   </>
-        // ),
         header: "Funding Split",
         id: "funding_split",
         accessorKey: "funding_sources",
@@ -895,13 +891,10 @@ export default function Page() {
                 <TooltipContent className="pr-0 z-50 flex items-center justify-center">
                   <div className="px-3 py-1.5 w-64 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
                     <div className="flex flex-col text-xs space-y-1">
-                      <div className="">
-                        <span className="font-bold">VC Funding</span>{" "}
-                        <span className="font-light">
-                          ... numbers are estimated and could be slightly more. Just going off of publicly available data from TracXn, Crunchbase, or press releases.
-                        </span>
+                      <div className="font-light">
+                        <span className="font-semibold">VC Funding</span>{" "}
+                        amounts are sourced from publicly available data and the community.
                       </div>
-
                       <div className="flex flex-col">
                         <span className="font-semibold">Sources:</span>
                         <Link rel="noopener noreferrer" target="_blank" href="https://twitter.com/zachxbt/status/1729290605711245573?t=QuUaMlTM1HHBDs_T4YAiNg&s=19" className="underline font-light">
@@ -911,8 +904,23 @@ export default function Page() {
                           DefiLlama
                         </Link>
                       </div>
-                      <div className="text-[0.6rem] font-light leading-snug">Contact us on Twitter or Discord if you have any feedback or suggestions.</div>
-
+                      <div className="text-[0.7rem] font-light leading-snug pt-2">
+                        If you have any feedback or suggestions, please don't hesistate to contact us on
+                        {" "}
+                        <Link
+                          href="https://twitter.com/growthepie_eth"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline"
+                        >X/Twitter</Link>
+                        {' or '}
+                        <Link
+                          href="https://discord.gg/fxjJFe7QyN"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline"
+                        >Discord</Link>.
+                      </div>
                     </div>
                   </div>
                 </TooltipContent>
