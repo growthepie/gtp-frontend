@@ -15,7 +15,7 @@ import {
   ProjectFundingSource,
   ProjectsResponse,
   List,
-  ListContent
+  ListAmountsByProjectIdResponse
 } from "@/types/api/RetroPGF3";
 import Icon from "@/components/layout/Icon";
 import { useTheme } from "next-themes";
@@ -98,15 +98,7 @@ export default function Page() {
     data: listAmountsByProjectId,
     isLoading: listAmountsByProjectIdLoading,
     isValidating: listAmountsByProjectIdValidating,
-  } = useSWR<{
-    listAmounts: {
-      [key: string]: {
-        id: string;
-        listName: string;
-        listContent: ListContent[];
-      }[];
-    }
-  }>(baseURL[environment] + "/api/optimism-retropgf-3/listAmountsByProjectId", {
+  } = useSWR<ListAmountsByProjectIdResponse>(baseURL[environment] + "/api/optimism-retropgf-3/listAmountsByProjectId", {
     refreshInterval: 1 * 1000 * 60, // 2 minutes,
   });
 
@@ -270,6 +262,13 @@ export default function Page() {
 
     return maxTotalFundingAmount;
   }, [getAllProjectsCombinedFundingSourcesByCurrency, projects]);
+
+
+  const getProjectIdUniqueListAuthors = useCallback((projectId: string) => {
+    if (!listAmountsByProjectId || !listAmountsByProjectId.listAmounts[projectId]) return [];
+
+    return uniq(listAmountsByProjectId.listAmounts[projectId].map((list) => list.listAuthor.address));
+  }, [listAmountsByProjectId]);
 
 
   const getValuesInOrdersOfMagnitude = useCallback((value: number) => {
@@ -547,30 +546,32 @@ export default function Page() {
         accessorKey: "lists",
         size: 70,
         cell: (info) => (
-          <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis flex justify-end items-center space-x-2 text-right text-[0.8rem] font-light leading-[1.2] font-inter">
-
-            <div>
-              {/* <div className="text-[0.9rem] font-light leading-[1.2] font-inter"> */}
-              {/* <div className="text-[0.6rem] text-forest-900/80 dark:text-forest-500/80 font-light">
-                  {info.row.original.included_in_ballots} Ballots on {info.row.original.lists.length} Lists
-                </div> */}
-              {info.row.original.lists.length}
-            </div>
-            <div className="w-4 h-4">
-              <Icon
-                icon={"feather:list"}
-                className={`w-4 h-4 text-forest-900/80 dark:text-forest-500/80 fill-current`}
-              />
-            </div>
-            {/* {listAmountsByProjectId && listAmountsByProjectId.listAmounts[info.row.original.id] && listAmountsByProjectId.listAmounts[info.row.original.id].length > 0 && (
-              <div className="w-4 h-4">
-                <Icon
-                  icon={"feather:check-square"}
-                  className={`w-4 h-4 text-green-500 dark:text-green-500 fill-current`}
-                />
+          <>
+            <div className="w-full whitespace-nowrap text-ellipsis relative">
+              <div className="absolute right-0 -bottom-[11px] flex space-x-1 text-[0.55rem] text-forest-900/30 dark:text-forest-500/30 font-light leading-[1]">
+                <div className="flex justify-center items-center rounded-sm text-forest-900/30 dark:text-forest-500/30" >{getProjectIdUniqueListAuthors(info.row.original.id).length}</div>
+                <div>
+                  {getProjectIdUniqueListAuthors(info.row.original.id).length > 1 ? "authors" : "author"}
+                </div>
               </div>
-            )} */}
-          </div>
+              <div className="font-normal w-full flex justify-end font-inter">
+                <div className="flex space-x-1">
+                  <div>{info.row.original.lists.length}</div>
+                  <div className="w-4 h-4 text-forest-900/80 dark:text-forest-500/80">
+                    <Icon
+                      icon={"feather:list"}
+                      className={`w-4 h-4`}
+                    // style={{
+                    //   color: (info.row.original.lists.length >= 3 && getProjectIdUniqueListAuthors(info.row.original.id).length === 1) ?
+                    //     `hsla(${(getProjectIdUniqueListAuthors(info.row.original.id).length / info.row.original.lists.length) * 80}, 71%, 45%, 100%)` :
+                    //     `hsla(${(getProjectIdUniqueListAuthors(info.row.original.id).length / info.row.original.lists.length) * 120}, 71%, 45%, 100%)`
+                    // }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
         ),
         meta: {
           headerAlign: { marginLeft: "auto", flexDirection: "row-reverse" },
@@ -627,9 +628,6 @@ export default function Page() {
                 #
                 {getProjectsTotalFundingRank(info.row.original.funding_sources)}
               </div>
-              {/* {getProjectsTotalFundingSourcesByCurrency(
-                info.row.original.funding_sources,
-              )["TOTAL"].toLocaleString()}{" "} */}
               <div className="text-[11px] font-normal w-full flex justify-between font-inter mt-1">
                 <div className="flex space-x-1">
                   {["TOTAL"]
@@ -655,9 +653,6 @@ export default function Page() {
                     }, [])}
                   <div className="w-4"></div>
                 </div>
-                {/* <div className="text-forest-900/30 dark:text-forest-500/30">
-                  {"/ "}${formatNumber(totalFundingAmounts["TOTAL"], true)}
-                </div> */}
               </div>
               <div className="relative -bottom-[2px] left-0 right-0 text-xs font-normal text-right h-[2px]">
                 <div
@@ -665,29 +660,9 @@ export default function Page() {
                   style={{
                     height: "2px",
                     width: `100%`,
-                    // right with bases on bottom and right
-                    // clipPath: "polygon(100% 100%, 100% 0%, 0% 9%)",
+
                   }}
                 >
-                  {/* {getValuesInOrdersOfMagnitude(
-                    getProjectsCombinedFundingSourcesByCurrency(
-                      info.row.original.funding_sources,
-                    )["TOTAL"],
-                  ).map(
-                    (d, i) =>
-                      d.multiplier && (
-                        <div
-                          key={i}
-                          className="absolute text-xs font-light text-forest-900/30 dark:text-forest-500/30"
-                          style={{
-                            top: `${i * 2}px`,
-                            height: "2px",
-                            width: `${d.multiplier}%`,
-                            backgroundColor: `rgba(255,255,255,${1 - i * 0.1}`,
-                          }}
-                        ></div>
-                      ),
-                  )} */}
                   <div
                     className=" bg-forest-900 dark:bg-forest-500"
                     style={{
@@ -708,20 +683,9 @@ export default function Page() {
                   style={{
                     height: "2px",
                     width: `100%`,
-                    // right with bases on bottom and right
-                    // clipPath: "polygon(100% 100%, 100% 0, 0 100%)",
                   }}
                 />
               </div>
-              {/* <div>
-                {JSON.stringify(
-                  getValuesInOrdersOfMagnitude(
-                    getProjectsCombinedFundingSourcesByCurrency(
-                      info.row.original.funding_sources,
-                    )["TOTAL"],
-                  ),
-                )}
-              </div> */}
             </div>
           );
         },
@@ -1174,7 +1138,7 @@ export default function Page() {
       // },
     ],
 
-    [getMaxTotalFundingAmount, getProjectsCombinedFundingSourcesByCurrency, getProjectsTotalFundingRank],
+    [getMaxTotalFundingAmount, getProjectsCombinedFundingSourcesByCurrency, getProjectsTotalFundingRank, getProjectIdUniqueListAuthors, theme],
   );
 
   // const projectsUniqueValues = useMemo(() => {
