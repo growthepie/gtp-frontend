@@ -276,7 +276,7 @@ export const AllChains: Chain[] = [
     key: "linea",
     urlKey: "linea",
     chainType: "L2",
-    ecosystem: [], // TODO: add ecosystems when unhiding from the UI
+    ecosystem: ["all-chains"], // TODO: add ecosystems when unhiding from the UI
     description:
       "Linea is a developer-friendly ZK Rollup, marked as the next stage of ConsenSys zkEVM, which aims to enhance the Ethereum network by facilitating a new wave of decentralized applications. Public launch was in July 2023.",
     border: {
