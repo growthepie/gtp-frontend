@@ -50,7 +50,7 @@ const Chain = ({ params }: { params: any }) => {
   const [selectedChains, setSelectedChains] = useSessionStorage(
     "fundamentalsChains",
     AllChains.filter(
-      chain => chain.ecosystem.includes("all-chains")
+      chain => chain.ecosystem.includes("all-chains") && ["arbitrum", "optimism", "base", "linea", "zksync_era"].includes(chain.key)
     ).map((chain) => chain.key),
   );
 

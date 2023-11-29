@@ -10,6 +10,7 @@ import { usePathname } from "next/navigation";
 type AirtableRow = {
   id: string;
   body: string;
+  desc: string;
 };
 
 type NotificationType = {
@@ -20,20 +21,17 @@ type NotificationType = {
 const currentDateTime = new Date().getTime();
 
 const Notification = () => {
-  const [circleDisappear, setCircleDisappear] = useState(false);
   const [data, setData] = useState<Array<object> | null>(null);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
-  const [currentTuple, setCurrentTuple] = useState<object | null>(null);
   const [loadedMessages, setLoadedMessages] = useState<string[]>([]);
   const [circleStart, setCircleStart] = useState(false);
-  const [exitAnimation, setExitAnimation] = useState<string | null>(null);
-  const [dataLength, setDataLength] = useState(0);
   const [currentURL, setCurrentURL] = useState<string | null>(null);
   const [pathname, setPathname] = useState<string | null>(null);
   const [sessionArray, setSessionArray] = useState<NotificationType[] | null>(
     null,
   );
+  const [openNotif, setOpenNotif] = useState(false);
 
   const isMobile = useMediaQuery("(max-width: 767px)");
   const currentPath = usePathname();
@@ -180,6 +178,7 @@ const Notification = () => {
           let newEntry: AirtableRow = {
             id: data[item]["id"],
             body: data[item]["fields"]["Body"],
+            desc: data[item]["fields"]["Description"],
           };
 
           returnArray.push(newEntry);
@@ -190,147 +189,59 @@ const Notification = () => {
     return returnArray;
   }, [data, currentURL]);
 
-  useEffect(() => {
-    if (Object.keys(filteredData).length > 0) {
-      const animationDuration = 7900; // Time to stay in position
-      const leaveDuration = 400;
-
-      setCircleStart(true);
-      const timer = setTimeout(() => {
-        const currentItem = filteredData[currentBannerIndex];
-
-        setCurrentBannerIndex((currentBannerIndex + 1) % filteredData.length);
-        setCircleStart(false);
-        setExitAnimation(currentItem.id);
-        const leaveTimer = setTimeout(() => {
-          addItemToArray(currentItem.id);
-          setLoadedMessages((prevLoadedMessages) => [
-            ...prevLoadedMessages,
-            currentItem.id,
-          ]);
-        }, leaveDuration);
-      }, animationDuration);
-
-      return () => {
-        clearTimeout(timer);
-      };
-    }
-  }, [data, filteredData, currentBannerIndex, loadedMessages]);
-
   return (
     filteredData && (
-      <div className="">
-        {filteredData.map((item) => {
-          if (loadedMessages.includes(item.id)) {
-            return null;
-          }
+      <>
+        <div className="block w-full relative">
+          <button
+            className="flex items-center gap-x-[10px] overflow-hidden w-[600px] h-[28px] rounded-full border-[1px] dark:border-forest-50 border-black bg-white dark:bg-forest-900 px-[7px] relative z-10"
+            onClick={() => {
+              setOpenNotif(!openNotif);
+            }}
+          >
+            <Image src="/FiBell.svg" width={16} height={16} alt="Bell image" />
 
-          return (
-            <div
-              key={item.id}
-              className={`fixed ${
-                !isMobile ? "bottom-12" : "bottom-[100px]"
-              } z-50`}
-              style={{
-                right:
-                  item.id !== filteredData[currentBannerIndex]["id"] &&
-                  exitAnimation !== item.id
-                    ? "-500px"
-                    : !isMobile
-                    ? "100px"
-                    : "10px", // Adjust the values as needed
-                transform:
-                  exitAnimation === item.id
-                    ? "translateY(-100px)"
-                    : "translateY(0)",
-                opacity: exitAnimation === item.id ? 0 : 1, // Transition from 1 to 0 opacity
-                transition:
-                  "right 400ms ease-in-out, transform 300ms ease-in-out, opacity 400ms ease-in-out", // Adjust duration and easing as needed
-              }}
-            >
-              <div
-                className={`flex items-center dark:border-forest-400 border-b-[1px] dark:bg-[#1F2726] bg-white min-h-[50px] max-h-[75px] rounded-full px-[12px] relative ${
-                  isMobile ? "w-[400px]" : "w-[500px]"
-                }`}
-              >
-                <div className="w-[85%] text-[16px]">
-                  <Markdown>{item.body}</Markdown>
-                </div>
-                <div
-                  className={`w-[10%] h-[90%] hover:bg-forest-700 rounded-full relative flex items-center justify-center ${
-                    circleDisappear
-                      ? "hover:cursor-default"
-                      : "hover:cursor-pointer"
-                  }`}
-                  onClick={() => {
-                    const leaveDuration = 400;
-
-                    setCurrentBannerIndex(
-                      (currentBannerIndex + 1) % filteredData.length,
-                    );
-                    addItemToArray(item.id);
-                    setExitAnimation(item.id);
-                    const leaveTimer = setTimeout(() => {
-                      setLoadedMessages((prevLoadedMessages) => [
-                        ...prevLoadedMessages,
-                        item["id"],
-                      ]);
-                    }, leaveDuration);
-                  }}
-                >
-                  <Icon
-                    icon="ph:x"
-                    className={`absolute  ${
-                      !isMobile ? "w-[30px] h-[30px]" : "w-[25px] h-[25px]"
-                    }`}
-                  />
-                  <svg
-                    id="circle-svg"
-                    width="100%"
-                    height="100%"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 124 124"
-                  >
-                    <circle
-                      cx="62"
-                      cy="62"
-                      r="50"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="8"
-                      strokeDasharray="392"
-                      strokeDashoffset="392"
-                      className={`
-                      ${
-                        item.id === filteredData[currentBannerIndex]["id"] &&
-                        circleStart
-                          ? "animate-circle-disappear"
-                          : ""
-                      } `}
-                    />
-                  </svg>
-                  <style>
-                    {`
-                  @keyframes circleDisappear {
-                    0% {
-                      stroke-dashoffset: 0;
-                    }
-                    100% {
-                      stroke-dashoffset: 392; // Matched to the strokeDasharray
-                    }
-                  }
-
-                  .animate-circle-disappear {
-                    animation: circleDisappear 8s linear;
-                  }
-                `}
-                  </style>
-                </div>
-              </div>
+            <p className="text-[12px] font-[500] ">Notification Center</p>
+          </button>
+          <div
+            className={`absolute flex flex-col w-[600px] top-0 dark:bg-forest-900 bg-forest-50 rounded-b-xl rounded-t-xl z-1 overflow-hidden transition-max-height duration-700 ease-in-out`}
+            style={{
+              maxHeight: openNotif ? "1000px" : "0",
+            }}
+          >
+            <div className="h-[28px]">
+              {/*Top bar for height for consistency*/}
             </div>
-          );
-        })}
-      </div>
+
+            <div>
+              {filteredData.map((item, index) => {
+                return (
+                  <div
+                    className={`flex border-b-white border-dotted  w-full pt-[8px] hover:cursor-pointer ${
+                      index < filteredData.length - 1
+                        ? "border-b-[1px]"
+                        : "border-b-[0px]"
+                    }`}
+                    key={item.id}
+                  >
+                    <div className="flex flex-col w-full pl-[35px] pb-[8px]">
+                      <div className="h-[17px] font-bold text-[14px]">
+                        {item.desc}
+                      </div>
+                      <Markdown className="h-auto text-[12px] ">
+                        {item.body}
+                      </Markdown>
+                    </div>
+                    <div className="w-[35px] pr-[20px] self-center">
+                      <Icon icon="ci:chevron-right" />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </>
     )
   );
 };

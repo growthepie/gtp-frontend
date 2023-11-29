@@ -11,6 +11,9 @@ module.exports = {
   darkMode: "class", // or 'media' or 'class'
   theme: {
     extend: {
+      transitionProperty: {
+        height: "height",
+      },
       fontFamily: {
         inter: ["var(--font-inter)", "sans-serif"],
         raleway: ["var(--font-raleway)", "sans-serif"],

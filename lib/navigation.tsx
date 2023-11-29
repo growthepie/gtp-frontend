@@ -285,7 +285,7 @@ export const navigationItems: NavigationItem[] = [
         page: {
           title: "Category Comparison",
           description:
-            "How are certain blockspace categories used on different chains?",
+            "How are certain blockspace categories used on different chains? Explore the varied applications of blockspace categories across Ethereum Layer-2s.",
         },
         icon: "gtp:blockspace-category-comparison",
         key: "category-comparison",
@@ -341,7 +341,8 @@ export const navigationItems: NavigationItem[] = [
         label: "Public Goods Network",
         category: "opstack",
         page: {
-          description: "",
+          description:
+            "Public Goods Network is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in July 2023.",
         },
         icon: "gtp:public-goods-network-logo-monochrome",
         key: "gitcoin_pgn",
@@ -352,7 +353,8 @@ export const navigationItems: NavigationItem[] = [
         label: "Zora",
         category: "opstack",
         page: {
-          description: "",
+          description:
+            "Zora is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in June 2023.",
         },
         icon: "gtp:zora-logo-monochrome",
         key: "zora",
@@ -389,24 +391,25 @@ export const navigationItems: NavigationItem[] = [
         label: "zkSync Era",
         category: "zk-rollup",
         page: {
-          description: "",
+          description:
+            "zkSync Era is a Layer 2 protocol that scales Ethereum with cutting-edge ZK tech. Their mission isn't to merely increase Ethereum's throughput, but to fully preserve its foundational values – freedom, self-sovereignty, decentralization – at scale.",
         },
         icon: "gtp:zksync-era-logo-monochrome",
         key: "zksync_era",
         rootKey: "chainsOptimism",
         urlKey: "zksync-era",
       },
-      // {
-      //   label: "Linea",
-      //   category: "zk-rollup",
-      //   page: {
-      //     description: "Linea is a developer-friendly ZK Rollup, marked as the next stage of ConsenSys zkEVM, which aims to enhance the Ethereum network by facilitating a new wave of decentralized applications. Public launch was in July 2023.",
-      //   },
-      //   icon: "gtp:linea-logo-monochrome",
-      //   key: "linea",
-      //   rootKey: "chainsLinea",
-      //   urlKey: "linea",
-      // },
+      {
+        label: "Linea",
+        category: "zk-rollup",
+        page: {
+          description: "Linea is a developer-friendly ZK Rollup, marked as the next stage of ConsenSys zkEVM, which aims to enhance the Ethereum network by facilitating a new wave of decentralized applications. Public launch was in July 2023.",
+        },
+        icon: "gtp:linea-logo-monochrome",
+        key: "linea",
+        rootKey: "chainsLinea",
+        urlKey: "linea",
+      },
       {
         label: "Immutable X",
         category: "validium",
