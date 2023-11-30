@@ -6,16 +6,16 @@ import { Icon } from "@iconify/react";
 export default function SupportUsBanner() {
   const [isFirstText, setIsFirstText] = useState(true);
 
-  useEffect(() => {
-    // Toggle between texts every 8 seconds
-    const textSlideInterval = setInterval(() => {
-      setIsFirstText((prevIsFirstText) => !prevIsFirstText);
-    }, 8000);
+  // useEffect(() => {
+  //   // Toggle between texts every 8 seconds
+  //   const textSlideInterval = setInterval(() => {
+  //     setIsFirstText((prevIsFirstText) => !prevIsFirstText);
+  //   }, 8000);
 
-    return () => {
-      clearInterval(textSlideInterval);
-    };
-  }, [isFirstText]);
+  //   return () => {
+  //     clearInterval(textSlideInterval);
+  //   };
+  // }, [isFirstText]);
 
   return (
     <Link
@@ -26,26 +26,28 @@ export default function SupportUsBanner() {
       }
       target="_blank"
       rel="noopener"
-      className={`relative flex overflow-hidden xl:hidden items-center justify-between bg-forest-100 text-black px-1 py-1 rounded-full text-[10px] sm:text-sm font-bold mr-auto w-[375px] sm:w-[560px] mt-6 z-0 ${
-        isFirstText ? "dark:bg-[#FFE28A]" : "dark:bg-[#1DF7EF]"
-      }`}
+      className={`relative flex overflow-hidden xl:hidden hard-shine items-center justify-between px-1 py-1 rounded-full text-[10px] sm:text-sm font-semibold mr-auto w-[375px] sm:w-[560px] mt-6 z-0 ${isFirstText ? "text-white bg-[#FF0420] dark:bg-[#FF0420]" : "text-black bg-forest-100 dark:bg-[#1DF7EF]"
+        }`}
     >
       <div
-        className={`ml-3 mr-4 flex space-x-0.5 absolute overflow-x-visible items-center ${
-          isFirstText
-            ? "translate-x-0"
-            : "translate-x-[-535px] sm:translate-x-[-665px]"
-        } `}
+        className={`ml-3 mr-4 flex space-x-0.5 absolute overflow-x-visible items-center ${isFirstText
+          ? "translate-x-0"
+          : "translate-x-[-535px] sm:translate-x-[-665px]"
+          } `}
         style={{
           transition: "transform 1s ease-in-out", // Adjust the duration and easing as needed
         }}
       >
+        <Icon
+          icon="fluent:megaphone-loud-32-filled"
+          className={`w-4 h-4 sm:h-[23px] sm:w-[23px] z-10 mr-2`}
+        />
         <div
           className="w-[800px] flex space-x-0.5 z-0 items-center"
           style={{ minWidth: 0, whiteSpace: "nowrap" }}
         >
-          <div className="slide-text mr-[200px]">
-            We are listed for Retroactive Public Goods Funding. Spread the word!{" "}
+          <div className="slide-text flex items-center pr-[200px] leading-snug">
+            We're listed on Optimism's <div className="font-extrabold mx-1">RetroPGF 3</div> — Spread the word!{" "}
           </div>
           <div className="slide-text flex items-center">
             <div className="mr-0.5">We are part of Gitcoin Round 19!</div>
@@ -57,9 +59,7 @@ export default function SupportUsBanner() {
       <div className="flex-grow"></div>
       <Icon
         icon="feather:arrow-right-circle"
-        className={` w-4 h-4 sm:h-6 sm:w-6  bg-forest-100 z-10 ${
-          isFirstText ? "dark:bg-[#FFE28A]" : "dark:bg-[#1DF7EF]"
-        }`}
+        className={`w-4 h-4 sm:h-[25px] sm:w-[25px] z-10`}
       />
     </Link>
   );

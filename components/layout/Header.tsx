@@ -13,13 +13,8 @@ export default function Header() {
     <header className="flex flex-col xl:flex-row justify-between space-x-0 xl:space-x-6 items-center max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[50px] md:pt-[50px]">
       <div className="flex justify-between items-center w-full">
         <div className="flex space-x-0 xl:space-x-6 w-full">
-          {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
-            ["development", "preview"].includes(
-              process.env.NEXT_PUBLIC_VERCEL_ENV,
-            ) && <Notification />}
-
           {/*Banner/Notification Area */}
-
+          {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined && ["development", "preview"].includes(process.env.NEXT_PUBLIC_VERCEL_ENV) ? <Notification /> : <Banner />}
           <div className="flex justify-between items-end md:hidden relative w-full">
             <Link href="/" className="">
               <div className="h-[36px] w-[154.05px] relative">
@@ -91,7 +86,7 @@ export default function Header() {
           </Link>
         </div>
       </div>
-
+      {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined && !["development", "preview"].includes(process.env.NEXT_PUBLIC_VERCEL_ENV) && <SupportUsBanner />}
       {/* Donation Banner smaller than XL screen */}
       {/* <Link
         href="https://explorer.gitcoin.co/#/round/42161/0x59d79b22595b17af659ce9b03907615f53742c57/0x59d79b22595b17af659ce9b03907615f53742c57-16"
