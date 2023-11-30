@@ -6,11 +6,13 @@ import { Icon } from "@iconify/react";
 import Markdown from "react-markdown";
 import { useMediaQuery } from "usehooks-ts";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 type AirtableRow = {
   id: string;
   body: string;
   desc: string;
+  url?: string;
 };
 
 type NotificationType = {
@@ -179,6 +181,9 @@ const Notification = () => {
             id: data[item]["id"],
             body: data[item]["fields"]["Body"],
             desc: data[item]["fields"]["Description"],
+            url: data[item]["fields"]["URL"]
+              ? data[item]["fields"]["URL"]
+              : null,
           };
 
           returnArray.push(newEntry);
@@ -214,30 +219,49 @@ const Notification = () => {
             </div>
 
             <div>
-              {filteredData.map((item, index) => {
-                return (
+              {filteredData.map((item, index) =>
+                item.url ? (
+                  <Link
+                    className={`flex border-b-white border-dotted w-full mt-[8px] hover:cursor-pointer ${
+                      index < filteredData.length - 1
+                        ? "border-b-[1px] pb-0"
+                        : "border-b-[0px] pb-[1px]"
+                    }`}
+                    key={item.id}
+                    href={item.url}
+                  >
+                    <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[5px]">
+                      <div className="h-[17px] font-bold text-[14px]">
+                        {item.desc}
+                      </div>
+                      <div className="h-auto text-[12px] leading-[.65rem]">
+                        <Markdown>{item.body}</Markdown>
+                      </div>
+                    </div>
+                    <div className="w-[35px] pr-[20px] self-center">
+                      <Icon icon="ci:chevron-right" />
+                    </div>
+                  </Link>
+                ) : (
                   <div
-                    className={`flex border-b-white border-dotted  w-full pt-[8px] hover:cursor-pointer ${
+                    className={`flex border-b-white border-dotted w-full mt-[8px] ${
                       index < filteredData.length - 1
                         ? "border-b-[1px]"
                         : "border-b-[0px]"
                     }`}
                     key={item.id}
                   >
-                    <div className="flex flex-col w-full pl-[35px] pb-[8px]">
+                    <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[5px] ">
                       <div className="h-[17px] font-bold text-[14px]">
                         {item.desc}
                       </div>
-                      <Markdown className="h-auto text-[12px] ">
-                        {item.body}
-                      </Markdown>
-                    </div>
-                    <div className="w-[35px] pr-[20px] self-center">
-                      <Icon icon="ci:chevron-right" />
+                      <div className="h-auto text-[12px] leading-[.65rem]">
+                        <Markdown>{item.body}</Markdown>
+                      </div>
                     </div>
                   </div>
-                );
-              })}
+                ),
+              )}
             </div>
           </div>
         </div>

@@ -13,7 +13,10 @@ export default function Header() {
     <header className="flex flex-col xl:flex-row justify-between space-x-0 xl:space-x-6 items-center max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[50px] md:pt-[50px]">
       <div className="flex justify-between items-center w-full">
         <div className="flex space-x-0 xl:space-x-6 w-full">
-          <Banner />
+          {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
+            ["development", "preview"].includes(
+              process.env.NEXT_PUBLIC_VERCEL_ENV,
+            ) && <Notification />}
 
           {/*Banner/Notification Area */}
 
