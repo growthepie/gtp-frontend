@@ -892,17 +892,38 @@ export default function Page() {
                 <TooltipContent className="z-50 flex items-center justify-center">
                   <div className="flex flex-col space-y-0.5 px-0.5 py-0.5 pt-1 text-[0.65rem] font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50">
                     <div className="px-3 text-sm">{info.row.original.display_name}</div>
-                    {info.row.original.funding_sources.map((fundingSource, i) => (
+                    {info.row.original.funding_sources.sort(
+                      (a, b) => {
+                        const aType = a.type;
+                        const bType = b.type;
+
+                        const aAmount = a.amount;
+                        const bAmount = b.amount;
+
+                        if (aType === bType) {
+                          if (aAmount === bAmount) return 0;
+                          return aAmount - bAmount;
+                        }
+
+                        if (aType.localeCompare(bType) === 1)
+                          return 1;
+
+                        if (aType.localeCompare(bType) === -1)
+                          return -1;
+
+                        return 0;
+                      }
+                    ).map((fundingSource, i) => (
                       <div key={i} className="flex px-3 py-0.5 justify-between items-center border border-forest-900/20 dark:border-forest-500/20 rounded-full">
                         <div className="flex flex-col text-[0.6rem] leading-snug">
                           <div className="w-48 font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">{fundingSource.type}</div>
                           <div className="font-light text-forest-900/80 dark:text-forest-500/80">
-
+                            {fundingSource.description}
                           </div>
 
                         </div>
                         <div className="w-16 flex justify-between font-inter font-[600] text-xs space-x-1">
-                          <div className="flex-1 text-right">{formatNumber(fundingSource.amount, true)}</div>{" "}<div className="w-8 text-left text-[10px] font-light text-forest-900/80 dark:text-forest-500/80">{fundingSource.currency}</div>
+                          <div className="flex-1 text-right">{formatNumber(fundingSource.amount, true)}</div>{" "}<div className="w-4 text-left text-[10px] font-light text-forest-900/80 dark:text-forest-500/80">{fundingSource.currency}</div>
                         </div>
                       </div>
                     ))}
