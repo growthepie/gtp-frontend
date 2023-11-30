@@ -1,9 +1,7 @@
 import {
   ListAmountsByProjectId,
-  ListAmountsByProjectIdResponse,
-  ListContent,
-  ProjectsResponse,
   QuartilesByProjecId,
+  RetropgfStatus,
 } from "@/types/api/RetroPGF3";
 import { Pool } from "pg";
 import { Project } from "@/types/api/RetroPGF3";
@@ -110,6 +108,7 @@ export async function GET() {
       });
 
     const numUniqueAuthorsByProject: { [projectId: string]: number } = {};
+    const retroPgfStatusByProject: {[projectId:string]: RetropgfStatus} = {};
 
     data.forEach((project) => {
       numUniqueAuthorsByProject[project.id] = 0;
@@ -120,10 +119,31 @@ export async function GET() {
       const uniqueAuthors = new Set(listAmountsByProject.map(list => list.listAuthor.address));
 
       numUniqueAuthorsByProject[project.id] = uniqueAuthors.size;
+
+      retroPgfStatusByProject[project.id] = {
+        retropgf1: null,
+        retropgf2: null,
+        // retropgf3: null,
+      };
+
+      const retroPgf1 = project.funding_sources.find((fundingSource) => fundingSource.type === "RETROPGF_1");
+      const retroPgf2 = project.funding_sources.find((fundingSource) => fundingSource.type === "RETROPGF_2");
+      // const retroPgf3 = project.funding_sources.find((fundingSource) => fundingSource.type === "RETROPGF_3");
+
+      if (retroPgf1) {
+        retroPgfStatusByProject[project.id].retropgf1 = retroPgf1.amount;
+      }
+
+      if (retroPgf2) {
+        retroPgfStatusByProject[project.id].retropgf2 = retroPgf2.amount;
+      }
+
+      // if (retroPgf3) {
+      //   retroPgfStatusByProject[project.id].retropgf3 = retroPgf3.amount;
+      // }
     });
 
-
-    return Response.json({ listAmounts: listAmounts, listQuartiles: projectQuartiles, numUniqueAuthors: numUniqueAuthorsByProject });
+    return Response.json({ listAmounts: listAmounts, listQuartiles: projectQuartiles, numUniqueAuthors: numUniqueAuthorsByProject, retropgfStatus: retroPgfStatusByProject });
   } catch (error) {
     return Response.json({ error });
   }

@@ -32,7 +32,8 @@ import { last, uniq, debounce } from "lodash";
 import moment from "moment";
 import Image from "next/image";
 import Link from "next/link";
-import { OsoTaggedProjects } from "./osoTaggedProjects";
+// import { OsoTaggedProjects } from "./osoTaggedProjects";
+// import { OsoStats } from "./osoProjectStats";
 import { formatNumber } from "@/lib/chartUtils";
 import {
   Tooltip,
@@ -44,10 +45,7 @@ import { useUIContext } from "@/contexts/UIContext";
 // import { TreeMapChart } from "@/components/charts/treemapChart";
 import { useElementSize } from "usehooks-ts";
 
-const OsoTaggedProjectsMap = OsoTaggedProjects.reduce((prev, curr) => {
-  prev[curr["Project ID"]] = curr;
-  return prev;
-}, {});
+
 
 // Collective Governance
 // Developer Ecosystem
@@ -92,6 +90,18 @@ const environment = process.env.NEXT_PUBLIC_VERCEL_ENV || "development";
 const multiplierOPToken = 1.35;
 
 export default function Page() {
+  // const ProjectIdToOsoStatsMaps = OsoTaggedProjects.reduce((acc, taggedProject) => {
+  //   const id = `Project|${taggedProject["Project ID"]}`;
+  //   const slug = taggedProject["OSO Slug"];
+  //   const project = OsoStats.find(project => project["slug"] === slug);
+
+  //   if (!project) return acc;
+
+  //   acc[id] = project;
+
+  //   return acc;
+  // }, {});
+
   const {
     data: projectsResponse,
     isLoading: projectsLoading,
@@ -551,7 +561,7 @@ export default function Page() {
                       ).map((list, i) => (
                         list.listContent.map((listContentItem, j) => (
                           <div key={j} className="flex px-3 py-0.5 justify-between items-center border border-forest-900/20 dark:border-forest-500/20 rounded-full">
-                            <div key={j} className="flex flex-col text-[0.6rem] leading-snug">
+                            <div className="flex flex-col text-[0.6rem] leading-snug">
                               <div className="w-48 font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">{list.listName}</div>
                               <div className="font-light text-forest-900/80 dark:text-forest-500/80">
                                 {list.listAuthor.resolvedName.name ? (
@@ -749,120 +759,156 @@ export default function Page() {
         cell: (info) => {
           return (
             <div className="w-full overflow-x whitespace-nowrap text-ellipsis relative">
-              <div className="text-[11px] font-normal w-full flex justify-between font-inter mt-1">
-                <div className="w-full flex justify-between">
-                  {["USD", "OP"]
-                    .map((currency) => [
-                      currency,
-                      getProjectsCombinedFundingSourcesByCurrency(
-                        info.row.original.funding_sources,
-                      )[currency],
-                    ])
-                    // .filter(([currency, value]) => value !== 0)
-                    .map(([currency, value]) => (
-                      <div
-                        key={currency}
-                        className="flex space-x-1 text-[0.6rem]"
-                      >
-                        {(value as number) > 0 ? (
-                          <>
-                            <div
-                              className={
-                                currency === "OP"
-                                  ? "text-[#FE5468] leading-[1.6] font-[500]"
-                                  : "text-[#7fdcd6] leading-[1.6] font-[400]"
-                              }
-                            >
-                              {currency === "USD" && (
-                                <span className="opacity-60 text-[0.55rem]">
-                                  $
-                                </span>
-                              )}
-                              {parseInt(value as string).toLocaleString()}
-                              {currency === "OP" && (
-                                <>
-                                  {" "}
-                                  <span className="opacity-60 text-[0.55rem]">
-                                    OP
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                          </>
-                        ) : (
-                          <div className="text-forest-900/30 dark:text-forest-500/30">
-                            0
+              <Tooltip placement="left">
+                <TooltipTrigger className="w-full">
+                  {listAmountsByProjectId && Object.values(listAmountsByProjectId.retropgfStatus[info.row.original.id]).filter((value) => value).length > 0 && (
+                    <div className="absolute right-0 -top-2.5 text-[0.6rem] text-forest-900/40 dark:text-forest-500/40 font-light leading-[1] flex space-x-1 items-center">
+                      <div className="leading-snug">RetroPGF</div>
+                      {Object.entries(listAmountsByProjectId.retropgfStatus[info.row.original.id]).map(([key, value]) => (
+                        <>
+                          {value !== null && value > 0 ?
+                            <div key={key} className="flex w-2.5 h-2.5 justify-center font-medium bg-[#FE5468]/40 text-[#FE5468] rounded-full text-[0.55rem] font-mono leading-snug">{key.replace(/[^0-9]/g, "")}</div>
+                            : <div key={key} className="flex w-2.5 h-2.5 justify-center font-medium invisible">{key.replace(/[^0-9]/g, "")}</div>
+                          }</>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="text-[11px] font-normal w-full flex justify-between font-inter mt-1">
+                    <div className="w-full flex justify-between">
+                      {["USD", "OP"]
+                        .map((currency) => [
+                          currency,
+                          getProjectsCombinedFundingSourcesByCurrency(
+                            info.row.original.funding_sources,
+                          )[currency],
+                        ])
+                        // .filter(([currency, value]) => value !== 0)
+                        .map(([currency, value]) => (
+                          <div
+                            key={currency}
+                            className="flex space-x-1 text-[0.6rem]"
+                          >
+                            {(value as number) > 0 ? (
+                              <>
+                                <div
+                                  className={
+                                    currency === "OP"
+                                      ? "text-[#FE5468] leading-[1.6] font-[500]"
+                                      : "text-[#7fdcd6] leading-[1.6] font-[400]"
+                                  }
+                                >
+                                  {currency === "USD" && (
+                                    <span className="opacity-60 text-[0.55rem]">
+                                      $
+                                    </span>
+                                  )}
+                                  {parseInt(value as string).toLocaleString()}
+                                  {currency === "OP" && (
+                                    <>
+                                      {" "}
+                                      <span className="opacity-60 text-[0.55rem]">
+                                        OP
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                              </>
+                            ) : (
+                              <div className="text-forest-900/30 dark:text-forest-500/30">
+                                0
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    ))}
-                </div>
-              </div>
-              <div className="absolute -bottom-1 left-0 right-0 text-xs font-normal text-right">
-                <div
-                  className="relative z-10"
-                  style={{
-                    height: "2px",
-                    width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                      info.row.original.funding_sources,
-                    )["TOTAL"] /
-                      getProjectsCombinedFundingSourcesByCurrency(
-                        info.row.original.funding_sources,
-                      )["TOTAL"]) *
-                      100.0
-                      }%`,
-                  }}
-                >
-                  <div
-                    className="absolute bg-[#7fdcd6]"
-                    style={{
-                      height: "2px",
-                      width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                        info.row.original.funding_sources,
-                      )["USD"] /
-                        getProjectsCombinedFundingSourcesByCurrency(
+                        ))}
+                    </div>
+                  </div>
+                  <div className="absolute -bottom-1 left-0 right-0 text-xs font-normal text-right">
+                    <div
+                      className="relative z-10"
+                      style={{
+                        height: "2px",
+                        width: `${(getProjectsCombinedFundingSourcesByCurrency(
                           info.row.original.funding_sources,
-                        )["TOTAL"]) *
-                        100.0
-                        }%`,
-                    }}
-                  ></div>
-                  <div
-                    className="absolute bg-[#FE5468]"
-                    style={{
-                      height: "2px",
-                      left:
-                        getProjectsCombinedFundingSourcesByCurrency(
-                          info.row.original.funding_sources,
-                        )["USD"] !== 0
-                          ? `${(getProjectsCombinedFundingSourcesByCurrency(
+                        )["TOTAL"] /
+                          getProjectsCombinedFundingSourcesByCurrency(
+                            info.row.original.funding_sources,
+                          )["TOTAL"]) *
+                          100.0
+                          }%`,
+                      }}
+                    >
+                      <div
+                        className="absolute bg-[#7fdcd6]"
+                        style={{
+                          height: "2px",
+                          width: `${(getProjectsCombinedFundingSourcesByCurrency(
                             info.row.original.funding_sources,
                           )["USD"] /
                             getProjectsCombinedFundingSourcesByCurrency(
                               info.row.original.funding_sources,
                             )["TOTAL"]) *
-                          100.0
-                          }%`
-                          : 0,
-                      width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                        info.row.original.funding_sources,
-                      )["OPUSD"] /
-                        getProjectsCombinedFundingSourcesByCurrency(
-                          info.row.original.funding_sources,
-                        )["TOTAL"]) *
-                        100.0
-                        }%`,
-                    }}
-                  ></div>
-                </div>
-                <div
-                  className="absolute inset-0 z-0 bg-forest-900/30 dark:bg-forest-500/30"
-                  style={{
-                    height: "2px",
-                    width: `100%`,
-                  }}
-                />
-              </div>
+                            100.0
+                            }%`,
+                        }}
+                      ></div>
+                      <div
+                        className="absolute bg-[#FE5468]"
+                        style={{
+                          height: "2px",
+                          left:
+                            getProjectsCombinedFundingSourcesByCurrency(
+                              info.row.original.funding_sources,
+                            )["USD"] !== 0
+                              ? `${(getProjectsCombinedFundingSourcesByCurrency(
+                                info.row.original.funding_sources,
+                              )["USD"] /
+                                getProjectsCombinedFundingSourcesByCurrency(
+                                  info.row.original.funding_sources,
+                                )["TOTAL"]) *
+                              100.0
+                              }%`
+                              : 0,
+                          width: `${(getProjectsCombinedFundingSourcesByCurrency(
+                            info.row.original.funding_sources,
+                          )["OPUSD"] /
+                            getProjectsCombinedFundingSourcesByCurrency(
+                              info.row.original.funding_sources,
+                            )["TOTAL"]) *
+                            100.0
+                            }%`,
+                        }}
+                      ></div>
+                    </div>
+                    <div
+                      className="absolute inset-0 z-0 bg-forest-900/30 dark:bg-forest-500/30"
+                      style={{
+                        height: "2px",
+                        width: `100%`,
+                      }}
+                    />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="z-50 flex items-center justify-center">
+                  <div className="flex flex-col space-y-0.5 px-0.5 py-0.5 pt-1 text-[0.65rem] font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50">
+                    <div className="px-3 text-sm">{info.row.original.display_name}</div>
+                    {info.row.original.funding_sources.map((fundingSource, i) => (
+                      <div key={i} className="flex px-3 py-0.5 justify-between items-center border border-forest-900/20 dark:border-forest-500/20 rounded-full">
+                        <div className="flex flex-col text-[0.6rem] leading-snug">
+                          <div className="w-48 font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">{fundingSource.type}</div>
+                          <div className="font-light text-forest-900/80 dark:text-forest-500/80">
+
+                          </div>
+
+                        </div>
+                        <div className="w-16 flex justify-between font-inter font-[600] text-xs space-x-1">
+                          <div className="flex-1 text-right">{formatNumber(fundingSource.amount, true)}</div>{" "}<div className="w-8 text-left text-[10px] font-light text-forest-900/80 dark:text-forest-500/80">{fundingSource.currency}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
             </div>
           );
         },
@@ -886,6 +932,16 @@ export default function Page() {
           return a > b ? 1 : -1;
         },
       },
+      // {
+      //   header: "Headcount",
+      //   id: "headcount",
+      //   cell: (info) => (
+      //     <div className="w-full overflow-x whitespace-nowrap text-ellipsis relative flex space-x-1">
+      //       <div>{ProjectIdToOsoStatsMaps && ProjectIdToOsoStatsMaps[info.row.original.id] && parseInt(ProjectIdToOsoStatsMaps[info.row.original.id]["Avg Monthly Active Devs Last 6 Months"])}</div>
+      //       <div>{ProjectIdToOsoStatsMaps && ProjectIdToOsoStatsMaps[info.row.original.id] && parseInt(ProjectIdToOsoStatsMaps[info.row.original.id]["Contributors Last 6 Months"])}</div>
+      //     </div>
+      //   )
+      // },
       {
         header: () => (
           <div className="flex w-full justify-end">
