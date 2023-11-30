@@ -33,7 +33,7 @@ export default function Banner() {
         />
         <div className="ml-3 mr-4 flex space-x-0.5 overflow-x-visible items-center">
           <div className="pr-[50px] leading-snug">
-            We're listed on <span className="font-extrabold">RetroPGF 3</span> — Spread the word!{" "}
+            We&apos;re listed on <span className="font-extrabold">RetroPGF 3</span> — Spread the word!{" "}
           </div>
         </div>
 
