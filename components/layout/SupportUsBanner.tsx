@@ -47,7 +47,7 @@ export default function SupportUsBanner() {
           style={{ minWidth: 0, whiteSpace: "nowrap" }}
         >
           <div className="slide-text flex items-center pr-[200px] leading-snug">
-            We're listed on Optimism&apos;s <div className="font-extrabold mx-1">RetroPGF 3</div> — Spread the word!{" "}
+            We&apos;re listed on Optimism&apos;s <div className="font-extrabold mx-1">RetroPGF 3</div> — Spread the word!{" "}
           </div>
           <div className="slide-text flex items-center">
             <div className="mr-0.5">We are part of Gitcoin Round 19!</div>
