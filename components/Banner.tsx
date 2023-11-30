@@ -18,34 +18,30 @@ export default function Banner() {
   }, []);
 
   return (
-    <Link
-      href={
-        "https://vote.optimism.io/retropgf/3/application/0x849e164d1b8cc2b51bd3313d007ac58acb816660492336d2498615551ec75f02"
-      }
-      target="_blank"
-      rel="noopener"
-      className={`hidden overflow-hidden xl:flex absolute top-[50px] items-center text-black bg-forest-100 p-1 justify-between rounded-full text-sm font-bold mr-auto dark:bg-[#FFE28A] `}
-    >
-      <div
-        className="ml-3 mr-4 flex space-x-0.5 overflow-x-visible "
-        style={{
-          width: "500px", // Adjust the width as needed
-        }}
+    <>
+      <Link
+        href={
+          "https://vote.optimism.io/retropgf/3/application/0x849e164d1b8cc2b51bd3313d007ac58acb816660492336d2498615551ec75f02"
+        }
+        target="_blank"
+        rel="noopener"
+        className={`hidden overflow-hidden xl:flex absolute top-[50px] hard-shine items-center p-1 justify-between rounded-full text-sm font-semibold mr-auto text-white bg-[#FF0420] dark:bg-[#FF0420]`}
       >
-        <div
-          className="w-[800px] flex space-x-0.5 z-0"
-          style={{ minWidth: 0, whiteSpace: "nowrap" }}
-        >
-          <div className="mr-[200px]">
-            We are listed for Retroactive Public Goods Funding. Spread the word!{" "}
+        <Icon
+          icon="fluent:megaphone-loud-32-filled"
+          className={`h-[23px] w-[23px] z-10 ml-2.5`}
+        />
+        <div className="ml-3 mr-4 flex space-x-0.5 overflow-x-visible items-center">
+          <div className="pr-[50px] leading-snug">
+            We're listed on <span className="font-extrabold">RetroPGF 3</span> — Spread the word!{" "}
           </div>
         </div>
-      </div>
 
-      <Icon
-        icon="feather:arrow-right-circle"
-        className={`h-6 w-6  bg-forest-100 z-10 dark:bg-[#FFE28A] `}
-      />
-    </Link>
+        <Icon
+          icon="feather:arrow-right-circle"
+          className={`h-[25px] w-[25px]`}
+        />
+      </Link>
+    </>
   );
 }
