@@ -284,12 +284,22 @@ export default function Page() {
     return [Math.min(...listOPAmounts), Math.max(...listOPAmounts)];
   }, [listAmountsByProjectId]);
 
+  const median = (nums: number[]): number => {
+    const half = Math.floor(nums.length / 2);
+
+    if (nums.length % 2) {
+      return nums[half];
+    }
+
+    return (nums[half - 1] + nums[half]) / 2.0;
+  };
+
   const getProjectIdMedianListOPAmount = useCallback((projectId: string) => {
     if (!listAmountsByProjectId || !listAmountsByProjectId.listAmounts[projectId]) return 0;
 
     const listOPAmounts = listAmountsByProjectId.listAmounts[projectId].sort((a, b) => a.listContent[0].OPAmount - b.listContent[0].OPAmount).map((listAmount) => listAmount.listContent[0].OPAmount);
 
-    return listOPAmounts[Math.floor(listOPAmounts.length / 2)];
+    return median(listOPAmounts);
   }, [listAmountsByProjectId]);
 
   const getBoxPlotData: (projectId: string) => { min: number, q1: number, median: number, q3: number, max: number, globalMin: number, globalMax: number } = useCallback((projectId: string) => {
@@ -298,15 +308,7 @@ export default function Page() {
     const numbers = listAmountsByProjectId.listAmounts[projectId].map((listAmount) => listAmount.listContent[0].OPAmount);
     numbers.sort((a, b) => a - b);
 
-    const median = (nums: number[]): number => {
-      const half = Math.floor(nums.length / 2);
 
-      if (nums.length % 2) {
-        return nums[half];
-      }
-
-      return (nums[half - 1] + nums[half]) / 2.0;
-    };
 
     const q1 = median(numbers.slice(0, Math.floor(numbers.length / 2)));
     const q2 = median(numbers);
@@ -678,6 +680,7 @@ export default function Page() {
                   <div className="flex flex-col space-y-1 px-0.5 py-0.5 pt-1 text-[0.65rem] font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50">
                     <div className="px-3 text-sm">{info.row.original.display_name}</div>
                     <div className="px-3 flex justify-between">{["min", "q1", "median", "q3", "max"].map((key) => (
+                      !Number.isNaN(getBoxPlotData(info.row.original.id)[key]) &&
                       <div key={key} className="flex items-center space-x-1">
                         <div className="text-[0.6rem] font-semibold capitalize">{key.slice(0, 3)}</div>
                         <div className="text-[0.6rem] font-light font-inter">{formatNumber(getBoxPlotData(info.row.original.id)[key], true)}</div>
@@ -687,10 +690,9 @@ export default function Page() {
                       (a, b) => a.listContent[0].OPAmount - b.listContent[0].OPAmount
                     ).map((list, i) => (
                       list.listContent.map((listContentItem, j) => (
-                        <div key={j} className="flex px-3 justify-between items-center border border-forest-900/20 dark:border-forest-500/20 rounded-full">
-                          <div key={j} className="flex flex-col text-[0.6rem]">
+                        <div key={j} className="flex px-3 py-0.5 justify-between items-center border border-forest-900/20 dark:border-forest-500/20 rounded-full">
+                          <div key={j} className="flex flex-col text-[0.6rem] leading-snug">
                             <div className="w-48 font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">{list.listName}</div>
-
                             <div className="font-light text-forest-900/80 dark:text-forest-500/80">
                               {list.listAuthor.resolvedName.name ? (
                                 <>{list.listAuthor.resolvedName.name}</>
@@ -710,7 +712,7 @@ export default function Page() {
 
                           </div>
                           <div className="w-16 font-inter font-medium text-xs text-right">
-                            {formatNumber(listContentItem.OPAmount, true)}{" "}<span className="text-[12px] font-light">OP</span>
+                            {formatNumber(listContentItem.OPAmount, true)}{" "}<span className="text-[10px] font-light text-forest-900/80 dark:text-forest-500/80">OP</span>
                           </div>
                         </div>
                       ))
@@ -724,6 +726,23 @@ export default function Page() {
             </div>
           </>
         ),
+        sortingFn: (rowA, rowB) => {
+          const a = getProjectIdMedianListOPAmount(rowA.original.id);
+          const b = getProjectIdMedianListOPAmount(rowB.original.id);
+
+          if (Number.isNaN(a) && Number.isNaN(b)) return 0;
+
+          if (Number.isNaN(a)) return -1;
+
+          if (Number.isNaN(b)) return 1;
+
+
+          // If both are equal, return 0.
+          if (a === b) return 0;
+
+          // Otherwise, sort by whether a is greater than or less than b.
+          return a > b ? 1 : -1;
+        },
       },
 
       {
