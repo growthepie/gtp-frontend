@@ -517,7 +517,7 @@ export default function Page() {
                 (<Tooltip placement="left">
                   <TooltipTrigger className="w-full">
                     <div className="text-[0.7rem] font-normal w-full flex space-x-9.5 items-center font-inter mt-1">
-                      {!Number.isNaN(listAmountsByProjectId.listQuartiles[info.row.original.id].q1) && !Number.isNaN(listAmountsByProjectId.listQuartiles[info.row.original.id].q3) ?
+                      {listAmountsByProjectId.listAmounts[info.row.original.id].length > 1 ?
                         (<>
                           <div className=" text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
                             {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].q1, true)}
@@ -540,7 +540,7 @@ export default function Page() {
                     <div className="flex flex-col space-y-0.5 px-0.5 py-0.5 pt-1 text-[0.65rem] font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-2xl shadow-lg z-50">
                       <div className="px-3 text-sm">{info.row.original.display_name}</div>
                       <div className="px-3 flex justify-between">{["min", "q1", "median", "q3", "max"].map((key) => (
-                        !Number.isNaN(listAmountsByProjectId.listQuartiles[info.row.original.id][key]) &&
+                        listAmountsByProjectId.listQuartiles[info.row.original.id][key] !== undefined && listAmountsByProjectId.listQuartiles[info.row.original.id][key] !== null &&
                         <div key={key} className="flex items-center space-x-1">
                           <div className="text-[0.6rem] font-semibold capitalize">{key.slice(0, 3)}</div>
                           <div className="text-[0.6rem] font-light font-inter">{formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id][key], true)}</div>
