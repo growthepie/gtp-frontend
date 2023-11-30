@@ -81,11 +81,6 @@ const ImpactCategoriesMap = {
   },
 };
 
-// const baseURL =
-//   process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
-//     ? `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-//     : `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
-
 const baseURL = {
   development: `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`,
   preview: "https://dev.growthepie.xyz",
@@ -126,40 +121,13 @@ export default function Page() {
     },
   ]);
 
-  const [totalFundingAmounts, setTotalFundingAmounts] = useState<{
-    [currency: string]: number;
-  }>({});
-
   const [displayNameFilter, setDisplayNameFilter] = useState<string>("");
-
-  const { isSidebarOpen } = useUIContext();
 
   useEffect(() => {
     if (projectsResponse) {
       if (data.length === 0 && projects.length === 0)
         setData(projectsResponse.projects);
       setProjects(projectsResponse.projects);
-
-      const tFA: { [currency: string]: number } = {};
-      tFA["OP"] = 0;
-      tFA["USD"] = 0;
-      tFA["OPUSD"] = 0;
-      tFA["TOTAL"] = 0;
-
-      projectsResponse.projects.forEach((project) => {
-        project.funding_sources.forEach((fundingSource) => {
-          tFA[fundingSource.currency] = fundingSource.amount;
-
-          if (fundingSource.currency === "OP") {
-            tFA["OPUSD"] += multiplierOPToken * fundingSource.amount;
-            tFA["TOTAL"] += multiplierOPToken * fundingSource.amount;
-          } else {
-            tFA["TOTAL"] += fundingSource.amount;
-          }
-        });
-      });
-
-      setTotalFundingAmounts(tFA);
     }
   }, [data, projects.length, projectsResponse]);
 
@@ -276,19 +244,6 @@ export default function Page() {
     return maxTotalFundingAmount;
   }, [getAllProjectsCombinedFundingSourcesByCurrency, projects]);
 
-
-  const getProjectIdUniqueListAuthors = useCallback((projectId: string) => {
-    if (!listAmountsByProjectId || !listAmountsByProjectId.listAmounts[projectId]) return [];
-
-    return uniq(listAmountsByProjectId.listAmounts[projectId].map((list) => list.listAuthor.address));
-  }, [listAmountsByProjectId]);
-
-  const getProjectIdUniqueListContent = useCallback((projectId: string) => {
-    if (!listAmountsByProjectId || !listAmountsByProjectId.listAmounts[projectId]) return [];
-
-    return uniq(listAmountsByProjectId.listAmounts[projectId].map((list) => list.listContent));
-  }, [listAmountsByProjectId]);
-
   const [minListOPAmount, maxListOPAmount] = useMemo<[number, number]>(() => {
     if (!listAmountsByProjectId) return [0, 0];
 
@@ -296,122 +251,6 @@ export default function Page() {
 
     return [Math.min(...listOPAmounts), Math.max(...listOPAmounts)];
   }, [listAmountsByProjectId]);
-
-  const median = (nums: number[]): number => {
-    const half = Math.floor(nums.length / 2);
-
-    if (nums.length % 2) {
-      return nums[half];
-    }
-
-    return (nums[half - 1] + nums[half]) / 2.0;
-  };
-
-  const getProjectIdMedianListOPAmount = useCallback((projectId: string) => {
-    if (!listAmountsByProjectId || !listAmountsByProjectId.listAmounts[projectId]) return 0;
-
-    const listOPAmounts = listAmountsByProjectId.listAmounts[projectId].sort((a, b) => a.listContent[0].OPAmount - b.listContent[0].OPAmount).map((listAmount) => listAmount.listContent[0].OPAmount);
-
-    return median(listOPAmounts);
-  }, [listAmountsByProjectId]);
-
-  const getBoxPlotData: (projectId: string) => { min: number, q1: number, median: number, q3: number, max: number, globalMin: number, globalMax: number } = useCallback((projectId: string) => {
-    if (!listAmountsByProjectId || !listAmountsByProjectId.listAmounts[projectId] || !(minListOPAmount + maxListOPAmount)) return { min: 0, q1: 0, median: 0, q3: 0, max: 0, globalMin: 0, globalMax: 0 };
-
-    const numbers = listAmountsByProjectId.listAmounts[projectId].map((listAmount) => listAmount.listContent[0].OPAmount);
-    numbers.sort((a, b) => a - b);
-
-
-
-    const q1 = median(numbers.slice(0, Math.floor(numbers.length / 2)));
-    const q2 = median(numbers);
-    const q3 = median(numbers.slice(Math.ceil(numbers.length / 2)));
-
-    const min = numbers[0];
-    const max = numbers[numbers.length - 1];
-
-    return { min, q1, median: q2, q3, max, globalMin: minListOPAmount, globalMax: maxListOPAmount };
-  }, [listAmountsByProjectId, minListOPAmount, maxListOPAmount]);
-
-
-  const getValuesInOrdersOfMagnitude = useCallback((value: number) => {
-    const ordersOfMagnitude = [
-      { label: "", value: 1 },
-      { label: "10", value: 10 },
-      { label: "1h", value: 100 },
-      { label: "1k", value: 1000 },
-      { label: "10k", value: 10000 },
-      { label: "100k", value: 100000 },
-      { label: "1M", value: 1000000 },
-      { label: "10M", value: 10000000 },
-      { label: "100M", value: 100000000 },
-    ];
-
-    // find nearest largest order of magnitude
-    let nearestLargestOrderOfMagnitude =
-      ordersOfMagnitude[ordersOfMagnitude.length - 1];
-
-    for (let i = 0; i < ordersOfMagnitude.length; i++) {
-      if (value < ordersOfMagnitude[i].value)
-        nearestLargestOrderOfMagnitude = ordersOfMagnitude[i];
-
-      if (value >= ordersOfMagnitude[i].value) break;
-    }
-
-    const result: {
-      label: string;
-      value: number;
-      multiplier?: number;
-    }[] = ordersOfMagnitude.slice(
-      0,
-      ordersOfMagnitude.indexOf(nearestLargestOrderOfMagnitude),
-    );
-
-    let remaining = value;
-
-    for (let i = result.length - 1; i >= 0; i--) {
-      const multiplier = Math.floor(remaining / result[i].value);
-
-      remaining = remaining - result[i].value * multiplier;
-
-      result[i].multiplier = multiplier;
-    }
-
-    return result;
-  }, []);
-
-  const IncludeInBallotsByList = useMemo(() => {
-    const result: {
-      [listName: string]: {
-        list: List;
-        author: string;
-        totalBallotCount: number;
-        totalProjectCount: number;
-        avgBallotsPerProject: number;
-      };
-    } = {};
-
-    projects.forEach((project) => {
-      project.lists.forEach((list) => {
-        if (!result[list.listName])
-          result[list.listName] = {
-            list: list,
-            author: list.author.resolvedName.name ?? list.author.address,
-            totalBallotCount: 0,
-            totalProjectCount: 0,
-            avgBallotsPerProject: 0,
-          };
-
-        result[list.listName].totalBallotCount += project.included_in_ballots;
-        result[list.listName].totalProjectCount++;
-        result[list.listName].avgBallotsPerProject =
-          result[list.listName].totalBallotCount /
-          result[list.listName].totalProjectCount;
-      });
-    });
-
-    return result;
-  }, [projects]);
 
   const columns = useMemo<ColumnDef<Project>[]>(
     () => [
@@ -623,12 +462,12 @@ export default function Page() {
         cell: (info) => (
           <>
             <div className="w-full whitespace-nowrap text-ellipsis relative">
-              <div className="absolute right-0 -bottom-[11px] flex space-x-1 text-[0.55rem] text-forest-900/30 dark:text-forest-500/30 font-light leading-[1]">
-                <div className="flex justify-center items-center rounded-sm text-forest-900/30 dark:text-forest-500/30" >{getProjectIdUniqueListAuthors(info.row.original.id).length}</div>
+              {listAmountsByProjectId?.numUniqueAuthors[info.row.original.id] && <div className="absolute right-0 -bottom-[11px] flex space-x-1 text-[0.55rem] text-forest-900/30 dark:text-forest-500/30 font-light leading-[1]">
+                <div className="flex justify-center items-center rounded-sm text-forest-900/30 dark:text-forest-500/30" >{listAmountsByProjectId.numUniqueAuthors[info.row.original.id]}</div>
                 <div>
-                  {getProjectIdUniqueListAuthors(info.row.original.id).length > 1 ? "authors" : "author"}
+                  {listAmountsByProjectId.numUniqueAuthors[info.row.original.id] > 1 ? "authors" : "author"}
                 </div>
-              </div>
+              </div>}
               <div className="font-normal w-full flex justify-end font-inter">
                 <div className="flex space-x-1">
                   <div>{info.row.original.lists.length}</div>
@@ -636,11 +475,6 @@ export default function Page() {
                     <Icon
                       icon={"feather:list"}
                       className={`w-4 h-4`}
-                    // style={{
-                    //   color: (info.row.original.lists.length >= 3 && getProjectIdUniqueListAuthors(info.row.original.id).length === 1) ?
-                    //     `hsla(${(getProjectIdUniqueListAuthors(info.row.original.id).length / info.row.original.lists.length) * 80}, 71%, 45%, 100%)` :
-                    //     `hsla(${(getProjectIdUniqueListAuthors(info.row.original.id).length / info.row.original.lists.length) * 120}, 71%, 45%, 100%)`
-                    // }}
                     />
                   </div>
                 </div>
@@ -669,91 +503,93 @@ export default function Page() {
         cell: (info) => (
           <>
             <div className="w-full whitespace-nowrap text-ellipsis relative overflow-visible">
-              {listAmountsByProjectId && listAmountsByProjectId.listAmounts[info.row.original.id].length > 0 && !Number.isNaN(getBoxPlotData(info.row.original.id).min) && !Number.isNaN(getBoxPlotData(info.row.original.id).max) && (
+              {listAmountsByProjectId && listAmountsByProjectId.listAmounts[info.row.original.id].length > 0 && !Number.isNaN(listAmountsByProjectId.listQuartiles[info.row.original.id].min) && !Number.isNaN(listAmountsByProjectId.listQuartiles[info.row.original.id].max) && (
                 <div className="flex text-[0.55rem] text-forest-900/60 dark:text-forest-500/60 font-inter font-light leading-[1]">
                   <div className="absolute left-0 -top-1.5">
-                    {formatNumber(getBoxPlotData(info.row.original.id).min, true)}
+                    {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].min, true)}
                   </div>
                   <div className="absolute right-0 left-0 -top-1.5 text-center">—</div>
                   <div className="absolute right-0 -top-1.5">
-                    {formatNumber(getBoxPlotData(info.row.original.id).max, true)}
+                    {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].max, true)}
                   </div>
                 </div>)}
-              {listAmountsByProjectId && listAmountsByProjectId.listAmounts[info.row.original.id].length > 0 && (<Tooltip placement="left" allowInteract>
-                <TooltipTrigger className="w-full">
-                  <div className="text-[0.7rem] font-normal w-full flex space-x-9.5 items-center font-inter mt-1">
-                    {!Number.isNaN(getBoxPlotData(info.row.original.id).q1) && !Number.isNaN(getBoxPlotData(info.row.original.id).q3) ?
-                      (<>
-                        <div className=" text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
-                          {formatNumber(getBoxPlotData(info.row.original.id).q1, true)}
-                        </div>
-                        <div className="flex-1 text-forest-900/50 dark:text-forest-500/50">-</div>
-                        <div className="text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
-                          {formatNumber(getBoxPlotData(info.row.original.id).q3, true)}{" "}<span className="text-[0.6rem]">OP</span>
-                        </div>
-                      </>) : (<div className="flex-1 text-forest-900/80 dark:text-forest-500 font-light leading-[1] text-right">
-                        {formatNumber(getBoxPlotData(info.row.original.id).median, true)}{" "}<span className="text-[0.6rem]">OP</span>
-                      </div>)}
-                  </div>
-                  <div className="relative bottom-[8px] left-0 right-0 text-xs font-normal text-right h-[2px]">
-                    <BoxPlot {...{ ...getBoxPlotData(info.row.original.id) }} />
-                  </div>
+              {listAmountsByProjectId && listAmountsByProjectId.listAmounts[info.row.original.id].length > 0 &&
+                (<Tooltip placement="left">
+                  <TooltipTrigger className="w-full">
+                    <div className="text-[0.7rem] font-normal w-full flex space-x-9.5 items-center font-inter mt-1">
+                      {!Number.isNaN(listAmountsByProjectId.listQuartiles[info.row.original.id].q1) && !Number.isNaN(listAmountsByProjectId.listQuartiles[info.row.original.id].q3) ?
+                        (<>
+                          <div className=" text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
+                            {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].q1, true)}
+                          </div>
+                          <div className="flex-1 text-forest-900/50 dark:text-forest-500/50">-</div>
+                          <div className="text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
+                            {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].q3, true)}{" "}<span className="text-[0.6rem]">OP</span>
+                          </div>
+                        </>) : (<div className="flex-1 text-forest-900/80 dark:text-forest-500 font-light leading-[1] text-right">
+                          {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].median, true)}{" "}<span className="text-[0.6rem]">OP</span>
+                        </div>)}
+                    </div>
+                    <div className="relative bottom-[8px] left-0 right-0 text-xs font-normal text-right h-[2px]">
+                      <BoxPlot {...{ ...listAmountsByProjectId.listQuartiles[info.row.original.id], globalMin: minListOPAmount, globalMax: maxListOPAmount }} />
+                    </div>
 
 
-                </TooltipTrigger>
-                <TooltipContent className="z-50 flex items-center justify-center">
-                  <div className="flex flex-col space-y-0.5 px-0.5 py-0.5 pt-1 text-[0.65rem] font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-2xl shadow-lg z-50">
-                    <div className="px-3 text-sm">{info.row.original.display_name}</div>
-                    <div className="px-3 flex justify-between">{["min", "q1", "median", "q3", "max"].map((key) => (
-                      !Number.isNaN(getBoxPlotData(info.row.original.id)[key]) &&
-                      <div key={key} className="flex items-center space-x-1">
-                        <div className="text-[0.6rem] font-semibold capitalize">{key.slice(0, 3)}</div>
-                        <div className="text-[0.6rem] font-light font-inter">{formatNumber(getBoxPlotData(info.row.original.id)[key], true)}</div>
-                      </div>
-                    ))}</div>
-                    {listAmountsByProjectId?.listAmounts[info.row.original.id].sort(
-                      (a, b) => a.listContent[0].OPAmount - b.listContent[0].OPAmount
-                    ).map((list, i) => (
-                      list.listContent.map((listContentItem, j) => (
-                        <div key={j} className="flex px-3 py-0.5 justify-between items-center border border-forest-900/20 dark:border-forest-500/20 rounded-full">
-                          <div key={j} className="flex flex-col text-[0.6rem] leading-snug">
-                            <div className="w-48 font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">{list.listName}</div>
-                            <div className="font-light text-forest-900/80 dark:text-forest-500/80">
-                              {list.listAuthor.resolvedName.name ? (
-                                <>{list.listAuthor.resolvedName.name}</>
-                              ) : (
-                                <>
-                                  {list.listAuthor.address.slice(
-                                    0,
-                                    5,
-                                  ) +
-                                    "..." +
-                                    list.listAuthor.address.slice(
-                                      -8,
-                                    )}
-                                </>
-                              )}
+                  </TooltipTrigger>
+                  <TooltipContent className="z-50 flex items-center justify-center">
+                    <div className="flex flex-col space-y-0.5 px-0.5 py-0.5 pt-1 text-[0.65rem] font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-2xl shadow-lg z-50">
+                      <div className="px-3 text-sm">{info.row.original.display_name}</div>
+                      <div className="px-3 flex justify-between">{["min", "q1", "median", "q3", "max"].map((key) => (
+                        !Number.isNaN(listAmountsByProjectId.listQuartiles[info.row.original.id][key]) &&
+                        <div key={key} className="flex items-center space-x-1">
+                          <div className="text-[0.6rem] font-semibold capitalize">{key.slice(0, 3)}</div>
+                          <div className="text-[0.6rem] font-light font-inter">{formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id][key], true)}</div>
+                        </div>
+                      ))}</div>
+                      {listAmountsByProjectId?.listAmounts[info.row.original.id].sort(
+                        (a, b) => a.listContent[0].OPAmount - b.listContent[0].OPAmount
+                      ).map((list, i) => (
+                        list.listContent.map((listContentItem, j) => (
+                          <div key={j} className="flex px-3 py-0.5 justify-between items-center border border-forest-900/20 dark:border-forest-500/20 rounded-full">
+                            <div key={j} className="flex flex-col text-[0.6rem] leading-snug">
+                              <div className="w-48 font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">{list.listName}</div>
+                              <div className="font-light text-forest-900/80 dark:text-forest-500/80">
+                                {list.listAuthor.resolvedName.name ? (
+                                  <>{list.listAuthor.resolvedName.name}</>
+                                ) : (
+                                  <>
+                                    {list.listAuthor.address.slice(
+                                      0,
+                                      5,
+                                    ) +
+                                      "..." +
+                                      list.listAuthor.address.slice(
+                                        -8,
+                                      )}
+                                  </>
+                                )}
+                              </div>
+
                             </div>
-
+                            <div className="w-16 font-inter font-[600] text-xs text-right">
+                              {formatNumber(listContentItem.OPAmount, true)}{" "}<span className="text-[10px] font-light text-forest-900/80 dark:text-forest-500/80">OP</span>
+                            </div>
                           </div>
-                          <div className="w-16 font-inter font-[600] text-xs text-right">
-                            {formatNumber(listContentItem.OPAmount, true)}{" "}<span className="text-[10px] font-light text-forest-900/80 dark:text-forest-500/80">OP</span>
-                          </div>
-                        </div>
-                      ))
+                        ))
 
-                    ))}
+                      ))}
 
-                  </div>
+                    </div>
 
-                </TooltipContent>
-              </Tooltip>)}
+                  </TooltipContent>
+                </Tooltip>)}
             </div>
           </>
         ),
         sortingFn: (rowA, rowB) => {
-          const a = getProjectIdMedianListOPAmount(rowA.original.id);
-          const b = getProjectIdMedianListOPAmount(rowB.original.id);
+          if (!listAmountsByProjectId) return 0;
+          const a = listAmountsByProjectId.listQuartiles[rowA.original.id].median;
+          const b = listAmountsByProjectId.listQuartiles[rowB.original.id].median;
 
           if (Number.isNaN(a) && Number.isNaN(b)) return 0;
 
@@ -769,7 +605,6 @@ export default function Page() {
           return a > b ? 1 : -1;
         },
       },
-
       {
         header: () => (
           <div>
@@ -1087,7 +922,7 @@ export default function Page() {
                         </Link>
                       </div>
                       <div className="text-[0.7rem] font-light leading-snug pt-2">
-                        If you have any feedback or suggestions, please don& apos;t hesistate to contact us on
+                        If you have any feedback or suggestions, please don&apos;t hesistate to contact us on
                         {" "}
                         <Link
                           href="https://twitter.com/growthepie_eth"
@@ -1210,7 +1045,7 @@ export default function Page() {
                     </Link>
                   </div>
                   < div className="text-[0.7rem] font-light leading-snug pt-2" >
-                    If you have any feedback or suggestions, please don & apos;t hesistate to contact us on
+                    If you have any feedback or suggestions, please don &apos;t hesistate to contact us on
                     {" "}
                     <Link
                       href="https://twitter.com/growthepie_eth"
@@ -1332,122 +1167,12 @@ export default function Page() {
 
           // Otherwise, sort by whether a is greater than or less than b.
           return categoriesA > categoriesB ? 1 : -1;
-
-          // If both are equal, return 0.
-          //   if (categoriesA.join("") === categoriesB.join("")) return 0;
-
-          //   if (categoriesA.length === categoriesB.length) {
-          //     let i = 1;
-          //     while (i < categoriesA.length) {
-          //       if (
-          //         categoriesA.slice(0, categoriesA.length - i).join("") ===
-          //         categoriesB.slice(0, categoriesB.length - i).join("")
-          //       )
-          //         return 1;
-          //       i++;
-          //     }
-          //   } else if (categoriesA.length > categoriesB.length) {
-          //     let i = 1;
-          //     while (i < categoriesA.length) {
-          //       if (
-          //         categoriesA.slice(0, categoriesA.length - i).join("") ===
-          //         categoriesB.join("")
-          //       )
-          //         return 1;
-          //       i++;
-          //     }
-          //   } else if (categoriesB.length > categoriesA.length) {
-          //     let i = 1;
-          //     while (i < categoriesB.length) {
-          //       if (
-          //         categoriesB.slice(0, categoriesB.length - i).join("") ===
-          //         categoriesA.join("")
-          //       )
-          //         return -1;
-          //       i++;
-          //     }
-          //   }
-          // },
         },
       },
-      // {
-      //   header: "Last Updated",
-      //   accessorKey: "last_updated",
-      //   // size: 15,
-      //   cell: (info) => (
-      //     <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis text-right">
-      //       {moment(info.row.original.last_updated).fromNow(true)}
-      //     </div>
-      //   ),
-      //   meta: {
-      //     headerAlign: {
-      //       marginLeft: "auto",
-      //       flexDirection: "row-reverse",
-      //     },
-      //   },
-      //   sortingFn: (rowA, rowB) => {
-      //     const a = moment(rowA.original.last_updated).unix();
-      //     const b = moment(rowB.original.last_updated).unix();
-
-      //     // If both are equal, return 0.
-      //     if (a === b) return 0;
-
-      //     // Otherwise, sort by whether a is greater than or less than b.
-      //     return a > b ? 1 : -1;
-      //   },
-      // },
     ],
 
-    [getMaxTotalFundingAmount, getProjectsCombinedFundingSourcesByCurrency, getProjectsTotalFundingRank, getProjectIdUniqueListAuthors, getBoxPlotData, listAmountsByProjectId],
+    [getMaxTotalFundingAmount, getProjectsCombinedFundingSourcesByCurrency, getProjectsTotalFundingRank, listAmountsByProjectId],
   );
-
-  // const projectsUniqueValues = useMemo(() => {
-  //   if (!projects) return null;
-  //   const uniqueValues = {
-  //     usd_funding: uniq(
-  //       projects.map(
-  //         (d) =>
-  //           getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)[
-  //           "USD"
-  //           ],
-  //       ),
-  //     ).length,
-  //     op_funding: uniq(
-  //       projects.map(
-  //         (d) =>
-  //           getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)[
-  //           "OP"
-  //           ],
-  //       ),
-  //     ).length,
-  //   };
-
-  //   return uniqueValues;
-  // }, [getProjectsCombinedFundingSourcesByCurrency, projects]);
-
-  // const dataUniqueValues = useMemo(() => {
-  //   if (!data) return null;
-  //   const uniqueValues = {
-  //     usd_funding: uniq(
-  //       data.map(
-  //         (d) =>
-  //           getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)[
-  //           "USD"
-  //           ],
-  //       ),
-  //     ).length,
-  //     op_funding: uniq(
-  //       data.map(
-  //         (d) =>
-  //           getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)[
-  //           "OP"
-  //           ],
-  //       ),
-  //     ).length,
-  //   };
-
-  //   return uniqueValues;
-  // }, [data, getProjectsCombinedFundingSourcesByCurrency]);
 
   const table = useReactTable<Project>({
     data,
@@ -1520,7 +1245,7 @@ export default function Page() {
     return `#${"00000".substring(0, 6 - c.length)}${c}`;
   };
 
-  const tableMinWidthClass = "min-w-[1250px]";
+  const tableMinWidthClass = "min-w-[1300px]";
 
   const [contentRef, { width: contentWidth }] = useElementSize();
   const [tableRef, { width: tableWidth }] = useElementSize();
@@ -1892,315 +1617,22 @@ const BoxPlot: React.FC<BoxPlotProps> = ({ min, q1, median, q3, max, scale = 100
   const q3Pos = getScalePos(q3, globalMin, globalMax, scale);
   const maxPos = getScalePos(max, globalMin, globalMax, scale);
 
-  const width = q3Pos - q1Pos; // Width of the box (Q1 to Q3)
-
   return (
     <div className="relative flex items-center h-6" style={{ width: `${scale}%` }}>
       {/* spacer */}
       <div style={{ width: `${minPos}px` }}></div>
-      {/* Line for min */}
-      {/* <div className="h-[2px] bg-forest-900/30 dark:bg-forest-500/30" style={{ width: '1px' }}></div> */}
-
       {/* Line for min to Q1 */}
       <div className="h-[2px] -mt-[2px]  bg-forest-900/50 dark:bg-forest-500/50" style={{ width: `${q1Pos - minPos}%` }}></div>
-
       {/* Box for Q1 to Q3 */}
       <div className="relative h-[3px] rounded-xs bg-forest-900/80 dark:bg-forest-500/80" style={{ width: `${medianPos - q1Pos}%` }} />
       {/* Line for median */}
-      {/* <div className="absolute h-[2px] bg-forest-900 dark:bg-forest-500" style={{ left: `${medianPos}px`, width: '1px' }}></div> */}
       <div className="h-[4px] -mb-[1px] bg-forest-900 dark:bg-forest-500" style={{ left: `0%`, width: '1px' }}></div>
       {/* </div> */}
-      {/* <div className="h-[5px] bg-forest-900 dark:bg-forest-500" style={{ left: `${medianPos}px`, width: '1px' }}></div> */}
       <div className="relative h-[3px] rounded-xs bg-forest-900/80 dark:bg-forest-500/80" style={{ width: `${q3Pos - medianPos}%` }} />
-
-
       {/* Line for Q3 to max */}
       <div className="h-[2px] -mt-[2px]  bg-forest-900/50 dark:bg-forest-500/50" style={{ width: `${maxPos - q3Pos}%` }}></div>
-
-      {/* Line for max */}
-      {/* <div className="h-[2px] bg-forest-900/30 dark:bg-forest-500/30" style={{ left: `${maxPos}px`, width: '1px' }}></div> */}
       {/* background */}
       <div className="absolute -mt-[2px] w-full h-[2px] bg-forest-900/20 dark:bg-forest-500/20 rounded-xs -z-10" />
     </div>
   );
 };
-
-// {
-//   "id": "Project|0xc754e70f8d64d1923e4fb7591e0cad3790d4e164b3b11a8db1c1356714037792",
-//   "included_in_ballots": 6,
-//   "display_name": "L2BEAT 💗",
-//   "applicant": {
-//       "address": {
-//           "address": "0x1B686eE8E31c5959D9F5BBd8122a58682788eeaD",
-//           "isContract": false,
-//           "resolvedName": {
-//               "name": "delegate.l2beat.eth",
-//               "address": "0x1B686eE8E31c5959D9F5BBd8122a58682788eeaD"
-//           }
-//       },
-//       "amountOwned": {
-//           "amount": {
-//               "amount": "0",
-//               "currency": "OP",
-//               "decimals": 18
-//           },
-//           "bpsOfTotal": 0,
-//           "bpsOfQuorum": 0,
-//           "bpsOfDelegatedSupply": 0
-//       }
-//   },
-//   "applicant_type": "PROJECT",
-//   "bio": "L2BEAT is a public goods company dedicated to providing on-chain transparency. ",
-//   "certified_not_barred_from_participating": true,
-//   "certified_not_designated_or_sanctioned_or_blocked": true,
-//   "certified_not_sponsored_by_political_figure_or_government_entit": true,
-//   "contribution_description": "Since RPGF2 we have focused on:\n \nEnd User Experience and Adoption\n- Added a “risk rosette” - quickly compare risk vectors of different L2s\n- Introduced “stages”, progress on the road to full decentralization\n- Separated L2 TVL into assets bridged canonically, externally and minted natively on L2\n- Continuous addition of new L2s, incl. all new OP Stack chains\n- Published a report on “Upgradeability of Ethereum L2s”\n\nCollective governance\n- Hosted Governance Breakfast at several conferences, fostering governance discussion\n- Hosted weekly Optimism Office Hours \n- Hosting whole-day governance workshops during L2DAYS at Devconnect Istanbul\n\nDeveloper ecosystem\n- Constant development of contract monitoring of L2 systems\n- Build Your Own Rollup\n- co-hosted L2Warsaw & L2DAYS Istanbul\n- Earl.js",
-//   "contribution_links": [
-//       {
-//           "url": "https://l2beat.com/",
-//           "type": "OTHER",
-//           "description": "L2BEAT website"
-//       },
-//       {
-//           "url": "https://github.com/l2beat/",
-//           "type": "GITHUB_REPO",
-//           "description": "Main Github repository"
-//       },
-//       {
-//           "url": "https://github.com/l2beat/l2beat/pull/1268",
-//           "type": "GITHUB_REPO",
-//           "description": "Risk Rossette"
-//       },
-//       {
-//           "url": "https://github.com/l2beat/l2beat/pull/1584",
-//           "type": "GITHUB_REPO",
-//           "description": "Stages"
-//       },
-//       {
-//           "url": "https://github.com/l2beat/l2beat/pull/1938",
-//           "type": "GITHUB_REPO",
-//           "description": "TVL separation"
-//       },
-//       {
-//           "url": "https://l2beat.com/multisig-report",
-//           "type": "OTHER",
-//           "description": "\"Upgradeability of Ethereum L2s\" report"
-//       },
-//       {
-//           "url": "https://byor.l2beat.com/",
-//           "type": "OTHER",
-//           "description": "Build Your Own Rollup"
-//       },
-//       {
-//           "url": "https://github.com/l2beat/earl",
-//           "type": "GITHUB_REPO",
-//           "description": "Earl JS"
-//       },
-//       {
-//           "url": "https://l2beat.notion.site/Delegate-your-votes-to-L2BEAT-8ffc452bed9a431cb158d1e4e19839e3",
-//           "type": "OTHER",
-//           "description": "L2BEAT Governance page"
-//       },
-//       {
-//           "url": "https://warsaw.l2beat.com/",
-//           "type": "OTHER",
-//           "description": "L2Warsaw conference"
-//       },
-//       {
-//           "url": "https://l2days.xyz/",
-//           "type": "OTHER",
-//           "description": "L2DAYS Istanbul conference"
-//       }
-//   ],
-//   "funding_sources": [
-//       {
-//           "type": "RETROPGF_2",
-//           "amount": 256294.36,
-//           "currency": "OP",
-//           "description": ""
-//       },
-//       {
-//           "type": "OTHER",
-//           "amount": 500000,
-//           "currency": "USD",
-//           "description": "Ethereum Foundation 2023 grant (second tranche)"
-//       },
-//       {
-//           "type": "GOVERNANCE_FUND",
-//           "amount": 63667,
-//           "currency": "OP",
-//           "description": "Optimism governance rewards and compensation since March 2023"
-//       },
-//       {
-//           "type": "OTHER",
-//           "amount": 85000,
-//           "currency": "USD",
-//           "description": "Gitcoin since March 2023"
-//       },
-//       {
-//           "type": "OTHER",
-//           "amount": 52000,
-//           "currency": "USD",
-//           "description": "Sponsorship that covered L2 Warsaw conference costs"
-//       },
-//       {
-//           "type": "OTHER",
-//           "amount": 60000,
-//           "currency": "USD",
-//           "description": "Grant from Polygon Labs for the \"Uprgradability of Ethereum L2S\" report"
-//       },
-//       {
-//           "type": "OTHER",
-//           "amount": 5000,
-//           "currency": "USD",
-//           "description": "Direct donations"
-//       },
-//       {
-//           "type": "OTHER",
-//           "amount": 110000,
-//           "currency": "USD",
-//           "description": "Development of public goods software funded by third-parties"
-//       }
-//   ],
-//   "impact_category": [
-//       "COLLECTIVE_GOVERNANCE",
-//       "DEVELOPER_ECOSYSTEM",
-//       "END_USER_EXPERIENCE_AND_ADOPTION"
-//   ],
-//   "impact_description": "From the direct feedback we receive, both on Discord & Telegram as well as in person during conferences, we know that our work is helping shape the way Ethereum and L2 ecosystems evolve.\n- The risk assessment and stages frameworks serve as a north star for projects in terms of what they should prioritize in their roadmaps.\n- Our contract monitoring ensures that no changes to the security parameters of any L2 go unnoticed.\n- The introduction of TVL breakdown spurred discussion on how we should treat L2 assets depending on their origin.\n- Our work on L2 upgradeability is now the backbone of security council designs in various protocols.\n- Due to our active participation in governance, we’re now experimenting with different forms of involvement and outreach to the community.",
-//   "impact_metrics": [
-//       {
-//           "url": "https://l2beat.com",
-//           "number": "79",
-//           "description": "Project researched"
-//       },
-//       {
-//           "url": "https://l2beat.com",
-//           "number": "7",
-//           "description": "OP Stack projects researched to date"
-//       },
-//       {
-//           "url": "https://discord.com/channels/885067338158837800/1074693294656856136/1074699641980977254",
-//           "number": "248",
-//           "description": "Days publicly monitoring L2 systems"
-//       },
-//       {
-//           "url": "https://github.com/l2beat/l2beat/tree/master/packages/backend/discovery",
-//           "number": "1131",
-//           "description": "Number of monitored smart contracts"
-//       },
-//       {
-//           "url": "https://l2beat.com/",
-//           "number": "3",
-//           "description": "Conferences organized"
-//       },
-//       {
-//           "url": "https://l2beat.com/",
-//           "number": "4",
-//           "description": "Governance meetups organized"
-//       },
-//       {
-//           "url": "https://calendar.google.com/calendar/embed?src=c_074582b1bd5a655c8cd2d6b3ab9bd44771ce7082c26f942d5339ee1d9e7c8c04%40group.calendar.google.com&ctz=Europe%2FWarsaw",
-//           "number": "11",
-//           "description": "Optimism Office Hours hosted"
-//       }
-//   ],
-//   "lists": [
-//       {
-//           "id": "List|0x02116ab0eccd61f1d2b2e8d37fff78dea2c927c54343837e496a6cedeb224b2e",
-//           "likes": [
-//               "0xcf79C7EaEC5BDC1A9e32D099C5D6BdF67E4cF6e8"
-//           ],
-//           "author": {
-//               "address": "0x5a5D9aB7b1bD978F80909503EBb828879daCa9C3",
-//               "isContract": false,
-//               "resolvedName": {
-//                   "name": "cerv1.eth",
-//                   "address": "0x5a5D9aB7b1bD978F80909503EBb828879daCa9C3"
-//               }
-//           },
-//           "listName": "Developer Ecosystem Projects on Open Source Observer",
-//           "categories": [
-//               "DEVELOPER_ECOSYSTEM"
-//           ],
-//           "listDescription": "Developer Ecosystem Projects on Open Source Observer",
-//           "impactEvaluationLink": "https://github.com/opensource-observer/insights/blob/main/notebooks/2023-11-07_RPGF3xOSO.ipynb",
-//           "impactEvaluationDescription": "This list awards 50K OP tokens to any RPGF3 project in the 'Developer Ecosystem' category that is represented on https://opensource.observer. Only projects with unique, public GitHub repos included in their application have been indexed by OSO. It awards an extra 25K tokens to projects that included a contract address or NPM package url in their application, or that were in a prior RPGF round. Note: lists generated by the OSO team do not include OSO in them in order to comply with voting rules, so please consider adding our project to your ballot separately."
-//       },
-//       {
-//           "id": "List|0x9fb7b59084243ab3bf31d526acd082fbe9bf6d53cb0fce5b07d6ea63d8957b6b",
-//           "likes": [
-//               "0xcf79C7EaEC5BDC1A9e32D099C5D6BdF67E4cF6e8"
-//           ],
-//           "author": {
-//               "address": "0x5a5D9aB7b1bD978F80909503EBb828879daCa9C3",
-//               "isContract": false,
-//               "resolvedName": {
-//                   "name": "cerv1.eth",
-//                   "address": "0x5a5D9aB7b1bD978F80909503EBb828879daCa9C3"
-//               }
-//           },
-//           "listName": "Bear Market Builders",
-//           "categories": [
-//               "OP_STACK"
-//           ],
-//           "listDescription": "Projects that have been building OSS continuously for more than two years.",
-//           "impactEvaluationLink": "https://github.com/opensource-observer/insights/blob/main/notebooks/2023-11-13_RPGF3_BearMarketBuilders.ipynb",
-//           "impactEvaluationDescription": "This list awards 50K OP tokens to any *active* RPGF3 project in any impact category that is represented on https://opensource.observer that started before Nov 2021. Only projects with unique, public GitHub repos included in their application have been indexed by OSO. It also awards a token bonus to projects based on the number of full-time active developers they have on GitHub in the last 6 months: 20K tokens for 1-2 devs, 30K for 3-5, 40K for 6-9, 50K for 10+. Note: lists generated by the OSO team do not include OSO in them in order to comply with voting rules, so please consider adding our project to your ballot separately. Always DYOR!"
-//       },
-//       {
-//           "id": "List|0xe415e926feab9736a8a2572bdd69ded645d133199c06c75d82b11c419c5f50ba",
-//           "likes": [],
-//           "author": {
-//               "address": "0x5a5D9aB7b1bD978F80909503EBb828879daCa9C3",
-//               "isContract": false,
-//               "resolvedName": {
-//                   "name": "cerv1.eth",
-//                   "address": "0x5a5D9aB7b1bD978F80909503EBb828879daCa9C3"
-//               }
-//           },
-//           "listName": "End User Experience & Adoption Projects on Open Source Observer",
-//           "categories": [
-//               "END_USER_EXPERIENCE_AND_ADOPTION"
-//           ],
-//           "listDescription": "OSS projects with direct impact on user growth across the Superchain.",
-//           "impactEvaluationLink": "https://github.com/opensource-observer/insights/blob/main/notebooks/2023-11-13_RPGF3_EndUserExperience.ipynb",
-//           "impactEvaluationDescription": "This list awards 50K OP tokens to any *active* RPGF3 project in the 'End User Experience & Adoption' category that is represented on https://opensource.observer. Only projects with unique, public GitHub repos included in their application have been indexed by OSO. It also awards a token bonus to projects based on the number of monthly active users they have on OP Mainnet: 10K tokens for 10-100 MAUs, 20K for 100-1000, 30K for 1000-10,000, and so on. If a contract address was not included as a link in a project's RPGF3 application, then it most likely won't be included here. Finally, projects targeting end users on Base, Farcaster, and Zora networks also receive a 10K OP bonus. Note: lists generated by the OSO team do not include OSO in them in order to comply with voting rules, so please consider adding our project to your ballot separately. Always DYOR!"
-//       },
-//       {
-//           "id": "List|0x8848b2be08d0503becabd7f0b1af589c252a061407301bc9549971bad15a743b",
-//           "likes": [],
-//           "author": {
-//               "address": "0x5a5D9aB7b1bD978F80909503EBb828879daCa9C3",
-//               "isContract": false,
-//               "resolvedName": {
-//                   "name": "cerv1.eth",
-//                   "address": "0x5a5D9aB7b1bD978F80909503EBb828879daCa9C3"
-//               }
-//           },
-//           "listName": "Directed Graph of OSS Contributors",
-//           "categories": [
-//               "DEVELOPER_ECOSYSTEM"
-//           ],
-//           "listDescription": "This list applies the page rank algorithm to the graph of OSS contributors on Open Source Observer.",
-//           "impactEvaluationLink": "https://github.com/opensource-observer/insights/blob/main/notebooks/2023-11-14_RPGF3_ContributorPageRank.ipynb",
-//           "impactEvaluationDescription": "This is an experimental list format that uses the page rank algorithm to allocate 20M OP tokens to OSS projects that are represented on https://opensource.observer. First, it identifies users with at least 10 contributions (commits, PRs, issues) to a given OSS project. Then, it creates a directed graph of contributors and runs page rank over the graph. Finally, it allocates tokens pro rata to the top 120 projects based on page rank, rounded to the nearest 10K OP. The algorithm considers all contributions to all non-forked repos listed by RPGF3 projects (as well as contributions to core Optimism repos). The algorithm excludes Protocol Guild to prevent double-counting of contributors to the Ethereum org space; if you use this list for voting, you should consider adding Protocol Guild back to your ballot.Note: lists generated by the OSO team do not include OSO in them in order to comply with voting rules, so please consider adding our project to your ballot separately. Always DYOR!"
-//       }
-//   ],
-//   "understood_fund_claim_period": true,
-//   "understood_kyc_requirements": true,
-//   "website_url": "https://l2beat.com/",
-//   "profile": {
-//       "id": "OptimistProfile|0xa699bfc98744dd0d49347bc458e68d933685b26d69c24f85b45afc2c0148a7c7",
-//       "bio": "L2BEAT is a public goods company dedicated to providing on-chain transparency. We serve as an impartial and independent steward for Ethereum community.",
-//       "uid": "0xa699bfc98744dd0d49347bc458e68d933685b26d69c24f85b45afc2c0148a7c7",
-//       "name": "L2BEAT 💗",
-//       "websiteUrl": "https://l2beat.com/",
-//       "bannerImageUrl": "https://content.optimism.io/profile/v0/banner-image/10/0x1B686eE8E31c5959D9F5BBd8122a58682788eeaD.png",
-//       "profileImageUrl": "https://content.optimism.io/profile/v0/profile-image/10/0x1B686eE8E31c5959D9F5BBd8122a58682788eeaD.png"
-//   },
-//   "payout_address": {
-//       "address": "0xeA78912803bE5E356EaC2b8e127D4BA87230A48e"
-//   },
-//   "last_updated": "2023-11-16T21:05:22.314Z"
-// }

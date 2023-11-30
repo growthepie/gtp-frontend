@@ -114,15 +114,26 @@ export type ListAuthor = {
 
 export type ListAmountsByProjectIdResponse = {
   listAmounts: ListAmountsByProjectId;
+  listQuartiles: QuartilesByProjecId;
+  numUniqueAuthors: { [projectId: string]: number };
 };
 
 export type ListAmountsByProjectId = {
-  [key: string]: {
+  [projectId: string]: {
     id: string;
     listName: string;
     listAuthor: ListAuthor;
     listContent: ListContent[];
   }[];
+};
+
+export type QuartilesByProjecId = {[projectId: string]: {
+  min: number;
+  q1: number;
+  median: number;
+  q3: number;
+  max: number;
+}
 };
 
 export type ProjectInfoResponse = {
