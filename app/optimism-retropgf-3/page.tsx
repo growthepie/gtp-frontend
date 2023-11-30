@@ -270,6 +270,54 @@ export default function Page() {
     return uniq(listAmountsByProjectId.listAmounts[projectId].map((list) => list.listAuthor.address));
   }, [listAmountsByProjectId]);
 
+  const getProjectIdUniqueListContent = useCallback((projectId: string) => {
+    if (!listAmountsByProjectId || !listAmountsByProjectId.listAmounts[projectId]) return [];
+
+    return uniq(listAmountsByProjectId.listAmounts[projectId].map((list) => list.listContent));
+  }, [listAmountsByProjectId]);
+
+  const [minListOPAmount, maxListOPAmount] = useMemo<[number, number]>(() => {
+    if (!listAmountsByProjectId) return [0, 0];
+
+    const listOPAmounts = Object.values(listAmountsByProjectId.listAmounts).flatMap((listAmounts) => listAmounts.map((listAmount) => listAmount.listContent[0].OPAmount));
+
+    return [Math.min(...listOPAmounts), Math.max(...listOPAmounts)];
+  }, [listAmountsByProjectId]);
+
+  const getProjectIdMedianListOPAmount = useCallback((projectId: string) => {
+    if (!listAmountsByProjectId || !listAmountsByProjectId.listAmounts[projectId]) return 0;
+
+    const listOPAmounts = listAmountsByProjectId.listAmounts[projectId].sort((a, b) => a.listContent[0].OPAmount - b.listContent[0].OPAmount).map((listAmount) => listAmount.listContent[0].OPAmount);
+
+    return listOPAmounts[Math.floor(listOPAmounts.length / 2)];
+  }, [listAmountsByProjectId]);
+
+  const getBoxPlotData: (projectId: string) => { min: number, q1: number, median: number, q3: number, max: number, globalMin: number, globalMax: number } = useCallback((projectId: string) => {
+    if (!listAmountsByProjectId || !listAmountsByProjectId.listAmounts[projectId] || !(minListOPAmount + maxListOPAmount)) return { min: 0, q1: 0, median: 0, q3: 0, max: 0, globalMin: 0, globalMax: 0 };
+
+    const numbers = listAmountsByProjectId.listAmounts[projectId].map((listAmount) => listAmount.listContent[0].OPAmount);
+    numbers.sort((a, b) => a - b);
+
+    const median = (nums: number[]): number => {
+      const half = Math.floor(nums.length / 2);
+
+      if (nums.length % 2) {
+        return nums[half];
+      }
+
+      return (nums[half - 1] + nums[half]) / 2.0;
+    };
+
+    const q1 = median(numbers.slice(0, Math.floor(numbers.length / 2)));
+    const q2 = median(numbers);
+    const q3 = median(numbers.slice(Math.ceil(numbers.length / 2)));
+
+    const min = numbers[0];
+    const max = numbers[numbers.length - 1];
+
+    return { min, q1, median: q2, q3, max, globalMin: minListOPAmount, globalMax: maxListOPAmount };
+  }, [listAmountsByProjectId, minListOPAmount, maxListOPAmount]);
+
 
   const getValuesInOrdersOfMagnitude = useCallback((value: number) => {
     const ordersOfMagnitude = [
@@ -587,6 +635,106 @@ export default function Page() {
           return a > b ? 1 : -1;
         },
       },
+      {
+        header: "List Amounts",
+        accessorKey: "lists",
+        size: 100,
+        cell: (info) => (
+          <>
+            {/* <div className="w-full whitespace-nowrap text-ellipsis relative"> */}
+            {/* {getProjectIdUniqueListContent(info.row.original.id).map((listContent, i) => (
+                <div key={i} className="text-[0.55rem] text-forest-900/30 dark:text-forest-500/30 font-light leading-[1]">
+                  {listContent.map((listContentItem, j) => (
+                    <div key={j} className="flex justify-center items-center rounded-sm text-forest-900/30 dark:text-forest-500/30" >{listContentItem.OPAmount}</div>
+                  ))}
+                </div>
+              ))} */}
+            {/* {JSON.stringify(getBoxPlotData(info.row.original.id))} */}
+            <div className="w-full whitespace-nowrap text-ellipsis relative overflow-visible">
+              <div className="flex text-[0.55rem] text-forest-900/60 dark:text-forest-500/60 font-inter font-light leading-[1]">
+                {getBoxPlotData(info.row.original.id).min !== Number.NaN && <div className="absolute left-0 -top-1.5">
+                  {formatNumber(getBoxPlotData(info.row.original.id).min, true)}
+                </div>}
+                <div className="absolute right-0 left-0 -top-1.5 text-center">—</div>
+                {getBoxPlotData(info.row.original.id).max !== Number.NaN && <div className="absolute right-0 -top-1.5">
+                  {formatNumber(getBoxPlotData(info.row.original.id).max, true)}
+                </div>}
+              </div>
+              <Tooltip placement="left" allowInteract>
+                <TooltipTrigger className="w-full">
+
+
+                  <div className="text-[0.7rem] font-normal w-full flex space-x-9.5 items-center font-inter mt-1">
+                    {/* <div className="text-forest-900/80 dark:text-forest-500/80 text-[0.5rem]">{formatNumber(getBoxPlotData(info.row.original.id).q1, true)}</div> */}
+                    {/* <div className="text-forest-900 dark:text-forest-500">{formatNumber(getBoxPlotData(info.row.original.id).median, true)}</div> */}
+                    {/* <div className="text-[0.55rem] text-forest-900/80 dark:text-forest-500/80 font-light leading-[1]">
+                      {formatNumber(getBoxPlotData(info.row.original.id).min, true)}
+                    </div> */}
+                    {getBoxPlotData(info.row.original.id).q1 && getBoxPlotData(info.row.original.id).q3 ?
+                      (<>
+                        <div className=" text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
+                          {formatNumber(getBoxPlotData(info.row.original.id).q1, true)}
+                        </div>
+                        <div className="flex-1 text-forest-900/50 dark:text-forest-500/50">-</div>
+                        <div className="text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
+                          {formatNumber(getBoxPlotData(info.row.original.id).q3, true)}{" "}<span className="text-[0.6rem]">OP</span>
+                        </div>
+                      </>) : (<div className="flex-1 text-forest-900/80 dark:text-forest-500 font-light leading-[1] text-right">
+                        {formatNumber(getBoxPlotData(info.row.original.id).median, true)}{" "}<span className="text-[0.6rem]">OP</span>
+                      </div>)}
+
+                    {/* <div className="text-forest-900/80 dark:text-forest-500/80 text-[0.5rem]">{formatNumber(getBoxPlotData(info.row.original.id).q3, true)}</div> */}
+                  </div>
+                  <div className="relative bottom-[8px] left-0 right-0 text-xs font-normal text-right h-[2px]">
+                    <BoxPlot {...{ ...getBoxPlotData(info.row.original.id) }} />
+                  </div>
+
+
+                </TooltipTrigger>
+                <TooltipContent className="z-50 flex items-center justify-center">
+                  <div className="flex flex-col space-y-1  px-2 py-1.5 w-80 text-[0.65rem] font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50">
+                    {listAmountsByProjectId?.listAmounts[info.row.original.id].sort(
+                      (a, b) => a.listContent[0].OPAmount - b.listContent[0].OPAmount
+                    ).map((list, i) => (
+
+
+                      list.listContent.map((listContentItem, j) => (
+                        <div key={j} className="flex">
+                          <div key={j} className="flex flex-col w-64 leading-tight">
+                            <div className="font-medium">{list.listName}</div>
+                            <div className="font-light text-forest-900/80 dark:text-forest-500/80 text-[0.6rem]">
+                              {list.listAuthor.resolvedName.name ? (
+                                <>{list.listAuthor.resolvedName.name}</>
+                              ) : (
+                                <>
+                                  {list.listAuthor.address.slice(
+                                    0,
+                                    5,
+                                  ) +
+                                    "..." +
+                                    list.listAuthor.address.slice(
+                                      -8,
+                                    )}
+                                </>
+                              )}
+                            </div>
+
+                          </div>
+                          <div className="font-light w-16 text-sm text-right">{formatNumber(listContentItem.OPAmount, true)} OP</div>
+                        </div>
+                      ))
+
+                    ))}
+
+                  </div>
+
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            {/* </div> */}
+          </>
+        ),
+      },
 
       {
         header: () => (
@@ -598,8 +746,8 @@ export default function Page() {
                   <TooltipTrigger>
                     <Icon icon="feather:info" className="w-4 h-4 absolute left-3 top-0" />
                   </TooltipTrigger>
-                  <TooltipContent className="pr-0 z-50 flex items-center justify-center">
-                    <div className="px-3 py-1.5 w-64 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
+                  <TooltipContent className="z-50 flex items-center justify-center">
+                    <div className="-mr-3.5 px-3 py-1.5 w-64 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
                       <div className="flex flex-col text-xs space-y-1">
                         <div className="font-light">
                           Total{" "}
@@ -953,7 +1101,7 @@ export default function Page() {
                   <div className="">
                     <span className="font-bold">Has Token</span>{" "}
                     <span className="font-light">
-                      ... Just going off of publicly available data from TracXn, Crunchbase, or press releases.
+                      indicates whether the project has a token and is sourced from publicly available data and the community.
                     </span>
                   </div>
 
@@ -966,7 +1114,23 @@ export default function Page() {
                       DefiLlama
                     </Link>
                   </div>
-                  <div className="text-[0.6rem] font-light leading-snug">Contact us on Twitter or Discord if you have any feedback or suggestions.</div>
+                  <div className="text-[0.7rem] font-light leading-snug pt-2">
+                    If you have any feedback or suggestions, please don't hesistate to contact us on
+                    {" "}
+                    <Link
+                      href="https://twitter.com/growthepie_eth"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline"
+                    >X/Twitter</Link>
+                    {' or '}
+                    <Link
+                      href="https://discord.gg/fxjJFe7QyN"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline"
+                    >Discord</Link>.
+                  </div>
                   {/* <span className="font-light">is calculated based on the reported USD and OP amount.<br /><br />For OP tokens we calculated with $1.35 (OP price when RPGF applications were closed).<br /><br /><span className="font-bold">Note:</span> Projects only had to report funding they received from the collective, many didn&apos;t include VC funding and other funding sources.</span> */}
                 </div>
               </div>
@@ -1569,6 +1733,81 @@ export default function Page() {
     </>
   );
 }
+
+// The props type
+type BoxPlotProps = {
+  min: number;
+  q1: number;
+  median: number;
+  q3: number;
+  max: number;
+  scale?: number; // To scale the plot within the table cell
+  globalMin: number; // To scale the plot within the table cell
+  globalMax: number; // To scale the plot within the table cell
+};
+
+const BoxPlot: React.FC<BoxPlotProps> = ({ min, q1, median, q3, max, scale = 100, globalMin, globalMax }) => {
+
+  // Function to calculate log-scaled position
+  const getScalePos = (value: number, globalMin: number, globalMax: number, scale: number, mode: "log" | "linear" | "sqrt" = "sqrt") => {
+    if (mode === "linear") {
+      const position = (value / globalMax) * scale;
+      return position;
+    }
+
+    if (mode === "sqrt") {
+      const position = (Math.sqrt(value) / Math.sqrt(globalMax)) * scale;
+      return position;
+    }
+
+    const logMin = Math.log(globalMin <= 0 ? 1 : globalMin);
+    const logMax = Math.log(globalMax);
+    const logValue = Math.log(value <= 0 ? 1 : value);
+    const logRange = logMax - logMin;
+    const logPosition = logValue - logMin;
+    const position = (logPosition / logRange) * scale;
+    return position;
+  };
+
+  // Calculate positions using log scale
+  const minPos = getScalePos(min, globalMin, globalMax, scale);
+  const q1Pos = getScalePos(q1, globalMin, globalMax, scale);
+  const medianPos = getScalePos(median, globalMin, globalMax, scale);
+  const q3Pos = getScalePos(q3, globalMin, globalMax, scale);
+  const maxPos = getScalePos(max, globalMin, globalMax, scale);
+
+  const width = q3Pos - q1Pos; // Width of the box (Q1 to Q3)
+
+  return (
+    <div className="relative flex items-center h-6" style={{ width: `${scale}%` }}>
+      {/* spacer */}
+      <div style={{ width: `${minPos}px` }}></div>
+      {/* Line for min */}
+      {/* <div className="h-[2px] bg-forest-900/30 dark:bg-forest-500/30" style={{ width: '1px' }}></div> */}
+
+      {/* Line for min to Q1 */}
+      <div className="h-[2px] -mt-[2px]  bg-forest-900/50 dark:bg-forest-500/50" style={{ width: `${q1Pos - minPos}%` }}></div>
+
+      {/* Box for Q1 to Q3 */}
+      <div className="relative h-[3px] rounded-xs bg-forest-900/80 dark:bg-forest-500/80" style={{ width: `${medianPos - q1Pos}%` }} />
+      {/* Line for median */}
+      {/* <div className="absolute h-[2px] bg-forest-900 dark:bg-forest-500" style={{ left: `${medianPos}px`, width: '1px' }}></div> */}
+      <div className="h-[4px] -mb-[1px] bg-forest-900 dark:bg-forest-500" style={{ left: `0%`, width: '1px' }}></div>
+      {/* </div> */}
+      {/* <div className="h-[5px] bg-forest-900 dark:bg-forest-500" style={{ left: `${medianPos}px`, width: '1px' }}></div> */}
+      <div className="relative h-[3px] rounded-xs bg-forest-900/80 dark:bg-forest-500/80" style={{ width: `${q3Pos - medianPos}%` }} />
+
+
+      {/* Line for Q3 to max */}
+      <div className="h-[2px] -mt-[2px]  bg-forest-900/50 dark:bg-forest-500/50" style={{ width: `${maxPos - q3Pos}%` }}></div>
+
+      {/* Line for max */}
+      {/* <div className="h-[2px] bg-forest-900/30 dark:bg-forest-500/30" style={{ left: `${maxPos}px`, width: '1px' }}></div> */}
+      {/* background */}
+      <div className="absolute -mt-[2px] w-full h-[2px] bg-forest-900/20 dark:bg-forest-500/20 rounded-xs -z-10" />
+    </div>
+  );
+};
 
 // {
 //   "id": "Project|0xc754e70f8d64d1923e4fb7591e0cad3790d4e164b3b11a8db1c1356714037792",
