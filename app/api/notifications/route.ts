@@ -50,3 +50,8 @@ export async function GET() {
     headers: { "content-type": "application/json" },
   });
 }
+
+// Example function to force a cache refresh
+function refreshCache() {
+  lastFetchTime = 0; // Force a cache refresh on the next request
+}

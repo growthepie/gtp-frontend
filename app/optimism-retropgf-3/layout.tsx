@@ -75,6 +75,15 @@ export default async function Layout({
           <div>RetroPGF Hub</div>
         </Link>
         <Link
+          href={"https://retrolist.app/"}
+          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-2 py-1"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <Icon icon="feather:external-link" className="w-4 h-4" />
+          <div>Retrolist</div>
+        </Link>
+        <Link
           href={"https://www.pairwise.vote/"}
           className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-2 py-1"
           rel="noreferrer"
