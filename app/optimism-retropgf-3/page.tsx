@@ -677,7 +677,7 @@ export default function Page() {
 
                 </TooltipTrigger>
                 <TooltipContent className="z-50 flex items-center justify-center">
-                  <div className="flex flex-col space-y-1 px-0.5 py-0.5 pt-1 text-[0.65rem] font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50">
+                  <div className="flex flex-col space-y-0.5 px-0.5 py-0.5 pt-1 text-[0.65rem] font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-2xl shadow-lg z-50">
                     <div className="px-3 text-sm">{info.row.original.display_name}</div>
                     <div className="px-3 flex justify-between">{["min", "q1", "median", "q3", "max"].map((key) => (
                       !Number.isNaN(getBoxPlotData(info.row.original.id)[key]) &&
@@ -711,7 +711,7 @@ export default function Page() {
                             </div>
 
                           </div>
-                          <div className="w-16 font-inter font-medium text-xs text-right">
+                          <div className="w-16 font-inter font-[600] text-xs text-right">
                             {formatNumber(listContentItem.OPAmount, true)}{" "}<span className="text-[10px] font-light text-forest-900/80 dark:text-forest-500/80">OP</span>
                           </div>
                         </div>
