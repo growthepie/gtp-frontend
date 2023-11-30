@@ -641,36 +641,21 @@ export default function Page() {
         size: 100,
         cell: (info) => (
           <>
-            {/* <div className="w-full whitespace-nowrap text-ellipsis relative"> */}
-            {/* {getProjectIdUniqueListContent(info.row.original.id).map((listContent, i) => (
-                <div key={i} className="text-[0.55rem] text-forest-900/30 dark:text-forest-500/30 font-light leading-[1]">
-                  {listContent.map((listContentItem, j) => (
-                    <div key={j} className="flex justify-center items-center rounded-sm text-forest-900/30 dark:text-forest-500/30" >{listContentItem.OPAmount}</div>
-                  ))}
-                </div>
-              ))} */}
-            {/* {JSON.stringify(getBoxPlotData(info.row.original.id))} */}
             <div className="w-full whitespace-nowrap text-ellipsis relative overflow-visible">
-              <div className="flex text-[0.55rem] text-forest-900/60 dark:text-forest-500/60 font-inter font-light leading-[1]">
-                {getBoxPlotData(info.row.original.id).min !== Number.NaN && <div className="absolute left-0 -top-1.5">
-                  {formatNumber(getBoxPlotData(info.row.original.id).min, true)}
-                </div>}
-                <div className="absolute right-0 left-0 -top-1.5 text-center">—</div>
-                {getBoxPlotData(info.row.original.id).max !== Number.NaN && <div className="absolute right-0 -top-1.5">
-                  {formatNumber(getBoxPlotData(info.row.original.id).max, true)}
-                </div>}
-              </div>
-              <Tooltip placement="left" allowInteract>
+              {listAmountsByProjectId && listAmountsByProjectId.listAmounts[info.row.original.id].length > 0 && !Number.isNaN(getBoxPlotData(info.row.original.id).min) && !Number.isNaN(getBoxPlotData(info.row.original.id).max) && (
+                <div className="flex text-[0.55rem] text-forest-900/60 dark:text-forest-500/60 font-inter font-light leading-[1]">
+                  <div className="absolute left-0 -top-1.5">
+                    {formatNumber(getBoxPlotData(info.row.original.id).min, true)}
+                  </div>
+                  <div className="absolute right-0 left-0 -top-1.5 text-center">—</div>
+                  <div className="absolute right-0 -top-1.5">
+                    {formatNumber(getBoxPlotData(info.row.original.id).max, true)}
+                  </div>
+                </div>)}
+              {listAmountsByProjectId && listAmountsByProjectId.listAmounts[info.row.original.id].length > 0 && (<Tooltip placement="left" allowInteract>
                 <TooltipTrigger className="w-full">
-
-
                   <div className="text-[0.7rem] font-normal w-full flex space-x-9.5 items-center font-inter mt-1">
-                    {/* <div className="text-forest-900/80 dark:text-forest-500/80 text-[0.5rem]">{formatNumber(getBoxPlotData(info.row.original.id).q1, true)}</div> */}
-                    {/* <div className="text-forest-900 dark:text-forest-500">{formatNumber(getBoxPlotData(info.row.original.id).median, true)}</div> */}
-                    {/* <div className="text-[0.55rem] text-forest-900/80 dark:text-forest-500/80 font-light leading-[1]">
-                      {formatNumber(getBoxPlotData(info.row.original.id).min, true)}
-                    </div> */}
-                    {getBoxPlotData(info.row.original.id).q1 && getBoxPlotData(info.row.original.id).q3 ?
+                    {!Number.isNaN(getBoxPlotData(info.row.original.id).q1) && !Number.isNaN(getBoxPlotData(info.row.original.id).q3) ?
                       (<>
                         <div className=" text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
                           {formatNumber(getBoxPlotData(info.row.original.id).q1, true)}
@@ -682,8 +667,6 @@ export default function Page() {
                       </>) : (<div className="flex-1 text-forest-900/80 dark:text-forest-500 font-light leading-[1] text-right">
                         {formatNumber(getBoxPlotData(info.row.original.id).median, true)}{" "}<span className="text-[0.6rem]">OP</span>
                       </div>)}
-
-                    {/* <div className="text-forest-900/80 dark:text-forest-500/80 text-[0.5rem]">{formatNumber(getBoxPlotData(info.row.original.id).q3, true)}</div> */}
                   </div>
                   <div className="relative bottom-[8px] left-0 right-0 text-xs font-normal text-right h-[2px]">
                     <BoxPlot {...{ ...getBoxPlotData(info.row.original.id) }} />
@@ -692,16 +675,22 @@ export default function Page() {
 
                 </TooltipTrigger>
                 <TooltipContent className="z-50 flex items-center justify-center">
-                  <div className="flex flex-col space-y-1  px-2 py-1.5 w-80 text-[0.65rem] font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50">
+                  <div className="flex flex-col space-y-1 px-0.5 py-0.5 w-96 text-[0.65rem] font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50">
+                    <div className="px-4 text-sm">{rows[info.row.index].original.display_name}</div>
+                    <div className="px-4 flex justify-between">{["min", "q1", "median", "q3", "max"].map((key) => (
+                      <div key={key} className="flex items-center space-x-1">
+                        <div className="text-[0.6rem] font-semibold capitalize">{key.slice(0, 3)}</div>
+                        <div className="text-[0.6rem] font-light font-inter">{formatNumber(getBoxPlotData(info.row.original.id)[key], true)}</div>
+                      </div>
+                    ))}</div>
                     {listAmountsByProjectId?.listAmounts[info.row.original.id].sort(
                       (a, b) => a.listContent[0].OPAmount - b.listContent[0].OPAmount
                     ).map((list, i) => (
-
-
                       list.listContent.map((listContentItem, j) => (
-                        <div key={j} className="flex">
-                          <div key={j} className="flex flex-col w-64 leading-tight">
+                        <div key={j} className="flex px-3 justify-between items-center border border-forest-900/20 dark:border-forest-500/20 rounded-full">
+                          <div key={j} className="flex flex-col w-80 leading-tight">
                             <div className="font-medium">{list.listName}</div>
+
                             <div className="font-light text-forest-900/80 dark:text-forest-500/80 text-[0.6rem]">
                               {list.listAuthor.resolvedName.name ? (
                                 <>{list.listAuthor.resolvedName.name}</>
@@ -720,7 +709,9 @@ export default function Page() {
                             </div>
 
                           </div>
-                          <div className="font-light w-16 text-sm text-right">{formatNumber(listContentItem.OPAmount, true)} OP</div>
+                          <div className="font-inter font-normal w-16 text-sm text-right">
+                            {formatNumber(listContentItem.OPAmount, true)}{" "}<span className="text-[12px] font-light">OP</span>
+                          </div>
                         </div>
                       ))
 
@@ -729,9 +720,8 @@ export default function Page() {
                   </div>
 
                 </TooltipContent>
-              </Tooltip>
+              </Tooltip>)}
             </div>
-            {/* </div> */}
           </>
         ),
       },
