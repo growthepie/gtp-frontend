@@ -675,9 +675,9 @@ export default function Page() {
 
                 </TooltipTrigger>
                 <TooltipContent className="z-50 flex items-center justify-center">
-                  <div className="flex flex-col space-y-1 px-0.5 py-0.5 w-96 text-[0.65rem] font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50">
-                    <div className="px-4 text-sm">{info.row.original.display_name}</div>
-                    <div className="px-4 flex justify-between">{["min", "q1", "median", "q3", "max"].map((key) => (
+                  <div className="flex flex-col space-y-1 px-0.5 py-0.5 pt-1 text-[0.65rem] font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50">
+                    <div className="px-3 text-sm">{info.row.original.display_name}</div>
+                    <div className="px-3 flex justify-between">{["min", "q1", "median", "q3", "max"].map((key) => (
                       <div key={key} className="flex items-center space-x-1">
                         <div className="text-[0.6rem] font-semibold capitalize">{key.slice(0, 3)}</div>
                         <div className="text-[0.6rem] font-light font-inter">{formatNumber(getBoxPlotData(info.row.original.id)[key], true)}</div>
@@ -688,10 +688,10 @@ export default function Page() {
                     ).map((list, i) => (
                       list.listContent.map((listContentItem, j) => (
                         <div key={j} className="flex px-3 justify-between items-center border border-forest-900/20 dark:border-forest-500/20 rounded-full">
-                          <div key={j} className="flex flex-col w-80 leading-tight">
-                            <div className="font-medium">{list.listName}</div>
+                          <div key={j} className="flex flex-col text-[0.6rem]">
+                            <div className="w-48 font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">{list.listName}</div>
 
-                            <div className="font-light text-forest-900/80 dark:text-forest-500/80 text-[0.6rem]">
+                            <div className="font-light text-forest-900/80 dark:text-forest-500/80">
                               {list.listAuthor.resolvedName.name ? (
                                 <>{list.listAuthor.resolvedName.name}</>
                               ) : (
@@ -709,7 +709,7 @@ export default function Page() {
                             </div>
 
                           </div>
-                          <div className="font-inter font-normal w-16 text-sm text-right">
+                          <div className="w-16 font-inter font-medium text-xs text-right">
                             {formatNumber(listContentItem.OPAmount, true)}{" "}<span className="text-[12px] font-light">OP</span>
                           </div>
                         </div>
