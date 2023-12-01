@@ -14,7 +14,16 @@ export default function Header() {
       <div className="flex justify-between items-center w-full">
         <div className="flex space-x-0 xl:space-x-6 w-full">
           {/*Banner/Notification Area */}
-          {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined && ["development", "preview"].includes(process.env.NEXT_PUBLIC_VERCEL_ENV) ? <Notification /> : <Banner />}
+          {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
+          ["development", "preview"].includes(
+            process.env.NEXT_PUBLIC_VERCEL_ENV,
+          ) ? (
+            <div className={"hidden md:flex"}>
+              <Notification />
+            </div>
+          ) : (
+            <Banner />
+          )}
           <div className="flex justify-between items-end md:hidden relative w-full">
             <Link href="/" className="">
               <div className="h-[36px] w-[154.05px] relative">
@@ -36,7 +45,19 @@ export default function Header() {
                 />
               </div>
             </Link>
-            <Sidebar isMobile={true} />
+            {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
+            ["development", "preview"].includes(
+              process.env.NEXT_PUBLIC_VERCEL_ENV,
+            ) ? (
+              <div className="flex md:hidden w-[60%]  h-6 items-end justify-end mr-[50px] xs:mr-[25px] sm:mr-[30px]">
+                <Notification />
+              </div>
+            ) : (
+              <> </>
+            )}
+            <div>
+              <Sidebar isMobile={true} />
+            </div>
           </div>
         </div>
       </div>
@@ -86,7 +107,14 @@ export default function Header() {
           </Link>
         </div>
       </div>
-      {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined && !["development", "preview"].includes(process.env.NEXT_PUBLIC_VERCEL_ENV) && <SupportUsBanner />}
+      {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
+      ["development", "preview"].includes(
+        process.env.NEXT_PUBLIC_VERCEL_ENV,
+      ) ? (
+        <> </>
+      ) : (
+        <SupportUsBanner />
+      )}
       {/* Donation Banner smaller than XL screen */}
       {/* <Link
         href="https://explorer.gitcoin.co/#/round/42161/0x59d79b22595b17af659ce9b03907615f53742c57/0x59d79b22595b17af659ce9b03907615f53742c57-16"

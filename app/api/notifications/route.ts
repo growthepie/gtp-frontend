@@ -1,8 +1,7 @@
 const notificationTable = "tblA4NwUahsIldb6x";
 const baseId = "appZWDvjvDmVnOici";
-const CACHE_TTL_SECONDS = 1800; // 30 minutes
-let cachedData = null;
-let lastFetchTime = 0;
+const table = "tblU8WV0sxYUz6Kcp";
+const CACHE_TTL_SECONDS = 600; // 10 minutes
 
 async function fetchData() {
   const url = `https://api.airtable.com/v0/${baseId}/${notificationTable}`;
@@ -14,6 +13,8 @@ async function fetchData() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
       },
+      next: { revalidate: CACHE_TTL_SECONDS },
+      mode: "cors",
     });
 
     if (!response.ok) {
@@ -24,8 +25,7 @@ async function fetchData() {
     }
 
     const data = await response.json();
-    cachedData = data;
-    lastFetchTime = Date.now();
+
     return data;
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -34,24 +34,8 @@ async function fetchData() {
 }
 
 export async function GET() {
-  const currentTime = Date.now();
-
-  // Check if data is cached and not expired
-  if (cachedData && currentTime - lastFetchTime < CACHE_TTL_SECONDS * 1000) {
-    return new Response(JSON.stringify(cachedData), {
-      headers: { "content-type": "application/json" },
-    });
-  }
-
-  // Fetch data if not cached or expired
   const result = await fetchData();
-
   return new Response(JSON.stringify(result), {
     headers: { "content-type": "application/json" },
   });
-}
-
-// Example function to force a cache refresh
-function refreshCache() {
-  lastFetchTime = 0; // Force a cache refresh on the next request
 }
