@@ -14,6 +14,7 @@ async function fetchData() {
         Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
       },
       next: { revalidate: CACHE_TTL_SECONDS },
+      mode: "cors",
     });
 
     if (!response.ok) {
