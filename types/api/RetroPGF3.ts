@@ -116,6 +116,13 @@ export type ListAmountsByProjectIdResponse = {
   listAmounts: ListAmountsByProjectId;
   listQuartiles: QuartilesByProjecId;
   numUniqueAuthors: { [projectId: string]: number };
+  retropgfStatus: { [projectId: string]: RetropgfStatus };
+};
+
+export type RetropgfStatus = {
+  retropgf1: null | number;
+  retropgf2: null | number;
+  // retropgf3: null | number;
 };
 
 export type ListAmountsByProjectId = {
