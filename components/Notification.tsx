@@ -220,9 +220,9 @@ const Notification = () => {
       {filteredData && (
         <>
           {!isMobile ? (
-            <div className="block w-full relative">
+            <div className="flex w-full relative ">
               <button
-                className="hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[500px] xl:w-[600px] h-[28px] rounded-full border-[1px] dark:border-forest-50 border-black bg-white dark:bg-forest-900 px-[7px] relative z-10"
+                className="hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[478px] xl:w-[600px] h-[28px] rounded-full border-[1px] dark:border-forest-50 border-black bg-white dark:bg-forest-900 px-[7px] relative z-10"
                 onClick={() => {
                   setOpenNotif(!openNotif);
                 }}
