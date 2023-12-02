@@ -1425,7 +1425,6 @@ export default function Page() {
     count: rows.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 45,
-    overscan: 25,
   });
 
   const Style = useMemo(
