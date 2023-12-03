@@ -174,6 +174,29 @@ export default function Page() {
     return moment(lastUpdated).fromNow();
   }, [projectsResponse]);
 
+  const ballotRankingByProjectId = useMemo<{ [projectId: string]: number } | null>(
+    () => {
+      if (!projectsResponse) return null;
+
+      const projectsRanked = projectsResponse.projects.sort((a, b) => {
+        // If both are equal, return 0.
+        if (a.included_in_ballots === b.included_in_ballots) return 0;
+
+        // Otherwise, sort by whether a is greater than or less than b.
+        return a.included_in_ballots > b.included_in_ballots ? -1 : 1;
+      }).map((project, i) => ({
+        id: project.id,
+        rank: i + 1,
+      })).reduce((acc, curr) => {
+        acc[curr.id] = curr.rank;
+        return acc;
+      }, {});
+
+      return projectsRanked;
+    },
+    [projectsResponse],
+  );
+
   const getProjectsCombinedFundingSourcesByCurrency = useCallback(
     (fundingSources: ProjectFundingSource[]) => {
       const combinedFundingSources: {
@@ -446,9 +469,11 @@ export default function Page() {
               </div>
 
               <div className="text-[0.6rem] text-forest-900/80 dark:text-forest-500/80 font-light w-0 overflow-visible">
-                {info.table
+                {/* {info.table
                   .getSortedRowModel()
-                  .rows.findIndex((d) => d.id === info.row.id) + 1}
+                  .rows.findIndex((d) => d.id === info.row.id) + 1} */}
+
+                {ballotRankingByProjectId && ballotRankingByProjectId[info.row.original.id]}
               </div>
             </div>
           </>
@@ -620,6 +645,16 @@ export default function Page() {
         meta: {
           headerAlign: { marginLeft: "auto", flexDirection: "row-reverse" },
         },
+        sortingFn: (rowA, rowB) => {
+          const a = rowA.original.included_in_ballots;
+          const b = rowB.original.included_in_ballots;
+
+          // If both are equal, return 0.
+          if (a === b) return 0;
+
+          // Otherwise, sort by whether a is greater than or less than b.
+          return a > b ? 1 : -1;
+        },
       },
       {
         header: "In Lists",
@@ -667,88 +702,6 @@ export default function Page() {
         accessorKey: "list_amounts",
         size: 100,
         cell: (info) => getListAmountsCell(info),
-        // cell: (info) => (
-        //   <div className="w-full whitespace-nowrap text-ellipsis relative overflow-visible">
-        //     {listAmountsByProjectId && listAmountsByProjectId.listAmounts[info.row.original.id].length > 0 && !Number.isNaN(listAmountsByProjectId.listQuartiles[info.row.original.id].min) && !Number.isNaN(listAmountsByProjectId.listQuartiles[info.row.original.id].max) && (
-        //       <div className="flex text-[0.55rem] text-forest-900/60 dark:text-forest-500/60 font-inter font-light leading-[1]">
-        //         <div className="absolute left-0 -top-1.5">
-        //           {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].min, true)}
-        //         </div>
-        //         <div className="absolute right-0 left-0 -top-1.5 text-center">—</div>
-        //         <div className="absolute right-0 -top-1.5">
-        //           {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].max, true)}
-        //         </div>
-        //       </div>)}
-        //     {listAmountsByProjectId && listAmountsByProjectId.listAmounts[info.row.original.id].length > 0 &&
-        //       (<Tooltip placement="left">
-        //         <TooltipTrigger className="w-full">
-        //           <div className="text-[0.7rem] font-normal w-full flex space-x-9.5 items-center font-inter mt-1">
-        //             {listAmountsByProjectId.listAmounts[info.row.original.id].length > 1 ?
-        //               (<>
-        //                 <div className=" text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
-        //                   {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].q1, true)}
-        //                 </div>
-        //                 <div className="flex-1 text-forest-900/50 dark:text-forest-500/50">-</div>
-        //                 <div className="text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
-        //                   {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].q3, true)}{" "}<span className="text-[0.6rem]">OP</span>
-        //                 </div>
-        //               </>) : (<div className="flex-1 text-forest-900/80 dark:text-forest-500 font-light leading-[1] text-right">
-        //                 {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].median, true)}{" "}<span className="text-[0.6rem]">OP</span>
-        //               </div>)}
-        //           </div>
-        //           <div className="relative bottom-[8px] left-0 right-0 text-xs font-normal text-right h-[2px]">
-        //             <BoxPlot {...{ ...listAmountsByProjectId.listQuartiles[info.row.original.id], globalMin: minListOPAmount, globalMax: maxListOPAmount }} />
-        //           </div>
-
-
-        //         </TooltipTrigger>
-        //         <TooltipContent className="z-50 flex items-center justify-center">
-        //           <div className="flex flex-col space-y-0.5 px-0.5 py-0.5 pt-1 text-[0.65rem] font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-2xl shadow-lg z-50">
-        //             <div className="px-3 text-sm">{info.row.original.display_name}</div>
-        //             <div className="px-3 flex justify-between">{["min", "q1", "median", "q3", "max"].map((key, i) => (
-        //               listAmountsByProjectId.listQuartiles[info.row.original.id][key] !== undefined && listAmountsByProjectId.listQuartiles[info.row.original.id][key] !== null &&
-        //               (<div key={i} className="flex items-center space-x-1">
-        //                 <div className="text-[0.6rem] font-semibold capitalize">{key.slice(0, 3)}</div>
-        //                 <div className="text-[0.6rem] font-light font-inter">{formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id][key], true)}</div>
-        //               </div>)
-        //             ))}</div>
-        //             {listAmountsByProjectId?.listAmounts[info.row.original.id].sort(
-        //               (a, b) => a.listContent[0].OPAmount - b.listContent[0].OPAmount
-        //             ).map((list, i) => (
-        //               list.listContent.map((listContentItem, j) => (
-        //                 <div key={`${i}${j}`} className="flex px-3 py-0.5 justify-between items-center border border-forest-900/20 dark:border-forest-500/20 rounded-full">
-        //                   <div className="flex flex-col text-[0.6rem] leading-snug">
-        //                     <div className="w-48 font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">{list.listName}</div>
-        //                     <div className="font-light text-forest-900/80 dark:text-forest-500/80">
-        //                       {list.listAuthor.resolvedName.name ? (
-        //                         <>{list.listAuthor.resolvedName.name}</>
-        //                       ) : (
-        //                         <>
-        //                           {list.listAuthor.address.slice(
-        //                             0,
-        //                             5,
-        //                           ) +
-        //                             "..." +
-        //                             list.listAuthor.address.slice(
-        //                               -8,
-        //                             )}
-        //                         </>
-        //                       )}
-        //                     </div>
-
-        //                   </div>
-        //                   <div className="w-16 font-inter font-[600] text-xs text-right">
-        //                     {formatNumber(listContentItem.OPAmount, true)}{" "}<span className="text-[10px] font-light text-forest-900/80 dark:text-forest-500/80">OP</span>
-        //                   </div>
-        //                 </div>
-        //               ))
-
-        //             ))}
-        //           </div>
-        //         </TooltipContent>
-        //       </Tooltip>)}
-        //   </div>
-        // ),
         sortingFn: (rowA, rowB) => {
           if (!listAmountsByProjectId) return 0;
           const a = listAmountsByProjectId.listQuartiles[rowA.original.id].median;
@@ -815,76 +768,8 @@ export default function Page() {
           </div>
         ),
         accessorKey: "funding_sources",
-        size: 150,
+        size: 140,
         cell: (info) => getFundingSourcesCell(info),
-        // cell: (info) => {
-        //   return (
-        //     <div className="w-full whitespace-nowrap text-ellipsis relative">
-        //       <div className="absolute -left-0 -top-2.5 text-[0.6rem] text-forest-900/30 dark:text-forest-500/30 font-light leading-[1]">
-        //         #
-        //         {getProjectsTotalFundingRank(info.row.original.funding_sources)}
-        //       </div>
-        //       <div className="text-[11px] font-normal w-full flex justify-between font-inter mt-1">
-        //         <div className="flex space-x-1">
-        //           {["TOTAL"]
-        //             .map((currency) => [
-        //               currency,
-        //               getProjectsCombinedFundingSourcesByCurrency(
-        //                 info.row.original.funding_sources,
-        //               )[currency],
-        //             ])
-        //             .map(([currency, value]) => (
-        //               <div key={currency}>
-        //                 <span className="opacity-60 text-[0.55rem]">$</span>
-        //                 {`${formatNumber(
-        //                   parseInt(value as string),
-        //                   false,
-        //                 ).toLocaleString()}`}
-        //               </div>
-        //             ))
-        //             .reduce((prev, curr) => {
-        //               return prev.length === 0
-        //                 ? [curr]
-        //                 : [prev, <div key={curr[0]}>&</div>, curr];
-        //             }, [])}
-        //           <div className="w-4"></div>
-        //         </div>
-        //       </div>
-        //       <div className="relative -bottom-[2px] left-0 right-0 text-xs font-normal text-right h-[2px]">
-        //         <div
-        //           className="absolute"
-        //           style={{
-        //             height: "2px",
-        //             width: `100%`,
-
-        //           }}
-        //         >
-        //           <div
-        //             className=" bg-forest-900 dark:bg-forest-500"
-        //             style={{
-        //               height: "2px",
-
-        //               width: `${(getProjectsCombinedFundingSourcesByCurrency(
-        //                 info.row.original.funding_sources,
-        //               )["TOTAL"] /
-        //                 getMaxTotalFundingAmount()) *
-        //                 100.0
-        //                 }%`,
-        //               // right with bases on bottom and right
-        //             }}
-        //           ></div>
-        //         </div>
-        //         <div
-        //           className="absolute bg-forest-900/30 dark:bg-forest-500/30"
-        //           style={{
-        //             height: "2px",
-        //             width: `100%`,
-        //           }}
-        //         />
-        //       </div>
-        //     </div>
-        //   );
-        // },
         meta: {
           headerAlign: { textAlign: "left" },
         },
@@ -909,7 +794,7 @@ export default function Page() {
         header: "Funding Split",
         id: "funding_split",
         accessorKey: "funding_sources",
-        size: 150,
+        size: 140,
         cell: (info) => {
           return (
             <div className="w-full overflow-x whitespace-nowrap text-ellipsis relative">
@@ -1402,7 +1287,7 @@ export default function Page() {
       },
     ],
 
-    [getMaxTotalFundingAmount, getProjectsCombinedFundingSourcesByCurrency, getProjectsTotalFundingRank, listAmountsByProjectId],
+    [ballotRankingByProjectId, getFundingSourcesCell, getListAmountsCell, getProjectsCombinedFundingSourcesByCurrency, listAmountsByProjectId],
   );
 
   const table = useReactTable<Project>({
@@ -1561,10 +1446,10 @@ export default function Page() {
                               colSpan={header.colSpan}
                               style={{
                                 width: header.getSize(),
-                                paddingLeft: i === 0 ? "20px" : "20px",
+                                paddingLeft: i === 0 ? "15px" : "15px",
                                 paddingRight:
                                   i === headerGroup.headers.length
-                                    ? "20px"
+                                    ? "15px"
                                     : "10px",
                               }}
                               className="whitespace-nowrap relative"
@@ -1574,7 +1459,7 @@ export default function Page() {
                                   <div
                                     className={
                                       header.column.getCanSort()
-                                        ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold w-fit ${i === 0 ? "pl-[10px]" : ""
+                                        ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-[11px] font-bold w-fit ${i === 0 ? "pl-[10px]" : ""
                                         }`
                                         : ""
                                     }
@@ -1705,10 +1590,10 @@ export default function Page() {
                                     height: "0px",
                                     overflow: "hidden",
                                     width: header.getSize(),
-                                    paddingLeft: i === 0 ? "20px" : "20px",
+                                    paddingLeft: i === 0 ? "15px" : "15px",
                                     paddingRight:
                                       i === headerGroup.headers.length
-                                        ? "20px"
+                                        ? "15px"
                                         : "10px",
                                     ...(header.column.columnDef.meta as any)
                                       ?.headerStyle,
@@ -1724,7 +1609,7 @@ export default function Page() {
                                     <div
                                       {...{
                                         className: header.column.getCanSort()
-                                          ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold h-0 ${i === 0 ? "pl-[10px]" : ""
+                                          ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-[11px] font-bold h-0 ${i === 0 ? "pl-[10px]" : ""
                                           }`
                                           : "",
                                         onClick:
@@ -1776,7 +1661,7 @@ export default function Page() {
                                     <td
                                       key={cell.id}
                                       style={{
-                                        paddingLeft: i === 0 ? "10px" : "20px",
+                                        paddingLeft: i === 0 ? "10px" : "15px",
                                       }}
                                       className={
                                         i === 0 ? "sticky left-0 z-10" : ""

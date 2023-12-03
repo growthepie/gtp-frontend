@@ -25,6 +25,9 @@ export async function GET() {
     data.forEach((project) => {
       project.lists.forEach((list) => {
         delete list.listContent;
+        delete list.impactEvaluationDescription;
+        delete list.impactEvaluationLink;
+        delete list.listDescription;
       });
       delete project.profile.bio;
       delete project.profile.bannerImageUrl;
