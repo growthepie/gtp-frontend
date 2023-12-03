@@ -101,6 +101,15 @@ export default async function Layout({
           <Icon icon="feather:external-link" className="w-4 h-4" />
           <div>Open Source Observer</div>
         </Link>
+        <Link
+          href="https://www.notion.so/Impact-Evaluation-Framework-1bda7c3908c54d52ac4ef364251ef651"
+          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-2 py-1"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <Icon icon="feather:external-link" className="w-4 h-4" />
+          <div>Impact Evaluation Framework</div>
+        </Link>
       </Container>
     </>
   );
