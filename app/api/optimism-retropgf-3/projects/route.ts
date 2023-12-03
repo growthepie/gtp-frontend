@@ -14,7 +14,7 @@ export async function GET() {
   try {
     const result = await pool.query(
       `SELECT 
-        p.id, p.display_name, p.profile, p.applicant, p.applicant_type, p.included_in_ballots, p.lists, p.funding_sources, p.impact_category, p.impact_metrics, p.last_updated, info.value_raised, info.has_token, info.note 
+        p.id, p.display_name, p.profile, p.applicant, p.applicant_type, p.included_in_ballots, p.lists, p.funding_sources, p.impact_category, p.last_updated, info.value_raised, info.has_token, info.note 
       FROM rpgf3_projects p 
       LEFT JOIN project_info info 
         ON p.id = info.project_id`,
@@ -26,6 +26,8 @@ export async function GET() {
       project.lists.forEach((list) => {
         delete list.listContent;
       });
+      delete project.profile.bio;
+      delete project.profile.bannerImageUrl;
     });
 
     return Response.json({ projects: data });
