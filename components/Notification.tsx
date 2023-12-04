@@ -7,6 +7,7 @@ import Markdown from "react-markdown";
 import { useMediaQuery } from "usehooks-ts";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { BASE_URL } from "@/lib/helpers";
 
 type AirtableRow = {
   id: string;
@@ -81,27 +82,17 @@ const Notification = () => {
     setSessionArray(storedArray);
   }, [currentPath]);
 
-  const baseURL =
-    process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
-      ? `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-      : `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
-
   useEffect(() => {
     const fetchData = async () => {
-      if (
-        process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ||
-        process.env.NEXT_PUBLIC_VERCEL_ENV === "preview"
-      ) {
-        try {
-          const response = await fetch(baseURL + "/api/notifications", {
-            method: "GET",
-          });
-          const result = await response.json();
+      try {
+        const response = await fetch(BASE_URL + "/api/notifications", {
+          method: "GET",
+        });
+        const result = await response.json();
 
-          setData(result.records);
-        } catch (error) {
-          console.error("Error fetching data: ", error);
-        }
+        setData(result.records);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
       }
     };
 
@@ -248,11 +239,10 @@ const Notification = () => {
                   {filteredData.map((item, index) =>
                     item.url ? (
                       <Link
-                        className={`flex border-b-white border-dotted w-full mt-[8px] hover:cursor-pointer ${
-                          index < filteredData.length - 1
-                            ? "border-b-[1px] pb-0"
-                            : "border-b-[0px] pb-[1px]"
-                        }`}
+                        className={`flex border-b-white border-dotted w-full mt-[8px] hover:cursor-pointer ${index < filteredData.length - 1
+                          ? "border-b-[1px] pb-0"
+                          : "border-b-[0px] pb-[1px]"
+                          }`}
                         key={item.id}
                         href={item.url}
                       >
@@ -270,11 +260,10 @@ const Notification = () => {
                       </Link>
                     ) : (
                       <div
-                        className={`flex border-b-white border-dotted w-full mt-[8px] ${
-                          index < filteredData.length - 1
-                            ? "border-b-[1px]"
-                            : "border-b-[0px]"
-                        }`}
+                        className={`flex border-b-white border-dotted w-full mt-[8px] ${index < filteredData.length - 1
+                          ? "border-b-[1px]"
+                          : "border-b-[0px]"
+                          }`}
                         key={item.id}
                       >
                         <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[5px] ">
@@ -309,9 +298,8 @@ const Notification = () => {
               </div>
 
               <div
-                className={`fixed top-0 left-0 w-full h-auto bg-forest-900 z-50 rounded-b-2xl transition-max-height duration-700 ease-in-out overflow-hidden ${
-                  openNotif ? "bg-blend-darken" : "bg-blend-normal"
-                }`}
+                className={`fixed top-0 left-0 w-full h-auto bg-forest-900 z-50 rounded-b-2xl transition-max-height duration-700 ease-in-out overflow-hidden ${openNotif ? "bg-blend-darken" : "bg-blend-normal"
+                  }`}
                 style={{
                   maxHeight: openNotif ? "1000px" : "0",
                 }}
@@ -321,11 +309,10 @@ const Notification = () => {
                   {filteredData.map((item, index) =>
                     item.url ? (
                       <Link
-                        className={`flex border-b-white border-dotted w-full mt-[8px] hover:cursor-pointer ${
-                          index < filteredData.length - 1
-                            ? "border-b-[1px] pb-0"
-                            : "border-b-[0px] pb-[15px]"
-                        }`}
+                        className={`flex border-b-white border-dotted w-full mt-[8px] hover:cursor-pointer ${index < filteredData.length - 1
+                          ? "border-b-[1px] pb-0"
+                          : "border-b-[0px] pb-[15px]"
+                          }`}
                         key={item.id}
                         href={item.url}
                       >
@@ -343,11 +330,10 @@ const Notification = () => {
                       </Link>
                     ) : (
                       <div
-                        className={`flex border-b-white border-dotted w-full mt-[8px] ${
-                          index < filteredData.length - 1
-                            ? "border-b-[1px] pb-0"
-                            : "border-b-[0px] pb-[15px]"
-                        }`}
+                        className={`flex border-b-white border-dotted w-full mt-[8px] ${index < filteredData.length - 1
+                          ? "border-b-[1px] pb-0"
+                          : "border-b-[0px] pb-[15px]"
+                          }`}
                         key={item.id}
                       >
                         <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[8px] ">

@@ -44,6 +44,7 @@ import Container from "@/components/layout/Container";
 import { useUIContext } from "@/contexts/UIContext";
 // import { TreeMapChart } from "@/components/charts/treemapChart";
 import { useElementSize } from "usehooks-ts";
+import { BASE_URL } from "@/lib/helpers";
 
 
 
@@ -79,14 +80,6 @@ const ImpactCategoriesMap = {
   },
 };
 
-const baseURL = {
-  development: `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`,
-  preview: "https://dev.growthepie.xyz",
-  production: `https://www.growthepie.xyz`,
-};
-
-const environment = process.env.NEXT_PUBLIC_VERCEL_ENV || "development";
-
 const multiplierOPToken = 1.35;
 
 export default function Page() {
@@ -107,7 +100,7 @@ export default function Page() {
     isLoading: projectsLoading,
     isValidating: projectsValidating,
   } = useSWR<ProjectsResponse>(
-    baseURL[environment] + "/api/optimism-retropgf-3/projects",
+    BASE_URL + "/api/optimism-retropgf-3/projects",
     {
       refreshInterval: 1 * 1000 * 60, // 1 minutes,
     },
@@ -117,7 +110,7 @@ export default function Page() {
     data: listAmountsByProjectId,
     isLoading: listAmountsByProjectIdLoading,
     isValidating: listAmountsByProjectIdValidating,
-  } = useSWR<ListAmountsByProjectIdResponse>(baseURL[environment] + "/api/optimism-retropgf-3/listAmountsByProjectId", {
+  } = useSWR<ListAmountsByProjectIdResponse>(BASE_URL + "/api/optimism-retropgf-3/listAmountsByProjectId", {
     refreshInterval: 1 * 1000 * 60, // 2 minutes,
   });
 
