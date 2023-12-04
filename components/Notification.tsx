@@ -8,6 +8,7 @@ import { useMediaQuery } from "usehooks-ts";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { BASE_URL } from "@/lib/helpers";
+import moment from "moment";
 
 type AirtableRow = {
   id: string;
@@ -40,38 +41,38 @@ const Notification = () => {
   const isMobile = useMediaQuery("(max-width: 767px)");
   const currentPath = usePathname();
 
-  function isoDateTimeToUnix(
-    dateString: string,
-    timeString: string,
-  ): number | null {
-    if (typeof dateString !== "string" || typeof timeString !== "string") {
-      console.error("Invalid date or time type");
-      return null;
-    }
+  // function isoDateTimeToUnix(
+  //   dateString: string,
+  //   timeString: string,
+  // ): number | null {
+  //   if (typeof dateString !== "string" || typeof timeString !== "string") {
+  //     console.error("Invalid date or time type");
+  //     return null;
+  //   }
 
-    const dateParts = dateString.split("-").map(Number);
-    const timeParts = timeString.split(":").map(Number);
+  //   const dateParts = dateString.split("-").map(Number);
+  //   const timeParts = timeString.split(":").map(Number);
 
-    if (dateParts.length !== 3 || timeParts.length !== 3) {
-      console.error("Invalid date or time length");
-      return null;
-    }
+  //   if (dateParts.length !== 3 || timeParts.length !== 3) {
+  //     console.error("Invalid date or time length");
+  //     return null;
+  //   }
 
-    // Create a JavaScript Date object with the parsed date and time, and set it to the local time zone
-    const localDate = new Date(
-      dateParts[0],
-      dateParts[1] - 1, // Month is 0-based in JavaScript
-      dateParts[2],
-      timeParts[0],
-      timeParts[1],
-      timeParts[2],
-    );
+  //   // Create a JavaScript Date object with the parsed date and time, and set it to the local time zone
+  //   const localDate = new Date(
+  //     dateParts[0],
+  //     dateParts[1] - 1, // Month is 0-based in JavaScript
+  //     dateParts[2],
+  //     timeParts[0],
+  //     timeParts[1],
+  //     timeParts[2],
+  //   );
 
-    // Get the Unix timestamp (milliseconds since January 1, 1970)
-    const unixTimestamp = localDate.getTime();
+  //   // Get the Unix timestamp (milliseconds since January 1, 1970)
+  //   const unixTimestamp = localDate.getTime();
 
-    return unixTimestamp;
-  }
+  //   return unixTimestamp;
+  // }
 
   useEffect(() => {
     setCurrentURL(window.location.href);
@@ -99,19 +100,21 @@ const Notification = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    // Attach event listener when the component mounts
-    document.addEventListener("mousedown", handleClickOutside);
+  // useEffect(() => {
+  //   // Attach event listener when the component mounts
+  //   document.addEventListener("mousedown", handleClickOutside);
 
-    // Detach event listener when the component unmounts
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  //   // Detach event listener when the component unmounts
+  //   return () => {
+  //     document.removeEventListener("mousedown", handleClickOutside);
+  //   };
+  // }, []);
 
   function DateEnabled(startTime, startDate, endTime, endDate) {
-    const startDateTime = isoDateTimeToUnix(startDate, startTime);
-    const endDateTime = isoDateTimeToUnix(endDate, endTime);
+    const startDateTime = moment.utc(`${startDate}T${startTime}Z`).valueOf();
+    const endDateTime = moment.utc(`${endDate}T${endTime}Z`).valueOf();
+    console.log(startDateTime, endDateTime);
+
     if (endDateTime && startDateTime) {
       if (currentDateTime < endDateTime && currentDateTime > startDateTime) {
         return true;
@@ -138,15 +141,15 @@ const Notification = () => {
     return retValue;
   }
 
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      mobileRef.current &&
-      "contains" in mobileRef.current &&
-      !(mobileRef.current as Element).contains(event.target as Node)
-    ) {
-      setOpenNotif(false);
-    }
-  };
+  // const handleClickOutside = (event: MouseEvent) => {
+  //   if (
+  //     mobileRef.current &&
+  //     "contains" in mobileRef.current &&
+  //     !(mobileRef.current as Element).contains(event.target as Node)
+  //   ) {
+  //     setOpenNotif(false);
+  //   }
+  // };
 
   const addItemToArray = (newData: string) => {
     if (newData.trim() !== "") {
@@ -206,12 +209,52 @@ const Notification = () => {
     return returnArray;
   }, [data, currentURL]);
 
+  const Items = useMemo(() => {
+    if (!filteredData) {
+      return null;
+    }
+    return (
+      <>
+        {filteredData.map((item, i) => {
+          if (item.url) {
+            return (
+              <Link
+                className={`flex border-b-white border-dotted w-full mt-[8px] hover:cursor-pointer`}
+                key={item.id}
+                href={item.url}
+              >
+                <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[5px]">
+                  <div className="h-[17px] font-bold text-[14px]">{item.desc}</div>
+                  <div className="h-auto text-[12px] leading-[.65rem]">
+                    <Markdown>{item.body}</Markdown>
+                  </div>
+                </div>
+                <div className="w-[35px] pr-[20px] self-center">
+                  <Icon icon="ci:chevron-right" />
+                </div>
+              </Link>
+            )
+          }
+          return (
+            <div key={item.id} className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[5px] ">
+              <div className="h-[17px] font-bold text-[14px]">{item.desc}</div>
+              <div className="h-auto text-[12px] leading-[.65rem]">
+                <Markdown>{item.body}</Markdown>
+              </div>
+            </div>
+          );
+        })
+        }
+      </>);
+
+  }, [filteredData]);
+
   return (
-    <>
+    <div className="relative">
       {filteredData && (
         <>
           {!isMobile ? (
-            <div className="flex w-full relative ">
+            <div className="flex w-full relative z-50">
               <button
                 className="hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[478px] xl:w-[600px] h-[28px] rounded-full border-[1px] dark:border-forest-50 border-black bg-white dark:bg-forest-900 px-[7px] relative z-10"
                 onClick={() => {
@@ -227,7 +270,7 @@ const Notification = () => {
                 <p className="text-[12px] font-[500] ">Notification Center</p>
               </button>
               <div
-                className={`absolute hidden mb-[10px] lg:mb-0 md:flex flex-col w-[500px] xl:w-[600px] top-0 dark:bg-forest-900 bg-forest-50 rounded-b-xl rounded-t-xl z-1 overflow-hidden transition-max-height duration-700 ease-in-out`}
+                className={`absolute hidden mb-[10px] lg:mb-0 md:flex flex-col w-[478px] xl:w-[600px] top-0 dark:bg-forest-900 bg-forest-50 rounded-b-xl rounded-t-xl z-1 overflow-hidden transition-max-height duration-700 ease-in-out`}
                 style={{
                   maxHeight: openNotif ? "1000px" : "0",
                 }}
@@ -236,7 +279,7 @@ const Notification = () => {
                   {/*Top bar for height for consistency*/}
                 </div>
                 <div>
-                  {filteredData.map((item, index) =>
+                  {/* {filteredData.map((item, index) =>
                     item.url ? (
                       <Link
                         className={`flex border-b-white border-dotted w-full mt-[8px] hover:cursor-pointer ${index < filteredData.length - 1
@@ -276,14 +319,15 @@ const Notification = () => {
                         </div>
                       </div>
                     ),
-                  )}
+                  )} */}
+                  {Items}
                 </div>
               </div>
             </div>
           ) : (
             <>
               <div
-                className="justify-self-end hover:pointer"
+                className="justify-self-end hover:pointer z-50 cursor-pointer"
                 onClick={() => {
                   setOpenNotif(!openNotif);
                 }}
@@ -353,7 +397,15 @@ const Notification = () => {
           )}
         </>
       )}
-    </>
+      {openNotif && (
+        <div
+          className="fixed inset-0 bg-black opacity-30 z-20"
+          onClick={() => {
+            setOpenNotif(false);
+          }}
+        />
+      )}
+    </div>
   );
 };
 

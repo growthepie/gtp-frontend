@@ -15,9 +15,9 @@ export default function Header() {
         <div className="flex space-x-0 xl:space-x-6 w-full xl:justify-normal justify-end">
           {/*Banner/Notification Area */}
           {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
-          ["development", "preview"].includes(
-            process.env.NEXT_PUBLIC_VERCEL_ENV,
-          ) ? (
+            ["development", "preview"].includes(
+              process.env.NEXT_PUBLIC_VERCEL_ENV,
+            ) ? (
             <div className={`hidden md:flex justify-self-end mb-2 xl:mb-0`}>
               <Notification />
             </div>
@@ -45,17 +45,18 @@ export default function Header() {
                 />
               </div>
             </Link>
-            {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
-            ["development", "preview"].includes(
-              process.env.NEXT_PUBLIC_VERCEL_ENV,
-            ) ? (
-              <div className="flex md:hidden w-[60%]  h-6 items-end justify-end mr-[50px] xs:mr-[25px] sm:mr-[30px]">
-                <Notification />
-              </div>
-            ) : (
-              <> </>
-            )}
+
             <div>
+              {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
+                ["development", "preview"].includes(
+                  process.env.NEXT_PUBLIC_VERCEL_ENV,
+                ) ? (
+                <div className="flex md:hidden w-8 h-8 mt-[14px] mr-10">
+                  <Notification />
+                </div>
+              ) : (
+                <> </>
+              )}
               <Sidebar isMobile={true} />
             </div>
           </div>
@@ -108,9 +109,9 @@ export default function Header() {
         </div>
       </div>
       {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
-      ["development", "preview"].includes(
-        process.env.NEXT_PUBLIC_VERCEL_ENV,
-      ) ? (
+        ["development", "preview"].includes(
+          process.env.NEXT_PUBLIC_VERCEL_ENV,
+        ) ? (
         <> </>
       ) : (
         <SupportUsBanner />
