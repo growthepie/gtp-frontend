@@ -51,9 +51,7 @@ export default function Header() {
                 ["development", "preview"].includes(
                   process.env.NEXT_PUBLIC_VERCEL_ENV,
                 ) ? (
-                <div className="flex md:hidden w-8 h-8 mt-[14px] mr-10">
-                  <Notification />
-                </div>
+                <Notification />
               ) : (
                 <> </>
               )}

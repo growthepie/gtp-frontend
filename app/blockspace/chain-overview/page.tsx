@@ -94,7 +94,7 @@ const ChainOverview = () => {
         <div className="flex items-center w-[99%] mx-auto mb-[30px]">
           <div className="text-[16px]">
             An overview of chains high-level blockspace usage. All expressed in
-            share of chain usage.
+            share of chain usage. You can toggle between share of chain usage or absolute numbers.
           </div>
         </div>
       </Container>
@@ -106,7 +106,7 @@ const ChainOverview = () => {
           selectedTimespan={selectedTimespan}
           setSelectedTimespan={setSelectedTimespan}
           data={chainFilter}
-          // data={!chainEcosystemFilter || chainEcosystemFilter=== "all-chains" ? usageData.data.chains : )}
+        // data={!chainEcosystemFilter || chainEcosystemFilter=== "all-chains" ? usageData.data.chains : )}
         />
       )}
     </>
