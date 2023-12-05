@@ -1402,7 +1402,7 @@ export default function Page() {
     const data = projects.map((d) => {
       return {
         project_name: d.display_name,
-        applicant_type: d.applicant.type,
+        applicant_type: d.applicant_type,
         applicant_address: d.applicant.address.address,
         applicant_ens: d.applicant.address.resolvedName.name,
         included_in_ballots: d.included_in_ballots,
