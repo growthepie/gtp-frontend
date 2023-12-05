@@ -1401,6 +1401,7 @@ export default function Page() {
 
     const data = projects.map((d) => {
       return {
+        project_id: d.id.replace("Project|", ""),
         project_name: d.display_name,
         applicant_type: d.applicant_type,
         applicant_address: d.applicant.address.address,
