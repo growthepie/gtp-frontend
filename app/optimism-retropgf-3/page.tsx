@@ -278,6 +278,36 @@ export default function Page() {
     return [Math.min(...listOPAmounts), Math.max(...listOPAmounts)];
   }, [listAmountsByProjectId]);
 
+  const totalsForProjectsInQuorum = useMemo(() => {
+    if (!listAmountsByProjectId) return 0;
+    if (!projectsResponse) return 0;
+
+    // get projects over 17 ballots
+    const projectsOverQuorum = projectsResponse.projects.filter((project) => project.included_in_ballots >= 17);
+
+    const listOPAmounts = projectsOverQuorum.map((project) => listAmountsByProjectId.listQuartiles[project.id]);
+
+
+
+    const totals = listOPAmounts.reduce((acc, curr) => {
+      acc.median += curr.median;
+      acc.q1 += curr.q1;
+      acc.q3 += curr.q3;
+      acc.min += curr.min;
+      acc.max += curr.max;
+      return acc;
+    }, {
+      median: 0,
+      q1: 0,
+      q3: 0,
+      min: 0,
+      max: 0,
+    });
+
+    return totals;
+
+  }, [projectsResponse, listAmountsByProjectId]);
+
   const getListAmountsCell = useCallback((info) => {
     if (!listAmountsByProjectId) return null;
 
@@ -1373,6 +1403,12 @@ export default function Page() {
           ref={contentRef}
         >
           <div className="w-1/2">
+            {/* {totalsForProjectsInQuorum && Object.keys(totalsForProjectsInQuorum).map((key) => (
+              <div key={key} className="flex items-center space-x-1">
+                <div className="text-xs font-light">total {key}: {formatNumber(totalsForProjectsInQuorum[key], true)}</div>
+              </div>
+            ))} */}
+
             <div className="relative">
               <input
                 className="block rounded-full pl-6 pr-3 py-1.5 w-full z-20 text-xs text-forest-900  bg-forest-100 dark:bg-forest-1000 dark:text-forest-500 border border-forest-500 dark:border-forest-700 focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
@@ -1406,6 +1442,7 @@ export default function Page() {
           </div>
         </div>
       </Container>
+
       <Container
         className={`w-full mt-[0px] h-100 ${isTableWidthWider ? "!px-0" : "!px-[20px] md:!px-[50px]"
           }`}
