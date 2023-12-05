@@ -207,10 +207,10 @@ export default function LandingMetricsTable({
                                   background:
                                     item.chain.colors[theme ?? "dark"][1],
                                   width: `${(data.chains[item.chain.key].data.data[
-                                      data.chains[item.chain.key].data.data
-                                        .length - 1
-                                    ][1] /
-                                      maxVal) *
+                                    data.chains[item.chain.key].data.data
+                                      .length - 1
+                                  ][1] /
+                                    maxVal) *
                                     100
                                     }%`,
                                 }}
@@ -398,8 +398,8 @@ export default function LandingMetricsTable({
                               strokeLinecap="round"
                               strokeLinejoin="round"
                               className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
-                                  ? "opacity-0"
-                                  : "opacity-100"
+                                ? "opacity-0"
+                                : "opacity-100"
                                 }`}
                             >
                               <circle
@@ -414,8 +414,8 @@ export default function LandingMetricsTable({
                             <Icon
                               icon="feather:check-circle"
                               className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
-                                  ? "opacity-100"
-                                  : "opacity-0"
+                                ? "opacity-100"
+                                : "opacity-0"
                                 }`}
                             />
                           </div>
@@ -452,27 +452,29 @@ export default function LandingMetricsTable({
             );
           })} */}
             </div>
-            <div className="py-[16px] md:py-[32px] w-3/5 mx-auto">
+            {/* <div className="py-[16px] md:py-[32px] w-3/5 mx-auto">
               <hr className="border-dotted border-top-[1px] h-[0.5px] border-black/[16%] dark:border-white/[16%]" />
-            </div>
-            <div className="flex space-x-2 pl-16 pb-0.5">
+            </div> */}
+            {/* <div className="flex space-x-2 pl-16 pb-0.5">
               <span className="text-xs">
-                The following figure, “Multiple”, represents the number of
+                The following figure, “Multiple Chains”, represents the number of
                 unique addresses that were active on multiple Layer 2s in a
                 given week.
               </span>
-            </div>
+            </div> */}
             {rows().length > 0 &&
               rows()
                 .filter((row) => row.chain.key === "multiple")
                 .map((item, index) => (
                   <div
                     key={item.chain.key}
-                    className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[10px] lg:p-3 lg:py-[8px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${selectedChains.includes(item.chain.key)
-                        ? " hover:bg-forest-500/10"
-                        : "opacity-50 grayscale hover:opacity-70 hover:grayscale-20 transition-all duration-100"
+                    className={`group flex space-x-5 items-center pointer-events-auto ${interactable ? 'cursor-pointer' : 'cursor-default'} p-1.5 py-[10px] lg:p-3 lg:py-[8px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${selectedChains.includes(item.chain.key)
+                      ? " hover:bg-forest-100 hover:dark:bg-[#4B5553]"
+                      : "opacity-50 grayscale hover:opacity-70 hover:grayscale-20 transition-all duration-100"
                       }`}
                     onClick={() => {
+                      if (!interactable) return;
+
                       if (selectedChains.includes(item.chain.key)) {
                         setSelectedChains(
                           selectedChains.filter((c) => c !== item.chain.key),
@@ -492,10 +494,10 @@ export default function LandingMetricsTable({
                                 background:
                                   item.chain.colors[theme ?? "dark"][1],
                                 width: `${(data.chains[item.chain.key].data.data[
-                                    data.chains[item.chain.key].data.data
-                                      .length - 1
-                                  ][1] /
-                                    maxVal) *
+                                  data.chains[item.chain.key].data.data
+                                    .length - 1
+                                ][1] /
+                                  maxVal) *
                                   100
                                   }%`,
                               }}
@@ -525,8 +527,11 @@ export default function LandingMetricsTable({
                           }}
                         /> */}
                       </div>
-                      <div className="break-inside-avoid text-xs md:text-sm lg:text-lg pl-8">
+                      <div className="break-inside-avoid text-xs md:text-sm lg:text-lg pl-8 flex group-hover:hidden">
                         {item.chain.label}
+                      </div>
+                      <div className="w-full text-xs md:text-sm pl-8 py-0 md:py-0 lg:py-1 pr-64 hidden group-hover:flex">
+                        “Multiple Chains” represents the number of unique addresses that were active on multiple Layer 2s in a given week.
                       </div>
                     </div>
                     <div className="w-2/12">
@@ -540,7 +545,7 @@ export default function LandingMetricsTable({
                           )
                           .humanize()}
                     </div>
-                    <div className="w-1/5 capitalize">
+                    <div className="w-1/5 capitalize group-hover:hidden">
                       {item.chain.chainType === "L2" &&
                         master &&
                         master.chains[item.chain.key].rollup === "-" ? (
@@ -560,7 +565,7 @@ export default function LandingMetricsTable({
                         </>
                       )}
                     </div>
-                    <div className="flex-1 flex justify-end items-center">
+                    <div className="flex-1 flex justify-end items-center group-hover:hidden">
                       {/* <div className="flex flex-1 align-middle items-center"> */}
                       <div className={`relative w-full`}>
                         <div className="flex w-full justify-end">
@@ -620,7 +625,7 @@ export default function LandingMetricsTable({
                         ></div> */}
                       </div>
                     </div>
-                    <div className="w-[10%] text-right pr-14">
+                    <div className="w-[10%] text-right pr-14 group-hover:hidden">
                       {d3.format(
                         data.chains[item.chain.key].user_share > 0.01
                           ? ".1%"
@@ -641,8 +646,8 @@ export default function LandingMetricsTable({
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
-                                ? "opacity-0"
-                                : "opacity-100"
+                              ? "opacity-0"
+                              : "opacity-100"
                               }`}
                           >
                             <circle
@@ -657,8 +662,8 @@ export default function LandingMetricsTable({
                           <Icon
                             icon="feather:check-circle"
                             className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
-                                ? "opacity-100"
-                                : "opacity-0"
+                              ? "opacity-100"
+                              : "opacity-0"
                               }`}
                           />
                         </div>
