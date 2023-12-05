@@ -1,0 +1,12 @@
+name: Deploy on test push
+on:
+  push:
+    branches:
+      - test
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger rebuild on vercel
+        run: curl -X POST ${{ secrets.TEST_DEPLOY_HOOK }}
