@@ -21,6 +21,13 @@ export const Contributors = [
     linkedin: "https://www.linkedin.com/in/manishiwa",
   },
   {
+    name: "Chris Keshian",
+    image: "/contributors/chris.png",
+    role: "Product",
+    twitter: "https://www.twitter.com/chriskeshian",
+    linkedin: "https://www.linkedin.com/in/chriskeshian",
+  },
+  {
     name: "Michael May",
     image: "/contributors/michael.png",
     role: "Frontend",
