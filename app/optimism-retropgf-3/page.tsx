@@ -44,6 +44,8 @@ import Container from "@/components/layout/Container";
 import { useUIContext } from "@/contexts/UIContext";
 // import { TreeMapChart } from "@/components/charts/treemapChart";
 import { useElementSize } from "usehooks-ts";
+import { BASE_URL } from "@/lib/helpers";
+import { a } from "react-spring";
 
 
 
@@ -79,14 +81,6 @@ const ImpactCategoriesMap = {
   },
 };
 
-const baseURL = {
-  development: `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`,
-  preview: "https://dev.growthepie.xyz",
-  production: `https://www.growthepie.xyz`,
-};
-
-const environment = process.env.NEXT_PUBLIC_VERCEL_ENV || "development";
-
 const multiplierOPToken = 1.35;
 
 export default function Page() {
@@ -107,7 +101,7 @@ export default function Page() {
     isLoading: projectsLoading,
     isValidating: projectsValidating,
   } = useSWR<ProjectsResponse>(
-    baseURL[environment] + "/api/optimism-retropgf-3/projects",
+    BASE_URL + "/api/optimism-retropgf-3/projects",
     {
       refreshInterval: 1 * 1000 * 60, // 1 minutes,
     },
@@ -117,7 +111,7 @@ export default function Page() {
     data: listAmountsByProjectId,
     isLoading: listAmountsByProjectIdLoading,
     isValidating: listAmountsByProjectIdValidating,
-  } = useSWR<ListAmountsByProjectIdResponse>(baseURL[environment] + "/api/optimism-retropgf-3/listAmountsByProjectId", {
+  } = useSWR<ListAmountsByProjectIdResponse>(BASE_URL + "/api/optimism-retropgf-3/listAmountsByProjectId", {
     refreshInterval: 1 * 1000 * 60, // 2 minutes,
   });
 
@@ -284,6 +278,36 @@ export default function Page() {
 
     return [Math.min(...listOPAmounts), Math.max(...listOPAmounts)];
   }, [listAmountsByProjectId]);
+
+  const totalsForProjectsInQuorum = useMemo(() => {
+    if (!listAmountsByProjectId) return 0;
+    if (!projectsResponse) return 0;
+
+    // get projects over 17 ballots
+    const projectsOverQuorum = projectsResponse.projects.filter((project) => project.included_in_ballots >= 17);
+
+    const listOPAmounts = projectsOverQuorum.map((project) => listAmountsByProjectId.listQuartiles[project.id]);
+
+
+
+    const totals = listOPAmounts.reduce((acc, curr) => {
+      acc.median += curr.median;
+      acc.q1 += curr.q1;
+      acc.q3 += curr.q3;
+      acc.min += curr.min;
+      acc.max += curr.max;
+      return acc;
+    }, {
+      median: 0,
+      q1: 0,
+      q3: 0,
+      min: 0,
+      max: 0,
+    });
+
+    return totals;
+
+  }, [projectsResponse, listAmountsByProjectId]);
 
   const getListAmountsCell = useCallback((info) => {
     if (!listAmountsByProjectId) return null;
@@ -1371,6 +1395,60 @@ export default function Page() {
     setIsTableWidthWider(tableWidth > contentWidth);
   }, [contentWidth, tableWidth]);
 
+  const compileCSV = () => {
+    console.log(projects.length, listAmountsByProjectId);
+    if (!projects || !listAmountsByProjectId) return "";
+
+    const data = projects.map((d) => {
+      return {
+        project_name: d.display_name,
+        applicant_type: d.applicant.type,
+        applicant_address: d.applicant.address.address,
+        applicant_ens: d.applicant.address.resolvedName.name,
+        included_in_ballots: d.included_in_ballots,
+        included_in_lists: d.lists.length,
+        lists_min_amount: listAmountsByProjectId.listQuartiles[d.id].min ?? "",
+        lists_quartile_1_amount: listAmountsByProjectId.listQuartiles[d.id].q1 ?? "",
+        lists_median_amount: listAmountsByProjectId.listQuartiles[d.id].median ?? "",
+        lists_quartile_3_amount: listAmountsByProjectId.listQuartiles[d.id].q3 ?? "",
+        lists_max_amount: listAmountsByProjectId.listQuartiles[d.id].max ?? "",
+        funding_reported_total: getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)["TOTAL"],
+        funding_reported_usd: getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)["USD"],
+        funding_reported_op: getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)["OP"],
+        vc_funding: d.value_raised,
+        has_token: d.has_token,
+        impact_category: d.impact_category.join("|"),
+      };
+    });
+
+
+    const csv = [
+      Object.keys(data[0]).join(","),
+      ...data.map((d) => Object.values(d).join(",")),
+    ].join("\n");
+
+    return csv;
+  }
+
+  const handleExportCSV = () => {
+    const csv = compileCSV();
+    if (csv === "") return;
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "projects.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  const canDownloadCSV = useMemo(() => {
+    return projects && projects.length > 0 && listAmountsByProjectId && Object.keys(listAmountsByProjectId).length > 0;
+  }, [listAmountsByProjectId, projects]);
+
+
   return (
     <>
       {/* <Container className={`mt-[0px] !pr-0 ${isSidebarOpen ? "min-[1550px]:!pr-[50px]" : "min-[1350px]:!pr-[50px]"}`} ref={containerRef}> */}
@@ -1380,6 +1458,12 @@ export default function Page() {
           ref={contentRef}
         >
           <div className="w-1/2">
+            {/* {totalsForProjectsInQuorum && Object.keys(totalsForProjectsInQuorum).map((key) => (
+              <div key={key} className="flex items-center space-x-1">
+                <div className="text-xs font-light">total {key}: {formatNumber(totalsForProjectsInQuorum[key], true)}</div>
+              </div>
+            ))} */}
+
             <div className="relative">
               <input
                 className="block rounded-full pl-6 pr-3 py-1.5 w-full z-20 text-xs text-forest-900  bg-forest-100 dark:bg-forest-1000 dark:text-forest-500 border border-forest-500 dark:border-forest-700 focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
@@ -1408,11 +1492,21 @@ export default function Page() {
               )}
             </div>
           </div>
-          <div className="text-xs font-normal text-forest-200 dark:text-forest-400">
-            Last updated {lastUpdatedString}
+          <div className="flex flex-col justify-end items-end text-xs font-normal space-y-1">
+            {canDownloadCSV &&
+              <div onClick={handleExportCSV} className="-mt-2 flex items-center space-x-1 cursor-pointer rounded-full px-2 py-1 bg-forest-50 dark:bg-forest-900 dark:text-forest-500 text-forest-900 font-medium">
+                <div className="text-[0.7rem] font-medium">Export CSV</div>
+                <Icon
+                  icon="feather:download"
+                  className="w-3 h-3"
+                />
+              </div>
+            }
+            <div className="text-forest-200 dark:text-forest-400">Last updated {lastUpdatedString}</div>
           </div>
         </div>
       </Container>
+
       <Container
         className={`w-full mt-[0px] h-100 ${isTableWidthWider ? "!px-0" : "!px-[20px] md:!px-[50px]"
           }`}

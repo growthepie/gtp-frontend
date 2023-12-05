@@ -230,7 +230,7 @@ export default function ChainComponent({
     Object.keys(data.metrics).forEach((key) => {
       maxUnixtimes.push(
         data.metrics[key].daily.data[
-          data.metrics[key].daily.data.length - 1
+        data.metrics[key].daily.data.length - 1
         ][0],
       );
     });
@@ -445,17 +445,18 @@ export default function ChainComponent({
       const series = points[0].series;
 
       const date = new Date(x);
-
-      // const prefix = prefixes[series.name] ?? "";
-
-      const dateString = date.toLocaleDateString(undefined, {
+      const dateString = `
+      <div>
+        ${date.toLocaleDateString(undefined, {
         timeZone: "UTC",
         month: "short",
         day: "numeric",
         year: "numeric",
-      });
+      })}
+      </div>
+      `;
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-36 text-xs font-raleway"><div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-40 text-xs font-raleway"><div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-6 mb-2 flex justify-between">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
       let pointsSum = 0;
@@ -473,28 +474,25 @@ export default function ChainComponent({
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-1">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-                  AllChainsByKeys[data.chain_id].colors[theme][0]
-                }"></div>
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[data.chain_id].colors[theme][0]
+              }"></div>
                 <!--
-                <div class="tooltip-point-name">${
-                  AllChainsByKeys[data.chain_id].label
-                }</div>
+                <div class="tooltip-point-name">${AllChainsByKeys[data.chain_id].label
+              }</div>
                 -->
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                  percentage,
-                  2,
-                )}%</div>
+                percentage,
+                2,
+              )}%</div>
               </div>
               <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
                 <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
 
                 <div class="h-[2px] rounded-full absolute left-0 top-0" style="width: ${Highcharts.numberFormat(
-                  percentage,
-                  2,
-                )}%; background-color: ${
-              AllChainsByKeys[data.chain_id].colors[theme][0]
-            };"> </div>
+                percentage,
+                2,
+              )}%; background-color: ${AllChainsByKeys[data.chain_id].colors[theme][0]
+              };"> </div>
               </div> -->`;
 
           let prefix = displayValues[series.name].prefix;
@@ -513,25 +511,21 @@ export default function ChainComponent({
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-1">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-              AllChainsByKeys[data.chain_id].colors[theme][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[data.chain_id].colors[theme][0]
             }"></div>
             <!--
-            <div class="tooltip-point-name text-md">${
-              AllChainsByKeys[data.chain_id].label
+            <div class="tooltip-point-name text-md">${AllChainsByKeys[data.chain_id].label
             }</div>
             -->
             <div class="flex-1 text-left justify-start font-inter flex">
-                <div class="opacity-70 mr-0.5 ${
-                  !prefix && "hidden"
-                }">${prefix}</div>
+                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+            }">${prefix}</div>
                 ${parseFloat(value).toLocaleString(undefined, {
-                  minimumFractionDigits: prefix ? 2 : 0,
-                  maximumFractionDigits: prefix ? 2 : 0,
-                })}
-                <div class="opacity-70 ml-0.5 ${
-                  !suffix && "hidden"
-                }">${suffix}</div>
+              minimumFractionDigits: prefix ? 2 : 0,
+              maximumFractionDigits: prefix ? 2 : 0,
+            })}
+                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+            }">${suffix}</div>
             </div>
           </div>
           <!-- <div class="flex ml-4 w-[calc(100% - 1rem)] relative mb-1">
@@ -540,9 +534,8 @@ export default function ChainComponent({
             <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
               name,
               (y / pointsSum) * 100,
-            )}%; background-color: ${
-            AllChainsByKeys[data.chain_id].colors[theme][0]
-          }33;"></div>
+            )}%; background-color: ${AllChainsByKeys[data.chain_id].colors[theme][0]
+            }33;"></div>
           </div> -->`;
         })
         .join("");
@@ -1038,6 +1031,97 @@ export default function ChainComponent({
 
   const delayPromises = [];
 
+  const onChartRender = (chart: Highcharts.Chart) => {
+    // only 1 chart so setting const for i to = 0
+    const i = 0;
+    // const chart: Highcharts.Chart = this;
+    const lastPoint: Highcharts.Point =
+      chart.series[0].points[chart.series[0].points.length - 1];
+
+    // check if i exists as a key in lastPointLines
+    if (!lastPointLines[i]) {
+      lastPointLines[i] = [];
+    }
+
+    if (lastPointLines[i] && lastPointLines[i].length > 0) {
+      lastPointLines[i].forEach((line) => {
+        line.destroy();
+      });
+      lastPointLines[i] = [];
+    }
+
+    // calculate the fraction that 15px is in relation to the pixel width of the chart
+    const fraction = 15 / chart.chartWidth;
+
+    // create a bordered line from the last point to the top of the chart's container
+    lastPointLines[i][lastPointLines[i].length] = chart.renderer
+      .createElement("line")
+      .attr({
+        x1: chart.chartWidth * (1 - fraction) + 0.00005,
+        y1: lastPoint.plotY
+          ? lastPoint.plotY + chart.plotTop
+          : 0,
+        x2: chart.chartWidth * (1 - fraction),
+        y2: chart.plotTop / 2,
+        stroke: "url('#gradient0')",
+        "stroke-dasharray": "2",
+        "stroke-width": 1,
+        rendering: "crispEdges",
+      })
+      .add();
+
+    lastPointLines[i][lastPointLines[i].length] = chart.renderer
+      .createElement("line")
+      .attr({
+        x1: chart.chartWidth * (1 - fraction) + 0.5,
+        y1: chart.plotTop / 2 + 0.00005,
+        x2: chart.chartWidth * (1 - fraction) - 8,
+        y2: chart.plotTop / 2,
+        stroke:
+          AllChainsByKeys[data.chain_id].colors[
+          theme ?? "dark"
+          ][1],
+        "stroke-dasharray": "2",
+        "stroke-width": 1,
+        rendering: "crispEdges",
+      })
+      .add();
+
+    // create a circle at the end of the line
+    lastPointLines[i][lastPointLines[i].length] = chart.renderer
+      .circle(
+        chart.chartWidth * (1 - fraction) - 8,
+        chart.plotTop / 2,
+        3,
+      )
+      .attr({
+        fill: AllChainsByKeys[data.chain_id].colors[
+          theme ?? "dark"
+        ][1],
+        r: 2,
+        zIndex: 9999,
+        rendering: "crispEdges",
+      })
+      .add();
+
+    // create a circle at the end of the line
+    lastPointLines[i][lastPointLines[i].length] = chart.renderer
+      .circle(
+        lastPoint.plotX,
+        lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
+        2,
+      )
+      .attr({
+        stroke: "#CDD8D3",
+        opacity: 0.44,
+        r: 1,
+        zIndex: 9999,
+        rendering: "crispEdges",
+      })
+      .add();
+  };
+
+
   const resituateChart = debounce(() => {
     if (chartComponents.current && !zoomed) {
       chartComponents.current.forEach((chart) => {
@@ -1155,93 +1239,8 @@ export default function ChainComponent({
                     stop2?.setAttribute("stop-opacity", "0.33");
                   },
                   render: function () {
-                    // only 1 chart so setting const for i to = 0
-                    const i = 0;
-                    const chart: Highcharts.Chart = this;
-                    const lastPoint: Highcharts.Point =
-                      chart.series[0].points[chart.series[0].points.length - 1];
-
-                    // check if i exists as a key in lastPointLines
-                    if (!lastPointLines[i]) {
-                      lastPointLines[i] = [];
-                    }
-
-                    if (lastPointLines[i] && lastPointLines[i].length > 0) {
-                      lastPointLines[i].forEach((line) => {
-                        line.destroy();
-                      });
-                      lastPointLines[i] = [];
-                    }
-
-                    // calculate the fraction that 15px is in relation to the pixel width of the chart
-                    const fraction = 15 / chart.chartWidth;
-
-                    // create a bordered line from the last point to the top of the chart's container
-                    lastPointLines[i][lastPointLines[i].length] = chart.renderer
-                      .createElement("line")
-                      .attr({
-                        x1: chart.chartWidth * (1 - fraction) + 0.00005,
-                        y1: lastPoint.plotY
-                          ? lastPoint.plotY + chart.plotTop
-                          : 0,
-                        x2: chart.chartWidth * (1 - fraction),
-                        y2: chart.plotTop / 2,
-                        stroke: "url('#gradient0')",
-                        "stroke-dasharray": "2",
-                        "stroke-width": 1,
-                        rendering: "crispEdges",
-                      })
-                      .add();
-
-                    lastPointLines[i][lastPointLines[i].length] = chart.renderer
-                      .createElement("line")
-                      .attr({
-                        x1: chart.chartWidth * (1 - fraction) + 0.5,
-                        y1: chart.plotTop / 2 + 0.00005,
-                        x2: chart.chartWidth * (1 - fraction) - 8,
-                        y2: chart.plotTop / 2,
-                        stroke:
-                          AllChainsByKeys[data.chain_id].colors[
-                            theme ?? "dark"
-                          ][1],
-                        "stroke-dasharray": "2",
-                        "stroke-width": 1,
-                        rendering: "crispEdges",
-                      })
-                      .add();
-
-                    // create a circle at the end of the line
-                    lastPointLines[i][lastPointLines[i].length] = chart.renderer
-                      .circle(
-                        chart.chartWidth * (1 - fraction) - 8,
-                        chart.plotTop / 2,
-                        3,
-                      )
-                      .attr({
-                        fill: AllChainsByKeys[data.chain_id].colors[
-                          theme ?? "dark"
-                        ][1],
-                        r: 2,
-                        zIndex: 9999,
-                        rendering: "crispEdges",
-                      })
-                      .add();
-
-                    // create a circle at the end of the line
-                    lastPointLines[i][lastPointLines[i].length] = chart.renderer
-                      .circle(
-                        lastPoint.plotX,
-                        lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
-                        2,
-                      )
-                      .attr({
-                        stroke: "#CDD8D3",
-                        opacity: 0.44,
-                        r: 1,
-                        zIndex: 9999,
-                        rendering: "crispEdges",
-                      })
-                      .add();
+                    const chart = this;
+                    onChartRender(chart);
                   },
                 },
               },
@@ -1264,29 +1263,32 @@ export default function ChainComponent({
                   data: data.metrics[category].daily.types.includes("eth")
                     ? showUsd
                       ? data.metrics[category].daily.data.map((d) => [
-                          d[0],
-                          d[data.metrics[category].daily.types.indexOf("usd")],
-                        ])
-                      : data.metrics[category].daily.data.map((d) => [
-                          d[0],
-                          showGwei(category)
-                            ? d[
-                                data.metrics[category].daily.types.indexOf(
-                                  "eth",
-                                )
-                              ] * 1000000000
-                            : d[
-                                data.metrics[category].daily.types.indexOf(
-                                  "eth",
-                                )
-                              ],
-                        ])
-                    : data.metrics[category].daily.data.map((d) => [
                         d[0],
-                        d[1],
-                      ]),
+                        d[data.metrics[category].daily.types.indexOf("usd")],
+                      ])
+                      : data.metrics[category].daily.data.map((d) => [
+                        d[0],
+                        showGwei(category)
+                          ? d[
+                          data.metrics[category].daily.types.indexOf(
+                            "eth",
+                          )
+                          ] * 1000000000
+                          : d[
+                          data.metrics[category].daily.types.indexOf(
+                            "eth",
+                          )
+                          ],
+                      ])
+                    : data.metrics[category].daily.data.map((d) => [
+                      d[0],
+                      d[1],
+                    ]),
                   showInLegend: false,
                   marker: {
+                    enabled: false,
+                  },
+                  dataGrouping: {
                     enabled: false,
                   },
                   // states: {
@@ -1319,11 +1321,11 @@ export default function ChainComponent({
                         attributes: {
                           fill:
                             AllChainsByKeys[data.chain_id]?.colors[
-                              theme ?? "dark"
+                            theme ?? "dark"
                             ][0] + "99",
                           stroke:
                             AllChainsByKeys[data.chain_id]?.colors[
-                              theme ?? "dark"
+                            theme ?? "dark"
                             ][0] + "66",
                           strokeWidth: 0,
                         },

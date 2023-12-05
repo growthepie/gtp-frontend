@@ -41,7 +41,7 @@ export default async function Layout({
           </Link>
         </div>
         <Subheading
-          className="text-[14px] mb-0"
+          className="text-[14px] mb-0 md:pr-[120px]"
           iconContainerClassName="items-center mb-0 relative"
         >
           This is a list of all 643 projects that are part of RPGF3. Voting by badgeholders is in progress until December 7th. A project needs at least 17 votes in order to receive funding through RPGF.
