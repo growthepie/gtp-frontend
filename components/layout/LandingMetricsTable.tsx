@@ -75,9 +75,9 @@ export default function LandingMetricsTable({
         (row) => row.chain.chainType != null && row.chain.chainType != "L1",
       )
       .sort((a, b) => {
-        // always show multiple at the bottom
-        if (a.chain.key === "multiple") return 1;
-        if (b.chain.key === "multiple") return -1;
+        // // always show multiple at the bottom
+        // if (a.chain.key === "multiple") return 1;
+        // if (b.chain.key === "multiple") return -1;
 
         // sort by last value in daily data array and keep unselected chains at the bottom in descending order
         if (selectedChains.includes(a.chain.key)) {
@@ -99,7 +99,7 @@ export default function LandingMetricsTable({
   let height = 0;
   const transitions = useTransition(
     rows()
-      .filter((row) => row.chain.key != "multiple")
+      // .filter((row) => row.chain.key != "multiple")
       .map((data) => ({
         ...data,
         y: (height += isMobile ? 44 : 50) - (isMobile ? 44 : 50),
@@ -156,6 +156,221 @@ export default function LandingMetricsTable({
           <div className="flex flex-col">
             <div className="w-full relative" style={{ height }}>
               {transitions((style, item, t, index) => {
+                if (item.chain.key === "multiple")
+                  return (
+                    <animated.div
+                      className="absolute w-full"
+                      style={{
+                        zIndex: rows().length - index,
+                        ...style,
+                      }}
+                    >
+                      <div
+                        className={`group flex space-x-5 items-center pointer-events-auto ${interactable ? 'cursor-pointer' : 'cursor-default'} p-1.5 py-[10px] lg:p-3 lg:py-[8px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${selectedChains.includes(item.chain.key)
+                          ? " hover:bg-forest-100 hover:dark:bg-[#4B5553]"
+                          : "opacity-50 grayscale hover:opacity-70 hover:grayscale-20 transition-all duration-100"
+                          }`}
+                        onClick={() => {
+                          if (!interactable) return;
+
+                          if (selectedChains.includes(item.chain.key)) {
+                            setSelectedChains(
+                              selectedChains.filter((c) => c !== item.chain.key),
+                            );
+                          } else {
+                            setSelectedChains([...selectedChains, item.chain.key]);
+                          }
+                        }}
+                      >
+                        <div className="w-full h-full absolute inset-0 rounded-full overflow-clip">
+                          <div className="relative w-full h-full">
+                            {item.chain.key !== "ethereum" && (
+                              <>
+                                <div
+                                  className={`absolute left-[15px] right-[15px] lg:left-[18px] lg:right-[18px] bottom-[0px] h-[1px] lg:h-[2px] rounded-none font-semibold transition-width duration-300 `}
+                                  style={{
+                                    background:
+                                      item.chain.colors[theme ?? "dark"][1],
+                                    width: `${(data.chains[item.chain.key].data.data[
+                                      data.chains[item.chain.key].data.data
+                                        .length - 1
+                                    ][1] /
+                                      maxVal) *
+                                      100
+                                      }%`,
+                                  }}
+                                ></div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex w-[22.5%] items-center">
+                          <div className="relative">
+                            <div
+                              className={`absolute -left-[14.5px] -top-[14.5px] w-[29px] h-[29px] rounded-full border-[5px] ${item.chain.border[theme ?? "dark"][1]
+                                }`}
+                            ></div>
+                            {/* <Icon
+                          icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
+                          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5 h-5"
+                          style={{
+                            color: item.chain.colors[theme ?? "dark"][1],
+                          }}
+                        /> */}
+                            {/* <Icon
+                          icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
+                          className="w-[29px] h-[29px]"
+                          style={{
+                            color: item.chain.colors[theme ?? "dark"][1],
+                          }}
+                        /> */}
+                          </div>
+                          <div className="break-inside-avoid text-xs md:text-sm lg:text-lg pl-8 flex group-hover:hidden">
+                            {item.chain.label}
+                          </div>
+                          <div className="w-full text-xs md:text-sm pl-8 py-0 md:py-0 lg:py-1 pr-64 hidden group-hover:flex">
+                            “Multiple Chains” represents the number of unique addresses that were active on multiple Layer 2s in a given week.
+                          </div>
+                        </div>
+                        <div className="w-2/12">
+                          {/* format as 1 year 2 months */}
+                          {item.chain.chainType === "L2" &&
+                            moment
+                              .duration(
+                                moment().diff(
+                                  moment(master.chains[item.chain.key].launch_date),
+                                ),
+                              )
+                              .humanize()}
+                        </div>
+                        <div className="w-1/5 capitalize group-hover:hidden">
+                          {item.chain.chainType === "L2" &&
+                            master &&
+                            master.chains[item.chain.key].rollup === "-" ? (
+                            " - "
+                          ) : (
+                            <>
+                              {item.chain.chainType === "L2" && (
+                                <>
+                                  <span>
+                                    {master.chains[item.chain.key].rollup}
+                                  </span>{" "}
+                                  <span className="hidden lg:inline-block">
+                                    {master.chains[item.chain.key].technology}
+                                  </span>
+                                </>
+                              )}
+                            </>
+                          )}
+                        </div>
+                        <div className="flex-1 flex justify-end items-center group-hover:hidden">
+                          {/* <div className="flex flex-1 align-middle items-center"> */}
+                          <div className={`relative w-full`}>
+                            <div className="flex w-full justify-end">
+                              {data.chains[item.chain.key].data.types.includes(
+                                "usd",
+                              ) && (
+                                  <>
+                                    {showUsd ? (
+                                      <div className="">$</div>
+                                    ) : (
+                                      <div className="">Ξ</div>
+                                    )}
+                                  </>
+                                )}
+                              {data.chains[item.chain.key].data.types.includes(
+                                "usd",
+                              )
+                                ? Intl.NumberFormat(undefined, {
+                                  notation: "compact",
+                                  maximumFractionDigits: 2,
+                                  minimumFractionDigits: 2,
+                                }).format(
+                                  data.chains[item.chain.key].data.data[
+                                  data[item.chain.key].data.data.length - 1
+                                  ][
+                                  !showUsd &&
+                                    data.chains[
+                                      item.chain.key
+                                    ].data.types.includes("usd")
+                                    ? 2
+                                    : 1
+                                  ],
+                                )
+                                : Intl.NumberFormat(undefined, {
+                                  notation: "compact",
+                                  maximumFractionDigits: 2,
+                                  minimumFractionDigits: 2,
+                                }).format(
+                                  data.chains[item.chain.key].data.data[
+                                  data.chains[item.chain.key].data.data.length -
+                                  1
+                                  ][1],
+                                )}
+                            </div>
+                            {/* <div className="absolute -bottom-[6px] right-0 w-full h-1 bg-black/10 rounded-none"></div>
+                        <div
+                          className={`absolute -bottom-[6px] right-0 h-1 bg-forest-900 dark:bg-forest-50 rounded-none`}
+                          style={{
+                            width: `${
+                              (data.chains[item.chain.key].data.data[
+                                data.chains[item.chain.key].data.data.length - 1
+                              ][1] /
+                                maxVal) *
+                              100
+                            }%`,
+                          }}
+                        ></div> */}
+                          </div>
+                        </div>
+                        <div className="w-[10%] text-right pr-14 group-hover:hidden">
+                          {d3.format(
+                            data.chains[item.chain.key].user_share > 0.01
+                              ? ".1%"
+                              : ".1%",
+                          )(data.chains[item.chain.key].user_share)}
+                        </div>
+                        {interactable && (
+                          <div className={`absolute  ${"-right-[20px]"}`}>
+                            <div className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
+                                  ? "opacity-0"
+                                  : "opacity-100"
+                                  }`}
+                              >
+                                <circle
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                />
+                              </svg>
+                            </div>
+                            <div className="p-1 rounded-full bg-forest-50 dark:bg-forest-900">
+                              <Icon
+                                icon="feather:check-circle"
+                                className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                                  }`}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </animated.div>
+                  );
+
                 return (
                   <animated.div
                     className="absolute w-full"
@@ -426,251 +641,13 @@ export default function LandingMetricsTable({
                 );
               })}
 
-              {/* {chains &&
-          chainsLastVal &&
-          chainsLastVal.map((clv, i) => {
-            const chain = clv.chain;
-            return (
-              <div key={i} className="flex flex-col">
-                {i === chainsLastVal.length - 1 && (
-                  <>
-                    <div className="pt-[32px] pb-[32px] w-3/5 mx-auto">
-                      <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
-                    </div>
-                    <div className="flex space-x-2 pl-16 pb-0.5">
-
-                      <span className="text-xs">
-                        The following figure, “Multiple”, represents the number
-                        of unique addresses interacting with one or multiple L2s
-                        in a given week.
-                      </span>
-                    </div>
-                  </>
-                )}
-                
-              </div>
-            );
-          })} */}
             </div>
-            {/* <div className="py-[16px] md:py-[32px] w-3/5 mx-auto">
-              <hr className="border-dotted border-top-[1px] h-[0.5px] border-black/[16%] dark:border-white/[16%]" />
-            </div> */}
-            {/* <div className="flex space-x-2 pl-16 pb-0.5">
-              <span className="text-xs">
-                The following figure, “Multiple Chains”, represents the number of
-                unique addresses that were active on multiple Layer 2s in a
-                given week.
-              </span>
-            </div> */}
-            {rows().length > 0 &&
+            {/* {rows().length > 0 &&
               rows()
                 .filter((row) => row.chain.key === "multiple")
                 .map((item, index) => (
-                  <div
-                    key={item.chain.key}
-                    className={`group flex space-x-5 items-center pointer-events-auto ${interactable ? 'cursor-pointer' : 'cursor-default'} p-1.5 py-[10px] lg:p-3 lg:py-[8px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${selectedChains.includes(item.chain.key)
-                      ? " hover:bg-forest-100 hover:dark:bg-[#4B5553]"
-                      : "opacity-50 grayscale hover:opacity-70 hover:grayscale-20 transition-all duration-100"
-                      }`}
-                    onClick={() => {
-                      if (!interactable) return;
-
-                      if (selectedChains.includes(item.chain.key)) {
-                        setSelectedChains(
-                          selectedChains.filter((c) => c !== item.chain.key),
-                        );
-                      } else {
-                        setSelectedChains([...selectedChains, item.chain.key]);
-                      }
-                    }}
-                  >
-                    <div className="w-full h-full absolute inset-0 rounded-full overflow-clip">
-                      <div className="relative w-full h-full">
-                        {item.chain.key !== "ethereum" && (
-                          <>
-                            <div
-                              className={`absolute left-[15px] right-[15px] lg:left-[18px] lg:right-[18px] bottom-[0px] h-[1px] lg:h-[2px] rounded-none font-semibold transition-width duration-300 `}
-                              style={{
-                                background:
-                                  item.chain.colors[theme ?? "dark"][1],
-                                width: `${(data.chains[item.chain.key].data.data[
-                                  data.chains[item.chain.key].data.data
-                                    .length - 1
-                                ][1] /
-                                  maxVal) *
-                                  100
-                                  }%`,
-                              }}
-                            ></div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex w-[22.5%] items-center">
-                      <div className="relative">
-                        <div
-                          className={`absolute -left-[14.5px] -top-[14.5px] w-[29px] h-[29px] rounded-full border-[5px] ${item.chain.border[theme ?? "dark"][1]
-                            }`}
-                        ></div>
-                        {/* <Icon
-                          icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
-                          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5 h-5"
-                          style={{
-                            color: item.chain.colors[theme ?? "dark"][1],
-                          }}
-                        /> */}
-                        {/* <Icon
-                          icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
-                          className="w-[29px] h-[29px]"
-                          style={{
-                            color: item.chain.colors[theme ?? "dark"][1],
-                          }}
-                        /> */}
-                      </div>
-                      <div className="break-inside-avoid text-xs md:text-sm lg:text-lg pl-8 flex group-hover:hidden">
-                        {item.chain.label}
-                      </div>
-                      <div className="w-full text-xs md:text-sm pl-8 py-0 md:py-0 lg:py-1 pr-64 hidden group-hover:flex">
-                        “Multiple Chains” represents the number of unique addresses that were active on multiple Layer 2s in a given week.
-                      </div>
-                    </div>
-                    <div className="w-2/12">
-                      {/* format as 1 year 2 months */}
-                      {item.chain.chainType === "L2" &&
-                        moment
-                          .duration(
-                            moment().diff(
-                              moment(master.chains[item.chain.key].launch_date),
-                            ),
-                          )
-                          .humanize()}
-                    </div>
-                    <div className="w-1/5 capitalize group-hover:hidden">
-                      {item.chain.chainType === "L2" &&
-                        master &&
-                        master.chains[item.chain.key].rollup === "-" ? (
-                        " - "
-                      ) : (
-                        <>
-                          {item.chain.chainType === "L2" && (
-                            <>
-                              <span>
-                                {master.chains[item.chain.key].rollup}
-                              </span>{" "}
-                              <span className="hidden lg:inline-block">
-                                {master.chains[item.chain.key].technology}
-                              </span>
-                            </>
-                          )}
-                        </>
-                      )}
-                    </div>
-                    <div className="flex-1 flex justify-end items-center group-hover:hidden">
-                      {/* <div className="flex flex-1 align-middle items-center"> */}
-                      <div className={`relative w-full`}>
-                        <div className="flex w-full justify-end">
-                          {data.chains[item.chain.key].data.types.includes(
-                            "usd",
-                          ) && (
-                              <>
-                                {showUsd ? (
-                                  <div className="">$</div>
-                                ) : (
-                                  <div className="">Ξ</div>
-                                )}
-                              </>
-                            )}
-                          {data.chains[item.chain.key].data.types.includes(
-                            "usd",
-                          )
-                            ? Intl.NumberFormat(undefined, {
-                              notation: "compact",
-                              maximumFractionDigits: 2,
-                              minimumFractionDigits: 2,
-                            }).format(
-                              data.chains[item.chain.key].data.data[
-                              data[item.chain.key].data.data.length - 1
-                              ][
-                              !showUsd &&
-                                data.chains[
-                                  item.chain.key
-                                ].data.types.includes("usd")
-                                ? 2
-                                : 1
-                              ],
-                            )
-                            : Intl.NumberFormat(undefined, {
-                              notation: "compact",
-                              maximumFractionDigits: 2,
-                              minimumFractionDigits: 2,
-                            }).format(
-                              data.chains[item.chain.key].data.data[
-                              data.chains[item.chain.key].data.data.length -
-                              1
-                              ][1],
-                            )}
-                        </div>
-                        {/* <div className="absolute -bottom-[6px] right-0 w-full h-1 bg-black/10 rounded-none"></div>
-                        <div
-                          className={`absolute -bottom-[6px] right-0 h-1 bg-forest-900 dark:bg-forest-50 rounded-none`}
-                          style={{
-                            width: `${
-                              (data.chains[item.chain.key].data.data[
-                                data.chains[item.chain.key].data.data.length - 1
-                              ][1] /
-                                maxVal) *
-                              100
-                            }%`,
-                          }}
-                        ></div> */}
-                      </div>
-                    </div>
-                    <div className="w-[10%] text-right pr-14 group-hover:hidden">
-                      {d3.format(
-                        data.chains[item.chain.key].user_share > 0.01
-                          ? ".1%"
-                          : ".1%",
-                      )(data.chains[item.chain.key].user_share)}
-                    </div>
-                    {interactable && (
-                      <div className={`absolute  ${"-right-[20px]"}`}>
-                        <div className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
-                              ? "opacity-0"
-                              : "opacity-100"
-                              }`}
-                          >
-                            <circle
-                              xmlns="http://www.w3.org/2000/svg"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                            />
-                          </svg>
-                        </div>
-                        <div className="p-1 rounded-full bg-forest-50 dark:bg-forest-900">
-                          <Icon
-                            icon="feather:check-circle"
-                            className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
-                              ? "opacity-100"
-                              : "opacity-0"
-                              }`}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  
+                ))} */}
           </div>
         </div>
       </div>
