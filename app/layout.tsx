@@ -62,6 +62,11 @@ const jsonLd: Graph = {
 // };
 
 // const jsonLd = [jsonLdOrg, jsonLdWebSite];
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "dark",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.growthepie.xyz"),
@@ -72,10 +77,6 @@ export const metadata: Metadata = {
   },
   description:
     "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "black" },
-  ],
   openGraph: {
     title: "growthepie",
     description: "Growing Ethereum’s Ecosystem Together",
