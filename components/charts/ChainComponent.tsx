@@ -454,21 +454,9 @@ export default function ChainComponent({
         year: "numeric",
       })}
       </div>
-      <div>-</div>
-      <div>
-        ${new Date(date.valueOf() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString(
-        //add 7 days to the date
-        undefined,
-        {
-          timeZone: "UTC",
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        },
-      )}
-      </div>`;
+      `;
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 text-xs font-raleway"><div class="flex-1 font-bold text-[13px] md:text-[14px] ml-6 mb-2 flex justify-between">${dateString}</div>`;
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-40 text-xs font-raleway"><div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-6 mb-2 flex justify-between">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
       let pointsSum = 0;
@@ -486,12 +474,10 @@ export default function ChainComponent({
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-1">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-                  AllChainsByKeys[data.chain_id].colors[theme][0]
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[data.chain_id].colors[theme][0]
               }"></div>
                 <!--
-                <div class="tooltip-point-name">${
-                  AllChainsByKeys[data.chain_id].label
+                <div class="tooltip-point-name">${AllChainsByKeys[data.chain_id].label
               }</div>
                 -->
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
@@ -505,8 +491,7 @@ export default function ChainComponent({
                 <div class="h-[2px] rounded-full absolute left-0 top-0" style="width: ${Highcharts.numberFormat(
                 percentage,
                 2,
-              )}%; background-color: ${
-              AllChainsByKeys[data.chain_id].colors[theme][0]
+              )}%; background-color: ${AllChainsByKeys[data.chain_id].colors[theme][0]
               };"> </div>
               </div> -->`;
 
@@ -526,24 +511,20 @@ export default function ChainComponent({
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-1">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-              AllChainsByKeys[data.chain_id].colors[theme][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[data.chain_id].colors[theme][0]
             }"></div>
             <!--
-            <div class="tooltip-point-name text-md">${
-              AllChainsByKeys[data.chain_id].label
+            <div class="tooltip-point-name text-md">${AllChainsByKeys[data.chain_id].label
             }</div>
             -->
             <div class="flex-1 text-left justify-start font-inter flex">
-                <div class="opacity-70 mr-0.5 ${
-                  !prefix && "hidden"
+                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
             }">${prefix}</div>
                 ${parseFloat(value).toLocaleString(undefined, {
               minimumFractionDigits: prefix ? 2 : 0,
               maximumFractionDigits: prefix ? 2 : 0,
             })}
-                <div class="opacity-70 ml-0.5 ${
-                  !suffix && "hidden"
+                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
             }">${suffix}</div>
             </div>
           </div>
@@ -553,8 +534,7 @@ export default function ChainComponent({
             <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
               name,
               (y / pointsSum) * 100,
-            )}%; background-color: ${
-            AllChainsByKeys[data.chain_id].colors[theme][0]
+            )}%; background-color: ${AllChainsByKeys[data.chain_id].colors[theme][0]
             }33;"></div>
           </div> -->`;
         })
@@ -1148,7 +1128,7 @@ export default function ChainComponent({
         isMounted() && chart && chart.setSize(null, null, false);
         isMounted() && chart && chart.reflow();
         isMounted() && chart && resetXAxisExtremes();
-        
+
         // delay(0)
         //   .then(() => {
         //     isMounted() && chart && chart.setSize(null, null, false);
@@ -1306,6 +1286,9 @@ export default function ChainComponent({
                     ]),
                   showInLegend: false,
                   marker: {
+                    enabled: false,
+                  },
+                  dataGrouping: {
                     enabled: false,
                   },
                   // states: {
