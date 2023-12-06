@@ -272,7 +272,7 @@ export default function Page() {
   }, [getAllProjectsCombinedFundingSourcesByCurrency, projects]);
 
   const [minListOPAmount, maxListOPAmount] = useMemo<[number, number]>(() => {
-    if (!listAmountsByProjectId) return [0, 0];
+    if (!listAmountsByProjectId || !listAmountsByProjectId?.listAmounts) return [0, 0];
 
     const listOPAmounts = Object.values(listAmountsByProjectId.listAmounts).flatMap((listAmounts) => listAmounts.map((listAmount) => listAmount.listContent[0].OPAmount));
 
