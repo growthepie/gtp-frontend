@@ -1446,6 +1446,7 @@ export default function Page() {
   }
 
   const canDownloadCSV = useMemo(() => {
+    if (!projects || !listAmountsByProjectId) return false;
     return projects && projects.length > 0 && listAmountsByProjectId && Object.keys(listAmountsByProjectId).length > 0;
   }, [listAmountsByProjectId, projects]);
 
