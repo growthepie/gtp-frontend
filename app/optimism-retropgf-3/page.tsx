@@ -274,7 +274,7 @@ export default function Page() {
   const [minListOPAmount, maxListOPAmount] = useMemo<[number, number]>(() => {
     if (!listAmountsByProjectId || !listAmountsByProjectId?.listAmounts) return [0, 0];
 
-    const listOPAmounts = Object.values(listAmountsByProjectId.listAmounts).flatMap((listAmounts) => listAmounts.map((listAmount) => listAmount.listContent[0].OPAmount));
+    const listOPAmounts = Object.values(listAmountsByProjectId.listAmounts).flatMap((listAmounts) => listAmounts.map((listAmount) => listAmount.listContent.length > 0 ? listAmount.listContent[0].OPAmount : 0));
 
     return [Math.min(...listOPAmounts), Math.max(...listOPAmounts)];
   }, [listAmountsByProjectId]);
@@ -356,7 +356,7 @@ export default function Page() {
                   <div className="text-[0.6rem] font-light font-inter">{formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id][key], true)}</div>
                 </div>)
               ))}</div>
-              {listAmountsByProjectId.listAmounts[info.row.original.id].sort(
+              {listAmountsByProjectId.listAmounts[info.row.original.id].filter(l => l.listContent.length > 0).sort(
                 (a, b) => a.listContent[0].OPAmount - b.listContent[0].OPAmount
               ).map((list, i) => (
                 list.listContent.map((listContentItem, j) => (
