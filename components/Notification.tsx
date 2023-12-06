@@ -218,11 +218,10 @@ const Notification = () => {
           if (item.url) {
             return (
               <Link
-                className={`flex border-b-white border-dotted w-full mt-[8px] hover:cursor-pointer ${
-                  i >= filteredData.length - 1
-                    ? "border-b-[0px] pb-1"
-                    : "border-b-[1px] pb-0"
-                }`}
+                className={`flex border-b-white border-dotted w-full mt-[8px] hover:cursor-pointer ${i >= filteredData.length - 1
+                  ? "border-b-[0px] pb-1"
+                  : "border-b-[1px] pb-0"
+                  }`}
                 key={item.id}
                 href={item.url}
               >
@@ -244,11 +243,10 @@ const Notification = () => {
           return (
             <div
               key={item.id}
-              className={`flex border-b-white border-dotted w-full mt-[8px]  ${
-                i >= filteredData.length - 1
-                  ? "border-b-[0px] pb-1"
-                  : "border-b-[1px] pb-0"
-              }`}
+              className={`flex border-b-white border-dotted w-full mt-[8px]  ${i >= filteredData.length - 1
+                ? "border-b-[0px] pb-1"
+                : "border-b-[1px] pb-0"
+                }`}
             >
               <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[5px]">
                 <div className="h-[17px] font-bold text-[14px]">
@@ -270,7 +268,7 @@ const Notification = () => {
       {filteredData && (
         <>
           {!isMobile ? (
-            <div className="flex w-full relative z-50">
+            <div className="flex w-full relative z-[110]">
               <button
                 className="hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[478px] xl:w-[600px] h-[28px] rounded-full border-[1px] dark:border-forest-50 border-black bg-white dark:bg-forest-900 px-[7px] relative z-10"
                 onClick={() => {
@@ -287,56 +285,15 @@ const Notification = () => {
                 <p className="text-[12px] font-[500] ">Notification Center</p>
               </button>
               <div
-                className={`absolute hidden mb-[10px] lg:mb-0 md:flex flex-col w-[478px] xl:w-[600px] top-0 dark:bg-forest-900 bg-forest-50 rounded-b-xl rounded-t-xl z-1 overflow-hidden transition-max-height duration-700 ease-in-out`}
-                style={{
-                  maxHeight: openNotif ? "1000px" : "0",
-                }}
+                className={`absolute hidden mb-[10px] lg:mb-0 md:flex flex-col w-[478px] xl:w-[600px] top-0 dark:bg-forest-900 bg-forest-50 rounded-b-xl rounded-t-xl z-1 overflow-hidden transition-max-height ${openNotif ? "max-h-screen duration-300 ease-in-out" : "max-h-0 duration-300 ease-in-out"
+                  }`}
+              // style={{
+              //   maxHeight: openNotif ? "fit-content duration-400 ease-in" : "0px duration-200 ease-out",
+              // }}
               >
-                <div className="h-[28px]">
-                  {/*Top bar for height for consistency*/}
+                <div className="h-[24px]">
                 </div>
                 <div>
-                  {/* {filteredData.map((item, index) =>
-                    item.url ? (
-                      <Link
-                        className={`flex border-b-white border-dotted w-full mt-[8px] hover:cursor-pointer ${index < filteredData.length - 1
-                          ? "border-b-[1px] pb-0"
-                          : "border-b-[0px] pb-[1px]"
-                          }`}
-                        key={item.id}
-                        href={item.url}
-                      >
-                        <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[5px]">
-                          <div className="h-[17px] font-bold text-[14px]">
-                            {item.desc}
-                          </div>
-                          <div className="h-auto text-[12px] leading-[.65rem]">
-                            <Markdown>{item.body}</Markdown>
-                          </div>
-                        </div>
-                        <div className="w-[35px] pr-[20px] self-center">
-                          <Icon icon="ci:chevron-right" />
-                        </div>
-                      </Link>
-                    ) : (
-                      <div
-                        className={`flex border-b-white border-dotted w-full mt-[8px] ${index < filteredData.length - 1
-                          ? "border-b-[1px]"
-                          : "border-b-[0px]"
-                          }`}
-                        key={item.id}
-                      >
-                        <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[5px] ">
-                          <div className="h-[17px] font-bold text-[14px]">
-                            {item.desc}
-                          </div>
-                          <div className="h-auto text-[12px] leading-[.65rem]">
-                            <Markdown>{item.body}</Markdown>
-                          </div>
-                        </div>
-                      </div>
-                    ),
-                  )} */}
                   {Items}
                 </div>
               </div>
@@ -344,7 +301,7 @@ const Notification = () => {
           ) : (
             <>
               <div
-                className="justify-self-end hover:pointer z-50 cursor-pointer"
+                className={`relative flex md:hidden mt-[2px] mr-10 justify-self-end hover:pointer cursor-pointer p-3 rounded-full ${openNotif ? "dark:bg-forest-900 bg-forest-50 z-[110]" : ""}`}
                 onClick={() => {
                   setOpenNotif(!openNotif);
                 }}
@@ -359,23 +316,21 @@ const Notification = () => {
               </div>
 
               <div
-                className={`fixed top-0 left-0 w-full h-auto bg-forest-900 z-50 rounded-b-2xl transition-max-height duration-700 ease-in-out overflow-hidden ${
-                  openNotif ? "bg-blend-darken" : "bg-blend-normal"
-                }`}
+                className={`fixed top-[80px] left-0 w-full h-auto bg-forest-900 rounded-2xl transition-max-height overflow-hidden break-inside-avoid z-[110] ${openNotif ? "bg-blend-darken duration-300 ease-in-out z-[110]" : "bg-blend-normal duration-300 ease-in-out z-50"
+                  }`}
                 style={{
-                  maxHeight: openNotif ? "1000px" : "0",
+                  maxHeight: openNotif ? "100vh" : "0",
                 }}
                 ref={mobileRef}
               >
-                <div>
+                <div className="flex flex-col w-full pl-[0px] py-[8px] gap-y-[5px]">
                   {filteredData.map((item, index) =>
                     item.url ? (
                       <Link
-                        className={`flex border-b-white border-dotted w-full mt-[8px] hover:cursor-pointer ${
-                          index < filteredData.length - 1
-                            ? "border-b-[1px] pb-1"
-                            : "border-b-[0px] pb-1"
-                        }`}
+                        className={`flex border-b-white border-dotted w-full mt-[8px] hover:cursor-pointer ${index < filteredData.length - 1
+                          ? "border-b-[1px] pb-1"
+                          : "border-b-[0px] pb-1"
+                          }`}
                         key={item.id}
                         href={item.url}
                       >
@@ -383,7 +338,7 @@ const Notification = () => {
                           <div className="h-[17px] font-bold text-[16px]">
                             {item.desc}
                           </div>
-                          <div className="h-auto text-[14px] leading-[.75rem]">
+                          <div className="h-auto text-[14px] leading-snug">
                             <Markdown>{item.body}</Markdown>
                           </div>
                         </div>
@@ -393,11 +348,10 @@ const Notification = () => {
                       </Link>
                     ) : (
                       <div
-                        className={`flex border-b-white border-dotted w-full mt-[8px] ${
-                          index < filteredData.length - 1
-                            ? "border-b-[1px] pb-1"
-                            : "border-b-[0px] pb-1"
-                        }`}
+                        className={`flex border-b-white border-dotted w-full mt-[8px] ${index < filteredData.length - 1
+                          ? "border-b-[1px] pb-1"
+                          : "border-b-[0px] pb-1"
+                          }`}
                         key={item.id}
                       >
                         <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[8px] ">
@@ -419,7 +373,7 @@ const Notification = () => {
       )}
       {openNotif && (
         <div
-          className="fixed inset-0 bg-black opacity-30 z-20"
+          className="fixed inset-0 bg-black opacity-30 z-[100]"
           onClick={() => {
             setOpenNotif(false);
           }}

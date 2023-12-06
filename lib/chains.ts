@@ -294,7 +294,7 @@ export const AllChains: Chain[] = [
     darkTextOnBackground: true,
   },
   {
-    label: "Multiple",
+    label: "Multiple Chains",
     icon: null,
     key: "multiple",
     urlKey: "multiple",
