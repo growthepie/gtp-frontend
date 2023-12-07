@@ -337,16 +337,30 @@ const Notification = () => {
                               key={item.id}
                               className={`flex border-b-white border-dashed w-full items-center mr-[10px] xl:mr-0 overflow-hidden h-full ${
                                 openNotif ? "w-auto" : "w-[358px] xl:w-[560px]"
-                              }`}
+                              } relative`}
                             >
                               <div
-                                className={`flex max-w-[308px] xl:max-w-[550px]  items-center  whitespace-nowrap gap-x-2 overflow-hidden  `}
+                                className={`flex w-[308px] xl:w-[550px] items-center whitespace-nowrap gap-x-2 overflow-hidden relative`}
                               >
-                                <div className=" font-bold text-[14px]">
+                                <div className="font-bold text-[14px]">
                                   {item.desc}
                                 </div>
-                                <div className=" text-[12px] leading-[.75rem] whitespace-nowrap">
-                                  <Markdown>{item.body}</Markdown>
+                                <div className="flex text-[12px] leading-[.75rem] whitespace-nowrap relative w-full overflow-hidden">
+                                  <div
+                                    className="relative z-10 w-full flex justify-start"
+                                    style={{
+                                      backgroundImage:
+                                        "linear-gradient(90deg, #2a3433 80%, rgba(42, 52, 51, 0.00) 100%)",
+                                      WebkitMaskImage:
+                                        "-webkit-linear-gradient(90deg, #2a3433 80%, rgba(42, 52, 51, 0.00) 100%)",
+                                      maskImage:
+                                        "linear-gradient(90deg, #2a3433 80%, rgba(42, 52, 51, 0.00) 100%)",
+                                    }}
+                                  >
+                                    <Markdown>{item.body}</Markdown>
+                                    {/* Pseudo-element for gradient fade effect */}
+                                  </div>
+                                  {/* Mask for gradient fade effect */}
                                 </div>
                               </div>
                             </div>
