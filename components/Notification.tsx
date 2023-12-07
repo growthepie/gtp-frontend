@@ -229,7 +229,7 @@ const Notification = () => {
         {filteredData.map((item, i) => {
           return (
             <div
-              className={`hover:pointer`}
+              className={``}
               onClick={() => {
                 if (item.url) {
                   window.open(item.url, "_blank");
@@ -239,11 +239,13 @@ const Notification = () => {
             >
               <div
                 key={item.id}
-                className={`flex border-forest-50 border-dashed w-full mt-[8px]  hover:cursor-pointer ${
+                className={`flex border-forest-50 border-dashed w-full mt-[8px]   ${
                   i >= filteredData.length - 1
                     ? "border-b-[0px] pb-1"
                     : "border-b-[1px] pb-0"
-                } ${openNotif ? "w-auto" : "w-[478px] xl:w-[600px]"}`}
+                } ${openNotif ? "w-auto" : "w-[478px] xl:w-[600px]"}
+                ${item.url ? "hover:cursor-pointer" : "hover:cursor-none"}
+                `}
               >
                 <div
                   className={`flex w-full flex-col pl-[35px] pb-[8px] gap-y-[5px] `}
@@ -255,7 +257,11 @@ const Notification = () => {
                     <Markdown>{item.body}</Markdown>
                   </div>
                 </div>
-                <div className="w-[24px] h-[24px] pr-[20px] self-center ml-auto">
+                <div
+                  className={`w-[24px] h-[24px] pr-[20px] self-center ml-auto ${
+                    item.url ? "block" : "hidden"
+                  }`}
+                >
                   <Icon icon="ci:chevron-right" />
                 </div>
               </div>
@@ -309,7 +315,7 @@ const Notification = () => {
                       />
                     </div>
                     <div
-                      className="flex absolute transition-transform duration-500"
+                      className="flex absolute transition-transform duration-500 h-full"
                       style={{
                         transform: `translateX(-${
                           (100 / filteredData.length) * currentIndex
@@ -329,12 +335,12 @@ const Notification = () => {
                           >
                             <div
                               key={item.id}
-                              className={`flex border-b-white border-dashed w-full items-center mr-[10px] xl:mr-0 overflow-hidden ${
-                                openNotif ? "w-auto" : "w-[358px] xl:w-[575px]"
+                              className={`flex border-b-white border-dashed w-full items-center mr-[10px] xl:mr-0 overflow-hidden h-full ${
+                                openNotif ? "w-auto" : "w-[358px] xl:w-[560px]"
                               }`}
                             >
                               <div
-                                className={`flex w-[308px] xl:w-[560px]  items-center  whitespace-nowrap gap-x-2 overflow-hidden`}
+                                className={`flex max-w-[308px] xl:max-w-[550px]  items-center  whitespace-nowrap gap-x-2 overflow-hidden  `}
                               >
                                 <div className=" font-bold text-[14px]">
                                   {item.desc}
@@ -348,7 +354,7 @@ const Notification = () => {
                         );
                       })}
                     </div>
-                    <div className="px-[0px] relative left-[308px] xl:left-[540px] w-[16px] h-[16px] bg-forest-900 z-30">
+                    <div className="px-[0px] relative left-[308px] xl:left-[542px] w-[16px] h-[16px] bg-forest-900 z-30">
                       <Icon
                         icon="ci:chevron-right"
                         className="w-[16px] h-[16px]"
