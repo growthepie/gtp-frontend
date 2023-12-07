@@ -406,21 +406,22 @@ const Notification = () => {
               </div>
 
               <div
-                className={`fixed top-[80px] left-0 w-full h-auto bg-forest-900 rounded-2xl transition-max-height overflow-hidden break-inside-avoid z-[110] ${
+                className={`fixed top-[80px] left-0 right-0 w-[95%] h-auto bg-forest-900 rounded-2xl transition-max-height border-forest-50 overflow-hidden break-inside-avoid z-[110] ${
                   openNotif
-                    ? "bg-blend-darken duration-300 ease-in-out z-[110]"
-                    : "bg-blend-normal duration-300 ease-in-out z-50"
+                    ? "bg-blend-darken duration-300 ease-in-out z-[110] border-[1px]"
+                    : "bg-blend-normal duration-300 ease-in-out z-50 border-[0px] "
                 }`}
                 style={{
                   maxHeight: openNotif ? "100vh" : "0",
+                  margin: "auto",
                 }}
                 ref={mobileRef}
               >
-                <div className="flex flex-col w-full pl-[0px] py-[8px] gap-y-[5px]">
+                <div className="flex flex-col w-[100%] pl-[0px] py-[8px] gap-y-[5px]">
                   {filteredData.map((item, index) =>
                     item.url ? (
                       <Link
-                        className={`flex border-b-white border-dotted w-full mt-[8px] hover:cursor-pointer ${
+                        className={`flex border-b-white border-dashed w-full mt-[8px] hover:cursor-pointer ${
                           index < filteredData.length - 1
                             ? "border-b-[1px] pb-1"
                             : "border-b-[0px] pb-1"
@@ -442,7 +443,7 @@ const Notification = () => {
                       </Link>
                     ) : (
                       <div
-                        className={`flex border-b-white border-dotted w-full mt-[8px] ${
+                        className={`flex border-b-white border-dashed w-full mt-[8px] ${
                           index < filteredData.length - 1
                             ? "border-b-[1px] pb-1"
                             : "border-b-[0px] pb-1"

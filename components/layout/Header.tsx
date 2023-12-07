@@ -24,9 +24,9 @@ export default function Header() {
           ) : (
             <Banner />
           )}
-          <div className="flex justify-between items-end md:hidden relative w-full">
+          <div className="flex justify-between items-start h-full md:hidden relative w-full">
             <Link href="/" className="">
-              <div className="h-[36px] w-[154.05px] relative">
+              <div className="h-[36px] w-[154.05px] relative ">
                 <Image
                   src="/logo_full.png"
                   alt="Forest"
