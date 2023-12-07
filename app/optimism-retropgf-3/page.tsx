@@ -46,7 +46,7 @@ import { useUIContext } from "@/contexts/UIContext";
 import { useElementSize } from "usehooks-ts";
 import { BASE_URL } from "@/lib/helpers";
 import { a } from "react-spring";
-
+import { RecoveredListData } from "./recoveredListData";
 
 
 // Collective Governance
@@ -279,41 +279,41 @@ export default function Page() {
     return [Math.min(...listOPAmounts), Math.max(...listOPAmounts)];
   }, [listAmountsByProjectId]);
 
-  const totalsForProjectsInQuorum = useMemo(() => {
-    if (!listAmountsByProjectId) return 0;
-    if (!projectsResponse) return 0;
+  // const totalsForProjectsInQuorum = useMemo(() => {
+  //   if (!listAmountsByProjectId) return 0;
+  //   if (!projectsResponse) return 0;
 
-    // get projects over 17 ballots
-    const projectsOverQuorum = projectsResponse.projects.filter((project) => project.included_in_ballots >= 17);
+  //   // get projects over 17 ballots
+  //   const projectsOverQuorum = projectsResponse.projects.filter((project) => project.included_in_ballots >= 17);
 
-    const listOPAmounts = projectsOverQuorum.map((project) => listAmountsByProjectId.listQuartiles[project.id]);
+  //   const listOPAmounts = projectsOverQuorum.map((project) => listAmountsByProjectId.listQuartiles[project.id]);
 
 
 
-    const totals = listOPAmounts.reduce((acc, curr) => {
-      acc.median += curr.median;
-      acc.q1 += curr.q1;
-      acc.q3 += curr.q3;
-      acc.min += curr.min;
-      acc.max += curr.max;
-      return acc;
-    }, {
-      median: 0,
-      q1: 0,
-      q3: 0,
-      min: 0,
-      max: 0,
-    });
+  //   const totals = listOPAmounts.reduce((acc, curr) => {
+  //     acc.median += curr.median;
+  //     acc.q1 += curr.q1;
+  //     acc.q3 += curr.q3;
+  //     acc.min += curr.min;
+  //     acc.max += curr.max;
+  //     return acc;
+  //   }, {
+  //     median: 0,
+  //     q1: 0,
+  //     q3: 0,
+  //     min: 0,
+  //     max: 0,
+  //   });
 
-    return totals;
+  //   return totals;
 
-  }, [projectsResponse, listAmountsByProjectId]);
+  // }, [projectsResponse, listAmountsByProjectId]);
 
   const getListAmountsCell = useCallback((info) => {
-    if (!listAmountsByProjectId) return null;
+    if (!listAmountsByProjectId || !listAmountsByProjectId.listQuartiles) return null;
 
     return (<div className="w-full whitespace-nowrap text-ellipsis relative overflow-visible">
-      {listAmountsByProjectId && listAmountsByProjectId.listAmounts[info.row.original.id].length > 0 && !Number.isNaN(listAmountsByProjectId.listQuartiles[info.row.original.id].min) && !Number.isNaN(listAmountsByProjectId.listQuartiles[info.row.original.id].max) && (
+      {(listAmountsByProjectId.listQuartiles[info.row.original.id].min + listAmountsByProjectId.listQuartiles[info.row.original.id].max) > 0 && !Number.isNaN(listAmountsByProjectId.listQuartiles[info.row.original.id].min) && !Number.isNaN(listAmountsByProjectId.listQuartiles[info.row.original.id].max) && (
         <div className="flex text-[0.55rem] text-forest-900/60 dark:text-forest-500/60 font-inter font-light leading-[1]">
           <div className="absolute left-0 -top-1.5">
             {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].min, true)}
@@ -323,29 +323,31 @@ export default function Page() {
             {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].max, true)}
           </div>
         </div>)}
-      {listAmountsByProjectId && listAmountsByProjectId.listAmounts[info.row.original.id].length > 0 &&
+      {/* {listAmountsByProjectId && listAmountsByProjectId.listAmounts[info.row.original.id].length > 0 &&
         (<Tooltip placement="left">
-          <TooltipTrigger className="w-full">
-            <div className="text-[0.7rem] font-normal w-full flex space-x-9.5 items-center font-inter mt-1">
-              {listAmountsByProjectId.listAmounts[info.row.original.id].length > 1 ?
-                (<>
-                  <div className=" text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
-                    {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].q1, true)}
-                  </div>
-                  <div className="flex-1 text-forest-900/50 dark:text-forest-500/50">-</div>
-                  <div className="text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
-                    {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].q3, true)}{" "}<span className="text-[0.6rem]">OP</span>
-                  </div>
-                </>) : (<div className="flex-1 text-forest-900/80 dark:text-forest-500 font-light leading-[1] text-right">
-                  {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].median, true)}{" "}<span className="text-[0.6rem]">OP</span>
-                </div>)}
+          <TooltipTrigger className="w-full"> */}
+      <div className="text-[0.7rem] font-normal w-full flex space-x-0.5 items-center font-inter mt-1">
+        {listAmountsByProjectId.listQuartiles[info.row.original.id].q3 > 1 ?
+          (<>
+            <div className=" text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
+              {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].q1, true)}
             </div>
-            <div className="relative bottom-[8px] left-0 right-0 text-xs font-normal text-right h-[2px]">
-              <BoxPlot {...{ ...listAmountsByProjectId.listQuartiles[info.row.original.id], globalMin: minListOPAmount, globalMax: maxListOPAmount }} />
+            <div className="flex-1 text-forest-900/50 dark:text-forest-500/50">-</div>
+            <div className="text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
+              {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].q3, true)}{" "}<span className="text-[0.6rem]">OP</span>
             </div>
+          </>) : (<div className="flex-1 text-forest-900/80 dark:text-forest-500 font-light leading-[1] text-right">
+            {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].median, true)}{" "}<span className="text-[0.6rem]">OP</span>
+          </div>)}
+      </div>
+      <div className="relative bottom-[8px] left-0 right-0 text-xs font-normal text-right h-[2px]">
+        <BoxPlot {...{
+          ...listAmountsByProjectId.listQuartiles[info.row.original.id], globalMin: 0, globalMax: 5000000
+        }} />
+      </div>
 
 
-          </TooltipTrigger>
+      {/* </TooltipTrigger>
           <TooltipContent className="z-50 flex items-center justify-center">
             <div className="flex flex-col space-y-0.5 px-0.5 py-0.5 pt-1 text-[0.65rem] font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-2xl shadow-lg z-50">
               <div className="px-3 text-sm">{info.row.original.display_name}</div>
@@ -390,7 +392,7 @@ export default function Page() {
               ))}
             </div>
           </TooltipContent>
-        </Tooltip>)}
+        </Tooltip>)} */}
     </div>);
 
   }, [listAmountsByProjectId, minListOPAmount, maxListOPAmount]);
@@ -687,15 +689,15 @@ export default function Page() {
         cell: (info) => (
           <>
             <div className="w-full whitespace-nowrap text-ellipsis relative">
-              {listAmountsByProjectId?.numUniqueAuthors[info.row.original.id] && <div className="absolute right-0 -bottom-[11px] flex space-x-1 text-[0.55rem] text-forest-900/30 dark:text-forest-500/30 font-light leading-[1]">
+              {/* {listAmountsByProjectId?.numUniqueAuthors[info.row.original.id] && <div className="absolute right-0 -bottom-[11px] flex space-x-1 text-[0.55rem] text-forest-900/30 dark:text-forest-500/30 font-light leading-[1]">
                 <div className="flex justify-center items-center rounded-sm text-forest-900/30 dark:text-forest-500/30" >{listAmountsByProjectId.numUniqueAuthors[info.row.original.id]}</div>
                 <div>
                   {listAmountsByProjectId.numUniqueAuthors[info.row.original.id] > 1 ? "authors" : "author"}
                 </div>
-              </div>}
+              </div>} */}
               <div className="font-normal w-full flex justify-end font-inter">
                 <div className="flex space-x-1">
-                  <div>{info.row.original.lists.length}</div>
+                  <div>{listAmountsByProjectId && listAmountsByProjectId["listCounts"][info.row.original.id]}</div>
                   <div className="w-4 h-4 text-forest-900/80 dark:text-forest-500/80">
                     <Icon
                       icon={"feather:list"}
@@ -1407,7 +1409,8 @@ export default function Page() {
         applicant_address: d.applicant.address.address,
         applicant_ens: d.applicant.address.resolvedName.name,
         included_in_ballots: d.included_in_ballots,
-        included_in_lists: d.lists.length,
+        // included_in_lists: d.lists.length,
+        included_in_lists: listAmountsByProjectId["listCounts"][d.id],
         lists_min_amount: listAmountsByProjectId.listQuartiles[d.id].min ?? "",
         lists_quartile_1_amount: listAmountsByProjectId.listQuartiles[d.id].q1 ?? "",
         lists_median_amount: listAmountsByProjectId.listQuartiles[d.id].median ?? "",
@@ -1504,7 +1507,8 @@ export default function Page() {
                 />
               </div>
             }
-            <div className="text-forest-200 dark:text-forest-400">Last updated {lastUpdatedString}</div>
+            {/* <div className="text-forest-200 dark:text-forest-400">Last updated {lastUpdatedString}</div> */}
+            <div className="text-forest-200 dark:text-forest-400">Voting ended {moment.unix(1701982800).fromNow()}</div>
           </div>
         </div>
       </Container>
