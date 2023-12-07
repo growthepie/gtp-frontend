@@ -35,6 +35,7 @@ const Notification = () => {
   const [sessionArray, setSessionArray] = useState<NotificationType[] | null>(
     null,
   );
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [openNotif, setOpenNotif] = useState(false);
   const mobileRef = useRef(null);
 
@@ -208,6 +209,17 @@ const Notification = () => {
     return returnArray;
   }, [data, currentURL]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Increment the index to show the next item in the carousel
+
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % filteredData.length);
+    }, 5000); // Adjust the interval as needed
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, [filteredData]); // Remove currentIndex from the dependency array
+
   const Items = useMemo(() => {
     if (!filteredData) {
       return null;
@@ -215,18 +227,27 @@ const Notification = () => {
     return (
       <>
         {filteredData.map((item, i) => {
-          if (item.url) {
-            return (
-              <Link
-                className={`flex border-b-white border-dotted w-full mt-[8px] hover:cursor-pointer ${
+          return (
+            <div
+              className={`hover:pointer`}
+              onClick={() => {
+                if (item.url) {
+                  window.open(item.url, "_blank");
+                }
+              }}
+              key={item.id + item.url}
+            >
+              <div
+                key={item.id}
+                className={`flex border-forest-50 border-dashed w-full mt-[8px]  hover:cursor-pointer ${
                   i >= filteredData.length - 1
                     ? "border-b-[0px] pb-1"
                     : "border-b-[1px] pb-0"
-                }`}
-                key={item.id}
-                href={item.url}
+                } ${openNotif ? "w-auto" : "w-[478px] xl:w-[600px]"}`}
               >
-                <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[5px]">
+                <div
+                  className={`flex w-full flex-col pl-[35px] pb-[8px] gap-y-[5px] `}
+                >
                   <div className="h-[17px] font-bold text-[14px]">
                     {item.desc}
                   </div>
@@ -234,28 +255,8 @@ const Notification = () => {
                     <Markdown>{item.body}</Markdown>
                   </div>
                 </div>
-                <div className="w-[35px] pr-[20px] self-center">
+                <div className="w-[24px] h-[24px] pr-[20px] self-center ml-auto">
                   <Icon icon="ci:chevron-right" />
-                </div>
-              </Link>
-            );
-          }
-
-          return (
-            <div
-              key={item.id}
-              className={`flex border-b-white border-dotted w-full mt-[8px]  ${
-                i >= filteredData.length - 1
-                  ? "border-b-[0px] pb-1"
-                  : "border-b-[1px] pb-0"
-              }`}
-            >
-              <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[5px]">
-                <div className="h-[17px] font-bold text-[14px]">
-                  {item.desc}
-                </div>
-                <div className="h-auto text-[12px] leading-[.75rem]">
-                  <Markdown>{item.body}</Markdown>
                 </div>
               </div>
             </div>
@@ -272,25 +273,95 @@ const Notification = () => {
           {!isMobile ? (
             <div className="flex w-full relative z-[110]">
               <button
-                className="hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[478px] xl:w-[600px] h-[28px] rounded-full border-[1px] dark:border-forest-50 border-black bg-white dark:bg-forest-900 px-[7px] relative z-10"
+                className={`hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[358px] xl:w-[600px] border-[1px] h-[28px] rounded-full  dark:border-forest-50 border-black bg-white dark:bg-forest-900 px-[7px] relative z-10 `}
                 onClick={() => {
                   setOpenNotif(!openNotif);
                 }}
               >
-                <Image
-                  src="/FiBell.svg"
-                  width={16}
-                  height={16}
-                  alt="Bell image"
-                  className="text-forest-900"
-                />
-                <p className="text-[12px] font-[500] ">Notification Center</p>
+                {openNotif ? (
+                  <div className="w-full flex  gap-x-2.5">
+                    <Image
+                      src="/FiBell.svg"
+                      width={16}
+                      height={16}
+                      alt="Bell image"
+                      className="text-forest-900"
+                    />
+                    <p className="text-[12px] font-[500] ">
+                      Notification Center
+                    </p>{" "}
+                    <div className="ml-auto">
+                      <Icon
+                        icon="ci:chevron-down"
+                        className="w-[16px] h-[16px]"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="px-[0px] relative w-[16px] h-[16px] bg-forest-900 rounded-full z-30">
+                      <Image
+                        src="/FiBell.svg"
+                        width={16}
+                        height={16}
+                        alt="Bell image"
+                        className="text-forest-900 "
+                      />
+                    </div>
+                    <div
+                      className="flex absolute transition-transform duration-500"
+                      style={{
+                        transform: `translateX(-${
+                          (100 / filteredData.length) * currentIndex
+                        }%)`,
+                      }}
+                    >
+                      {filteredData.map((item, i) => {
+                        return (
+                          <div
+                            className={`hover:pointer ml-[25px]`}
+                            onClick={() => {
+                              if (item.url) {
+                                window.open(item.url, "_blank");
+                              }
+                            }}
+                            key={item.id + item.desc}
+                          >
+                            <div
+                              key={item.id}
+                              className={`flex border-b-white border-dashed w-full items-center mr-[10px] xl:mr-0 overflow-hidden ${
+                                openNotif ? "w-auto" : "w-[358px] xl:w-[575px]"
+                              }`}
+                            >
+                              <div
+                                className={`flex w-[308px] xl:w-[560px]  items-center  whitespace-nowrap gap-x-2 overflow-hidden`}
+                              >
+                                <div className=" font-bold text-[14px]">
+                                  {item.desc}
+                                </div>
+                                <div className=" text-[12px] leading-[.75rem] whitespace-nowrap">
+                                  <Markdown>{item.body}</Markdown>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="px-[0px] relative left-[308px] xl:left-[540px] w-[16px] h-[16px] bg-forest-900 z-30">
+                      <Icon
+                        icon="ci:chevron-right"
+                        className="w-[16px] h-[16px]"
+                      />
+                    </div>
+                  </>
+                )}
               </button>
               <div
-                className={`absolute hidden mb-[10px] lg:mb-0 md:flex flex-col w-[478px] xl:w-[600px] top-0 dark:bg-forest-900 bg-forest-50 rounded-b-xl rounded-t-xl z-1 overflow-hidden transition-max-height ${
+                className={`absolute hidden mb-[10px] lg:mb-0 md:flex flex-col w-[358px] xl:w-[600px] top-0 dark:bg-forest-900 bg-forest-50 border-forest-50 rounded-b-xl rounded-t-xl z-1 overflow-hidden transition-max-height ${
                   openNotif
-                    ? "max-h-screen duration-300 ease-in-out"
-                    : "max-h-0 duration-300 ease-in-out"
+                    ? "max-h-screen duration-300 ease-in-out border-[1px]"
+                    : "max-h-[28px] duration-300 ease-in-out border-[0px]"
                 }`}
                 // style={{
                 //   maxHeight: openNotif ? "fit-content duration-400 ease-in" : "0px duration-200 ease-out",
@@ -300,7 +371,7 @@ const Notification = () => {
                 <div>
                   {filteredData.length === 0 ? (
                     <div
-                      className={`flex border-b-white border-dotted w-full mt-[8px]`}
+                      className={`flex border-b-white border-dashed w-full mt-[8px]`}
                     >
                       <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[5px]">
                         <div className="h-[17px] font-semibold text-[15px]">
