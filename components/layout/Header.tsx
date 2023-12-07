@@ -22,7 +22,9 @@ export default function Header() {
               <Notification />
             </div>
           ) : (
-            <Banner />
+            <>
+              {/* <Banner /> */}
+            </>
           )}
           <div className="flex justify-between items-end md:hidden relative w-full">
             <Link href="/" className="">
@@ -112,7 +114,9 @@ export default function Header() {
         ) ? (
         <> </>
       ) : (
-        <SupportUsBanner />
+        <>
+          {/* <SupportUsBanner /> */}
+        </>
       )}
       {/* Donation Banner smaller than XL screen */}
       {/* <Link
