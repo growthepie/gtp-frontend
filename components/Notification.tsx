@@ -15,6 +15,8 @@ type AirtableRow = {
   body: string;
   desc: string;
   url?: string;
+  icon?: string;
+  color?: string;
 };
 
 type NotificationType = {
@@ -27,7 +29,6 @@ const currentDateTime = new Date().getTime();
 const Notification = () => {
   const [data, setData] = useState<Array<object> | null>(null);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
-  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [loadedMessages, setLoadedMessages] = useState<string[]>([]);
   const [circleStart, setCircleStart] = useState(false);
   const [currentURL, setCurrentURL] = useState<string | null>(null);
@@ -35,6 +36,7 @@ const Notification = () => {
   const [sessionArray, setSessionArray] = useState<NotificationType[] | null>(
     null,
   );
+  const [hoverID, setHoverID] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [openNotif, setOpenNotif] = useState(false);
   const mobileRef = useRef(null);
@@ -199,6 +201,12 @@ const Notification = () => {
             url: data[item]["fields"]["URL"]
               ? data[item]["fields"]["URL"]
               : null,
+            icon: data[item]["fields"]["Icon"]
+              ? data[item]["fields"]["Icon"]
+              : null,
+            color: data[item]["fields"]["Color"]
+              ? data[item]["fields"]["Color"]
+              : null,
           };
 
           returnArray.push(newEntry);
@@ -228,49 +236,92 @@ const Notification = () => {
       <>
         {filteredData.map((item, i) => {
           return (
-            <div
-              className={``}
-              onClick={() => {
-                if (item.url) {
-                  window.open(item.url, "_blank");
-                }
-              }}
-              key={item.id + item.url}
-            >
+            <>
               <div
-                key={item.id}
-                className={`flex border-forest-50 border-dashed w-full mt-[8px]   ${
-                  i >= filteredData.length - 1
-                    ? "border-b-[0px] pb-1"
-                    : "border-b-[1px] pb-0"
-                } ${openNotif ? "w-auto" : "w-[478px] xl:w-[600px]"}
-                ${item.url ? "hover:cursor-pointer" : "hover:cursor-none"}
-                `}
+                className={``}
+                onClick={() => {
+                  if (item.url) {
+                    window.open(item.url, "_blank");
+                  }
+                }}
+                key={item.id + item.url}
+                onMouseEnter={() => {
+                  setHoverID((prevHoverID) => {
+                    return item.id;
+                  });
+                }}
+                onMouseLeave={() => {
+                  setHoverID((prevHoverID) => {
+                    return null; // Return the new value for the state
+                  });
+                }}
               >
                 <div
-                  className={`flex w-full flex-col pl-[35px] pb-[8px] gap-y-[5px] `}
+                  key={item.id + item.url}
+                  className={`relative pb-1 pt-1 ${
+                    i >= filteredData.length - 1
+                      ? "pb-1"
+                      : "pb-0 border-b border-forest-50 border-dashed"
+                  } ${openNotif ? "w-auto" : "w-[478px] xl:w-[600px]"}
+      ${item.url ? "cursor-pointer" : "cursor-normal"} flex`}
+                  onMouseEnter={() => {
+                    setHoverID(item.id);
+                  }}
+                  onMouseLeave={() => {
+                    setHoverID(null);
+                  }}
                 >
-                  <div className="h-[17px] font-bold text-[14px]">
-                    {item.desc}
+                  <div className="flex items-center w-[35px] justify-center  ">
+                    {item.icon && (
+                      <Icon
+                        icon={item.icon || "default-icon"}
+                        className={`w-[12px] h-[12px] text-forest-50 ${
+                          item.icon ? "visible" : "invisible"
+                        } ${
+                          hoverID === item.id
+                            ? "text-forest-200"
+                            : "text-forest-800"
+                        }`}
+                      />
+                    )}
                   </div>
-                  <div className="h-auto text-[12px] leading-[.75rem]">
-                    <Markdown>{item.body}</Markdown>
+                  <div
+                    className={`flex w-full flex-col  pb-[8px] gap-y-[5px] `}
+                  >
+                    <div className="h-[17px] font-bold text-[14px]">
+                      {item.desc}
+                    </div>
+                    <div className="h-auto text-[12px] leading-[.75rem]">
+                      <Markdown>{item.body}</Markdown>
+                    </div>
                   </div>
-                </div>
-                <div
-                  className={`w-[24px] h-[24px] pr-[20px] self-center ml-auto ${
-                    item.url ? "block" : "hidden"
-                  }`}
-                >
-                  <Icon icon="ci:chevron-right" />
+                  <div
+                    className={`w-[24px] h-[24px] pr-[19px] my-auto ml-auto  ${
+                      item.url ? "block" : "hidden"
+                    }`}
+                  >
+                    <Icon icon="ci:chevron-right" className="relative top-1" />
+                  </div>
                 </div>
               </div>
-            </div>
+            </>
           );
         })}
       </>
     );
-  }, [filteredData]);
+  }, [filteredData, hoverID]);
+
+  function hexToRgba(hexColor) {
+    // This function will always set the alpha to 0
+    const cleanHexColor = hexColor.replace("#", "");
+
+    const hexValue = parseInt(cleanHexColor, 16);
+    const red = (hexValue >> 16) & 255;
+    const green = (hexValue >> 8) & 255;
+    const blue = hexValue & 255;
+
+    return `rgba(${red}, ${green}, ${blue}, 0)`;
+  }
 
   return (
     <div className="relative">
@@ -279,7 +330,15 @@ const Notification = () => {
           {!isMobile ? (
             <div className="flex w-full relative z-[110]">
               <button
-                className={`hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[358px] xl:w-[600px] border-[1px] h-[28px] rounded-full  dark:border-forest-50 border-black bg-white dark:bg-forest-900 px-[7px] relative z-10 `}
+                className={`hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[358px] xl:w-[600px] border-[1px] h-[28px] rounded-full   px-[7px] relative z-10 ${
+                  filteredData[currentIndex] &&
+                  filteredData[currentIndex]["color"]
+                    ? openNotif
+                      ? "dark:border-forest-50 border-black bg-white dark:bg-forest-900"
+                      : `bg-[${filteredData[currentIndex]["color"]}]`
+                    : "dark:border-forest-50 border-black bg-white dark:bg-forest-900"
+                }
+                `}
                 onClick={() => {
                   setOpenNotif(!openNotif);
                 }}
@@ -305,14 +364,31 @@ const Notification = () => {
                   </div>
                 ) : (
                   <>
-                    <div className="px-[0px] relative w-[16px] h-[16px] bg-forest-900 rounded-full z-30">
-                      <Image
-                        src="/FiBell.svg"
-                        width={16}
-                        height={16}
-                        alt="Bell image"
-                        className="text-forest-900 "
-                      />
+                    <div
+                      className={`px-[0px] relative w-[16px] h-[16px] rounded-full z-30 ${
+                        filteredData[currentIndex] &&
+                        filteredData[currentIndex]["color"]
+                          ? `bg-[${filteredData[currentIndex]["color"]}]`
+                          : "dark:border-forest-50 border-black bg-white dark:bg-forest-900"
+                      }`}
+                    >
+                      {filteredData[currentIndex] &&
+                      filteredData[currentIndex]["icon"] ? (
+                        <Icon
+                          icon={
+                            filteredData[currentIndex]["icon"] || "default-icon"
+                          }
+                          className={`w-[16px] h-[16px] text-forest-50`}
+                        />
+                      ) : (
+                        <Image
+                          src="/FiBell.svg"
+                          width={16}
+                          height={16}
+                          alt="Bell image"
+                          className="text-forest-900 "
+                        />
+                      )}
                     </div>
                     <div
                       className="flex absolute transition-transform duration-500 h-full"
@@ -345,16 +421,50 @@ const Notification = () => {
                                 <div className="font-bold text-[14px]">
                                   {item.desc}
                                 </div>
+                                <div className="-px-1">-</div>
                                 <div className="flex text-[12px] leading-[.75rem] whitespace-nowrap relative w-full overflow-hidden">
                                   <div
                                     className="relative z-10 w-full flex justify-start"
                                     style={{
                                       backgroundImage:
-                                        "linear-gradient(90deg, #2a3433 80%, rgba(42, 52, 51, 0.00) 100%)",
+                                        filteredData[currentIndex] &&
+                                        filteredData[currentIndex]["color"]
+                                          ? `linear-gradient(90deg, ${
+                                              filteredData[currentIndex][
+                                                "color"
+                                              ]
+                                            } 80%, ${hexToRgba(
+                                              filteredData[currentIndex][
+                                                "color"
+                                              ],
+                                            )} 100%)`
+                                          : "linear-gradient(90deg, #2a3433 80%, rgba(42, 52, 51, 0.00) 100%)",
                                       WebkitMaskImage:
-                                        "-webkit-linear-gradient(90deg, #2a3433 80%, rgba(42, 52, 51, 0.00) 100%)",
+                                        filteredData[currentIndex] &&
+                                        filteredData[currentIndex]["color"]
+                                          ? `-webkit-linear-gradient(90deg, ${
+                                              filteredData[currentIndex][
+                                                "color"
+                                              ]
+                                            } 80%, ${hexToRgba(
+                                              filteredData[currentIndex][
+                                                "color"
+                                              ],
+                                            )} 100%)`
+                                          : "-webkit-linear-gradient(90deg, #2a3433 80%, rgba(42, 52, 51, 0.00) 100%)",
                                       maskImage:
-                                        "linear-gradient(90deg, #2a3433 80%, rgba(42, 52, 51, 0.00) 100%)",
+                                        filteredData[currentIndex] &&
+                                        filteredData[currentIndex]["color"]
+                                          ? `linear-gradient(90deg, ${
+                                              filteredData[currentIndex][
+                                                "color"
+                                              ]
+                                            } 80%, ${hexToRgba(
+                                              filteredData[currentIndex][
+                                                "color"
+                                              ],
+                                            )} 100%)`
+                                          : "linear-gradient(90deg, #2a3433 80%, rgba(42, 52, 51, 0.00) 100%)",
                                     }}
                                   >
                                     <Markdown>{item.body}</Markdown>
@@ -368,7 +478,14 @@ const Notification = () => {
                         );
                       })}
                     </div>
-                    <div className="px-[0px] relative left-[308px] xl:left-[542px] w-[16px] h-[16px] bg-forest-900 z-30">
+                    <div
+                      className={`px-[0px] relative left-[308px] xl:left-[542px] w-[16px] h-[16px]  z-30 ${
+                        filteredData[currentIndex] &&
+                        filteredData[currentIndex]["color"]
+                          ? `bg-[${filteredData[currentIndex]["color"]}]`
+                          : "dark:border-forest-50 border-black bg-white dark:bg-forest-900"
+                      }`}
+                    >
                       <Icon
                         icon="ci:chevron-right"
                         className="w-[16px] h-[16px]"
@@ -387,7 +504,7 @@ const Notification = () => {
                 //   maxHeight: openNotif ? "fit-content duration-400 ease-in" : "0px duration-200 ease-out",
                 // }}
               >
-                <div className="h-[24px]"></div>
+                <div className="h-[24px] "></div>
                 <div>
                   {filteredData.length === 0 ? (
                     <div
@@ -411,7 +528,8 @@ const Notification = () => {
               <div
                 className={`relative flex md:hidden mt-[2px] mr-10 justify-self-end hover:pointer cursor-pointer p-3 rounded-full ${
                   openNotif ? "dark:bg-forest-900 bg-forest-50 z-[110]" : ""
-                }`}
+                }
+            `}
                 onClick={() => {
                   setOpenNotif(!openNotif);
                 }}
