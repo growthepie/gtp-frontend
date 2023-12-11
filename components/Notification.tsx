@@ -260,11 +260,10 @@ const Notification = () => {
               >
                 <div
                   key={item.id + item.url}
-                  className={`relative pb-1 pt-1 ${
-                    i >= filteredData.length - 1
-                      ? "pb-1"
-                      : "pb-0 border-b border-forest-50 border-dashed"
-                  } ${openNotif ? "w-auto" : "w-[478px] xl:w-[600px]"}
+                  className={`relative pb-1 pt-1 ${i >= filteredData.length - 1
+                    ? "pb-1"
+                    : "pb-0 border-b border-forest-50 border-dashed"
+                    } ${openNotif ? "w-auto" : "w-[478px] xl:w-[600px]"}
       ${item.url ? "cursor-pointer" : "cursor-normal"} flex`}
                   onMouseEnter={() => {
                     setHoverID(item.id);
@@ -277,13 +276,11 @@ const Notification = () => {
                     {item.icon && (
                       <Icon
                         icon={item.icon || "default-icon"}
-                        className={`w-[12px] h-[12px] text-forest-50 ${
-                          item.icon ? "visible" : "invisible"
-                        } ${
-                          hoverID === item.id
+                        className={`w-[12px] h-[12px] text-forest-50 ${item.icon ? "visible" : "invisible"
+                          } ${hoverID === item.id
                             ? "text-forest-200"
                             : "text-forest-800"
-                        }`}
+                          }`}
                       />
                     )}
                   </div>
@@ -298,9 +295,8 @@ const Notification = () => {
                     </div>
                   </div>
                   <div
-                    className={`w-[24px] h-[24px] pr-[19px] my-auto ml-auto  ${
-                      item.url ? "block" : "hidden"
-                    }`}
+                    className={`w-[24px] h-[24px] pr-[19px] my-auto ml-auto  ${item.url ? "block" : "hidden"
+                      }`}
                   >
                     <Icon icon="ci:chevron-right" className="relative top-1" />
                   </div>
@@ -332,18 +328,17 @@ const Notification = () => {
           {!isMobile ? (
             <div className="flex w-full relative z-[110]">
               <button
-                className={`hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[358px] xl:w-[600px] border-[1px] h-[28px] rounded-full   px-[7px] relative z-10 ${
-                  filteredData[currentIndex] &&
+                className={`hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[358px] xl:w-[600px] border-[1px] h-[28px] rounded-full   px-[7px] relative z-10 ${filteredData[currentIndex] &&
                   filteredData[currentIndex]["color"]
-                    ? openNotif
-                      ? "dark:border-forest-50 border-black bg-white dark:bg-forest-900"
-                      : `bg-[${filteredData[currentIndex]["color"]}]`
-                    : "dark:border-forest-50 border-black bg-white dark:bg-forest-900"
-                }
+                  ? openNotif
+                    ? "dark:border-forest-50 border-black bg-white dark:bg-forest-900"
+                    : `bg-[${filteredData[currentIndex]["color"]}]`
+                  : "dark:border-forest-50 border-black bg-white dark:bg-forest-900"
+                  }
                 `}
               >
                 {openNotif ? (
-                  <div className="w-full flex  gap-x-2.5">
+                  <div className="w-full flex gap-x-2.5">
                     <Image
                       src="/FiBell.svg"
                       width={16}
@@ -354,7 +349,7 @@ const Notification = () => {
                     <p className="text-[12px] font-[500] ">
                       Notification Center
                     </p>{" "}
-                    <div className="ml-auto">
+                    <div className="absolute right-2" onClick={() => setOpenNotif(!openNotif)}>
                       <Icon
                         icon="ci:chevron-down"
                         className="w-[16px] h-[16px]"
@@ -364,15 +359,14 @@ const Notification = () => {
                 ) : (
                   <>
                     <div
-                      className={`px-[0px] relative w-[16px] h-[16px] rounded-full z-30 ${
-                        filteredData[currentIndex] &&
+                      className={`px-[0px] relative w-[16px] h-[16px] rounded-full z-30 ${filteredData[currentIndex] &&
                         filteredData[currentIndex]["color"]
-                          ? `bg-[${filteredData[currentIndex]["color"]}]`
-                          : "dark:border-forest-50 border-black bg-white dark:bg-forest-900"
-                      }`}
+                        ? `bg-[${filteredData[currentIndex]["color"]}]`
+                        : "dark:border-forest-50 border-black bg-white dark:bg-forest-900"
+                        }`}
                     >
                       {filteredData[currentIndex] &&
-                      filteredData[currentIndex]["icon"] ? (
+                        filteredData[currentIndex]["icon"] ? (
                         <Icon
                           icon={
                             filteredData[currentIndex]["icon"] || "default-icon"
@@ -392,9 +386,8 @@ const Notification = () => {
                     <div
                       className="flex absolute transition-transform duration-500 h-full"
                       style={{
-                        transform: `translateX(-${
-                          (100 / filteredData.length) * currentIndex
-                        }%)`,
+                        transform: `translateX(-${(100 / filteredData.length) * currentIndex
+                          }%)`,
                       }}
                     >
                       {filteredData.map((item, i) => {
@@ -410,9 +403,8 @@ const Notification = () => {
                           >
                             <div
                               key={item.id}
-                              className={`flex border-b-white border-dashed w-full items-center mr-[10px] xl:mr-0 overflow-hidden h-full ${
-                                openNotif ? "w-auto" : "w-[358px] xl:w-[560px]"
-                              } relative`}
+                              className={`flex border-b-white border-dashed w-full items-center mr-[10px] xl:mr-0 overflow-hidden h-full ${openNotif ? "w-auto" : "w-[358px] xl:w-[560px]"
+                                } relative`}
                             >
                               <div
                                 className={`flex w-[308px] xl:w-[550px] items-center whitespace-nowrap gap-x-2 overflow-hidden relative`}
@@ -422,59 +414,19 @@ const Notification = () => {
                                 </div>
                                 <div className="-px-1">-</div>
                                 <div className="flex text-[12px] leading-[.75rem] whitespace-nowrap relative w-full overflow-hidden">
-                                  <div
-                                    className="relative z-10 w-full flex justify-start"
+
+                                  <div className="absolute top-0 bottom-0 left-0 right-0"
                                     style={{
-                                      backgroundImage:
-                                        filteredData[currentIndex] &&
+                                      backgroundImage: filteredData[currentIndex] &&
                                         filteredData[currentIndex]["color"]
-                                          ? `linear-gradient(90deg, ${
-                                              filteredData[currentIndex][
-                                                "color"
-                                              ]
-                                            } 80%, ${hexToRgba(
-                                              filteredData[currentIndex][
-                                                "color"
-                                              ],
-                                            )} 100%)`
-                                          : theme === "dark"
-                                          ? "linear-gradient(90deg, #2a3433 80%, rgba(42, 52, 51, 0.00) 100%)"
-                                          : "linear-gradient(90deg, #FFFFFF 80%, rgba(255, 255, 255, 0.00) 100%)",
-                                      WebkitMaskImage:
-                                        filteredData[currentIndex] &&
-                                        filteredData[currentIndex]["color"]
-                                          ? `-webkit-linear-gradient(90deg, ${
-                                              filteredData[currentIndex][
-                                                "color"
-                                              ]
-                                            } 80%, ${hexToRgba(
-                                              filteredData[currentIndex][
-                                                "color"
-                                              ],
-                                            )} 100%)`
-                                          : theme === "dark"
-                                          ? "-webkit-linear-gradient(90deg, #2a3433 80%, rgba(42, 52, 51, 0.00) 100%)"
-                                          : "-webkit-linear-gradient(90deg, #FFFFFF 80%, rgba(255, 255, 255, 0.00) 100%)",
-                                      maskImage:
-                                        filteredData[currentIndex] &&
-                                        filteredData[currentIndex]["color"]
-                                          ? `linear-gradient(90deg, ${
-                                              filteredData[currentIndex][
-                                                "color"
-                                              ]
-                                            } 80%, ${hexToRgba(
-                                              filteredData[currentIndex][
-                                                "color"
-                                              ],
-                                            )} 100%)`
-                                          : theme === "dark"
-                                          ? "linear-gradient(90deg, #2a3433 80%, rgba(42, 52, 51, 0.00) 100%)"
-                                          : "linear-gradient(90deg, #FFFFFF 80%, rgba(255, 255, 255, 0.00) 100%)",
+                                        ? `linear-gradient(90deg, ${filteredData[currentIndex]["color"]}00 75%, ${filteredData[currentIndex]["color"]}FF 97%)`
+                                        : theme === "dark"
+                                          ? "linear-gradient(90deg, #2a343300 75%, #2a3433FF 97%)"
+                                          : "linear-gradient(90deg, #FFFFFF00 75%, #FFFFFFFF 97%)"
                                     }}
-                                  >
-                                    <Markdown>{item.body}</Markdown>
-                                    {/* Pseudo-element for gradient fade effect */}
-                                  </div>
+                                  ></div>
+                                  <Markdown>{item.body}</Markdown>
+                                  {/* Pseudo-element for gradient fade effect */}
                                   {/* Mask for gradient fade effect */}
                                 </div>
                               </div>
@@ -484,12 +436,11 @@ const Notification = () => {
                       })}
                     </div>
                     <div
-                      className={`px-[0px] relative left-[308px] xl:left-[542px] w-[16px] h-[16px]  z-30 ${
-                        filteredData[currentIndex] &&
+                      className={`px-[0px] absolute right-2 w-[16px] h-[16px]  z-30 ${filteredData[currentIndex] &&
                         filteredData[currentIndex]["color"]
-                          ? `bg-[${filteredData[currentIndex]["color"]}]`
-                          : "dark:border-forest-50 border-black bg-white dark:bg-forest-900"
-                      }`}
+                        ? `bg-[${filteredData[currentIndex]["color"]}]`
+                        : "dark:border-forest-50 border-black bg-white dark:bg-forest-900"
+                        }`}
                     >
                       <Icon
                         icon="ci:chevron-right"
@@ -503,16 +454,15 @@ const Notification = () => {
                 )}
               </button>
               <div
-                className={`absolute hidden mb-[10px] lg:mb-0 md:flex flex-col w-[358px] xl:w-[600px] top-0 dark:bg-forest-900 bg-forest-50 border-forest-50 rounded-b-xl rounded-t-xl z-1 overflow-hidden transition-max-height ${
-                  openNotif
-                    ? "max-h-screen duration-300 ease-in-out border-[1px]"
-                    : "max-h-[28px] duration-300 ease-in-out border-[0px]"
-                }`}
-                // style={{
-                //   maxHeight: openNotif ? "fit-content duration-400 ease-in" : "0px duration-200 ease-out",
-                // }}
+                className={`absolute hidden mb-[10px] lg:mb-0 md:flex flex-col w-[358px] xl:w-[600px] top-0 dark:bg-forest-900 bg-forest-50 border-forest-50 rounded-b-xl rounded-t-xl z-1 overflow-hidden transition-max-height ${openNotif
+                  ? "max-h-screen duration-300 ease-in-out border-[1px]"
+                  : "max-h-[28px] duration-300 ease-in-out border-[0px]"
+                  }`}
+              // style={{
+              //   maxHeight: openNotif ? "fit-content duration-400 ease-in" : "0px duration-200 ease-out",
+              // }}
               >
-                <div className="h-[24px] "></div>
+                <div className="h-[28px] "></div>
                 <div>
                   {filteredData.length === 0 ? (
                     <div
@@ -534,9 +484,8 @@ const Notification = () => {
           ) : (
             <>
               <div
-                className={`relative flex md:hidden mt-[2px] mr-10 justify-self-end hover:pointer cursor-pointer p-3 rounded-full ${
-                  openNotif ? "dark:bg-forest-900 bg-forest-50 z-[110]" : ""
-                }
+                className={`relative flex md:hidden mt-[2px] mr-10 justify-self-end hover:pointer cursor-pointer p-3 rounded-full ${openNotif ? "dark:bg-forest-900 bg-forest-50 z-[110]" : ""
+                  }
             `}
                 onClick={() => {
                   setOpenNotif(!openNotif);
@@ -552,11 +501,10 @@ const Notification = () => {
               </div>
 
               <div
-                className={`fixed top-[80px] left-0 right-0 w-[95%] h-auto bg-forest-900 rounded-2xl transition-max-height border-forest-50 overflow-hidden break-inside-avoid z-[110] ${
-                  openNotif
-                    ? "bg-blend-darken duration-300 ease-in-out z-[110] border-[1px]"
-                    : "bg-blend-normal duration-300 ease-in-out z-50 border-[0px] "
-                }`}
+                className={`fixed top-[80px] left-0 right-0 w-[95%] h-auto bg-forest-900 rounded-2xl transition-max-height border-forest-50 overflow-hidden break-inside-avoid z-[110] ${openNotif
+                  ? "bg-blend-darken duration-300 ease-in-out z-[110] border-[1px]"
+                  : "bg-blend-normal duration-300 ease-in-out z-50 border-[0px] "
+                  }`}
                 style={{
                   maxHeight: openNotif ? "100vh" : "0",
                   margin: "auto",
@@ -567,11 +515,10 @@ const Notification = () => {
                   {filteredData.map((item, index) =>
                     item.url ? (
                       <Link
-                        className={`flex border-b-white border-dashed w-full mt-[8px] hover:cursor-pointer ${
-                          index < filteredData.length - 1
-                            ? "border-b-[1px] pb-1"
-                            : "border-b-[0px] pb-1"
-                        }`}
+                        className={`flex border-b-white border-dashed w-full mt-[8px] hover:cursor-pointer ${index < filteredData.length - 1
+                          ? "border-b-[1px] pb-1"
+                          : "border-b-[0px] pb-1"
+                          }`}
                         key={item.id}
                         href={item.url}
                       >
@@ -589,11 +536,10 @@ const Notification = () => {
                       </Link>
                     ) : (
                       <div
-                        className={`flex border-b-white border-dashed w-full mt-[8px] ${
-                          index < filteredData.length - 1
-                            ? "border-b-[1px] pb-1"
-                            : "border-b-[0px] pb-1"
-                        }`}
+                        className={`flex border-b-white border-dashed w-full mt-[8px] ${index < filteredData.length - 1
+                          ? "border-b-[1px] pb-1"
+                          : "border-b-[0px] pb-1"
+                          }`}
                         key={item.id}
                       >
                         <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[8px] ">
