@@ -8,6 +8,7 @@ import { useMediaQuery } from "usehooks-ts";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { BASE_URL } from "@/lib/helpers";
+import { useTheme } from "next-themes";
 import moment from "moment";
 
 type AirtableRow = {
@@ -40,6 +41,7 @@ const Notification = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [openNotif, setOpenNotif] = useState(false);
   const mobileRef = useRef(null);
+  const { theme } = useTheme();
 
   const isMobile = useMediaQuery("(max-width: 767px)");
   const currentPath = usePathname();
@@ -271,7 +273,7 @@ const Notification = () => {
                     setHoverID(null);
                   }}
                 >
-                  <div className="flex items-center w-[35px] justify-center  ">
+                  <div className="flex items-center w-[38px] justify-center  ">
                     {item.icon && (
                       <Icon
                         icon={item.icon || "default-icon"}
@@ -339,9 +341,6 @@ const Notification = () => {
                     : "dark:border-forest-50 border-black bg-white dark:bg-forest-900"
                 }
                 `}
-                onClick={() => {
-                  setOpenNotif(!openNotif);
-                }}
               >
                 {openNotif ? (
                   <div className="w-full flex  gap-x-2.5">
@@ -438,7 +437,9 @@ const Notification = () => {
                                                 "color"
                                               ],
                                             )} 100%)`
-                                          : "linear-gradient(90deg, #2a3433 80%, rgba(42, 52, 51, 0.00) 100%)",
+                                          : theme === "dark"
+                                          ? "linear-gradient(90deg, #2a3433 80%, rgba(42, 52, 51, 0.00) 100%)"
+                                          : "linear-gradient(90deg, #FFFFFF 80%, rgba(255, 255, 255, 0.00) 100%)",
                                       WebkitMaskImage:
                                         filteredData[currentIndex] &&
                                         filteredData[currentIndex]["color"]
@@ -451,7 +452,9 @@ const Notification = () => {
                                                 "color"
                                               ],
                                             )} 100%)`
-                                          : "-webkit-linear-gradient(90deg, #2a3433 80%, rgba(42, 52, 51, 0.00) 100%)",
+                                          : theme === "dark"
+                                          ? "-webkit-linear-gradient(90deg, #2a3433 80%, rgba(42, 52, 51, 0.00) 100%)"
+                                          : "-webkit-linear-gradient(90deg, #FFFFFF 80%, rgba(255, 255, 255, 0.00) 100%)",
                                       maskImage:
                                         filteredData[currentIndex] &&
                                         filteredData[currentIndex]["color"]
@@ -464,7 +467,9 @@ const Notification = () => {
                                                 "color"
                                               ],
                                             )} 100%)`
-                                          : "linear-gradient(90deg, #2a3433 80%, rgba(42, 52, 51, 0.00) 100%)",
+                                          : theme === "dark"
+                                          ? "linear-gradient(90deg, #2a3433 80%, rgba(42, 52, 51, 0.00) 100%)"
+                                          : "linear-gradient(90deg, #FFFFFF 80%, rgba(255, 255, 255, 0.00) 100%)",
                                     }}
                                   >
                                     <Markdown>{item.body}</Markdown>
@@ -489,6 +494,9 @@ const Notification = () => {
                       <Icon
                         icon="ci:chevron-right"
                         className="w-[16px] h-[16px]"
+                        onClick={() => {
+                          setOpenNotif(!openNotif);
+                        }}
                       />
                     </div>
                   </>
