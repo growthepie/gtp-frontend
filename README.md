@@ -17,7 +17,7 @@ The [`gtp-frontend`](https://github.com/growthepie/gtp-frontend) repository is b
 - Built with [Next.js](https://nextjs.org/)
 - Styled with [Tailwind CSS](https://tailwindcss.com/)
 - Data sourced from growthepie's [API](https://github.com/growthepie/gtp)
-- Data visualizations using [Highcharts](https://github.com/highcharts/highcharts)
+- Data visualizations using [Highcharts](https://highcharts.com)
 - Deployed on [Vercel](https://vercel.com/)
 
 ## Get Involved
