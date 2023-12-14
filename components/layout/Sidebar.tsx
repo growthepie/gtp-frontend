@@ -17,6 +17,7 @@ import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import Backgrounds from "./Backgrounds";
 import rpgf from "@/icons/svg/rpgf.svg";
+import { useTheme } from "next-themes";
 
 type SidebarProps = {
   className?: string;
@@ -30,7 +31,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
 
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
+  const { theme, setTheme } = useTheme();
   // detect if we are changing routes on mobile
   useEffect(() => {
     if (isMobile && isMobileSidebarOpen) {
@@ -296,6 +297,13 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
               Feedback
             </Link>
           </div>
+        )}
+        {isSidebarOpen ? (
+          <div className="relative flex bottom-2 right-4  justify-center w-full h-full pt-6 ">
+            <DarkModeSwitch isMobile />
+          </div>
+        ) : (
+          <></>
         )}
       </div>
     </motion.div>

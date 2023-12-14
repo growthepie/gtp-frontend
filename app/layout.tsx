@@ -64,9 +64,9 @@ const jsonLd: Graph = {
 // const jsonLd = [jsonLdOrg, jsonLdWebSite];
 export const viewport = {
   width: "device-width",
-  initialScale: 1,
+  initialScale: "1.0",
   themeColor: "dark",
-};
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.growthepie.xyz"),
@@ -160,7 +160,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <Head />
-      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway overflow-x-hidden overflow-y-auto">
+      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway overflow-x-hidden overflow-y-scroll">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

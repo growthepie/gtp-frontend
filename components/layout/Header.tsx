@@ -10,23 +10,23 @@ import Notification from "@/components/Notification";
 
 export default function Header() {
   return (
-    <header className="flex flex-col xl:flex-row justify-between space-x-0 xl:space-x-6 items-center max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[50px] md:pt-[50px]">
+    <header className="flex justify-between space-x-0 xl:space-x-6 items-start max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[50px] md:pt-[50px]">
       <div className="flex justify-between items-center w-full">
-        <div className="flex space-x-0 xl:space-x-6 w-full xl:justify-normal justify-end">
+        <div className="flex space-x-0 xl:space-x-6 w-full">
           {/*Banner/Notification Area */}
           {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
             ["development", "preview"].includes(
               process.env.NEXT_PUBLIC_VERCEL_ENV,
             ) ? (
-            <div className={`hidden md:flex justify-self-end mb-2 xl:mb-0`}>
+            <div className={`hidden md:flex `}>
               <Notification />
             </div>
           ) : (
             <Banner />
           )}
-          <div className="flex justify-between items-end md:hidden relative w-full">
+          <div className="flex justify-between items-start h-full md:hidden relative w-full">
             <Link href="/" className="">
-              <div className="h-[36px] w-[154.05px] relative">
+              <div className="h-[36px] w-[154.05px] relative ">
                 <Image
                   src="/logo_full.png"
                   alt="Forest"
@@ -51,9 +51,7 @@ export default function Header() {
                 ["development", "preview"].includes(
                   process.env.NEXT_PUBLIC_VERCEL_ENV,
                 ) ? (
-                <div className="flex md:hidden w-8 h-8 mt-[14px] mr-10">
-                  <Notification />
-                </div>
+                <Notification />
               ) : (
                 <> </>
               )}
@@ -62,9 +60,9 @@ export default function Header() {
           </div>
         </div>
       </div>
-      <div className="items-center z-10 hidden md:flex md:space-x-[34px] self-end ">
+      <div className="items-center z-10 hidden md:flex md:space-x-[34px]">
         <EthUsdSwitch />
-        <DarkModeSwitch />
+
         <div className="flex space-x-[22px] items-center">
           <Link
             href="https://twitter.com/growthepie_eth"
