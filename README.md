@@ -1,38 +1,32 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Welcome to the growthepie 📏🥧 Frontend!
 
-## Getting Started
+[growthepie](https://growthepie.xyz/) aims to enhance transparency and understanding of the Ethereum Layer 2 ecosystem by providing comprehensive, curated data, blockspace analysis and educational resources to users, developers and investors.
 
-First, run the development server:
+The growthepie frontend provides an engaging user interface, displaying curated data and analysis sourced from our robust [backend](https://github.com/growthepie/gtp).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+<p align="center">
+  <img src="https://github.com/growthepie/.github/assets/90760534/ca2ca39f-657b-4f79-8550-242b4ee9c4ec" alt="Sublime's custom image"/>
+</p>
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## gtp - Frontend Repository
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The [`gtp-frontend`](https://github.com/growthepie/gtp-frontend) repository is built with Next.js, leveraging modern web technologies to ensure a responsive and interactive experience for our users.
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+### Features
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+- Built with [Next.js](https://nextjs.org/)
+- Styled with [Tailwind CSS](https://tailwindcss.com/)
+- Data sourced from growthepie's [API](https://github.com/growthepie/gtp)
+- Data visualizations using [Highcharts](https://github.com/highcharts/highcharts)
+- Deployed on [Vercel](https://vercel.com/)
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Raleway, a custom Google Font.
+## Get Involved
 
-## Learn More
+- **Contribute**: Fork our repo, make your changes, and submit a pull request.
+- **Join Our Community**: For discussions and collaboration, join us on [Discord](https://discord.gg/pKzYwm7h).
 
-To learn more about Next.js, take a look at the following resources:
+Your involvement is vital to growthepie and our mission to enhance transparency in the Ethereum Layer 2 ecosystem.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+The growthepie frontend is licensed under the [MIT License](LICENSE).
