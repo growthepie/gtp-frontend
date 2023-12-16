@@ -1,13 +1,13 @@
-import "./globals.css";
+import "../globals.css";
 import { Analytics } from "@vercel/analytics/react";
-import { Providers } from "./providers";
+import { Providers } from "../providers";
 import CookieConsent from "@/components/layout/CookieConsent";
 import { Raleway, Inter, Roboto_Mono } from "next/font/google";
 import Header from "@/components/layout/Header";
 import SidebarContainer from "@/components/layout/SidebarContainer";
 import Backgrounds from "@/components/layout/Backgrounds";
 import { Metadata } from "next";
-import Head from "./head";
+// import Head from "./head";
 import { Graph } from "schema-dts";
 
 const jsonLd: Graph = {
@@ -159,23 +159,23 @@ export default function RootLayout({
       className={`${raleway.variable} ${inter.variable} ${robotoMono.variable}`}
       suppressHydrationWarning
     >
-      <Head />
+      {/* <Head /> */}
       <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway overflow-x-hidden overflow-y-scroll">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Providers>
-          <div className="flex h-fit w-full justify-center">
+          {/* <div className="flex h-fit w-full justify-center">
             <div className="flex w-full max-w-[1680px] min-h-screen">
               <SidebarContainer />
               <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
                 <div className="w-full relative min-h-full">
                   <Backgrounds />
                   <Header />
-                  <main className="flex-1 w-full mx-auto z-10 mb-[165px]">
-                    {children}
-                    <div className="bg-blue-200 z-50"></div>
+                  <main className="flex-1 w-full mx-auto z-10 mb-[165px]"> */}
+          {children}
+          {/*  <div className="bg-blue-200 z-50"></div>
                   </main>
                   <div className="mt-24 w-full text-center py-3 absolute bottom-0">
                     <div className="text-[0.7rem] text-inherit dark:text-forest-400 leading-[2] ml-8 z-20">
@@ -185,7 +185,7 @@ export default function RootLayout({
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
           <CookieConsent />
         </Providers>
         <Analytics />
