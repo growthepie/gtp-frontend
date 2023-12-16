@@ -160,7 +160,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       {/* <Head /> */}
-      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway overflow-x-hidden overflow-y-scroll">
+      <body className="bg-white dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -186,7 +186,7 @@ export default function RootLayout({
               </div>
             </div>
           </div> */}
-          <CookieConsent />
+          {/* <CookieConsent /> */}
         </Providers>
         <Analytics />
       </body>

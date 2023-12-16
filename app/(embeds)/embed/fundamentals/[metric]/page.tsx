@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { use, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import Error from "next/error";
 import { MetricsResponse } from "@/types/api/MetricsResponse";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
@@ -13,9 +13,25 @@ import MetricsTable from "@/components/layout/MetricsTable";
 import { intersection } from "lodash";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
+import { useTheme } from "next-themes";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 
 const Chain = ({ params }: { params: any }) => {
+  const searchParams = useSearchParams();
+  const queryTheme = searchParams ? searchParams.get("theme") : null;
+  const { theme, setTheme } = useTheme();
+  useLayoutEffect(() => {
+    setTimeout(() => {
+
+      if (queryTheme == "light") {
+        setTheme("light");
+      } else {
+        setTheme("dark");
+      }
+    }, 1000);
+  }, []);
+
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [errorCode, setErrorCode] = useState<number | null>(null);
 
@@ -44,17 +60,12 @@ const Chain = ({ params }: { params: any }) => {
     icon: "",
   };
 
-  const [selectedChains, setSelectedChains] = useSessionStorage(
-    "fundamentalsChains",
-    AllChains.filter(
-      chain => (chain.ecosystem.includes("all-chains") && ["arbitrum", "optimism", "base", "linea", "zksync_era"].includes(chain.key)) || chain.key === "ethereum"
-    ).map((chain) => chain.key),
-  );
+  const selectedChains = AllChains.filter(
+    chain => (chain.ecosystem.includes("all-chains") && ["arbitrum", "optimism", "base", "linea", "zksync_era"].includes(chain.key)) || chain.key === "ethereum"
+  ).map((chain) => chain.key);
 
-  const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
-    "fundamentalsTimespan",
-    "365d",
-  );
+
+  const selectedTimespan = "365d";
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
@@ -77,9 +88,10 @@ const Chain = ({ params }: { params: any }) => {
     return <Error statusCode={errorCode} />;
   }
 
+
+
   return (
-    <>
-      {/* <Link href={`https://www.growthepie.xyz/fundamentals/${params.metric}`} referrerPolicy="origin" target="_blank" rel="noopener noreferrer" aria-label="growthepie.xyz"> */}
+    <Link href={`https://www.growthepie.xyz/fundamentals/${params.metric}`} referrerPolicy="origin" target="_blank" rel="noopener noreferrer" aria-label="growthepie.xyz">
       {metricData && (
         <ComparisonChart
           data={Object.keys(metricData.data.chains)
@@ -108,12 +120,13 @@ const Chain = ({ params }: { params: any }) => {
           showEthereumMainnet={showEthereumMainnet}
           setShowEthereumMainnet={setShowEthereumMainnet}
           selectedTimespan={selectedTimespan}
-          setSelectedTimespan={setSelectedTimespan}
+          setSelectedTimespan={() => { }}
+          is_embed={true}
         >
           <MetricsTable
             data={metricData.data.chains}
             selectedChains={selectedChains}
-            setSelectedChains={setSelectedChains}
+            setSelectedChains={() => { }}
             chains={chains}
             metric_id={metricData.data.metric_id}
             showEthereumMainnet={showEthereumMainnet}
@@ -121,8 +134,7 @@ const Chain = ({ params }: { params: any }) => {
           />
         </ComparisonChart>
       )}
-      {/* </Link > */}
-    </>
+    </Link >
   );
 };
 
