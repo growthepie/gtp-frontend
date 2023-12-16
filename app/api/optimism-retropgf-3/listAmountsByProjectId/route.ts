@@ -5,6 +5,7 @@ import {
 } from "@/types/api/RetroPGF3";
 import { Pool } from "pg";
 import { Project } from "@/types/api/RetroPGF3";
+import { RecoveredListData } from "@/app/(layout)/optimism-retropgf-3/recoveredListData";
 
 export const revalidate = 60 * 1; // 2 minutes
 
@@ -25,20 +26,32 @@ function getMax(sortedNumbers: number[]): number {
 
 function getMedian(sortedNumbers: number[]): number {
   const mid = sortedNumbers.length / 2;
-  return sortedNumbers.length % 2 !== 0 ? sortedNumbers[Math.floor(mid)] : (sortedNumbers[mid - 1] + sortedNumbers[mid]) / 2;
+  return sortedNumbers.length % 2 !== 0
+    ? sortedNumbers[Math.floor(mid)]
+    : (sortedNumbers[mid - 1] + sortedNumbers[mid]) / 2;
 }
 
 function getQ1(sortedNumbers: number[]): number {
   const mid = sortedNumbers.length / 2;
-  return sortedNumbers.length % 2 !== 0 ? getMedian(sortedNumbers.slice(0, Math.floor(mid))) : getMedian(sortedNumbers.slice(0, mid));
+  return sortedNumbers.length % 2 !== 0
+    ? getMedian(sortedNumbers.slice(0, Math.floor(mid)))
+    : getMedian(sortedNumbers.slice(0, mid));
 }
 
 function getQ3(sortedNumbers: number[]): number {
   const mid = sortedNumbers.length / 2;
-  return sortedNumbers.length % 2 !== 0 ? getMedian(sortedNumbers.slice(Math.ceil(mid))) : getMedian(sortedNumbers.slice(mid));
+  return sortedNumbers.length % 2 !== 0
+    ? getMedian(sortedNumbers.slice(Math.ceil(mid)))
+    : getMedian(sortedNumbers.slice(mid));
 }
 
-function getQuartiles(sortedNumbers: number[]): { min: number; q1: number; median: number; q3: number; max: number } {
+function getQuartiles(sortedNumbers: number[]): {
+  min: number;
+  q1: number;
+  median: number;
+  q3: number;
+  max: number;
+} {
   return {
     min: getMin(sortedNumbers),
     q1: getQ1(sortedNumbers),
@@ -58,84 +71,136 @@ export async function GET() {
     // create dictionary of project ids to lists
     const listAmounts: ListAmountsByProjectId = {};
 
-    data.forEach((project) => {
-      listAmounts[project.id] = project.lists.map((list) => {
-        return {
-          id: list.id,
-          listName: list.listName,
-          listAuthor: list.author,
-          listContent: list.listContent
-            ? list.listContent?.filter((listContent) => {
-                return listContent.project.id === project.id;
-              })
-            : [],
-        };
-      });
-    });
+    // data.forEach((project) => {
+    //   listAmounts[project.id] = project.lists.map((list) => {
+    //     return {
+    //       id: list.id,
+    //       listName: list.listName,
+    //       listAuthor: list.author,
+    //       listContent: list.listContent
+    //         ? list.listContent?.filter((listContent) => {
+    //             return listContent.project.id === project.id;
+    //           })
+    //         : [],
+    //     };
+    //   });
+    // });
 
-    // calculate quartiles
-    const projectQuartiles: QuartilesByProjecId = {};
+    // // calculate quartiles
+    // const projectQuartiles: QuartilesByProjecId = {};
 
-    data.forEach((project) => {
-      projectQuartiles[project.id] = {
-        min: NaN,
-        q1: NaN,
-        median: NaN,
-        q3: NaN,
-        max: NaN,
-      };
+    // data.forEach((project) => {
+    //   projectQuartiles[project.id] = {
+    //     min: NaN,
+    //     q1: NaN,
+    //     median: NaN,
+    //     q3: NaN,
+    //     max: NaN,
+    //   };
 
-      const listAmountsByProject = listAmounts[project.id];
-      const amounts = listAmountsByProject.map(list => list.listContent.map((listContent) => {
-        return listContent.OPAmount;
-      })).flat();
+    //   const listAmountsByProject = listAmounts[project.id];
+    //   const amounts = listAmountsByProject
+    //     .map((list) =>
+    //       list.listContent.map((listContent) => {
+    //         return listContent.OPAmount;
+    //       }),
+    //     )
+    //     .flat();
 
-      const sortedAmounts = amounts.sort((a, b) => a - b);
+    //   const sortedAmounts = amounts.sort((a, b) => a - b);
 
+    //   if (sortedAmounts && sortedAmounts.length > 0) {
+    //     // const min = amounts[0];
+    //     // const max = amounts[amounts.length - 1];
+    //     // const median = amounts[Math.floor(amounts.length / 2)];
 
-        if (sortedAmounts && sortedAmounts.length > 0) {
-          
+    //     // const q1 = amounts[Math.floor(amounts.length / 4)];
+    //     // const q3 = amounts[Math.floor((3 * amounts.length) / 4)];
 
-          // const min = amounts[0];
-          // const max = amounts[amounts.length - 1];
-          // const median = amounts[Math.floor(amounts.length / 2)];
-
-          // const q1 = amounts[Math.floor(amounts.length / 4)];
-          // const q3 = amounts[Math.floor((3 * amounts.length) / 4)];
-
-          projectQuartiles[project.id] = getQuartiles(sortedAmounts);
-        }
-      });
+    //     projectQuartiles[project.id] = getQuartiles(sortedAmounts);
+    //   }
+    // });
 
     const numUniqueAuthorsByProject: { [projectId: string]: number } = {};
-    const retroPgfStatusByProject: {[projectId:string]: RetropgfStatus} = {};
+    const retroPgfStatusByProject: { [projectId: string]: RetropgfStatus } = {};
 
-    data.forEach((project) => {
-      numUniqueAuthorsByProject[project.id] = 0;
+    // data.forEach((project) => {
+    //   numUniqueAuthorsByProject[project.id] = 0;
 
-      const listAmountsByProject = listAmounts[project.id];
-      const authors = listAmountsByProject.map(list => list.listAuthor.address).flat();
+    //   const listAmountsByProject = listAmounts[project.id];
+    //   const authors = listAmountsByProject.map(list => list.listAuthor.address).flat();
 
-      const uniqueAuthors = new Set(listAmountsByProject.map(list => list.listAuthor.address));
+    //   const uniqueAuthors = new Set(listAmountsByProject.map(list => list.listAuthor.address));
 
-      numUniqueAuthorsByProject[project.id] = uniqueAuthors.size;
+    //   numUniqueAuthorsByProject[project.id] = uniqueAuthors.size;
 
-      retroPgfStatusByProject[project.id] = {
-        retropgf1: null,
-        retropgf2: null,
-        // retropgf3: null,
+    //   retroPgfStatusByProject[project.id] = {
+    //     retropgf1: null,
+    //     retropgf2: null,
+    //   };
+
+    //   const retroPgf1 = project.funding_sources.find((fundingSource) => fundingSource.type === "RETROPGF_1");
+    //   const retroPgf2 = project.funding_sources.find((fundingSource) => fundingSource.type === "RETROPGF_2");
+
+    //   if (retroPgf1) {
+    //     retroPgfStatusByProject[project.id].retropgf1 = retroPgf1.amount;
+    //   }
+
+    //   if (retroPgf2) {
+    //     retroPgfStatusByProject[project.id].retropgf2 = retroPgf2.amount;
+    //   }
+
+    //   // if (retroPgf3) {
+    //   //   retroPgfStatusByProject[project.id].retropgf3 = retroPgf3.amount;
+    //   // }
+    // });
+    // console.log(RecoveredListData);
+    const listCounts = {};
+    const projectQuartiles: QuartilesByProjecId = {};
+    Object.keys(RecoveredListData).forEach((project_id) => {
+      const project = data.find((project) => project.id === project_id);
+      // const id = project_id.split("|")[1];
+      // console.log(project_id);
+      // numUniqueAuthorsByProject[project_id] = 0;
+
+      // const listAmountsByProject = listAmounts[project_id];
+      // const authors = listAmountsByProject.map(list => list.listAuthor.address).flat();
+
+      // const uniqueAuthors = new Set(listAmountsByProject.map(list => list.listAuthor.address));
+
+      // numUniqueAuthorsByProject[project_id] = uniqueAuthors.size;
+
+      listAmounts[project_id] = [];
+      numUniqueAuthorsByProject[project_id] = 0;
+
+      listCounts[project_id] = RecoveredListData[project_id].listCount;
+
+      projectQuartiles[project_id] = {
+        min: RecoveredListData[project_id].min,
+        q1: RecoveredListData[project_id].q1,
+        median: RecoveredListData[project_id].median,
+        q3: RecoveredListData[project_id].q3,
+        max: RecoveredListData[project_id].max,
       };
 
-      const retroPgf1 = project.funding_sources.find((fundingSource) => fundingSource.type === "RETROPGF_1");
-      const retroPgf2 = project.funding_sources.find((fundingSource) => fundingSource.type === "RETROPGF_2");
-      // const retroPgf3 = project.funding_sources.find((fundingSource) => fundingSource.type === "RETROPGF_3");
+      retroPgfStatusByProject[project_id] = {
+        retropgf1: null,
+        retropgf2: null,
+      };
+
+      const retroPgf1 = project?.funding_sources.find(
+        (fundingSource) => fundingSource.type === "RETROPGF_1",
+      );
+      const retroPgf2 = project?.funding_sources.find(
+        (fundingSource) => fundingSource.type === "RETROPGF_2",
+      );
 
       if (retroPgf1) {
-        retroPgfStatusByProject[project.id].retropgf1 = retroPgf1.amount;
+        retroPgfStatusByProject[project_id].retropgf1 = retroPgf1.amount;
       }
 
       if (retroPgf2) {
-        retroPgfStatusByProject[project.id].retropgf2 = retroPgf2.amount;
+        retroPgfStatusByProject[project_id].retropgf2 = retroPgf2.amount;
       }
 
       // if (retroPgf3) {
@@ -143,7 +208,13 @@ export async function GET() {
       // }
     });
 
-    return Response.json({ listAmounts: listAmounts, listQuartiles: projectQuartiles, numUniqueAuthors: numUniqueAuthorsByProject, retropgfStatus: retroPgfStatusByProject });
+    return Response.json({
+      listAmounts: listAmounts,
+      listCounts: listCounts,
+      listQuartiles: projectQuartiles,
+      numUniqueAuthors: numUniqueAuthorsByProject,
+      retropgfStatus: retroPgfStatusByProject,
+    });
   } catch (error) {
     return Response.json({ error });
   }
