@@ -7,13 +7,6 @@ import useSWR from "swr";
 import { MetricsURLs } from "@/lib/urls";
 import { AllChains, AllChainsByKeys } from "@/lib/chains";
 import { navigationItems } from "@/lib/navigation";
-import {
-  XYChart,
-  AnimatedAxis,
-  AnimatedGrid,
-  AnimatedLineSeries,
-  Tooltip,
-} from "@visx/xychart";
 import { format } from "date-fns";
 import ComparisonChart from "@/components/layout/ComparisonChart";
 import MetricsTable from "@/components/layout/MetricsTable";
