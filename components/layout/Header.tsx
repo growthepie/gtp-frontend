@@ -15,16 +15,14 @@ export default function Header() {
         <div className="flex space-x-0 xl:space-x-6 w-full">
           {/*Banner/Notification Area */}
           {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
-            ["development", "preview"].includes(
-              process.env.NEXT_PUBLIC_VERCEL_ENV,
-            ) ? (
-            <div className={`hidden md:flex `}>
+          ["development", "preview"].includes(
+            process.env.NEXT_PUBLIC_VERCEL_ENV,
+          ) ? (
+            <div className={`hidden md:flex pr-[15px] `}>
               <Notification />
             </div>
           ) : (
-            <>
-              {/* <Banner /> */}
-            </>
+            <>{/* <Banner /> */}</>
           )}
           <div className="flex justify-between items-start h-full md:hidden relative w-full">
             <Link href="/" className="">
@@ -50,9 +48,9 @@ export default function Header() {
 
             <div>
               {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
-                ["development", "preview"].includes(
-                  process.env.NEXT_PUBLIC_VERCEL_ENV,
-                ) ? (
+              ["development", "preview"].includes(
+                process.env.NEXT_PUBLIC_VERCEL_ENV,
+              ) ? (
                 <Notification />
               ) : (
                 <> </>
@@ -62,16 +60,16 @@ export default function Header() {
           </div>
         </div>
       </div>
-      <div className="items-center z-10 hidden md:flex md:space-x-[34px]">
+      <div className="items-center z-10 hidden md:flex md:space-x-[34px] ">
         <EthUsdSwitch />
 
-        <div className="flex space-x-[22px] items-center">
+        <div className="flex space-x-[22px] items-center ">
           <Link
             href="https://twitter.com/growthepie_eth"
             target="_blank"
             rel="noopener"
           >
-            <Icon icon="gtp:twitter" className="h-6 w-6" />
+            <Icon icon="gtp:twitter" className="h-6 w-[24px]" />
           </Link>
 
           <Link
@@ -97,7 +95,7 @@ export default function Header() {
             target="_blank"
             rel="noopener"
           >
-            <Icon icon="cib:discord" className="h-6 w-6 pt-[2px]" />
+            <Icon icon="cib:discord" className="h-6 w-7 pt-[2px]" />
           </Link>
           <Link
             href="https://www.github.com/growthepie"
@@ -109,14 +107,12 @@ export default function Header() {
         </div>
       </div>
       {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
-        ["development", "preview"].includes(
-          process.env.NEXT_PUBLIC_VERCEL_ENV,
-        ) ? (
+      ["development", "preview"].includes(
+        process.env.NEXT_PUBLIC_VERCEL_ENV,
+      ) ? (
         <> </>
       ) : (
-        <>
-          {/* <SupportUsBanner /> */}
-        </>
+        <>{/* <SupportUsBanner /> */}</>
       )}
       {/* Donation Banner smaller than XL screen */}
       {/* <Link
