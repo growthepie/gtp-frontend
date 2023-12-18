@@ -32,6 +32,7 @@ export const ChainURLs = {
   gitcoin_pgn: "https://api.growthepie.xyz/v1/chains/gitcoin_pgn.json",
   zora: "https://api.growthepie.xyz/v1/chains/zora.json",
   linea: "https://api.growthepie.xyz/v1/chains/linea.json",
+  scroll: "https://api.growthepie.xyz/v1/chains/scroll.json",
   // mock urls
   // ethereum: "http://localhost:3000/mock/v1/chains/ethereum.json",
   // arbitrum: "http://localhost:3000/mock/v1/chains/arbitrum.json",

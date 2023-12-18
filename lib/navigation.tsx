@@ -411,6 +411,17 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "linea",
       },
       {
+        label: "Scroll",
+        category: "zk-rollup",
+        page: {
+          description: "Scroll is a general purpose zkEVM rollup. Public launch was in October 2023.",
+        },
+        icon: "gtp:scroll-logo-monochrome",
+        key: "scroll",
+        rootKey: "chainsScroll",
+        urlKey: "scroll",
+      },
+      {
         label: "Immutable X",
         category: "validium",
         page: {
