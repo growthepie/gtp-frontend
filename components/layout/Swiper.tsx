@@ -194,13 +194,13 @@ export default function Swiper({ ariaId }: { ariaId?: string }) {
         </SplideTrack>
 
         <div className="splide__arrows -mt-8 md:-mt-0">
-          <button className="splide__arrow splide__arrow--prev rounded-full text-forest-400 bg-white dark:bg-forest-700 ml-1 md:ml-6 !w-5 md:!w-8 !h-5 md:!h-8">
+          <button className="splide__arrow splide__arrow--prev rounded-full text-forest-400 bg-white dark:bg-forest-700 ml-1 md:ml-3 !w-5 md:!w-8 !h-5 md:!h-8">
             <Icon
               icon="feather:chevron-right"
               className="w-3 h-3 md:w-6 md:h-6 z-50"
             />
           </button>
-          <button className="splide__arrow splide__arrow--next rounded-full text-forest-400 bg-white dark:bg-forest-700 mr-1 md:mr-6 !w-5 md:!w-8 !h-5 md:!h-8">
+          <button className="splide__arrow splide__arrow--next rounded-full text-forest-400 bg-white dark:bg-forest-700 mr-1 md:mr-3 !w-5 md:!w-8 !h-5 md:!h-8">
             <Icon
               icon="feather:chevron-right"
               className="w-3 h-3 md:w-6 md:h-6 z-50"
