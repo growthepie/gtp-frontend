@@ -166,9 +166,9 @@ export default function LandingMetricsTable({
                       }}
                     >
                       <div
-                        className={`group flex space-x-5 items-center pointer-events-auto ${interactable ? 'cursor-pointer' : 'cursor-default'} p-1.5 py-[10px] lg:p-3 lg:py-[8px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${selectedChains.includes(item.chain.key)
-                          ? " hover:bg-forest-100 hover:dark:bg-[#4B5553]"
-                          : "opacity-50 grayscale hover:opacity-70 hover:grayscale-20 transition-all duration-100"
+                        className={`group flex space-x-5 items-center pointer-events-auto ${interactable ? 'cursor-pointer' : 'cursor-default'} p-1.5 py-[10px] lg:p-3 lg:py-[8px] rounded-full w-full font-[400] border-[1px] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${selectedChains.includes(item.chain.key)
+                          ? "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/10"
+                          : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 transition-all duration-100"
                           }`}
                         onClick={() => {
                           if (!interactable) return;
@@ -381,10 +381,10 @@ export default function LandingMetricsTable({
                   >
                     <div
                       key={item.chain.key}
-                      className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[10px] lg:p-3 lg:py-[8px] rounded-full w-full font-[400] border-[1px] border-black/[16%] dark:border-white/[16%] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${index > 0 ? "-mt-[1px]" : ""
+                      className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[10px] lg:p-3 lg:py-[8px] rounded-full w-full font-[400] border-[1px] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${index > 0 ? "-mt-[1px]" : ""
                         } ${selectedChains.includes(item.chain.key)
-                          ? " hover:bg-forest-500/10"
-                          : "opacity-50 grayscale hover:opacity-70 hover:grayscale-20 transition-all duration-100"
+                          ? "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/10"
+                          : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 transition-all duration-100"
                         }`}
                       onClick={() => {
                         if (selectedChains.includes(item.chain.key)) {
@@ -397,6 +397,9 @@ export default function LandingMetricsTable({
                             item.chain.key,
                           ]);
                         }
+                      }}
+                      style={{
+                        color: selectedChains.includes(item.chain.key) ? undefined : "#5A6462",
                       }}
                     >
                       {/* <div
@@ -418,9 +421,10 @@ export default function LandingMetricsTable({
                             <>
                               <div
                                 className={`absolute left-[15px] right-[15px] lg:left-[18px] lg:right-[18px] bottom-[0px] h-[1px] lg:h-[2px] rounded-none font-semibold transition-width duration-300 `}
+
                                 style={{
-                                  background:
-                                    item.chain.colors[theme ?? "dark"][1],
+                                  background: selectedChains.includes(item.chain.key) ?
+                                    item.chain.colors[theme ?? "dark"][1] : "#5A6462",
                                   width: `${(data.chains[item.chain.key].data.data[
                                     data.chains[item.chain.key].data.data
                                       .length - 1
@@ -445,7 +449,7 @@ export default function LandingMetricsTable({
                             icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
                             className="absolute -left-[14.5px] -top-[14.5px] w-[29px] h-[29px]"
                             style={{
-                              color: item.chain.colors[theme ?? "dark"][1],
+                              color: selectedChains.includes(item.chain.key) ? item.chain.colors[theme ?? "dark"][1] : "#5A6462",
                             }}
                           />
                           {/* <Icon
