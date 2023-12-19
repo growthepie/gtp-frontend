@@ -332,7 +332,9 @@ export default function LandingMetricsTable({
                         </div>
                         {interactable && (
                           <div className={`absolute  ${"-right-[20px]"}`}>
-                            <div className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                            <div className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" style={{
+                              color: selectedChains.includes(item.chain.key) ? undefined : "#5A6462",
+                            }}>
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="24"
@@ -356,7 +358,11 @@ export default function LandingMetricsTable({
                                 />
                               </svg>
                             </div>
-                            <div className="p-1 rounded-full bg-forest-50 dark:bg-forest-900">
+                            <div className={`p-1 rounded-full ${selectedChains.includes(item.chain.key)
+                              ? "bg-white dark:bg-forest-1000"
+                              : "bg-forest-50 dark:bg-[#1F2726]"
+                              }`}
+                            >
                               <Icon
                                 icon="feather:check-circle"
                                 className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
@@ -605,7 +611,9 @@ export default function LandingMetricsTable({
                       </div>
                       {interactable && (
                         <div className={`absolute  ${"-right-[20px]"}`}>
-                          <div className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
+                          <div className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50" style={{
+                            color: selectedChains.includes(item.chain.key) ? undefined : "#5A6462",
+                          }}>
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               width="24"
@@ -629,7 +637,10 @@ export default function LandingMetricsTable({
                               />
                             </svg>
                           </div>
-                          <div className="p-1 rounded-full bg-forest-50 dark:bg-forest-900">
+                          <div className={`p-1 rounded-full ${selectedChains.includes(item.chain.key)
+                            ? "bg-white dark:bg-forest-1000"
+                            : "bg-forest-50 dark:bg-[#1F2726]"
+                            }`}>
                             <Icon
                               icon="feather:check-circle"
                               className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
@@ -654,7 +665,7 @@ export default function LandingMetricsTable({
                 ))} */}
           </div>
         </div>
-      </div>
+      </div >
     </>
   );
 }
