@@ -294,6 +294,29 @@ export const AllChains: Chain[] = [
     darkTextOnBackground: true,
   },
   {
+    label: "Scroll",
+    icon: "/icons/scroll.png",
+    key: "scroll",
+    urlKey: "scroll",
+    chainType: "L2",
+    ecosystem: ["all-chains"],
+    description:
+      "Scroll is a general purpose zkEVM rollup. Public launch was in October 2023.",
+    border: {
+      light: ["border-[#FBB90D]", "border-[#FBB90D]"],
+      dark: ["border-[#FFDF27]", "border-[#FFDF27]"],
+    },
+    colors: {
+      light: ["#FBB90D", "#FBB90D"], // dark purple
+      dark: ["#FFDF27", "#FFDF27"], // dark purple
+    },
+    backgrounds: {
+      light: ["bg-[#FBB90D]", "bg-[#FBB90D]"],
+      dark: ["bg-[#FFDF27]", "bg-[#FFDF27]"],
+    },
+    darkTextOnBackground: true,
+  },
+  {
     label: "Multiple Chains",
     icon: null,
     key: "multiple",
