@@ -281,7 +281,7 @@ const Notification = () => {
                     setHoverID(null);
                   }}
                 >
-                  <div className="flex items-center w-[38px] justify-center  ">
+                  <div className="flex items-center w-[34px] justify-center  ">
                     {item.icon && (
                       <Icon
                         icon={item.icon || "default-icon"}
@@ -298,16 +298,16 @@ const Notification = () => {
                   <div
                     className={`flex w-full flex-col  pb-[8px] gap-y-[5px] `}
                   >
-                    <div className="h-[17px] font-bold text-[14px]">
+                    <div className="h-[17px] font-bold text-[14px] ">
                       {item.desc}
                     </div>
-                    <div className="h-auto text-[12px] leading-[.75rem]">
+                    <div className="h-auto text-[12px] leading-[.75rem] ">
                       <ReactMarkdown>{item.body}</ReactMarkdown>
                     </div>
                   </div>
                   <div
                     className={`w-[24px] h-[24px] pr-[19px] my-auto ml-auto  ${
-                      item.url ? "block" : "hidden"
+                      item.url ? "visible" : "invisible"
                     }`}
                   >
                     <Icon icon="ci:chevron-right" className="relative top-1" />
@@ -359,7 +359,7 @@ const Notification = () => {
                 `}
               >
                 {openNotif ? (
-                  <div className="w-full flex gap-x-2.5">
+                  <div className="w-full flex">
                     <Image
                       src="/FiBell.svg"
                       width={16}
@@ -367,7 +367,7 @@ const Notification = () => {
                       alt="Bell image"
                       className="text-forest-900"
                     />
-                    <p className="text-[12px] font-[500] ">
+                    <p className="text-[12px] font-[500] pl-[7px]">
                       Notification Center
                     </p>{" "}
                     <div className="absolute right-2">
