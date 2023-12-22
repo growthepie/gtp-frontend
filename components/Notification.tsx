@@ -244,7 +244,7 @@ const Notification = () => {
           return (
             <>
               <div
-                className={``}
+                className={`hover:bg-forest-500/10 z-10`}
                 onClick={() => {
                   if (item.url) {
                     window.open(item.url, "_blank");
@@ -281,11 +281,11 @@ const Notification = () => {
                     setHoverID(null);
                   }}
                 >
-                  <div className="flex items-center w-[34px] justify-center  ">
+                  <div className="flex items-center w-[34px] justify-center   ">
                     {item.icon && (
                       <Icon
                         icon={item.icon || "default-icon"}
-                        className={`w-[12px] h-[12px] text-forest-50 ${
+                        className={`w-[12px] h-[12px] text-forest-50  ${
                           item.icon ? "visible" : "invisible"
                         } ${
                           hoverID === item.id
@@ -296,7 +296,7 @@ const Notification = () => {
                     )}
                   </div>
                   <div
-                    className={`flex w-full flex-col  pb-[8px] gap-y-[5px] `}
+                    className={`flex w-full flex-col  pb-[8px] gap-y-[5px] z-20 `}
                   >
                     <div className="h-[17px] font-bold text-[14px] ">
                       {item.desc}
@@ -348,7 +348,7 @@ const Notification = () => {
               }}
             >
               <button
-                className={`hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[305px] mdl:w-[343px] xl:w-[600px] border-[1px] h-[28px] rounded-full   px-[7px] relative z-10 ${
+                className={`hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[305px] mdl:w-[343px] xl:w-[600px] border-[1px] h-[28px] rounded-full   px-[7px] relative z-30 ${
                   filteredData[currentIndex] &&
                   filteredData[currentIndex]["color"]
                     ? openNotif
@@ -358,7 +358,7 @@ const Notification = () => {
                 }
                 `}
               >
-                {openNotif ? (
+                {openNotif || filteredData.length === 0 ? (
                   <div className="w-full flex">
                     <Image
                       src="/FiBell.svg"
@@ -526,13 +526,13 @@ const Notification = () => {
                 //   maxHeight: openNotif ? "fit-content duration-400 ease-in" : "0px duration-200 ease-out",
                 // }}
               >
-                <div className="h-[28px] "></div>
+                <div className="h-[28px]  "></div>
                 <div>
                   {filteredData.length === 0 ? (
                     <div
                       className={`flex border-b-white border-dashed w-full mt-[8px]`}
                     >
-                      <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[5px]">
+                      <div className="flex flex-col w-full pl-[32px] pb-[8px] gap-y-[5px]">
                         <div className="h-[17px] font-semibold text-[15px]">
                           There are currently no notifications.
                         </div>
@@ -566,7 +566,7 @@ const Notification = () => {
               </div>
 
               <div
-                className={`fixed top-[80px] left-0 right-0 w-[95%] h-auto bg-forest-900 rounded-2xl transition-max-height border-forest-50 overflow-hidden break-inside-avoid z-[110] ${
+                className={`fixed top-[80px] left-0 right-0 w-[95%] h-auto bg-forest-900 rounded-2xl transition-max-height border-forest-50  overflow-hidden break-inside-avoid z-[110] ${
                   openNotif
                     ? "bg-blend-darken duration-300 ease-in-out z-[110] border-[1px]"
                     : "bg-blend-normal duration-300 ease-in-out z-50 border-[0px] "
@@ -577,11 +577,11 @@ const Notification = () => {
                 }}
                 ref={mobileRef}
               >
-                <div className="flex flex-col w-[100%] pl-[0px] py-[8px] gap-y-[5px]">
+                <div className="flex flex-col w-[100%] pl-[0px] py-[8px] gap-y-[5px] ">
                   {filteredData.map((item, index) =>
                     item.url ? (
                       <Link
-                        className={`flex border-b-white border-dashed w-full mt-[8px] hover:cursor-pointer ${
+                        className={`flex border-b-white border-dashed w-full mt-[8px] hover:cursor-pointer  ${
                           index < filteredData.length - 1
                             ? "border-b-[1px] pb-1"
                             : "border-b-[0px] pb-1"
