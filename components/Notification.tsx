@@ -641,6 +641,9 @@ const Notification = () => {
         <div
           className="fixed inset-0 bg-black opacity-0 transition-opacity duration-500 z-[100]"
           style={{ opacity: 0.3 }}
+          onClick={() => {
+            setOpenNotif(!openNotif);
+          }}
         />
       )}
     </div>
