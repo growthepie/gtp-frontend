@@ -577,51 +577,59 @@ const Notification = () => {
                 }}
                 ref={mobileRef}
               >
-                <div className="flex flex-col w-[100%] pl-[0px] py-[8px] gap-y-[5px] ">
-                  {filteredData.map((item, index) =>
-                    item.url ? (
-                      <Link
-                        className={`flex border-b-white border-dashed w-full mt-[8px] hover:cursor-pointer  ${
-                          index < filteredData.length - 1
-                            ? "border-b-[1px] pb-1"
-                            : "border-b-[0px] pb-1"
-                        }`}
-                        key={item.id}
-                        href={item.url}
-                      >
-                        <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[8px]">
-                          <div className="h-[17px] font-bold text-[16px]">
-                            {item.desc}
+                {filteredData.length === 0 ? (
+                  <div className="flex flex-col w-full pl-[32px] pb-[8px] gap-y-[5px] justify-center">
+                    <div className="h-[17px] font-semibold text-[15px]">
+                      There are currently no notifications.
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col w-[100%] pl-[0px] py-[8px] gap-y-[5px] ">
+                    {filteredData.map((item, index) =>
+                      item.url ? (
+                        <Link
+                          className={`flex border-b-white border-dashed w-full mt-[8px] hover:cursor-pointer  ${
+                            index < filteredData.length - 1
+                              ? "border-b-[1px] pb-1"
+                              : "border-b-[0px] pb-1"
+                          }`}
+                          key={item.id}
+                          href={item.url}
+                        >
+                          <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[8px]">
+                            <div className="h-[17px] font-bold text-[16px]">
+                              {item.desc}
+                            </div>
+                            <div className="h-auto text-[14px] leading-snug">
+                              <ReactMarkdown>{item.body}</ReactMarkdown>
+                            </div>
                           </div>
-                          <div className="h-auto text-[14px] leading-snug">
-                            <ReactMarkdown>{item.body}</ReactMarkdown>
+                          <div className="w-[35px] pr-[20px] self-center">
+                            <Icon icon="ci:chevron-right" />
+                          </div>
+                        </Link>
+                      ) : (
+                        <div
+                          className={`flex border-b-white border-dashed w-full mt-[8px] ${
+                            index < filteredData.length - 1
+                              ? "border-b-[1px] pb-1"
+                              : "border-b-[0px] pb-1"
+                          }`}
+                          key={item.id}
+                        >
+                          <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[8px] ">
+                            <div className="h-[17px] font-bold text-[16px]">
+                              {item.desc}
+                            </div>
+                            <div className="h-auto text-[14px] leading-[.75rem]">
+                              <ReactMarkdown>{item.body}</ReactMarkdown>
+                            </div>
                           </div>
                         </div>
-                        <div className="w-[35px] pr-[20px] self-center">
-                          <Icon icon="ci:chevron-right" />
-                        </div>
-                      </Link>
-                    ) : (
-                      <div
-                        className={`flex border-b-white border-dashed w-full mt-[8px] ${
-                          index < filteredData.length - 1
-                            ? "border-b-[1px] pb-1"
-                            : "border-b-[0px] pb-1"
-                        }`}
-                        key={item.id}
-                      >
-                        <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[8px] ">
-                          <div className="h-[17px] font-bold text-[16px]">
-                            {item.desc}
-                          </div>
-                          <div className="h-auto text-[14px] leading-[.75rem]">
-                            <ReactMarkdown>{item.body}</ReactMarkdown>
-                          </div>
-                        </div>
-                      </div>
-                    ),
-                  )}
-                </div>
+                      ),
+                    )}
+                  </div>
+                )}
               </div>
             </>
           )}
