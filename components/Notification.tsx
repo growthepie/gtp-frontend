@@ -578,7 +578,7 @@ const Notification = () => {
                 ref={mobileRef}
               >
                 {filteredData.length === 0 ? (
-                  <div className="flex flex-col w-full pl-[32px] pb-[8px] gap-y-[5px] justify-center">
+                  <div className="flex flex-col w-full pl-[32px] pt-[3px] pb-2  gap-y-[5px] justify-center">
                     <div className="h-[17px] font-semibold text-[15px]">
                       There are currently no notifications.
                     </div>
