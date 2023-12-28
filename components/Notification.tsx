@@ -372,7 +372,9 @@ const Notification = () => {
                     </p>{" "}
                     <div className="absolute right-2">
                       <Icon
-                        icon="ci:chevron-down"
+                        icon={`${
+                          openNotif ? "ci:chevron-down" : "ci:chevron-right"
+                        }`}
                         className="w-[16px] h-[16px]"
                       />
                     </div>
