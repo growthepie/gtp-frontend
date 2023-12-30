@@ -1503,7 +1503,9 @@ export default function ChainChart({
                     ? (key === "profit" || key === "txcosts") && (
                         <div
                           className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
-                            key === "txcosts" ? "hidden lg:block" : ""
+                            enabledFundamentalsKeys.length - 2 === i
+                              ? "hidden lg:block"
+                              : ""
                           }`}
                         >
                           <div className="absolute left-[15px] align-bottom flex items-end z-30">
