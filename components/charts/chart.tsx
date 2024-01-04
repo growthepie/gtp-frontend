@@ -155,34 +155,34 @@ export const Chart = ({
               ...// @ts-ignore
               (chartType !== "column"
                 ? {
-                    shadow: {
-                      color:
-                        AllChainsByKeys[s.name]?.colors[theme ?? "dark"][1] +
-                        "33",
-                      width: 10,
+                  shadow: {
+                    color:
+                      AllChainsByKeys[s.name]?.colors[theme ?? "dark"][1] +
+                      "33",
+                    width: 10,
+                  },
+                  color: {
+                    linearGradient: {
+                      x1: 0,
+                      y1: 0,
+                      x2: 1,
+                      y2: 0,
                     },
-                    color: {
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 1,
-                        y2: 0,
-                      },
-                      stops: [
-                        [
-                          0,
-                          AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0],
-                        ],
-                        // [0.33, AllChainsByKeys[series.name].colors[1]],
-                        [
-                          1,
-                          AllChainsByKeys[s.name]?.colors[theme ?? "dark"][1],
-                        ],
+                    stops: [
+                      [
+                        0,
+                        AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0],
                       ],
-                    },
-                  }
+                      // [0.33, AllChainsByKeys[series.name].colors[1]],
+                      [
+                        1,
+                        AllChainsByKeys[s.name]?.colors[theme ?? "dark"][1],
+                      ],
+                    ],
+                  },
+                }
                 : s.name === "all_l2s"
-                ? {
+                  ? {
                     borderColor: "transparent",
 
                     shadow: {
@@ -204,47 +204,47 @@ export const Chart = ({
                       stops:
                         theme === "dark"
                           ? [
-                              [
-                                0,
-                                AllChainsByKeys[s.name]?.colors[
-                                  theme ?? "dark"
-                                ][0] + "E6",
-                              ],
-                              // [
-                              //   0.3,
-                              //   //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
-                              //   AllChainsByKeys[series.name].colors[theme][0] +
-                              //     "FF",
-                              // ],
-                              [
-                                1,
-                                AllChainsByKeys[s.name]?.colors[
-                                  theme ?? "dark"
-                                ][1] + "E6",
-                              ],
-                            ]
-                          : [
-                              [
-                                0,
-                                AllChainsByKeys[s.name]?.colors[
-                                  theme ?? "dark"
-                                ][0] + "E6",
-                              ],
-                              // [
-                              //   0.7,
-                              //   AllChainsByKeys[series.name].colors[theme][0] +
-                              //     "88",
-                              // ],
-                              [
-                                1,
-                                AllChainsByKeys[s.name]?.colors[
-                                  theme ?? "dark"
-                                ][1] + "E6",
-                              ],
+                            [
+                              0,
+                              AllChainsByKeys[s.name]?.colors[
+                              theme ?? "dark"
+                              ][0] + "E6",
                             ],
+                            // [
+                            //   0.3,
+                            //   //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
+                            //   AllChainsByKeys[series.name].colors[theme][0] +
+                            //     "FF",
+                            // ],
+                            [
+                              1,
+                              AllChainsByKeys[s.name]?.colors[
+                              theme ?? "dark"
+                              ][1] + "E6",
+                            ],
+                          ]
+                          : [
+                            [
+                              0,
+                              AllChainsByKeys[s.name]?.colors[
+                              theme ?? "dark"
+                              ][0] + "E6",
+                            ],
+                            // [
+                            //   0.7,
+                            //   AllChainsByKeys[series.name].colors[theme][0] +
+                            //     "88",
+                            // ],
+                            [
+                              1,
+                              AllChainsByKeys[s.name]?.colors[
+                              theme ?? "dark"
+                              ][1] + "E6",
+                            ],
+                          ],
                     },
                   }
-                : {
+                  : {
                     borderColor: "transparent",
                     shadow: {
                       color: "#CDD8D3" + "FF",
@@ -263,17 +263,17 @@ export const Chart = ({
                         [
                           0,
                           AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] +
-                            "FF",
+                          "FF",
                         ],
                         [
                           0.349,
                           AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] +
-                            "88",
+                          "88",
                         ],
                         [
                           1,
                           AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] +
-                            "00",
+                          "00",
                         ],
                       ],
                     },
@@ -450,13 +450,13 @@ export const Chart = ({
                         yScale === "percentage"
                           ? tooltipFormatter(true, true, decimalToPercent)
                           : tooltipFormatter(
-                              true,
-                              false,
-                              (x) => {
-                                return parseFloat(x).toFixed(decimals);
-                              },
-                              series.length > 0 ? series[0].dataKey : undefined,
-                            ),
+                            true,
+                            false,
+                            (x) => {
+                              return parseFloat(x).toFixed(decimals);
+                            },
+                            series.length > 0 ? series[0].dataKey : undefined,
+                          ),
                     },
                     xAxis: {
                       ...baseOptions.xAxis,
@@ -481,9 +481,9 @@ export const Chart = ({
                       max: maxY ? maxY : undefined,
                       tickPositions: maxY
                         ? Array.from(
-                            { length: numIntervals + 1 },
-                            (_, i) => i * intervalSize,
-                          )
+                          { length: numIntervals + 1 },
+                          (_, i) => i * intervalSize,
+                        )
                         : undefined,
                       tickInterval: maxY ? yAxisTicks.interval : undefined,
                       gridLineColor:
@@ -541,13 +541,12 @@ export const Chart = ({
                   }}
                 />
               </div>
-              <div className="absolute bottom-[47.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50 mix-blend-lighten">
+              <div className="absolute bottom-[47.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
                 <ChartWatermark
-                  className={`h-[30.67px]  md:h-[46px] ${
-                    parseInt(chartHeight, 10) > 200
+                  className={`h-[30.67px] md:h-[46px] ${parseInt(chartHeight, 10) > 200
                       ? "w-[128px] md:w-[163px]"
                       : "w-[128.67px] md:w-[193px] "
-                  }`}
+                    } text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten`}
                 />
               </div>
             </div>
