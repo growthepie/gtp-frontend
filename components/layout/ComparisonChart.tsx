@@ -339,8 +339,21 @@ export default function ComparisonChart({
           types: [],
         },
       ];
-    return d;
-  }, [data, showEthereumMainnet]);
+
+    return d.sort((a, b) => {
+      // always show ethereum on the bottom
+      if (a.name === "ethereum") return 1;
+      if (b.name === "ethereum") return -1;
+
+      const aData = a.data[a.data.length - 1][1];
+      const bData = b.data[b.data.length - 1][1];
+      if (reversePerformer) return aData - bData;
+
+      return bData - aData;
+    });
+  }, [data, reversePerformer, showEthereumMainnet]);
+
+  console.log("filteredData", filteredData);
 
   const formatNumber = useCallback(
     (value: number | string, isAxis = false) => {
@@ -820,17 +833,19 @@ export default function ComparisonChart({
       //@ts-ignore
       series: [
         ...filteredData
-          .sort((a, b) => {
-            if (selectedScale === "percentage")
-              return (
-                a.data[a.data.length - 1][1] - b.data[b.data.length - 1][1]
-              );
-            else {
-              return (
-                b.data[b.data.length - 1][1] - a.data[a.data.length - 1][1]
-              );
-            }
-          })
+          // .sort((a, b) => {
+          //   if (a.name === "ethereum") return 1;
+
+          //   if (selectedScale === "percentage")
+          //     return (
+          //       a.data[a.data.length - 1][1] - b.data[b.data.length - 1][1]
+          //     );
+          //   else {
+          //     return (
+          //       b.data[b.data.length - 1][1] - a.data[a.data.length - 1][1]
+          //     );
+          //   }
+          // })
           .map((series: any, i: number) => {
             const zIndex = showEthereumMainnet
               ? series.name === "ethereum"
@@ -1129,6 +1144,7 @@ export default function ComparisonChart({
     showEthereumMainnet,
     dataGrouping,
     showGwei,
+    metric_id,
   ]);
 
   useEffect(() => {
