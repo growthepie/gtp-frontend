@@ -16,7 +16,7 @@ export default function Header() {
           {/*Banner/Notification Area */}
 
           <div className={`hidden md:flex pr-[15px] `}>
-            <Notification />
+            {/* <Notification /> */}
           </div>
 
           <div className="flex justify-between items-start h-full md:hidden relative w-full">
@@ -42,7 +42,7 @@ export default function Header() {
             </Link>
 
             <div>
-              <Notification />
+              {/* <Notification /> */}
 
               <Sidebar isMobile={true} />
             </div>
@@ -96,9 +96,9 @@ export default function Header() {
         </div>
       </div>
       {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
-      ["development", "preview"].includes(
-        process.env.NEXT_PUBLIC_VERCEL_ENV,
-      ) ? (
+        ["development", "preview"].includes(
+          process.env.NEXT_PUBLIC_VERCEL_ENV,
+        ) ? (
         <> </>
       ) : (
         <>{/* <SupportUsBanner /> */}</>
