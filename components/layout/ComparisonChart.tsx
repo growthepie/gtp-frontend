@@ -1412,20 +1412,20 @@ export default function ComparisonChart({
                       >
                         Stacked
                       </button>
+
+                      <button
+                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"percentage" === selectedScale
+                          ? "bg-forest-500 dark:bg-forest-1000"
+                          : "hover:enabled:bg-forest-500/10"
+                          }`}
+                        onClick={() => {
+                          setSelectedScale("percentage");
+                        }}
+                      >
+                        Percentage
+                      </button>
                     </>
                   )}
-                  <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"percentage" === selectedScale
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:enabled:bg-forest-500/10"
-                      }`}
-                    onClick={() => {
-                      setSelectedScale("percentage");
-                    }}
-                  >
-                    Percentage
-                  </button>
-
                 </div>
                 <div className="hidden md:flex">
                   <Tooltip placement="left" allowInteract>
