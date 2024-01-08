@@ -1388,9 +1388,9 @@ export default function ComparisonChart({
               <div className="flex justify-center items-center pl-0 md:pl-0 w-full md:w-auto">
                 <div className="flex justify-between md:justify-center items-center  space-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
                   <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"absolute" === selectedScale
+                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"absolute" === selectedScale
                       ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
+                      : "hover:enabled:bg-forest-500/10"
                       }`}
                     onClick={() => {
                       setSelectedScale("absolute");
@@ -1398,28 +1398,34 @@ export default function ComparisonChart({
                   >
                     Absolute
                   </button>
-                  <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"log" === selectedScale
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
-                      }`}
-                    onClick={() => {
-                      setSelectedScale("log");
-                    }}
-                  >
-                    Stacked
-                  </button>
-                  <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"percentage" === selectedScale
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
-                      }`}
-                    onClick={() => {
-                      setSelectedScale("percentage");
-                    }}
-                  >
-                    Percentage
-                  </button>
+                  {metric_id !== "txcosts" && (
+                    <>
+                      <button
+                        disabled={metric_id === "txcosts"}
+                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"log" === selectedScale
+                          ? "bg-forest-500 dark:bg-forest-1000"
+                          : "hover:enabled:bg-forest-500/10"
+                          }`}
+                        onClick={() => {
+                          setSelectedScale("log");
+                        }}
+                      >
+                        Stacked
+                      </button>
+                      <button
+                        disabled={metric_id === "txcosts"}
+                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"percentage" === selectedScale
+                          ? "bg-forest-500 dark:bg-forest-1000"
+                          : "hover:enabled:bg-forest-500/10"
+                          }`}
+                        onClick={() => {
+                          setSelectedScale("percentage");
+                        }}
+                      >
+                        Percentage
+                      </button>
+                    </>
+                  )}
                 </div>
                 <div className="hidden md:flex">
                   <Tooltip placement="left" allowInteract>
