@@ -216,10 +216,10 @@ const Notification = () => {
               : null,
             branch: data[item]["fields"]["Branch"]
               ? data[item]["fields"]["Branch"] === "Development" &&
-                NEXT_PUBLIC_VERCEL_ENV === "development"
+                process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
                 ? true
                 : data[item]["fields"]["Branch"] === "Production" &&
-                  NEXT_PUBLIC_VERCEL_ENV !== "development"
+                  process.env.NEXT_PUBLIC_VERCEL_ENV !== "development"
                 ? true
                 : false
               : false,
