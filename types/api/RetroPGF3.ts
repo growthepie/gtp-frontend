@@ -83,6 +83,11 @@ export type Project = {
 
 export type ProjectsResponse = {
   projects: Project[];
+  prices: {
+    optimism: {
+      usd: number;
+    };
+  };
 };
 
 export type List = {

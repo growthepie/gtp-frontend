@@ -698,12 +698,22 @@ export default function Page() {
                       </div>
                     </TooltipTrigger>
                     <TooltipContent className="z-50 flex items-center justify-center">
-                      <div className="px-3 py-1.5 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
-                        <div className="text-xs space-x-1">
-
-                          {info.row.original.awarded.toLocaleString()} OP <span className="font-light">Awarded</span>
-
+                      <div className="ml-2 px-3 py-1.5 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex flex-col space-y-1">
+                        <div className="text-xs text-center">Award Amount</div>
+                        <div className="flex justify-between space-x-1 font-bold items-end leading-snug">
+                          <div className="flex-1 text-right">{info.row.original.awarded.toLocaleString()}</div><div className="text-left opacity-60 text-xs font-normal">OP</div>
                         </div>
+                        {projectsResponse?.prices.optimism.usd &&
+                          (
+                            <>
+                              <div className="flex justify-between space-x-1 items-end">
+                                <div className="flex-1 text-right"><span className="opacity-60 text-[0.65rem]">$</span>{Math.round(projectsResponse.prices.optimism.usd * info.row.original.awarded).toLocaleString()}</div><div className="text-left opacity-60 text-[0.65rem]">USD</div>
+                              </div>
+                              {/* <div className="text-[0.6rem] text-center opacity-60">@ ${projectsResponse.prices.optimism.usd} / OP</div> */}
+                            </>
+                          )
+                        }
+
                       </div>
                     </TooltipContent>
                   </Tooltip>
