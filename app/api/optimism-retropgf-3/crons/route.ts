@@ -32,6 +32,7 @@ const fetchProjects = async (skip, retries = 10) => {
           edges {
             node {
               id
+              awarded
               includedInBallots
               displayName
               applicant {
@@ -175,6 +176,9 @@ const createTableIfNotExists = async () => {
     CREATE INDEX IF NOT EXISTS idx_impact_metrics ON rpgf3_projects USING gin (impact_metrics);
     CREATE INDEX IF NOT EXISTS idx_profile ON rpgf3_projects USING gin (profile);
     CREATE INDEX IF NOT EXISTS idx_payout_address ON rpgf3_projects USING gin (payout_address);
+
+    -- create column 'awarded' as integer if it doesn't exist defaulting to -1
+    ALTER TABLE rpgf3_projects ADD COLUMN IF NOT EXISTS awarded INTEGER DEFAULT -1;
   `;
 
   try {
@@ -210,6 +214,7 @@ const insertOrUpdateProjects = async (projects) => {
       display_name,
       applicant,
       applicant_type,
+      awarded,
       bio,
       certified_not_barred_from_participating,
       certified_not_designated_or_sanctioned_or_blocked,
@@ -234,6 +239,7 @@ const insertOrUpdateProjects = async (projects) => {
       display_name = EXCLUDED.display_name,
       applicant = EXCLUDED.applicant,
       applicant_type = EXCLUDED.applicant_type,
+      awarded = EXCLUDED.awarded,
       bio = EXCLUDED.bio,
       certified_not_barred_from_participating = EXCLUDED.certified_not_barred_from_participating,
       certified_not_designated_or_sanctioned_or_blocked = EXCLUDED.certified_not_designated_or_sanctioned_or_blocked,
@@ -259,6 +265,7 @@ const insertOrUpdateProjects = async (projects) => {
     project.displayName,
     JSON.stringify(project.applicant),
     project.applicantType,
+    project.awarded,
     project.bio,
     project.certifiedNotBarredFromParticipating,
     project.certifiedNotDesignatedOrSanctionedOrBlocked,

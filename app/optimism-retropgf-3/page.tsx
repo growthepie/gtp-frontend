@@ -47,7 +47,10 @@ import { useElementSize } from "usehooks-ts";
 import { BASE_URL } from "@/lib/helpers";
 import { a } from "react-spring";
 import { RecoveredListData } from "./recoveredListData";
+import QuestionAnswer from "@/components/layout/QuestionAnswer";
 
+
+const timestamp = new Date().getTime();
 
 // Collective Governance
 // Developer Ecosystem
@@ -270,6 +273,29 @@ export default function Page() {
 
     return maxTotalFundingAmount;
   }, [getAllProjectsCombinedFundingSourcesByCurrency, projects]);
+
+  const getAwardedRank = useCallback(
+    (awarded: number) => {
+      // const awarded = project.awarded;
+
+      const awardedRank = projects
+        .map((d) => d.awarded)
+        .filter((d) => d !== -1)
+        .sort((a, b) => b - a)
+        .indexOf(awarded) + 1;
+
+      return awardedRank;
+    },
+    [projects],
+  );
+
+  const getMaxAwardedAmount = useCallback(() => {
+    const maxAwardedAmount = Math.max(
+      ...projects.map((d) => d.awarded).filter((d) => d !== -1),
+    );
+
+    return maxAwardedAmount;
+  }, [projects]);
 
   const [minListOPAmount, maxListOPAmount] = useMemo<[number, number]>(() => {
     if (!listAmountsByProjectId || !listAmountsByProjectId?.listAmounts) return [0, 0];
@@ -575,7 +601,7 @@ export default function Page() {
       {
         header: "Applicant",
         accessorKey: "applicant",
-        size: 150,
+        size: 120,
         cell: (info) => (
           <div className="w-full flex space-x-2 items-center overflow-hidden whitespace-nowrap text-ellipsis">
             <div className="w-6 h-6 flex items-center justify-center">
@@ -644,6 +670,92 @@ export default function Page() {
 
           // Otherwise, sort by whether a is greater than or less than b.
           return nameA > nameB ? 1 : -1;
+        },
+      },
+      {
+        header: "Result",
+        size: 80,
+        accessorKey: "awarded",
+        cell: (info) => (
+          <div className="w-full whitespace-nowrap text-ellipsis relative text-right">
+            {info.row.original.awarded > 0 ?
+              (
+                // <div className="rounded-md bg-[#FF0420]/60 px-1.5 py-0.5 font-medium">{formatNumber(info.row.original.awarded * - 20000, true)} OP</div>
+                <>
+
+                  <div className="absolute inset-0 bg-gradient-to-tr border from-[#FF0420]/30 via-[#FF0420]/50 to-[#FF0420]/30 border-forest-900/20 dark:border-forest-500/20 -m-1.5 -mt-2 rounded-sm"></div>
+
+                  <div className="absolute -left-1 -top-1.5 text-[0.6rem] text-forest-900 dark:text-forest-500 leading-[1]">
+                    #
+                    {getAwardedRank(info.row.original.awarded)}
+                  </div>
+                  <Tooltip placement="right">
+                    <TooltipTrigger>
+                      <div className="text-[12px]  text-forest-900 dark:text-forest-100 font-bold  w-full flex justify-end font-inter mt-1">
+
+                        <div className="rounded-sm px-0.5 w-full text-right z-20">{formatNumber(info.row.original.awarded, true)} OP</div>
+
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="z-50 flex items-center justify-center">
+                      <div className="px-3 py-1.5 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
+                        <div className="text-xs space-x-1">
+
+                          {info.row.original.awarded.toLocaleString()} OP <span className="font-light">Awarded</span>
+
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                  <div className="relative -bottom-[2px] left-0 right-0 text-xs font-normal text-right h-[2px]">
+                    <div
+                      className="absolute"
+                      style={{
+                        height: "2px",
+                        width: `100%`,
+
+                      }}
+                    >
+                      <div
+                        className=" sbg-[#FF0420] sdark:bg-[#FF0420] bg-forest-900 dark:bg-forest-100"
+                        style={{
+                          height: "2px",
+
+                          width: `${(info.row.original.awarded / getMaxAwardedAmount()) *
+                            100.0
+                            }%`,
+                          // right with bases on bottom and right
+                        }}
+                      ></div>
+                    </div>
+                    <div
+                      className="absolute sbg-forest-900/30 bg-forest-900/30 dark:bg-forest-100/30"
+                      style={{
+                        height: "2px",
+                        width: `100%`,
+                      }}
+                    />
+                  </div>
+                </>
+              ) :
+              (<div className="font-normal w-full flex justify-end font-inter">
+                <div className="flex space-x-1"><div className="text-forest-900/50 dark:text-forest-500/50">—</div></div>
+              </div>)}
+          </div>
+
+        ),
+        meta: {
+          headerAlign: { marginLeft: "auto", flexDirection: "row-reverse" },
+        },
+        sortingFn: (rowA, rowB) => {
+          const a = rowA.original.awarded;
+          const b = rowB.original.awarded;
+
+          // If both are equal, return 0.
+          if (a === b) return 0;
+
+          // Otherwise, sort by whether a is greater than or less than b.
+          return a > b ? 1 : -1;
         },
       },
       {
@@ -1155,7 +1267,7 @@ export default function Page() {
         header: () => (
           <Tooltip placement="left" allowInteract>
             <TooltipTrigger>
-              <Icon icon={"game-icons:two-coins"} className="w-6 h-6" />
+              <Icon icon={"bx:coin"} className="w-6 h-6" />
             </TooltipTrigger>
             <TooltipContent className="pr-0 z-50 flex items-center justify-center">
               <div className="px-3 py-1.5 w-64 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex items-center">
@@ -1408,6 +1520,7 @@ export default function Page() {
         applicant_type: d.applicant_type,
         applicant_address: d.applicant.address.address,
         applicant_ens: d.applicant.address.resolvedName.name,
+        award_result: d.awarded,
         included_in_ballots: d.included_in_ballots,
         // included_in_lists: d.lists.length,
         included_in_lists: listAmountsByProjectId["listCounts"][d.id],
@@ -1441,7 +1554,7 @@ export default function Page() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", "projects.csv");
+    link.setAttribute("download", "retropgf3_projects.csv");
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
@@ -1462,16 +1575,16 @@ export default function Page() {
           className={`w-full flex justify-between items-center mt-[10px] mb-[10px]`}
           ref={contentRef}
         >
-          <div className="w-1/2">
+          <div className="flex w-full space-x-2">
             {/* {totalsForProjectsInQuorum && Object.keys(totalsForProjectsInQuorum).map((key) => (
               <div key={key} className="flex items-center space-x-1">
                 <div className="text-xs font-light">total {key}: {formatNumber(totalsForProjectsInQuorum[key], true)}</div>
               </div>
             ))} */}
 
-            <div className="relative">
+            <div className="relative flex flex-1">
               <input
-                className="block rounded-full pl-6 pr-3 py-1.5 w-full z-20 text-xs text-forest-900  bg-forest-100 dark:bg-forest-1000 dark:text-forest-500 border border-forest-500 dark:border-forest-700 focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
+                className="block rounded-full pl-10 pr-3 py-1.5 w-full font-medium text-xs text-forest-900  bg-forest-100 dark:bg-forest-1000 dark:text-forest-500 border border-forest-500 dark:border-forest-700 focus:outline-none hover:border-forest-900 dark:hover:border-forest-400 transition-colors duration-300"
                 placeholder="Project Filter"
                 value={displayNameFilter}
                 onChange={(e) => {
@@ -1483,43 +1596,46 @@ export default function Page() {
               />
               <Icon
                 icon="feather:search"
-                className="w-4 h-4 absolute left-1.5 top-1.5"
+                className="w-6 h-6 absolute left-[10px] top-[8px] z-10 text-forest-900 dark:text-forest-500"
               />
               {displayNameFilter.length > 0 && (
                 <div
-                  className="absolute right-2.5 top-1.5 underline cursor-pointer text-forest-900 dark:text-forest-500 text-xs font-light leading-[1.2]"
+                  className="absolute right-3 top-2 underline cursor-pointer text-forest-900 dark:text-forest-500 text-xs font-light leading-[1.2]"
                   onClick={() => {
                     setDisplayNameFilter("");
                   }}
                 >
-                  clear
+                  <Icon
+                    icon="feather:x"
+                    className="w-6 h-6 z-10 text-forest-900 dark:text-forest-500"
+                  />
                 </div>
               )}
             </div>
-          </div>
-          <div className="flex flex-col justify-end items-end text-xs font-normal space-y-1">
-            {canDownloadCSV &&
-              <div onClick={handleExportCSV} className="-mt-2 flex items-center space-x-1 cursor-pointer rounded-full px-2 py-1 bg-forest-50 dark:bg-forest-900 dark:text-forest-500 text-forest-900 font-medium">
-                <div className="text-[0.7rem] font-medium">Export CSV</div>
-                <Icon
-                  icon="feather:download"
-                  className="w-3 h-3"
-                />
-              </div>
-            }
-            {/* <div className="text-forest-200 dark:text-forest-400">Last updated {lastUpdatedString}</div> */}
-            <div className="text-forest-200 dark:text-forest-400">Voting ended {moment.unix(1701982800).fromNow()}</div>
+            <div className="flex flex-col justify-end items-center text-xs font-normal space-y-1">
+              {canDownloadCSV &&
+                <div onClick={handleExportCSV} className="flex items-center space-x-1.5 cursor-pointer rounded-full px-4 py-2 bg-forest-50 dark:bg-forest-900 dark:text-forest-500 text-forest-900 font-medium">
+                  <Icon
+                    icon="feather:download"
+                    className="w-4 h-4"
+                  />
+                  <div className="text-base font-semibold">Export CSV</div>
+                </div>
+              }
+              {/* <div className="text-forest-200 dark:text-forest-400">Last updated {lastUpdatedString}</div> */}
+              {/* <div className="text-forest-200 dark:text-forest-400">Voting ended {moment.unix(1701982800).fromNow()}</div> */}
+            </div>
           </div>
         </div>
       </Container>
 
       <Container
-        className={`w-full mt-[0px] h-100 ${isTableWidthWider ? "!px-0" : "!px-[20px] md:!px-[50px]"
+        className={`w-full mt-[0px] h-100 -mb-12 ${isTableWidthWider ? "!pr-0 !pl-[20px] md:!pl-[50px]" : "!px-[20px] md:!px-[50px]"
           }`}
       >
         <div
           className={`w-full ${isTableWidthWider
-            ? "!px-[20px] md:!px-[50px] overflow-x-scroll"
+            ? "!pr-[20px] md:!pr-[50px] overflow-x-scroll"
             : "overflow-x-hidden"
             } z-100 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}
         >
@@ -1785,7 +1901,30 @@ export default function Page() {
             </div>
           </div>
         </div>
+        <QuestionAnswer
+          startOpen={false}
+          className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[30px] py-[23px] flex flex-col absolute bottom-8 left-[20px] right-[20px] md:left-[50px] md:right-[50px]"
+          question={"What can you see in this list?"}
+          answer={
+            <div className="text-xs lg:text-base">
+              <div>This is a list of all 643 projects that are part of RPGF3. Voting by badgeholders was in progress until December 7th. See here the voting results including the amount each project receives from RetroPGF3.</div>
+
+              <div className="font-bold mt-3">Result</div>
+              <div>Result is the amount each project got allocated during the voting period. This is the final result from all badgeholder&apos;s ballots.</div>
+
+              <div className="font-bold mt-3">In Ballots</div>
+              <div>A project needed at least 17 votes in order to receive funding through RPGF. When the checkmark is green, the project appeared in at least 17 ballots. Otherwise, the project will not receive any funding from RPGF3.</div>
+
+              <div className="font-bold mt-3">Funding Reported</div>
+              <div>Total Funding Reported is calculated based on the project&apos;s reported USD and OP amounts. For OP tokens we calculated with $1.35 (OP price when RPGF applications were closed). Note: The application requirements for RPGF3 specified disclosure of funding sources from the OP Collective only; VC and other sources were often not included.</div>
+
+              <div className="font-bold mt-3">VC Funding</div>
+              <div>VC Funding amounts are sourced from publicly available data and the community. Sources are mainly @ZachXBT, DefiLlama, and projects that approched us during the voting period. If you have any feedback or suggestions, please don&apos;t hesitate to contact us on X Twitter or Discord</div>
+            </div>
+          }
+        />
       </Container>
+
     </>
   );
 }
