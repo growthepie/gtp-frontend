@@ -195,6 +195,29 @@ export default function Page() {
     [projectsResponse],
   );
 
+  const awardedRankingByProjectId = useMemo<{ [projectId: string]: number } | null>(
+    () => {
+      if (!projectsResponse) return null;
+
+      const projectsRanked = projectsResponse.projects.sort((a, b) => {
+        // If both are equal, return 0.
+        if (a.awarded === b.awarded) return 0;
+
+        // Otherwise, sort by whether a is greater than or less than b.
+        return a.awarded > b.awarded ? -1 : 1;
+      }).map((project, i) => ({
+        id: project.id,
+        rank: i + 1,
+      })).reduce((acc, curr) => {
+        acc[curr.id] = curr.rank;
+        return acc;
+      }, {});
+
+      return projectsRanked;
+    },
+    [projectsResponse],
+  );
+
   const getProjectsCombinedFundingSourcesByCurrency = useCallback(
     (fundingSources: ProjectFundingSource[]) => {
       const combinedFundingSources: {
@@ -279,15 +302,17 @@ export default function Page() {
     (awarded: number) => {
       // const awarded = project.awarded;
 
-      const awardedRank = projects
-        .map((d) => d.awarded)
-        .filter((d) => d !== -1)
-        .sort((a, b) => b - a)
-        .indexOf(awarded) + 1;
+      // const awardedRank = projects
+      //   .map((d) => d.awarded)
+      //   .filter((d) => d !== -1)
+      //   .sort((a, b) => b - a)
+      //   .indexOf(awarded) + 1;
+
+      const awardedRank = RPGF3Results.sort((a, b) => b.awarded - a.awarded).findIndex((d) => d.awarded === awarded) + 1;
 
       return awardedRank;
     },
-    [projects],
+    [],
   );
 
   const getMaxAwardedAmount = useCallback(() => {
@@ -526,7 +551,7 @@ export default function Page() {
                   .getSortedRowModel()
                   .rows.findIndex((d) => d.id === info.row.id) + 1} */}
 
-                {ballotRankingByProjectId && ballotRankingByProjectId[info.row.original.id]}
+                {getAwardedRank(RPGF3ResultsById[info.row.original.id].awarded)}
               </div>
             </div>
           </>
