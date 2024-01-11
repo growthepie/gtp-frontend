@@ -19,6 +19,7 @@ type AirtableRow = {
   icon?: string;
   color?: string;
   textColor?: string;
+  branch: boolean;
 };
 
 type NotificationType = {
@@ -200,7 +201,7 @@ const Notification = () => {
           let newEntry: AirtableRow = {
             id: data[item]["id"],
             body: data[item]["fields"]["Body"],
-            desc: data[item]["fields"]["Description"],
+            desc: data[item]["fields"]["Head"],
             url: data[item]["fields"]["URL"]
               ? data[item]["fields"]["URL"]
               : null,
@@ -213,9 +214,19 @@ const Notification = () => {
             textColor: data[item]["fields"]["Text Color"]
               ? data[item]["fields"]["Text Color"]
               : null,
+            branch: data[item]["fields"]["Branch"]
+              ? data[item]["fields"]["Branch"] === "Development" &&
+                process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
+                ? true
+                : data[item]["fields"]["Branch"] === "Production" &&
+                  process.env.NEXT_PUBLIC_VERCEL_ENV !== "development"
+                ? true
+                : false
+              : false,
           };
-
-          returnArray.push(newEntry);
+          if (newEntry.branch) {
+            returnArray.push(newEntry);
+          }
         }
       });
     }
@@ -333,6 +344,7 @@ const Notification = () => {
     return `rgba(${red}, ${green}, ${blue}, 0)`;
   }
 
+  console.log(process.env.NEXT_PUBLIC_VERCEL_ENV);
   return (
     <div className="relative">
       {filteredData && (
@@ -372,7 +384,9 @@ const Notification = () => {
                     </p>{" "}
                     <div className="absolute right-2">
                       <Icon
-                        icon="ci:chevron-down"
+                        icon={`${
+                          openNotif ? "ci:chevron-down" : "ci:chevron-right"
+                        }`}
                         className="w-[16px] h-[16px]"
                       />
                     </div>
@@ -577,51 +591,59 @@ const Notification = () => {
                 }}
                 ref={mobileRef}
               >
-                <div className="flex flex-col w-[100%] pl-[0px] py-[8px] gap-y-[5px] ">
-                  {filteredData.map((item, index) =>
-                    item.url ? (
-                      <Link
-                        className={`flex border-b-white border-dashed w-full mt-[8px] hover:cursor-pointer  ${
-                          index < filteredData.length - 1
-                            ? "border-b-[1px] pb-1"
-                            : "border-b-[0px] pb-1"
-                        }`}
-                        key={item.id}
-                        href={item.url}
-                      >
-                        <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[8px]">
-                          <div className="h-[17px] font-bold text-[16px]">
-                            {item.desc}
+                {filteredData.length === 0 ? (
+                  <div className="flex flex-col w-full pl-[32px] pt-[3px] pb-2  gap-y-[5px] justify-center">
+                    <div className="h-[17px] font-semibold text-[15px]">
+                      There are currently no notifications.
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col w-[100%] pl-[0px] py-[8px] gap-y-[5px] ">
+                    {filteredData.map((item, index) =>
+                      item.url ? (
+                        <Link
+                          className={`flex border-b-white border-dashed w-full mt-[8px] hover:cursor-pointer  ${
+                            index < filteredData.length - 1
+                              ? "border-b-[1px] pb-1"
+                              : "border-b-[0px] pb-1"
+                          }`}
+                          key={item.id}
+                          href={item.url}
+                        >
+                          <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[8px]">
+                            <div className="h-[17px] font-bold text-[16px]">
+                              {item.desc}
+                            </div>
+                            <div className="h-auto text-[14px] leading-snug">
+                              <ReactMarkdown>{item.body}</ReactMarkdown>
+                            </div>
                           </div>
-                          <div className="h-auto text-[14px] leading-snug">
-                            <ReactMarkdown>{item.body}</ReactMarkdown>
+                          <div className="w-[35px] pr-[20px] self-center">
+                            <Icon icon="ci:chevron-right" />
+                          </div>
+                        </Link>
+                      ) : (
+                        <div
+                          className={`flex border-b-white border-dashed w-full mt-[8px] ${
+                            index < filteredData.length - 1
+                              ? "border-b-[1px] pb-1"
+                              : "border-b-[0px] pb-1"
+                          }`}
+                          key={item.id}
+                        >
+                          <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[8px] ">
+                            <div className="h-[17px] font-bold text-[16px]">
+                              {item.desc}
+                            </div>
+                            <div className="h-auto text-[14px] leading-[.75rem]">
+                              <ReactMarkdown>{item.body}</ReactMarkdown>
+                            </div>
                           </div>
                         </div>
-                        <div className="w-[35px] pr-[20px] self-center">
-                          <Icon icon="ci:chevron-right" />
-                        </div>
-                      </Link>
-                    ) : (
-                      <div
-                        className={`flex border-b-white border-dashed w-full mt-[8px] ${
-                          index < filteredData.length - 1
-                            ? "border-b-[1px] pb-1"
-                            : "border-b-[0px] pb-1"
-                        }`}
-                        key={item.id}
-                      >
-                        <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[8px] ">
-                          <div className="h-[17px] font-bold text-[16px]">
-                            {item.desc}
-                          </div>
-                          <div className="h-auto text-[14px] leading-[.75rem]">
-                            <ReactMarkdown>{item.body}</ReactMarkdown>
-                          </div>
-                        </div>
-                      </div>
-                    ),
-                  )}
-                </div>
+                      ),
+                    )}
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -631,6 +653,9 @@ const Notification = () => {
         <div
           className="fixed inset-0 bg-black opacity-0 transition-opacity duration-500 z-[100]"
           style={{ opacity: 0.3 }}
+          onClick={() => {
+            setOpenNotif(!openNotif);
+          }}
         />
       )}
     </div>
