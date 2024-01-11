@@ -31,7 +31,12 @@ export async function GET() {
       });
       delete project.profile.bio;
       delete project.profile.bannerImageUrl;
-      project.awarded = Math.random() > 0.5 ? i * Math.pow(10, i / 150) : 0;
+      if (
+        process.env.NEXT_PUBLIC_VERCEL_ENV &&
+        ["development", "preview"].includes(process.env.NEXT_PUBLIC_VERCEL_ENV)
+      ) {
+        project.awarded = Math.random() > 0.5 ? i * Math.pow(10, i / 150) : 0;
+      }
     });
 
     return Response.json({ projects: data });
