@@ -216,10 +216,12 @@ const Notification = () => {
               : null,
             branch: data[item]["fields"]["Branch"]
               ? data[item]["fields"]["Branch"] === "Development" &&
-                process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
+                (process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ||
+                  process.env.NEXT_PUBLIC_VERCEL_ENV === "preview")
                 ? true
                 : data[item]["fields"]["Branch"] === "Production" &&
-                  process.env.NEXT_PUBLIC_VERCEL_ENV !== "development"
+                  process.env.NEXT_PUBLIC_VERCEL_ENV !== "development" &&
+                  process.env.NEXT_PUBLIC_VERCEL_ENV !== "preview"
                 ? true
                 : false
               : false,
@@ -244,6 +246,8 @@ const Notification = () => {
     // Cleanup interval on component unmount
     return () => clearInterval(interval);
   }, [filteredData]); // Remove currentIndex from the dependency array
+
+  console.log(filteredData);
 
   const Items = useMemo(() => {
     if (!filteredData) {
@@ -344,6 +348,7 @@ const Notification = () => {
     return `rgba(${red}, ${green}, ${blue}, 0)`;
   }
 
+  console.log(process.env.NEXT_PUBLIC_VERCEL_ENV);
   return (
     <div className="relative">
       {filteredData && (
