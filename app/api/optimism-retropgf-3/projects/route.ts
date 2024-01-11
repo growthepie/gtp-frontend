@@ -11,6 +11,11 @@ const pool = new Pool({
 });
 
 export async function GET() {
+  // get OP token price from coingecko
+  const tokenPrice = await fetch(
+    "https://api.coingecko.com/api/v3/simple/price?ids=optimism&vs_currencies=usd",
+  ).then((res) => res.json());
+
   try {
     const result = await pool.query(
       `SELECT 
@@ -39,7 +44,7 @@ export async function GET() {
       }
     });
 
-    return Response.json({ projects: data });
+    return Response.json({ projects: data, prices: tokenPrice });
   } catch (error) {
     return Response.json({ error });
   }
