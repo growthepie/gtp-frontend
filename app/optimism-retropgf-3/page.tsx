@@ -1498,7 +1498,7 @@ export default function Page() {
     return `#${"00000".substring(0, 6 - c.length)}${c}`;
   };
 
-  const tableMinWidthClass = "min-w-[1300px]";
+  const tableMinWidthClass = "min-w-[1280px]";
 
   const [contentRef, { width: contentWidth }] = useElementSize();
   const [tableRef, { width: tableWidth }] = useElementSize();
@@ -1903,10 +1903,10 @@ export default function Page() {
         </div>
         <QuestionAnswer
           startOpen={false}
-          className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[30px] py-[23px] flex flex-col absolute bottom-8 left-[20px] right-[20px] md:left-[50px] md:right-[50px]"
+          className="z-50 rounded-3xl bg-forest-50 dark:bg-forest-900 px-[30px] py-[23px] flex flex-col absolute bottom-8 left-[20px] right-[20px] md:left-[50px] md:right-[50px]"
           question={"What can you see in this list?"}
           answer={
-            <div className="text-xs lg:text-base">
+            <div className="text-xs lg:text-sm">
               <div>This is a list of all 643 projects that are part of RPGF3. Voting by badgeholders was in progress until December 7th. See here the voting results including the amount each project receives from RetroPGF3.</div>
 
               <div className="font-bold mt-3">Result</div>
