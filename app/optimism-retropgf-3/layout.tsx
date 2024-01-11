@@ -111,7 +111,7 @@ export default async function Layout({
           iconContainerClassName="items-center mb-0 relative"
         >
           {/* This is a list of all 643 projects that are part of RPGF3. Voting by badgeholders is in progress until December 7th. A project needs at least 17 votes in order to receive funding through RPGF. */}
-          Voting results from a total of 643 projects participating in Optimism’s RetroPGF3. Results will be announced on January 11th and will be distributed in the coming weeks/months.
+          Voting results from a total of 643 projects participating in Optimism’s RetroPGF3. Results were announced on January 11th and will be distributed in the coming weeks/months.
         </Subheading>
       </Container>
 
