@@ -224,8 +224,9 @@ const Notification = () => {
                 : false
               : false,
           };
-
-          returnArray.push(newEntry);
+          if (newEntry.branch) {
+            returnArray.push(newEntry);
+          }
         }
       });
     }
