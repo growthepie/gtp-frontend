@@ -200,7 +200,7 @@ const Notification = () => {
           let newEntry: AirtableRow = {
             id: data[item]["id"],
             body: data[item]["fields"]["Body"],
-            desc: data[item]["fields"]["Description"],
+            desc: data[item]["fields"]["Head"],
             url: data[item]["fields"]["URL"]
               ? data[item]["fields"]["URL"]
               : null,
