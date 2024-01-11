@@ -220,8 +220,8 @@ const Notification = () => {
                   process.env.NEXT_PUBLIC_VERCEL_ENV === "preview")
                 ? true
                 : data[item]["fields"]["Branch"] === "Production" &&
-                  (process.env.NEXT_PUBLIC_VERCEL_ENV !== "development" ||
-                    process.env.NEXT_PUBLIC_VERCEL_ENV !== "preview")
+                  process.env.NEXT_PUBLIC_VERCEL_ENV !== "development" &&
+                  process.env.NEXT_PUBLIC_VERCEL_ENV !== "preview"
                 ? true
                 : false
               : false,
