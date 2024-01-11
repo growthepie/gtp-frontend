@@ -56,6 +56,7 @@ export type Project = {
   display_name: string;
   applicant: ProjectApplicant;
   applicant_type: string;
+  awarded: number;
   bio: string;
   certified_not_barred_from_participating: boolean;
   certified_not_designated_or_sanctioned_or_blocked: boolean;
@@ -134,13 +135,14 @@ export type ListAmountsByProjectId = {
   }[];
 };
 
-export type QuartilesByProjecId = {[projectId: string]: {
-  min: number;
-  q1: number;
-  median: number;
-  q3: number;
-  max: number;
-}
+export type QuartilesByProjecId = {
+  [projectId: string]: {
+    min: number;
+    q1: number;
+    median: number;
+    q3: number;
+    max: number;
+  };
 };
 
 export type ProjectInfoResponse = {
