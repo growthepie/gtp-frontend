@@ -1907,7 +1907,7 @@ export default function Page() {
               <div>This is a list of all 643 projects that are part of RPGF3. Voting by badgeholders was in progress until December 7th. See here the voting results including the amount each project receives from RetroPGF3.</div>
 
               <div className="font-bold mt-3">Result</div>
-              <div>Result is the amount each project got allocated during the voting period. This is the final result from all badgeholder’s ballots.</div>
+              <div>Result is the amount each project got allocated during the voting period. This is the final result from all badgeholder&apos;s ballots.</div>
 
               <div className="font-bold mt-3">In Ballots</div>
               <div>A project needed at least 17 votes in order to receive funding through RPGF. When the checkmark is green, the project appeared in at least 17 ballots. Otherwise, the project will not receive any funding from RPGF3.</div>
@@ -1916,7 +1916,7 @@ export default function Page() {
               <div>Total Funding Reported is calculated based on the project&apos;s reported USD and OP amounts. For OP tokens we calculated with $1.35 (OP price when RPGF applications were closed). Note: The application requirements for RPGF3 specified disclosure of funding sources from the OP Collective only; VC and other sources were often not included.</div>
 
               <div className="font-bold mt-3">VC Funding</div>
-              <div>VC Funding amounts are sourced from publicly available data and the community. Sources are mainly @ZachXBT, DefiLlama, and projects that approched us during the voting period. If you have any feedback or suggestions, please don't hesitate to contact us on X Twitter or Discord</div>
+              <div>VC Funding amounts are sourced from publicly available data and the community. Sources are mainly @ZachXBT, DefiLlama, and projects that approched us during the voting period. If you have any feedback or suggestions, please don&apos;t hesitate to contact us on X Twitter or Discord</div>
             </div>
           }
         />
