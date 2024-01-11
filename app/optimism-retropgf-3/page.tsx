@@ -674,7 +674,7 @@ export default function Page() {
       },
       {
         header: "Result",
-        size: 70,
+        size: 80,
         accessorKey: "awarded",
         cell: (info) => (
           <div className="w-full whitespace-nowrap text-ellipsis relative text-right">
@@ -683,17 +683,17 @@ export default function Page() {
                 // <div className="rounded-md bg-[#FF0420]/60 px-1.5 py-0.5 font-medium">{formatNumber(info.row.original.awarded * - 20000, true)} OP</div>
                 <>
 
-                  <div className="absolute inset-0 border border-forest-900/20 dark:border-forest-500/20 -m-1.5 -mt-2 rounded-md"></div>
+                  <div className="absolute inset-0 bg-gradient-to-tr border from-[#FF0420]/30 via-[#FF0420]/50 to-[#FF0420]/30 border-forest-900/20 dark:border-forest-500/20 -m-1.5 -mt-2 rounded-sm"></div>
 
-                  <div className="absolute -left-1 -top-2 text-[0.6rem] text-forest-900/50 dark:text-forest-500/50 font-light leading-[1]">
+                  <div className="absolute -left-1 -top-1.5 text-[0.6rem] text-forest-900 dark:text-forest-500 leading-[1]">
                     #
                     {getAwardedRank(info.row.original.awarded)}
                   </div>
                   <Tooltip placement="right">
                     <TooltipTrigger>
-                      <div className="text-[11px] font-normal w-full flex justify-end font-inter mt-1">
+                      <div className="text-[12px]  text-forest-900 dark:text-forest-100 font-bold  w-full flex justify-end font-inter mt-1">
 
-                        <div className="rounded-sm px-0.5 font-bold w-full text-right z-20">{formatNumber(info.row.original.awarded, true)} OP</div>
+                        <div className="rounded-sm px-0.5 w-full text-right z-20">{formatNumber(info.row.original.awarded, true)} OP</div>
 
                       </div>
                     </TooltipTrigger>
@@ -717,7 +717,7 @@ export default function Page() {
                       }}
                     >
                       <div
-                        className=" bg-[#FF0420] dark:bg-[#FF0420]"
+                        className=" sbg-[#FF0420] sdark:bg-[#FF0420] bg-forest-900 dark:bg-forest-100"
                         style={{
                           height: "2px",
 
@@ -729,7 +729,7 @@ export default function Page() {
                       ></div>
                     </div>
                     <div
-                      className="absolute bg-forest-900/30 dark:bg-forest-500/30"
+                      className="absolute sbg-forest-900/30 bg-forest-900/30 dark:bg-forest-100/30"
                       style={{
                         height: "2px",
                         width: `100%`,
@@ -1600,12 +1600,15 @@ export default function Page() {
               />
               {displayNameFilter.length > 0 && (
                 <div
-                  className="absolute right-2.5 top-1.5 underline cursor-pointer text-forest-900 dark:text-forest-500 text-xs font-light leading-[1.2]"
+                  className="absolute right-3 top-2 underline cursor-pointer text-forest-900 dark:text-forest-500 text-xs font-light leading-[1.2]"
                   onClick={() => {
                     setDisplayNameFilter("");
                   }}
                 >
-                  clear
+                  <Icon
+                    icon="feather:x"
+                    className="w-6 h-6 z-10 text-forest-900 dark:text-forest-500"
+                  />
                 </div>
               )}
             </div>
