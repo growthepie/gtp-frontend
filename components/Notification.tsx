@@ -19,6 +19,7 @@ type AirtableRow = {
   icon?: string;
   color?: string;
   textColor?: string;
+  branch: boolean;
 };
 
 type NotificationType = {
@@ -213,6 +214,15 @@ const Notification = () => {
             textColor: data[item]["fields"]["Text Color"]
               ? data[item]["fields"]["Text Color"]
               : null,
+            branch: data[item]["fields"]["Branch"]
+              ? data[item]["fields"]["Branch"] === "Development" &&
+                NEXT_PUBLIC_VERCEL_ENV === "development"
+                ? true
+                : data[item]["fields"]["Branch"] === "Production" &&
+                  NEXT_PUBLIC_VERCEL_ENV !== "development"
+                ? true
+                : false
+              : false,
           };
 
           returnArray.push(newEntry);
