@@ -245,6 +245,8 @@ const Notification = () => {
     return () => clearInterval(interval);
   }, [filteredData]); // Remove currentIndex from the dependency array
 
+  console.log(filteredData);
+
   const Items = useMemo(() => {
     if (!filteredData) {
       return null;
