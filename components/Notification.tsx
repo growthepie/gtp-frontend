@@ -247,8 +247,6 @@ const Notification = () => {
     return () => clearInterval(interval);
   }, [filteredData]); // Remove currentIndex from the dependency array
 
-  console.log(filteredData);
-
   const Items = useMemo(() => {
     if (!filteredData) {
       return null;
@@ -348,14 +346,15 @@ const Notification = () => {
     return `rgba(${red}, ${green}, ${blue}, 0)`;
   }
 
-  console.log(process.env.NEXT_PUBLIC_VERCEL_ENV);
   return (
     <div className="relative">
       {filteredData && (
         <>
           {!isMobile ? (
             <div
-              className={`flex w-full relative z-[110]`}
+              className={`flex w-full relative ${
+                openNotif ? "z-[110]" : "z-10"
+              }`}
               onMouseEnter={() => {
                 setOpenNotif(true);
               }}

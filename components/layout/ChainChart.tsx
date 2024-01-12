@@ -3,6 +3,7 @@
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts";
 import highchartsAnnotations from "highcharts/modules/annotations";
+import Share from "@/components/Share";
 
 import {
   useState,
@@ -1564,6 +1565,9 @@ export default function ChainChart({
             })}
         </div>
       )}
+      <div className="flex w-full justify-end mt-6 items-center">
+        <Share />
+      </div>
     </div>
   );
 }
