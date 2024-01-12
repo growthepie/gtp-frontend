@@ -48,6 +48,7 @@ import { BASE_URL } from "@/lib/helpers";
 import { a } from "react-spring";
 import { RecoveredListData } from "./recoveredListData";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
+import { RPGF3Results, RPGF3ResultsById } from "./rpgf3_results";
 
 
 const timestamp = new Date().getTime();
@@ -123,7 +124,7 @@ export default function Page() {
 
   const [sorting, setSorting] = useState<SortingState>([
     {
-      id: "included_in_ballots",
+      id: "awarded",
       desc: true,
     },
   ]);
@@ -291,11 +292,11 @@ export default function Page() {
 
   const getMaxAwardedAmount = useCallback(() => {
     const maxAwardedAmount = Math.max(
-      ...projects.map((d) => d.awarded).filter((d) => d !== -1),
+      ...RPGF3Results.map((d) => d.awarded).filter((d) => d !== -1),
     );
 
     return maxAwardedAmount;
-  }, [projects]);
+  }, []);
 
   const [minListOPAmount, maxListOPAmount] = useMemo<[number, number]>(() => {
     if (!listAmountsByProjectId || !listAmountsByProjectId?.listAmounts) return [0, 0];
@@ -678,7 +679,7 @@ export default function Page() {
         accessorKey: "awarded",
         cell: (info) => (
           <div className="w-full whitespace-nowrap text-ellipsis relative text-right">
-            {info.row.original.awarded > 0 ?
+            {RPGF3ResultsById[info.row.original.id].awarded > 0 ?
               (
                 // <div className="rounded-md bg-[#FF0420]/60 px-1.5 py-0.5 font-medium">{formatNumber(info.row.original.awarded * - 20000, true)} OP</div>
                 <>
@@ -687,13 +688,13 @@ export default function Page() {
 
                   <div className="absolute -left-1 -top-1.5 text-[0.6rem] text-forest-900 dark:text-forest-500 leading-[1]">
                     #
-                    {getAwardedRank(info.row.original.awarded)}
+                    {getAwardedRank(RPGF3ResultsById[info.row.original.id].awarded)}
                   </div>
                   <Tooltip placement="right">
                     <TooltipTrigger>
                       <div className="text-[12px]  text-forest-900 dark:text-forest-100 font-bold  w-full flex justify-end font-inter mt-1">
 
-                        <div className="rounded-sm px-0.5 w-full text-right z-20">{formatNumber(info.row.original.awarded, true)} OP</div>
+                        <div className="rounded-sm px-0.5 w-full text-right z-20">{formatNumber(RPGF3ResultsById[info.row.original.id].awarded, true)} OP</div>
 
                       </div>
                     </TooltipTrigger>
@@ -701,19 +702,19 @@ export default function Page() {
                       <div className="ml-2 px-3 py-1.5 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex flex-col space-y-1">
                         <div className="text-xs text-center">Award Amount</div>
                         <div className="flex justify-between space-x-1 font-bold items-end leading-snug">
-                          <div className="flex-1 text-right">{info.row.original.awarded.toLocaleString()}</div><div className="text-left opacity-60 text-xs font-normal">OP</div>
+                          <div className="flex-1 text-right">{RPGF3ResultsById[info.row.original.id].awarded.toLocaleString()}</div><div className="text-left opacity-60 text-xs font-normal">OP</div>
                         </div>
                         {projectsResponse?.prices.optimism.usd &&
                           (
                             <>
                               <div className="flex justify-between space-x-1 items-end">
-                                <div className="flex-1 text-right"><span className="opacity-60 text-[0.65rem]">$</span>{Math.round(projectsResponse.prices.optimism.usd * info.row.original.awarded).toLocaleString()}</div><div className="text-left opacity-60 text-[0.65rem]">USD</div>
+                                <div className="flex-1 text-right"><span className="opacity-60 text-[0.65rem]">$</span>{Math.round(projectsResponse.prices.optimism.usd * RPGF3ResultsById[info.row.original.id].awarded).toLocaleString()}</div><div className="text-left opacity-60 text-[0.65rem]">USD</div>
                               </div>
                               {/* <div className="text-[0.6rem] text-center opacity-60">@ ${projectsResponse.prices.optimism.usd} / OP</div> */}
                             </>
                           )
                         }
-
+                        <div className="text-xs text-center opacity-60">Median Amount: {RPGF3ResultsById[info.row.original.id].result_median_amount.toLocaleString()} OP</div>
                       </div>
                     </TooltipContent>
                   </Tooltip>
@@ -731,7 +732,7 @@ export default function Page() {
                         style={{
                           height: "2px",
 
-                          width: `${(info.row.original.awarded / getMaxAwardedAmount()) *
+                          width: `${(RPGF3ResultsById[info.row.original.id].awarded / getMaxAwardedAmount()) *
                             100.0
                             }%`,
                           // right with bases on bottom and right
@@ -758,8 +759,8 @@ export default function Page() {
           headerAlign: { marginLeft: "auto", flexDirection: "row-reverse" },
         },
         sortingFn: (rowA, rowB) => {
-          const a = rowA.original.awarded;
-          const b = rowB.original.awarded;
+          const a = RPGF3ResultsById[rowA.original.id].awarded;
+          const b = RPGF3ResultsById[rowB.original.id].awarded;
 
           // If both are equal, return 0.
           if (a === b) return 0;
@@ -776,12 +777,12 @@ export default function Page() {
           <div className="w-full overflow-hidden whitespace-nowrap text-ellipsis flex justify-end items-center">
             <div className="flex items-center space-x-2">
               <div className="text-[0.9rem] font-medium leading-[1.2] font-inter">
-                {info.row.original.included_in_ballots}
+                {RPGF3ResultsById[info.row.original.id].result_ballots}
               </div>
               <div className="w-4 h-4">
                 <Icon
                   icon={"feather:check-square"}
-                  className={`w-4 h-4  fill-current ${info.row.original.included_in_ballots >= 17
+                  className={`w-4 h-4  fill-current ${RPGF3ResultsById[info.row.original.id].result_quorum
                     ? "text-green-500 dark:text-green-500"
                     : "text-forest-900/80 dark:text-forest-500/80"
                     }`}
@@ -794,8 +795,8 @@ export default function Page() {
           headerAlign: { marginLeft: "auto", flexDirection: "row-reverse" },
         },
         sortingFn: (rowA, rowB) => {
-          const a = rowA.original.included_in_ballots;
-          const b = rowB.original.included_in_ballots;
+          const a = RPGF3ResultsById[rowA.original.id].result_ballots;
+          const b = RPGF3ResultsById[rowB.original.id].result_ballots;
 
           // If both are equal, return 0.
           if (a === b) return 0;

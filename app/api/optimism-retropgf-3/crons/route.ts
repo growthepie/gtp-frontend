@@ -16,7 +16,7 @@ const pool = new Pool({
 const delay = (duration) =>
   new Promise((resolve) => setTimeout(resolve, duration));
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 5;
 
 const fetchProjects = async (skip, retries = 10) => {
   const endpoint = process.env.OPTIMISM_VOTE_ENDPOINT;
@@ -179,6 +179,10 @@ const createTableIfNotExists = async () => {
 
     -- create column 'awarded' as integer if it doesn't exist defaulting to -1
     ALTER TABLE rpgf3_projects ADD COLUMN IF NOT EXISTS awarded INTEGER DEFAULT -1;
+    ALTER TABLE result_median_amount ADD COLUMN IF NOT EXISTS result_median_amount INTEGER DEFAULT -1;
+    ALTER TABLE result_ballots ADD COLUMN IF NOT EXISTS result_ballots INTEGER DEFAULT -1;
+    ALTER TABLE result_ballots ADD COLUMN IF NOT EXISTS result_ballots INTEGER DEFAULT -1;
+    ALTER TABLE result_quorum ADD COLUMN IF NOT EXISTS result_quorum BOOLEAN DEFAULT FALSE;
   `;
 
   try {

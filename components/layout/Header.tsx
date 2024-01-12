@@ -14,16 +14,11 @@ export default function Header() {
       <div className="flex justify-between items-center w-full">
         <div className="flex space-x-0 xl:space-x-6 w-full">
           {/*Banner/Notification Area */}
-          {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
-          ["development", "preview"].includes(
-            process.env.NEXT_PUBLIC_VERCEL_ENV,
-          ) ? (
-            <div className={`hidden md:flex pr-[15px] `}>
-              <Notification />
-            </div>
-          ) : (
-            <>{/* <Banner /> */}</>
-          )}
+
+          <div className={`hidden md:flex pr-[15px] `}>
+            <Notification />
+          </div>
+
           <div className="flex justify-between items-start h-full md:hidden relative w-full">
             <Link href="/" className="">
               <div className="h-[36px] w-[154.05px] relative ">
@@ -47,14 +42,8 @@ export default function Header() {
             </Link>
 
             <div>
-              {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
-              ["development", "preview"].includes(
-                process.env.NEXT_PUBLIC_VERCEL_ENV,
-              ) ? (
-                <Notification />
-              ) : (
-                <> </>
-              )}
+              <Notification />
+
               <Sidebar isMobile={true} />
             </div>
           </div>
@@ -107,9 +96,9 @@ export default function Header() {
         </div>
       </div>
       {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
-      ["development", "preview"].includes(
-        process.env.NEXT_PUBLIC_VERCEL_ENV,
-      ) ? (
+        ["development", "preview"].includes(
+          process.env.NEXT_PUBLIC_VERCEL_ENV,
+        ) ? (
         <> </>
       ) : (
         <>{/* <SupportUsBanner /> */}</>

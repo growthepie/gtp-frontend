@@ -137,7 +137,7 @@ export default function ChainChart({
     Object.keys(data.metrics).forEach((key) => {
       maxUnixtimes.push(
         data.metrics[key].daily.data[
-          data.metrics[key].daily.data.length - 1
+        data.metrics[key].daily.data.length - 1
         ][0],
       );
     });
@@ -467,28 +467,25 @@ export default function ChainChart({
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-1">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-                  AllChainsByKeys[data.chain_id].colors[theme][0]
-                }"></div>
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[data.chain_id].colors[theme][0]
+              }"></div>
                 <!--
-                <div class="tooltip-point-name">${
-                  AllChainsByKeys[data.chain_id].label
-                }</div>
+                <div class="tooltip-point-name">${AllChainsByKeys[data.chain_id].label
+              }</div>
                 -->
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                  percentage,
-                  2,
-                )}%</div>
+                percentage,
+                2,
+              )}%</div>
               </div>
               <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
                 <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
 
                 <div class="h-[2px] rounded-full absolute left-0 top-0" style="width: ${Highcharts.numberFormat(
-                  percentage,
-                  2,
-                )}%; background-color: ${
-              AllChainsByKeys[data.chain_id].colors[theme][0]
-            };"> </div>
+                percentage,
+                2,
+              )}%; background-color: ${AllChainsByKeys[data.chain_id].colors[theme][0]
+              };"> </div>
               </div> -->`;
 
           let prefix = displayValues[series.name].prefix;
@@ -507,25 +504,21 @@ export default function ChainChart({
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-1">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-              AllChainsByKeys[data.chain_id].colors[theme][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[data.chain_id].colors[theme][0]
             }"></div>
             <!--
-            <div class="tooltip-point-name text-md">${
-              AllChainsByKeys[data.chain_id].label
+            <div class="tooltip-point-name text-md">${AllChainsByKeys[data.chain_id].label
             }</div>
             -->
             <div class="flex-1 text-left justify-start font-inter flex">
-                <div class="opacity-70 mr-0.5 ${
-                  !prefix && "hidden"
-                }">${prefix}</div>
+                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+            }">${prefix}</div>
                 ${parseFloat(value).toLocaleString(undefined, {
-                  minimumFractionDigits: prefix ? 2 : 0,
-                  maximumFractionDigits: prefix ? 2 : 0,
-                })}
-                <div class="opacity-70 ml-0.5 ${
-                  !suffix && "hidden"
-                }">${suffix}</div>
+              minimumFractionDigits: prefix ? 2 : 0,
+              maximumFractionDigits: prefix ? 2 : 0,
+            })}
+                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+            }">${suffix}</div>
             </div>
           </div>
           <!-- <div class="flex ml-4 w-[calc(100% - 1rem)] relative mb-1">
@@ -534,9 +527,8 @@ export default function ChainChart({
             <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
               name,
               (y / pointsSum) * 100,
-            )}%; background-color: ${
-            AllChainsByKeys[data.chain_id].colors[theme][0]
-          }33;"></div>
+            )}%; background-color: ${AllChainsByKeys[data.chain_id].colors[theme][0]
+            }33;"></div>
           </div> -->`;
         })
         .join("");
@@ -1080,11 +1072,10 @@ export default function ChainChart({
             Object.keys(timespans).map((timespan) => (
               <button
                 key={timespan}
-                className={`rounded-full grow px-[16px] py-[8px] text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
-                  selectedTimespan === timespan
+                className={`rounded-full grow px-[16px] py-[8px] text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
-                }`}
+                  }`}
                 onClick={() => {
                   setSelectedTimespan(timespan);
                 }}
@@ -1122,9 +1113,9 @@ export default function ChainChart({
       {data && (
         <div
           className="grid grid-rows-8 lg:grid-rows-4 lg:grid-cols-2 lg:grid-flow-row gap-y-0 gap-x-[15px]"
-          // style={{
-          //   gridRow: `span ${Math.ceil(enabledFundamentalsKeys.length / 2)}`,
-          // }}
+        // style={{
+        //   gridRow: `span ${Math.ceil(enabledFundamentalsKeys.length / 2)}`,
+        // }}
         >
           {enabledFundamentalsKeys
             // .filter((key) => enabledFundamentalsKeys.includes(key))
@@ -1222,64 +1213,62 @@ export default function ChainChart({
                     </div>
                     {!zoomed
                       ? (key === "profit" || key === "txcosts") && (
-                          <div
-                            className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
-                              key === "txcosts" ? "hidden lg:block" : ""
+                        <div
+                          className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${key === "txcosts" ? "hidden lg:block" : ""
                             }`}
-                          >
-                            <div className="absolute left-[15px] align-bottom flex items-end z-30">
-                              {new Date(
-                                timespans[selectedTimespan].xMin,
-                              ).toLocaleDateString(undefined, {
-                                timeZone: "UTC",
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })}
-                            </div>
-                            <div className="absolute right-[15px] align-bottom flex items-end z-30">
-                              {new Date(
-                                timespans[selectedTimespan].xMax,
-                              ).toLocaleDateString(undefined, {
-                                timeZone: "UTC",
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })}
-                            </div>
+                        >
+                          <div className="absolute left-[15px] align-bottom flex items-end z-30">
+                            {new Date(
+                              timespans[selectedTimespan].xMin,
+                            ).toLocaleDateString(undefined, {
+                              timeZone: "UTC",
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
                           </div>
-                        )
+                          <div className="absolute right-[15px] align-bottom flex items-end z-30">
+                            {new Date(
+                              timespans[selectedTimespan].xMax,
+                            ).toLocaleDateString(undefined, {
+                              timeZone: "UTC",
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}
+                          </div>
+                        </div>
+                      )
                       : (key === "profit" || key === "txcosts") &&
-                        intervalShown && (
-                          <div
-                            className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
-                              key === "txcosts" ? "hidden lg:block" : ""
+                      intervalShown && (
+                        <div
+                          className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${key === "txcosts" ? "hidden lg:block" : ""
                             }`}
-                          >
-                            <div className="absolute left-[15px] align-bottom flex items-end z-30 ">
-                              {new Date(intervalShown.min).toLocaleDateString(
-                                undefined,
-                                {
-                                  timeZone: "UTC",
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                },
-                              )}
-                            </div>
-                            <div className="absolute right-[15px] align-bottom flex items-end z-30">
-                              {new Date(intervalShown.max).toLocaleDateString(
-                                undefined,
-                                {
-                                  timeZone: "UTC",
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                },
-                              )}
-                            </div>
+                        >
+                          <div className="absolute left-[15px] align-bottom flex items-end z-30 ">
+                            {new Date(intervalShown.min).toLocaleDateString(
+                              undefined,
+                              {
+                                timeZone: "UTC",
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              },
+                            )}
                           </div>
-                        )}
+                          <div className="absolute right-[15px] align-bottom flex items-end z-30">
+                            {new Date(intervalShown.max).toLocaleDateString(
+                              undefined,
+                              {
+                                timeZone: "UTC",
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              },
+                            )}
+                          </div>
+                        </div>
+                      )}
                   </div>
                 );
               }
@@ -1306,10 +1295,10 @@ export default function ChainChart({
                             ...options.chart,
                             animation: isAnimate
                               ? {
-                                  duration: 500,
-                                  delay: 0,
-                                  easing: "easeOutQuint",
-                                }
+                                duration: 500,
+                                delay: 0,
+                                easing: "easeOutQuint",
+                              }
                               : false,
                             index: i,
                             margin: zoomed ? zoomedMargin : defaultMargin,
@@ -1322,7 +1311,7 @@ export default function ChainChart({
                                 const chart: Highcharts.Chart = this;
                                 const lastPoint: Highcharts.Point =
                                   chart.series[0].points[
-                                    chart.series[0].points.length - 1
+                                  chart.series[0].points.length - 1
                                   ];
 
                                 if (lastPointLines[i]) {
@@ -1417,31 +1406,31 @@ export default function ChainChart({
                               )
                                 ? showUsd
                                   ? data.metrics[key].daily.data.map((d) => [
-                                      d[0],
-                                      d[
-                                        data.metrics[key].daily.types.indexOf(
-                                          "usd",
-                                        )
-                                      ],
-                                    ])
-                                  : data.metrics[key].daily.data.map((d) => [
-                                      d[0],
-                                      showGwei(key)
-                                        ? d[
-                                            data.metrics[
-                                              key
-                                            ].daily.types.indexOf("eth")
-                                          ] * 1000000000
-                                        : d[
-                                            data.metrics[
-                                              key
-                                            ].daily.types.indexOf("eth")
-                                          ],
-                                    ])
-                                : data.metrics[key].daily.data.map((d) => [
                                     d[0],
-                                    d[1],
-                                  ]),
+                                    d[
+                                    data.metrics[key].daily.types.indexOf(
+                                      "usd",
+                                    )
+                                    ],
+                                  ])
+                                  : data.metrics[key].daily.data.map((d) => [
+                                    d[0],
+                                    showGwei(key)
+                                      ? d[
+                                      data.metrics[
+                                        key
+                                      ].daily.types.indexOf("eth")
+                                      ] * 1000000000
+                                      : d[
+                                      data.metrics[
+                                        key
+                                      ].daily.types.indexOf("eth")
+                                      ],
+                                  ])
+                                : data.metrics[key].daily.data.map((d) => [
+                                  d[0],
+                                  d[1],
+                                ]),
                               showInLegend: false,
                               marker: {
                                 enabled: false,
@@ -1461,8 +1450,8 @@ export default function ChainChart({
                           }
                         }}
                       />
-                      <div className="absolute bottom-[48.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-40 mix-blend-lighten">
-                        <ChartWatermark className="w-[102.936px] h-[24.536px]" />
+                      <div className="absolute bottom-[48.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-40">
+                        <ChartWatermark className="w-[102.936px] h-[24.536px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                       </div>
                     </div>
                     <div className="absolute top-[14px] w-full flex justify-between items-center px-[26px]">
@@ -1502,64 +1491,64 @@ export default function ChainChart({
                   </div>
                   {!zoomed
                     ? (key === "profit" || key === "txcosts") && (
-                        <div
-                          className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
-                            key === "txcosts" ? "hidden lg:block" : ""
+                      <div
+                        className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${enabledFundamentalsKeys.length - 2 === i
+                            ? "hidden lg:block"
+                            : ""
                           }`}
-                        >
-                          <div className="absolute left-[15px] align-bottom flex items-end z-30">
-                            {new Date(
-                              timespans[selectedTimespan].xMin,
-                            ).toLocaleDateString(undefined, {
-                              timeZone: "UTC",
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
-                          </div>
-                          <div className="absolute right-[15px] align-bottom flex items-end z-30">
-                            {new Date(
-                              timespans[selectedTimespan].xMax,
-                            ).toLocaleDateString(undefined, {
-                              timeZone: "UTC",
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
-                          </div>
+                      >
+                        <div className="absolute left-[15px] align-bottom flex items-end z-30">
+                          {new Date(
+                            timespans[selectedTimespan].xMin,
+                          ).toLocaleDateString(undefined, {
+                            timeZone: "UTC",
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
                         </div>
-                      )
+                        <div className="absolute right-[15px] align-bottom flex items-end z-30">
+                          {new Date(
+                            timespans[selectedTimespan].xMax,
+                          ).toLocaleDateString(undefined, {
+                            timeZone: "UTC",
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </div>
+                      </div>
+                    )
                     : (key === "profit" || key === "txcosts") &&
-                      intervalShown && (
-                        <div
-                          className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
-                            key === "txcosts" ? "hidden lg:block" : ""
+                    intervalShown && (
+                      <div
+                        className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${key === "txcosts" ? "hidden lg:block" : ""
                           }`}
-                        >
-                          <div className="absolute left-[15px] align-bottom flex items-end z-30 ">
-                            {new Date(intervalShown.min).toLocaleDateString(
-                              undefined,
-                              {
-                                timeZone: "UTC",
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              },
-                            )}
-                          </div>
-                          <div className="absolute right-[15px] align-bottom flex items-end z-30">
-                            {new Date(intervalShown.max).toLocaleDateString(
-                              undefined,
-                              {
-                                timeZone: "UTC",
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              },
-                            )}
-                          </div>
+                      >
+                        <div className="absolute left-[15px] align-bottom flex items-end z-30 ">
+                          {new Date(intervalShown.min).toLocaleDateString(
+                            undefined,
+                            {
+                              timeZone: "UTC",
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            },
+                          )}
                         </div>
-                      )}
+                        <div className="absolute right-[15px] align-bottom flex items-end z-30">
+                          {new Date(intervalShown.max).toLocaleDateString(
+                            undefined,
+                            {
+                              timeZone: "UTC",
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            },
+                          )}
+                        </div>
+                      </div>
+                    )}
                 </div>
               );
             })}

@@ -1304,8 +1304,8 @@ export default function ComparisonChart({
                         constructorType={"stockChart"}
                       />
                     </div>
-                    <div className="absolute bottom-[48.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-40 mix-blend-lighten">
-                      <ChartWatermark className="w-[128.67px] h-[30.67px]" />
+                    <div className="absolute bottom-[48.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-40">
+                      <ChartWatermark className="w-[128.67px] h-[30.67px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                     </div>
                   </div>
                 </div>
