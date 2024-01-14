@@ -19,12 +19,12 @@ export default function EthUsdSwitch({ isMobile }: EthUsdSwitchProps) {
   const handleToggle = () => {
     if (showUsd === true) {
       track("changed to ETH", {
-        location: isMobile ? "mobile Menu" : "desktop Sidebar",
+        location: isMobile ? "mobile Menu" : "desktop Header",
         page: window.location.pathname,
       });
     } else {
       track("changed to USD", {
-        location: isMobile ? "mobile Menu" : "desktop Sidebar",
+        location: isMobile ? "mobile Menu" : "desktop Header",
         page: window.location.pathname,
       });
     }
