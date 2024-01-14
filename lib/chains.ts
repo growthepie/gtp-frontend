@@ -317,6 +317,29 @@ export const AllChains: Chain[] = [
     darkTextOnBackground: true,
   },
   {
+    label: "Mantle",
+    icon: "/icons/mantle.png",
+    key: "mantle",
+    urlKey: "mantle",
+    chainType: "L2",
+    ecosystem: [], // add ecosystems when unhiding from the UI
+    description:
+      "Mantle is an OVM based EVM-compatible rollup. Public launch was in July 2023.",
+    border: {
+      light: ["border-[#08373C]", "border-[#08373C]"],
+      dark: ["border-[#10808C]", "border-[#10808C]"],
+    },
+    colors: {
+      light: ["#08373C", "#08373C"], // dark purple
+      dark: ["#10808C", "#10808C"], // dark purple
+    },
+    backgrounds: {
+      light: ["bg-[#08373C]", "bg-[#08373C]"],
+      dark: ["bg-[#10808C]", "bg-[#10808C]"],
+    },
+    darkTextOnBackground: true,
+  },
+  {
     label: "Multiple Chains",
     icon: null,
     key: "multiple",

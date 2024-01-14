@@ -1661,7 +1661,7 @@ export default function CategoryMetrics({
                 series={chartSeries}
                 yScale={"linear"}
                 // yScale="linear"
-                chartHeight="400px"
+                chartHeight={isMobile ? 400 : 500}
                 chartWidth="100%"
                 decimals={selectedMode === "txcount_" ? 0 : 2}
               />

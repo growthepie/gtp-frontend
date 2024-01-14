@@ -14,9 +14,9 @@ export async function GET(request: Request) {
     ...blockspace.options.map(
       (option) => `https://www.growthepie.xyz/blockspace/${option.urlKey}`,
     ),
-    ...chains.options.map(
-      (option) => `https://www.growthepie.xyz/chains/${option.urlKey}`,
-    ),
+    ...chains.options
+      .filter((c) => c.hide !== true)
+      .map((option) => `https://www.growthepie.xyz/chains/${option.urlKey}`),
   ];
 
   const getDate = () => {

@@ -27,6 +27,7 @@ export type NavigationItem = {
     urlKey: string;
   }[];
   href?: string;
+  hide?: boolean;
 };
 
 export const navigationCategories = {
@@ -71,6 +72,10 @@ export const chainGroup = {
   },
   validium: {
     label: "VALIDIUM",
+    icon: "feather:clock",
+  },
+  optimium: {
+    label: "OPTIMIUM",
     icon: "feather:clock",
   },
 };
@@ -403,7 +408,8 @@ export const navigationItems: NavigationItem[] = [
         label: "Linea",
         category: "zk-rollup",
         page: {
-          description: "Linea is a developer-friendly ZK Rollup, marked as the next stage of ConsenSys zkEVM, which aims to enhance the Ethereum network by facilitating a new wave of decentralized applications. Public launch was in July 2023.",
+          description:
+            "Linea is a developer-friendly ZK Rollup, marked as the next stage of ConsenSys zkEVM, which aims to enhance the Ethereum network by facilitating a new wave of decentralized applications. Public launch was in July 2023.",
         },
         icon: "gtp:linea-logo-monochrome",
         key: "linea",
@@ -414,12 +420,26 @@ export const navigationItems: NavigationItem[] = [
         label: "Scroll",
         category: "zk-rollup",
         page: {
-          description: "Scroll is a general purpose zkEVM rollup. Public launch was in October 2023.",
+          description:
+            "Scroll is a general purpose zkEVM rollup. Public launch was in October 2023.",
         },
         icon: "gtp:scroll-logo-monochrome",
         key: "scroll",
         rootKey: "chainsScroll",
         urlKey: "scroll",
+      },
+      {
+        label: "Mantle",
+        category: "optimium",
+        page: {
+          description:
+            "Mantle is an OVM based EVM-compatible rollup. Public launch was in July 2023.",
+        },
+        icon: "gtp:mantle-logo-monochrome",
+        key: "mantle",
+        rootKey: "chainsMantle",
+        urlKey: "mantle",
+        hide: true, // remove when unhiding from the UI
       },
       {
         label: "Immutable X",
