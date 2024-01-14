@@ -25,9 +25,9 @@ export type NavigationItem = {
     key?: string;
     rootKey?: string;
     urlKey: string;
+    hide?: boolean;
   }[];
   href?: string;
-  hide?: boolean;
 };
 
 export const navigationCategories = {

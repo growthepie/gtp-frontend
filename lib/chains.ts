@@ -330,8 +330,8 @@ export const AllChains: Chain[] = [
       dark: ["border-[#10808C]", "border-[#10808C]"],
     },
     colors: {
-      light: ["#08373C", "#08373C"], // dark purple
-      dark: ["#10808C", "#10808C"], // dark purple
+      light: ["#08373C", "#08373C"], // dark greenish
+      dark: ["#10808C", "#10808C"], // dark greenish
     },
     backgrounds: {
       light: ["bg-[#08373C]", "bg-[#08373C]"],
