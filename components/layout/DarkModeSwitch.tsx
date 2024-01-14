@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
+import { track } from "@vercel/analytics";
 
 type DarkModeSwitchProps = {
   isMobile?: boolean;
@@ -17,6 +18,18 @@ export default function DarkModeSwitch({ isMobile }: DarkModeSwitchProps) {
   }, []);
 
   const handleToggle = () => {
+    if (theme === "dark") {
+      track("changed to Light Mode", {
+        location: isMobile ? "mobile Menu" : "desktop Sidebar",
+        page: window.location.pathname,
+      });
+    } else {
+      track("changed to Dark Mode", {
+        location: isMobile ? "mobile Menu" : "desktop Sidebar",
+        page: window.location.pathname,
+      });
+    }
+
     setTheme(theme === "dark" ? "light" : "dark");
   };
 

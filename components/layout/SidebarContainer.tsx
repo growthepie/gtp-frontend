@@ -6,6 +6,7 @@ import { Icon } from "@iconify/react";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import { useEffect } from "react";
+import { track } from "@vercel/analytics";
 
 export default function SidebarContainer() {
   const { isSidebarOpen, toggleSidebar } = useUIContext();
@@ -50,6 +51,10 @@ export default function SidebarContainer() {
                   isSidebarOpen ? "rotate-180" : ""
                 }`}
                 onClick={() => {
+                  track("clicked Sidebar Close", {
+                    location: "desktop sidebar",
+                    page: window.location.pathname,
+                  });
                   toggleSidebar();
                 }}
               />
@@ -76,6 +81,10 @@ export default function SidebarContainer() {
                 icon="feather:log-out"
                 className={`w-[13px] h-[13px] cursor-pointer mt-2`}
                 onClick={() => {
+                  track("clicked Sidebar Open", {
+                    location: "desktop sidebar",
+                    page: window.location.pathname,
+                  });
                   toggleSidebar();
                 }}
               />

@@ -18,6 +18,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import Backgrounds from "./Backgrounds";
 import rpgf from "@/icons/svg/rpgf.svg";
 import { useTheme } from "next-themes";
+import { track } from "@vercel/analytics";
 
 type SidebarProps = {
   className?: string;
@@ -67,7 +68,20 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           // style={{
           //   top: scrollHeight >= 15 ? "20px" : `calc(28px - ${scrollHeight}px)`,
           // }}
-          onClick={toggleMobileSidebar}
+          onClick={() => {
+            if (isMobileSidebarOpen)
+              track("closed Navigation Menu", {
+                location: "mobile sidebar",
+                page: window.location.pathname,
+              });
+            else
+              track("opened Navigation Menu", {
+                location: "mobile sidebar",
+                page: window.location.pathname,
+              });
+
+            toggleMobileSidebar();
+          }}
         >
           <Icon icon="feather:menu" className="h-8 w-8" />
         </button>
@@ -98,6 +112,12 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                     href="https://twitter.com/growthepie_eth"
                     target="_blank"
                     rel="noopener"
+                    onClick={() => {
+                      track("clicked Twitter link", {
+                        location: "mobile sidebar",
+                        page: window.location.pathname,
+                      });
+                    }}
                   >
                     <Icon icon="gtp:twitter" className="h-[19px] w-[19px]" />
                   </Link>
@@ -106,6 +126,12 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                     target="_blank"
                     rel="noopener"
                     className=" dark:text-forest-200 text-forest-900"
+                    onClick={() => {
+                      track("clicked Lens link", {
+                        location: "mobile sidebar",
+                        page: window.location.pathname,
+                      });
+                    }}
                   >
                     <Icon icon="gtp:lens" className="h-[19px] w-[24px]" />
                   </Link>
@@ -115,6 +141,12 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                     target="_blank"
                     rel="noopener"
                     className=" dark:text-forest-200 text-forest-900"
+                    onClick={() => {
+                      track("clicked Warpcast link", {
+                        location: "mobile sidebar",
+                        page: window.location.pathname,
+                      });
+                    }}
                   >
                     <Icon icon="gtp:farcaster" className="h-[19px] w-[19px]" />
                   </Link>
@@ -122,6 +154,13 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                     href="https://discord.gg/fxjJFe7QyN"
                     target="_blank"
                     rel="noopener"
+                    className=" dark:text-forest-200 text-forest-900"
+                    onClick={() => {
+                      track("clicked Discord link", {
+                        location: "mobile sidebar",
+                        page: window.location.pathname,
+                      });
+                    }}
                   >
                     <Icon icon="cib:discord" className="h-[19px] w-[19px]" />
                   </Link>
@@ -129,6 +168,13 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                     href="https://www.github.com/growthepie"
                     target="_blank"
                     rel="noopener"
+                    className=" dark:text-forest-200 text-forest-900"
+                    onClick={() => {
+                      track("clicked Github link", {
+                        location: "mobile sidebar",
+                        page: window.location.pathname,
+                      });
+                    }}
                   >
                     <Icon icon="cib:github" className="h-[19px] w-[19px]" />
                   </Link>
@@ -181,6 +227,12 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                     rel="noopener"
                     target="_blank"
                     href="https://discord.com/channels/1070991734139531294/1095735245678067753"
+                    onClick={() => {
+                      track("clicked feedback link", {
+                        location: "mobile sidebar",
+                        page: window.location.pathname,
+                      });
+                    }}
                   >
                     Feedback
                   </Link>
@@ -281,6 +333,12 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
               rel="noopener"
               target="_blank"
               href="https://discord.com/channels/1070991734139531294/1095735245678067753"
+              onClick={() => {
+                track("clicked Feedback link", {
+                  location: "desktop sidebar",
+                  page: window.location.pathname,
+                });
+              }}
             >
               Feedback
             </Link>
@@ -293,6 +351,12 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
               rel="noopener"
               target="_blank"
               href="https://discord.com/channels/1070991734139531294/1095735245678067753"
+              onClick={() => {
+                track("clicked Feedback link", {
+                  location: "desktop sidebar",
+                  page: window.location.pathname,
+                });
+              }}
             >
               Feedback
             </Link>

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
+import { track } from "@vercel/analytics";
 
 type EthUsdSwitchProps = {
   isMobile?: boolean;
@@ -16,6 +17,17 @@ export default function EthUsdSwitch({ isMobile }: EthUsdSwitchProps) {
   }, []);
 
   const handleToggle = () => {
+    if (showUsd === true) {
+      track("changed to ETH", {
+        location: isMobile ? "mobile Menu" : "desktop Sidebar",
+        page: window.location.pathname,
+      });
+    } else {
+      track("changed to USD", {
+        location: isMobile ? "mobile Menu" : "desktop Sidebar",
+        page: window.location.pathname,
+      });
+    }
     setShowUsd(!showUsd);
   };
 

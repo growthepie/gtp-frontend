@@ -10,6 +10,7 @@ import Link from "next/link";
 import { BASE_URL } from "@/lib/helpers";
 import { useTheme } from "next-themes";
 import moment from "moment";
+import { track } from "@vercel/analytics";
 
 type AirtableRow = {
   id: string;
@@ -356,6 +357,10 @@ const Notification = () => {
                 openNotif ? "z-[110]" : "z-10"
               }`}
               onMouseEnter={() => {
+                track("hovered Notification Center", {
+                  location: "desktop header",
+                  page: window.location.pathname,
+                });
                 setOpenNotif(true);
               }}
               onMouseLeave={() => {
@@ -526,6 +531,10 @@ const Notification = () => {
                               : "inherit",
                         }}
                         onClick={() => {
+                          track("clicked Notification Center", {
+                            location: "desktop header",
+                            page: window.location.pathname,
+                          });
                           setOpenNotif(!openNotif);
                         }}
                       />
@@ -570,6 +579,10 @@ const Notification = () => {
                 }
             `}
                 onClick={() => {
+                  track("clicked Notification Center", {
+                    location: "mobile header",
+                    page: window.location.pathname,
+                  });
                   setOpenNotif(!openNotif);
                 }}
               >
