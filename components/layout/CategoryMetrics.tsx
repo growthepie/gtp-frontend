@@ -959,6 +959,8 @@ export default function CategoryMetrics({
     }
   };
 
+  let height = 0;
+  const rowHeight = 52;
   const transitions = useTransition(
     sortedChainValues
       ?.filter(([item]) => !(item === "imx" && selectedMode === "gas_fees_"))
@@ -966,18 +968,21 @@ export default function CategoryMetrics({
         item,
         value,
         index,
-        yValue: 50 * index,
+        y: (height += rowHeight) - rowHeight,
+        height: rowHeight,
       })) || [],
     {
       key: (item: any) => item.item, // Use item as the key
-      from: { y: 0, opacity: 0 },
+      from: { opacity: 0, height: 0 },
       leave: null,
-      enter: ({ yValue, item }) => ({
-        y: yValue,
+      enter: ({ y, height, item }) => ({
+        y: y,
+        height: height,
         opacity: selectedChains[item] ? 1.0 : 0.3,
       }),
-      update: ({ yValue, item }) => ({
-        y: yValue,
+      update: ({ y, height, item }) => ({
+        y: y,
+        height: height,
         opacity: selectedChains[item] ? 1.0 : 0.3,
       }),
       config: { mass: 5, tension: 500, friction: 100 },
@@ -1624,10 +1629,17 @@ export default function CategoryMetrics({
       <Container>
         <div className="flex flex-col justify-between lg:flex-row w-[98.5%] gap-y-8 mx-auto mt-[20px] lg:mt-[30px] mb-[20px] lg:mb-0">
           <div className="w-full lg:w-[44%] flex flex-col justify-between ">
-            <div className="flex flex-col mt-4  relative">
+            <div
+              className="mt-4 relative"
+              style={{
+                height: height,
+                minHeight: isMobile ? undefined : "500px",
+              }}
+            >
               {sortedChainValues &&
                 transitions((style, item) => (
                   <animated.div
+                    className="absolute w-full"
                     key={item.item}
                     style={{
                       ...style,

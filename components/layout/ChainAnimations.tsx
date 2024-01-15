@@ -139,9 +139,9 @@ export default function ChainAnimations({
     return null;
   } else {
     return (
-      <animated.div
+      <div
         key={chain}
-        className={`relative flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium hover:cursor-pointer z-0 ${
+        className={`relative flex flex-row items-center rounded-full text-xs font-medium hover:cursor-pointer z-0 ${
           AllChainsByKeys[chain].darkTextOnBackground === true
             ? "text-white dark:text-black"
             : "text-white"
@@ -153,8 +153,13 @@ export default function ChainAnimations({
         ${isShaking ? "animate-shake " : ""}`}
         style={{
           width: width,
-          bottom: `${index * 45}px`,
+          // height: "45px",
+          // bottom: `${index * 45}px`,
         }}
+        // style={{
+        //   zIndex: index,
+        //   ...style,
+        // }}
         onClick={() => {
           if (availableSelectedChains > 1 || !selectedChains[chain]) {
             setSelectedChains((prevSelectedChains) => ({
@@ -238,7 +243,7 @@ export default function ChainAnimations({
             </div>
           </div>
         </div>
-      </animated.div>
+      </div>
     );
   }
 }
