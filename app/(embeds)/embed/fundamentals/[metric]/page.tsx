@@ -69,7 +69,7 @@ const Chain = ({ params }: { params: any }) => {
   ).map((chain) => chain.key);
 
   const [selectedScale, setSelectedScale] = useState(
-    params.metric != "txcosts" ? "log" : "absolute",
+    params.metric != "transaction-costs" ? "log" : "absolute",
   );
 
   const [selectedTimespan, setSelectedTimespan] = useState("365d");

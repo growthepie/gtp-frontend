@@ -173,7 +173,9 @@ const Chain = ({ params }: { params: any }) => {
             setShowEthereumMainnet={setShowEthereumMainnet}
             selectedTimespan={selectedTimespan}
             setSelectedTimespan={setSelectedTimespan}
-            selectedScale={selectedScale}
+            selectedScale={
+              params.metric === "transaction-costs" ? "absolute" : selectedScale
+            }
             setSelectedScale={setSelectedScale}
           >
             <MetricsTable
