@@ -244,7 +244,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
               </div>
               <div className="mt-24 w-full text-center py-6 absolute bottom-0">
                 <div className="text-[0.7rem] text-inherit leading-[2] z-20">
-                  © 2023 growthepie 🥧
+                  © {new Date().getFullYear()} growthepie 🥧
                 </div>
               </div>
             </div>

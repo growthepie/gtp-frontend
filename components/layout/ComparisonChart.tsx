@@ -28,8 +28,9 @@ import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import Container from "./Container";
 import ChartWatermark from "./ChartWatermark";
-import { navigationItems } from "@/lib/navigation";
+import { navigationItems, navigationCategories } from "@/lib/navigation";
 import { IS_PREVIEW } from "@/lib/helpers";
+import { useWindowSize } from "usehooks-ts";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -194,6 +195,7 @@ export default function ComparisonChart({
   selectedTimespan,
   setSelectedTimespan,
   metric_id,
+  is_embed = false,
 }: {
   data: any;
   timeIntervals: string[];
@@ -207,6 +209,7 @@ export default function ComparisonChart({
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
   metric_id: string;
+  is_embed?: boolean;
 }) {
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
@@ -237,7 +240,9 @@ export default function ComparisonChart({
 
   // const [selectedTimespan, setSelectedTimespan] = useState("365d");
 
-  const [selectedScale, setSelectedScale] = useState("absolute");
+  const [selectedScale, setSelectedScale] = useState(
+    is_embed && metric_id != "txcosts" ? "log" : "absolute",
+  );
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
@@ -440,14 +445,16 @@ export default function ComparisonChart({
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme][0]
-              }"></div>
-                <div class="tooltip-point-name">${AllChainsByKeys[name].label
-              }</div>
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                  AllChainsByKeys[name].colors[theme][0]
+                }"></div>
+                <div class="tooltip-point-name">${
+                  AllChainsByKeys[name].label
+                }</div>
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                percentage,
-                2,
-              )}%</div>
+                  percentage,
+                  2,
+                )}%</div>
               </div>
               
               <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -473,19 +480,23 @@ export default function ComparisonChart({
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+              AllChainsByKeys[name].colors[theme][0]
             }"></div>
-            <div class="tooltip-point-name text-md">${AllChainsByKeys[name].label
+            <div class="tooltip-point-name text-md">${
+              AllChainsByKeys[name].label
             }</div>
             <div class="flex-1 text-right justify-end font-inter flex">
-                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-            }">${prefix}</div>
+                <div class="opacity-70 mr-0.5 ${
+                  !prefix && "hidden"
+                }">${prefix}</div>
                 ${parseFloat(value).toLocaleString(undefined, {
-              minimumFractionDigits: valuePrefix ? 2 : 0,
-              maximumFractionDigits: valuePrefix ? 2 : 0,
-            })}
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
+                  minimumFractionDigits: valuePrefix ? 2 : 0,
+                  maximumFractionDigits: valuePrefix ? 2 : 0,
+                })}
+                <div class="opacity-70 ml-0.5 ${
+                  !suffix && "hidden"
+                }">${suffix}</div>
             </div>
           </div>
           <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -504,24 +515,29 @@ export default function ComparisonChart({
       let suffix = "";
       let value = pointsSum;
 
-      const sumRow = selectedScale === "log" ? `
+      const sumRow =
+        selectedScale === "log"
+          ? `
         <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
           <div class="w-4 h-1.5 rounded-r-full" style=""></div>
           <div class="tooltip-point-name text-md">Total</div>
           <div class="flex-1 text-right justify-end font-inter flex">
-              <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-        }">${prefix}</div>
+              <div class="opacity-70 mr-0.5 ${
+                !prefix && "hidden"
+              }">${prefix}</div>
               ${parseFloat(value).toLocaleString(undefined, {
-          minimumFractionDigits: valuePrefix ? 2 : 0,
-          maximumFractionDigits: valuePrefix ? 2 : 0,
-        })}
-              <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-        }">${suffix}</div>
+                minimumFractionDigits: valuePrefix ? 2 : 0,
+                maximumFractionDigits: valuePrefix ? 2 : 0,
+              })}
+              <div class="opacity-70 ml-0.5 ${
+                !suffix && "hidden"
+              }">${suffix}</div>
           </div>
         </div>
         <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
           <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
-        </div>` : "";
+        </div>`
+          : "";
 
       return tooltip + tooltipPoints + sumRow + tooltipEnd;
     },
@@ -620,9 +636,9 @@ export default function ComparisonChart({
           filteredData[0].name === ""
             ? Date.now() - 365 * 24 * 60 * 60 * 1000
             : filteredData.reduce(
-              (min, d) => Math.min(min, d.data[0][0]),
-              Infinity,
-            ) - buffer,
+                (min, d) => Math.min(min, d.data[0][0]),
+                Infinity,
+              ) - buffer,
 
         xMax: maxPlusBuffer,
       },
@@ -747,6 +763,12 @@ export default function ComparisonChart({
     }
   }, [selectedScale]);
 
+  const getChartHeight = useCallback(() => {
+    if (is_embed) return window ? window.innerHeight - 160 : 400;
+    if (isMobile) return 275;
+    return 400;
+  }, [isMobile, is_embed]);
+
   const options = useMemo((): Highcharts.Options => {
     if (!filteredData || filteredData.length === 0) return {};
 
@@ -759,7 +781,7 @@ export default function ComparisonChart({
 
     const dynamicOptions: Highcharts.Options = {
       chart: {
-        height: isMobile ? 275 : 400,
+        height: getChartHeight(),
         type: getSeriesType(filteredData[0].name),
         plotBorderColor: "transparent",
         zooming: {
@@ -897,21 +919,21 @@ export default function ComparisonChart({
             };
 
             const pointsSettings =
-            // getSeriesType(series.name) === "column"
-            //   ? {
-            //       pointPlacement: 0.5,
-            //       pointPadding: 0.15,
-            //       pointRange:
-            //         timeIntervalToMilliseconds[
-            //           dataGrouping.enabled ? "weekly" : "daily"
-            //         ],
-            //     }
-            //   :
-            {
-              pointPlacement: 0.5,
-              // pointInterval: 7,
-              // pointIntervalUnit: "day",
-            };
+              // getSeriesType(series.name) === "column"
+              //   ? {
+              //       pointPlacement: 0.5,
+              //       pointPadding: 0.15,
+              //       pointRange:
+              //         timeIntervalToMilliseconds[
+              //           dataGrouping.enabled ? "weekly" : "daily"
+              //         ],
+              //     }
+              //   :
+              {
+                pointPlacement: 0.5,
+                // pointInterval: 7,
+                // pointIntervalUnit: "day",
+              };
 
             return {
               name: series.name,
@@ -926,15 +948,15 @@ export default function ComparisonChart({
               data: series.types.includes("usd")
                 ? showUsd
                   ? series.data.map((d: any) => [
-                    d[0],
-                    d[series.types.indexOf("usd")],
-                  ])
+                      d[0],
+                      d[series.types.indexOf("usd")],
+                    ])
                   : series.data.map((d: any) => [
-                    d[0],
-                    showGwei
-                      ? d[series.types.indexOf("eth")] * 1000000000
-                      : d[series.types.indexOf("eth")],
-                  ])
+                      d[0],
+                      showGwei
+                        ? d[series.types.indexOf("eth")] * 1000000000
+                        : d[series.types.indexOf("eth")],
+                    ])
                 : series.data.map((d: any) => [d[0], d[1]]),
               ...pointsSettings,
               type: getSeriesType(series.name),
@@ -956,12 +978,12 @@ export default function ComparisonChart({
                   [
                     0,
                     AllChainsByKeys[series.name]?.colors[theme ?? "dark"][0] +
-                    "33",
+                      "33",
                   ],
                   [
                     1,
                     AllChainsByKeys[series.name]?.colors[theme ?? "dark"][1] +
-                    "33",
+                      "33",
                   ],
                 ],
               },
@@ -972,39 +994,39 @@ export default function ComparisonChart({
               ...// @ts-ignore
               (getSeriesType(series.name) !== "column"
                 ? {
-                  shadow: {
-                    color:
-                      AllChainsByKeys[series.name]?.colors[
-                      theme ?? "dark"
-                      ][1] + "33",
-                    width: 10,
-                  },
-                  color: {
-                    linearGradient: {
-                      x1: 0,
-                      y1: 0,
-                      x2: 1,
-                      y2: 0,
+                    shadow: {
+                      color:
+                        AllChainsByKeys[series.name]?.colors[
+                          theme ?? "dark"
+                        ][1] + "33",
+                      width: 10,
                     },
-                    stops: [
-                      [
-                        0,
-                        AllChainsByKeys[series.name]?.colors[
-                        theme ?? "dark"
-                        ][0],
+                    color: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 1,
+                        y2: 0,
+                      },
+                      stops: [
+                        [
+                          0,
+                          AllChainsByKeys[series.name]?.colors[
+                            theme ?? "dark"
+                          ][0],
+                        ],
+                        // [0.33, AllChainsByKeys[series.name].colors[1]],
+                        [
+                          1,
+                          AllChainsByKeys[series.name]?.colors[
+                            theme ?? "dark"
+                          ][1],
+                        ],
                       ],
-                      // [0.33, AllChainsByKeys[series.name].colors[1]],
-                      [
-                        1,
-                        AllChainsByKeys[series.name]?.colors[
-                        theme ?? "dark"
-                        ][1],
-                      ],
-                    ],
-                  },
-                }
+                    },
+                  }
                 : series.name === "all_l2s"
-                  ? {
+                ? {
                     borderColor: "transparent",
 
                     shadow: {
@@ -1026,47 +1048,47 @@ export default function ComparisonChart({
                       stops:
                         theme === "dark"
                           ? [
-                            [
-                              0,
-                              AllChainsByKeys[series.name]?.colors[
-                              theme ?? "dark"
-                              ][0] + "E6",
-                            ],
-                            // [
-                            //   0.3,
-                            //   //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
-                            //   AllChainsByKeys[series.name].colors[theme][0] +
-                            //     "FF",
-                            // ],
-                            [
-                              1,
-                              AllChainsByKeys[series.name]?.colors[
-                              theme ?? "dark"
-                              ][1] + "E6",
-                            ],
-                          ]
+                              [
+                                0,
+                                AllChainsByKeys[series.name]?.colors[
+                                  theme ?? "dark"
+                                ][0] + "E6",
+                              ],
+                              // [
+                              //   0.3,
+                              //   //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
+                              //   AllChainsByKeys[series.name].colors[theme][0] +
+                              //     "FF",
+                              // ],
+                              [
+                                1,
+                                AllChainsByKeys[series.name]?.colors[
+                                  theme ?? "dark"
+                                ][1] + "E6",
+                              ],
+                            ]
                           : [
-                            [
-                              0,
-                              AllChainsByKeys[series.name]?.colors[
-                              theme ?? "dark"
-                              ][0] + "E6",
+                              [
+                                0,
+                                AllChainsByKeys[series.name]?.colors[
+                                  theme ?? "dark"
+                                ][0] + "E6",
+                              ],
+                              // [
+                              //   0.7,
+                              //   AllChainsByKeys[series.name].colors[theme][0] +
+                              //     "88",
+                              // ],
+                              [
+                                1,
+                                AllChainsByKeys[series.name]?.colors[
+                                  theme ?? "dark"
+                                ][1] + "E6",
+                              ],
                             ],
-                            // [
-                            //   0.7,
-                            //   AllChainsByKeys[series.name].colors[theme][0] +
-                            //     "88",
-                            // ],
-                            [
-                              1,
-                              AllChainsByKeys[series.name]?.colors[
-                              theme ?? "dark"
-                              ][1] + "E6",
-                            ],
-                          ],
                     },
                   }
-                  : {
+                : {
                     borderColor: "transparent",
                     shadow: {
                       color: "#CDD8D3" + "FF",
@@ -1085,19 +1107,19 @@ export default function ComparisonChart({
                         [
                           0,
                           AllChainsByKeys[series.name]?.colors[
-                          theme ?? "dark"
+                            theme ?? "dark"
                           ][0] + "FF",
                         ],
                         [
                           0.349,
                           AllChainsByKeys[series.name]?.colors[
-                          theme ?? "dark"
+                            theme ?? "dark"
                           ][0] + "88",
                         ],
                         [
                           1,
                           AllChainsByKeys[series.name]?.colors[
-                          theme ?? "dark"
+                            theme ?? "dark"
                           ][0] + "00",
                         ],
                       ],
@@ -1112,11 +1134,11 @@ export default function ComparisonChart({
                     attributes: {
                       fill:
                         AllChainsByKeys[series.name]?.colors[
-                        theme ?? "dark"
+                          theme ?? "dark"
                         ][0] + "99",
                       stroke:
                         AllChainsByKeys[series.name]?.colors[
-                        theme ?? "dark"
+                          theme ?? "dark"
                         ][0] + "66",
                       strokeWidth: 0,
                     },
@@ -1194,42 +1216,90 @@ export default function ComparisonChart({
 
   useEffect(() => {
     if (chartComponent.current) {
+      if (is_embed) {
+        return;
+      }
+
       if (isMobile) {
         chartComponent.current.setSize(null, 275, false);
-      } else {
-        chartComponent.current.setSize(null, 400, false);
+        return;
       }
+
+      chartComponent.current.setSize(null, 400, false);
     }
-  }, [isMobile]);
+  }, [isMobile, is_embed]);
+
+  const { width, height } = useWindowSize();
+  useEffect(() => {
+    if (!is_embed) return;
+
+    if (chartComponent.current) {
+      chartComponent.current.setSize(width, height - 160, false);
+    }
+  }, [is_embed, width, height]);
 
   return (
     <div className="w-full flex-col relative">
-      <Container className="">
+      {/* {is_embed === true && (
+        <div className="absolute top-0 left-20 md:top-4 md:left-20 font-bold text-[14px] md:text-[18px] leading-snug z-50">
+          {
+            navigationItems[1].options.find((item) => item.key === metric_id)
+              ?.label
+          }
+        </div>
+      )} */}
+      <Container className={`${is_embed ? "!p-0 !m-0" : ""}`}>
         <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative">
-          <div className="hidden md:flex justify-center items-center">
-            <div className="w-7 h-7 md:w-9 md:h-9 relative ml-[21px] mr-1.5">
-              <Image
-                src="/GTP-Chain.png"
-                alt="GTP Chain"
-                className="object-contain"
-                fill
-              />
+          {is_embed ? (
+            <div className="hidden md:flex justify-center items-center">
+              <div className="w-5 h-5 md:w-7 md:h-7 relative ml-[21px] mr-3">
+                <Icon
+                  icon={
+                    navigationCategories[
+                      navigationItems[1].options.find(
+                        (item) => item.key === metric_id,
+                      )?.category ?? "convenience"
+                    ].icon
+                  }
+                  className="w-5 h-5 md:w-7 md:h-7"
+                />
+              </div>
+              {/* <Icon icon="gtp:chain" className="w-7 h-7 lg:w-9 lg:h-9" /> */}
+              <h2 className="text-[24px] xl:text-[30px] leading-snug font-bold hidden md:block my-[10px]">
+                {
+                  navigationItems[1].options.find(
+                    (item) => item.key === metric_id,
+                  )?.label
+                }
+              </h2>
             </div>
-            {/* <Icon icon="gtp:chain" className="w-7 h-7 lg:w-9 lg:h-9" /> */}
-            <h2 className="text-[24px] xl:text-[30px] leading-snug font-bold hidden lg:block my-[10px]">
-              Selected Chains
-            </h2>
-          </div>
+          ) : (
+            <div className="hidden md:flex justify-center items-center">
+              <div className="w-7 h-7 md:w-9 md:h-9 relative ml-[21px] mr-1.5">
+                <Image
+                  src="/GTP-Chain.png"
+                  alt="GTP Chain"
+                  className="object-contain"
+                  fill
+                />
+              </div>
+              {/* <Icon icon="gtp:chain" className="w-7 h-7 lg:w-9 lg:h-9" /> */}
+              <h2 className="text-[24px] xl:text-[30px] leading-snug font-bold hidden lg:block my-[10px]">
+                Selected Chains
+              </h2>
+            </div>
+          )}
 
           <div className="flex w-full md:w-auto justify-between md:justify-center items-stretch md:items-center space-x-[4px] md:space-x-1">
             {!zoomed ? (
               Object.keys(timespans).map((timespan) => (
                 <button
                   key={timespan}
-                  className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${selectedTimespan === timespan
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                    }`}
+                  className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
+                    selectedTimespan === timespan
+                      ? "bg-forest-500 dark:bg-forest-1000"
+                      : "hover:bg-forest-500/10"
+                  }`}
                   onClick={() => {
                     setSelectedTimespan(timespan);
                     // setXAxis();
@@ -1272,10 +1342,11 @@ export default function ComparisonChart({
             )}
           </div>
           <div
-            className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[calc(50%-19px)] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${avg && ["365d", "max"].includes(selectedTimespan)
-              ? "translate-y-[calc(-100%+3px)]"
-              : "translate-y-0 "
-              }`}
+            className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[calc(50%-19px)] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${
+              avg && ["365d", "max"].includes(selectedTimespan)
+                ? "translate-y-[calc(-100%+3px)]"
+                : "translate-y-0 "
+            }`}
           >
             <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
               7-day rolling average
@@ -1284,17 +1355,39 @@ export default function ComparisonChart({
         </div>
 
         <div className="w-full flex flex-col-reverse lg:flex-row mt-8 md:mt-0">
-          <div
-            className={`hidden lg:block lg:w-7/12 xl:w-5/12 pl-2 pr-[19px] self-center`}
-          >
-            <div className="-mt-7 lg:-mr-10">{children}</div>
-          </div>
+          {!is_embed && (
+            <div
+              className={`hidden lg:block lg:w-7/12 xl:w-5/12 pl-2 pr-[19px] self-center`}
+            >
+              <div className="-mt-7 lg:-mr-10">{children}</div>
+            </div>
+          )}
           {highchartsLoaded ? (
             <>
-              <div className={`w-full lg:w-5/12 xl:w-7/12 relative`}>
-                <div className="w-full p-0 py-0 xl:pl-4 xl:py-14">
-                  <div className="w-full h-[17rem] md:h-[26rem] relative rounded-xl">
-                    <div className="block absolute w-full h-[275px] md:h-[24rem] top-0 md:top-4">
+              <div
+                className={
+                  is_embed ? "w-full" : "w-full lg:w-5/12 xl:w-7/12 relative"
+                }
+              >
+                <div
+                  className={
+                    is_embed ? "w-full" : "w-full p-0 py-0 xl:pl-4 xl:py-14"
+                  }
+                >
+                  <div
+                    className={
+                      is_embed
+                        ? "w-full relative h-[calc(100vh-160px)] md:h-[calc(100vh-100px)]"
+                        : "w-full h-[17rem] md:h-[26rem] rounded-xl"
+                    }
+                  >
+                    <div
+                      className={
+                        is_embed
+                          ? "relative block w-full top-0 md:top-8"
+                          : "block absolute w-full h-[275px] md:h-[24rem] top-0 md:top-4"
+                      }
+                    >
                       <HighchartsReact
                         highcharts={Highcharts}
                         options={options}
@@ -1388,10 +1481,11 @@ export default function ComparisonChart({
               <div className="flex justify-center items-center pl-0 md:pl-0 w-full md:w-auto">
                 <div className="flex justify-between md:justify-center items-center  space-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
                   <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"absolute" === selectedScale
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:enabled:bg-forest-500/10"
-                      }`}
+                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${
+                      "absolute" === selectedScale
+                        ? "bg-forest-500 dark:bg-forest-1000"
+                        : "hover:enabled:bg-forest-500/10"
+                    }`}
                     onClick={() => {
                       setSelectedScale("absolute");
                     }}
@@ -1402,10 +1496,11 @@ export default function ComparisonChart({
                     <>
                       <button
                         disabled={metric_id === "txcosts"}
-                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"log" === selectedScale
-                          ? "bg-forest-500 dark:bg-forest-1000"
-                          : "hover:enabled:bg-forest-500/10"
-                          }`}
+                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${
+                          "log" === selectedScale
+                            ? "bg-forest-500 dark:bg-forest-1000"
+                            : "hover:enabled:bg-forest-500/10"
+                        }`}
                         onClick={() => {
                           setSelectedScale("log");
                         }}
@@ -1414,10 +1509,11 @@ export default function ComparisonChart({
                       </button>
 
                       <button
-                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"percentage" === selectedScale
-                          ? "bg-forest-500 dark:bg-forest-1000"
-                          : "hover:enabled:bg-forest-500/10"
-                          }`}
+                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${
+                          "percentage" === selectedScale
+                            ? "bg-forest-500 dark:bg-forest-1000"
+                            : "hover:enabled:bg-forest-500/10"
+                        }`}
                         onClick={() => {
                           setSelectedScale("percentage");
                         }}
@@ -1465,10 +1561,11 @@ export default function ComparisonChart({
               <div className="flex justify-center items-center pl-0 md:pl-0 w-full md:w-auto">
                 <div className="flex justify-between md:justify-center items-center  space-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
                   <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"absolute" === selectedScale
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
-                      }`}
+                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
+                      "absolute" === selectedScale
+                        ? "bg-forest-500 dark:bg-forest-1000"
+                        : "hover:bg-forest-500/10"
+                    }`}
                     onClick={() => {
                       setSelectedScale("absolute");
                     }}
@@ -1476,10 +1573,11 @@ export default function ComparisonChart({
                     Absolute
                   </button>
                   <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"log" === selectedScale
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
-                      }`}
+                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
+                      "log" === selectedScale
+                        ? "bg-forest-500 dark:bg-forest-1000"
+                        : "hover:bg-forest-500/10"
+                    }`}
                     onClick={() => {
                       setSelectedScale("log");
                     }}
@@ -1487,10 +1585,11 @@ export default function ComparisonChart({
                     Stacked
                   </button>
                   <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"percentage" === selectedScale
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
-                      }`}
+                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
+                      "percentage" === selectedScale
+                        ? "bg-forest-500 dark:bg-forest-1000"
+                        : "hover:bg-forest-500/10"
+                    }`}
                     onClick={() => {
                       setSelectedScale("percentage");
                     }}
@@ -1524,9 +1623,11 @@ export default function ComparisonChart({
           </div>
         )}
       </Container>
-      <Container className="block mt-6 lg:hidden w-full !pr-0">
-        {children}
-      </Container>
+      {!is_embed && (
+        <Container className="block mt-6 lg:hidden w-full !pr-0">
+          {children}
+        </Container>
+      )}
     </div>
   );
 }

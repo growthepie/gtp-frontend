@@ -1,6 +1,6 @@
-import "./globals.css";
+import "../globals.css";
 import { Analytics } from "@vercel/analytics/react";
-import { Providers } from "./providers";
+import { Providers } from "../providers";
 import CookieConsent from "@/components/layout/CookieConsent";
 import { Raleway, Inter, Roboto_Mono } from "next/font/google";
 import Header from "@/components/layout/Header";
@@ -66,7 +66,7 @@ export const viewport = {
   width: "device-width",
   initialScale: "1.0",
   themeColor: "dark",
-}
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.growthepie.xyz"),
@@ -179,7 +179,7 @@ export default function RootLayout({
                   </main>
                   <div className="mt-24 w-full text-center py-3 absolute bottom-0">
                     <div className="text-[0.7rem] text-inherit dark:text-forest-400 leading-[2] ml-8 z-20">
-                      © 2023 growthepie 🥧
+                      © {new Date().getFullYear()} growthepie 🥧
                     </div>
                   </div>
                 </div>

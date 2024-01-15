@@ -1,7 +1,7 @@
 "use client";
-import { ContractsURL } from "../../../lib/urls";
-import { Contract } from "../../../types/api/ContractsResponse";
-import { ContractsResponse } from "../../../types/api/ContractsResponse";
+import { ContractsURL } from "@/lib/urls";
+import { Contract } from "@/types/api/ContractsResponse";
+import { ContractsResponse } from "@/types/api/ContractsResponse";
 import useSWR from "swr";
 
 // async function getContracts() {

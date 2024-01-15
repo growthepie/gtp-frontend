@@ -2183,7 +2183,6 @@ export default function OverviewMetrics({
                                 <div className="relative w-[16%]">
                                   <select
                                     className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[4px]"
-                                    placeholder="Category"
                                     name="main_category_key"
                                     onChange={(e) => {
                                       setLabelFormMainCategoryKey(
@@ -2191,6 +2190,9 @@ export default function OverviewMetrics({
                                       );
                                     }}
                                   >
+                                    <option value="" disabled selected>
+                                      Category
+                                    </option>
                                     {master &&
                                       Object.keys(
                                         master.blockspace_categories
@@ -2212,9 +2214,11 @@ export default function OverviewMetrics({
                                 <div className="relative w-[16%]">
                                   <select
                                     className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[4px]"
-                                    placeholder="Subcategory"
                                     name="sub_category_key"
                                   >
+                                    <option value="" disabled selected>
+                                      Category
+                                    </option>
                                     {labelFormMainCategoryKey &&
                                       master &&
                                       master.blockspace_categories["mapping"][

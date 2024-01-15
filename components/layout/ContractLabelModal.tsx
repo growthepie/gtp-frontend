@@ -116,18 +116,18 @@ export default function ContractLabelModal({
                 </div>
               </div>
               <div className="relative w-full">
-                <select
-                  className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[2px]"
-                  placeholder="Category"
-                >
+                <select className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[2px]">
+                  <option value="" disabled selected>
+                    Category
+                  </option>
                   <option value="1">1</option>
                 </select>
               </div>
               <div className="relative w-full">
-                <select
-                  className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[2px]"
-                  placeholder="Subcategory"
-                >
+                <select className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[2px]">
+                  <option value="" disabled selected>
+                    Subcategory
+                  </option>
                   <option value="1">1</option>
                 </select>
               </div>

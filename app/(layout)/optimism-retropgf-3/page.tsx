@@ -15,7 +15,7 @@ import {
   ProjectFundingSource,
   ProjectsResponse,
   List,
-  ListAmountsByProjectIdResponse
+  ListAmountsByProjectIdResponse,
 } from "@/types/api/RetroPGF3";
 import Icon from "@/components/layout/Icon";
 import { useTheme } from "next-themes";
@@ -49,7 +49,6 @@ import { a } from "react-spring";
 import { RecoveredListData } from "./recoveredListData";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import { RPGF3Results, RPGF3ResultsById } from "./rpgf3_results";
-
 
 const timestamp = new Date().getTime();
 
@@ -104,20 +103,20 @@ export default function Page() {
     data: projectsResponse,
     isLoading: projectsLoading,
     isValidating: projectsValidating,
-  } = useSWR<ProjectsResponse>(
-    BASE_URL + "/api/optimism-retropgf-3/projects",
-    {
-      refreshInterval: 1 * 1000 * 60, // 1 minutes,
-    },
-  );
+  } = useSWR<ProjectsResponse>(BASE_URL + "/api/optimism-retropgf-3/projects", {
+    refreshInterval: 1 * 1000 * 60, // 1 minutes,
+  });
 
   const {
     data: listAmountsByProjectId,
     isLoading: listAmountsByProjectIdLoading,
     isValidating: listAmountsByProjectIdValidating,
-  } = useSWR<ListAmountsByProjectIdResponse>(BASE_URL + "/api/optimism-retropgf-3/listAmountsByProjectId", {
-    refreshInterval: 1 * 1000 * 60, // 2 minutes,
-  });
+  } = useSWR<ListAmountsByProjectIdResponse>(
+    BASE_URL + "/api/optimism-retropgf-3/listAmountsByProjectId",
+    {
+      refreshInterval: 1 * 1000 * 60, // 2 minutes,
+    },
+  );
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [data, setData] = useState<Project[]>([]);
@@ -172,28 +171,30 @@ export default function Page() {
     return moment(lastUpdated).fromNow();
   }, [projectsResponse]);
 
-  const ballotRankingByProjectId = useMemo<{ [projectId: string]: number } | null>(
-    () => {
-      if (!projectsResponse) return null;
+  const ballotRankingByProjectId = useMemo<{
+    [projectId: string]: number;
+  } | null>(() => {
+    if (!projectsResponse) return null;
 
-      const projectsRanked = projectsResponse.projects.sort((a, b) => {
+    const projectsRanked = projectsResponse.projects
+      .sort((a, b) => {
         // If both are equal, return 0.
         if (a.included_in_ballots === b.included_in_ballots) return 0;
 
         // Otherwise, sort by whether a is greater than or less than b.
         return a.included_in_ballots > b.included_in_ballots ? -1 : 1;
-      }).map((project, i) => ({
+      })
+      .map((project, i) => ({
         id: project.id,
         rank: i + 1,
-      })).reduce((acc, curr) => {
+      }))
+      .reduce((acc, curr) => {
         acc[curr.id] = curr.rank;
         return acc;
       }, {});
 
-      return projectsRanked;
-    },
-    [projectsResponse],
-  );
+    return projectsRanked;
+  }, [projectsResponse]);
 
   const getProjectsCombinedFundingSourcesByCurrency = useCallback(
     (fundingSources: ProjectFundingSource[]) => {
@@ -279,11 +280,12 @@ export default function Page() {
     (awarded: number) => {
       // const awarded = project.awarded;
 
-      const awardedRank = projects
-        .map((d) => d.awarded)
-        .filter((d) => d !== -1)
-        .sort((a, b) => b - a)
-        .indexOf(awarded) + 1;
+      const awardedRank =
+        projects
+          .map((d) => d.awarded)
+          .filter((d) => d !== -1)
+          .sort((a, b) => b - a)
+          .indexOf(awarded) + 1;
 
       return awardedRank;
     },
@@ -299,9 +301,18 @@ export default function Page() {
   }, []);
 
   const [minListOPAmount, maxListOPAmount] = useMemo<[number, number]>(() => {
-    if (!listAmountsByProjectId || !listAmountsByProjectId?.listAmounts) return [0, 0];
+    if (!listAmountsByProjectId || !listAmountsByProjectId?.listAmounts)
+      return [0, 0];
 
-    const listOPAmounts = Object.values(listAmountsByProjectId.listAmounts).flatMap((listAmounts) => listAmounts.map((listAmount) => listAmount.listContent.length > 0 ? listAmount.listContent[0].OPAmount : 0));
+    const listOPAmounts = Object.values(
+      listAmountsByProjectId.listAmounts,
+    ).flatMap((listAmounts) =>
+      listAmounts.map((listAmount) =>
+        listAmount.listContent.length > 0
+          ? listAmount.listContent[0].OPAmount
+          : 0,
+      ),
+    );
 
     return [Math.min(...listOPAmounts), Math.max(...listOPAmounts)];
   }, [listAmountsByProjectId]);
@@ -314,8 +325,6 @@ export default function Page() {
   //   const projectsOverQuorum = projectsResponse.projects.filter((project) => project.included_in_ballots >= 17);
 
   //   const listOPAmounts = projectsOverQuorum.map((project) => listAmountsByProjectId.listQuartiles[project.id]);
-
-
 
   //   const totals = listOPAmounts.reduce((acc, curr) => {
   //     acc.median += curr.median;
@@ -336,45 +345,90 @@ export default function Page() {
 
   // }, [projectsResponse, listAmountsByProjectId]);
 
-  const getListAmountsCell = useCallback((info) => {
-    if (!listAmountsByProjectId || !listAmountsByProjectId.listQuartiles) return null;
+  const getListAmountsCell = useCallback(
+    (info) => {
+      if (!listAmountsByProjectId || !listAmountsByProjectId.listQuartiles)
+        return null;
 
-    return (<div className="w-full whitespace-nowrap text-ellipsis relative overflow-visible">
-      {(listAmountsByProjectId.listQuartiles[info.row.original.id].min + listAmountsByProjectId.listQuartiles[info.row.original.id].max) > 0 && !Number.isNaN(listAmountsByProjectId.listQuartiles[info.row.original.id].min) && !Number.isNaN(listAmountsByProjectId.listQuartiles[info.row.original.id].max) && (
-        <div className="flex text-[0.55rem] text-forest-900/60 dark:text-forest-500/60 font-inter font-light leading-[1]">
-          <div className="absolute left-0 -top-1.5">
-            {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].min, true)}
-          </div>
-          <div className="absolute right-0 left-0 -top-1.5 text-center">—</div>
-          <div className="absolute right-0 -top-1.5">
-            {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].max, true)}
-          </div>
-        </div>)}
-      {/* {listAmountsByProjectId && listAmountsByProjectId.listAmounts[info.row.original.id].length > 0 &&
+      return (
+        <div className="w-full whitespace-nowrap text-ellipsis relative overflow-visible">
+          {listAmountsByProjectId.listQuartiles[info.row.original.id].min +
+            listAmountsByProjectId.listQuartiles[info.row.original.id].max >
+            0 &&
+            !Number.isNaN(
+              listAmountsByProjectId.listQuartiles[info.row.original.id].min,
+            ) &&
+            !Number.isNaN(
+              listAmountsByProjectId.listQuartiles[info.row.original.id].max,
+            ) && (
+              <div className="flex text-[0.55rem] text-forest-900/60 dark:text-forest-500/60 font-inter font-light leading-[1]">
+                <div className="absolute left-0 -top-1.5">
+                  {formatNumber(
+                    listAmountsByProjectId.listQuartiles[info.row.original.id]
+                      .min,
+                    true,
+                  )}
+                </div>
+                <div className="absolute right-0 left-0 -top-1.5 text-center">
+                  —
+                </div>
+                <div className="absolute right-0 -top-1.5">
+                  {formatNumber(
+                    listAmountsByProjectId.listQuartiles[info.row.original.id]
+                      .max,
+                    true,
+                  )}
+                </div>
+              </div>
+            )}
+          {/* {listAmountsByProjectId && listAmountsByProjectId.listAmounts[info.row.original.id].length > 0 &&
         (<Tooltip placement="left">
           <TooltipTrigger className="w-full"> */}
-      <div className="text-[0.7rem] font-normal w-full flex space-x-0.5 items-center font-inter mt-1">
-        {listAmountsByProjectId.listQuartiles[info.row.original.id].q3 > 1 ?
-          (<>
-            <div className=" text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
-              {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].q1, true)}
-            </div>
-            <div className="flex-1 text-forest-900/50 dark:text-forest-500/50">-</div>
-            <div className="text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
-              {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].q3, true)}{" "}<span className="text-[0.6rem]">OP</span>
-            </div>
-          </>) : (<div className="flex-1 text-forest-900/80 dark:text-forest-500 font-light leading-[1] text-right">
-            {formatNumber(listAmountsByProjectId.listQuartiles[info.row.original.id].median, true)}{" "}<span className="text-[0.6rem]">OP</span>
-          </div>)}
-      </div>
-      <div className="relative bottom-[8px] left-0 right-0 text-xs font-normal text-right h-[2px]">
-        <BoxPlot {...{
-          ...listAmountsByProjectId.listQuartiles[info.row.original.id], globalMin: 0, globalMax: 5000000
-        }} />
-      </div>
+          <div className="text-[0.7rem] font-normal w-full flex space-x-0.5 items-center font-inter mt-1">
+            {listAmountsByProjectId.listQuartiles[info.row.original.id].q3 >
+            1 ? (
+              <>
+                <div className=" text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
+                  {formatNumber(
+                    listAmountsByProjectId.listQuartiles[info.row.original.id]
+                      .q1,
+                    true,
+                  )}
+                </div>
+                <div className="flex-1 text-forest-900/50 dark:text-forest-500/50">
+                  -
+                </div>
+                <div className="text-forest-900 dark:text-forest-500 font-light leading-[1] text-right">
+                  {formatNumber(
+                    listAmountsByProjectId.listQuartiles[info.row.original.id]
+                      .q3,
+                    true,
+                  )}{" "}
+                  <span className="text-[0.6rem]">OP</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 text-forest-900/80 dark:text-forest-500 font-light leading-[1] text-right">
+                {formatNumber(
+                  listAmountsByProjectId.listQuartiles[info.row.original.id]
+                    .median,
+                  true,
+                )}{" "}
+                <span className="text-[0.6rem]">OP</span>
+              </div>
+            )}
+          </div>
+          <div className="relative bottom-[8px] left-0 right-0 text-xs font-normal text-right h-[2px]">
+            <BoxPlot
+              {...{
+                ...listAmountsByProjectId.listQuartiles[info.row.original.id],
+                globalMin: 0,
+                globalMax: 5000000,
+              }}
+            />
+          </div>
 
-
-      {/* </TooltipTrigger>
+          {/* </TooltipTrigger>
           <TooltipContent className="z-50 flex items-center justify-center">
             <div className="flex flex-col space-y-0.5 px-0.5 py-0.5 pt-1 text-[0.65rem] font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-2xl shadow-lg z-50">
               <div className="px-3 text-sm">{info.row.original.display_name}</div>
@@ -420,79 +474,86 @@ export default function Page() {
             </div>
           </TooltipContent>
         </Tooltip>)} */}
-    </div>);
-
-  }, [listAmountsByProjectId, minListOPAmount, maxListOPAmount]);
-
-  const getFundingSourcesCell = useCallback((info) => {
-    return (
-      <div className="w-full whitespace-nowrap text-ellipsis relative">
-        <div className="absolute -left-0 -top-2.5 text-[0.6rem] text-forest-900/30 dark:text-forest-500/30 font-light leading-[1]">
-          #
-          {getProjectsTotalFundingRank(info.row.original.funding_sources)}
         </div>
-        <div className="text-[11px] font-normal w-full flex justify-between font-inter mt-1">
-          <div className="flex space-x-1">
-            {["TOTAL"]
-              .map((currency) => [
-                currency,
-                getProjectsCombinedFundingSourcesByCurrency(
-                  info.row.original.funding_sources,
-                )[currency],
-              ])
-              .map(([currency, value]) => (
-                <div key={currency}>
-                  <span className="opacity-60 text-[0.55rem]">$</span>
-                  {`${formatNumber(
-                    parseInt(value as string),
-                    false,
-                  ).toLocaleString()}`}
-                </div>
-              ))
-              .reduce((prev, curr) => {
-                return prev.length === 0
-                  ? [curr]
-                  : [prev, <div key={curr[0]}>&</div>, curr];
-              }, [])}
-            <div className="w-4"></div>
+      );
+    },
+    [listAmountsByProjectId, minListOPAmount, maxListOPAmount],
+  );
+
+  const getFundingSourcesCell = useCallback(
+    (info) => {
+      return (
+        <div className="w-full whitespace-nowrap text-ellipsis relative">
+          <div className="absolute -left-0 -top-2.5 text-[0.6rem] text-forest-900/30 dark:text-forest-500/30 font-light leading-[1]">
+            #{getProjectsTotalFundingRank(info.row.original.funding_sources)}
           </div>
-        </div>
-        <div className="relative -bottom-[2px] left-0 right-0 text-xs font-normal text-right h-[2px]">
-          <div
-            className="absolute"
-            style={{
-              height: "2px",
-              width: `100%`,
-
-            }}
-          >
+          <div className="text-[11px] font-normal w-full flex justify-between font-inter mt-1">
+            <div className="flex space-x-1">
+              {["TOTAL"]
+                .map((currency) => [
+                  currency,
+                  getProjectsCombinedFundingSourcesByCurrency(
+                    info.row.original.funding_sources,
+                  )[currency],
+                ])
+                .map(([currency, value]) => (
+                  <div key={currency}>
+                    <span className="opacity-60 text-[0.55rem]">$</span>
+                    {`${formatNumber(
+                      parseInt(value as string),
+                      false,
+                    ).toLocaleString()}`}
+                  </div>
+                ))
+                .reduce((prev, curr) => {
+                  return prev.length === 0
+                    ? [curr]
+                    : [prev, <div key={curr[0]}>&</div>, curr];
+                }, [])}
+              <div className="w-4"></div>
+            </div>
+          </div>
+          <div className="relative -bottom-[2px] left-0 right-0 text-xs font-normal text-right h-[2px]">
             <div
-              className=" bg-forest-900 dark:bg-forest-500"
+              className="absolute"
               style={{
                 height: "2px",
-
-                width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                  info.row.original.funding_sources,
-                )["TOTAL"] /
-                  getMaxTotalFundingAmount()) *
-                  100.0
-                  }%`,
-                // right with bases on bottom and right
+                width: `100%`,
               }}
-            ></div>
-          </div>
-          <div
-            className="absolute bg-forest-900/30 dark:bg-forest-500/30"
-            style={{
-              height: "2px",
-              width: `100%`,
-            }}
-          />
-        </div>
-      </div>
-    );
-  }, [getMaxTotalFundingAmount, getProjectsCombinedFundingSourcesByCurrency, getProjectsTotalFundingRank]);
+            >
+              <div
+                className=" bg-forest-900 dark:bg-forest-500"
+                style={{
+                  height: "2px",
 
+                  width: `${
+                    (getProjectsCombinedFundingSourcesByCurrency(
+                      info.row.original.funding_sources,
+                    )["TOTAL"] /
+                      getMaxTotalFundingAmount()) *
+                    100.0
+                  }%`,
+                  // right with bases on bottom and right
+                }}
+              ></div>
+            </div>
+            <div
+              className="absolute bg-forest-900/30 dark:bg-forest-500/30"
+              style={{
+                height: "2px",
+                width: `100%`,
+              }}
+            />
+          </div>
+        </div>
+      );
+    },
+    [
+      getMaxTotalFundingAmount,
+      getProjectsCombinedFundingSourcesByCurrency,
+      getProjectsTotalFundingRank,
+    ],
+  );
 
   const columns = useMemo<ColumnDef<Project>[]>(
     () => [
@@ -526,7 +587,8 @@ export default function Page() {
                   .getSortedRowModel()
                   .rows.findIndex((d) => d.id === info.row.id) + 1} */}
 
-                {ballotRankingByProjectId && ballotRankingByProjectId[info.row.original.id]}
+                {ballotRankingByProjectId &&
+                  ballotRankingByProjectId[info.row.original.id]}
               </div>
             </div>
           </>
@@ -557,7 +619,7 @@ export default function Page() {
 
             <div
               className="flex-1 overflow-hidden text-ellipsis font-bold whitespace-nowrap"
-            // style={{ whiteSpace: "pre-wrap" }}
+              // style={{ whiteSpace: "pre-wrap" }}
             >
               {info.row.original.display_name}
             </div>
@@ -585,8 +647,9 @@ export default function Page() {
           <div className="w-full flex justify-between items-center">
             <div className="border-2 rounded-md border-forest-900/20 dark:border-forest-500/20 p-1 hover:bg-forest-900/10 dark:hover:bg-forest-500/10">
               <Link
-                href={`https://vote.optimism.io/retropgf/3/application/${info.row.original.id.split("|")[1]
-                  }`}
+                href={`https://vote.optimism.io/retropgf/3/application/${
+                  info.row.original.id.split("|")[1]
+                }`}
                 rel="noopener noreferrer"
                 target="_blank"
               >
@@ -622,10 +685,11 @@ export default function Page() {
               rel="noopener noreferrer"
               target="_blank"
               href={`https://optimistic.etherscan.io/address/${info.row.original.applicant.address.address}`}
-              className={`rounded-full px-1 py-0 border border-forest-900/20 dark:border-forest-500/20 font-mono text-[10px] ${info.row.original.applicant.address.resolvedName.name
-                ? "text-forest-900 dark:text-forest-500"
-                : "text-forest-900/50 dark:text-forest-500/50"
-                } hover:bg-forest-900/10 dark:hover:bg-forest-500/10`}
+              className={`rounded-full px-1 py-0 border border-forest-900/20 dark:border-forest-500/20 font-mono text-[10px] ${
+                info.row.original.applicant.address.resolvedName.name
+                  ? "text-forest-900 dark:text-forest-500"
+                  : "text-forest-900/50 dark:text-forest-500/50"
+              } hover:bg-forest-900/10 dark:hover:bg-forest-500/10`}
             >
               {info.row.original.applicant.address.resolvedName.name ? (
                 <>{info.row.original.applicant.address.resolvedName.name}</>
@@ -679,81 +743,113 @@ export default function Page() {
         accessorKey: "awarded",
         cell: (info) => (
           <div className="w-full whitespace-nowrap text-ellipsis relative text-right">
-            {RPGF3ResultsById[info.row.original.id].awarded > 0 ?
-              (
-                // <div className="rounded-md bg-[#FF0420]/60 px-1.5 py-0.5 font-medium">{formatNumber(info.row.original.awarded * - 20000, true)} OP</div>
-                <>
+            {RPGF3ResultsById[info.row.original.id].awarded > 0 ? (
+              // <div className="rounded-md bg-[#FF0420]/60 px-1.5 py-0.5 font-medium">{formatNumber(info.row.original.awarded * - 20000, true)} OP</div>
+              <>
+                <div className="absolute inset-0 bg-gradient-to-tr border from-[#FF0420]/30 via-[#FF0420]/50 to-[#FF0420]/30 border-forest-900/20 dark:border-forest-500/20 -m-1.5 -mt-2 rounded-sm"></div>
 
-                  <div className="absolute inset-0 bg-gradient-to-tr border from-[#FF0420]/30 via-[#FF0420]/50 to-[#FF0420]/30 border-forest-900/20 dark:border-forest-500/20 -m-1.5 -mt-2 rounded-sm"></div>
-
-                  <div className="absolute -left-1 -top-1.5 text-[0.6rem] text-forest-900 dark:text-forest-500 leading-[1]">
-                    #
-                    {getAwardedRank(RPGF3ResultsById[info.row.original.id].awarded)}
-                  </div>
-                  <Tooltip placement="right">
-                    <TooltipTrigger>
-                      <div className="text-[12px]  text-forest-900 dark:text-forest-100 font-bold  w-full flex justify-end font-inter mt-1">
-
-                        <div className="rounded-sm px-0.5 w-full text-right z-20">{formatNumber(RPGF3ResultsById[info.row.original.id].awarded, true)} OP</div>
-
+                <div className="absolute -left-1 -top-1.5 text-[0.6rem] text-forest-900 dark:text-forest-500 leading-[1]">
+                  #
+                  {getAwardedRank(
+                    RPGF3ResultsById[info.row.original.id].awarded,
+                  )}
+                </div>
+                <Tooltip placement="right">
+                  <TooltipTrigger>
+                    <div className="text-[12px]  text-forest-900 dark:text-forest-100 font-bold  w-full flex justify-end font-inter mt-1">
+                      <div className="rounded-sm px-0.5 w-full text-right z-20">
+                        {formatNumber(
+                          RPGF3ResultsById[info.row.original.id].awarded,
+                          true,
+                        )}{" "}
+                        OP
                       </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="z-50 flex items-center justify-center">
-                      <div className="ml-2 px-3 py-1.5 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex flex-col space-y-1">
-                        <div className="text-xs text-center">Award Amount</div>
-                        <div className="flex justify-between space-x-1 font-bold items-end leading-snug">
-                          <div className="flex-1 text-right">{RPGF3ResultsById[info.row.original.id].awarded.toLocaleString()}</div><div className="text-left opacity-60 text-xs font-normal">OP</div>
-                        </div>
-                        {projectsResponse?.prices.optimism.usd &&
-                          (
-                            <>
-                              <div className="flex justify-between space-x-1 items-end">
-                                <div className="flex-1 text-right"><span className="opacity-60 text-[0.65rem]">$</span>{Math.round(projectsResponse.prices.optimism.usd * RPGF3ResultsById[info.row.original.id].awarded).toLocaleString()}</div><div className="text-left opacity-60 text-[0.65rem]">USD</div>
-                              </div>
-                              {/* <div className="text-[0.6rem] text-center opacity-60">@ ${projectsResponse.prices.optimism.usd} / OP</div> */}
-                            </>
-                          )
-                        }
-                        <div className="text-xs text-center opacity-60">Median Amount: {RPGF3ResultsById[info.row.original.id].result_median_amount.toLocaleString()} OP</div>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                  <div className="relative -bottom-[2px] left-0 right-0 text-xs font-normal text-right h-[2px]">
-                    <div
-                      className="absolute"
-                      style={{
-                        height: "2px",
-                        width: `100%`,
-
-                      }}
-                    >
-                      <div
-                        className=" sbg-[#FF0420] sdark:bg-[#FF0420] bg-forest-900 dark:bg-forest-100"
-                        style={{
-                          height: "2px",
-
-                          width: `${(RPGF3ResultsById[info.row.original.id].awarded / getMaxAwardedAmount()) *
-                            100.0
-                            }%`,
-                          // right with bases on bottom and right
-                        }}
-                      ></div>
                     </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="z-50 flex items-center justify-center">
+                    <div className="ml-2 px-3 py-1.5 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 flex flex-col space-y-1">
+                      <div className="text-xs text-center">Award Amount</div>
+                      <div className="flex justify-between space-x-1 font-bold items-end leading-snug">
+                        <div className="flex-1 text-right">
+                          {RPGF3ResultsById[
+                            info.row.original.id
+                          ].awarded.toLocaleString()}
+                        </div>
+                        <div className="text-left opacity-60 text-xs font-normal">
+                          OP
+                        </div>
+                      </div>
+                      {projectsResponse?.prices.optimism.usd && (
+                        <>
+                          <div className="flex justify-between space-x-1 items-end">
+                            <div className="flex-1 text-right">
+                              <span className="opacity-60 text-[0.65rem]">
+                                $
+                              </span>
+                              {Math.round(
+                                projectsResponse.prices.optimism.usd *
+                                  RPGF3ResultsById[info.row.original.id]
+                                    .awarded,
+                              ).toLocaleString()}
+                            </div>
+                            <div className="text-left opacity-60 text-[0.65rem]">
+                              USD
+                            </div>
+                          </div>
+                          {/* <div className="text-[0.6rem] text-center opacity-60">@ ${projectsResponse.prices.optimism.usd} / OP</div> */}
+                        </>
+                      )}
+                      <div className="text-xs text-center opacity-60">
+                        Median Amount:{" "}
+                        {RPGF3ResultsById[
+                          info.row.original.id
+                        ].result_median_amount.toLocaleString()}{" "}
+                        OP
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+                <div className="relative -bottom-[2px] left-0 right-0 text-xs font-normal text-right h-[2px]">
+                  <div
+                    className="absolute"
+                    style={{
+                      height: "2px",
+                      width: `100%`,
+                    }}
+                  >
                     <div
-                      className="absolute sbg-forest-900/30 bg-forest-900/30 dark:bg-forest-100/30"
+                      className=" sbg-[#FF0420] sdark:bg-[#FF0420] bg-forest-900 dark:bg-forest-100"
                       style={{
                         height: "2px",
-                        width: `100%`,
-                      }}
-                    />
-                  </div>
-                </>
-              ) :
-              (<div className="font-normal w-full flex justify-end font-inter">
-                <div className="flex space-x-1"><div className="text-forest-900/50 dark:text-forest-500/50">—</div></div>
-              </div>)}
-          </div>
 
+                        width: `${
+                          (RPGF3ResultsById[info.row.original.id].awarded /
+                            getMaxAwardedAmount()) *
+                          100.0
+                        }%`,
+                        // right with bases on bottom and right
+                      }}
+                    ></div>
+                  </div>
+                  <div
+                    className="absolute sbg-forest-900/30 bg-forest-900/30 dark:bg-forest-100/30"
+                    style={{
+                      height: "2px",
+                      width: `100%`,
+                    }}
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="font-normal w-full flex justify-end font-inter">
+                <div className="flex space-x-1">
+                  <div className="text-forest-900/50 dark:text-forest-500/50">
+                    —
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         ),
         meta: {
           headerAlign: { marginLeft: "auto", flexDirection: "row-reverse" },
@@ -782,10 +878,11 @@ export default function Page() {
               <div className="w-4 h-4">
                 <Icon
                   icon={"feather:check-square"}
-                  className={`w-4 h-4  fill-current ${RPGF3ResultsById[info.row.original.id].result_quorum
-                    ? "text-green-500 dark:text-green-500"
-                    : "text-forest-900/80 dark:text-forest-500/80"
-                    }`}
+                  className={`w-4 h-4  fill-current ${
+                    RPGF3ResultsById[info.row.original.id].result_quorum
+                      ? "text-green-500 dark:text-green-500"
+                      : "text-forest-900/80 dark:text-forest-500/80"
+                  }`}
                 />
               </div>
             </div>
@@ -820,12 +917,14 @@ export default function Page() {
               </div>} */}
               <div className="font-normal w-full flex justify-end font-inter">
                 <div className="flex space-x-1">
-                  <div>{listAmountsByProjectId && listAmountsByProjectId["listCounts"][info.row.original.id]}</div>
+                  <div>
+                    {listAmountsByProjectId &&
+                      listAmountsByProjectId["listCounts"][
+                        info.row.original.id
+                      ]}
+                  </div>
                   <div className="w-4 h-4 text-forest-900/80 dark:text-forest-500/80">
-                    <Icon
-                      icon={"feather:list"}
-                      className={`w-4 h-4`}
-                    />
+                    <Icon icon={"feather:list"} className={`w-4 h-4`} />
                   </div>
                 </div>
               </div>
@@ -853,15 +952,16 @@ export default function Page() {
         cell: (info) => getListAmountsCell(info),
         sortingFn: (rowA, rowB) => {
           if (!listAmountsByProjectId) return 0;
-          const a = listAmountsByProjectId.listQuartiles[rowA.original.id].median;
-          const b = listAmountsByProjectId.listQuartiles[rowB.original.id].median;
+          const a =
+            listAmountsByProjectId.listQuartiles[rowA.original.id].median;
+          const b =
+            listAmountsByProjectId.listQuartiles[rowB.original.id].median;
 
           if (Number.isNaN(a) && Number.isNaN(b)) return 0;
 
           if (Number.isNaN(a)) return -1;
 
           if (Number.isNaN(b)) return 1;
-
 
           // If both are equal, return 0.
           if (a === b) return 0;
@@ -949,18 +1049,33 @@ export default function Page() {
             <div className="w-full overflow-x whitespace-nowrap text-ellipsis relative">
               <Tooltip placement="left">
                 <TooltipTrigger className="w-full">
-                  {listAmountsByProjectId && Object.values(listAmountsByProjectId.retropgfStatus[info.row.original.id]).filter((value) => value).length > 0 && (
-                    <div className="absolute right-0 -top-2.5 text-[0.6rem] text-forest-900/40 dark:text-forest-500/40 font-light leading-[1] flex space-x-1 items-center">
-                      <div className="leading-snug">RetroPGF</div>
-                      {Object.entries(listAmountsByProjectId.retropgfStatus[info.row.original.id]).map(([key, value]) => (
-                        <div key={key} >
-                          {value !== null && value > 0 ?
-                            <div className="flex w-2.5 h-2.5 justify-center font-medium bg-[#FE5468]/40 text-[#FE5468] rounded-full text-[0.55rem] font-mono leading-snug">{key.replace(/[^0-9]/g, "")}</div>
-                            : <div className="flex w-2.5 h-2.5 justify-center font-medium invisible">{key.replace(/[^0-9]/g, "")}</div>
-                          }</div>
-                      ))}
-                    </div>
-                  )}
+                  {listAmountsByProjectId &&
+                    Object.values(
+                      listAmountsByProjectId.retropgfStatus[
+                        info.row.original.id
+                      ],
+                    ).filter((value) => value).length > 0 && (
+                      <div className="absolute right-0 -top-2.5 text-[0.6rem] text-forest-900/40 dark:text-forest-500/40 font-light leading-[1] flex space-x-1 items-center">
+                        <div className="leading-snug">RetroPGF</div>
+                        {Object.entries(
+                          listAmountsByProjectId.retropgfStatus[
+                            info.row.original.id
+                          ],
+                        ).map(([key, value]) => (
+                          <div key={key}>
+                            {value !== null && value > 0 ? (
+                              <div className="flex w-2.5 h-2.5 justify-center font-medium bg-[#FE5468]/40 text-[#FE5468] rounded-full text-[0.55rem] font-mono leading-snug">
+                                {key.replace(/[^0-9]/g, "")}
+                              </div>
+                            ) : (
+                              <div className="flex w-2.5 h-2.5 justify-center font-medium invisible">
+                                {key.replace(/[^0-9]/g, "")}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                   <div className="text-[11px] font-normal w-full flex justify-between font-inter mt-1">
                     <div className="w-full flex justify-between">
@@ -1016,28 +1131,30 @@ export default function Page() {
                       className="relative z-10"
                       style={{
                         height: "2px",
-                        width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                          info.row.original.funding_sources,
-                        )["TOTAL"] /
-                          getProjectsCombinedFundingSourcesByCurrency(
+                        width: `${
+                          (getProjectsCombinedFundingSourcesByCurrency(
                             info.row.original.funding_sources,
-                          )["TOTAL"]) *
+                          )["TOTAL"] /
+                            getProjectsCombinedFundingSourcesByCurrency(
+                              info.row.original.funding_sources,
+                            )["TOTAL"]) *
                           100.0
-                          }%`,
+                        }%`,
                       }}
                     >
                       <div
                         className="absolute bg-[#7fdcd6]"
                         style={{
                           height: "2px",
-                          width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                            info.row.original.funding_sources,
-                          )["USD"] /
-                            getProjectsCombinedFundingSourcesByCurrency(
+                          width: `${
+                            (getProjectsCombinedFundingSourcesByCurrency(
                               info.row.original.funding_sources,
-                            )["TOTAL"]) *
+                            )["USD"] /
+                              getProjectsCombinedFundingSourcesByCurrency(
+                                info.row.original.funding_sources,
+                              )["TOTAL"]) *
                             100.0
-                            }%`,
+                          }%`,
                         }}
                       ></div>
                       <div
@@ -1048,23 +1165,25 @@ export default function Page() {
                             getProjectsCombinedFundingSourcesByCurrency(
                               info.row.original.funding_sources,
                             )["USD"] !== 0
-                              ? `${(getProjectsCombinedFundingSourcesByCurrency(
-                                info.row.original.funding_sources,
-                              )["USD"] /
-                                getProjectsCombinedFundingSourcesByCurrency(
-                                  info.row.original.funding_sources,
-                                )["TOTAL"]) *
-                              100.0
-                              }%`
+                              ? `${
+                                  (getProjectsCombinedFundingSourcesByCurrency(
+                                    info.row.original.funding_sources,
+                                  )["USD"] /
+                                    getProjectsCombinedFundingSourcesByCurrency(
+                                      info.row.original.funding_sources,
+                                    )["TOTAL"]) *
+                                  100.0
+                                }%`
                               : 0,
-                          width: `${(getProjectsCombinedFundingSourcesByCurrency(
-                            info.row.original.funding_sources,
-                          )["OPUSD"] /
-                            getProjectsCombinedFundingSourcesByCurrency(
+                          width: `${
+                            (getProjectsCombinedFundingSourcesByCurrency(
                               info.row.original.funding_sources,
-                            )["TOTAL"]) *
+                            )["OPUSD"] /
+                              getProjectsCombinedFundingSourcesByCurrency(
+                                info.row.original.funding_sources,
+                              )["TOTAL"]) *
                             100.0
-                            }%`,
+                          }%`,
                         }}
                       ></div>
                     </div>
@@ -1079,9 +1198,11 @@ export default function Page() {
                 </TooltipTrigger>
                 <TooltipContent className="z-50 flex items-center justify-center">
                   <div className="flex flex-col space-y-0.5 px-0.5 py-0.5 pt-1 text-[0.65rem] font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50">
-                    <div className="px-3 text-sm">{info.row.original.display_name}</div>
-                    {info.row.original.funding_sources.sort(
-                      (a, b) => {
+                    <div className="px-3 text-sm">
+                      {info.row.original.display_name}
+                    </div>
+                    {info.row.original.funding_sources
+                      .sort((a, b) => {
                         const aType = a.type;
                         const bType = b.type;
 
@@ -1093,28 +1214,35 @@ export default function Page() {
                           return aAmount - bAmount;
                         }
 
-                        if (aType.localeCompare(bType) === 1)
-                          return 1;
+                        if (aType.localeCompare(bType) === 1) return 1;
 
-                        if (aType.localeCompare(bType) === -1)
-                          return -1;
+                        if (aType.localeCompare(bType) === -1) return -1;
 
                         return 0;
-                      }
-                    ).map((fundingSource, i) => (
-                      <div key={i} className="flex px-3 py-0.5 justify-between items-center border border-forest-900/20 dark:border-forest-500/20 rounded-full">
-                        <div className="flex flex-col text-[0.6rem] leading-snug">
-                          <div className="w-48 font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">{fundingSource.type}</div>
-                          <div className="font-light text-forest-900/80 dark:text-forest-500/80">
-                            {fundingSource.description}
+                      })
+                      .map((fundingSource, i) => (
+                        <div
+                          key={i}
+                          className="flex px-3 py-0.5 justify-between items-center border border-forest-900/20 dark:border-forest-500/20 rounded-full"
+                        >
+                          <div className="flex flex-col text-[0.6rem] leading-snug">
+                            <div className="w-48 font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">
+                              {fundingSource.type}
+                            </div>
+                            <div className="font-light text-forest-900/80 dark:text-forest-500/80">
+                              {fundingSource.description}
+                            </div>
                           </div>
-
+                          <div className="w-16 flex justify-between font-inter font-[600] text-xs space-x-1">
+                            <div className="flex-1 text-right">
+                              {formatNumber(fundingSource.amount, true)}
+                            </div>{" "}
+                            <div className="w-4 text-left text-[10px] font-light text-forest-900/80 dark:text-forest-500/80">
+                              {fundingSource.currency}
+                            </div>
+                          </div>
                         </div>
-                        <div className="w-16 flex justify-between font-inter font-[600] text-xs space-x-1">
-                          <div className="flex-1 text-right">{formatNumber(fundingSource.amount, true)}</div>{" "}<div className="w-4 text-left text-[10px] font-light text-forest-900/80 dark:text-forest-500/80">{fundingSource.currency}</div>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </TooltipContent>
               </Tooltip>
@@ -1187,8 +1315,8 @@ export default function Page() {
                         </Link>
                       </div>
                       <div className="text-[0.7rem] font-light leading-snug pt-2">
-                        If you have any feedback or suggestions, please don&apos;t hesistate to contact us on
-                        {" "}
+                        If you have any feedback or suggestions, please
+                        don&apos;t hesistate to contact us on{" "}
                         <Link
                           href="https://twitter.com/growthepie_eth"
                           target="_blank"
@@ -1207,14 +1335,14 @@ export default function Page() {
                           Discord
                         </Link>
                         .
-                      </div >
-                    </div >
-                  </div >
-                </TooltipContent >
-              </Tooltip >
-            </div >
+                      </div>
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </div>
             VC Funding
-          </div >
+          </div>
         ),
         accessorKey: "value_raised",
         size: 100,
@@ -1286,9 +1414,10 @@ export default function Page() {
                   <div className="">
                     <span className="font-bold">Has Token</span>{" "}
                     <span className="font-light">
-                      indicates whether the project has a token and is sourced from publicly available data and the community.
-                    </span >
-                  </div >
+                      indicates whether the project has a token and is sourced
+                      from publicly available data and the community.
+                    </span>
+                  </div>
 
                   <div className="flex flex-col">
                     <span className="font-semibold">Sources:</span>
@@ -1309,28 +1438,33 @@ export default function Page() {
                       DefiLlama
                     </Link>
                   </div>
-                  < div className="text-[0.7rem] font-light leading-snug pt-2" >
-                    If you have any feedback or suggestions, please don &apos;t hesistate to contact us on
-                    {" "}
+                  <div className="text-[0.7rem] font-light leading-snug pt-2">
+                    If you have any feedback or suggestions, please don &apos;t
+                    hesistate to contact us on{" "}
                     <Link
                       href="https://twitter.com/growthepie_eth"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="underline"
-                    >X/Twitter</Link>
-                    {' or '}
+                    >
+                      X/Twitter
+                    </Link>
+                    {" or "}
                     <Link
                       href="https://discord.gg/fxjJFe7QyN"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="underline"
-                    >Discord</Link>.
-                  </div >
+                    >
+                      Discord
+                    </Link>
+                    .
+                  </div>
                   {/* <span className="font-light">is calculated based on the reported USD and OP amount.<br /><br />For OP tokens we calculated with $1.35 (OP price when RPGF applications were closed).<br /><br /><span className="font-bold">Note:</span> Projects only had to report funding they received from the collective, many didn&apos;t include VC funding and other funding sources.</span> */}
-                </div >
-              </div >
-            </TooltipContent >
-          </Tooltip >
+                </div>
+              </div>
+            </TooltipContent>
+          </Tooltip>
         ),
         accessorKey: "has_token",
         size: 40,
@@ -1436,7 +1570,13 @@ export default function Page() {
       },
     ],
 
-    [ballotRankingByProjectId, getFundingSourcesCell, getListAmountsCell, getProjectsCombinedFundingSourcesByCurrency, listAmountsByProjectId],
+    [
+      ballotRankingByProjectId,
+      getFundingSourcesCell,
+      getListAmountsCell,
+      getProjectsCombinedFundingSourcesByCurrency,
+      listAmountsByProjectId,
+    ],
   );
 
   const table = useReactTable<Project>({
@@ -1472,8 +1612,9 @@ export default function Page() {
         }
         
         td {
-            border-color: ${theme === "light" ? "rgba(0,0,0,0.16)" : "rgba(255,255,255,0.16)"
-          };
+            border-color: ${
+              theme === "light" ? "rgba(0,0,0,0.16)" : "rgba(255,255,255,0.16)"
+            };
             border-width:1px;
             border-style:solid none;
             padding:5px 10px;
@@ -1536,19 +1677,27 @@ export default function Page() {
         // included_in_lists: d.lists.length,
         included_in_lists: listAmountsByProjectId["listCounts"][d.id],
         lists_min_amount: listAmountsByProjectId.listQuartiles[d.id].min ?? "",
-        lists_quartile_1_amount: listAmountsByProjectId.listQuartiles[d.id].q1 ?? "",
-        lists_median_amount: listAmountsByProjectId.listQuartiles[d.id].median ?? "",
-        lists_quartile_3_amount: listAmountsByProjectId.listQuartiles[d.id].q3 ?? "",
+        lists_quartile_1_amount:
+          listAmountsByProjectId.listQuartiles[d.id].q1 ?? "",
+        lists_median_amount:
+          listAmountsByProjectId.listQuartiles[d.id].median ?? "",
+        lists_quartile_3_amount:
+          listAmountsByProjectId.listQuartiles[d.id].q3 ?? "",
         lists_max_amount: listAmountsByProjectId.listQuartiles[d.id].max ?? "",
-        funding_reported_total: getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)["TOTAL"],
-        funding_reported_usd: getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)["USD"],
-        funding_reported_op: getProjectsCombinedFundingSourcesByCurrency(d.funding_sources)["OP"],
+        funding_reported_total: getProjectsCombinedFundingSourcesByCurrency(
+          d.funding_sources,
+        )["TOTAL"],
+        funding_reported_usd: getProjectsCombinedFundingSourcesByCurrency(
+          d.funding_sources,
+        )["USD"],
+        funding_reported_op: getProjectsCombinedFundingSourcesByCurrency(
+          d.funding_sources,
+        )["OP"],
         vc_funding: d.value_raised,
         has_token: d.has_token,
         impact_category: d.impact_category.join("|"),
       };
     });
-
 
     const csv = [
       Object.keys(data[0]).join(","),
@@ -1556,7 +1705,7 @@ export default function Page() {
     ].join("\n");
 
     return csv;
-  }
+  };
 
   const handleExportCSV = () => {
     const csv = compileCSV();
@@ -1570,13 +1719,17 @@ export default function Page() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }
+  };
 
   const canDownloadCSV = useMemo(() => {
     if (!projects || !listAmountsByProjectId) return false;
-    return projects && projects.length > 0 && listAmountsByProjectId && Object.keys(listAmountsByProjectId).length > 0;
+    return (
+      projects &&
+      projects.length > 0 &&
+      listAmountsByProjectId &&
+      Object.keys(listAmountsByProjectId).length > 0
+    );
   }, [listAmountsByProjectId, projects]);
-
 
   return (
     <>
@@ -1624,15 +1777,15 @@ export default function Page() {
               )}
             </div>
             <div className="flex flex-col justify-end items-center text-xs font-normal space-y-1">
-              {canDownloadCSV &&
-                <div onClick={handleExportCSV} className="flex items-center space-x-1.5 cursor-pointer rounded-full px-4 py-2 bg-forest-50 dark:bg-forest-900 dark:text-forest-500 text-forest-900 font-medium">
-                  <Icon
-                    icon="feather:download"
-                    className="w-4 h-4"
-                  />
+              {canDownloadCSV && (
+                <div
+                  onClick={handleExportCSV}
+                  className="flex items-center space-x-1.5 cursor-pointer rounded-full px-4 py-2 bg-forest-50 dark:bg-forest-900 dark:text-forest-500 text-forest-900 font-medium"
+                >
+                  <Icon icon="feather:download" className="w-4 h-4" />
                   <div className="text-base font-semibold">Export CSV</div>
                 </div>
-              }
+              )}
               {/* <div className="text-forest-200 dark:text-forest-400">Last updated {lastUpdatedString}</div> */}
               {/* <div className="text-forest-200 dark:text-forest-400">Voting ended {moment.unix(1701982800).fromNow()}</div> */}
             </div>
@@ -1641,14 +1794,18 @@ export default function Page() {
       </Container>
 
       <Container
-        className={`w-full mt-[0px] h-100 -mb-12 ${isTableWidthWider ? "!pr-0 !pl-[20px] md:!pl-[50px]" : "!px-[20px] md:!px-[50px]"
-          }`}
+        className={`w-full mt-[0px] h-100 -mb-12 ${
+          isTableWidthWider
+            ? "!pr-0 !pl-[20px] md:!pl-[50px]"
+            : "!px-[20px] md:!px-[50px]"
+        }`}
       >
         <div
-          className={`w-full ${isTableWidthWider
-            ? "!pr-[20px] md:!pr-[50px] overflow-x-scroll"
-            : "overflow-x-hidden"
-            } z-100 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}
+          className={`w-full ${
+            isTableWidthWider
+              ? "!pr-[20px] md:!pr-[50px] overflow-x-scroll"
+              : "overflow-x-hidden"
+          } z-100 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}
         >
           <div className={tableMinWidthClass}>
             <div className="flex flex-col items-center justify-center w-full h-full relative">
@@ -1686,8 +1843,9 @@ export default function Page() {
                                   <div
                                     className={
                                       header.column.getCanSort()
-                                        ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-[11px] font-bold w-fit ${i === 0 ? "pl-[10px]" : ""
-                                        }`
+                                        ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-[11px] font-bold w-fit ${
+                                            i === 0 ? "pl-[10px]" : ""
+                                          }`
                                         : ""
                                     }
                                     style={{
@@ -1785,14 +1943,14 @@ export default function Page() {
                 ${
                   // if scroll is at top or bottom, don't show the fade
                   parentRef.current &&
-                    (parentRef.current.scrollTop < 30 ||
-                      parentRef.current.scrollTop >
+                  (parentRef.current.scrollTop < 30 ||
+                    parentRef.current.scrollTop >
                       parentRef.current.scrollHeight -
-                      parentRef.current.clientHeight -
-                      30)
+                        parentRef.current.clientHeight -
+                        30)
                     ? "fade-edge-div-vertical-hidden"
                     : "fade-edge-div-vertical"
-                  }}`}
+                }}`}
               >
                 <div
                   ref={parentRef}
@@ -1830,14 +1988,15 @@ export default function Page() {
                                     //   ? "sticky top-0 z-20"
                                     //   : "sticky top-0 left-0 z-30"
                                     ""
-                                    } bg-white dark:bg-forest-1000 whitespace-nowrap`}
+                                  } bg-white dark:bg-forest-1000 whitespace-nowrap`}
                                 >
                                   {header.isPlaceholder ? null : (
                                     <div
                                       {...{
                                         className: header.column.getCanSort()
-                                          ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-[11px] font-bold h-0 ${i === 0 ? "pl-[10px]" : ""
-                                          }`
+                                          ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-[11px] font-bold h-0 ${
+                                              i === 0 ? "pl-[10px]" : ""
+                                            }`
                                           : "",
                                         onClick:
                                           header.column.getToggleSortingHandler(),
@@ -1879,8 +2038,9 @@ export default function Page() {
                                 key={row.id}
                                 style={{
                                   height: `${virtualRow.size}px`,
-                                  transform: `translateY(${virtualRow.start - index * virtualRow.size
-                                    }px)`,
+                                  transform: `translateY(${
+                                    virtualRow.start - index * virtualRow.size
+                                  }px)`,
                                 }}
                               >
                                 {row.getVisibleCells().map((cell, i) => {
@@ -1918,24 +2078,50 @@ export default function Page() {
           question={"What can you see in this list?"}
           answer={
             <div className="text-xs lg:text-sm">
-              <div>This is a list of all 643 projects that are part of RPGF3. Voting by badgeholders was in progress until December 7th. See here the voting results including the amount each project receives from RetroPGF3.</div>
+              <div>
+                This is a list of all 643 projects that are part of RPGF3.
+                Voting by badgeholders was in progress until December 7th. See
+                here the voting results including the amount each project
+                receives from RetroPGF3.
+              </div>
 
               <div className="font-bold mt-3">Result</div>
-              <div>Result is the amount each project got allocated during the voting period. This is the final result from all badgeholder&apos;s ballots.</div>
+              <div>
+                Result is the amount each project got allocated during the
+                voting period. This is the final result from all
+                badgeholder&apos;s ballots.
+              </div>
 
               <div className="font-bold mt-3">In Ballots</div>
-              <div>A project needed at least 17 votes in order to receive funding through RPGF. When the checkmark is green, the project appeared in at least 17 ballots. Otherwise, the project will not receive any funding from RPGF3.</div>
+              <div>
+                A project needed at least 17 votes in order to receive funding
+                through RPGF. When the checkmark is green, the project appeared
+                in at least 17 ballots. Otherwise, the project will not receive
+                any funding from RPGF3.
+              </div>
 
               <div className="font-bold mt-3">Funding Reported</div>
-              <div>Total Funding Reported is calculated based on the project&apos;s reported USD and OP amounts. For OP tokens we calculated with $1.35 (OP price when RPGF applications were closed). Note: The application requirements for RPGF3 specified disclosure of funding sources from the OP Collective only; VC and other sources were often not included.</div>
+              <div>
+                Total Funding Reported is calculated based on the project&apos;s
+                reported USD and OP amounts. For OP tokens we calculated with
+                $1.35 (OP price when RPGF applications were closed). Note: The
+                application requirements for RPGF3 specified disclosure of
+                funding sources from the OP Collective only; VC and other
+                sources were often not included.
+              </div>
 
               <div className="font-bold mt-3">VC Funding</div>
-              <div>VC Funding amounts are sourced from publicly available data and the community. Sources are mainly @ZachXBT, DefiLlama, and projects that approched us during the voting period. If you have any feedback or suggestions, please don&apos;t hesitate to contact us on X Twitter or Discord</div>
+              <div>
+                VC Funding amounts are sourced from publicly available data and
+                the community. Sources are mainly @ZachXBT, DefiLlama, and
+                projects that approched us during the voting period. If you have
+                any feedback or suggestions, please don&apos;t hesitate to
+                contact us on X Twitter or Discord
+              </div>
             </div>
           }
         />
       </Container>
-
     </>
   );
 }
@@ -1952,10 +2138,24 @@ type BoxPlotProps = {
   globalMax: number; // To scale the plot within the table cell
 };
 
-const BoxPlot: React.FC<BoxPlotProps> = ({ min, q1, median, q3, max, scale = 100, globalMin, globalMax }) => {
-
+const BoxPlot: React.FC<BoxPlotProps> = ({
+  min,
+  q1,
+  median,
+  q3,
+  max,
+  scale = 100,
+  globalMin,
+  globalMax,
+}) => {
   // Function to calculate log-scaled position
-  const getScalePos = (value: number, globalMin: number, globalMax: number, scale: number, mode: "log" | "linear" | "sqrt" = "sqrt") => {
+  const getScalePos = (
+    value: number,
+    globalMin: number,
+    globalMax: number,
+    scale: number,
+    mode: "log" | "linear" | "sqrt" = "sqrt",
+  ) => {
     if (mode === "linear") {
       const position = (value / globalMax) * scale;
       return position;
@@ -1984,30 +2184,54 @@ const BoxPlot: React.FC<BoxPlotProps> = ({ min, q1, median, q3, max, scale = 100
 
   if (!q1 && !q3)
     return (
-      <div className="relative flex items-center h-6" style={{ width: `${scale}%` }}>
+      <div
+        className="relative flex items-center h-6"
+        style={{ width: `${scale}%` }}
+      >
         {/* spacer */}
         <div style={{ width: `${medianPos}px` }}></div>
         {/* Line for median */}
-        <div className="h-[4px] -mb-[1px] bg-forest-900 dark:bg-forest-500" style={{ left: `0%`, width: '1px' }}></div>
+        <div
+          className="h-[4px] -mb-[1px] bg-forest-900 dark:bg-forest-500"
+          style={{ left: `0%`, width: "1px" }}
+        ></div>
         {/* background */}
         <div className="absolute -mt-[2px] w-full h-[2px] bg-forest-900/20 dark:bg-forest-500/20 rounded-xs -z-10" />
       </div>
     );
 
   return (
-    <div className="relative flex items-center h-6" style={{ width: `${scale}%` }}>
+    <div
+      className="relative flex items-center h-6"
+      style={{ width: `${scale}%` }}
+    >
       {/* spacer */}
       <div style={{ width: `${minPos}px` }}></div>
       {/* Line for min to Q1 */}
-      <div className="h-[2px] -mt-[2px]  bg-forest-900/50 dark:bg-forest-500/50" style={{ width: `${q1Pos - minPos}%` }}></div>
+      <div
+        className="h-[2px] -mt-[2px]  bg-forest-900/50 dark:bg-forest-500/50"
+        style={{ width: `${q1Pos - minPos}%` }}
+      ></div>
       {/* Box for Q1 to Q3 */}
-      <div className="relative h-[3px] rounded-xs bg-forest-900/80 dark:bg-forest-500/80" style={{ width: `${medianPos - q1Pos}%` }} />
+      <div
+        className="relative h-[3px] rounded-xs bg-forest-900/80 dark:bg-forest-500/80"
+        style={{ width: `${medianPos - q1Pos}%` }}
+      />
       {/* Line for median */}
-      <div className="h-[4px] -mb-[1px] bg-forest-900 dark:bg-forest-500" style={{ left: `0%`, width: '1px' }}></div>
+      <div
+        className="h-[4px] -mb-[1px] bg-forest-900 dark:bg-forest-500"
+        style={{ left: `0%`, width: "1px" }}
+      ></div>
       {/* </div> */}
-      <div className="relative h-[3px] rounded-xs bg-forest-900/80 dark:bg-forest-500/80" style={{ width: `${q3Pos - medianPos}%` }} />
+      <div
+        className="relative h-[3px] rounded-xs bg-forest-900/80 dark:bg-forest-500/80"
+        style={{ width: `${q3Pos - medianPos}%` }}
+      />
       {/* Line for Q3 to max */}
-      <div className="h-[2px] -mt-[2px]  bg-forest-900/50 dark:bg-forest-500/50" style={{ width: `${maxPos - q3Pos}%` }}></div>
+      <div
+        className="h-[2px] -mt-[2px]  bg-forest-900/50 dark:bg-forest-500/50"
+        style={{ width: `${maxPos - q3Pos}%` }}
+      ></div>
       {/* background */}
       <div className="absolute -mt-[2px] w-full h-[2px] bg-forest-900/20 dark:bg-forest-500/20 rounded-xs -z-10" />
     </div>
