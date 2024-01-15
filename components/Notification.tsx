@@ -28,6 +28,8 @@ type NotificationType = {
   key: string;
 };
 
+const NOTICACHE = "NotificationCache";
+
 const currentDateTime = new Date().getTime();
 
 const Notification = () => {
@@ -40,6 +42,8 @@ const Notification = () => {
   const [sessionArray, setSessionArray] = useState<NotificationType[] | null>(
     null,
   );
+  const [cachedNotifications, setCachedNotifications] = useState<string[]>([]);
+
   const [hoverID, setHoverID] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [openNotif, setOpenNotif] = useState(false);
@@ -106,6 +110,18 @@ const Notification = () => {
     };
 
     fetchData();
+
+    const notiArray = localStorage.getItem(NOTICACHE);
+
+    if (notiArray) {
+      const testArray = JSON.parse(notiArray);
+      const newNotifications = Array.isArray(testArray)
+        ? testArray
+        : [testArray];
+
+      // Update cachedNotifications by appending new notifications
+      setCachedNotifications(newNotifications);
+    }
   }, []);
 
   // useEffect(() => {
@@ -347,6 +363,18 @@ const Notification = () => {
     return `rgba(${red}, ${green}, ${blue}, 0)`;
   }
 
+  function storeLocalNotifications() {
+    filteredData.forEach((element, index) => {
+      let arrSearch = cachedNotifications.indexOf(element["id"]);
+      if (arrSearch === -1) {
+        cachedNotifications.push(element["id"]);
+      }
+    });
+    //Search local storage for notification. If not stored push it onto array and store locally.
+
+    localStorage.setItem(NOTICACHE, JSON.stringify(cachedNotifications));
+  }
+
   return (
     <div className="relative">
       {filteredData && (
@@ -365,6 +393,7 @@ const Notification = () => {
               }}
               onMouseLeave={() => {
                 setOpenNotif(false);
+                storeLocalNotifications();
               }}
             >
               <button
@@ -380,13 +409,25 @@ const Notification = () => {
               >
                 {openNotif || filteredData.length === 0 ? (
                   <div className="w-full flex">
-                    <Image
-                      src="/FiBell.svg"
-                      width={16}
-                      height={16}
-                      alt="Bell image"
-                      className="text-forest-900"
-                    />
+                    {filteredData.every((notification) =>
+                      cachedNotifications.includes(notification["id"]),
+                    ) ? (
+                      <Image
+                        src="/FiBellRead.svg"
+                        width={16}
+                        height={16}
+                        alt="Bell image"
+                        className="text-forest-900"
+                      />
+                    ) : (
+                      <Image
+                        src="/FiBell.svg"
+                        width={16}
+                        height={16}
+                        alt="Bell image"
+                        className="text-forest-900"
+                      />
+                    )}
                     <p className="text-[12px] font-[500] pl-[7px]">
                       Notification Center
                     </p>{" "}
@@ -417,13 +458,23 @@ const Notification = () => {
                           }
                           className={`w-[16px] h-[16px] text-forest-50`}
                         />
+                      ) : filteredData.every((notification) =>
+                          cachedNotifications.includes(notification["id"]),
+                        ) ? (
+                        <Image
+                          src="/FiBellRead.svg"
+                          width={16}
+                          height={16}
+                          alt="Bell image"
+                          className="text-forest-900"
+                        />
                       ) : (
                         <Image
                           src="/FiBell.svg"
                           width={16}
                           height={16}
                           alt="Bell image"
-                          className="text-forest-900 "
+                          className="text-forest-900"
                         />
                       )}
                     </div>
@@ -587,12 +638,25 @@ const Notification = () => {
                 }}
               >
                 {" "}
-                <Image
-                  src="/FiBell.svg"
-                  alt="Bell image"
-                  width={24}
-                  height={24}
-                />
+                {filteredData.every((notification) =>
+                  cachedNotifications.includes(notification["id"]),
+                ) ? (
+                  <Image
+                    src="/FiBellRead.svg"
+                    width={16}
+                    height={16}
+                    alt="Bell image"
+                    className="text-forest-900"
+                  />
+                ) : (
+                  <Image
+                    src="/FiBell.svg"
+                    width={16}
+                    height={16}
+                    alt="Bell image"
+                    className="text-forest-900"
+                  />
+                )}
               </div>
 
               <div
