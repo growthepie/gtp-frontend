@@ -3,6 +3,7 @@ import Highcharts, {
   AxisLabelsFormatterContextObject,
 } from "highcharts/highstock";
 import highchartsAnnotations from "highcharts/modules/annotations";
+import highchartsPatternFill from "highcharts/modules/pattern-fill";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
 import {
   useState,
@@ -185,7 +186,6 @@ type MainChartProps = {
 export default function ComparisonChart({
   data,
   timeIntervals,
-  onTimeIntervalChange,
   showTimeIntervals = true,
   children,
   sources,
@@ -194,12 +194,15 @@ export default function ComparisonChart({
   setShowEthereumMainnet,
   selectedTimespan,
   setSelectedTimespan,
+  selectedTimeInterval,
+  setSelectedTimeInterval,
+  selectedScale,
+  setSelectedScale,
   metric_id,
   is_embed = false,
 }: {
   data: any;
   timeIntervals: string[];
-  onTimeIntervalChange: (interval: string) => void;
   showTimeIntervals: boolean;
   children?: ReactNode;
   sources: string[];
@@ -208,6 +211,10 @@ export default function ComparisonChart({
   setShowEthereumMainnet: (show: boolean) => void;
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
+  selectedTimeInterval: string;
+  setSelectedTimeInterval: (timeInterval: string) => void;
+  selectedScale: string;
+  setSelectedScale: (scale: string) => void;
   metric_id: string;
   is_embed?: boolean;
 }) {
@@ -221,7 +228,7 @@ export default function ComparisonChart({
     });
     highchartsRoundedCorners(Highcharts);
     highchartsAnnotations(Highcharts);
-
+    highchartsPatternFill(Highcharts);
     setHighchartsLoaded(true);
   }, []);
 
@@ -240,11 +247,11 @@ export default function ComparisonChart({
 
   // const [selectedTimespan, setSelectedTimespan] = useState("365d");
 
-  const [selectedScale, setSelectedScale] = useState(
-    is_embed && metric_id != "txcosts" ? "log" : "absolute",
-  );
+  // const [selectedScale, setSelectedScale] = useState(
+  //   is_embed && metric_id != "txcosts" ? "log" : "absolute",
+  // );
 
-  const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
+  // const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
   const [zoomed, setZoomed] = useState(false);
   const [zoomMin, setZoomMin] = useState(0);
@@ -313,11 +320,12 @@ export default function ComparisonChart({
     (name: string) => {
       if (name === "ethereum") return "area";
       if (selectedScale === "percentage") return "area";
-      if (selectedScale === "log") return "area";
+      if (selectedScale === "log")
+        return selectedTimeInterval === "daily" ? "area" : "column";
 
       return "line";
     },
-    [selectedScale],
+    [selectedScale, selectedTimeInterval],
   );
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
@@ -433,6 +441,16 @@ export default function ComparisonChart({
         return acc;
       }, 0);
 
+      const maxPoint = points.reduce((max: number, point: any) => {
+        if (point.y > max) max = point.y;
+        return max;
+      }, 0);
+
+      const maxPercentage = points.reduce((max: number, point: any) => {
+        if (point.percentage > max) max = point.percentage;
+        return max;
+      }, 0);
+
       const tooltipPoints = points
         .sort((a: any, b: any) => {
           if (reversePerformer) return a.y - b.y;
@@ -458,11 +476,11 @@ export default function ComparisonChart({
               </div>
               
               <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-                <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
+                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
     
-                <div class="h-[2px] rounded-none absolute right-0 -top-[3px] bg-forest-900 dark:bg-forest-50" 
+                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                 style="
-                  width: ${percentage}%;
+                  width: ${(percentage / maxPercentage) * 100}%;
                   background-color: ${AllChainsByKeys[name].colors[theme][0]};
                 "></div>
               </div>`;
@@ -500,11 +518,11 @@ export default function ComparisonChart({
             </div>
           </div>
           <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-            <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
+            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
 
-            <div class="h-[2px] rounded-none absolute right-0 -top-[3px] bg-forest-900 dark:bg-forest-50" 
+            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
             style="
-              width: ${(Math.max(0, value) / pointSumNonNegative) * 100}%;
+              width: ${(Math.max(0, value) / maxPoint) * 100}%;
               background-color: ${AllChainsByKeys[name].colors[theme][0]};
             "></div>
           </div>`;
@@ -645,19 +663,15 @@ export default function ComparisonChart({
         label: "6 months",
         shortLabel: "6M",
         value: 6,
-        xMin:
-          firstDayOfLastMonth.valueOf() - 6 * 31 * 24 * 60 * 60 * 1000 - buffer,
-        xMax: monthMaxPlusBuffer,
+        xMin: maxPlusBuffer.valueOf() - 6 * 31 * 24 * 60 * 60 * 1000 - buffer,
+        xMax: maxPlusBuffer,
       },
       "12m": {
         label: "1 year",
         shortLabel: "1Y",
         value: 12,
-        xMin:
-          firstDayOfLastMonth.valueOf() -
-          11 * 31 * 24 * 60 * 60 * 1000 -
-          buffer,
-        xMax: monthMaxPlusBuffer,
+        xMin: maxPlusBuffer.valueOf() - 12 * 31 * 24 * 60 * 60 * 1000 - buffer,
+        xMax: maxPlusBuffer,
       },
       maxM: {
         label: "Maximum",
@@ -671,7 +685,7 @@ export default function ComparisonChart({
                 Infinity,
               ) - buffer,
 
-        xMax: monthMaxPlusBuffer,
+        xMax: maxPlusBuffer,
       },
       max: {
         label: "Maximum",
@@ -788,6 +802,29 @@ export default function ComparisonChart({
         return {
           column: {
             stacking: "normal",
+            crisp: true,
+            // fillColor: {
+            //   pattern: {
+            //     path: {
+            //       d: "M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11",
+            //       strokeWidth: 13,
+            //     },
+            //     width: 5,
+            //     height: 5,
+            //     opacity: 0,
+            //   },
+            // },
+            // color: {
+            //   pattern: {
+            //     path: {
+            //       d: "M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11",
+            //       strokeWidth: 3,
+            //     },
+            //     width: 20,
+            //     height: 20,
+            //     opacity: 0.4,
+            //   },
+            // },
           },
           area: {
             stacking: "normal",
@@ -814,10 +851,73 @@ export default function ComparisonChart({
   );
 
   const getSeriesData = useCallback(
-    (types: string[], data: number[][]) => {
+    (name: string, types: string[], data: number[][]) => {
       const timeIndex = 0;
       let valueIndex = 1;
       let valueMulitplier = 1;
+
+      let zones: any[] | undefined = undefined;
+      let zoneAxis: string | undefined = undefined;
+
+      const isLineChart = getSeriesType(name) === "line";
+      const isColumnChart = getSeriesType(name) === "column";
+
+      const isAreaChart = getSeriesType(name) === "area";
+
+      let fillOpacity = undefined;
+
+      let seriesFill = "transparent";
+
+      if (isAreaChart) {
+        seriesFill = AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "33";
+      }
+
+      if (isAreaChart) {
+        seriesFill = AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "33";
+      }
+
+      let fillColor =
+        selectedTimeInterval === "daily"
+          ? AllChainsByKeys[name]?.colors[theme ?? "dark"][0]
+          : undefined;
+      // {
+      //     linearGradient: {
+      //       x1: 0,
+      //       y1: 0,
+      //       x2: 0,
+      //       y2: 1,
+      //     },
+      //     stops: [
+      //       [0, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "33"],
+      //       [1, AllChainsByKeys[name]?.colors[theme ?? "dark"][1] + "33"],
+      //     ],
+      // pattern: {
+      //   color: AllChainsByKeys[name].colors[theme][0],
+      // },
+      // pattern: {
+      //   path: "M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11",
+      //   width: 10,
+      //   height: 10,
+      //   strokeWidth: 3,
+      // },
+      // }
+      let color =
+        selectedTimeInterval === "daily"
+          ? AllChainsByKeys[name]?.colors[theme ?? "dark"][0]
+          : undefined;
+      // {
+      //   linearGradient: {
+      //     x1: 0,
+      //     y1: 0,
+      //     x2: 0,
+      //     y2: 1,
+      //   },
+      //   stops: [
+      //     [0, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "FF"],
+      //     [0.349, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "88"],
+      //     [1, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "00"],
+      //   ],
+      // };
 
       if (types.includes("usd")) {
         if (showUsd) {
@@ -833,23 +933,38 @@ export default function ComparisonChart({
       });
 
       if (selectedTimeInterval === "daily") {
-        return seriesData;
+        return {
+          data: seriesData,
+          zoneAxis,
+          zones,
+          fillColor: seriesFill,
+          fillOpacity,
+          color,
+        };
       }
 
-      const currentDate = new Date();
-      const currentYear = currentDate.getUTCFullYear();
-      const currentMonth = currentDate.getUTCMonth();
+      // check if the last data point is the last day of the month by adding a day to the last data point and checking if the day is 1
+      const lastDataPoint = seriesData[seriesData.length - 1];
+      const lastDayOfMonthCheck = new Date(lastDataPoint[0]);
+      // add a day to the last data point
+      lastDayOfMonthCheck.setDate(lastDayOfMonthCheck.getUTCDate() + 1);
+
+      let monthlyData: any[] = [];
+
+      // const currentDate = new Date();
+      // const currentYear = currentDate.getUTCFullYear();
+      // const currentMonth = currentDate.getUTCMonth();
 
       // calculate monthly sum aggregates for metrics we don't need to average
       if (!avgMonthlyMetrics.includes(metric_id)) {
-        const monthlyData = seriesData.reduce((acc: any[], d: any) => {
+        monthlyData = seriesData.reduce((acc: any[], d: any) => {
           const date = new Date(d[0]);
-          const dateYear = date.getUTCFullYear();
-          const dateMonth = date.getUTCMonth();
+          // const dateYear = date.getUTCFullYear();
+          // const dateMonth = date.getUTCMonth();
 
           // don't include the current month
-          if (dateYear === currentYear && dateMonth === currentMonth)
-            return acc;
+          // if (dateYear === currentYear && dateMonth === currentMonth)
+          //   return acc;
 
           const dateValue = Date.UTC(
             date.getUTCFullYear(),
@@ -871,19 +986,17 @@ export default function ComparisonChart({
 
           return acc;
         }, []);
-        console.log("monthlyData", monthlyData);
 
-        return monthlyData;
         // else calculate monthly averages for metrics we need to average
       } else {
-        const monthlyData = seriesData.reduce((acc: any[], d: any) => {
+        monthlyData = seriesData.reduce((acc: any[], d: any) => {
           const date = new Date(d[0]);
-          const dateYear = date.getUTCFullYear();
-          const dateMonth = date.getUTCMonth();
+          // const dateYear = date.getUTCFullYear();
+          // const dateMonth = date.getUTCMonth();
 
           // don't include the current month
-          if (dateYear === currentYear && dateMonth === currentMonth)
-            return acc;
+          // if (dateYear === currentYear && dateMonth === currentMonth)
+          //   return acc;
 
           const dateValue = Date.UTC(
             date.getUTCFullYear(),
@@ -914,11 +1027,128 @@ export default function ComparisonChart({
             d[1].length;
           d[1] = average;
         });
-
-        return monthlyData;
       }
+
+      // if it is not the last day of the month, add a zone to the chart to indicate that the data is incomplete
+      if (lastDayOfMonthCheck.getUTCDate() !== 1) {
+        zoneAxis = "x";
+        zones = [
+          {
+            value: monthlyData[monthlyData.length - 2][0] + 1,
+            dashStyle: "Solid",
+            fillColor: isColumnChart
+              ? {
+                  linearGradient: {
+                    x1: 0,
+                    y1: 0,
+                    x2: 0,
+                    y2: 1,
+                  },
+                  stops: [
+                    [
+                      0,
+                      AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "FF",
+                    ],
+                    [
+                      0.349,
+                      AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "88",
+                    ],
+                    [
+                      1,
+                      AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "00",
+                    ],
+                  ],
+                }
+              : seriesFill,
+            color: isColumnChart
+              ? {
+                  linearGradient: {
+                    x1: 0,
+                    y1: 0,
+                    x2: 0,
+                    y2: 1,
+                  },
+                  stops: [
+                    [
+                      0,
+                      AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "FF",
+                    ],
+                    [
+                      0.349,
+                      AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "88",
+                    ],
+                    [
+                      1,
+                      AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "00",
+                    ],
+                  ],
+                }
+              : AllChainsByKeys[name].colors[theme ?? "dark"][0],
+          },
+          {
+            // value: monthlyData[monthlyData.length - 2][0],
+            dashStyle: "Dot",
+            fillColor: isColumnChart
+              ? {
+                  linearGradient: {
+                    x1: 0,
+                    y1: 0,
+                    x2: 0,
+                    y2: 1,
+                  },
+                  stops: [
+                    [
+                      0,
+                      AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "FF",
+                    ],
+                    [
+                      0.349,
+                      AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "88",
+                    ],
+                    [
+                      1,
+                      AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "00",
+                    ],
+                  ],
+                }
+              : seriesFill,
+            color: isColumnChart
+              ? {
+                  pattern: {
+                    path: {
+                      d: "M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11",
+                      strokeWidth: 3,
+                    },
+                    width: 10,
+                    height: 10,
+                    opacity: 1,
+                    color:
+                      AllChainsByKeys[name].colors[theme ?? "dark"][0] + "CC",
+                  },
+                }
+              : AllChainsByKeys[name].colors[theme ?? "dark"][0],
+          },
+        ];
+      }
+
+      return {
+        data: monthlyData,
+        zoneAxis,
+        zones,
+        fillColor,
+        fillOpacity,
+        color,
+      };
     },
-    [avgMonthlyMetrics, metric_id, selectedTimeInterval, showGwei, showUsd],
+    [
+      avgMonthlyMetrics,
+      metric_id,
+      selectedScale,
+      selectedTimeInterval,
+      showGwei,
+      showUsd,
+      theme,
+    ],
   );
 
   const getChartHeight = useCallback(() => {
@@ -1041,280 +1271,216 @@ export default function ComparisonChart({
       },
       //@ts-ignore
       series: [
-        ...filteredData
-          // .sort((a, b) => {
-          //   if (a.name === "ethereum") return 1;
+        ...filteredData.map((series: any, i: number) => {
+          const zIndex = showEthereumMainnet
+            ? series.name === "ethereum"
+              ? 0
+              : 10
+            : 10;
+          let borderRadius: string | null = null;
 
-          //   if (selectedScale === "percentage")
-          //     return (
-          //       a.data[a.data.length - 1][1] - b.data[b.data.length - 1][1]
-          //     );
-          //   else {
-          //     return (
-          //       b.data[b.data.length - 1][1] - a.data[a.data.length - 1][1]
-          //     );
-          //   }
-          // })
-          .map((series: any, i: number) => {
-            const zIndex = showEthereumMainnet
-              ? series.name === "ethereum"
+          if (showEthereumMainnet && i === 1) {
+            borderRadius = "8%";
+          } else if (i === 0) {
+            borderRadius = "8%";
+          }
+
+          const timeIntervalToMilliseconds = {
+            daily: 1 * 24 * 3600 * 1000,
+            weekly: 7 * 24 * 3600 * 1000,
+            monthly: 30 * 24 * 3600 * 1000,
+          };
+
+          const pointsSettings = {
+            pointPlacement:
+              selectedTimeInterval === "monthly" && selectedScale === "log"
                 ? 0
-                : 10
-              : 10;
+                : 0.5,
+          };
 
-            let borderRadius: string | null = null;
+          console.log(
+            "getSeriesData",
+            getSeriesData(series.name, series.types, series.data),
+          );
 
-            if (showEthereumMainnet && i === 1) {
-              borderRadius = "8%";
-            } else if (i === 0) {
-              borderRadius = "8%";
-            }
-
-            const timeIntervalToMilliseconds = {
-              daily: 1 * 24 * 3600 * 1000,
-              weekly: 7 * 24 * 3600 * 1000,
-              monthly: 30 * 24 * 3600 * 1000,
-            };
-
-            const pointsSettings =
-              // getSeriesType(series.name) === "column"
-              //   ? {
-              //       pointPlacement: 0.5,
-              //       pointPadding: 0.15,
-              //       pointRange:
-              //         timeIntervalToMilliseconds[
-              //           dataGrouping.enabled ? "weekly" : "daily"
-              //         ],
-              //     }
-              //   :
-              {
-                pointPlacement: 0.5,
-                // pointInterval: 7,
-                // pointIntervalUnit: "day",
-              };
-
-            return {
-              name: series.name,
-              // always show ethereum on the bottom
-              zIndex: zIndex,
-              step:
-                // getSeriesType(series.name) === "column" ||
-                // selectedScale === "log"
-                //   ? "center"
-                //   :
-                undefined,
-              data: getSeriesData(series.types, series.data),
-              // series.types.includes("usd")
-              //   ? showUsd
-              //     ? series.data.map((d: any) => [
-              //         d[0],
-              //         d[series.types.indexOf("usd")],
-              //       ])
-              //     : series.data.map((d: any) => [
-              //         d[0],
-              //         showGwei
-              //           ? d[series.types.indexOf("eth")] * 1000000000
-              //           : d[series.types.indexOf("eth")],
-              //       ])
-              //   : series.data.map((d: any) => [d[0], d[1]]),
-              ...pointsSettings,
-              type: getSeriesType(series.name),
-              // fill if series name is ethereum
-              clip: true,
-              dataGrouping: dataGrouping,
-              borderRadiusTopLeft: borderRadius,
-              borderRadiusTopRight: borderRadius,
-              // type: getSeriesType(series.name),
-              fillOpacity: series.name === "ethereum" ? 1 : 0,
-              fillColor: {
-                linearGradient: {
-                  x1: 0,
-                  y1: 0,
-                  x2: 0,
-                  y2: 1,
-                },
-                stops: [
-                  [
-                    0,
-                    AllChainsByKeys[series.name]?.colors[theme ?? "dark"][0] +
+          return {
+            name: series.name,
+            // always show ethereum on the bottom
+            zIndex: zIndex,
+            step: undefined,
+            data: getSeriesData(series.name, series.types, series.data).data,
+            zoneAxis: getSeriesData(series.name, series.types, series.data)
+              .zoneAxis,
+            zones: getSeriesData(series.name, series.types, series.data).zones,
+            ...pointsSettings,
+            type: getSeriesType(series.name),
+            // fill if series name is ethereum
+            clip: true,
+            dataGrouping: dataGrouping,
+            borderRadiusTopLeft: borderRadius,
+            borderRadiusTopRight: borderRadius,
+            fillOpacity: getSeriesData(series.name, series.types, series.data)
+              .fillOpacity,
+            fillColor: getSeriesData(series.name, series.types, series.data)
+              .fillColor,
+            color: getSeriesData(series.name, series.types, series.data).color,
+            borderColor:
+              AllChainsByKeys[series.name]?.colors[theme ?? "dark"][0],
+            borderWidth: 1,
+            lineWidth: 2,
+            ...// @ts-ignore
+            (getSeriesType(series.name) !== "column"
+              ? {
+                  shadow: {
+                    color:
+                      AllChainsByKeys[series.name]?.colors[theme ?? "dark"][1] +
                       "33",
-                  ],
-                  [
-                    1,
-                    AllChainsByKeys[series.name]?.colors[theme ?? "dark"][1] +
-                      "33",
-                  ],
-                ],
-              },
-              borderColor:
-                AllChainsByKeys[series.name]?.colors[theme ?? "dark"][0],
-              borderWidth: 1,
-              lineWidth: 2,
-              ...// @ts-ignore
-              (getSeriesType(series.name) !== "column"
-                ? {
-                    shadow: {
-                      color:
-                        AllChainsByKeys[series.name]?.colors[
-                          theme ?? "dark"
-                        ][1] + "33",
-                      width: 10,
-                    },
-                    color: {
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 1,
-                        y2: 0,
-                      },
-                      stops: [
-                        [
-                          0,
-                          AllChainsByKeys[series.name]?.colors[
-                            theme ?? "dark"
-                          ][0],
-                        ],
-                        // [0.33, AllChainsByKeys[series.name].colors[1]],
-                        [
-                          1,
-                          AllChainsByKeys[series.name]?.colors[
-                            theme ?? "dark"
-                          ][1],
-                        ],
-                      ],
-                    },
-                  }
-                : series.name === "all_l2s"
-                ? {
-                    borderColor: "transparent",
-
-                    shadow: {
-                      color: "#CDD8D3" + "FF",
-                      // color:
-                      //   AllChainsByKeys[series.name].colors[theme][1] + "33",
-                      // width: 10,
-                      offsetX: 0,
-                      offsetY: 0,
-                      width: 2,
-                    },
-                    color: {
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 0,
-                        y2: 1,
-                      },
-                      stops:
-                        theme === "dark"
-                          ? [
-                              [
-                                0,
-                                AllChainsByKeys[series.name]?.colors[
-                                  theme ?? "dark"
-                                ][0] + "E6",
-                              ],
-                              // [
-                              //   0.3,
-                              //   //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
-                              //   AllChainsByKeys[series.name].colors[theme][0] +
-                              //     "FF",
-                              // ],
-                              [
-                                1,
-                                AllChainsByKeys[series.name]?.colors[
-                                  theme ?? "dark"
-                                ][1] + "E6",
-                              ],
-                            ]
-                          : [
-                              [
-                                0,
-                                AllChainsByKeys[series.name]?.colors[
-                                  theme ?? "dark"
-                                ][0] + "E6",
-                              ],
-                              // [
-                              //   0.7,
-                              //   AllChainsByKeys[series.name].colors[theme][0] +
-                              //     "88",
-                              // ],
-                              [
-                                1,
-                                AllChainsByKeys[series.name]?.colors[
-                                  theme ?? "dark"
-                                ][1] + "E6",
-                              ],
-                            ],
-                    },
-                  }
-                : {
-                    borderColor: "transparent",
-                    shadow: {
-                      color: "#CDD8D3" + "FF",
-                      offsetX: 0,
-                      offsetY: 0,
-                      width: 2,
-                    },
-                    color: {
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 0,
-                        y2: 1,
-                      },
-                      stops: [
-                        [
-                          0,
-                          AllChainsByKeys[series.name]?.colors[
-                            theme ?? "dark"
-                          ][0] + "FF",
-                        ],
-                        [
-                          0.349,
-                          AllChainsByKeys[series.name]?.colors[
-                            theme ?? "dark"
-                          ][0] + "88",
-                        ],
-                        [
-                          1,
-                          AllChainsByKeys[series.name]?.colors[
-                            theme ?? "dark"
-                          ][0] + "00",
-                        ],
-                      ],
-                    },
-                  }),
-              states: {
-                hover: {
-                  enabled: true,
-                  halo: {
-                    size: 5,
-                    opacity: 1,
-                    attributes: {
-                      fill:
-                        AllChainsByKeys[series.name]?.colors[
-                          theme ?? "dark"
-                        ][0] + "99",
-                      stroke:
-                        AllChainsByKeys[series.name]?.colors[
-                          theme ?? "dark"
-                        ][0] + "66",
-                      strokeWidth: 0,
-                    },
+                    width: 10,
                   },
-                  brightness: 0.3,
+                  // color: {
+                  //   linearGradient: {
+                  //     x1: 0,
+                  //     y1: 0,
+                  //     x2: 1,
+                  //     y2: 0,
+                  //   },
+                  //   stops: [
+                  //     [
+                  //       0,
+                  //       AllChainsByKeys[series.name]?.colors[
+                  //         theme ?? "dark"
+                  //       ][0],
+                  //     ],
+                  //     // [0.33, AllChainsByKeys[series.name].colors[1]],
+                  //     [
+                  //       1,
+                  //       AllChainsByKeys[series.name]?.colors[
+                  //         theme ?? "dark"
+                  //       ][1],
+                  //     ],
+                  //   ],
+                  // },
+                }
+              : series.name === "all_l2s"
+              ? {
+                  borderColor: "transparent",
+
+                  shadow: {
+                    color: "#CDD8D3" + "FF",
+                    // color:
+                    //   AllChainsByKeys[series.name].colors[theme][1] + "33",
+                    // width: 10,
+                    offsetX: 0,
+                    offsetY: 0,
+                    width: 2,
+                  },
+                  // color: {
+                  //   linearGradient: {
+                  //     x1: 0,
+                  //     y1: 0,
+                  //     x2: 0,
+                  //     y2: 1,
+                  //   },
+                  //   stops:
+                  //     theme === "dark"
+                  //       ? [
+                  //           [
+                  //             0,
+                  //             AllChainsByKeys[series.name]?.colors[
+                  //               theme ?? "dark"
+                  //             ][0] + "E6",
+                  //           ],
+
+                  //           [
+                  //             1,
+                  //             AllChainsByKeys[series.name]?.colors[
+                  //               theme ?? "dark"
+                  //             ][1] + "E6",
+                  //           ],
+                  //         ]
+                  //       : [
+                  //           [
+                  //             0,
+                  //             AllChainsByKeys[series.name]?.colors[
+                  //               theme ?? "dark"
+                  //             ][0] + "E6",
+                  //           ],
+
+                  //           [
+                  //             1,
+                  //             AllChainsByKeys[series.name]?.colors[
+                  //               theme ?? "dark"
+                  //             ][1] + "E6",
+                  //           ],
+                  //         ],
+                  // },
+                }
+              : {
+                  borderColor: "transparent",
+                  shadow: {
+                    color: "#CDD8D3" + "FF",
+                    offsetX: 0,
+                    offsetY: 0,
+                    width: 2,
+                  },
+                  // fillColor: {
+                  //   linearGradient: {
+                  //     x1: 0,
+                  //     y1: 0,
+                  //     x2: 0,
+                  //     y2: 1,
+                  //   },
+                  //   stops: [
+                  //     [
+                  //       0,
+                  //       AllChainsByKeys[series.name]?.colors[
+                  //         theme ?? "dark"
+                  //       ][0] + "FF",
+                  //     ],
+                  //     [
+                  //       0.349,
+                  //       AllChainsByKeys[series.name]?.colors[
+                  //         theme ?? "dark"
+                  //       ][0] + "88",
+                  //     ],
+                  //     [
+                  //       1,
+                  //       AllChainsByKeys[series.name]?.colors[
+                  //         theme ?? "dark"
+                  //       ][0] + "00",
+                  //     ],
+                  //   ],
+                  // },
+                }),
+            states: {
+              hover: {
+                enabled: true,
+                halo: {
+                  size: 5,
+                  opacity: 1,
+                  attributes: {
+                    fill:
+                      AllChainsByKeys[series.name]?.colors[theme ?? "dark"][0] +
+                      "99",
+                    stroke:
+                      AllChainsByKeys[series.name]?.colors[theme ?? "dark"][0] +
+                      "66",
+                    strokeWidth: 0,
+                  },
                 },
-                inactive: {
-                  enabled: true,
-                  opacity: 0.6,
-                },
-                selection: {
-                  enabled: false,
-                },
+                brightness: 0.3,
               },
-              showInNavigator: false,
-            };
-          }),
+              inactive: {
+                enabled: true,
+                opacity: 0.6,
+              },
+              selection: {
+                enabled: false,
+              },
+            },
+            showInNavigator: false,
+          };
+        }),
       ],
       navigator: {
         enabled: false,
@@ -1357,6 +1523,7 @@ export default function ComparisonChart({
     metric_id,
     getSeriesData,
     getChartHeight,
+    selectedTimeInterval,
   ]);
 
   useEffect(() => {
@@ -1459,7 +1626,7 @@ export default function ComparisonChart({
                     if (selectedTimeInterval === interval) return;
 
                     if (interval === "daily") setSelectedTimespan("180d");
-                    else setSelectedTimespan("6m");
+                    else setSelectedTimespan("12m");
 
                     setSelectedTimeInterval(interval);
                     // setXAxis();

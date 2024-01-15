@@ -43,6 +43,13 @@ export const tooltipFormatter = (
     let tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
         <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
 
+    let maxPercentage = points.reduce((acc: number, point: any) => {
+      if (point.percentage > acc) {
+        acc = point.percentage;
+      }
+      return acc;
+    }, 0);
+
     points
       .sort((a: any, b: any) => {
         if (reversePerformer) return a.y - b.y;
@@ -72,16 +79,18 @@ export const tooltipFormatter = (
 
         tooltip += `
         <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-        <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors["dark"][0]}"></div>
+        <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+          AllChainsByKeys[name].colors["dark"][0]
+        }"></div>
         <div class="tooltip-point-name">${AllChainsByKeys[name].label}</div>
         <div class="flex-1 text-right font-inter">${value}</div>
       </div>
       <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-        <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
+        <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
 
-        <div class="h-[2px] rounded-none absolute right-0 -top-[3px] bg-forest-900 dark:bg-forest-50" 
+        <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
         style="
-          width: ${percentage}%;
+          width: ${(percentage / maxPercentage) * 100}%;
           background-color: ${AllChainsByKeys[name].colors["dark"][0]};
         "></div>
       </div>`;
@@ -123,6 +132,13 @@ export const tooltipFormatter = (
 
     let pointsSum = points.reduce((acc: number, point: any) => {
       acc += point.y;
+      return acc;
+    }, 0);
+
+    let maxPoint = points.reduce((acc: number, point: any) => {
+      if (point.y > acc) {
+        acc = point.y;
+      }
       return acc;
     }, 0);
 
@@ -172,11 +188,11 @@ export const tooltipFormatter = (
         </div>
       </div>
       <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-        <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
+        <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
 
-        <div class="h-[2px] rounded-none absolute right-0 -top-[3px] bg-forest-900 dark:bg-forest-50" 
+        <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
         style="
-          width: ${(y / pointsSum) * 100}%;
+          width: ${(y / maxPoint) * 100}%;
           background-color: ${AllChainsByKeys[name].colors["dark"][0]};
         "></div>
       </div>`;

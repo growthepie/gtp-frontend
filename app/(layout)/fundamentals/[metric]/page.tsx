@@ -35,7 +35,8 @@ const Chain = ({ params }: { params: any }) => {
     return AllChains.filter(
       (chain) =>
         Object.keys(metricData.data.chains).includes(chain.key) &&
-        chain.key != "ethereum" && chain.ecosystem.includes("all-chains")
+        chain.key != "ethereum" &&
+        chain.ecosystem.includes("all-chains"),
     );
   }, [metricData]);
 
@@ -50,8 +51,18 @@ const Chain = ({ params }: { params: any }) => {
   const [selectedChains, setSelectedChains] = useSessionStorage(
     "fundamentalsChains",
     AllChains.filter(
-      chain => (chain.ecosystem.includes("all-chains") && ["arbitrum", "optimism", "base", "linea", "zksync_era"].includes(chain.key)) || chain.key === "ethereum"
+      (chain) =>
+        (chain.ecosystem.includes("all-chains") &&
+          ["arbitrum", "optimism", "base", "linea", "zksync_era"].includes(
+            chain.key,
+          )) ||
+        chain.key === "ethereum",
     ).map((chain) => chain.key),
+  );
+
+  const [selectedScale, setSelectedScale] = useSessionStorage(
+    "fundamentalsScale",
+    "absolute",
   );
 
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
@@ -59,7 +70,10 @@ const Chain = ({ params }: { params: any }) => {
     "365d",
   );
 
-  const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
+  const [selectedTimeInterval, setSelectedTimeInterval] = useSessionStorage(
+    "fundamentalsTimeInterval",
+    "daily",
+  );
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(
     "fundamentalsShowEthereumMainnet",
@@ -73,7 +87,7 @@ const Chain = ({ params }: { params: any }) => {
       ["365d", "max"].includes(selectedTimespan) &&
       selectedTimeInterval === "daily"
       ? "daily_7d_rolling"
-      : selectedTimeInterval;
+      : "daily";
   }, [metricData, selectedTimeInterval, selectedTimespan]);
 
   if (errorCode) {
@@ -136,9 +150,7 @@ const Chain = ({ params }: { params: any }) => {
         {metricData && (
           <ComparisonChart
             data={Object.keys(metricData.data.chains)
-              .filter(
-                (chain) => selectedChains.includes(chain)
-              )
+              .filter((chain) => selectedChains.includes(chain))
               .map((chain) => {
                 return {
                   name: chain,
@@ -152,9 +164,8 @@ const Chain = ({ params }: { params: any }) => {
               Object.keys(metricData.data.chains.arbitrum),
               ["daily", "weekly", "monthly"],
             )}
-            onTimeIntervalChange={(timeInterval) =>
-              setSelectedTimeInterval(timeInterval)
-            }
+            selectedTimeInterval={selectedTimeInterval}
+            setSelectedTimeInterval={setSelectedTimeInterval}
             showTimeIntervals={true}
             sources={metricData.data.source}
             avg={metricData.data.avg}
@@ -162,6 +173,8 @@ const Chain = ({ params }: { params: any }) => {
             setShowEthereumMainnet={setShowEthereumMainnet}
             selectedTimespan={selectedTimespan}
             setSelectedTimespan={setSelectedTimespan}
+            selectedScale={selectedScale}
+            setSelectedScale={setSelectedScale}
           >
             <MetricsTable
               data={metricData.data.chains}

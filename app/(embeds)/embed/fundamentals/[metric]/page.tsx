@@ -68,6 +68,10 @@ const Chain = ({ params }: { params: any }) => {
       chain.key === "ethereum",
   ).map((chain) => chain.key);
 
+  const [selectedScale, setSelectedScale] = useState(
+    params.metric != "txcosts" ? "log" : "absolute",
+  );
+
   const [selectedTimespan, setSelectedTimespan] = useState("365d");
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
@@ -108,9 +112,11 @@ const Chain = ({ params }: { params: any }) => {
             Object.keys(metricData.data.chains.arbitrum),
             ["daily", "weekly", "monthly"],
           )}
-          onTimeIntervalChange={(timeInterval) =>
-            setSelectedTimeInterval(timeInterval)
-          }
+          // onTimeIntervalChange={(timeInterval) =>
+          //   setSelectedTimeInterval(timeInterval)
+          // }
+          selectedTimeInterval={selectedTimeInterval}
+          setSelectedTimeInterval={setSelectedTimeInterval}
           showTimeIntervals={true}
           sources={metricData.data.source}
           avg={metricData.data.avg}
@@ -118,6 +124,8 @@ const Chain = ({ params }: { params: any }) => {
           setShowEthereumMainnet={setShowEthereumMainnet}
           selectedTimespan={selectedTimespan}
           setSelectedTimespan={setSelectedTimespan}
+          selectedScale={selectedScale}
+          setSelectedScale={setSelectedScale}
           is_embed={true}
         >
           <MetricsTable
