@@ -285,7 +285,7 @@ export default function ComparisonChart({
       const xMinYear = xMinDate.getUTCFullYear();
       const xMaxYear = xMaxDate.getUTCFullYear();
 
-      if (selectedTimespan === "max") {
+      if (selectedTimespan === "max" || selectedTimespan === "maxM") {
         for (let year = xMinYear; year <= xMaxYear; year++) {
           for (let month = 0; month < 12; month = month + 4) {
             if (year === xMinYear && month < xMinMonth) continue;
@@ -413,7 +413,7 @@ export default function ComparisonChart({
       const dateString = date.toLocaleDateString(undefined, {
         timeZone: "UTC",
         month: "short",
-        day: "numeric",
+        day: selectedTimeInterval === "daily" ? "numeric" : undefined,
         year: "numeric",
       });
 
@@ -549,6 +549,7 @@ export default function ComparisonChart({
       showUsd,
       theme,
       valuePrefix,
+      selectedTimeInterval,
     ],
   );
 
@@ -604,6 +605,14 @@ export default function ComparisonChart({
     const buffer = 0.5 * 24 * 60 * 60 * 1000;
     const maxPlusBuffer = maxDate.valueOf() + buffer;
 
+    //
+    const firstDayOfLastMonth = new Date(
+      maxDate.getFullYear(),
+      maxDate.getMonth() - 1,
+      1,
+    );
+    const monthMaxPlusBuffer = firstDayOfLastMonth.valueOf() + buffer;
+
     return {
       // "30d": {
       //   label: "30 days",
@@ -613,24 +622,60 @@ export default function ComparisonChart({
       // },
       "90d": {
         label: "90 days",
+        shortLabel: "90D",
         value: 90,
         xMin: maxDate.valueOf() - 90 * 24 * 60 * 60 * 1000 - buffer,
         xMax: maxPlusBuffer,
       },
       "180d": {
         label: "180 days",
+        shortLabel: "180D",
         value: 180,
         xMin: maxDate.valueOf() - 180 * 24 * 60 * 60 * 1000 - buffer,
         xMax: maxPlusBuffer,
       },
       "365d": {
         label: "1 year",
+        shortLabel: "365D",
         value: 365,
         xMin: maxDate.valueOf() - 365 * 24 * 60 * 60 * 1000 - buffer,
         xMax: maxPlusBuffer,
       },
+      "6m": {
+        label: "6 months",
+        shortLabel: "6M",
+        value: 6,
+        xMin:
+          firstDayOfLastMonth.valueOf() - 6 * 31 * 24 * 60 * 60 * 1000 - buffer,
+        xMax: monthMaxPlusBuffer,
+      },
+      "12m": {
+        label: "1 year",
+        shortLabel: "1Y",
+        value: 12,
+        xMin:
+          firstDayOfLastMonth.valueOf() -
+          11 * 31 * 24 * 60 * 60 * 1000 -
+          buffer,
+        xMax: monthMaxPlusBuffer,
+      },
+      maxM: {
+        label: "Maximum",
+        shortLabel: "Max",
+        value: 0,
+        xMin:
+          filteredData[0].name === ""
+            ? Date.now() - 365 * 24 * 60 * 60 * 1000
+            : filteredData.reduce(
+                (min, d) => Math.min(min, d.data[0][0]),
+                Infinity,
+              ) - buffer,
+
+        xMax: monthMaxPlusBuffer,
+      },
       max: {
         label: "Maximum",
+        shortLabel: "Max",
         value: 0,
         xMin:
           filteredData[0].name === ""
@@ -762,6 +807,119 @@ export default function ComparisonChart({
         };
     }
   }, [selectedScale]);
+
+  const avgMonthlyMetrics = useMemo(
+    () => ["daa", "stables_mcap", "tvl", "txcosts"],
+    [],
+  );
+
+  const getSeriesData = useCallback(
+    (types: string[], data: number[][]) => {
+      const timeIndex = 0;
+      let valueIndex = 1;
+      let valueMulitplier = 1;
+
+      if (types.includes("usd")) {
+        if (showUsd) {
+          valueIndex = types.indexOf("usd");
+        } else {
+          valueIndex = types.indexOf("eth");
+          if (showGwei) valueMulitplier = 1000000000;
+        }
+      }
+
+      const seriesData = data.map((d) => {
+        return [d[timeIndex], d[valueIndex] * valueMulitplier];
+      });
+
+      if (selectedTimeInterval === "daily") {
+        return seriesData;
+      }
+
+      const currentDate = new Date();
+      const currentYear = currentDate.getUTCFullYear();
+      const currentMonth = currentDate.getUTCMonth();
+
+      // calculate monthly sum aggregates for metrics we don't need to average
+      if (!avgMonthlyMetrics.includes(metric_id)) {
+        const monthlyData = seriesData.reduce((acc: any[], d: any) => {
+          const date = new Date(d[0]);
+          const dateYear = date.getUTCFullYear();
+          const dateMonth = date.getUTCMonth();
+
+          // don't include the current month
+          if (dateYear === currentYear && dateMonth === currentMonth)
+            return acc;
+
+          const dateValue = Date.UTC(
+            date.getUTCFullYear(),
+            date.getUTCMonth(),
+            1,
+          ).valueOf();
+
+          // check if there is already a data point for this month
+          const existingDataPoint = acc.find((d) => d[0] === dateValue);
+
+          // if there is, add the current value to the existing data point
+          if (existingDataPoint) {
+            existingDataPoint[1] += d[1];
+          }
+          // if there isn't, create a new data point
+          else {
+            acc.push([dateValue, d[1]]);
+          }
+
+          return acc;
+        }, []);
+        console.log("monthlyData", monthlyData);
+
+        return monthlyData;
+        // else calculate monthly averages for metrics we need to average
+      } else {
+        const monthlyData = seriesData.reduce((acc: any[], d: any) => {
+          const date = new Date(d[0]);
+          const dateYear = date.getUTCFullYear();
+          const dateMonth = date.getUTCMonth();
+
+          // don't include the current month
+          if (dateYear === currentYear && dateMonth === currentMonth)
+            return acc;
+
+          const dateValue = Date.UTC(
+            date.getUTCFullYear(),
+            date.getUTCMonth(),
+            1,
+          ).valueOf();
+
+          // check if there is already a data point for this month
+          const existingDataPoint = acc.find((d) => d[0] === dateValue);
+
+          // if there is, add the current value to the existing data point
+          if (existingDataPoint) {
+            existingDataPoint[1].push(d[1]);
+          }
+
+          // if there isn't, create a new data point
+          else {
+            acc.push([dateValue, [d[1]]]);
+          }
+
+          return acc;
+        }, []);
+
+        // calculate the average for each month
+        monthlyData.forEach((d) => {
+          const average =
+            d[1].reduce((acc: number, value: number) => acc + value, 0) /
+            d[1].length;
+          d[1] = average;
+        });
+
+        return monthlyData;
+      }
+    },
+    [avgMonthlyMetrics, metric_id, selectedTimeInterval, showGwei, showUsd],
+  );
 
   const getChartHeight = useCallback(() => {
     if (is_embed) return window ? window.innerHeight - 160 : 400;
@@ -945,19 +1103,20 @@ export default function ComparisonChart({
                 //   ? "center"
                 //   :
                 undefined,
-              data: series.types.includes("usd")
-                ? showUsd
-                  ? series.data.map((d: any) => [
-                      d[0],
-                      d[series.types.indexOf("usd")],
-                    ])
-                  : series.data.map((d: any) => [
-                      d[0],
-                      showGwei
-                        ? d[series.types.indexOf("eth")] * 1000000000
-                        : d[series.types.indexOf("eth")],
-                    ])
-                : series.data.map((d: any) => [d[0], d[1]]),
+              data: getSeriesData(series.types, series.data),
+              // series.types.includes("usd")
+              //   ? showUsd
+              //     ? series.data.map((d: any) => [
+              //         d[0],
+              //         d[series.types.indexOf("usd")],
+              //       ])
+              //     : series.data.map((d: any) => [
+              //         d[0],
+              //         showGwei
+              //           ? d[series.types.indexOf("eth")] * 1000000000
+              //           : d[series.types.indexOf("eth")],
+              //       ])
+              //   : series.data.map((d: any) => [d[0], d[1]]),
               ...pointsSettings,
               type: getSeriesType(series.name),
               // fill if series name is ethereum
@@ -1196,6 +1355,8 @@ export default function ComparisonChart({
     dataGrouping,
     showGwei,
     metric_id,
+    getSeriesData,
+    getChartHeight,
   ]);
 
   useEffect(() => {
@@ -1249,7 +1410,7 @@ export default function ComparisonChart({
         </div>
       )} */}
       <Container className={`${is_embed ? "!p-0 !m-0" : ""}`}>
-        <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative">
+        <div className="flex space-x-8 w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative">
           {is_embed ? (
             <div className="hidden md:flex justify-center items-center">
               <div className="w-5 h-5 md:w-7 md:h-7 relative ml-[21px] mr-3">
@@ -1274,8 +1435,8 @@ export default function ComparisonChart({
               </h2>
             </div>
           ) : (
-            <div className="hidden md:flex justify-center items-center">
-              <div className="w-7 h-7 md:w-9 md:h-9 relative ml-[21px] mr-1.5">
+            <div className="flex justify-center items-center">
+              {/* <div className="w-7 h-7 md:w-9 md:h-9 relative ml-[21px] mr-1.5">
                 <Image
                   src="/GTP-Chain.png"
                   alt="GTP Chain"
@@ -1283,25 +1444,24 @@ export default function ComparisonChart({
                   fill
                 />
               </div>
-              {/* <Icon icon="gtp:chain" className="w-7 h-7 lg:w-9 lg:h-9" /> */}
               <h2 className="text-[24px] xl:text-[30px] leading-snug font-bold hidden lg:block my-[10px]">
                 Selected Chains
-              </h2>
-            </div>
-          )}
-
-          <div className="flex w-full md:w-auto justify-between md:justify-center items-stretch md:items-center space-x-[4px] md:space-x-1">
-            {!zoomed ? (
-              Object.keys(timespans).map((timespan) => (
+              </h2> */}
+              {["daily", "monthly"].map((interval) => (
                 <button
-                  key={timespan}
-                  className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
-                    selectedTimespan === timespan
+                  key={interval}
+                  className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium capitalize ${
+                    selectedTimeInterval === interval
                       ? "bg-forest-500 dark:bg-forest-1000"
                       : "hover:bg-forest-500/10"
                   }`}
                   onClick={() => {
-                    setSelectedTimespan(timespan);
+                    if (selectedTimeInterval === interval) return;
+
+                    if (interval === "daily") setSelectedTimespan("180d");
+                    else setSelectedTimespan("6m");
+
+                    setSelectedTimeInterval(interval);
                     // setXAxis();
                     chartComponent?.current?.xAxis[0].update({
                       min: timespans[selectedTimespan].xMin,
@@ -1315,9 +1475,52 @@ export default function ComparisonChart({
                     setZoomed(false);
                   }}
                 >
-                  {timespans[timespan].label}
+                  <span className="hidden md:block">{interval}</span>
+                  <span className="block md:hidden">{interval[0]}</span>
                 </button>
-              ))
+              ))}
+            </div>
+          )}
+
+          <div className="flex w-full md:w-auto justify-between md:justify-center items-stretch md:items-center space-x-[4px] md:space-x-1">
+            {!zoomed ? (
+              Object.keys(timespans)
+                .filter((timespan) =>
+                  selectedTimeInterval === "daily"
+                    ? ["90d", "180d", "365d", "max"].includes(timespan)
+                    : ["6m", "12m", "maxM"].includes(timespan),
+                )
+                .map((timespan) => (
+                  <button
+                    key={timespan}
+                    className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
+                      selectedTimespan === timespan
+                        ? "bg-forest-500 dark:bg-forest-1000"
+                        : "hover:bg-forest-500/10"
+                    }`}
+                    onClick={() => {
+                      setSelectedTimespan(timespan);
+                      // setXAxis();
+                      chartComponent?.current?.xAxis[0].update({
+                        min: timespans[selectedTimespan].xMin,
+                        max: timespans[selectedTimespan].xMax,
+                        // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
+                        tickPositions: getTickPositions(
+                          timespans.max.xMin,
+                          timespans.max.xMax,
+                        ),
+                      });
+                      setZoomed(false);
+                    }}
+                  >
+                    <span className="hidden md:block">
+                      {timespans[timespan].label}
+                    </span>
+                    <span className="block md:hidden">
+                      {timespans[timespan].shortLabel}
+                    </span>
+                  </button>
+                ))
             ) : (
               <>
                 <button
@@ -1378,7 +1581,7 @@ export default function ComparisonChart({
                     className={
                       is_embed
                         ? "w-full relative h-[calc(100vh-160px)] md:h-[calc(100vh-100px)]"
-                        : "w-full h-[17rem] md:h-[26rem] rounded-xl"
+                        : "w-full h-[17rem] md:h-[26rem] relative rounded-xl"
                     }
                   >
                     <div
