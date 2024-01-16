@@ -81,11 +81,18 @@ const Chain = ({ params }: { params: any }) => {
   const timeIntervalKey = useMemo(() => {
     if (!metricData) return null;
 
-    return metricData.data.avg === true &&
-      ["365d", "max"].includes(selectedTimespan) &&
-      selectedTimeInterval === "daily"
-      ? "daily_7d_rolling"
-      : selectedTimeInterval;
+    if (
+      metricData.data.avg === true &&
+      ["365d", "max"].includes(selectedTimespan)
+    ) {
+      return "daily_7d_rolling";
+    }
+
+    if (selectedTimeInterval === "monthly") {
+      return "monthly";
+    }
+
+    return "daily";
   }, [metricData, selectedTimeInterval, selectedTimespan]);
 
   if (errorCode) {
@@ -136,6 +143,7 @@ const Chain = ({ params }: { params: any }) => {
             metric_id={metricData.data.metric_id}
             showEthereumMainnet={showEthereumMainnet}
             setShowEthereumMainnet={setShowEthereumMainnet}
+            timeIntervalKey={timeIntervalKey}
           />
         </ComparisonChart>
       )}

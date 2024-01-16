@@ -943,98 +943,98 @@ export default function ComparisonChart({
         };
       }
 
-      // check if the last data point is the last day of the month by adding a day to the last data point and checking if the day is 1
-      const lastDataPoint = seriesData[seriesData.length - 1];
-      const lastDayOfMonthCheck = new Date(lastDataPoint[0]);
-      // add a day to the last data point
-      lastDayOfMonthCheck.setDate(lastDayOfMonthCheck.getUTCDate() + 1);
+      // // check if the last data point is the last day of the month by adding a day to the last data point and checking if the day is 1
+      // const lastDataPoint = seriesData[seriesData.length - 1];
+      // const lastDayOfMonthCheck = new Date(lastDataPoint[0]);
+      // // add a day to the last data point
+      // lastDayOfMonthCheck.setDate(lastDayOfMonthCheck.getUTCDate() + 1);
 
-      let monthlyData: any[] = [];
+      // let monthlyData: any[] = [];
 
-      // const currentDate = new Date();
-      // const currentYear = currentDate.getUTCFullYear();
-      // const currentMonth = currentDate.getUTCMonth();
+      // // const currentDate = new Date();
+      // // const currentYear = currentDate.getUTCFullYear();
+      // // const currentMonth = currentDate.getUTCMonth();
 
-      // calculate monthly sum aggregates for metrics we don't need to average
-      if (!avgMonthlyMetrics.includes(metric_id)) {
-        monthlyData = seriesData.reduce((acc: any[], d: any) => {
-          const date = new Date(d[0]);
-          // const dateYear = date.getUTCFullYear();
-          // const dateMonth = date.getUTCMonth();
+      // // calculate monthly sum aggregates for metrics we don't need to average
+      // if (!avgMonthlyMetrics.includes(metric_id)) {
+      //   monthlyData = seriesData.reduce((acc: any[], d: any) => {
+      //     const date = new Date(d[0]);
+      //     // const dateYear = date.getUTCFullYear();
+      //     // const dateMonth = date.getUTCMonth();
 
-          // don't include the current month
-          // if (dateYear === currentYear && dateMonth === currentMonth)
-          //   return acc;
+      //     // don't include the current month
+      //     // if (dateYear === currentYear && dateMonth === currentMonth)
+      //     //   return acc;
 
-          const dateValue = Date.UTC(
-            date.getUTCFullYear(),
-            date.getUTCMonth(),
-            1,
-          ).valueOf();
+      //     const dateValue = Date.UTC(
+      //       date.getUTCFullYear(),
+      //       date.getUTCMonth(),
+      //       1,
+      //     ).valueOf();
 
-          // check if there is already a data point for this month
-          const existingDataPoint = acc.find((d) => d[0] === dateValue);
+      //     // check if there is already a data point for this month
+      //     const existingDataPoint = acc.find((d) => d[0] === dateValue);
 
-          // if there is, add the current value to the existing data point
-          if (existingDataPoint) {
-            existingDataPoint[1] += d[1];
-          }
-          // if there isn't, create a new data point
-          else {
-            acc.push([dateValue, d[1]]);
-          }
+      //     // if there is, add the current value to the existing data point
+      //     if (existingDataPoint) {
+      //       existingDataPoint[1] += d[1];
+      //     }
+      //     // if there isn't, create a new data point
+      //     else {
+      //       acc.push([dateValue, d[1]]);
+      //     }
 
-          return acc;
-        }, []);
+      //     return acc;
+      //   }, []);
 
-        // else calculate monthly averages for metrics we need to average
-      } else {
-        monthlyData = seriesData.reduce((acc: any[], d: any) => {
-          const date = new Date(d[0]);
-          // const dateYear = date.getUTCFullYear();
-          // const dateMonth = date.getUTCMonth();
+      //   // else calculate monthly averages for metrics we need to average
+      // } else {
+      //   monthlyData = seriesData.reduce((acc: any[], d: any) => {
+      //     const date = new Date(d[0]);
+      //     // const dateYear = date.getUTCFullYear();
+      //     // const dateMonth = date.getUTCMonth();
 
-          // don't include the current month
-          // if (dateYear === currentYear && dateMonth === currentMonth)
-          //   return acc;
+      //     // don't include the current month
+      //     // if (dateYear === currentYear && dateMonth === currentMonth)
+      //     //   return acc;
 
-          const dateValue = Date.UTC(
-            date.getUTCFullYear(),
-            date.getUTCMonth(),
-            1,
-          ).valueOf();
+      //     const dateValue = Date.UTC(
+      //       date.getUTCFullYear(),
+      //       date.getUTCMonth(),
+      //       1,
+      //     ).valueOf();
 
-          // check if there is already a data point for this month
-          const existingDataPoint = acc.find((d) => d[0] === dateValue);
+      //     // check if there is already a data point for this month
+      //     const existingDataPoint = acc.find((d) => d[0] === dateValue);
 
-          // if there is, add the current value to the existing data point
-          if (existingDataPoint) {
-            existingDataPoint[1].push(d[1]);
-          }
+      //     // if there is, add the current value to the existing data point
+      //     if (existingDataPoint) {
+      //       existingDataPoint[1].push(d[1]);
+      //     }
 
-          // if there isn't, create a new data point
-          else {
-            acc.push([dateValue, [d[1]]]);
-          }
+      //     // if there isn't, create a new data point
+      //     else {
+      //       acc.push([dateValue, [d[1]]]);
+      //     }
 
-          return acc;
-        }, []);
+      //     return acc;
+      //   }, []);
 
-        // calculate the average for each month
-        monthlyData.forEach((d) => {
-          const average =
-            d[1].reduce((acc: number, value: number) => acc + value, 0) /
-            d[1].length;
-          d[1] = average;
-        });
-      }
+      //   // calculate the average for each month
+      //   monthlyData.forEach((d) => {
+      //     const average =
+      //       d[1].reduce((acc: number, value: number) => acc + value, 0) /
+      //       d[1].length;
+      //     d[1] = average;
+      //   });
+      // }
 
       // if it is not the last day of the month, add a zone to the chart to indicate that the data is incomplete
-      if (lastDayOfMonthCheck.getUTCDate() !== 1) {
+      if (new Date().getUTCDate() !== 1) {
         zoneAxis = "x";
         zones = [
           {
-            value: monthlyData[monthlyData.length - 2][0] + 1,
+            value: seriesData[seriesData.length - 2][0] + 1,
             dashStyle: "Solid",
             fillColor: isColumnChart
               ? {
@@ -1132,7 +1132,7 @@ export default function ComparisonChart({
       }
 
       return {
-        data: monthlyData,
+        data: seriesData,
         zoneAxis,
         zones,
         fillColor,
