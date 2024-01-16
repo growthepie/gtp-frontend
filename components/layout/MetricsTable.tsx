@@ -256,10 +256,10 @@ const MetricsTable = ({
   };
 
   const timespanLabelsMonthly = {
-    "30d": "1 Month",
-    "90d": "3 Months",
-    "180d": "6 Months",
-    "365d": "1 Year",
+    "30d": "1 month",
+    "90d": "3 months",
+    "180d": "6 months",
+    "365d": "1 year",
   };
 
   return (
@@ -270,17 +270,17 @@ const MetricsTable = ({
         >
           <div
             className={`${
-              isSidebarOpen ? "w-1/4 2xl:basis-1/3" : "basis-1/3"
+              isSidebarOpen ? "w-1/4 2xl:w-1/3" : "w-1/3"
             } pl-[44px] lg:pl-[52px]`}
           >
             Yesterday
           </div>
           <div
             className={`${
-              isSidebarOpen ? "w-3/4 2xl:basis-2/3" : "basis-2/3"
+              isSidebarOpen ? "w-3/4 2xl:w-2/3" : "w-2/3"
             } flex pr-4 pl-2`}
           >
-            {/* <div className={`basis-1/5 text-right capitalize`}>
+            {/* <div className={`w-1/5 text-right capitalize`}>
               Current
             </div> */}
             {Object.entries(
@@ -291,7 +291,7 @@ const MetricsTable = ({
               <div
                 key={timespan}
                 className={`text-right ${
-                  isSidebarOpen ? "w-1/3 2xl:basis-1/4" : "basis-1/4"
+                  isSidebarOpen ? "w-1/3 2xl:w-1/4" : "w-1/4"
                 }
                 ${
                   isSidebarOpen && timespan === "7d"
@@ -375,7 +375,7 @@ const MetricsTable = ({
                   </div>
                   <div
                     className={`flex ${
-                      isSidebarOpen ? "w-1/4 2xl:basis-1/3" : "basis-1/3"
+                      isSidebarOpen ? "w-1/4 2xl:w-1/3" : "w-1/3"
                     } items-center space-x-2`}
                     style={{
                       color: selectedChains.includes(item.chain.key)
@@ -479,7 +479,7 @@ const MetricsTable = ({
                       </div>
                     </div>
                   </div>
-                  <div className={`basis-2/3 pr-4 flex font-medium`}>
+                  <div className={`w-2/3 pr-4 flex font-medium`}>
                     {Object.keys(
                       timeIntervalKey === "monthly"
                         ? timespanLabelsMonthly
@@ -490,8 +490,8 @@ const MetricsTable = ({
                         className={`text-right  
                       ${
                         isSidebarOpen
-                          ? "basis-1/3 text-sm 2xl:text-base 2xl:basis-1/4"
-                          : "basis-1/4 text-base"
+                          ? "w-1/3 text-sm 2xl:text-base 2xl:w-1/4"
+                          : "w-1/4 text-base"
                       }
                       ${
                         isSidebarOpen && timespan === "7d"

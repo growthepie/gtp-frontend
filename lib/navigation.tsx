@@ -429,6 +429,30 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "scroll",
       },
       {
+        label: "Loopring",
+        category: "zk-rollup",
+        page: {
+          description: "",
+        },
+        icon: "gtp:loopring-logo-monochrome",
+        key: "loopring",
+        rootKey: "chainsLoopring",
+        urlKey: "loopring",
+        hide: true, // remove when unhiding from the UI
+      },
+      {
+        label: "Starknet",
+        category: "zk-rollup",
+        page: {
+          description: "",
+        },
+        icon: "gtp:starknet-logo-monochrome",
+        key: "starknet",
+        rootKey: "chainsStarknet",
+        urlKey: "starknet",
+        hide: true, // remove when unhiding from the UI
+      },
+      {
         label: "Mantle",
         category: "optimium",
         page: {
