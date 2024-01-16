@@ -266,7 +266,7 @@ const MetricsTable = ({
     <div className="flex flex-col mt-3 md:mt-0 ml-0 lg:-ml-2 font-semibold space-y-[5px] overflow-x-scroll md:overflow-x-visible z-100 w-full py-5 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
       <div className="min-w-[570px] md:min-w-[600px] lg:min-w-full pr-[20px] md:pr-[50px] lg:pr-2 w-full">
         <div
-          className={`flex space-x-5 items-center py-1 pl-4 pr-7 lg:pl-2 lg:pr-12 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
+          className={`flex items-center justify-between py-1 pl-4 pr-7 lg:pl-2 lg:pr-12 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
         >
           <div
             className={`${
@@ -278,7 +278,7 @@ const MetricsTable = ({
           <div
             className={`${
               isSidebarOpen ? "w-3/4 2xl:w-2/3" : "w-2/3"
-            } flex pr-4 pl-2`}
+            } flex pr-7 lg:pr-4`}
           >
             {/* <div className={`w-1/5 text-right capitalize`}>
               Current
@@ -294,7 +294,7 @@ const MetricsTable = ({
                   isSidebarOpen ? "w-1/3 2xl:w-1/4" : "w-1/4"
                 }
                 ${
-                  isSidebarOpen && timespan === "7d"
+                  isSidebarOpen && (timespan === "7d" || timespan === "90d")
                     ? "hidden 2xl:block"
                     : "block"
                 }`}
@@ -326,7 +326,7 @@ const MetricsTable = ({
               >
                 <div
                   key={item.chain.key}
-                  className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[4px] lg:p-3 lg:py-[10.5px] rounded-full w-full font-[400] border-[1px] whitespace-nowrap text-xs lg:text-[0.95rem] group relative
+                  className={`flex items-center justify-between cursor-pointer p-1.5 pl-4 py-[4px] lg:pr-2 lg:py-[10.5px] lg:pl-2 rounded-full w-full font-[400] border-[1px] whitespace-nowrap text-xs lg:text-[0.95rem] group relative
               ${
                 item.chain.key === "ethereum"
                   ? showEthereumMainnet
@@ -376,38 +376,36 @@ const MetricsTable = ({
                   <div
                     className={`flex ${
                       isSidebarOpen ? "w-1/4 2xl:w-1/3" : "w-1/3"
-                    } items-center space-x-2`}
+                    } items-center pl-[44px] lg:pl-[52px]`}
                     style={{
                       color: selectedChains.includes(item.chain.key)
                         ? undefined
                         : "#5A6462",
                     }}
                   >
-                    <div className="relative">
-                      {/* <div
+                    {/* <div
                       className={`w-[34px] h-[29px] rounded-full ${
                         item.chain.border[theme ?? "dark"][1]
                       } ${selectedChains.includes(item.chain.key) ? "" : ""}`}
                     ></div> */}
-                      <Icon
-                        icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
-                        className="absolute -left-[14.5px] -top-[14.5px] w-[29px] h-[29px]"
-                        style={{
-                          color: selectedChains.includes(item.chain.key)
-                            ? item.chain.colors[theme ?? "dark"][1]
-                            : "#5A6462",
-                        }}
-                      />
-                      {/* <Icon
+                    <Icon
+                      icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
+                      className="absolute left-[12px] lg:left-[17px] w-[29px] h-[29px]"
+                      style={{
+                        color: selectedChains.includes(item.chain.key)
+                          ? item.chain.colors[theme ?? "dark"][1]
+                          : "#5A6462",
+                      }}
+                    />
+                    {/* <Icon
                       icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
                       className="w-[29px] h-[29px]"
                       style={{
                         color: item.chain.colors[theme ?? "dark"][1],
                       }}
                     /> */}
-                    </div>
                     <div className="flex-1 break-inside-avoid">
-                      <div className="flex-1 flex flex-col pl-4 lg:pl-5">
+                      <div className="flex-1 flex flex-col">
                         <div className="flex w-full items-baseline text-sm font-bold leading-snug">
                           {/* {item.data.daily.types.includes("usd") && (
                           <> */}
@@ -479,7 +477,11 @@ const MetricsTable = ({
                       </div>
                     </div>
                   </div>
-                  <div className={`w-2/3 pr-4 flex font-medium`}>
+                  <div
+                    className={`${
+                      isSidebarOpen ? "w-3/4 2xl:w-2/3" : "w-2/3"
+                    } flex pr-4 font-medium`}
+                  >
                     {Object.keys(
                       timeIntervalKey === "monthly"
                         ? timespanLabelsMonthly
@@ -494,7 +496,8 @@ const MetricsTable = ({
                           : "w-1/4 text-base"
                       }
                       ${
-                        isSidebarOpen && timespan === "7d"
+                        isSidebarOpen &&
+                        (timespan === "7d" || timespan === "90d")
                           ? "hidden 2xl:block"
                           : ""
                       }`}
