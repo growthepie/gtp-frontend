@@ -79,10 +79,8 @@ const Chain = ({ params }: { params: any }) => {
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
 
   const timeIntervalKey = useMemo(() => {
-    if (!metricData) return null;
-
     if (
-      metricData.data.avg === true &&
+      metricData?.data.avg === true &&
       ["365d", "max"].includes(selectedTimespan)
     ) {
       return "daily_7d_rolling";
