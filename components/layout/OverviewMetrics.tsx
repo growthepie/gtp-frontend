@@ -1389,43 +1389,43 @@ export default function OverviewMetrics({
                   </button>
                 </div>
                 <div className="flex flex-1">
-                  {Object.keys(categories).map(
-                    (category, i) =>
-                      categories[category] !== "Chains" && (
-                        <div
-                          key={category}
-                          className={`relative flex h-full justify-center items-center 
+                  {Object.keys(categories)
+                    .filter((category) => categories[category] !== "Chains")
+                    .map((category, i) => (
+                      <div
+                        key={category}
+                        className={`relative flex h-full justify-center items-center 
                           ${category === "unlabeled" ? "flex-1" : "flex-1"}
                           ${
                             selectedCategory === category
                               ? "borden-hidden rounded-[0px]"
                               : "h-full"
                           }`}
-                          onMouseEnter={() => {
-                            setIsCategoryHovered((prev) => ({
-                              ...prev,
-                              [category]: true,
-                            }));
-                          }}
-                          onMouseLeave={() => {
-                            setIsCategoryHovered((prev) => ({
-                              ...prev,
-                              [category]: false,
-                            }));
-                          }}
-                          style={{
-                            backgroundColor:
-                              selectedCategory === category
-                                ? "#5A6462"
-                                : `rgba(0, 0, 0, ${
-                                    0.06 +
-                                    (i / Object.keys(categories).length) * 0.94
-                                  })`,
-                          }}
-                        >
-                          <button
-                            key={category}
-                            className={`flex flex-col w-full h-full justify-center items-center overflow-hidden border-l border-[
+                        onMouseEnter={() => {
+                          setIsCategoryHovered((prev) => ({
+                            ...prev,
+                            [category]: true,
+                          }));
+                        }}
+                        onMouseLeave={() => {
+                          setIsCategoryHovered((prev) => ({
+                            ...prev,
+                            [category]: false,
+                          }));
+                        }}
+                        style={{
+                          backgroundColor:
+                            selectedCategory === category
+                              ? "#5A6462"
+                              : `rgba(0, 0, 0, ${
+                                  0.06 +
+                                  (i / Object.keys(categories).length) * 0.94
+                                })`,
+                        }}
+                      >
+                        <button
+                          key={category}
+                          className={`flex flex-col w-full h-full justify-center items-center overflow-hidden border-l border-[
                           1px 
                         ] border-forest-50 dark:border-forest-800
                           ${
@@ -1438,24 +1438,23 @@ export default function OverviewMetrics({
                               ? "bg-forest-800/50"
                               : ""
                           }`}
-                            onClick={() => {
-                              setSelectedCategory(category);
-                              if (!forceSelectedChain) setSelectedChain(null);
-                            }}
+                          onClick={() => {
+                            setSelectedCategory(category);
+                            if (!forceSelectedChain) setSelectedChain(null);
+                          }}
+                        >
+                          <div
+                            className={`${
+                              selectedCategory === category
+                                ? "text-sm font-semibold"
+                                : "text-xs font-medium"
+                            }`}
                           >
-                            <div
-                              className={`${
-                                selectedCategory === category
-                                  ? "text-sm font-semibold"
-                                  : "text-xs font-medium"
-                              }`}
-                            >
-                              {categories[category]}
-                            </div>
-                          </button>
-                        </div>
-                      ),
-                  )}
+                            {categories[category]}
+                          </div>
+                        </button>
+                      </div>
+                    ))}
                 </div>
               </div>
             </div>
@@ -1797,7 +1796,7 @@ export default function OverviewMetrics({
             stack
             timespan={selectedTimespan}
             series={chartSeries}
-            yScale={selectedValue === "share" ? "percentage" : "linear"}
+            yScale={selectedValue === "share" ? "percentageDecimal" : "linear"}
             chartHeight="196px"
             chartWidth="100%"
             maxY={chartMax}

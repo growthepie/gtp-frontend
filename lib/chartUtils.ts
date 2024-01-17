@@ -18,9 +18,10 @@ export const decimalToPercent = (decimal: number | string, decimals = 2) => {
 export const tooltipFormatter = (
   shared = true,
   percentage = true,
-  valueFormatter: (value: any) => string = (value) => value,
+  valueFormatter: null | ((value: any) => string) = (value) => value,
   dataKey?: string,
   reversePerformer?: boolean,
+  stacked = false,
 ) => {
   const percentageFormatter = function (
     this: Highcharts.TooltipFormatterContextObject,
@@ -74,7 +75,7 @@ export const tooltipFormatter = (
         if (valueFormatter) {
           value = valueFormatter(value);
         } else {
-          value = Highcharts.numberFormat(percentage, 2);
+          value = Highcharts.numberFormat(percentage, 2) + "%";
         }
 
         tooltip += `
@@ -197,6 +198,31 @@ export const tooltipFormatter = (
         "></div>
       </div>`;
       });
+
+    if (stacked) {
+      const value = formatNumber(pointsSum, false, false, prefix, suffix);
+      tooltip += `
+        <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
+          <div class="w-4 h-1.5 rounded-r-full" style=""></div>
+          <div class="tooltip-point-name text-md">Total</div>
+          <div class="flex-1 text-right justify-end font-inter flex">
+              <div class="opacity-70 mr-0.5 ${
+                !prefix && "hidden"
+              }">${prefix}</div>
+              ${parseFloat(value).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+              <div class="opacity-70 ml-0.5 ${
+                !suffix && "hidden"
+              }">${suffix}</div>
+          </div>
+        </div>
+        <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+          <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
+        </div>`;
+    }
+
     tooltip += `
         </div>
       </div>`;
@@ -362,6 +388,12 @@ export const baseOptions: any = {
     },
   },
   plotOptions: {
+    line: {
+      animation: true,
+      dataGrouping: {
+        enabled: false,
+      },
+    },
     area: {
       stacking: undefined,
       animation: true,
@@ -383,7 +415,6 @@ export const baseOptions: any = {
       },
       groupPadding: 0,
     },
-
     series: {
       stacking: "normal",
       events: {

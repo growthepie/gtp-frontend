@@ -191,7 +191,9 @@ export default function ChainAnimations({
                 className="w-[15px] h-[15px]"
               />
             </div>
-            <div className="-mb-0.5">{AllChainsByKeys[chain].label}</div>
+            <div className="-mb-0.5 overflow-hidden text-ellipsis min-w-0 max-w-fit">
+              {AllChainsByKeys[chain].label}
+            </div>
           </div>
 
           <div
