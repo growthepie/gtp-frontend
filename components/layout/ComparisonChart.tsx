@@ -14,7 +14,7 @@ import {
   ReactNode,
 } from "react";
 import { useLocalStorage } from "usehooks-ts";
-import { merge } from "lodash";
+import { debounce, merge } from "lodash";
 // import { theme as customTheme } from "tailwind.config.js";
 import { useTheme } from "next-themes";
 import { Switch } from "../Switch";
@@ -32,6 +32,12 @@ import ChartWatermark from "./ChartWatermark";
 import { navigationItems, navigationCategories } from "@/lib/navigation";
 import { IS_PREVIEW } from "@/lib/helpers";
 import { useWindowSize } from "usehooks-ts";
+
+const monthly_agg_labels = {
+  avg: "Average",
+  sum: "Total",
+  unique: "Unique",
+};
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -199,6 +205,7 @@ export default function ComparisonChart({
   selectedScale,
   setSelectedScale,
   metric_id,
+  monthly_agg,
   is_embed = false,
 }: {
   data: any;
@@ -216,6 +223,7 @@ export default function ComparisonChart({
   selectedScale: string;
   setSelectedScale: (scale: string) => void;
   metric_id: string;
+  monthly_agg: string;
   is_embed?: boolean;
 }) {
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
@@ -1526,21 +1534,36 @@ export default function ComparisonChart({
     selectedTimeInterval,
   ]);
 
+  // useEffect(() => {
+  //   if (chartComponent.current) {
+  //     chartComponent.current.reflow();
+  //   }
+  // }, [chartComponent, filteredData]);
+
+  const resituateChart = debounce(() => {
+    chartComponent.current && chartComponent.current.reflow();
+  }, 300);
+
   useEffect(() => {
-    if (chartComponent.current) {
-      chartComponent.current.reflow();
-    }
-  }, [chartComponent, filteredData]);
+    resituateChart();
+
+    // cancel the debounced function on component unmount
+    return () => {
+      resituateChart.cancel();
+    };
+  }, [chartComponent, selectedTimespan, timespans, resituateChart]);
 
   const { isSidebarOpen } = useUIContext();
 
   useEffect(() => {
     setTimeout(() => {
-      if (chartComponent.current) {
-        chartComponent.current.reflow();
-      }
+      resituateChart();
     }, 300);
-  }, [isSidebarOpen]);
+
+    return () => {
+      resituateChart.cancel();
+    };
+  }, [isSidebarOpen, resituateChart]);
 
   useEffect(() => {
     if (chartComponent.current) {
@@ -1614,6 +1637,17 @@ export default function ComparisonChart({
               <h2 className="text-[24px] xl:text-[30px] leading-snug font-bold hidden lg:block my-[10px]">
                 Selected Chains
               </h2> */}
+              <div
+                className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 left-0 pl-[42px] w-[90px] md:pl-[85px] md:w-[151px] lg:pl-[89px] lg:w-[149px] xl:w-[170px] xl:pl-[110px] ${
+                  monthly_agg && selectedTimeInterval === "monthly"
+                    ? "translate-y-[calc(-100%+3px)]"
+                    : "translate-y-0 "
+                }`}
+              >
+                <div className="text-[0.65rem] md:text-xs font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-xl md:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0">
+                  {monthly_agg_labels[monthly_agg]}
+                </div>
+              </div>
               {["daily", "monthly"].map((interval) => (
                 <button
                   key={interval}
@@ -1712,7 +1746,7 @@ export default function ComparisonChart({
             )}
           </div>
           <div
-            className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[calc(50%-19px)] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${
+            className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[calc(50%-72px)] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${
               avg && ["365d", "max"].includes(selectedTimespan)
                 ? "translate-y-[calc(-100%+3px)]"
                 : "translate-y-0 "

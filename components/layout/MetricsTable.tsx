@@ -207,19 +207,24 @@ const MetricsTable = ({
     (item: any) => {
       let prefix = "";
       let suffix = "";
+
+      let types = item.data.daily.types;
+      let values = item.data.daily.data[item.data.daily.data.length - 1];
       let value = formatNumber(
         item.data.daily.data[item.data.daily.data.length - 1][1],
       );
 
-      if (item.data.daily.types.includes("eth")) {
+      if (timeIntervalKey === "monthly") {
+        types = item.data.last_30d.types;
+        values = item.data.last_30d.data;
+        value = formatNumber(values[0]);
+      }
+
+      if (types.includes("eth")) {
         if (!showUsd) {
           prefix = "Ξ";
 
-          value = formatNumber(
-            item.data.daily.data[item.data.daily.data.length - 1][
-              item.data.daily.types.indexOf("eth")
-            ],
-          );
+          value = formatNumber(values[types.indexOf("eth")]);
 
           let navItem = navigationItems[1].options.find(
             (item) => item.key === metric_id,
@@ -228,24 +233,16 @@ const MetricsTable = ({
           if (navItem && navItem.page?.showGwei) {
             prefix = "";
             suffix = " Gwei";
-            value = formatNumber(
-              item.data.daily.data[item.data.daily.data.length - 1][
-                item.data.daily.types.indexOf("eth")
-              ] * 1000000000,
-            );
+            value = formatNumber(values[types.indexOf("eth")] * 1000000000);
           }
         } else {
           prefix = "$";
-          value = formatNumber(
-            item.data.daily.data[item.data.daily.data.length - 1][
-              item.data.daily.types.indexOf("usd")
-            ],
-          );
+          value = formatNumber(values[types.indexOf("usd")]);
         }
       }
       return { value, prefix, suffix };
     },
-    [metric_id, showUsd],
+    [metric_id, showUsd, timeIntervalKey],
   );
 
   const timespanLabels = {
@@ -273,7 +270,7 @@ const MetricsTable = ({
               isSidebarOpen ? "w-1/4 2xl:w-1/3" : "w-1/3"
             } pl-[44px] lg:pl-[52px]`}
           >
-            Yesterday
+            {timeIntervalKey === "monthly" ? "Last 30d" : "Yesterday"}
           </div>
           <div
             className={`${

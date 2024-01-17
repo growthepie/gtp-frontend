@@ -142,7 +142,7 @@ const Chain = ({ params }: { params: any }) => {
             pageData.description
           )}
           {pageData.note && (
-            <div className="absolute text-xs">
+            <div className="text-xs">
               <span className="font-semibold text-forest-200 dark:text-forest-400">
                 Note:{" "}
               </span>
@@ -174,6 +174,7 @@ const Chain = ({ params }: { params: any }) => {
             showTimeIntervals={true}
             sources={metricData.data.source}
             avg={metricData.data.avg}
+            monthly_agg={metricData.data.monthly_agg}
             showEthereumMainnet={showEthereumMainnet}
             setShowEthereumMainnet={setShowEthereumMainnet}
             selectedTimespan={selectedTimespan}
