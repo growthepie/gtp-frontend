@@ -546,7 +546,7 @@ export const Chart = ({
                           return formatNumber(
                             t.value,
                             true,
-                            isPercentage,
+                            yScale === "percentageDecimal",
                             prefix,
                             suffix,
                           );
