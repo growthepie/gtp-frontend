@@ -8,10 +8,17 @@ import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
 import { Icon } from "@iconify/react";
 import { ChainResponse } from "@/types/api/ChainResponse";
-import { ChainURLs, MasterURL } from "@/lib/urls";
+import { BlockspaceURLs, ChainURLs, MasterURL } from "@/lib/urls";
 import Container from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
 import Image from "next/image";
+import OverviewMetrics from "@/components/layout/OverviewMetrics";
+import {
+  ChainOverviewResponse,
+  Chains,
+} from "@/types/api/ChainOverviewResponse";
+import { useMemo } from "react";
+import { useSessionStorage } from "usehooks-ts";
 
 const Chain = ({ params }: { params: any }) => {
   const { chain } = params;
@@ -30,6 +37,35 @@ const Chain = ({ params }: { params: any }) => {
     isValidating: chainValidating,
     isLoading: chainLoading,
   } = useSWR<ChainResponse>(chainKey ? ChainURLs[chainKey] : null);
+
+  const {
+    data: usageData,
+    error: usageError,
+    isLoading: usageLoading,
+    isValidating: usageValidating,
+  } = useSWR<ChainOverviewResponse>(BlockspaceURLs["chain-overview"]);
+
+  const chainFilter = useMemo(() => {
+    const filteredChains: Chains = Object.keys(AllChainsByKeys)
+      .filter((key) => key === chainKey || key === "all_l2s")
+      .reduce((result, chain) => {
+        const chainKey = AllChainsByKeys[chain].key;
+        const chainData = usageData?.data.chains[chainKey];
+
+        if (chainData) {
+          result[chainKey] = chainData;
+        }
+
+        return result;
+      }, {});
+
+    return filteredChains;
+  }, [chainKey, usageData?.data.chains]);
+
+  const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
+    "blockspaceTimespan",
+    "max",
+  );
 
   if (!chainKey) {
     return <div>Chain not found</div>;
@@ -191,7 +227,44 @@ const Chain = ({ params }: { params: any }) => {
           </div>
         )}
       </Container>
-      {/*Time selection */}
+      {usageData && chainKey !== "ethereum" &&(
+            <>
+              <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
+                <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] relative">
+                  <div className="flex gap-x-[8px] items-center">
+                    <Image
+                      src="/GTP-Package.svg"
+                      alt="GTP Chain"
+                      className="object-contain w-[32px] h-[32px]"
+                      height={36}
+                      width={36}
+                    />
+                    <Heading
+                      className="text-[26px] leading-snug lg:text-[36px]"
+                      as="h1"
+                    >
+                      Chain Overview
+                    </Heading>
+                  </div>
+                </div>
+                <div className="flex items-center w-[99%] mx-auto mb-[30px]">
+                  <div className="text-[16px]">
+                    An overview of chains high-level blockspace usage. All
+                    expressed in share of chain usage. You can toggle between
+                    share of chain usage or absolute numbers.
+                  </div>
+                </div>
+              </Container>
+
+              <OverviewMetrics
+                selectedTimespan={selectedTimespan}
+                setSelectedTimespan={setSelectedTimespan}
+                data={chainFilter}
+                forceSelectedChain={chainKey}
+                // data={!chainEcosystemFilter || chainEcosystemFilter=== "all-chains" ? usageData.data.chains : )}
+              />
+            </>,
+          )}
     </>
   );
 };
