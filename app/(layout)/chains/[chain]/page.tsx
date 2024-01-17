@@ -240,8 +240,8 @@ const Chain = ({ params }: { params: any }) => {
                   width={36}
                 />
                 <Heading
-                  className="text-[26px] leading-snug lg:text-[36px]"
-                  as="h1"
+                  className="text-[20px] leading-snug lg:text-[30px]"
+                  as="h2"
                 >
                   {AllChainsByKeys[chainKey].label} Usage
                 </Heading>
