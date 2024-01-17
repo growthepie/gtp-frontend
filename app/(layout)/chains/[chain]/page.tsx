@@ -229,7 +229,7 @@ const Chain = ({ params }: { params: any }) => {
       </Container>
       {usageData && chainKey !== "ethereum" && (
         <>
-          <Container className="flex flex-col w-full">
+          <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
             <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] relative">
               <div className="flex gap-x-[8px] items-center">
                 <Image
