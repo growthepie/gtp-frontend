@@ -229,7 +229,7 @@ const Chain = ({ params }: { params: any }) => {
       </Container>
       {usageData && chainKey !== "ethereum" && (
         <>
-          <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
+          <Container className="flex flex-col w-full">
             <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] relative">
               <div className="flex gap-x-[8px] items-center">
                 <Image
@@ -243,15 +243,15 @@ const Chain = ({ params }: { params: any }) => {
                   className="text-[26px] leading-snug lg:text-[36px]"
                   as="h1"
                 >
-                  Chain Overview
+                  {AllChainsByKeys[chainKey].label} Usage
                 </Heading>
               </div>
             </div>
             <div className="flex items-center w-[99%] mx-auto mb-[30px]">
               <div className="text-[16px]">
-                An overview of chains high-level blockspace usage. All expressed
-                in share of chain usage. You can toggle between share of chain
-                usage or absolute numbers.
+                An overview of {AllChainsByKeys[chainKey].label} high-level
+                blockspace usage. All expressed in share of chain usage. You can
+                toggle between share of chain usage or absolute numbers.
               </div>
             </div>
           </Container>
