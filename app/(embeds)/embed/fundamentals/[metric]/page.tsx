@@ -131,6 +131,7 @@ const Chain = ({ params }: { params: any }) => {
           setSelectedTimespan={setSelectedTimespan}
           selectedScale={selectedScale}
           setSelectedScale={setSelectedScale}
+          monthly_agg={metricData.data.monthly_agg}
           is_embed={true}
         >
           <MetricsTable
