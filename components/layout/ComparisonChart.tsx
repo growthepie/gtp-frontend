@@ -36,7 +36,8 @@ import { useWindowSize } from "usehooks-ts";
 const monthly_agg_labels = {
   avg: "Average",
   sum: "Total",
-  unique: "Unique",
+  unique: "Distinct",
+  distinct: "Distinct",
 };
 
 const COLORS = {
