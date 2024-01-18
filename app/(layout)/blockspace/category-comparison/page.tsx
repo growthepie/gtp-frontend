@@ -11,6 +11,7 @@ import useSWR from "swr";
 import { CategoryComparisonResponse } from "@/types/api/CategoryComparisonResponse";
 import EcosystemDropdown from "@/components/layout/EcosystemDropdown";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
+import ShowLoading from "@/components/layout/ShowLoading";
 
 const CategoryComparison = () => {
   const {
@@ -31,6 +32,10 @@ const CategoryComparison = () => {
 
   return (
     <>
+      <ShowLoading
+        dataLoading={[usageLoading]}
+        dataValidating={[usageValidating]}
+      />
       <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
         <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] relative">
           <div className="flex items-center gap-x-[8px]">

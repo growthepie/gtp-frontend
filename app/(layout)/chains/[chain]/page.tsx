@@ -74,8 +74,8 @@ const Chain = ({ params }: { params: any }) => {
   return (
     <>
       <ShowLoading
-        dataLoading={[masterLoading, chainLoading]}
-        dataValidating={[masterValidating, chainValidating]}
+        dataLoading={[masterLoading, chainLoading, usageLoading]}
+        dataValidating={[masterValidating, chainValidating, usageValidating]}
       />
       <Container className="flex w-full mt-[65px] md:mt-[45px]">
         {master && (
