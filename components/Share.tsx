@@ -48,6 +48,8 @@ export default function Share() {
     }
   };
 
+  const [isReadOnlyInput, setIsReadOnlyInput] = useState(true);
+
   //Initialize URL
   useEffect(() => {
     setcurrentURL(window.location.href);
@@ -61,7 +63,7 @@ export default function Share() {
           setOpenShare(true);
         }}
       >
-        <Icon className="w-5 h-5 font-semibold" icon="fe:share" />
+        <Icon className="w-5 h-5 font-semibold" icon="feather:share-2" />
         <div className="font-semibold">Share</div>
       </button>
       {openShare && (
@@ -74,14 +76,14 @@ export default function Share() {
             }}
           />
           <div
-            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[579px] h-[436px] bg-forest-50 dark:bg-forest-900 z-[110] rounded-2xl shadow-lg py-[30px] px-[30px] 
-          border-[5px] border-[#5A6462]"
+            className="fixed right-[45px] bottom-[15px] w-[579px] bg-forest-50 dark:bg-[#1F2726] z-[110] rounded-[40px] shadow-lg py-[30px] px-[30px] 
+          border-[5px] border-forest-500 dark:border-[#5A6462]"
           >
             <div className="flex w-full h-[32px] justify-between items-center justify-self-start ">
               <div className="flex items-center gap-x-[10px]">
                 <Icon
                   className="w-[24px] h-[24px] font-semibold"
-                  icon="fe:share"
+                  icon="feather:share-2"
                 />
                 <div className="font-bold text-[24px]">Share</div>
               </div>
@@ -91,12 +93,9 @@ export default function Share() {
                   setOpenShare(false);
                 }}
               >
-                <Image
-                  src="/FiCircleX.svg"
-                  width={24}
-                  height={24}
-                  alt="Exit"
-                  className="text-forest-900"
+                <Icon
+                  className="w-[24px] h-[24px] font-semibold"
+                  icon="feather:x-circle"
                 />
               </div>
             </div>
@@ -105,8 +104,10 @@ export default function Share() {
             </div>
             <div className="flex mt-[15px] text-[16px] leading-[150%] ">
               <div className="flex flex-col w-[285px] items-center justify-center">
-                <div className="w-[247px] h-[177px] flex items-center justify-center bg-white">
-                  Image Goes Here
+                <div className="w-[251px] h-[181px]  flex items-center justify-center p-0.5 bg-forest-500 dark:bg-[#5A6462] rounded-[6px]">
+                  <div className="w-full h-full flex items-center justify-center bg-white dark:bg-forest-1000 rounded-[5px] text-[#5A6462] text-xs">
+                    Image Goes Here
+                  </div>
                 </div>
                 <div className="mt-[10px]">
                   <label className="flex items-center cursor-pointer">
@@ -126,34 +127,33 @@ export default function Share() {
                     </div>
                   </label>
                 </div>
-                <div className="mt-[15px]">
-                  <div className="flex w-[285px] h-[54px] p-[15px] border-[1px] border-[#CDD8D3] rounded-full gap-x-[10px] items-center">
-                    <input
-                      type="text"
-                      value={currentURL ? currentURL : ""}
-                      className="w-[85%] bg-transparent border-none text-sm h-[24px] overflow-hidden whitespace-nowrap overflow-ellipsis"
-                    />
-                    {copied ? (
-                      <Icon className="w-[24px] h-[24px] " icon="fe:check" />
-                    ) : (
-                      <Image
-                        src="/FiCopy.svg"
-                        width={24}
-                        height={24}
-                        alt="Exit"
-                        className="text-forest-900 hover:cursor-pointer"
-                        onClick={() => {
-                          copyText(currentURL);
-                          triggerCopy();
-                        }}
-                      />
-                    )}
-                  </div>
+                <div className="mt-[15px] relative">
+                  {/* <div className="flex w-[285px] h-[54px] p-[15px] border-[1px] border-[#CDD8D3] gap-x-[10px] items-center"> */}
+                  <input
+                    type="text"
+                    value={currentURL ? currentURL : ""}
+                    className="w-[285px] h-[54px] p-[15px] pr-[45px] pass bg-transparent rounded-full border border-forest-400 dark:border-forest-800 font-medium text-forest-400 dark:text-forest-500 text-base overflow-hidden whitespace-nowrap text-ellipsis focus:outline-none"
+                    readOnly={isReadOnlyInput}
+                    onClick={(e) => {
+                      setIsReadOnlyInput(false);
+                      e.currentTarget.select();
+                    }}
+                  />
+
+                  <Icon
+                    className="w-[24px] h-[24px] absolute right-[15px] top-[15px] hover:cursor-pointer"
+                    icon={copied ? "feather:check" : "feather:copy"}
+                    onClick={() => {
+                      copyText(currentURL ? currentURL : "");
+                      triggerCopy();
+                    }}
+                  />
+                  {/* </div> */}
                 </div>
               </div>
-              <div className="flex flex-col ml-[20px] gap-y-[5px] ">
+              <div className="flex flex-col pl-[30px] gap-y-[5px]">
                 <div
-                  className="flex w-[204px] h-[54px] bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
+                  className="flex w-[204px] h-[54px] bg-forest-500 dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
                   onClick={() => {
                     handleSendEmail();
                   }}
@@ -164,7 +164,7 @@ export default function Share() {
                   </div>
                 </div>
                 <div
-                  className="flex w-[204px] h-[54px] bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
+                  className="flex w-[204px] h-[54px] bg-forest-500 dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
                   onClick={() => {
                     shareOnReddit();
                   }}
@@ -174,20 +174,20 @@ export default function Share() {
                     Share on Reddit
                   </div>
                 </div>
-                <div className="flex w-[204px] h-[54px] bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]">
+                <div className="flex w-[204px] h-[54px] bg-forest-500 dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]">
                   <Icon className="w-[24px] h-[24px] " icon="gtp:lens" />
                   <div className="h-[24px] leading-[150%] text-[16px]">
                     Share on Lens
                   </div>
                 </div>
-                <div className="flex w-[204px] h-[54px] bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]">
+                <div className="flex w-[204px] h-[54px] bg-forest-500 dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]">
                   <Icon className="w-[24px] h-[24px] " icon="gtp:farcaster" />
                   <div className="h-[24px] leading-[150%] text-[16px]">
                     Share on Farcaster
                   </div>
                 </div>
                 <div
-                  className="flex w-[204px] h-[54px] bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
+                  className="flex w-[204px] h-[54px] bg-forest-500 dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
                   onClick={() => {
                     shareOnTwitter();
                   }}

@@ -9,6 +9,7 @@ import Backgrounds from "@/components/layout/Backgrounds";
 import { Metadata } from "next";
 import Head from "./head";
 import { Graph } from "schema-dts";
+import Share from "@/components/Share";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",
@@ -185,6 +186,9 @@ export default function RootLayout({
                 </div>
               </div>
             </div>
+          </div>
+          <div className="fixed bottom-[20px] right-[50px] z-50 p-[5px] bg-forest-500 dark:bg-[#5A6462] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
+            <Share />
           </div>
           <CookieConsent />
         </Providers>
