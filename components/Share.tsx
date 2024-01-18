@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
+import Image from "next/image";
 
 export default function Share() {
   const [openShare, setOpenShare] = useState(false);
-  const [currentUrl, setCurrentUrl] = useState<string | null>(null);
+  const [currentURL, setcurrentURL] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   function copyText(entryText) {
@@ -19,29 +20,29 @@ export default function Share() {
   }
 
   const handleSendEmail = () => {
-    if (currentUrl !== null) {
+    if (currentURL !== null) {
       const mailtoLink = `mailto:${""}?subject=${encodeURIComponent(
         "GrowThePie",
-      )}&body=${encodeURIComponent(currentUrl)}`;
+      )}&body=${encodeURIComponent(currentURL)}`;
       window.location.href = mailtoLink;
     }
   };
 
   const shareOnTwitter = () => {
     const text = "Share";
-    if (currentUrl !== null) {
+    if (currentURL !== null) {
       const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
-        currentUrl,
+        currentURL,
       )}&text=${encodeURIComponent(text)}`;
       window.open(twitterUrl, "_blank");
     }
   };
 
   const shareOnReddit = () => {
-    if (currentUrl !== null) {
+    if (currentURL !== null) {
       const title = "Share";
       const redditShareUrl = `https://www.reddit.com/submit?url=${encodeURIComponent(
-        currentUrl,
+        currentURL,
       )}&title=${encodeURIComponent(title)}`;
       window.open(redditShareUrl, "_blank");
     }
@@ -49,7 +50,7 @@ export default function Share() {
 
   //Initialize URL
   useEffect(() => {
-    setCurrentUrl(window.location.href);
+    setcurrentURL(window.location.href);
   }, []);
 
   return (
@@ -72,93 +73,133 @@ export default function Share() {
               setOpenShare(!openShare);
             }}
           />
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[325px] bg-forest-50 dark:bg-forest-900 z-[110] rounded-2xl py-6 px-6 shadow-lg">
-            <div className="flex w-full h-[10px] justify-self-start justify-between items-center">
-              <div className="font-semibold">Share</div>
+          <div
+            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[579px] h-[436px] bg-forest-50 dark:bg-forest-900 z-[110] rounded-2xl shadow-lg py-[30px] px-[30px] 
+          border-[5px] border-[#5A6462]"
+          >
+            <div className="flex w-full h-[32px] justify-between items-center justify-self-start ">
+              <div className="flex items-center gap-x-[10px]">
+                <Icon
+                  className="w-[24px] h-[24px] font-semibold"
+                  icon="fe:share"
+                />
+                <div className="font-bold text-[24px]">Share</div>
+              </div>
               <div
-                className="w-8 h-8 flex items-center justify-center hover:bg-forest-800 bg-transparent rounded-full"
+                className="w-8 h-8 flex items-center justify-center hover:bg-forest-800 bg-transparent rounded-full hover:cursor-pointer"
                 onClick={() => {
                   setOpenShare(false);
                 }}
               >
-                <Icon
-                  className="w-6 h-6 font-semibold hover:cursor-pointer"
-                  icon="fe:close"
+                <Image
+                  src="/FiCircleX.svg"
+                  width={24}
+                  height={24}
+                  alt="Exit"
+                  className="text-forest-900"
                 />
               </div>
             </div>
-
-            <div className="mt-[7.5%] flex flex-col gap-y-4 items-center">
-              <div className="flex w-[400px] justify-between">
+            <div className="flex flex-col mt-[15px] text-[16px] leading-[150%]">
+              <div>Share this page on your social media channels.</div>
+            </div>
+            <div className="flex mt-[15px] text-[16px] leading-[150%] ">
+              <div className="flex flex-col w-[285px] items-center justify-center">
+                <div className="w-[247px] h-[177px] flex items-center justify-center bg-white">
+                  Image Goes Here
+                </div>
+                <div className="mt-[10px]">
+                  <label className="flex items-center cursor-pointer">
+                    <div className="flex items-center relative">
+                      <input
+                        type="checkbox"
+                        checked={true}
+                        className="hidden"
+                      />
+                      <div className="toggle__line w-[50px] h-[28px] bg-[#CDD8D3] rounded-full shadow-inner"></div>
+                      <div
+                        className={`toggle__dot absolute w-6 h-6 bg-[#1F2726] rounded-full shadow inset-y-.5 mx-0.5 left-0 `}
+                      ></div>
+                    </div>
+                    <div className="ml-3 text-[14px] leading-[150%] font-medium">
+                      Include Screenshot
+                    </div>
+                  </label>
+                </div>
+                <div className="mt-[15px]">
+                  <div className="flex w-[285px] h-[54px] p-[15px] border-[1px] border-[#CDD8D3] rounded-full gap-x-[10px] items-center">
+                    <input
+                      type="text"
+                      value={currentURL ? currentURL : ""}
+                      className="w-[85%] bg-transparent border-none text-sm h-[24px] overflow-hidden whitespace-nowrap overflow-ellipsis"
+                    />
+                    {copied ? (
+                      <Icon className="w-[24px] h-[24px] " icon="fe:check" />
+                    ) : (
+                      <Image
+                        src="/FiCopy.svg"
+                        width={24}
+                        height={24}
+                        alt="Exit"
+                        className="text-forest-900 hover:cursor-pointer"
+                        onClick={() => {
+                          copyText(currentURL);
+                          triggerCopy();
+                        }}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col ml-[20px] gap-y-[5px] ">
                 <div
-                  className="flex flex-col justify-center items-center hover:cursor-pointer"
+                  className="flex w-[204px] h-[54px] bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
                   onClick={() => {
                     handleSendEmail();
                   }}
                 >
-                  <div className="flex items-center justify-center w-[86px] h-[86px] rounded-full bg-forest-50">
-                    <Icon icon="fe:mail" className="w-8 h-8 text-forest-900" />
+                  <Icon className="w-[24px] h-[24px] " icon="gtp:email" />
+                  <div className="h-[24px] leading-[150%] text-[16px]">
+                    Share via Email
                   </div>
-                  <div className="pt-1"> Email </div>
                 </div>
                 <div
-                  className="flex flex-col justify-center items-center hover:cursor-pointer"
-                  onClick={() => {
-                    shareOnTwitter();
-                  }}
-                >
-                  <div className="flex items-center justify-center w-[86px] h-[86px] rounded-full bg-black">
-                    <Icon
-                      icon="akar-icons:x-fill"
-                      className="w-8 h-8 text-white"
-                    />
-                  </div>
-                  <div className="pt-1"> Twitter </div>
-                </div>
-
-                <div
-                  className="flex flex-col justify-center items-center hover:cursor-pointer"
+                  className="flex w-[204px] h-[54px] bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
                   onClick={() => {
                     shareOnReddit();
                   }}
                 >
-                  <div className="flex items-center justify-center w-[86px] h-[86px] rounded-full bg-[#FF5700]">
-                    <Icon
-                      icon="dashicons:reddit"
-                      className="w-8 h-8 text-white"
-                    />
+                  <Icon className="w-[24px] h-[24px] " icon="gtp:reddit" />
+                  <div className="h-[24px] leading-[150%] text-[16px]">
+                    Share on Reddit
                   </div>
-                  <div className="pt-1"> Reddit </div>
                 </div>
-              </div>
-              <div className="flex justify-center ">
-                <div className="flex w-[400px] h-[50px] bg-[#1F2726] border-[1px] border-white rounded-2xl items-center ">
-                  <div
-                    className="flex items-center justify-center rounded-full w-10 h-10 hover:bg-forest-800 bg-opacity-5 pr-2 ml-1 mr-1"
-                    onClick={() => {
-                      copyText(currentUrl);
-                      triggerCopy();
-                    }}
-                  >
-                    <Icon icon="fe:login" className="w-6 h-6 text-white " />
+                <div className="flex w-[204px] h-[54px] bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]">
+                  <Icon className="w-[24px] h-[24px] " icon="gtp:lens" />
+                  <div className="h-[24px] leading-[150%] text-[16px]">
+                    Share on Lens
                   </div>
-                  <input
-                    type="text"
-                    value={currentUrl ? currentUrl : ""}
-                    className="w-[85%] bg-transparent border-none text-sm h-[20px]"
-                  />
                 </div>
-              </div>
-              <div className="flex justify-center w-[400px] ">
+                <div className="flex w-[204px] h-[54px] bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]">
+                  <Icon className="w-[24px] h-[24px] " icon="gtp:farcaster" />
+                  <div className="h-[24px] leading-[150%] text-[16px]">
+                    Share on Farcaster
+                  </div>
+                </div>
                 <div
-                  className={`flex font-semibold items-center justify-center w-[80px] h-[30px] rounded-full bg-forest-50 text-black transition-opacity ${
-                    copied ? "opacity-100" : "opacity-0"
-                  }`}
+                  className="flex w-[204px] h-[54px] bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
+                  onClick={() => {
+                    shareOnTwitter();
+                  }}
                 >
-                  Copied
+                  <Icon className="w-[24px] h-[24px] " icon="pajamas:twitter" />
+                  <div className="h-[24px] leading-[150%] text-[16px]">
+                    Share on X
+                  </div>
                 </div>
               </div>
             </div>
+
             {/*Top Row X */}
           </div>
         </>

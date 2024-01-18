@@ -375,6 +375,7 @@ const Notification = () => {
     localStorage.setItem(NOTICACHE, JSON.stringify(cachedNotifications));
   }
 
+  console.log(cachedNotifications);
   return (
     <div className="relative">
       {filteredData && (
