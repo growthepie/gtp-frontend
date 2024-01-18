@@ -564,7 +564,10 @@ export const Chart = ({
               <div
                 className="absolute left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50"
                 style={{
-                  top: parseInt(chartHeight) / 3 - parseInt(chartHeight) / 25,
+                  top:
+                    parseInt(chartHeight, 10) <= 400
+                      ? parseInt(chartHeight) / 3 - parseInt(chartHeight) / 25
+                      : parseInt(chartHeight) / 3 + parseInt(chartHeight) / 12,
                 }}
               >
                 <ChartWatermark
