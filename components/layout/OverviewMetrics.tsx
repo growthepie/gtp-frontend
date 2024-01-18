@@ -60,6 +60,19 @@ const DisabledStates: {
   },
 };
 
+// object which contains the allowed modes for chains with mode exceptions
+const AllowedModes: {
+  [chain: string]: {
+    metric: string[];
+    scale: string[];
+  };
+} = {
+  imx: {
+    metric: ["txcount"],
+    scale: ["absolute", "share"],
+  },
+};
+
 type ContractInfo = {
   address: string;
   project_name: string;
@@ -76,16 +89,14 @@ type ContractInfo = {
 
 export default function OverviewMetrics({
   data,
-  showEthereumMainnet,
-  setShowEthereumMainnet,
   selectedTimespan,
   setSelectedTimespan,
+  forceSelectedChain,
 }: {
   data: Chains;
-  showEthereumMainnet: boolean;
-  setShowEthereumMainnet: (show: boolean) => void;
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
+  forceSelectedChain?: string;
 }) {
   const {
     data: master,
@@ -94,7 +105,9 @@ export default function OverviewMetrics({
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const [selectedMode, setSelectedMode] = useState("gas_fees_share_usd");
+  const [selectedMode, setSelectedMode] = useState(
+    forceSelectedChain === "imx" ? "txcount_share" : "gas_fees_share_usd",
+  );
   const [isCategoryMenuExpanded, setIsCategoryMenuExpanded] = useState(true);
   const [contractCategory, setContractCategory] = useState("value");
   const [sortOrder, setSortOrder] = useState(true);
@@ -420,7 +433,9 @@ export default function OverviewMetrics({
     return result;
   }, [data, selectedCategory, selectedTimespan]);
 
-  const [selectedChain, setSelectedChain] = useState<string | null>(null);
+  const [selectedChain, setSelectedChain] = useState<string | null>(
+    forceSelectedChain ?? null,
+  );
 
   const relativePercentageByChain = useMemo(() => {
     return Object.keys(data).reduce((acc, chainKey) => {
@@ -1121,10 +1136,12 @@ export default function OverviewMetrics({
     if (selectedChain) {
       let sum = 0;
       if (selectedMode.includes("share")) {
-        returnValue =
-          data[selectedChain].overview[selectedTimespan][selectedCategory].data[
-            overviewIndex
-          ];
+        returnValue = data[selectedChain].overview[selectedTimespan][
+          selectedCategory
+        ].data
+          ? data[selectedChain].overview[selectedTimespan][selectedCategory]
+              .data[overviewIndex]
+          : [];
       } else {
         for (
           let i = 0;
@@ -1261,7 +1278,8 @@ export default function OverviewMetrics({
         <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 lg:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
           <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
             <button
-              className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
+              disabled={forceSelectedChain === "imx"}
+              className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium disabled:opacity-30 ${
                 selectedMode.includes("gas_fees")
                   ? "bg-forest-500 dark:bg-forest-1000"
                   : "hover:bg-forest-500/10"
@@ -1371,43 +1389,43 @@ export default function OverviewMetrics({
                   </button>
                 </div>
                 <div className="flex flex-1">
-                  {Object.keys(categories).map(
-                    (category, i) =>
-                      categories[category] !== "Chains" && (
-                        <div
-                          key={category}
-                          className={`relative flex h-full justify-center items-center 
+                  {Object.keys(categories)
+                    .filter((category) => categories[category] !== "Chains")
+                    .map((category, i) => (
+                      <div
+                        key={category}
+                        className={`relative flex h-full justify-center items-center 
                           ${category === "unlabeled" ? "flex-1" : "flex-1"}
                           ${
                             selectedCategory === category
                               ? "borden-hidden rounded-[0px]"
                               : "h-full"
                           }`}
-                          onMouseEnter={() => {
-                            setIsCategoryHovered((prev) => ({
-                              ...prev,
-                              [category]: true,
-                            }));
-                          }}
-                          onMouseLeave={() => {
-                            setIsCategoryHovered((prev) => ({
-                              ...prev,
-                              [category]: false,
-                            }));
-                          }}
-                          style={{
-                            backgroundColor:
-                              selectedCategory === category
-                                ? "#5A6462"
-                                : `rgba(0, 0, 0, ${
-                                    0.06 +
-                                    (i / Object.keys(categories).length) * 0.94
-                                  })`,
-                          }}
-                        >
-                          <button
-                            key={category}
-                            className={`flex flex-col w-full h-full justify-center items-center overflow-hidden border-l border-[
+                        onMouseEnter={() => {
+                          setIsCategoryHovered((prev) => ({
+                            ...prev,
+                            [category]: true,
+                          }));
+                        }}
+                        onMouseLeave={() => {
+                          setIsCategoryHovered((prev) => ({
+                            ...prev,
+                            [category]: false,
+                          }));
+                        }}
+                        style={{
+                          backgroundColor:
+                            selectedCategory === category
+                              ? "#5A6462"
+                              : `rgba(0, 0, 0, ${
+                                  0.06 +
+                                  (i / Object.keys(categories).length) * 0.94
+                                })`,
+                        }}
+                      >
+                        <button
+                          key={category}
+                          className={`flex flex-col w-full h-full justify-center items-center overflow-hidden border-l border-[
                           1px 
                         ] border-forest-50 dark:border-forest-800
                           ${
@@ -1420,24 +1438,23 @@ export default function OverviewMetrics({
                               ? "bg-forest-800/50"
                               : ""
                           }`}
-                            onClick={() => {
-                              setSelectedCategory(category);
-                              setSelectedChain(null);
-                            }}
+                          onClick={() => {
+                            setSelectedCategory(category);
+                            if (!forceSelectedChain) setSelectedChain(null);
+                          }}
+                        >
+                          <div
+                            className={`${
+                              selectedCategory === category
+                                ? "text-sm font-semibold"
+                                : "text-xs font-medium"
+                            }`}
                           >
-                            <div
-                              className={`${
-                                selectedCategory === category
-                                  ? "text-sm font-semibold"
-                                  : "text-xs font-medium"
-                              }`}
-                            >
-                              {categories[category]}
-                            </div>
-                          </button>
-                        </div>
-                      ),
-                  )}
+                            {categories[category]}
+                          </div>
+                        </button>
+                      </div>
+                    ))}
                 </div>
               </div>
             </div>
@@ -1575,7 +1592,10 @@ export default function OverviewMetrics({
                                       ) {
                                         return;
                                       }
-                                      if (selectedChain === chainKey) {
+                                      if (
+                                        selectedChain === chainKey &&
+                                        !forceSelectedChain
+                                      ) {
                                         // setSelectedCategory(categoryKey);
                                         setSelectedChain(null);
                                       } else {
@@ -1584,7 +1604,8 @@ export default function OverviewMetrics({
                                       }
                                     } else {
                                       setSelectedCategory(categoryKey);
-                                      setSelectedChain(null);
+                                      if (!forceSelectedChain)
+                                        setSelectedChain(null);
                                     }
                                   }}
                                   onMouseEnter={() => {
@@ -1775,7 +1796,7 @@ export default function OverviewMetrics({
             stack
             timespan={selectedTimespan}
             series={chartSeries}
-            yScale={selectedValue === "share" ? "percentage" : "linear"}
+            yScale={selectedValue === "share" ? "percentageDecimal" : "linear"}
             chartHeight="196px"
             chartWidth="100%"
             maxY={chartMax}

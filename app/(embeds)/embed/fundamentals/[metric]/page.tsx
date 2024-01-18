@@ -79,13 +79,18 @@ const Chain = ({ params }: { params: any }) => {
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
 
   const timeIntervalKey = useMemo(() => {
-    if (!metricData) return null;
+    if (
+      metricData?.data.avg === true &&
+      ["365d", "max"].includes(selectedTimespan)
+    ) {
+      return "daily_7d_rolling";
+    }
 
-    return metricData.data.avg === true &&
-      ["365d", "max"].includes(selectedTimespan) &&
-      selectedTimeInterval === "daily"
-      ? "daily_7d_rolling"
-      : selectedTimeInterval;
+    if (selectedTimeInterval === "monthly") {
+      return "monthly";
+    }
+
+    return "daily";
   }, [metricData, selectedTimeInterval, selectedTimespan]);
 
   if (errorCode) {
@@ -126,6 +131,7 @@ const Chain = ({ params }: { params: any }) => {
           setSelectedTimespan={setSelectedTimespan}
           selectedScale={selectedScale}
           setSelectedScale={setSelectedScale}
+          monthly_agg={metricData.data.monthly_agg}
           is_embed={true}
         >
           <MetricsTable
@@ -136,6 +142,7 @@ const Chain = ({ params }: { params: any }) => {
             metric_id={metricData.data.metric_id}
             showEthereumMainnet={showEthereumMainnet}
             setShowEthereumMainnet={setShowEthereumMainnet}
+            timeIntervalKey={timeIntervalKey}
           />
         </ComparisonChart>
       )}

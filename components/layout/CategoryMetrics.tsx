@@ -89,6 +89,7 @@ export default function CategoryMetrics({
 
   const [openSub, setOpenSub] = useState(querySubcategories ? true : false);
   const [selectedValue, setSelectedValue] = useState("absolute");
+  const [selectedChartType, setSelectedChartType] = useState("absolute");
 
   const [maxDisplayedContracts, setMaxDisplayedContracts] = useState(10);
 
@@ -450,6 +451,7 @@ export default function CategoryMetrics({
         }
       }
     }
+    console.log("chainArray", chainArray);
     return chainArray;
   }, [
     selectedSubcategories,
@@ -473,14 +475,15 @@ export default function CategoryMetrics({
       name: chain,
       unixKey: "unix",
       dataKey: selectedType,
-      data: data["native_transfers"][dailyKey][chain]
-        .map((item, i) => {
-          // remap date keys so first is today and each day is subtracted from there
-          const date = today - i * 24 * 60 * 60 * 1000;
-          item[0] = date;
-          return item;
-        })
-        .reverse(),
+      data: data["native_transfers"][dailyKey][chain],
+      // .map((item, i) => {
+      //   // remap date keys so first is today and each day is subtracted from there
+      //   const date = today - i * 24 * 60 * 60 * 1000;
+      //   item[0] = date;
+      //   return item;
+      // })
+      // .reverse(),
+      type: selectedChartType,
     }));
     return [
       {
@@ -554,7 +557,14 @@ export default function CategoryMetrics({
           .reverse(),
       },
     ];
-  }, [selectedCategory, data, chartReturn, selectedType, dailyKey]);
+  }, [
+    selectedCategory,
+    data,
+    chartReturn,
+    dailyKey,
+    selectedType,
+    selectedChartType,
+  ]);
 
   const [isCategoryHovered, setIsCategoryHovered] = useState<{
     [key: string]: boolean;
@@ -1663,7 +1673,8 @@ export default function CategoryMetrics({
           <div className="w-full lg:w-[56%] relative bottom-2 mt-6 mb-[30px] h-[320px] lg:mt-0 lg:h-auto">
             {chartSeries && (
               <Chart
-                chartType="line"
+                chartType={selectedChartType === "absolute" ? "line" : "area"}
+                stack={selectedChartType !== "absolute"}
                 types={
                   selectedCategory === null || selectedCategory === "Chains"
                     ? data.native_transfers[dailyKey].types
@@ -1671,7 +1682,9 @@ export default function CategoryMetrics({
                 }
                 timespan={selectedTimespan}
                 series={chartSeries}
-                yScale={"linear"}
+                yScale={
+                  selectedChartType === "percentage" ? "percentage" : "linear"
+                }
                 // yScale="linear"
                 chartHeight={isMobile ? "400" : "500"}
                 chartWidth="100%"
@@ -1712,6 +1725,50 @@ export default function CategoryMetrics({
                 </div>
               ))}
           </div>{" "}
+        </div>
+      </Container>
+      <Container>
+        {" "}
+        <div className="flex flex-row w-[100%] mx-auto justify-center md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
+          {/* <button onClick={toggleFullScreen}>Fullscreen</button> */}
+          {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
+          {/* toggle ETH */}
+          <button
+            className={`px-[16px] py-[4px]  rounded-full ${
+              selectedChartType === "absolute"
+                ? "bg-forest-500 dark:bg-forest-1000"
+                : "hover:bg-forest-500/10"
+            }`}
+            onClick={() => {
+              setSelectedChartType("absolute");
+            }}
+          >
+            Absolute
+          </button>
+          <button
+            className={`px-[16px] py-[4px]  rounded-full ${
+              selectedChartType === "stacked"
+                ? "bg-forest-500 dark:bg-forest-1000"
+                : "hover:bg-forest-500/10"
+            }`}
+            onClick={() => {
+              setSelectedChartType("stacked");
+            }}
+          >
+            Stacked
+          </button>
+          <button
+            className={`px-[16px] py-[4px]  rounded-full ${
+              selectedChartType === "percentage"
+                ? "bg-forest-500 dark:bg-forest-1000"
+                : "hover:bg-forest-500/10"
+            }`}
+            onClick={() => {
+              setSelectedChartType("percentage");
+            }}
+          >
+            Percentage
+          </button>
         </div>
       </Container>
       <Container>

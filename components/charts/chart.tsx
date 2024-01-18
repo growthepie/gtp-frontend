@@ -49,7 +49,7 @@ export const Chart = ({
     dataKey: string;
     data: number[][];
   }[];
-  yScale?: "linear" | "logarithmic" | "percentage";
+  yScale?: "linear" | "logarithmic" | "percentage" | "percentageDecimal";
   chartHeight: string;
   chartWidth: string;
   decimals?: number;
@@ -91,6 +91,8 @@ export const Chart = ({
   }, []);
 
   const drawChartSeries = useCallback(() => {
+    const areaStacking =
+      yScale === "percentage" ? "percent" : stack ? "normal" : undefined;
     if (chartComponent.current) {
       const currentSeries = chartComponent.current.series;
 
@@ -112,7 +114,7 @@ export const Chart = ({
         if (currentSeries && currentSeries.find((cs) => cs.name === s.name)) {
           const seriesToUpdate = currentSeries.find((cs) => cs.name === s.name);
 
-          seriesToUpdate &&
+          if (seriesToUpdate) {
             seriesToUpdate.setData(
               s.data.map((d) => [
                 d[types.indexOf(s.unixKey)],
@@ -120,6 +122,12 @@ export const Chart = ({
               ]),
               false,
             );
+
+            seriesToUpdate.update(
+              { type: chartType, stacking: areaStacking },
+              true,
+            );
+          }
         } else {
           chartComponent.current?.addSeries(
             {
@@ -129,6 +137,7 @@ export const Chart = ({
                 d[types.indexOf(s.dataKey)],
               ]),
               type: chartType,
+              stacking: areaStacking,
               clip: true,
               fillOpacity: 1,
               fillColor: {
@@ -285,11 +294,11 @@ export const Chart = ({
       });
       chartComponent.current?.redraw();
     }
-  }, [chartType, series, theme, types, maxY]);
+  }, [chartType, series, theme, types, maxY, yScale, stack]);
 
   useEffect(() => {
     drawChartSeries();
-  }, [drawChartSeries, series, types, maxY]);
+  }, [drawChartSeries, series, types, maxY, yScale, stack]);
 
   const resetXAxisExtremes = useCallback(() => {
     if (chartComponent.current) {
@@ -352,7 +361,7 @@ export const Chart = ({
       let selectedInterval;
       let numIntervals;
 
-      if (yScale === "percentage") {
+      if (yScale === "percentage" || yScale === "percentageDecimal") {
         selectedInterval = 0.05; // Default interval for percentages
       } else {
         selectedInterval = 1; // Default interval for other scales
@@ -441,14 +450,21 @@ export const Chart = ({
                       },
                       area: {
                         ...baseOptions.plotOptions.area,
-                        stacking: stack ? "normal" : undefined,
+                        stacking:
+                          yScale === "percentage"
+                            ? "percent"
+                            : stack
+                            ? "normal"
+                            : undefined,
                       },
                     },
                     tooltip: {
                       ...baseOptions.tooltip,
                       formatter:
-                        yScale === "percentage"
+                        yScale === "percentageDecimal"
                           ? tooltipFormatter(true, true, decimalToPercent)
+                          : yScale === "percentage"
+                          ? tooltipFormatter(true, true, null)
                           : tooltipFormatter(
                               true,
                               false,
@@ -456,6 +472,8 @@ export const Chart = ({
                                 return parseFloat(x).toFixed(decimals);
                               },
                               series.length > 0 ? series[0].dataKey : undefined,
+                              false,
+                              stack,
                             ),
                     },
                     xAxis: {
@@ -503,7 +521,9 @@ export const Chart = ({
                         formatter: function (
                           t: Highcharts.AxisLabelsFormatterContextObject,
                         ) {
-                          const isPercentage = yScale === "percentage";
+                          const isPercentage =
+                            yScale === "percentage" ||
+                            yScale === "percentageDecimal";
                           let prefix = "";
                           let suffix = "";
 
@@ -526,7 +546,7 @@ export const Chart = ({
                           return formatNumber(
                             t.value,
                             true,
-                            isPercentage,
+                            yScale === "percentageDecimal",
                             prefix,
                             suffix,
                           );

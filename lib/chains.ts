@@ -337,7 +337,51 @@ export const AllChains: Chain[] = [
       light: ["bg-[#08373C]", "bg-[#08373C]"],
       dark: ["bg-[#10808C]", "bg-[#10808C]"],
     },
-    darkTextOnBackground: true,
+    darkTextOnBackground: false,
+  },
+  {
+    label: "Starknet",
+    icon: "/icons/starknet.png",
+    key: "starknet",
+    urlKey: "starknet",
+    chainType: "L2",
+    ecosystem: [], // add ecosystems when unhiding from the UI
+    description: "",
+    border: {
+      light: ["border-[#EC796B]", "border-[#EC796B]"],
+      dark: ["border-[#EC796B]", "border-[#EC796B]"],
+    },
+    colors: {
+      light: ["#EC796B", "#EC796B"], // dark greenish
+      dark: ["#EC796B", "#EC796B"], // dark greenish
+    },
+    backgrounds: {
+      light: ["bg-[#EC796B]", "bg-[#EC796B]"],
+      dark: ["bg-[#EC796B]", "bg-[#EC796B]"],
+    },
+    darkTextOnBackground: false,
+  },
+  {
+    label: "Loopring",
+    icon: "/icons/loopring.png",
+    key: "loopring",
+    urlKey: "loopring",
+    chainType: "L2",
+    ecosystem: [], // add ecosystems when unhiding from the UI
+    description: "",
+    border: {
+      light: ["border-[#4F5EDF]", "border-[#4F5EDF]"],
+      dark: ["border-[#4F5EDF]", "border-[#4F5EDF]"],
+    },
+    colors: {
+      light: ["#4F5EDF", "#4F5EDF"], // dark greenish
+      dark: ["#4F5EDF", "#4F5EDF"], // dark greenish
+    },
+    backgrounds: {
+      light: ["bg-[#4F5EDF]", "bg-[#4F5EDF]"],
+      dark: ["bg-[#4F5EDF]", "bg-[#4F5EDF]"],
+    },
+    darkTextOnBackground: false,
   },
   {
     label: "Multiple Chains",

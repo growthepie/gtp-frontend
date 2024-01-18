@@ -81,13 +81,18 @@ const Chain = ({ params }: { params: any }) => {
   );
 
   const timeIntervalKey = useMemo(() => {
-    if (!metricData) return null;
+    if (
+      metricData?.data.avg === true &&
+      ["365d", "max"].includes(selectedTimespan)
+    ) {
+      return "daily_7d_rolling";
+    }
 
-    return metricData.data.avg === true &&
-      ["365d", "max"].includes(selectedTimespan) &&
-      selectedTimeInterval === "daily"
-      ? "daily_7d_rolling"
-      : "daily";
+    if (selectedTimeInterval === "monthly") {
+      return "monthly";
+    }
+
+    return "daily";
   }, [metricData, selectedTimeInterval, selectedTimespan]);
 
   if (errorCode) {
@@ -137,7 +142,7 @@ const Chain = ({ params }: { params: any }) => {
             pageData.description
           )}
           {pageData.note && (
-            <div className="absolute text-xs">
+            <div className="text-xs">
               <span className="font-semibold text-forest-200 dark:text-forest-400">
                 Note:{" "}
               </span>
@@ -169,6 +174,7 @@ const Chain = ({ params }: { params: any }) => {
             showTimeIntervals={true}
             sources={metricData.data.source}
             avg={metricData.data.avg}
+            monthly_agg={metricData.data.monthly_agg}
             showEthereumMainnet={showEthereumMainnet}
             setShowEthereumMainnet={setShowEthereumMainnet}
             selectedTimespan={selectedTimespan}
@@ -186,6 +192,7 @@ const Chain = ({ params }: { params: any }) => {
               metric_id={metricData.data.metric_id}
               showEthereumMainnet={showEthereumMainnet}
               setShowEthereumMainnet={setShowEthereumMainnet}
+              timeIntervalKey={timeIntervalKey}
             />
           </ComparisonChart>
         )}
