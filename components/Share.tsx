@@ -1,9 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
+import { BASE_URLS } from "@/lib/helpers";
 
 export default function Share() {
+  const pathname = usePathname();
   const [openShare, setOpenShare] = useState(false);
   const [currentURL, setcurrentURL] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -52,8 +55,10 @@ export default function Share() {
 
   //Initialize URL
   useEffect(() => {
-    setcurrentURL(window.location.href);
-  }, []);
+    setcurrentURL(
+      BASE_URLS[process.env.NEXT_PUBLIC_VERCEL_ENV ?? "production"] + pathname,
+    );
+  }, [pathname]);
 
   return (
     <>
