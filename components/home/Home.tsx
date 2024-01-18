@@ -141,7 +141,7 @@ export default function Home() {
           </Heading>
         </div>
         <Subheading className="text-base leading-normal md:leading-snug mb-[15px] px-[5px] lg:px-[45px]">
-          Number of unique addresses interacting with one or multiple Layer 2s
+          Number of distinct addresses interacting with one or multiple Layer 2s
           in a given week.
         </Subheading>
       </Container>
