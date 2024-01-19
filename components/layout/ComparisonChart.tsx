@@ -1639,13 +1639,13 @@ export default function ComparisonChart({
                 Selected Chains
               </h2> */}
               <div
-                className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 left-0 pl-[42px] w-[90px] md:pl-[85px] md:w-[151px] lg:pl-[89px] lg:w-[149px] xl:w-[170px] xl:pl-[110px] ${
+                className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 left-0 pl-[36px] w-[90px] md:pl-[85px] md:w-[151px] lg:pl-[89px] lg:w-[149px] xl:w-[170px] xl:pl-[110px] ${
                   monthly_agg && selectedTimeInterval === "monthly"
                     ? "translate-y-[calc(-100%+3px)]"
                     : "translate-y-0 "
                 }`}
               >
-                <div className="text-[0.65rem] md:text-xs font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-xl md:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0">
+                <div className="text-[0.65rem] md:text-xs font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-2xl border-t border-l border-r border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0">
                   {monthly_agg_labels[monthly_agg]}
                 </div>
               </div>
@@ -1715,10 +1715,10 @@ export default function ComparisonChart({
                       setZoomed(false);
                     }}
                   >
-                    <span className="hidden md:block">
+                    <span className="hidden sm:block">
                       {timespans[timespan].label}
                     </span>
-                    <span className="block md:hidden">
+                    <span className="block sm:hidden">
                       {timespans[timespan].shortLabel}
                     </span>
                   </button>
@@ -1751,14 +1751,15 @@ export default function ComparisonChart({
             )}
           </div>
           <div
-            className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[calc(50%-72px)] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${
+            className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[113px] sm:w-[162px] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${
               avg && ["365d", "max"].includes(selectedTimespan)
                 ? "translate-y-[calc(-100%+3px)]"
                 : "translate-y-0 "
             }`}
           >
-            <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-2xl border-t border-l border-r leading-snug border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
-              7-day rolling average
+            <div className="text-[0.65rem] md:text-xs font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-2xl border-t border-l border-r border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
+              <span className="hidden md:block">7-day rolling average</span>
+              <span className="block md:hidden">7-day average</span>
             </div>
           </div>
         </div>
