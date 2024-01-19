@@ -1601,7 +1601,7 @@ export default function ComparisonChart({
         </div>
       )} */}
       <Container className={`${is_embed ? "!p-0 !m-0" : ""}`}>
-        <div className="flex space-x-8 w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative">
+        <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative">
           {is_embed ? (
             <div className="hidden md:flex justify-center items-center">
               <div className="w-5 h-5 md:w-7 md:h-7 relative ml-[21px] mr-3">
@@ -1639,20 +1639,20 @@ export default function ComparisonChart({
                 Selected Chains
               </h2> */}
               <div
-                className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 left-0 pl-[42px] w-[90px] md:pl-[85px] md:w-[151px] lg:pl-[89px] lg:w-[149px] xl:w-[170px] xl:pl-[110px] ${
+                className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 left-0 pl-[36px] w-[90px] md:pl-[85px] md:w-[151px] lg:pl-[89px] lg:w-[149px] xl:w-[170px] xl:pl-[110px] ${
                   monthly_agg && selectedTimeInterval === "monthly"
                     ? "translate-y-[calc(-100%+3px)]"
                     : "translate-y-0 "
                 }`}
               >
-                <div className="text-[0.65rem] md:text-xs font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-xl md:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0">
+                <div className="text-[0.65rem] md:text-xs font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-2xl border-t border-l border-r border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0">
                   {monthly_agg_labels[monthly_agg]}
                 </div>
               </div>
               {["daily", "monthly"].map((interval) => (
                 <button
                   key={interval}
-                  className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium capitalize ${
+                  className={`rounded-full px-[16px] py-[8px] grow text-xs sm:text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium capitalize ${
                     selectedTimeInterval === interval
                       ? "bg-forest-500 dark:bg-forest-1000"
                       : "hover:bg-forest-500/10"
@@ -1684,7 +1684,7 @@ export default function ComparisonChart({
             </div>
           )}
 
-          <div className="flex w-full md:w-auto justify-between md:justify-center items-stretch md:items-center space-x-[4px] md:space-x-1">
+          <div className="flex md:w-auto justify-between md:justify-center items-stretch md:items-center space-x-[4px] md:space-x-1">
             {!zoomed ? (
               Object.keys(timespans)
                 .filter((timespan) =>
@@ -1695,7 +1695,7 @@ export default function ComparisonChart({
                 .map((timespan) => (
                   <button
                     key={timespan}
-                    className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
+                    className={`rounded-full px-[16px] py-[8px] grow text-xs sm:text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
                       selectedTimespan === timespan
                         ? "bg-forest-500 dark:bg-forest-1000"
                         : "hover:bg-forest-500/10"
@@ -1715,10 +1715,10 @@ export default function ComparisonChart({
                       setZoomed(false);
                     }}
                   >
-                    <span className="hidden md:block">
+                    <span className="hidden sm:block">
                       {timespans[timespan].label}
                     </span>
-                    <span className="block md:hidden">
+                    <span className="block sm:hidden">
                       {timespans[timespan].shortLabel}
                     </span>
                   </button>
@@ -1726,7 +1726,7 @@ export default function ComparisonChart({
             ) : (
               <>
                 <button
-                  className={`rounded-full flex items-center space-x-3 px-[15px] py-[7px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium border-[0.5px] border-forest-400`}
+                  className={`rounded-full flex items-center space-x-3 px-[15px] py-[7px] w-full md:w-auto text-xs sm:text-sm md:text-base lg:px-4 lg:py-[11px] xl:px-6 xl:py-[15px] font-medium border-[0.5px] border-forest-400 leading-snug`}
                   onClick={() => {
                     chartComponent?.current?.xAxis[0].setExtremes(
                       timespans[selectedTimespan].xMin,
@@ -1735,11 +1735,15 @@ export default function ComparisonChart({
                     setZoomed(false);
                   }}
                 >
-                  <Icon icon="feather:zoom-out" className="w-6 h-6" />
-                  <div>Reset Zoom</div>
+                  <Icon
+                    icon="feather:zoom-out"
+                    className="w-4 h-4 md:w-6 md:h-6"
+                  />
+                  <span className="hidden md:block">Reset Zoom</span>
+                  <span className="block md:hidden">Reset</span>
                 </button>
                 <button
-                  className={`rounded-full px-[16px] py-[8px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4  bg-forest-100 dark:bg-forest-1000`}
+                  className={`rounded-full px-[16px] py-[8px] w-full md:w-auto text-xs sm:text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4  bg-forest-100 dark:bg-forest-1000`}
                 >
                   {intervalShown?.label}
                 </button>
@@ -1747,14 +1751,15 @@ export default function ComparisonChart({
             )}
           </div>
           <div
-            className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[calc(50%-72px)] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${
+            className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[113px] sm:w-[162px] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${
               avg && ["365d", "max"].includes(selectedTimespan)
                 ? "translate-y-[calc(-100%+3px)]"
                 : "translate-y-0 "
             }`}
           >
-            <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
-              7-day rolling average
+            <div className="text-[0.65rem] md:text-xs font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-2xl border-t border-l border-r border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
+              <span className="hidden md:block">7-day rolling average</span>
+              <span className="block md:hidden">7-day average</span>
             </div>
           </div>
         </div>
