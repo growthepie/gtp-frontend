@@ -1,3 +1,4 @@
+"use client";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
 import { useSpring, animated } from "@react-spring/web";

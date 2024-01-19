@@ -40,13 +40,13 @@ const Chain = ({ params }: { params: any }) => {
     );
   }, [metricData]);
 
-  const pageData = navigationItems[1]?.options.find(
-    (item) => item.urlKey === params.metric,
-  )?.page ?? {
-    title: "",
-    description: "",
-    icon: "",
-  };
+  // const pageData = navigationItems[1]?.options.find(
+  //   (item) => item.urlKey === params.metric,
+  // )?.page ?? {
+  //   title: "",
+  //   description: "",
+  //   icon: "",
+  // };
 
   const [selectedChains, setSelectedChains] = useSessionStorage(
     "fundamentalsChains",
@@ -101,11 +101,11 @@ const Chain = ({ params }: { params: any }) => {
 
   return (
     <>
-      <ShowLoading
+      {/* <ShowLoading
         dataLoading={[metricLoading]}
         dataValidating={[metricValidating]}
-      />
-      <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
+      /> */}
+      {/* <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
         <div className="flex justify-between items-start w-full mb-[15px]">
           <div className="flex items-center ">
             <Image
@@ -150,9 +150,9 @@ const Chain = ({ params }: { params: any }) => {
             </div>
           )}
         </Subheading>
-      </Container>
+      </Container> */}
       <div className="flex flex-col-reverse xl:flex-row space-x-0 xl:space-x-2">
-        {metricData && (
+        {metricData ? (
           <ComparisonChart
             data={Object.keys(metricData.data.chains)
               .filter((chain) => selectedChains.includes(chain))
@@ -195,16 +195,20 @@ const Chain = ({ params }: { params: any }) => {
               timeIntervalKey={timeIntervalKey}
             />
           </ComparisonChart>
+        ) : (
+          <div className="h-[904.8px] sm:h-[908.8px] md:h-[969px] lg:h-[553px] xl:h-[624px] w-full flex items-center justify-center">
+            <ShowLoading section />
+          </div>
         )}
       </div>
-      <Container className="flex flex-col space-y-[15px] mt-[30px]">
+      {/* <Container className="flex flex-col space-y-[15px] mt-[30px]">
         <QuestionAnswer
           className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[63px] py-[23px] flex flex-col"
           question={`What does ${pageData.title} tell you?`}
           answer={pageData.why}
           startOpen
         />
-      </Container>
+      </Container> */}
     </>
   );
 };

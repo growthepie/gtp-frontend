@@ -1764,12 +1764,12 @@ export default function ComparisonChart({
           </div>
         </div>
 
-        <div className="w-full flex flex-col-reverse lg:flex-row mt-8 md:mt-0">
+        <div className="w-full flex flex-col-reverse lg:flex-row pt-8 md:pt-0">
           {!is_embed && (
             <div
               className={`hidden lg:block lg:w-7/12 xl:w-5/12 pl-2 pr-[19px] self-center`}
             >
-              <div className="-mt-7 lg:-mr-10">{children}</div>
+              <div className="-pt-7 lg:-pr-10">{children}</div>
             </div>
           )}
           {highchartsLoaded ? (
