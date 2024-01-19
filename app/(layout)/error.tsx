@@ -109,7 +109,7 @@ const Error = ({
                 randIndices.map((index) => (
                   <Link
                     key={index}
-                    className="flex self-center items-center p-[15px] w-[250px] ml-[49px] h-[54px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                    className="flex self-center items-center p-[15px] w-[250px] h-[54px] bg-[#5A6462] rounded-full gap-x-[10px]"
                     href={`/${pageGroup}/${navigationItems[navIndex]["options"][index]["urlKey"]}`}
                   >
                     <Icon
