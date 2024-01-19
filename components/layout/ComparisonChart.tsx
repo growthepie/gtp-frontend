@@ -1639,7 +1639,7 @@ export default function ComparisonChart({
                 Selected Chains
               </h2> */}
               <div
-                className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 left-0 pl-[36px] w-[90px] md:pl-[85px] md:w-[151px] lg:pl-[89px] lg:w-[149px] xl:w-[170px] xl:pl-[110px] ${
+                className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 left-0 pl-[40px] w-[90px] md:pl-[85px] md:w-[151px] lg:pl-[89px] lg:w-[149px] xl:w-[170px] xl:pl-[110px] ${
                   monthly_agg && selectedTimeInterval === "monthly"
                     ? "translate-y-[calc(-100%+3px)]"
                     : "translate-y-0 "
@@ -1652,7 +1652,7 @@ export default function ComparisonChart({
               {["daily", "monthly"].map((interval) => (
                 <button
                   key={interval}
-                  className={`rounded-full px-[16px] py-[8px] grow text-xs sm:text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium capitalize ${
+                  className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium capitalize ${
                     selectedTimeInterval === interval
                       ? "bg-forest-500 dark:bg-forest-1000"
                       : "hover:bg-forest-500/10"
@@ -1695,7 +1695,7 @@ export default function ComparisonChart({
                 .map((timespan) => (
                   <button
                     key={timespan}
-                    className={`rounded-full px-[16px] py-[8px] grow text-xs sm:text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
+                    className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
                       selectedTimespan === timespan
                         ? "bg-forest-500 dark:bg-forest-1000"
                         : "hover:bg-forest-500/10"
@@ -1726,7 +1726,7 @@ export default function ComparisonChart({
             ) : (
               <>
                 <button
-                  className={`rounded-full flex items-center space-x-3 px-[15px] py-[7px] w-full md:w-auto text-xs sm:text-sm md:text-base lg:px-4 lg:py-[11px] xl:px-6 xl:py-[15px] font-medium border-[0.5px] border-forest-400 leading-snug`}
+                  className={`rounded-full flex items-center space-x-3 px-[15px] py-[7px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-[11px] xl:px-6 xl:py-[15px] font-medium border-[0.5px] border-forest-400 leading-snug`}
                   onClick={() => {
                     chartComponent?.current?.xAxis[0].setExtremes(
                       timespans[selectedTimespan].xMin,
@@ -1743,7 +1743,7 @@ export default function ComparisonChart({
                   <span className="block md:hidden">Reset</span>
                 </button>
                 <button
-                  className={`rounded-full px-[16px] py-[8px] w-full md:w-auto text-xs sm:text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4  bg-forest-100 dark:bg-forest-1000`}
+                  className={`rounded-full px-[16px] py-[8px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4  bg-forest-100 dark:bg-forest-1000`}
                 >
                   {intervalShown?.label}
                 </button>
@@ -1751,7 +1751,7 @@ export default function ComparisonChart({
             )}
           </div>
           <div
-            className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[113px] sm:w-[162px] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${
+            className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[117px] sm:w-[162px] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${
               avg && ["365d", "max"].includes(selectedTimespan)
                 ? "translate-y-[calc(-100%+3px)]"
                 : "translate-y-0 "
