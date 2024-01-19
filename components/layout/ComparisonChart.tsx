@@ -1769,7 +1769,7 @@ export default function ComparisonChart({
             <div
               className={`hidden lg:block lg:w-7/12 xl:w-5/12 pl-2 pr-[19px] self-center`}
             >
-              <div className="-pt-7 lg:-pr-10">{children}</div>
+              <div className="-mt-7 lg:-mr-10">{children}</div>
             </div>
           )}
           {highchartsLoaded ? (
