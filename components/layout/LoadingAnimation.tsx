@@ -89,7 +89,7 @@ export default function LoadingAnimation() {
       .map((child: ReactSVGElement) => {
         return child.props;
       })
-      .reverse()
+      .reverse(),
   );
 
   // useEffect(() => {

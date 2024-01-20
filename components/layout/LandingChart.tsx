@@ -1458,7 +1458,7 @@ export default function LandingChart({
   }, [isMobile]);
 
   return (
-    <div className="w-full mb-[0rem] lg:mb-[6rem] relative">
+    <div className="w-full">
       <div className="flex lg:hidden justify-center pb-[30px]">
         <div className="flex bg-forest-100 dark:bg-[#4B5553] rounded-xl w-1/2 px-1.5 py-1.5 md:px-3 md:py-1.5 items-center mr-2">
           <div className="flex flex-col items-center flex-1">
@@ -1661,7 +1661,7 @@ export default function LandingChart({
         </div>
       </div>
       {highchartsLoaded ? (
-        <div className="w-full py-4 rounded-xl">
+        <div className="w-full pt-4 pb-0 md:pb-16 rounded-xl">
           <div className="w-full h-[16rem] md:h-[26rem] relative rounded-xl">
             <div
               className="absolute w-full h-[24rem] top-1 md:top-4"
@@ -1723,138 +1723,140 @@ export default function LandingChart({
         </div>
       )}
 
-      <div className="flex justify-between items-center absolute -bottom-[1rem] lg:-bottom-[5rem] left-0 right-0 rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5">
-        {/* toggle ETH */}
-        <div className="flex z-10">
-          <Switch
-            checked={showEthereumMainnet}
-            onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
-          />
-          <div className="ml-2 block md:hidden xl:block leading-[1.75]">
-            Show Ethereum
-          </div>
-          <div className="ml-2 hidden md:block xl:hidden leading-[1.75]">
-            Show ETH
-          </div>
-        </div>
-      </div>
-      <div className="flex justify-end items-center absolute -bottom-[2.5rem] lg:-bottom-[6.5rem] left-0 right-0 rounded-full">
-        <div className="flex justify-center items-center">
-          <div className="hidden lg:flex bg-forest-100 dark:bg-[#4B5553] rounded-xl px-3 py-1.5 items-center mr-5">
-            <Icon
-              icon="feather:users"
-              className="w-8 h-8 lg:w-14 lg:h-14 mr-2"
+      <div className="lg:pb-12">
+        <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative">
+          {/* toggle ETH */}
+          <div className="flex z-10">
+            <Switch
+              checked={showEthereumMainnet}
+              onChange={() => setShowEthereumMainnet(!showEthereumMainnet)}
             />
-            <div className="flex flex-col items-center justify-center">
-              <div className="text-xs font-medium leading-tight">
-                Total Users
-              </div>
-              <div className="text-3xl font-[650]">
-                {latest_total.toLocaleString()}
-              </div>
-              <div className="text-xs font-medium leading-tight">
-                {latest_total_comparison > 0 ? (
-                  <span
-                    className="text-green-500 dark:text-green-400 font-semibold"
-                    style={{
-                      textShadow:
-                        theme === "dark"
-                          ? "1px 1px 4px #00000066"
-                          : "1px 1px 4px #ffffff99",
-                    }}
-                  >
-                    +{(latest_total_comparison * 100).toFixed(2)}%
-                  </span>
-                ) : (
-                  <span
-                    className="text-red-500 dark:text-red-400 font-semibold"
-                    style={{
-                      textShadow:
-                        theme === "dark"
-                          ? "1px 1px 4px #00000066"
-                          : "1px 1px 4px #ffffff99",
-                    }}
-                  >
-                    {(latest_total_comparison * 100).toFixed(2)}%
-                  </span>
-                )}{" "}
-                in last week
-              </div>
+            <div className="ml-2 block md:hidden xl:block leading-[1.75]">
+              Show Ethereum
+            </div>
+            <div className="ml-2 hidden md:block xl:hidden leading-[1.75]">
+              Show ETH
             </div>
           </div>
-          <div className="hidden lg:flex bg-forest-100 dark:bg-[#4B5553] rounded-xl px-3 py-1.5 items-center mr-1.5">
-            <Icon
-              icon="feather:layers"
-              className="w-8 h-8 lg:w-14 lg:h-14 mr-2"
-            />
-            <div className="flex flex-col items-center justify-center">
-              <div className="text-xs font-medium leading-tight">
-                Layer 2 Dominance
-              </div>
-              <div className="text-3xl font-[650]">
-                {l2_dominance.toFixed(2)}x
-              </div>
-              <div className="text-xs font-medium leading-tight">
-                {l2_dominance_comparison > 0 ? (
-                  <span
-                    className="text-green-500 dark:text-green-400 font-semibold"
-                    style={{
-                      textShadow:
-                        theme === "dark"
-                          ? "1px 1px 4px #00000066"
-                          : "1px 1px 4px #ffffff99",
-                    }}
-                  >
-                    +{l2_dominance_comparison.toFixed(2)}%
-                  </span>
-                ) : (
-                  <span
-                    className="text-red-500 dark:text-red-400 font-semibold"
-                    style={{
-                      textShadow:
-                        theme === "dark"
-                          ? "1px 1px 4px #00000066"
-                          : "1px 1px 4px #ffffff99",
-                    }}
-                  >
-                    {l2_dominance_comparison.toFixed(2)}%
-                  </span>
-                )}{" "}
-                in last week
-              </div>
-            </div>
-          </div>
-          <Tooltip placement="left" allowInteract>
-            <TooltipTrigger>
-              <div className="bottom-[28px] right-[8px] p-0 -mr-0.5 lg:p-1.5 z-10 lg:mr-0 absolute lg:static lg:mb-0.5">
-                <Icon icon="feather:info" className="w-6 h-6" />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent className="-mt-10 pr-10 lg:mt-0 z-50 flex items-center justify-center lg:pr-[3px]">
-              <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto md:w-[435px] h-[80px] flex items-center">
-                <div className="flex flex-col space-y-1">
-                  <div className="font-bold text-sm leading-snug">
-                    Data Sources:
+          <div className="flex justify-end items-center absolute top-[56px] lg:-top-[22px] right-[-1px] rounded-full z-10">
+            <div className="flex justify-center items-center">
+              <div className="hidden lg:flex bg-forest-100 dark:bg-[#4B5553] rounded-xl px-3 py-1.5 items-center mr-5">
+                <Icon
+                  icon="feather:users"
+                  className="w-8 h-8 lg:w-14 lg:h-14 mr-2"
+                />
+                <div className="flex flex-col items-center justify-center">
+                  <div className="text-xs font-medium leading-tight">
+                    Total Users
                   </div>
-                  <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
-                    {sources
-                      .map<React.ReactNode>((s) => (
-                        <Link
-                          key={s}
-                          rel="noopener noreferrer"
-                          target="_blank"
-                          href={Sources[s] ?? ""}
-                          className="hover:text-forest-500 dark:hover:text-forest-500 underline"
-                        >
-                          {s}
-                        </Link>
-                      ))
-                      .reduce((prev, curr) => [prev, ", ", curr])}
+                  <div className="text-3xl font-[650]">
+                    {latest_total.toLocaleString()}
+                  </div>
+                  <div className="text-xs font-medium leading-tight">
+                    {latest_total_comparison > 0 ? (
+                      <span
+                        className="text-green-500 dark:text-green-400 font-semibold"
+                        style={{
+                          textShadow:
+                            theme === "dark"
+                              ? "1px 1px 4px #00000066"
+                              : "1px 1px 4px #ffffff99",
+                        }}
+                      >
+                        +{(latest_total_comparison * 100).toFixed(2)}%
+                      </span>
+                    ) : (
+                      <span
+                        className="text-red-500 dark:text-red-400 font-semibold"
+                        style={{
+                          textShadow:
+                            theme === "dark"
+                              ? "1px 1px 4px #00000066"
+                              : "1px 1px 4px #ffffff99",
+                        }}
+                      >
+                        {(latest_total_comparison * 100).toFixed(2)}%
+                      </span>
+                    )}{" "}
+                    in last week
                   </div>
                 </div>
               </div>
-            </TooltipContent>
-          </Tooltip>
+              <div className="hidden lg:flex bg-forest-100 dark:bg-[#4B5553] rounded-xl px-3 py-1.5 items-center mr-1.5">
+                <Icon
+                  icon="feather:layers"
+                  className="w-8 h-8 lg:w-14 lg:h-14 mr-2"
+                />
+                <div className="flex flex-col items-center justify-center">
+                  <div className="text-xs font-medium leading-tight">
+                    Layer 2 Dominance
+                  </div>
+                  <div className="text-3xl font-[650]">
+                    {l2_dominance.toFixed(2)}x
+                  </div>
+                  <div className="text-xs font-medium leading-tight">
+                    {l2_dominance_comparison > 0 ? (
+                      <span
+                        className="text-green-500 dark:text-green-400 font-semibold"
+                        style={{
+                          textShadow:
+                            theme === "dark"
+                              ? "1px 1px 4px #00000066"
+                              : "1px 1px 4px #ffffff99",
+                        }}
+                      >
+                        +{l2_dominance_comparison.toFixed(2)}%
+                      </span>
+                    ) : (
+                      <span
+                        className="text-red-500 dark:text-red-400 font-semibold"
+                        style={{
+                          textShadow:
+                            theme === "dark"
+                              ? "1px 1px 4px #00000066"
+                              : "1px 1px 4px #ffffff99",
+                        }}
+                      >
+                        {l2_dominance_comparison.toFixed(2)}%
+                      </span>
+                    )}{" "}
+                    in last week
+                  </div>
+                </div>
+              </div>
+              <Tooltip placement="left" allowInteract>
+                <TooltipTrigger>
+                  <div className="bottom-[28px] right-[8px] p-0 -mr-0.5 lg:p-1.5 z-10 lg:mr-0 absolute lg:static lg:mb-0.5">
+                    <Icon icon="feather:info" className="w-6 h-6" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="-mt-10 pr-10 lg:mt-0 z-50 flex items-center justify-center lg:pr-[3px]">
+                  <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto md:w-[435px] h-[80px] flex items-center">
+                    <div className="flex flex-col space-y-1">
+                      <div className="font-bold text-sm leading-snug">
+                        Data Sources:
+                      </div>
+                      <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
+                        {sources
+                          .map<React.ReactNode>((s) => (
+                            <Link
+                              key={s}
+                              rel="noopener noreferrer"
+                              target="_blank"
+                              href={Sources[s] ?? ""}
+                              className="hover:text-forest-500 dark:hover:text-forest-500 underline"
+                            >
+                              {s}
+                            </Link>
+                          ))
+                          .reduce((prev, curr) => [prev, ", ", curr])}
+                      </div>
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
         </div>
       </div>
     </div>

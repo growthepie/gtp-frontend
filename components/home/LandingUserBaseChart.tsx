@@ -1,0 +1,162 @@
+"use client";
+import { useEffect, useMemo, useState, useRef } from "react";
+import Image from "next/image";
+import { useMediaQuery } from "@react-hook/media-query";
+import Heading from "@/components/layout/Heading";
+import Subheading from "@/components/layout/Subheading";
+import useSWR from "swr";
+import { MasterResponse } from "@/types/api/MasterResponse";
+import { AllChains, AllChainsByKeys } from "@/lib/chains";
+import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
+import LandingChart from "@/components/layout/LandingChart";
+import LandingMetricsTable from "@/components/layout/LandingMetricsTable";
+import LandingTopContracts from "@/components/layout/LandingTopContracts";
+import Swiper from "@/components/layout/SwiperItems";
+import { Icon } from "@iconify/react";
+import TopAnimation from "@/components/TopAnimation";
+import { LandingURL, MasterURL } from "@/lib/urls";
+import Link from "next/link";
+import QuestionAnswer from "@/components/layout/QuestionAnswer";
+import Container from "@/components/layout/Container";
+import ShowLoading from "@/components/layout/ShowLoading";
+
+export default function LandingUserBaseChart() {
+  const isLargeScreen = useMediaQuery("(min-width: 768px)");
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    setIsSidebarOpen(isLargeScreen);
+  }, [isLargeScreen]);
+
+  const {
+    data: landing,
+    error: landingError,
+    isLoading: landingLoading,
+    isValidating: landingValidating,
+  } = useSWR<LandingPageMetricsResponse>(LandingURL);
+  // } = useSWR<LandingPageMetricsResponse>("/mock/landing_page.json");
+
+  const {
+    data: master,
+    error: masterError,
+    isLoading: masterLoading,
+    isValidating: masterValidating,
+  } = useSWR<MasterResponse>(MasterURL);
+
+  const [data, setData] = useState<any>(null);
+
+  const [selectedTimeInterval, setSelectedTimeInterval] = useState("weekly");
+
+  const [selectedMetric, setSelectedMetric] = useState("Total Users");
+
+  useEffect(() => {
+    if (landing) {
+      setData(landing.data.metrics.user_base[selectedTimeInterval]);
+    }
+  }, [landing, selectedTimeInterval]);
+
+  useEffect(() => {
+    if (!data) return;
+
+    setSelectedChains(
+      Object.keys(data.chains)
+        .filter((chainKey) => AllChainsByKeys.hasOwnProperty(chainKey))
+        .map((chain) => chain),
+    );
+  }, [data, landing, selectedMetric, selectedTimeInterval]);
+
+  const chains = useMemo(() => {
+    if (!data) return [];
+
+    return AllChains.filter(
+      (chain) =>
+        Object.keys(data.chains).includes(chain.key) && chain.key != "ethereum",
+    );
+  }, [data]);
+
+  const [selectedChains, setSelectedChains] = useState(
+    AllChains.map((chain) => chain.key),
+  );
+
+  return (
+    <>
+      {data && landing && master ? (
+        <>
+          <Container>
+            <LandingChart
+              data={Object.keys(data.chains)
+                .filter((chain) => selectedChains.includes(chain))
+                .map((chain) => {
+                  return {
+                    name: chain,
+                    // type: 'spline',
+                    types: data.chains[chain].data.types,
+                    data: data.chains[chain].data.data,
+                  };
+                })}
+              sources={landing.data.metrics.user_base.source}
+              latest_total={data.latest_total}
+              latest_total_comparison={data.latest_total_comparison}
+              l2_dominance={data.l2_dominance}
+              l2_dominance_comparison={data.l2_dominance_comparison}
+              selectedMetric={selectedMetric}
+              metric={selectedTimeInterval}
+              setSelectedMetric={setSelectedMetric}
+            />
+          </Container>
+          <Container className="!pr-0">
+            <LandingMetricsTable
+              data={data}
+              selectedChains={selectedChains}
+              setSelectedChains={setSelectedChains}
+              chains={chains}
+              metric={selectedTimeInterval}
+              master={master}
+              interactable={selectedMetric !== "Total Users"}
+            />
+          </Container>
+        </>
+      ) : (
+        <Container>
+          <div
+            className={
+              isSidebarOpen
+                ? `w-full h-[470.98px] md:h-[718px] xl:h-[636px] rounded-[15px]`
+                : `w-full h-[470.98px] md:h-[718px] lg:h-[657px] xl:h-[636px] rounded-[15px]`
+            }
+          >
+            <div
+              role="status"
+              className="flex items-center justify-center h-full w-full rounded-lg animate-pulse bg-forest-50 dark:bg-[#1F2726]"
+            >
+              <Icon
+                icon="feather:loading"
+                className="w-6 h-6 text-white z-10"
+              />
+              <span className="sr-only">Loading...</span>
+            </div>
+          </div>
+          <div
+            className={
+              isSidebarOpen
+                ? `w-full h-[470.98px] md:h-[536.78px] lg:h-[626px] xl:h-[626px] 2xl:h-[606px] rounded-[15px]`
+                : `w-full h-[470.98px] md:h-[536.78px] lg:h-[606px] xl:h-[606px] 2xl:h-[586px] rounded-[15px]`
+            }
+          >
+            <div
+              role="status"
+              className="flex items-center justify-center h-full w-full rounded-lg animate-pulse bg-forest-50 dark:bg-[#1F2726]"
+            >
+              <Icon
+                icon="feather:loading"
+                className="w-6 h-6 text-white z-10"
+              />
+              <span className="sr-only">Loading...</span>
+            </div>
+          </div>
+        </Container>
+      )}
+    </>
+  );
+}

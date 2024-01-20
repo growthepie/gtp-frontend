@@ -11,7 +11,7 @@ import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsRespon
 import LandingChart from "@/components/layout/LandingChart";
 import LandingMetricsTable from "@/components/layout/LandingMetricsTable";
 import LandingTopContracts from "@/components/layout/LandingTopContracts";
-import Swiper from "@/components/layout/Swiper";
+import Swiper from "@/components/layout/SwiperItems";
 import { Icon } from "@iconify/react";
 import TopAnimation from "@/components/TopAnimation";
 import { LandingURL, MasterURL } from "@/lib/urls";
@@ -81,17 +81,14 @@ export default function Home() {
 
   return (
     <>
-      <ShowLoading
+      {/* <ShowLoading
         dataLoading={[masterLoading, landingLoading]}
         dataValidating={[masterValidating, landingValidating]}
         fullScreen={true}
-      />
+      /> */}
       {/* )} */}
 
-      <Container className="flex flex-col flex-1 w-full mt-[65px] md:mt-[45px]">
-        {/* <Heading className="font-bold text-[30px] leading-snug md:text-[36px] mb-[28px] lg:mb-[30px] max-w-[900px]">
-          Growing Ethereum’s Ecosystem Together
-        </Heading> */}
+      {/* <Container className="flex flex-col flex-1 w-full mt-[65px] md:mt-[45px]">
         <Heading
           className="font-bold leading-snug text-[24px] sm:text-[32px] md:text-[36px] max-w-[900px]"
           as="h1"
@@ -117,35 +114,15 @@ export default function Home() {
         </div>
         <Subheading className="text-base leading-normal md:leading-snug mb-[15px] pl-[5px] lg:pl-[45px] flex justify-between items-end space-x-2">
           <div>Aggregated daily metrics across all tracked Layer 2s.</div>
-          {/* <div className="text-[0.6rem] md:text-xs font-medium px-1.5 py-0.5 border dark:border-forest-50 rounded-md select-none">
-            7d rolling avg
-          </div> */}
         </Subheading>
-      </Container>
-      <Container className="!px-0 fade-edge-div h-[calc(146px + 24px)] md:h-[calc(176px + 24px)] pb-[24px] -mb-[24px]">
+      </Container> */}
+      {/* <Container className="!px-0 fade-edge-div h-[calc(146px + 24px)] md:h-[calc(176px + 24px)] pb-[24px] -mb-[24px]">
         <Swiper ariaId={"layer-2-traction-title"} />
-      </Container>
-      <Container className="flex flex-col flex-1 w-full">
-        {/* {data && landing && master && <TopAnimation />} */}
-        {/* <Subheading className="text-sm leading-snug">
-              Compare Ethereum&apos;s Layer 2 solutions and better understand
-              the metrics to grow the ecosystem.
-            </Subheading> */}
-        <div className="flex mt-[30px] md:mt-[60px] mb-[25px] md:mb-[32px] space-x-2 items-center">
-          <Icon
-            icon="gtp:gtp-pie"
-            className="w-[30px] h-[30px] md:w-9 md:h-9"
-          />
-          <Heading className="text-[20px] md:text-[30px] leading-snug font-bold">
-            Layer 2 User Base
-          </Heading>
+        <div className="h-[145px] md:h-[183px] w-full">
+          <ShowLoading section />
         </div>
-        <Subheading className="text-base leading-normal md:leading-snug mb-[15px] px-[5px] lg:px-[45px]">
-          Number of distinct addresses interacting with one or multiple Layer 2s
-          in a given week.
-        </Subheading>
-      </Container>
-
+      </Container> */}
+      {/* 
       {data && landing && master && (
         <>
           <Container className="flex-1">
@@ -182,9 +159,9 @@ export default function Home() {
             />
           </Container>
         </>
-      )}
-
-      <Container className="flex flex-col flex-1 w-full">
+      )} */}
+      {/* 
+      <Container className="flex flex-col flex-1 w-full relative">
         <div className="flex space-x-2 mt-[30px] md:mt-[60px] items-center">
           <Icon
             icon="gtp:package"
@@ -198,9 +175,9 @@ export default function Home() {
           Top 6 gas-consuming contracts across all tracked Layer 2s.
         </Subheading>
         <LandingTopContracts />
-      </Container>
+      </Container> */}
 
-      <Container>
+      {/* <Container>
         <div className="flex gap-x-0 md:gap-x-12 w-full ml-0 mt-[30px] md:mt-[60px]">
           <div className="flex flex-col md:w-1/2 lg:w-2/3">
             <div className="flex space-x-2 mb-[30px] items-center">
@@ -350,7 +327,7 @@ export default function Home() {
             }
           />
         </div>
-      </Container>
+      </Container> */}
     </>
   );
 }

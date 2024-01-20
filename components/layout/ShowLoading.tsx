@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useState } from "react";
 import LoadingAnimation from "./LoadingAnimation";
 
@@ -33,7 +34,7 @@ export default function ShowLoading({
   if (section)
     return (
       <div
-        className={`w-full h-full flex items-center justify-center bg-white dark:bg-forest-1000 z-[200] ${
+        className={`w-full h-full flex items-center justify-center ${
           showLoading ? "opacity-100" : "opacity-0 pointer-events-none"
         } transition-opacity duration-300`}
         suppressHydrationWarning

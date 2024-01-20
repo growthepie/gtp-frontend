@@ -1,3 +1,4 @@
+"use client";
 import { useState, useMemo } from "react";
 import useSWR from "swr";
 import ChainComponent from "@/components/charts/ChainComponent";
@@ -84,9 +85,9 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
 
   return (
     <>
-      {landing && (
+      {landing ? (
         <div className="lg:-mt-14 flex flex-col">
-          <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row justify-end items-center w-auto ml-0 lg:ml-auto lg:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px] mb-4">
+          <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row justify-end items-center ml-0 lg:ml-auto lg:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px] mb-4">
             {/* <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center space-x-[4px] xl:space-x-1">
               <button
                 className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
@@ -167,6 +168,18 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
                     : `${parseInt(selectedTimespan)} days`
                 }`}
               />
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col">
+          <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row justify-end items-center ml-0 lg:ml-auto lg:rounded-full md:py-[2px] mb-4 animate-pulse bg-forest-50 dark:bg-[#1F2726]"></div>
+          <div className="grid grid-rows-6 grid-cols-1 lg:grid-rows-3 lg:grid-cols-2 xl:grid-rows-2 xl:grid-cols-3 gap-x-[10px] gap-y-[15px]">
+            {new Array(6).fill(0).map((_, i) => (
+              <div
+                key={i}
+                className="group flex flex-col w-full h-[156.19px] rounded-[15px] animate-pulse bg-forest-50 dark:bg-[#1F2726]"
+              ></div>
             ))}
           </div>
         </div>
