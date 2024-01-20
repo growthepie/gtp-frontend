@@ -70,7 +70,7 @@ const Error = ({
 
   return (
     <>
-      {navIndex && (
+      {navIndex ? (
         <div className="flex flex-col items-center justify-center w-full h-[80vh] gap-y-[15px]">
           <div
             className={`flex flex-col w-[587px]  bg-[#1F2726] border-forest-400  rounded-[40px] p-[30px] gap-y-[15px] ${
@@ -109,7 +109,7 @@ const Error = ({
                 randIndices.map((index) => (
                   <Link
                     key={index}
-                    className="flex self-center items-center p-[15px] w-[250px] ml-[49px] h-[54px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                    className="flex self-center items-center p-[15px] w-[250px] h-[54px] bg-[#5A6462] rounded-full gap-x-[10px]"
                     href={`/${pageGroup}/${navigationItems[navIndex]["options"][index]["urlKey"]}`}
                   >
                     <Icon
@@ -126,6 +126,60 @@ const Error = ({
                 <Icon icon="gtp:book-open" className="w-[24px] h-[24px]" />
                 <div className="text-[16px] leading-[150%]">Knowledge</div>
               </a>
+              <Link
+                className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                href={`/optimism-retropgf-3`}
+              >
+                <Icon
+                  icon="gtp:optimism-logo-monochrome"
+                  className="w-[24px] h-[24px] text-[#FF0420] bg-white rounded-full"
+                />
+                <div className="text-[16px] leading-[150%]">RPGF3 Tracker</div>
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center w-full h-[80vh] gap-y-[15px]">
+          <div
+            className={`flex flex-col w-[587px]  bg-[#1F2726] border-forest-400  rounded-[40px] p-[30px] gap-y-[15px] ${
+              navIndex === 1 || navIndex === 3 ? "h-[579px]" : "h-[519px]"
+            }`}
+          >
+            <div className="flex items-center gap-x-[10px]">
+              <Icon icon="gtp:error" className="w-[24px] h-[25px]" />
+              <div className="h-[32px] text-[24px] font-bold leading-[133%]">
+                Something went wrong...
+              </div>
+            </div>
+            <div className="text-[16px] leading-[150%]">
+              The page you requested currently has some issues and our devs have
+              been notified. We can recommend checking out one of these pages:
+            </div>
+            <div className="flex flex-col gap-y-[5px]">
+              <Link
+                className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                href={`/`}
+              >
+                <Icon icon="gtp:house" className="w-[24px] h-[24px]" />
+                <div className="text-[16px] leading-[150%]">Home</div>
+              </Link>
+
+              <a
+                className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                href={`https://docs.growthepie.xyz/`}
+              >
+                <Icon icon="gtp:book-open" className="w-[24px] h-[24px]" />
+                <div className="text-[16px] leading-[150%]">Knowledge</div>
+              </a>
+              <a
+                className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                href={`https://mirror.xyz/blog.growthepie.eth`}
+              >
+                <Icon icon="gtp:blog" className="w-[25px] h-[25px]" />
+                <div className="text-[16px] leading-[150%]">Blog</div>
+              </a>
+
               <Link
                 className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#5A6462] rounded-full gap-x-[10px]"
                 href={`/optimism-retropgf-3`}
