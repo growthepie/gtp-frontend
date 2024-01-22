@@ -86,7 +86,7 @@ export default function Share() {
                   }}
                 />
                 <div
-                  className="fixed right-[5%] left-[5%] bottom-[15px] w-[90%] bg-forest-50 dark:bg-[#1F2726] z-[110] rounded-[40px] shadow-lg p-[20px] 
+                  className="absolute -right-[5px] bottom-[15px] w-[90vw] bg-forest-50 dark:bg-[#1F2726] z-[110] rounded-[40px] shadow-lg p-[20px] 
           border-[5px] border-forest-500 dark:border-[#5A6462]"
                 >
                   <div className="flex w-full h-[32px] justify-between items-center justify-self-start ">
@@ -216,7 +216,7 @@ export default function Share() {
                   }}
                 />
                 <div
-                  className="fixed right-[45px] bottom-[15px] w-[579px] bg-forest-50 dark:bg-[#1F2726] z-[110] rounded-[40px] shadow-lg py-[30px] px-[30px] 
+                  className="absolute -right-[5px] -bottom-[5px] w-[579px] bg-forest-50 dark:bg-[#1F2726] z-[110] rounded-[40px] shadow-lg py-[30px] px-[30px] 
         border-[5px] border-forest-500 dark:border-[#5A6462]"
                 >
                   <div className="flex w-full h-[32px] justify-between items-center justify-self-start ">
