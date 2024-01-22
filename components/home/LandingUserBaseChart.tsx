@@ -83,7 +83,13 @@ export default function LandingUserBaseChart() {
     <>
       {data && landing && master ? (
         <>
-          <Container>
+          <Container
+            className={
+              isSidebarOpen
+                ? `w-full h-[470.98px] md:h-[718px] lg:h-[626px] xl:h-[636px] rounded-[15px]`
+                : `w-full h-[470.98px] md:h-[718px] lg:h-[657px] xl:h-[636px] rounded-[15px]`
+            }
+          >
             <LandingChart
               data={Object.keys(data.chains)
                 .filter((chain) => selectedChains.includes(chain))

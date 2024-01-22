@@ -6,10 +6,17 @@ import HighchartsReact from "highcharts-react-official";
 import Highcharts, {
   AxisLabelsFormatterContextObject,
 } from "highcharts/highstock";
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+  useLayoutEffect,
+} from "react";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
-import { merge } from "lodash";
+import { debounce, merge } from "lodash";
 import { Switch } from "../Switch";
 import { AllChainsByKeys, EnabledChainsByKeys } from "@/lib/chains";
 import d3 from "d3";
@@ -19,6 +26,7 @@ import Link from "next/link";
 import { Sources } from "@/lib/datasources";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import ChartWatermark from "./ChartWatermark";
 import { IS_PREVIEW } from "@/lib/helpers";
 
@@ -877,10 +885,14 @@ export default function LandingChart({
       [selectedTimespan, timespans],
     );
 
+  // const containerRef = useRef<HTMLDivElement>(null);
+
+  const [containerRef, { width, height }] = useElementSizeObserver();
+
   const options = useMemo((): Highcharts.Options => {
     const dynamicOptions: Highcharts.Options = {
       chart: {
-        height: isMobile ? 250 : 400,
+        // height: "100%",
         type: selectedScale === "percentage" ? "area" : "column",
         plotBorderColor: "transparent",
 
@@ -909,11 +921,32 @@ export default function LandingChart({
             },
           },
         },
-        // events: {
-        //   load: function () {},
-        // },
+        events: {
+          load: function (this: Highcharts.Chart) {
+            const chart = this;
+            if (chart) {
+              const chart = this;
+              if (chart && width && height) {
+                chart.setSize(null, null, false);
+              }
+            }
+          },
+          // render: function (this: Highcharts.Chart) {
+          //   const chart = this;
+          //   if (chart && containerRef.current) {
+          //     chart.setSize(undefined, containerRef.current.offsetHeight);
+          //   }
+          // },
+          // redraw: function (this: Highcharts.Chart) {
+          //   const chart = this;
+          //   if (chart && containerRef.current) {
+          //     chart.setSize(undefined, containerRef.current.offsetHeight,);
+          //   }
+          // },
+        },
         // height: isMobile ? 200 : 400,
       },
+
       plotOptions: {
         area: {
           stacking: selectedScale === "percentage" ? "percent" : "normal",
@@ -1433,297 +1466,252 @@ export default function LandingChart({
     tooltipPositioner,
   ]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (chartComponent.current) {
-      chartComponent.current.reflow();
+      if (isSidebarOpen) chartComponent.current.reflow();
+      chartComponent.current.setSize(width, height, false);
     }
-  }, [chartComponent, filteredData]);
-
-  useEffect(() => {
-    setTimeout(() => {
-      if (chartComponent.current) {
-        chartComponent.current.reflow();
-      }
-    }, 300);
-  }, [isSidebarOpen]);
-
-  useEffect(() => {
-    if (chartComponent.current) {
-      if (isMobile) {
-        chartComponent.current.setSize(null, 200, false);
-      } else {
-        chartComponent.current.setSize(null, 400, false);
-      }
-    }
-  }, [isMobile]);
+  }, [width, height, isSidebarOpen]);
 
   return (
-    <div className="w-full">
-      <div className="flex lg:hidden justify-center pb-[30px]">
-        <div className="flex bg-forest-100 dark:bg-[#4B5553] rounded-xl w-1/2 px-1.5 py-1.5 md:px-3 md:py-1.5 items-center mr-2">
-          <div className="flex flex-col items-center flex-1">
-            <Icon
-              icon="feather:users"
-              className="w-8 h-8 md:w-14 md:h-14 mr-2 relative left-1"
-            />
-            <div className="block md:hidden text-[0.6rem] sm:text-[0.65rem] lg:text-xs font-medium leading-tight">
-              Total Users
-            </div>
-          </div>
-          <div className="flex flex-col items-center justify-center w-7/12">
-            <div className="hidden md:block text-xs font-medium leading-tight">
-              Total Users
-            </div>
-            <div className="text-xl md:text-3xl font-[650]">
-              {latest_total.toLocaleString()}
-            </div>
-            <div className="text-[0.6rem] md:text-xs font-medium leading-tight">
-              {latest_total_comparison > 0 ? (
-                <span
-                  className="text-green-500 dark:text-green-400 font-semibold"
-                  style={{
-                    textShadow:
-                      theme === "dark"
-                        ? "1px 1px 4px #00000066"
-                        : "1px 1px 4px #ffffff99",
-                  }}
-                >
-                  +{(latest_total_comparison * 100).toFixed(2)}%
-                </span>
-              ) : (
-                <span
-                  className="text-red-500 dark:text-red-400 font-semibold"
-                  style={{
-                    textShadow:
-                      theme === "dark"
-                        ? "1px 1px 4px #00000066"
-                        : "1px 1px 4px #ffffff99",
-                  }}
-                >
-                  {(latest_total_comparison * 100).toFixed(2)}%
-                </span>
-              )}{" "}
-              in last week
-            </div>
-          </div>
-        </div>
-        <div className="flex bg-forest-100 dark:bg-[#4B5553] w-1/2 rounded-xl px-1.5 py-1.5 md:px-3 md:py-1.5 items-center">
-          <div className="flex flex-col items-center flex-1">
-            <Icon
-              icon="feather:layers"
-              className="w-8 h-8 md:w-14 md:h-14 mr-2 relative left-1"
-            />
-            <div className="block md:hidden text-[0.58rem] sm:text-[0.65rem] lg:text-xs font-medium leading-tight">
-              L2 Dominance
-            </div>
-          </div>
-          <div className="flex flex-col items-center justify-center w-7/12">
-            <div className="hidden md:block text-xs font-medium leading-tight">
-              L2 Dominance
-            </div>
-            <div className="text-xl md:text-3xl font-[650]">
-              {l2_dominance.toFixed(2)}x
-            </div>
-            <div className="text-[0.6rem] md:text-xs font-medium leading-tight">
-              {l2_dominance_comparison > 0 ? (
-                <span
-                  className="text-green-500 dark:text-green-400 font-semibold"
-                  style={{
-                    textShadow:
-                      theme === "dark"
-                        ? "1px 1px 4px #00000066"
-                        : "1px 1px 4px #ffffff99",
-                  }}
-                >
-                  +{l2_dominance_comparison.toFixed(2)}%
-                </span>
-              ) : (
-                <span
-                  className="text-red-500 dark:text-red-400 font-semibold"
-                  style={{
-                    textShadow:
-                      theme === "dark"
-                        ? "1px 1px 4px #00000066"
-                        : "1px 1px 4px #ffffff99",
-                  }}
-                >
-                  {l2_dominance_comparison.toFixed(2)}%
-                </span>
-              )}{" "}
-              in last week
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs xl:text-base xl:flex xl:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 xl:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
-        <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center space-x-[4px] xl:space-x-1">
-          <button
-            className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-              showTotalUsers
-                ? "bg-forest-500 dark:bg-forest-1000"
-                : "hover:bg-forest-500/10"
-            }`}
-            onClick={() => {
-              setShowTotalUsers(true);
-              setSelectedScale("absolute");
-              setSelectedMetric("Total Users");
-            }}
-          >
-            Total Users
-          </button>
-          <button
-            className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-              "absolute" === selectedScale && !showTotalUsers
-                ? "bg-forest-500 dark:bg-forest-1000"
-                : "hover:bg-forest-500/10"
-            }`}
-            onClick={() => {
-              setShowTotalUsers(false);
-              setSelectedScale("absolute");
-              setSelectedMetric("Users per Chain");
-            }}
-          >
-            Users per Chain
-          </button>
-
-          <button
-            className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-              "percentage" === selectedScale
-                ? "bg-forest-500 dark:bg-forest-1000"
-                : "hover:bg-forest-500/10"
-            }`}
-            onClick={() => {
-              setShowTotalUsers(false);
-              setSelectedScale("percentage");
-              setSelectedMetric("Percentage");
-            }}
-          >
-            Percentage
-          </button>
-        </div>
-        <div className="block xl:hidden w-[70%] mx-auto my-[10px]">
-          <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
-        </div>
-        <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
-          {!zoomed ? (
-            Object.keys(timespans).map((timespan) => (
-              <button
-                key={timespan}
-                //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                  selectedTimespan === timespan
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
-                onClick={() => {
-                  setSelectedTimespan(timespan);
-                  // setXAxis();
-                  chartComponent?.current?.xAxis[0].update({
-                    min: timespans[selectedTimespan].xMin,
-                    max: timespans[selectedTimespan].xMax,
-                    // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
-                    tickPositions: getTickPositions(
-                      timespans.max.xMin,
-                      timespans.max.xMax,
-                    ),
-                  });
-                  setZoomed(false);
-                }}
-              >
-                {timespans[timespan].label}
-              </button>
-            ))
-          ) : (
-            <>
-              <button
-                className={`rounded-full flex items-center justify-center space-x-3 px-4 py-1.5 xl:py-4 text-md w-full xl:w-auto xl:px-4 xl:text-md font-medium border-[1px] border-forest-800`}
-                onClick={() => {
-                  chartComponent?.current?.xAxis[0].setExtremes(
-                    timespans[selectedTimespan].xMin,
-                    timespans[selectedTimespan].xMax,
-                  );
-                  setZoomed(false);
-                }}
-              >
-                <Icon
-                  icon="feather:zoom-out"
-                  className="h-4 w-4 xl:w-6 xl:h-6"
-                />
-                <div>Reset Zoom</div>
-              </button>
-              <button
-                className={`rounded-full text-md w-full xl:w-auto px-4 py-1.5 xl:py-4 xl:px-4 font-medium bg-forest-100 dark:bg-forest-1000`}
-              >
-                {intervalShown?.label}
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-      {highchartsLoaded ? (
-        <div className="w-full pt-4 pb-0 md:pb-16 rounded-xl">
-          <div className="w-full h-[16rem] md:h-[26rem] relative rounded-xl">
-            <div
-              className="absolute w-full h-[24rem] top-1 md:top-4"
-              // style={{
-              //   cursor: isDragging
-              //     ? "none"
-              //     : `url("/cursors/zoom.svg") 14.5 14.5, auto`,
-              // }}
-              // onClick={(e) => {
-              //   const chart = chartComponent?.current;
-
-              //   if (!chart)
-              //     return console.error("chartComponent.current is null");
-
-              //   if (chart.isInsidePlot(e.chartX - chart.plotLeft, e.chartY)) {
-              //     if (e.type === "mousedown") {
-              //       const x = e.chartX - chart.plotLeft;
-              //       const y = e.chartY - chart.plotTop;
-
-              //       // place vertical dotted line at the click position
-              //       chart.xAxis[0].addPlotLine({
-              //         id: "plot-line",
-              //         value: chart.xAxis[0].toValue(x, true),
-              //         color: "rgba(215, 223, 222, 0.5)",
-              //         width: 1,
-              //         dashStyle: "Dash",
-              //         zIndex: 100,
-              //       });
-              //     }
-              //     if (e.type === "mouseup") {
-              //     }
-              //   }
-              // }}
-            >
-              <HighchartsReact
-                highcharts={Highcharts}
-                options={options}
-                constructorType={"stockChart"}
-                ref={(chart) => {
-                  chartComponent.current = chart?.chart;
-                }}
+    <div className="w-full h-full flex flex-col justify-between">
+      <div className="h-[166.98px] sm:h-[168px] md:h-[190px] lg:h-[81px] xl:h-[60px]">
+        <div className="flex lg:hidden justify-center pb-[30px]">
+          <div className="flex bg-forest-100 dark:bg-[#4B5553] rounded-xl w-1/2 px-1.5 py-1.5 md:px-3 md:py-1.5 items-center mr-2">
+            <div className="flex flex-col items-center flex-1">
+              <Icon
+                icon="feather:users"
+                className="w-8 h-8 md:w-14 md:h-14 mr-2 relative left-1"
               />
-            </div>
-            <div className="absolute bottom-[46.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
-              <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
-            </div>
-            {filteredData.length === 0 && (
-              <div className="absolute top-[calc(50%+2rem)] left-[0px] text-xs font-medium flex justify-center w-full text-forest-500/60">
-                No chain(s) selected for comparison. Please select at least one.
+              <div className="block md:hidden text-[0.6rem] sm:text-[0.65rem] lg:text-xs font-medium leading-tight">
+                Total Users
               </div>
+            </div>
+            <div className="flex flex-col items-center justify-center w-7/12">
+              <div className="hidden md:block text-xs font-medium leading-tight">
+                Total Users
+              </div>
+              <div className="text-xl md:text-3xl font-[650]">
+                {latest_total.toLocaleString()}
+              </div>
+              <div className="text-[0.6rem] md:text-xs font-medium leading-tight">
+                {latest_total_comparison > 0 ? (
+                  <span
+                    className="text-green-500 dark:text-green-400 font-semibold"
+                    style={{
+                      textShadow:
+                        theme === "dark"
+                          ? "1px 1px 4px #00000066"
+                          : "1px 1px 4px #ffffff99",
+                    }}
+                  >
+                    +{(latest_total_comparison * 100).toFixed(2)}%
+                  </span>
+                ) : (
+                  <span
+                    className="text-red-500 dark:text-red-400 font-semibold"
+                    style={{
+                      textShadow:
+                        theme === "dark"
+                          ? "1px 1px 4px #00000066"
+                          : "1px 1px 4px #ffffff99",
+                    }}
+                  >
+                    {(latest_total_comparison * 100).toFixed(2)}%
+                  </span>
+                )}{" "}
+                in last week
+              </div>
+            </div>
+          </div>
+          <div className="flex bg-forest-100 dark:bg-[#4B5553] w-1/2 rounded-xl px-1.5 py-1.5 md:px-3 md:py-1.5 items-center">
+            <div className="flex flex-col items-center flex-1">
+              <Icon
+                icon="feather:layers"
+                className="w-8 h-8 md:w-14 md:h-14 mr-2 relative left-1"
+              />
+              <div className="block md:hidden text-[0.58rem] sm:text-[0.65rem] lg:text-xs font-medium leading-tight">
+                L2 Dominance
+              </div>
+            </div>
+            <div className="flex flex-col items-center justify-center w-7/12">
+              <div className="hidden md:block text-xs font-medium leading-tight">
+                L2 Dominance
+              </div>
+              <div className="text-xl md:text-3xl font-[650]">
+                {l2_dominance.toFixed(2)}x
+              </div>
+              <div className="text-[0.6rem] md:text-xs font-medium leading-tight">
+                {l2_dominance_comparison > 0 ? (
+                  <span
+                    className="text-green-500 dark:text-green-400 font-semibold"
+                    style={{
+                      textShadow:
+                        theme === "dark"
+                          ? "1px 1px 4px #00000066"
+                          : "1px 1px 4px #ffffff99",
+                    }}
+                  >
+                    +{l2_dominance_comparison.toFixed(2)}%
+                  </span>
+                ) : (
+                  <span
+                    className="text-red-500 dark:text-red-400 font-semibold"
+                    style={{
+                      textShadow:
+                        theme === "dark"
+                          ? "1px 1px 4px #00000066"
+                          : "1px 1px 4px #ffffff99",
+                    }}
+                  >
+                    {l2_dominance_comparison.toFixed(2)}%
+                  </span>
+                )}{" "}
+                in last week
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs xl:text-base xl:flex xl:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 xl:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
+          <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center space-x-[4px] xl:space-x-1">
+            <button
+              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
+                showTotalUsers
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
+              }`}
+              onClick={() => {
+                setShowTotalUsers(true);
+                setSelectedScale("absolute");
+                setSelectedMetric("Total Users");
+              }}
+            >
+              Total Users
+            </button>
+            <button
+              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
+                "absolute" === selectedScale && !showTotalUsers
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
+              }`}
+              onClick={() => {
+                setShowTotalUsers(false);
+                setSelectedScale("absolute");
+                setSelectedMetric("Users per Chain");
+              }}
+            >
+              Users per Chain
+            </button>
+
+            <button
+              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
+                "percentage" === selectedScale
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
+              }`}
+              onClick={() => {
+                setShowTotalUsers(false);
+                setSelectedScale("percentage");
+                setSelectedMetric("Percentage");
+              }}
+            >
+              Percentage
+            </button>
+          </div>
+          <div className="block xl:hidden w-[70%] mx-auto my-[10px]">
+            <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
+          </div>
+          <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
+            {!zoomed ? (
+              Object.keys(timespans).map((timespan) => (
+                <button
+                  key={timespan}
+                  //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
+                  className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
+                    selectedTimespan === timespan
+                      ? "bg-forest-500 dark:bg-forest-1000"
+                      : "hover:bg-forest-500/10"
+                  }`}
+                  onClick={() => {
+                    setSelectedTimespan(timespan);
+                    // setXAxis();
+                    chartComponent?.current?.xAxis[0].update({
+                      min: timespans[selectedTimespan].xMin,
+                      max: timespans[selectedTimespan].xMax,
+                      // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
+                      tickPositions: getTickPositions(
+                        timespans.max.xMin,
+                        timespans.max.xMax,
+                      ),
+                    });
+                    setZoomed(false);
+                  }}
+                >
+                  {timespans[timespan].label}
+                </button>
+              ))
+            ) : (
+              <>
+                <button
+                  className={`rounded-full flex items-center justify-center space-x-3 px-4 py-1.5 xl:py-4 text-md w-full xl:w-auto xl:px-4 xl:text-md font-medium border-[1px] border-forest-800`}
+                  onClick={() => {
+                    chartComponent?.current?.xAxis[0].setExtremes(
+                      timespans[selectedTimespan].xMin,
+                      timespans[selectedTimespan].xMax,
+                    );
+                    setZoomed(false);
+                  }}
+                >
+                  <Icon
+                    icon="feather:zoom-out"
+                    className="h-4 w-4 xl:w-6 xl:h-6"
+                  />
+                  <div>Reset Zoom</div>
+                </button>
+                <button
+                  className={`rounded-full text-md w-full xl:w-auto px-4 py-1.5 xl:py-4 xl:px-4 font-medium bg-forest-100 dark:bg-forest-1000`}
+                >
+                  {intervalShown?.label}
+                </button>
+              </>
             )}
           </div>
         </div>
-      ) : (
-        <div className="w-full h-[26rem] my-4 flex justify-center items-center">
-          <div className="w-10 h-10 animate-spin">
-            <Icon icon="feather:loader" className="w-10 h-10 text-forest-500" />
+      </div>
+      <div className="flex-1 min-h-0 w-full pt-4 pb-0 md:pt-8 md:pb-4 lg:pt-8 lg:pb-16">
+        <div className="relative h-full w-full rounded-xl" ref={containerRef}>
+          {highchartsLoaded ? (
+            <HighchartsReact
+              highcharts={Highcharts}
+              options={options}
+              constructorType={"stockChart"}
+              ref={(chart) => {
+                chartComponent.current = chart?.chart;
+              }}
+            />
+          ) : (
+            <div className="w-full flex-1 my-4 flex justify-center items-center">
+              <div className="w-10 h-10 animate-spin">
+                <Icon
+                  icon="feather:loader"
+                  className="w-10 h-10 text-forest-500"
+                />
+              </div>
+            </div>
+          )}
+          <div className="absolute bottom-[48.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
+            <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
           </div>
+          {filteredData.length === 0 && (
+            <div className="absolute top-[calc(50%+2rem)] left-[0px] text-xs font-medium flex justify-center w-full text-forest-500/60">
+              No chain(s) selected for comparison. Please select at least one.
+            </div>
+          )}
+          {/* </div> */}
         </div>
-      )}
+      </div>
 
-      <div className="lg:pb-12">
+      <div className="h-[32px] lg:h-[80px] flex flex-col justify-start">
         <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative">
           {/* toggle ETH */}
           <div className="flex z-10">
