@@ -216,7 +216,7 @@ export default function Share() {
                   }}
                 />
                 <div
-                  className="absolute -right-[5px] -bottom-[5px] w-[579px] bg-forest-50 dark:bg-[#1F2726] z-[110] rounded-[40px] shadow-lg py-[30px] px-[30px] 
+                  className="absolute -right-[5px] -bottom-[5px] w-[589px] bg-forest-50 dark:bg-[#1F2726] z-[110] rounded-[40px] shadow-lg py-[30px] px-[30px] 
         border-[5px] border-forest-500 dark:border-[#5A6462]"
                 >
                   <div className="flex w-full h-[32px] justify-between items-center justify-self-start ">
@@ -293,7 +293,7 @@ export default function Share() {
                     </div>
                     <div className="flex flex-col pl-[30px] gap-y-[5px]">
                       <div
-                        className="flex w-[204px] h-[54px] bg-forest-500 dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
+                        className="flex items-center w-[204px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px] "
                         onClick={() => {
                           handleSendEmail();
                         }}
@@ -304,7 +304,7 @@ export default function Share() {
                         </div>
                       </div>
                       <div
-                        className="flex w-[204px] h-[54px] bg-forest-500 dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
+                        className="flex items-center w-[204px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
                         onClick={() => {
                           shareOnReddit();
                         }}
@@ -317,13 +317,13 @@ export default function Share() {
                           Share on Reddit
                         </div>
                       </div>
-                      <div className="flex w-[204px] h-[54px] bg-forest-500 dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]">
+                      <div className="flex items-center w-[204px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]">
                         <Icon className="w-[24px] h-[24px] " icon="gtp:lens" />
                         <div className="h-[24px] leading-[150%] text-[16px]">
                           Share on Lens
                         </div>
                       </div>
-                      <div className="flex w-[204px] h-[54px] bg-forest-500 dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]">
+                      <div className="flex items-center w-[204px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] py-[15px] pl-[15px] rounded-full cursor-pointer gap-x-[10px]">
                         <Icon
                           className="w-[24px] h-[24px] "
                           icon="gtp:farcaster"
@@ -333,7 +333,7 @@ export default function Share() {
                         </div>
                       </div>
                       <div
-                        className="flex w-[204px] h-[54px] bg-forest-500 dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
+                        className="flex items-center w-[204px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
                         onClick={() => {
                           shareOnTwitter();
                         }}

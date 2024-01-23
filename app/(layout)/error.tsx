@@ -94,27 +94,36 @@ const Error = ({
                 </div>
                 <div className="flex flex-col gap-y-[5px]">
                   <Link
-                    className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                    className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px]"
                     href={`/`}
                   >
                     <Icon icon="gtp:house" className="w-[24px] h-[24px]" />
                     <div className="text-[16px] leading-[150%]">Home</div>
                   </Link>
-                  <div className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#5A6462] rounded-full gap-x-[10px]">
-                    <Icon
-                      icon={navigationItems[navIndex]["icon"]}
-                      className="w-[24px] h-[24px]"
-                    />
-                    <div className="text-[16px] leading-[150%]">
-                      {navigationItems[navIndex]["label"] +
-                        (navIndex === 1 || navIndex === 3 ? " Metrics" : "")}
-                    </div>
-                  </div>
+                  {randIndices && (
+                    <Link
+                      className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px] hover:cursor-pointer"
+                      href={`/${pageGroup}/${
+                        navigationItems[navIndex]["options"][randIndices[0]][
+                          "urlKey"
+                        ]
+                      }`}
+                    >
+                      <Icon
+                        icon={navigationItems[navIndex]["icon"]}
+                        className="w-[24px] h-[24px]"
+                      />
+                      <div className="text-[16px] leading-[150%]">
+                        {navigationItems[navIndex]["label"] +
+                          (navIndex === 1 || navIndex === 3 ? " Metrics" : "")}
+                      </div>
+                    </Link>
+                  )}
                   {randIndices &&
                     randIndices.map((index) => (
                       <Link
                         key={index}
-                        className="flex self-center items-center p-[15px] w-[250px] h-[54px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                        className="flex self-center items-center p-[15px] w-[250px] h-[54px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px]"
                         href={`/${pageGroup}/${navigationItems[navIndex]["options"][index]["urlKey"]}`}
                       >
                         <Icon
@@ -127,14 +136,14 @@ const Error = ({
                       </Link>
                     ))}
                   <a
-                    className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                    className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px]"
                     href={`https://docs.growthepie.xyz/`}
                   >
                     <Icon icon="gtp:book-open" className="w-[24px] h-[24px]" />
                     <div className="text-[16px] leading-[150%]">Knowledge</div>
                   </a>
                   <Link
-                    className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                    className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px]"
                     href={`/optimism-retropgf-3`}
                   >
                     <Icon
@@ -168,7 +177,7 @@ const Error = ({
                 </div>
                 <div className="flex flex-col gap-y-[5px]">
                   <Link
-                    className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                    className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px]"
                     href={`/`}
                   >
                     <Icon icon="gtp:house" className="w-[24px] h-[24px]" />
@@ -176,14 +185,14 @@ const Error = ({
                   </Link>
 
                   <a
-                    className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                    className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px]"
                     href={`https://docs.growthepie.xyz/`}
                   >
                     <Icon icon="gtp:book-open" className="w-[24px] h-[24px]" />
                     <div className="text-[16px] leading-[150%]">Knowledge</div>
                   </a>
                   <a
-                    className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                    className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px]"
                     href={`https://mirror.xyz/blog.growthepie.eth`}
                   >
                     <Icon icon="gtp:blog" className="w-[25px] h-[25px]" />
@@ -191,7 +200,7 @@ const Error = ({
                   </a>
 
                   <Link
-                    className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                    className="flex self-center items-center p-[15px] w-[299px] h-[54px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px]"
                     href={`/optimism-retropgf-3`}
                   >
                     <Icon
@@ -229,13 +238,13 @@ const Error = ({
                 </div>
                 <div className="flex flex-col gap-y-[5px]">
                   <Link
-                    className="flex self-center items-center p-[15px] w-[299px] h-[46px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                    className="flex self-center items-center p-[15px] w-[299px] h-[46px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px]"
                     href={`/`}
                   >
                     <Icon icon="gtp:house" className="w-[24px] h-[24px]" />
                     <div className="text-[14px] leading-[150%]">Home</div>
                   </Link>
-                  <div className="flex self-center items-center p-[15px] w-[299px] h-[46px] bg-[#5A6462] rounded-full gap-x-[10px]">
+                  <div className="flex self-center items-center p-[15px] w-[299px] h-[46px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px]">
                     <Icon
                       icon={navigationItems[navIndex]["icon"]}
                       className="w-[24px] h-[24px]"
@@ -249,7 +258,7 @@ const Error = ({
                     randIndices.map((index) => (
                       <Link
                         key={index}
-                        className="flex self-center items-center p-[15px] w-[250px] h-[46px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                        className="flex self-center items-center p-[15px] w-[250px] h-[46px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px]"
                         href={`/${pageGroup}/${navigationItems[navIndex]["options"][index]["urlKey"]}`}
                       >
                         <Icon
@@ -262,14 +271,14 @@ const Error = ({
                       </Link>
                     ))}
                   <a
-                    className="flex self-center items-center p-[15px] w-[299px] h-[46px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                    className="flex self-center items-center p-[15px] w-[299px] h-[46px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px]"
                     href={`https://docs.growthepie.xyz/`}
                   >
                     <Icon icon="gtp:book-open" className="w-[24px] h-[24px]" />
                     <div className="text-[14px] leading-[150%]">Knowledge</div>
                   </a>
                   <Link
-                    className="flex self-center items-center p-[15px] w-[299px] h-[46px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                    className="flex self-center items-center p-[15px] w-[299px] h-[46px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px]"
                     href={`/optimism-retropgf-3`}
                   >
                     <Icon
@@ -303,7 +312,7 @@ const Error = ({
                 </div>
                 <div className="flex flex-col gap-y-[5px]">
                   <Link
-                    className="flex self-center items-center p-[15px] w-[299px] h-[46px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                    className="flex self-center items-center p-[15px] w-[299px] h-[46px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px]"
                     href={`/`}
                   >
                     <Icon icon="gtp:house" className="w-[24px] h-[24px]" />
@@ -311,14 +320,14 @@ const Error = ({
                   </Link>
 
                   <a
-                    className="flex self-center items-center p-[15px] w-[299px] h-[46px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                    className="flex self-center items-center p-[15px] w-[299px] h-[46px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px]"
                     href={`https://docs.growthepie.xyz/`}
                   >
                     <Icon icon="gtp:book-open" className="w-[24px] h-[24px]" />
                     <div className="text-[16px] leading-[150%]">Knowledge</div>
                   </a>
                   <a
-                    className="flex self-center items-center p-[15px] w-[299px] h-[46px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                    className="flex self-center items-center p-[15px] w-[299px] h-[46px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px]"
                     href={`https://mirror.xyz/blog.growthepie.eth`}
                   >
                     <Icon icon="gtp:blog" className="w-[25px] h-[25px]" />
@@ -326,7 +335,7 @@ const Error = ({
                   </a>
 
                   <Link
-                    className="flex self-center items-center p-[15px] w-[299px] h-[46px] bg-[#5A6462] rounded-full gap-x-[10px]"
+                    className="flex self-center items-center p-[15px] w-[299px] h-[46px] bg-[#1F2726] hover:bg-[#5A6462] border-[3px] border-[#5A6462] rounded-full gap-x-[10px]"
                     href={`/optimism-retropgf-3`}
                   >
                     <Icon
