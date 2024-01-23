@@ -75,9 +75,9 @@ const Error = ({
 
   return (
     <>
-      <div className="flex flex-col items-center justify-center w-full h-[80vh] gap-y-[15px]">
+      <div className="flex flex-col items-center justify-center w-full mt-[85px] md:mt-[125px] -mb-[100px] gap-y-[15px]">
         <div
-          className={`flex flex-col bg-[#1F2726] border-forest-400  rounded-[40px] p-[30px] gap-y-[15px] 
+          className={`flex flex-col bg-[#1F2726] border-forest-400 rounded-[40px] p-[30px] gap-y-[15px] 
           ${navIndex === 1 || navIndex === 3 ? "h-[579px]" : "h-[519px]"} ${
             isMobile ? "w-[95%]" : "w-[587px]"
           }`}
