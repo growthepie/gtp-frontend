@@ -8,6 +8,8 @@ import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
 import Image from "next/image";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
+import { notFound } from "next/navigation";
+import { track } from "@vercel/analytics/server";
 
 type Props = {
   params: { metric: string };
@@ -20,6 +22,19 @@ const unitsMap = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  if (
+    !params.metric ||
+    navigationItems
+      .find((item) => item.label === "Fundamentals")
+      ?.options.find((item) => item.urlKey === params.metric) === undefined
+  ) {
+    track("404 Error", {
+      location: "404 Error",
+      page: "/fundamentals/" + params.metric,
+    });
+    return notFound();
+  }
+
   const option = navigationItems
     .find((item) => item.label === "Fundamentals")
     ?.options.find((item) => item.urlKey === params.metric);

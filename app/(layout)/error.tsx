@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { navigationItems } from "@/lib/navigation";
 import { useMediaQuery } from "usehooks-ts";
+import { track } from "@vercel/analytics";
 
 const Error = ({
   error,
@@ -51,8 +52,12 @@ const Error = ({
   useEffect(() => {
     setCurrentURL(window.location.href);
     let url = window.location.href;
-    const getRandomInt = (min, max) =>
-      Math.floor(Math.random() * (max - min + 1)) + min;
+
+    track("500 Error", {
+      location: "500 Error",
+      page: window.location.pathname,
+    });
+
     if (url.includes("fundamentals")) {
       setPageGroup("fundamentals");
       setNavIndex(1);

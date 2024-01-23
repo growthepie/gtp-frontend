@@ -2,7 +2,7 @@
 import Link from "next/link";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { AllChains, AllChainsByKeys } from "@/lib/chains";
+import { AllChains, AllChainsByKeys, AllChainsByUrlKey } from "@/lib/chains";
 import ChainChart from "@/components/layout/ChainChart";
 import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
@@ -19,6 +19,7 @@ import {
 } from "@/types/api/ChainOverviewResponse";
 import { useMemo } from "react";
 import { useSessionStorage } from "usehooks-ts";
+import { notFound } from "next/navigation";
 
 const Chain = ({ params }: { params: any }) => {
   const { chain } = params;
@@ -67,9 +68,7 @@ const Chain = ({ params }: { params: any }) => {
     "max",
   );
 
-  if (!chainKey) {
-    return <div>Chain not found</div>;
-  }
+  if (!chainKey) return notFound();
 
   return (
     <>

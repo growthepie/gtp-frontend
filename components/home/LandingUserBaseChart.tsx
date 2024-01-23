@@ -81,6 +81,11 @@ export default function LandingUserBaseChart() {
 
   return (
     <>
+      <ShowLoading
+        dataLoading={[masterLoading, landingLoading]}
+        dataValidating={[masterValidating, landingValidating]}
+        fullScreen={true}
+      />
       {data && landing && master ? (
         <>
           <Container

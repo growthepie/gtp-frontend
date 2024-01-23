@@ -655,11 +655,12 @@ export default function ChainChart({
               }
             }
           }
-
-          chart.xAxis[0].hideCrosshair();
-          chart.series[hoveredSeries.index].points.forEach((point) => {
-            point.setState();
-          });
+          if (chart && chart.xAxis[0]) {
+            chart.xAxis[0].hideCrosshair();
+            chart.series[hoveredSeries.index].points.forEach((point) => {
+              point.setState();
+            });
+          }
         });
       }
     },
