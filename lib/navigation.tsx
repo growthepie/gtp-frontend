@@ -63,7 +63,7 @@ export const chainGroup = {
     icon: "feather:clock",
   },
   "other-optimistic": {
-    label: "OTHER OPTIMISTIC",
+    label: "OTHER OPTIMISTIC ROLLUPS",
     icon: "feather:clock",
   },
   "zk-rollup": {
@@ -71,7 +71,7 @@ export const chainGroup = {
     icon: "feather:clock",
   },
   validium: {
-    label: "VALIDIUM",
+    label: "OFFCHAIN DATA AVAILABILITY",
     icon: "feather:clock",
   },
   optimium: {
