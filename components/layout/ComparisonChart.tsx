@@ -181,15 +181,6 @@ const baseOptions: Highcharts.Options = {
   },
 };
 
-type MainChartProps = {
-  data: {
-    name: string;
-    data: any;
-    types: any[];
-  };
-  dataKeys: string[];
-};
-
 export default function ComparisonChart({
   data,
   timeIntervals,
@@ -374,8 +365,6 @@ export default function ComparisonChart({
       return bData - aData;
     });
   }, [data, reversePerformer, showEthereumMainnet]);
-
-  console.log("filteredData", filteredData);
 
   const formatNumber = useCallback(
     (value: number | string, isAxis = false) => {
@@ -861,6 +850,16 @@ export default function ComparisonChart({
 
   const getSeriesData = useCallback(
     (name: string, types: string[], data: number[][]) => {
+      if (name === "")
+        return {
+          data: [],
+          zoneAxis: undefined,
+          zones: undefined,
+          fillColor: undefined,
+          fillOpacity: undefined,
+          color: undefined,
+        };
+
       const timeIndex = 0;
       let valueIndex = 1;
       let valueMulitplier = 1;
@@ -889,44 +888,10 @@ export default function ComparisonChart({
         selectedTimeInterval === "daily"
           ? AllChainsByKeys[name]?.colors[theme ?? "dark"][0]
           : undefined;
-      // {
-      //     linearGradient: {
-      //       x1: 0,
-      //       y1: 0,
-      //       x2: 0,
-      //       y2: 1,
-      //     },
-      //     stops: [
-      //       [0, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "33"],
-      //       [1, AllChainsByKeys[name]?.colors[theme ?? "dark"][1] + "33"],
-      //     ],
-      // pattern: {
-      //   color: AllChainsByKeys[name].colors[theme][0],
-      // },
-      // pattern: {
-      //   path: "M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11",
-      //   width: 10,
-      //   height: 10,
-      //   strokeWidth: 3,
-      // },
-      // }
       let color =
         selectedTimeInterval === "daily"
           ? AllChainsByKeys[name]?.colors[theme ?? "dark"][0]
           : undefined;
-      // {
-      //   linearGradient: {
-      //     x1: 0,
-      //     y1: 0,
-      //     x2: 0,
-      //     y2: 1,
-      //   },
-      //   stops: [
-      //     [0, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "FF"],
-      //     [0.349, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "88"],
-      //     [1, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "00"],
-      //   ],
-      // };
 
       if (types.includes("usd")) {
         if (showUsd) {
@@ -951,92 +916,6 @@ export default function ComparisonChart({
           color,
         };
       }
-
-      // // check if the last data point is the last day of the month by adding a day to the last data point and checking if the day is 1
-      // const lastDataPoint = seriesData[seriesData.length - 1];
-      // const lastDayOfMonthCheck = new Date(lastDataPoint[0]);
-      // // add a day to the last data point
-      // lastDayOfMonthCheck.setDate(lastDayOfMonthCheck.getUTCDate() + 1);
-
-      // let monthlyData: any[] = [];
-
-      // // const currentDate = new Date();
-      // // const currentYear = currentDate.getUTCFullYear();
-      // // const currentMonth = currentDate.getUTCMonth();
-
-      // // calculate monthly sum aggregates for metrics we don't need to average
-      // if (!avgMonthlyMetrics.includes(metric_id)) {
-      //   monthlyData = seriesData.reduce((acc: any[], d: any) => {
-      //     const date = new Date(d[0]);
-      //     // const dateYear = date.getUTCFullYear();
-      //     // const dateMonth = date.getUTCMonth();
-
-      //     // don't include the current month
-      //     // if (dateYear === currentYear && dateMonth === currentMonth)
-      //     //   return acc;
-
-      //     const dateValue = Date.UTC(
-      //       date.getUTCFullYear(),
-      //       date.getUTCMonth(),
-      //       1,
-      //     ).valueOf();
-
-      //     // check if there is already a data point for this month
-      //     const existingDataPoint = acc.find((d) => d[0] === dateValue);
-
-      //     // if there is, add the current value to the existing data point
-      //     if (existingDataPoint) {
-      //       existingDataPoint[1] += d[1];
-      //     }
-      //     // if there isn't, create a new data point
-      //     else {
-      //       acc.push([dateValue, d[1]]);
-      //     }
-
-      //     return acc;
-      //   }, []);
-
-      //   // else calculate monthly averages for metrics we need to average
-      // } else {
-      //   monthlyData = seriesData.reduce((acc: any[], d: any) => {
-      //     const date = new Date(d[0]);
-      //     // const dateYear = date.getUTCFullYear();
-      //     // const dateMonth = date.getUTCMonth();
-
-      //     // don't include the current month
-      //     // if (dateYear === currentYear && dateMonth === currentMonth)
-      //     //   return acc;
-
-      //     const dateValue = Date.UTC(
-      //       date.getUTCFullYear(),
-      //       date.getUTCMonth(),
-      //       1,
-      //     ).valueOf();
-
-      //     // check if there is already a data point for this month
-      //     const existingDataPoint = acc.find((d) => d[0] === dateValue);
-
-      //     // if there is, add the current value to the existing data point
-      //     if (existingDataPoint) {
-      //       existingDataPoint[1].push(d[1]);
-      //     }
-
-      //     // if there isn't, create a new data point
-      //     else {
-      //       acc.push([dateValue, [d[1]]]);
-      //     }
-
-      //     return acc;
-      //   }, []);
-
-      //   // calculate the average for each month
-      //   monthlyData.forEach((d) => {
-      //     const average =
-      //       d[1].reduce((acc: number, value: number) => acc + value, 0) /
-      //       d[1].length;
-      //     d[1] = average;
-      //   });
-      // }
 
       // if it is not the last day of the month, add a zone to the chart to indicate that the data is incomplete
       if (new Date().getUTCDate() !== 1) {
@@ -1149,15 +1028,7 @@ export default function ComparisonChart({
         color,
       };
     },
-    [
-      avgMonthlyMetrics,
-      metric_id,
-      selectedScale,
-      selectedTimeInterval,
-      showGwei,
-      showUsd,
-      theme,
-    ],
+    [getSeriesType, selectedTimeInterval, showGwei, showUsd, theme],
   );
 
   const getChartHeight = useCallback(() => {
@@ -1306,11 +1177,6 @@ export default function ComparisonChart({
                 ? 0
                 : 0.5,
           };
-
-          console.log(
-            "getSeriesData",
-            getSeriesData(series.name, series.types, series.data),
-          );
 
           return {
             name: series.name,
