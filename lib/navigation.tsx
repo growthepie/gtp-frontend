@@ -62,7 +62,7 @@ export const chainGroup = {
     icon: "feather:clock",
   },
   "other-optimistic": {
-    label: "OTHER OPTIMISTIC",
+    label: "OTHER OPTIMISTIC ROLLUPS",
     icon: "feather:clock",
   },
   "zk-rollup": {
@@ -70,7 +70,7 @@ export const chainGroup = {
     icon: "feather:clock",
   },
   validium: {
-    label: "VALIDIUM",
+    label: "OFFCHAIN DATA AVAILABILITY",
     icon: "feather:clock",
   },
 };
@@ -403,7 +403,8 @@ export const navigationItems: NavigationItem[] = [
         label: "Linea",
         category: "zk-rollup",
         page: {
-          description: "Linea is a developer-friendly ZK Rollup, marked as the next stage of ConsenSys zkEVM, which aims to enhance the Ethereum network by facilitating a new wave of decentralized applications. Public launch was in July 2023.",
+          description:
+            "Linea is a developer-friendly ZK Rollup, marked as the next stage of ConsenSys zkEVM, which aims to enhance the Ethereum network by facilitating a new wave of decentralized applications. Public launch was in July 2023.",
         },
         icon: "gtp:linea-logo-monochrome",
         key: "linea",
@@ -414,7 +415,8 @@ export const navigationItems: NavigationItem[] = [
         label: "Scroll",
         category: "zk-rollup",
         page: {
-          description: "Scroll is a general purpose zkEVM rollup. Public launch was in October 2023.",
+          description:
+            "Scroll is a general purpose zkEVM rollup. Public launch was in October 2023.",
         },
         icon: "gtp:scroll-logo-monochrome",
         key: "scroll",
