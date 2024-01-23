@@ -700,7 +700,7 @@ export default function ComparisonChart({
         xMax: maxPlusBuffer,
       },
     };
-  }, []);
+  }, [filteredData]);
 
   useEffect(() => {
     if (chartComponent.current) {
@@ -1028,7 +1028,15 @@ export default function ComparisonChart({
         color,
       };
     },
-    [getSeriesType, selectedTimeInterval, showGwei, showUsd, theme],
+    [
+      avgMonthlyMetrics,
+      metric_id,
+      selectedScale,
+      selectedTimeInterval,
+      showGwei,
+      showUsd,
+      theme,
+    ],
   );
 
   const getChartHeight = useCallback(() => {
