@@ -116,7 +116,7 @@ export const AllChains: Chain[] = [
     key: "polygon_zkevm",
     urlKey: "polygon-zkevm",
     chainType: "L2",
-    ecosystem: ["all-chains"],
+    ecosystem: ["all-chains", "zk-rollup"],
     description:
       "Polygon zkEVM uses zero-knowledge proofs to enable faster and cheaper transactions. It allows users to build and run EVM-compatible smart contracts, achieving up to 100x lower gas fees and up to 2,000x faster transaction speeds than the Ethereum mainnet. It's fully compatible with the Ethereum Virtual Machine, making it easy for developers to migrate their applications to the Polygon network. It launched in March 2023.",
     border: {
@@ -184,7 +184,7 @@ export const AllChains: Chain[] = [
     key: "zksync_era",
     urlKey: "zksync-era",
     chainType: "L2",
-    ecosystem: ["all-chains", "Hyperchain"],
+    ecosystem: ["all-chains", "Hyperchain", "zk-rollup"],
     description:
       "zkSync Era is a Layer 2 protocol that scales Ethereum with cutting-edge ZK tech. Their mission isn't to merely increase Ethereum's throughput, but to fully preserve its foundational values – freedom, self-sovereignty, decentralization – at scale.",
     border: {
@@ -276,7 +276,7 @@ export const AllChains: Chain[] = [
     key: "linea",
     urlKey: "linea",
     chainType: "L2",
-    ecosystem: ["all-chains"], // TODO: add ecosystems when unhiding from the UI
+    ecosystem: ["all-chains", "zk-rollup"], // TODO: add ecosystems when unhiding from the UI
     description:
       "Linea is a developer-friendly ZK Rollup, marked as the next stage of ConsenSys zkEVM, which aims to enhance the Ethereum network by facilitating a new wave of decentralized applications. Public launch was in July 2023.",
     border: {
@@ -299,7 +299,7 @@ export const AllChains: Chain[] = [
     key: "scroll",
     urlKey: "scroll",
     chainType: "L2",
-    ecosystem: ["all-chains"],
+    ecosystem: ["all-chains", "zk-rollup"],
     description:
       "Scroll is a general purpose zkEVM rollup. Public launch was in October 2023.",
     border: {
