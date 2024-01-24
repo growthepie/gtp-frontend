@@ -42,7 +42,7 @@ export default function ChainChart({
   data,
   chain,
 }: {
-  data: ChainsData;
+  data: ChainsData | ChainsData[];
   chain: string;
 }) {
   // Keep track of the mounted state

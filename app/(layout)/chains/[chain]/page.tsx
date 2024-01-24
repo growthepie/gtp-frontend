@@ -17,14 +17,17 @@ import {
   ChainOverviewResponse,
   Chains,
 } from "@/types/api/ChainOverviewResponse";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useSessionStorage } from "usehooks-ts";
 import { notFound } from "next/navigation";
 
 const Chain = ({ params }: { params: any }) => {
   const { chain } = params;
 
-  const chainKey = AllChains.find((c) => c.urlKey === chain)?.key;
+  const [chainKey, setChainKey] = useState<string[]>([
+    AllChains.find((c) => c.urlKey === chain)?.key,
+  ]);
+
   const {
     data: master,
     error: masterError,
@@ -37,7 +40,23 @@ const Chain = ({ params }: { params: any }) => {
     error: chainError,
     isValidating: chainValidating,
     isLoading: chainLoading,
-  } = useSWR<ChainResponse>(chainKey ? ChainURLs[chainKey] : null);
+  } = useSWR(chainKey ? chainKey : null, async (key) => {
+    if (!key || key.length === 0) {
+      return null;
+    }
+
+    const fetchPromises = key.map(async (chainKey) => {
+      const response = await fetch(ChainURLs[chainKey]);
+      const data = await response.json();
+      return data;
+    });
+
+    const responseData = await Promise.all(fetchPromises);
+
+    // You can use otherArgument as needed
+
+    return responseData;
+  });
 
   const {
     data: usageData,
@@ -48,13 +67,13 @@ const Chain = ({ params }: { params: any }) => {
 
   const chainFilter = useMemo(() => {
     const filteredChains: Chains = Object.keys(AllChainsByKeys)
-      .filter((key) => key === chainKey || key === "all_l2s")
+      .filter((key) => key === chainKey[0] || key === "all_l2s")
       .reduce((result, chain) => {
-        const chainKey = AllChainsByKeys[chain].key;
-        const chainData = usageData?.data.chains[chainKey];
+        const filterKey = AllChainsByKeys[chain].key;
+        const chainData = usageData?.data.chains[filterKey];
 
         if (chainData) {
-          result[chainKey] = chainData;
+          result[filterKey] = chainData;
         }
 
         return result;
@@ -186,7 +205,7 @@ const Chain = ({ params }: { params: any }) => {
                 </>
               )}
             </div>
-            {chainData && <ChainChart chain={chain} data={chainData.data} />}
+            {/* {chainData && <ChainChart chain={chain} data={chainData.data} />} */}
             <div className="flex lg:hidden justify-between text-base items-start mb-8 mt-[30px] lg:mt-[15px]">
               <Link
                 href={master.chains[chainKey].block_explorer}
@@ -259,7 +278,7 @@ const Chain = ({ params }: { params: any }) => {
             selectedTimespan={selectedTimespan}
             setSelectedTimespan={setSelectedTimespan}
             data={chainFilter}
-            forceSelectedChain={chainKey}
+            forceSelectedChain={chainKey[0]}
             // data={!chainEcosystemFilter || chainEcosystemFilter=== "all-chains" ? usageData.data.chains : )}
           />
         </>
