@@ -815,7 +815,7 @@ export default function ChainComponent({
       backgroundColor: undefined,
       margin: [1, 0, 0, 0],
       spacingBottom: 0,
-      panning: { enabled: true },
+      panning: { enabled: false },
       panKey: "shift",
       animation: isAnimate,
       zooming: {
