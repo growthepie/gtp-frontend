@@ -272,79 +272,74 @@ const Notification = () => {
       <>
         {filteredData.map((item, i) => {
           return (
-            <>
+            <div
+              key={item.id + item.url}
+              className={`hover:bg-forest-500/10 z-10`}
+              onClick={() => {
+                if (item.url) {
+                  window.open(item.url, "_blank");
+                }
+              }}
+              onMouseEnter={() => {
+                setHoverID((prevHoverID) => {
+                  return item.id;
+                });
+              }}
+              onMouseLeave={() => {
+                setHoverID((prevHoverID) => {
+                  return null; // Return the new value for the state
+                });
+              }}
+            >
               <div
-                className={`hover:bg-forest-500/10 z-10`}
-                onClick={() => {
-                  if (item.url) {
-                    window.open(item.url, "_blank");
-                  }
-                }}
                 key={item.id + item.url}
+                className={`relative pb-1 pt-[6px] ${
+                  i >= filteredData.length - 1
+                    ? "pb-1"
+                    : "pb-0 border-b border-forest-50 border-dashed"
+                } ${
+                  openNotif ? "w-auto" : "w-[305px] mdl:w-[343px] xl:w-[600px]"
+                } ${item.url ? "cursor-pointer" : "cursor-normal"} flex`}
                 onMouseEnter={() => {
-                  setHoverID((prevHoverID) => {
-                    return item.id;
-                  });
+                  setHoverID(item.id);
                 }}
                 onMouseLeave={() => {
-                  setHoverID((prevHoverID) => {
-                    return null; // Return the new value for the state
-                  });
+                  setHoverID(null);
                 }}
               >
+                <div className="flex items-center w-[34px] justify-center   ">
+                  {item.icon && (
+                    <Icon
+                      icon={item.icon || "default-icon"}
+                      className={`w-[12px] h-[12px] text-forest-50  ${
+                        item.icon ? "visible" : "invisible"
+                      } ${
+                        hoverID === item.id
+                          ? "text-forest-200"
+                          : "text-forest-800"
+                      }`}
+                    />
+                  )}
+                </div>
                 <div
-                  key={item.id + item.url}
-                  className={`relative pb-1 pt-[6px] ${
-                    i >= filteredData.length - 1
-                      ? "pb-1"
-                      : "pb-0 border-b border-forest-50 border-dashed"
-                  } ${
-                    openNotif
-                      ? "w-auto"
-                      : "w-[305px] mdl:w-[343px] xl:w-[600px]"
-                  }
-      ${item.url ? "cursor-pointer" : "cursor-normal"} flex`}
-                  onMouseEnter={() => {
-                    setHoverID(item.id);
-                  }}
-                  onMouseLeave={() => {
-                    setHoverID(null);
-                  }}
+                  className={`flex w-full flex-col  pb-[8px] gap-y-[5px] z-20 `}
                 >
-                  <div className="flex items-center w-[34px] justify-center   ">
-                    {item.icon && (
-                      <Icon
-                        icon={item.icon || "default-icon"}
-                        className={`w-[12px] h-[12px] text-forest-50  ${
-                          item.icon ? "visible" : "invisible"
-                        } ${
-                          hoverID === item.id
-                            ? "text-forest-200"
-                            : "text-forest-800"
-                        }`}
-                      />
-                    )}
+                  <div className="h-[17px] font-bold text-[14px] ">
+                    {item.desc}
                   </div>
-                  <div
-                    className={`flex w-full flex-col  pb-[8px] gap-y-[5px] z-20 `}
-                  >
-                    <div className="h-[17px] font-bold text-[14px] ">
-                      {item.desc}
-                    </div>
-                    <div className="h-auto text-[12px] leading-[.75rem] ">
-                      <ReactMarkdown>{item.body}</ReactMarkdown>
-                    </div>
-                  </div>
-                  <div
-                    className={`w-[24px] h-[24px] pr-[19px] my-auto ml-auto  ${
-                      item.url ? "visible" : "invisible"
-                    }`}
-                  >
-                    <Icon icon="ci:chevron-right" className="relative top-1" />
+                  <div className="h-auto text-[12px] leading-[.75rem] ">
+                    <ReactMarkdown>{item.body}</ReactMarkdown>
                   </div>
                 </div>
+                <div
+                  className={`w-[24px] h-[24px] pr-[19px] my-auto ml-auto  ${
+                    item.url ? "visible" : "invisible"
+                  }`}
+                >
+                  <Icon icon="ci:chevron-right" className="relative top-1" />
+                </div>
               </div>
-            </>
+            </div>
           );
         })}
       </>
@@ -680,49 +675,49 @@ const Notification = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col w-[100%] pl-[0px] py-[8px] gap-y-[5px] ">
-                    {filteredData.map((item, index) =>
-                      item.url ? (
-                        <Link
-                          className={`flex border-b-white border-dashed w-full mt-[8px] hover:cursor-pointer  ${
-                            index < filteredData.length - 1
-                              ? "border-b-[1px] pb-1"
-                              : "border-b-[0px] pb-1"
-                          }`}
-                          key={item.id}
-                          href={item.url}
-                        >
-                          <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[8px]">
-                            <div className="h-[17px] font-bold text-[16px]">
-                              {item.desc}
+                    {filteredData.map((item, index) => (
+                      <div key={item.id}>
+                        {item.url ? (
+                          <Link
+                            className={`flex border-b-white border-dashed w-full mt-[8px] hover:cursor-pointer  ${
+                              index < filteredData.length - 1
+                                ? "border-b-[1px] pb-1"
+                                : "border-b-[0px] pb-1"
+                            }`}
+                            href={item.url}
+                          >
+                            <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[8px]">
+                              <div className="h-[17px] font-bold text-[16px]">
+                                {item.desc}
+                              </div>
+                              <div className="h-auto text-[14px] leading-snug">
+                                <ReactMarkdown>{item.body}</ReactMarkdown>
+                              </div>
                             </div>
-                            <div className="h-auto text-[14px] leading-snug">
-                              <ReactMarkdown>{item.body}</ReactMarkdown>
+                            <div className="w-[35px] pr-[20px] self-center">
+                              <Icon icon="ci:chevron-right" />
+                            </div>
+                          </Link>
+                        ) : (
+                          <div
+                            className={`flex border-b-white border-dashed w-full mt-[8px] ${
+                              index < filteredData.length - 1
+                                ? "border-b-[1px] pb-1"
+                                : "border-b-[0px] pb-1"
+                            }`}
+                          >
+                            <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[8px] ">
+                              <div className="h-[17px] font-bold text-[16px]">
+                                {item.desc}
+                              </div>
+                              <div className="h-auto text-[14px] leading-[.75rem]">
+                                <ReactMarkdown>{item.body}</ReactMarkdown>
+                              </div>
                             </div>
                           </div>
-                          <div className="w-[35px] pr-[20px] self-center">
-                            <Icon icon="ci:chevron-right" />
-                          </div>
-                        </Link>
-                      ) : (
-                        <div
-                          className={`flex border-b-white border-dashed w-full mt-[8px] ${
-                            index < filteredData.length - 1
-                              ? "border-b-[1px] pb-1"
-                              : "border-b-[0px] pb-1"
-                          }`}
-                          key={item.id}
-                        >
-                          <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[8px] ">
-                            <div className="h-[17px] font-bold text-[16px]">
-                              {item.desc}
-                            </div>
-                            <div className="h-auto text-[14px] leading-[.75rem]">
-                              <ReactMarkdown>{item.body}</ReactMarkdown>
-                            </div>
-                          </div>
-                        </div>
-                      ),
-                    )}
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
