@@ -64,29 +64,29 @@ const Chain = ({ params }: { params: any }) => {
     return flattenedData;
   });
 
-  // const {
-  //   data: usageData,
-  //   error: usageError,
-  //   isLoading: usageLoading,
-  //   isValidating: usageValidating,
-  // } = useSWR<ChainOverviewResponse>(BlockspaceURLs["chain-overview"]);
+  const {
+    data: usageData,
+    error: usageError,
+    isLoading: usageLoading,
+    isValidating: usageValidating,
+  } = useSWR<ChainOverviewResponse>(BlockspaceURLs["chain-overview"]);
 
-  // const chainFilter = useMemo(() => {
-  //   const filteredChains: Chains = Object.keys(AllChainsByKeys)
-  //     .filter((key) => key === chainKey[0] || key === "all_l2s")
-  //     .reduce((result, chain) => {
-  //       const filterKey = AllChainsByKeys[chain].key;
-  //       const chainData = usageData?.data.chains[filterKey];
+  const chainFilter = useMemo(() => {
+    const filteredChains: Chains = Object.keys(AllChainsByKeys)
+      .filter((key) => key === chainKey[0] || key === "all_l2s")
+      .reduce((result, chain) => {
+        const filterKey = AllChainsByKeys[chain].key;
+        const chainData = usageData?.data.chains[filterKey];
 
-  //       if (chainData) {
-  //         result[filterKey] = chainData;
-  //       }
+        if (chainData) {
+          result[filterKey] = chainData;
+        }
 
-  //       return result;
-  //     }, {});
+        return result;
+      }, {});
 
-  //   return filteredChains;
-  // }, [chainKey, usageData?.data.chains]);
+    return filteredChains;
+  }, [chainKey, usageData?.data.chains]);
 
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
@@ -98,8 +98,8 @@ const Chain = ({ params }: { params: any }) => {
   return (
     <>
       <ShowLoading
-        dataLoading={[masterLoading, chainLoading]}
-        dataValidating={[masterValidating, chainValidating]}
+        dataLoading={[masterLoading, chainLoading, usageLoading]}
+        dataValidating={[masterValidating, chainValidating, usageLoading]}
       />
       <Container className="flex w-full mt-[65px] md:mt-[45px]">
         {master && (
@@ -276,7 +276,7 @@ const Chain = ({ params }: { params: any }) => {
           </div>
         )}
       </Container>
-      {/* {usageData && chainKey[0] !== "ethereum" && (
+      {usageData && chainKey[0] !== "ethereum" && (
         <>
           <Container className="flex flex-col w-full mt-[65px] md:mt-[60px]">
             <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] relative">
@@ -312,7 +312,7 @@ const Chain = ({ params }: { params: any }) => {
             forceSelectedChain={chainKey[0]}
           />
         </>
-      )} */}
+      )}
     </>
   );
 };
