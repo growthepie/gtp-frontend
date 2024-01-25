@@ -39,29 +39,29 @@ const Chain = ({ params }: { params: any }) => {
     isLoading: chainLoading,
   } = useSWR<ChainResponse>(chainKey ? ChainURLs[chainKey] : null);
 
-  const {
-    data: usageData,
-    error: usageError,
-    isLoading: usageLoading,
-    isValidating: usageValidating,
-  } = useSWR<ChainOverviewResponse>(BlockspaceURLs["chain-overview"]);
+  // const {
+  //   data: usageData,
+  //   error: usageError,
+  //   isLoading: usageLoading,
+  //   isValidating: usageValidating,
+  // } = useSWR<ChainOverviewResponse>(BlockspaceURLs["chain-overview"]);
 
-  const chainFilter = useMemo(() => {
-    const filteredChains: Chains = Object.keys(AllChainsByKeys)
-      .filter((key) => key === chainKey || key === "all_l2s")
-      .reduce((result, chain) => {
-        const chainKey = AllChainsByKeys[chain].key;
-        const chainData = usageData?.data.chains[chainKey];
+  // const chainFilter = useMemo(() => {
+  //   const filteredChains: Chains = Object.keys(AllChainsByKeys)
+  //     .filter((key) => key === chainKey || key === "all_l2s")
+  //     .reduce((result, chain) => {
+  //       const chainKey = AllChainsByKeys[chain].key;
+  //       const chainData = usageData?.data.chains[chainKey];
 
-        if (chainData) {
-          result[chainKey] = chainData;
-        }
+  //       if (chainData) {
+  //         result[chainKey] = chainData;
+  //       }
 
-        return result;
-      }, {});
+  //       return result;
+  //     }, {});
 
-    return filteredChains;
-  }, [chainKey, usageData?.data.chains]);
+  //   return filteredChains;
+  // }, [chainKey, usageData?.data.chains]);
 
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
@@ -73,8 +73,8 @@ const Chain = ({ params }: { params: any }) => {
   return (
     <>
       <ShowLoading
-        dataLoading={[masterLoading, chainLoading, usageLoading]}
-        dataValidating={[masterValidating, chainValidating, usageValidating]}
+        dataLoading={[masterLoading, chainLoading]} //  add usageLoading back in
+        dataValidating={[masterValidating, chainValidating]} // add usageValidating back in
       />
       <Container className="flex w-full mt-[65px] md:mt-[45px]">
         {master && (
