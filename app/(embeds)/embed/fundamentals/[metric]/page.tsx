@@ -40,15 +40,19 @@ const Chain = ({ params }: { params: any }) => {
     isValidating: metricValidating,
   } = useSWR<MetricsResponse>(MetricsURLs[params.metric]);
 
-  const chains = useMemo(() => {
-    if (!metricData) return AllChains;
+  const chainKeys = useMemo(() => {
+    if (!metricData)
+      return AllChains.filter(
+        (chain) =>
+          chain.ecosystem.includes("all-chains") || chain.key === "ethereum",
+      ).map((chain) => chain.key);
 
     return AllChains.filter(
       (chain) =>
-        Object.keys(metricData.data.chains).includes(chain.key) &&
-        chain.key != "ethereum" &&
-        chain.ecosystem.includes("all-chains"),
-    );
+        (Object.keys(metricData.data.chains).includes(chain.key) &&
+          chain.ecosystem.includes("all-chains")) ||
+        chain.key === "ethereum",
+    ).map((chain) => chain.key);
   }, [metricData]);
 
   const pageData = navigationItems[1]?.options.find(
@@ -138,7 +142,7 @@ const Chain = ({ params }: { params: any }) => {
             data={metricData.data.chains}
             selectedChains={selectedChains}
             setSelectedChains={() => {}}
-            chains={chains}
+            chainKeys={chainKeys}
             metric_id={metricData.data.metric_id}
             showEthereumMainnet={showEthereumMainnet}
             setShowEthereumMainnet={setShowEthereumMainnet}
