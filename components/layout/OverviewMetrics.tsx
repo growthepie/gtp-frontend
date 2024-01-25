@@ -436,9 +436,6 @@ export default function OverviewMetrics({
   const [selectedChain, setSelectedChain] = useState<string | null>(
     forceSelectedChain ?? null,
   );
-  console.log(selectedChain);
-
-  console.log(data);
 
   const relativePercentageByChain = useMemo(() => {
     return Object.keys(data).reduce((acc, chainKey) => {

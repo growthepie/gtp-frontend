@@ -344,19 +344,19 @@ const MetricsTable = ({
 
   return (
     <div className="flex flex-col mt-3 md:mt-0 ml-0 lg:-ml-2 font-semibold space-y-[5px] overflow-x-scroll md:overflow-x-visible z-100 w-full py-5 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
-      <div className="relative min-w-[570px] md:min-w-[600px] lg:min-w-full pr-[20px] md:pr-[50px] lg:pr-2 w-full">
+      <div className="min-w-[570px] md:min-w-[600px] lg:min-w-full pr-[20px] md:pr-[50px] lg:pr-2 w-full">
         <div
           className={`flex items-center justify-between py-1 pl-4 pr-7 lg:pl-2 lg:pr-12 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
         >
           <div
-            className={`${
+            className={` ${
               isSidebarOpen ? "w-1/4 2xl:w-1/3" : "w-1/3"
             } pl-[44px] lg:pl-[52px]`}
           >
             {timeIntervalKey === "monthly" ? "Last 30d" : "Yesterday"}
           </div>
           <div
-            className={`${
+            className={`relative ${
               isSidebarOpen ? "w-3/4 2xl:w-2/3" : "w-2/3"
             } flex pr-7 lg:pr-4`}
           >
@@ -382,64 +382,65 @@ const MetricsTable = ({
                 {label}
               </div>
             ))}
-          </div>
-          <div
-            className={`absolute right-[44px] md:right-[33px] cursor-pointer `}
-            onClick={onChainSelectToggle}
-          >
             <div
-              className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-              style={{
-                color: chainSelectToggleState === "all" ? undefined : "#5A6462",
-              }}
+              className={`absolute -right-[4px] -top-[4px] lg:top-0 lg:-right-[24px] cursor-pointer `}
+              onClick={onChainSelectToggle}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className={`w-6 h-6 ${
-                  chainSelectToggleState === "none"
-                    ? "opacity-100"
-                    : "opacity-0"
-                }`}
-              >
-                <circle
-                  xmlns="http://www.w3.org/2000/svg"
-                  cx="12"
-                  cy="12"
-                  r="8"
-                />
-              </svg>
-            </div>
-            <div
-              className={`p-1 rounded-full ${
-                chainSelectToggleState === "none"
-                  ? "bg-forest-50 dark:bg-[#1F2726]"
-                  : "bg-white dark:bg-forest-1000"
-              }`}
-            >
-              <Icon
-                icon="feather:check-circle"
-                className={`w-[17.65px] h-[17.65px] ${
-                  chainSelectToggleState === "none"
-                    ? "opacity-0"
-                    : "opacity-100"
-                }`}
+              <div
+                className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
                 style={{
                   color:
-                    chainSelectToggleState === "all"
-                      ? undefined
-                      : chainSelectToggleState === "normal"
-                      ? "#5A6462"
-                      : "#5A6462",
+                    chainSelectToggleState === "all" ? undefined : "#5A6462",
                 }}
-              />
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`w-6 h-6 ${
+                    chainSelectToggleState === "none"
+                      ? "opacity-100"
+                      : "opacity-0"
+                  }`}
+                >
+                  <circle
+                    xmlns="http://www.w3.org/2000/svg"
+                    cx="12"
+                    cy="12"
+                    r="8"
+                  />
+                </svg>
+              </div>
+              <div
+                className={`p-1 rounded-full ${
+                  chainSelectToggleState === "none"
+                    ? "bg-forest-50 dark:bg-[#1F2726]"
+                    : "bg-white dark:bg-forest-1000"
+                }`}
+              >
+                <Icon
+                  icon="feather:check-circle"
+                  className={`w-[17.65px] h-[17.65px] ${
+                    chainSelectToggleState === "none"
+                      ? "opacity-0"
+                      : "opacity-100"
+                  }`}
+                  style={{
+                    color:
+                      chainSelectToggleState === "all"
+                        ? undefined
+                        : chainSelectToggleState === "normal"
+                        ? "#5A6462"
+                        : "#5A6462",
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
