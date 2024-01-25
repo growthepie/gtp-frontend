@@ -30,7 +30,11 @@ const Chain = ({ params }: { params: any }) => {
   } = useSWR<MetricsResponse>(MetricsURLs[params.metric]);
 
   const chainKeys = useMemo(() => {
-    if (!metricData) return AllChains;
+    if (!metricData)
+      return AllChains.filter(
+        (chain) =>
+          chain.ecosystem.includes("all-chains") || chain.key === "ethereum",
+      ).map((chain) => chain.key);
 
     return AllChains.filter(
       (chain) =>
@@ -101,56 +105,6 @@ const Chain = ({ params }: { params: any }) => {
 
   return (
     <>
-      {/* <ShowLoading
-        dataLoading={[metricLoading]}
-        dataValidating={[metricValidating]}
-      /> */}
-      {/* <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
-        <div className="flex justify-between items-start w-full mb-[15px]">
-          <div className="flex items-center ">
-            <Image
-              src="/GTP-Fundamentals.svg"
-              alt="GTP Chain"
-              className="object-contain w-[32px] h-[32px] mr-[8px]"
-              height={36}
-              width={36}
-            />
-            <Heading className="text-[36px] leading-snug " as="h1">
-              {pageData.title}
-            </Heading>
-          </div>
-        </div>
-        <Subheading
-          className="text-[16px] mb-[30px] w-[99.5%] mx-auto"
-          iconContainerClassName="items-center mb-[15px] md:mb-[32px] relative"
-        >
-          {pageData.description.includes("L2Beat.com.") ? (
-            <div>
-              <p>
-                {pageData.description.replace("L2Beat.com.", "")}
-
-                <a
-                  className="hover:underline"
-                  target="_blank"
-                  href="https://l2beat.com/scaling/tvl"
-                >
-                  L2Beat.com
-                </a>
-              </p>
-            </div>
-          ) : (
-            pageData.description
-          )}
-          {pageData.note && (
-            <div className="text-xs">
-              <span className="font-semibold text-forest-200 dark:text-forest-400">
-                Note:{" "}
-              </span>
-              {pageData.note}
-            </div>
-          )}
-        </Subheading>
-      </Container> */}
       <div className="flex flex-col-reverse xl:flex-row space-x-0 xl:space-x-2">
         {metricData ? (
           <ComparisonChart

@@ -21,7 +21,7 @@ const MetricsTable = ({
   timeIntervalKey,
 }: {
   data: any;
-  chainKeys: any;
+  chainKeys: string[];
   selectedChains: any;
   setSelectedChains: any;
   metric_id: string;
