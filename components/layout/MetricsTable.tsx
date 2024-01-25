@@ -372,7 +372,7 @@ const MetricsTable = ({
             ))}
           </div>
           <div
-            className={`absolute right-[25px]  cursor-pointer `}
+            className={`absolute right-[24px]  cursor-pointer `}
             onClick={onChainSelectToggle}
           >
             <div
