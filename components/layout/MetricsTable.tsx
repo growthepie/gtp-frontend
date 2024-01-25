@@ -12,7 +12,7 @@ import { set } from "lodash";
 
 const MetricsTable = ({
   data,
-  chains,
+  chainKeys,
   selectedChains,
   setSelectedChains,
   metric_id,
@@ -21,7 +21,7 @@ const MetricsTable = ({
   timeIntervalKey,
 }: {
   data: any;
-  chains: any;
+  chainKeys: any;
   selectedChains: any;
   setSelectedChains: any;
   metric_id: string;
@@ -40,43 +40,68 @@ const MetricsTable = ({
 
   type ChainSelectToggle = "all" | "none" | "normal";
 
-  const [chainSelectToggle, setChainSelectToggle] =
-    useSessionStorage<ChainSelectToggle>("chainSelectToggle", "normal");
+  const chainSelectToggleState = useMemo(() => {
+    // ethereum always selected
+    if (selectedChains.length === 1) return "none";
+
+    if (selectedChains.length === chainKeys.length) return "all";
+
+    return "normal";
+  }, [chainKeys.length, selectedChains]);
 
   const onChainSelectToggle = useCallback(() => {
-    switch (chainSelectToggle) {
-      case "normal":
-        setLastSelectedChains(selectedChains);
-        setChainSelectToggle("all");
+    // if all chains are selected, unselect all
+    if (chainSelectToggleState === "all") {
+      setSelectedChains(["ethereum"]);
+    }
 
-        setSelectedChains(
-          AllChains.filter(
-            (chain) =>
-              chain.ecosystem.includes("all-chains") ||
-              chain.key === "ethereum",
-          ).map((chain) => chain.key),
-        );
-        break;
-      case "all":
-        setChainSelectToggle("none");
-        setSelectedChains(["ethereum"]);
-        break;
-      case "none":
-        setChainSelectToggle("normal");
-        setSelectedChains([...lastSelectedChains, "ethereum"]);
-        break;
-      default:
-        break;
+    // if no chains are selected, select last selected chains
+    if (chainSelectToggleState === "none") {
+      setSelectedChains(lastSelectedChains);
+    }
+
+    // if some chains are selected, select all chains
+    if (chainSelectToggleState === "normal") {
+      setSelectedChains(chainKeys);
     }
   }, [
-    chainSelectToggle,
-    chains,
+    chainSelectToggleState,
+    chainKeys,
     lastSelectedChains,
-    selectedChains,
-    setChainSelectToggle,
-    setLastSelectedChains,
     setSelectedChains,
   ]);
+
+  const handleChainClick = useCallback(
+    (chainKey: string) => {
+      if (chainKey === "ethereum") {
+        if (showEthereumMainnet) {
+          setShowEthereumMainnet(false);
+        } else {
+          setShowEthereumMainnet(true);
+        }
+        return;
+      }
+
+      let selected = [...selectedChains];
+
+      if (selectedChains.includes(chainKey)) {
+        selected = selected.filter((c) => c !== chainKey);
+      } else {
+        selected = [...selected, chainKey];
+      }
+
+      setLastSelectedChains(selected);
+      setSelectedChains(selected);
+    },
+
+    [
+      selectedChains,
+      setLastSelectedChains,
+      setSelectedChains,
+      setShowEthereumMainnet,
+      showEthereumMainnet,
+    ],
+  );
 
   const isMobile = useMediaQuery("(max-width: 1023px)");
 
@@ -353,7 +378,7 @@ const MetricsTable = ({
             <div
               className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
               style={{
-                color: chainSelectToggle === "all" ? undefined : "#5A6462",
+                color: chainSelectToggleState === "all" ? undefined : "#5A6462",
               }}
             >
               <svg
@@ -367,7 +392,9 @@ const MetricsTable = ({
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 className={`w-6 h-6 ${
-                  chainSelectToggle === "none" ? "opacity-100" : "opacity-0"
+                  chainSelectToggleState === "none"
+                    ? "opacity-100"
+                    : "opacity-0"
                 }`}
               >
                 <circle
@@ -380,7 +407,7 @@ const MetricsTable = ({
             </div>
             <div
               className={`p-1 rounded-full ${
-                chainSelectToggle === "none"
+                chainSelectToggleState === "none"
                   ? "bg-forest-50 dark:bg-[#1F2726]"
                   : "bg-white dark:bg-forest-1000"
               }`}
@@ -388,14 +415,16 @@ const MetricsTable = ({
               <Icon
                 icon="feather:check-circle"
                 className={`w-[17.65px] h-[17.65px] ${
-                  chainSelectToggle === "none" ? "opacity-0" : "opacity-100"
+                  chainSelectToggleState === "none"
+                    ? "opacity-0"
+                    : "opacity-100"
                 }`}
                 style={{
                   color:
-                    chainSelectToggle === "all"
+                    chainSelectToggleState === "all"
                       ? undefined
-                      : chainSelectToggle === "normal"
-                      ? "#5A646"
+                      : chainSelectToggleState === "normal"
+                      ? "#5A6462"
                       : "#5A6462",
                 }}
               />
@@ -435,24 +464,25 @@ const MetricsTable = ({
                   ? "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/10"
                   : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 transition-all duration-100"
               } `}
-                  onClick={() => {
-                    if (item.chain.key === "ethereum") {
-                      if (showEthereumMainnet) {
-                        setShowEthereumMainnet(false);
-                      } else {
-                        setShowEthereumMainnet(true);
-                      }
-                    } else {
-                      setChainSelectToggle("normal");
-                      if (selectedChains.includes(item.chain.key)) {
-                        setSelectedChains(
-                          selectedChains.filter((c) => c !== item.chain.key),
-                        );
-                      } else {
-                        setSelectedChains([...selectedChains, item.chain.key]);
-                      }
-                    }
-                  }}
+                  onClick={() => handleChainClick(item.chain.key)}
+                  // onClick={() => {
+                  //   if (item.chain.key === "ethereum") {
+                  //     if (showEthereumMainnet) {
+                  //       setShowEthereumMainnet(false);
+                  //     } else {
+                  //       setShowEthereumMainnet(true);
+                  //     }
+                  //   } else {
+                  //     setChainSelectToggle("normal");
+                  //     if (selectedChains.includes(item.chain.key)) {
+                  //       setSelectedChains(
+                  //         selectedChains.filter((c) => c !== item.chain.key),
+                  //       );
+                  //     } else {
+                  //       setSelectedChains([...selectedChains, item.chain.key]);
+                  //     }
+                  //   }
+                  // }}
                 >
                   <div className="w-full h-full absolute left-0 bottom-0 rounded-full overflow-clip">
                     <div className="relative w-full h-full">
