@@ -371,6 +371,7 @@ const Notification = () => {
   }
 
   // console.log(cachedNotifications);
+
   return (
     <div className="relative">
       {filteredData && (
