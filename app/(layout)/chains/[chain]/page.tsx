@@ -56,11 +56,15 @@ const Chain = ({ params }: { params: any }) => {
 
     const responseData = await Promise.all(fetchPromises);
 
+    // Flatten the structure by removing the "data" layer
+    const flattenedData = responseData.map((item) => item.data);
+
     // You can use otherArgument as needed
 
-    return responseData;
+    return flattenedData;
   });
 
+  console.log(chainData);
   const {
     data: usageData,
     error: usageError,
@@ -143,7 +147,7 @@ const Chain = ({ params }: { params: any }) => {
                 </div>
               </div>
               <div className="hidden lg:flex space-x-[10px] text-sm md:text-sm xl:text-base items-start">
-                <div
+                {/* <div
                   className={`flex flex-col bg-forest-900  px-4 py-2 
                   ${openChainList ? "rounded-2xl" : "rounded-full"}`}
                   onClick={() => {
@@ -167,7 +171,7 @@ const Chain = ({ params }: { params: any }) => {
                   ) : (
                     <></>
                   )}
-                </div>
+                </div> */}
                 <Link
                   href={master.chains[chainKey[0]].block_explorer}
                   className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
