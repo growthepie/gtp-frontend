@@ -1,4 +1,4 @@
-import { AllChainsByKeys } from "@/lib/chains";
+import { AllChains, AllChainsByKeys } from "@/lib/chains";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocalStorage, useMediaQuery, useSessionStorage } from "usehooks-ts";
@@ -48,23 +48,29 @@ const MetricsTable = ({
       case "normal":
         setLastSelectedChains(selectedChains);
         setChainSelectToggle("all");
+
         setSelectedChains(
-          Object.keys(AllChainsByKeys).filter((chain) => chain !== "ethereum"),
+          AllChains.filter(
+            (chain) =>
+              chain.ecosystem.includes("all-chains") ||
+              chain.key === "ethereum",
+          ).map((chain) => chain.key),
         );
         break;
       case "all":
         setChainSelectToggle("none");
-        setSelectedChains([]);
+        setSelectedChains(["ethereum"]);
         break;
       case "none":
         setChainSelectToggle("normal");
-        setSelectedChains(lastSelectedChains);
+        setSelectedChains([...lastSelectedChains, "ethereum"]);
         break;
       default:
         break;
     }
   }, [
     chainSelectToggle,
+    chains,
     lastSelectedChains,
     selectedChains,
     setChainSelectToggle,
