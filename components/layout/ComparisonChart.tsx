@@ -1029,6 +1029,7 @@ export default function ComparisonChart({
       };
     },
     [
+      getSeriesType,
       avgMonthlyMetrics,
       metric_id,
       selectedScale,

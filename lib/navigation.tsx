@@ -74,10 +74,6 @@ export const chainGroup = {
     label: "OFFCHAIN DATA AVAILABILITY",
     icon: "feather:clock",
   },
-  optimium: {
-    label: "OPTIMIUM",
-    icon: "feather:clock",
-  },
 };
 
 export const navigationItems: NavigationItem[] = [
