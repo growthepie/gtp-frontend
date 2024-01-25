@@ -8,6 +8,7 @@ import { useTransition, animated } from "@react-spring/web";
 import { useUIContext } from "@/contexts/UIContext";
 import { navigationItems } from "@/lib/navigation";
 import { CorporateContactJsonLd } from "next-seo";
+import { set } from "lodash";
 
 const MetricsTable = ({
   data,
@@ -31,6 +32,45 @@ const MetricsTable = ({
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const [maxVal, setMaxVal] = useState<number | null>(null);
+
+  const [lastSelectedChains, setLastSelectedChains] = useSessionStorage(
+    "lastSelectedChains",
+    selectedChains,
+  );
+
+  type ChainSelectToggle = "all" | "none" | "normal";
+
+  const [chainSelectToggle, setChainSelectToggle] =
+    useSessionStorage<ChainSelectToggle>("chainSelectToggle", "normal");
+
+  const onChainSelectToggle = useCallback(() => {
+    switch (chainSelectToggle) {
+      case "normal":
+        setLastSelectedChains(selectedChains);
+        setChainSelectToggle("all");
+        setSelectedChains(
+          Object.keys(AllChainsByKeys).filter((chain) => chain !== "ethereum"),
+        );
+        break;
+      case "all":
+        setChainSelectToggle("none");
+        setSelectedChains([]);
+        break;
+      case "none":
+        setChainSelectToggle("normal");
+        setSelectedChains(lastSelectedChains);
+        break;
+      default:
+        break;
+    }
+  }, [
+    chainSelectToggle,
+    lastSelectedChains,
+    selectedChains,
+    setChainSelectToggle,
+    setLastSelectedChains,
+    setSelectedChains,
+  ]);
 
   const isMobile = useMediaQuery("(max-width: 1023px)");
 
@@ -263,7 +303,7 @@ const MetricsTable = ({
     <div className="flex flex-col mt-3 md:mt-0 ml-0 lg:-ml-2 font-semibold space-y-[5px] overflow-x-scroll md:overflow-x-visible z-100 w-full py-5 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
       <div className="min-w-[570px] md:min-w-[600px] lg:min-w-full pr-[20px] md:pr-[50px] lg:pr-2 w-full">
         <div
-          className={`flex items-center justify-between py-1 pl-4 pr-7 lg:pl-2 lg:pr-12 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
+          className={`relative flex items-center justify-between py-1 pl-4 pr-7 lg:pl-2 lg:pr-12 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
         >
           <div
             className={`${
@@ -300,7 +340,63 @@ const MetricsTable = ({
               </div>
             ))}
           </div>
+          <div
+            className={`absolute right-[25px]  cursor-pointer `}
+            onClick={onChainSelectToggle}
+          >
+            <div
+              className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+              style={{
+                color: chainSelectToggle === "all" ? undefined : "#5A6462",
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`w-6 h-6 ${
+                  chainSelectToggle === "none" ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                <circle
+                  xmlns="http://www.w3.org/2000/svg"
+                  cx="12"
+                  cy="12"
+                  r="8"
+                />
+              </svg>
+            </div>
+            <div
+              className={`p-1 rounded-full ${
+                chainSelectToggle === "none"
+                  ? "bg-forest-50 dark:bg-[#1F2726]"
+                  : "bg-white dark:bg-forest-1000"
+              }`}
+            >
+              <Icon
+                icon="feather:check-circle"
+                className={`w-[17.65px] h-[17.65px] ${
+                  chainSelectToggle === "none" ? "opacity-0" : "opacity-100"
+                }`}
+                style={{
+                  color:
+                    chainSelectToggle === "all"
+                      ? undefined
+                      : chainSelectToggle === "normal"
+                      ? "#5A646"
+                      : "#5A6462",
+                }}
+              />
+            </div>
+          </div>
         </div>
+
         {/* <div
           className="h-auto overflow-y-hidden lg:h-[426px] lg:overflow-y-scroll overflow-x-visible relative  scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller"
           style={{
@@ -341,6 +437,7 @@ const MetricsTable = ({
                         setShowEthereumMainnet(true);
                       }
                     } else {
+                      setChainSelectToggle("normal");
                       if (selectedChains.includes(item.chain.key)) {
                         setSelectedChains(
                           selectedChains.filter((c) => c !== item.chain.key),
