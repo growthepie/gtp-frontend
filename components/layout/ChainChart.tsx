@@ -58,6 +58,8 @@ export default function ChainChart({
     fullScreen(Highcharts);
   }, []);
 
+  console.log(data);
+
   const { theme } = useTheme();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [selectedTimespan, setSelectedTimespan] = useState("365d");
@@ -80,16 +82,18 @@ export default function ChainChart({
     let min = Infinity;
     const now = Date.now();
 
-    Object.keys(data.metrics).forEach((key) => {
-      max = Math.max(
-        max,
-        ...data.metrics[key].daily.data.map((d: any) => d[0]),
-      );
+    data.forEach((item) => {
+      Object.keys(item.data.metrics).forEach((key) => {
+        max = Math.max(
+          max,
+          ...item.data.metrics[key].daily.data.map((d: any) => d[0]),
+        );
 
-      min = Math.min(
-        min,
-        ...data.metrics[key].daily.data.map((d: any) => d[0]),
-      );
+        min = Math.min(
+          min,
+          ...item.data.metrics[key].daily.data.map((d: any) => d[0]),
+        );
+      });
     });
 
     return {
@@ -126,21 +130,29 @@ export default function ChainChart({
 
   const minUnixAll = useMemo(() => {
     const minUnixtimes: number[] = [];
-    Object.keys(data.metrics).forEach((key) => {
-      minUnixtimes.push(data.metrics[key].daily.data[0][0]);
+
+    data.forEach((item) => {
+      Object.keys(item.data.metrics).forEach((key) => {
+        minUnixtimes.push(item.data.metrics[key].daily.data[0][0]);
+      });
     });
+
     return Math.min(...minUnixtimes);
   }, [data]);
 
   const maxUnixAll = useMemo(() => {
     const maxUnixtimes: number[] = [];
-    Object.keys(data.metrics).forEach((key) => {
-      maxUnixtimes.push(
-        data.metrics[key].daily.data[
-          data.metrics[key].daily.data.length - 1
-        ][0],
-      );
+
+    data.forEach((item) => {
+      Object.keys(item.data.metrics).forEach((key) => {
+        maxUnixtimes.push(
+          item.data.metrics[key].daily.data[
+            item.data.metrics[key].daily.data.length - 1
+          ][0],
+        );
+      });
     });
+
     return Math.max(...maxUnixtimes);
   }, [data]);
 
@@ -184,14 +196,16 @@ export default function ChainChart({
       [key: string]: string;
     } = {};
 
-    Object.keys(data.metrics).forEach((key) => {
-      const types = data.metrics[key].daily.types;
-      if (types.length > 2) {
-        if (showUsd && types.includes("usd")) p[key] = "$";
-        else p[key] = "Ξ";
-      } else {
-        p[key] = "";
-      }
+    data.forEach((item) => {
+      Object.keys(item.data.metrics).forEach((key) => {
+        const types = item.data.metrics[key].daily.types;
+        if (types.length > 2) {
+          if (showUsd && types.includes("usd")) p[key] = "$";
+          else p[key] = "Ξ";
+        } else {
+          p[key] = "";
+        }
+      });
     });
     return p;
   }, [data, showUsd]);
@@ -204,7 +218,7 @@ export default function ChainChart({
 
       if (
         !showUsd &&
-        data.metrics[key].daily.types.includes("eth") &&
+        data[0].data.metrics[key].daily.types.includes("eth") &&
         selectedScale !== "percentage"
       ) {
         if (showGwei(key)) {
@@ -378,54 +392,59 @@ export default function ChainChart({
         suffix: string;
       };
     } = {};
-    Object.keys(data.metrics).forEach((key) => {
-      let prefix = "";
-      let suffix = "";
-      let valueIndex = 1;
-      let valueMultiplier = 1;
+    data.forEach((item) => {
+      Object.keys(item.data.metrics).forEach((key) => {
+        let prefix = "";
+        let suffix = "";
+        let valueIndex = 1;
+        let valueMultiplier = 1;
 
-      let valueFormat = Intl.NumberFormat(undefined, {
-        notation: "compact",
-        maximumFractionDigits: 2,
-        minimumFractionDigits: 2,
-      });
+        let valueFormat = Intl.NumberFormat(undefined, {
+          notation: "compact",
+          maximumFractionDigits: 2,
+          minimumFractionDigits: 2,
+        });
 
-      let navItem = navigationItems[1].options.find((ni) => ni.key === key);
+        let navItem = navigationItems[1].options.find((ni) => ni.key === key);
 
-      if (data.metrics[key].daily.types.includes("eth")) {
-        if (!showUsd) {
-          prefix = "Ξ";
-          valueIndex = data.metrics[key].daily.types.indexOf("eth");
-          if (navItem && navItem.page?.showGwei) {
-            prefix = "";
-            suffix = " Gwei";
-            valueMultiplier = 1000000000;
+        if (item.data.metrics[key].daily.types.includes("eth")) {
+          if (!showUsd) {
+            prefix = "Ξ";
+            valueIndex = item.data.metrics[key].daily.types.indexOf("eth");
+            if (navItem && navItem.page?.showGwei) {
+              prefix = "";
+              suffix = " Gwei";
+              valueMultiplier = 1000000000;
+            }
+          } else {
+            prefix = "$";
+
+            valueIndex = item.data.metrics[key].daily.types.indexOf("usd");
           }
         } else {
-          prefix = "$";
-
-          valueIndex = data.metrics[key].daily.types.indexOf("usd");
         }
-      } else {
-      }
 
-      let dateIndex = data.metrics[key].daily.data.length - 1;
+        let dateIndex = item.data.metrics[key].daily.data.length - 1;
 
-      const latestUnix =
-        data.metrics[key].daily.data[data.metrics[key].daily.data.length - 1];
+        const latestUnix =
+          item.data.metrics[key].daily.data[
+            item.data.metrics[key].daily.data.length - 1
+          ];
 
-      if (intervalShown) {
-        const intervalMaxIndex = data.metrics[key].daily.data.findIndex(
-          (d) => d[0] >= intervalShown?.max,
+        if (intervalShown) {
+          const intervalMaxIndex = item.data.metrics[key].daily.data.findIndex(
+            (d) => d[0] >= intervalShown?.max,
+          );
+          if (intervalMaxIndex !== -1) dateIndex = intervalMaxIndex;
+        }
+
+        let value = valueFormat.format(
+          item.data.metrics[key].daily.data[dateIndex][valueIndex] *
+            valueMultiplier,
         );
-        if (intervalMaxIndex !== -1) dateIndex = intervalMaxIndex;
-      }
 
-      let value = valueFormat.format(
-        data.metrics[key].daily.data[dateIndex][valueIndex] * valueMultiplier,
-      );
-
-      p[key] = { value, prefix, suffix };
+        p[key] = { value, prefix, suffix };
+      });
     });
     return p;
   }, [data.metrics, showUsd, intervalShown]);
@@ -468,11 +487,11 @@ export default function ChainChart({
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-1">
                 <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-                  AllChainsByKeys[data.chain_id].colors[theme][0]
+                  AllChainsByKeys[data[0].data.chain_id].colors[theme][0]
                 }"></div>
                 <!--
                 <div class="tooltip-point-name">${
-                  AllChainsByKeys[data.chain_id].label
+                  AllChainsByKeys[data[0].data.chain_id].label
                 }</div>
                 -->
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
@@ -487,7 +506,7 @@ export default function ChainChart({
                   percentage,
                   2,
                 )}%; background-color: ${
-              AllChainsByKeys[data.chain_id].colors[theme][0]
+              AllChainsByKeys[data[0].data.chain_id].colors[theme][0]
             };"> </div>
               </div> -->`;
 
@@ -497,7 +516,7 @@ export default function ChainChart({
 
           if (
             !showUsd &&
-            data.metrics[series.name].daily.types.includes("eth")
+            data[0].data.metrics[series.name].daily.types.includes("eth")
           ) {
             if (showGwei(series.name)) {
               prefix = "";
@@ -508,11 +527,11 @@ export default function ChainChart({
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-1">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-              AllChainsByKeys[data.chain_id].colors[theme][0]
+              AllChainsByKeys[data[0].data.chain_id].colors[theme][0]
             }"></div>
             <!--
             <div class="tooltip-point-name text-md">${
-              AllChainsByKeys[data.chain_id].label
+              AllChainsByKeys[data[0].data.chain_id].label
             }</div>
             -->
             <div class="flex-1 text-left justify-start font-inter flex">
@@ -535,7 +554,7 @@ export default function ChainChart({
               name,
               (y / pointsSum) * 100,
             )}%; background-color: ${
-            AllChainsByKeys[data.chain_id].colors[theme][0]
+            AllChainsByKeys[data[0].data.chain_id].colors[theme][0]
           }33;"></div>
           </div> -->`;
         })
@@ -895,8 +914,8 @@ export default function ChainChart({
             y2: 1,
           },
           stops: [
-            [0, AllChainsByKeys[data.chain_id].colors[theme][0] + "33"],
-            [1, AllChainsByKeys[data.chain_id].colors[theme][1] + "33"],
+            [0, AllChainsByKeys[data[0].data.chain_id].colors[theme][0] + "33"],
+            [1, AllChainsByKeys[data[0].data.chain_id].colors[theme][1] + "33"],
           ],
         },
         shadow: {
@@ -912,12 +931,23 @@ export default function ChainChart({
             y2: 0,
           },
           stops: [
-            [0, AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][0]],
+            [
+              0,
+              AllChainsByKeys[data[0].data.chain_id]?.colors[
+                theme ?? "dark"
+              ][0],
+            ],
             // [0.33, AllChainsByKeys[series.name].colors[1]],
-            [1, AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1]],
+            [
+              1,
+              AllChainsByKeys[data[0].data.chain_id]?.colors[
+                theme ?? "dark"
+              ][1],
+            ],
           ],
         },
-        borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
+        borderColor:
+          AllChainsByKeys[data[0].data.chain_id].colors[theme ?? "dark"][0],
         borderWidth: 1,
       },
       series: {
@@ -1130,7 +1160,7 @@ export default function ChainChart({
           {enabledFundamentalsKeys
             // .filter((key) => enabledFundamentalsKeys.includes(key))
             .map((key, i) => {
-              if (!Object.keys(data.metrics).includes(key)) {
+              if (!Object.keys(data[0].data.metrics).includes(key)) {
                 return (
                   <div key={key} className="w-full relative">
                     <div className="w-full h-[60px] lg:h-[176px] relative  pointer-events-none">
@@ -1285,9 +1315,9 @@ export default function ChainChart({
                 );
               }
 
-              const isAllZeroValues = data.metrics[key].daily.data.every(
-                (d) => d[1] === 0,
-              );
+              const isAllZeroValues = data[0].data.metrics[
+                key
+              ].daily.data.every((d) => d[1] === 0);
 
               return (
                 <div key={key} className="w-full h-fit relative">
@@ -1413,36 +1443,39 @@ export default function ChainChart({
                             {
                               name: key,
                               crisp: false,
-                              data: data.metrics[key].daily.types.includes(
-                                "eth",
-                              )
+                              data: data[0].data.metrics[
+                                key
+                              ].daily.types.includes("eth")
                                 ? showUsd
-                                  ? data.metrics[key].daily.data.map((d) => [
-                                      d[0],
-                                      d[
-                                        data.metrics[key].daily.types.indexOf(
-                                          "usd",
-                                        )
+                                  ? data[0].data.metrics[key].daily.data.map(
+                                      (d) => [
+                                        d[0],
+                                        d[
+                                          data[0].data.metrics[
+                                            key
+                                          ].daily.types.indexOf("usd")
+                                        ],
                                       ],
-                                    ])
-                                  : data.metrics[key].daily.data.map((d) => [
-                                      d[0],
-                                      showGwei(key)
-                                        ? d[
-                                            data.metrics[
-                                              key
-                                            ].daily.types.indexOf("eth")
-                                          ] * 1000000000
-                                        : d[
-                                            data.metrics[
-                                              key
-                                            ].daily.types.indexOf("eth")
-                                          ],
-                                    ])
-                                : data.metrics[key].daily.data.map((d) => [
-                                    d[0],
-                                    d[1],
-                                  ]),
+                                    )
+                                  : data[0].data.metrics[key].daily.data.map(
+                                      (d) => [
+                                        d[0],
+                                        showGwei(key)
+                                          ? d[
+                                              data[0].data.metrics[
+                                                key
+                                              ].daily.types.indexOf("eth")
+                                            ] * 1000000000
+                                          : d[
+                                              data[0].data.metrics[
+                                                key
+                                              ].daily.types.indexOf("eth")
+                                            ],
+                                      ],
+                                    )
+                                : data[0].data.metrics[key].daily.data.map(
+                                    (d) => [d[0], d[1]],
+                                  ),
                               showInLegend: false,
                               marker: {
                                 enabled: false,
