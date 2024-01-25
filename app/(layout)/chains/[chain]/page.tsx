@@ -79,11 +79,11 @@ const Chain = ({ params }: { params: any }) => {
           result[filterKey] = chainData;
         }
 
-  //       return result;
-  //     }, {});
+        return result;
+      }, {});
 
-  //   return filteredChains;
-  // }, [chainKey, usageData?.data.chains]);
+    return filteredChains;
+  }, [chainKey, usageData?.data.chains]);
 
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
@@ -95,8 +95,8 @@ const Chain = ({ params }: { params: any }) => {
   return (
     <>
       <ShowLoading
-        dataLoading={[masterLoading, chainLoading]} //  add usageLoading back in
-        dataValidating={[masterValidating, chainValidating]} // add usageValidating back in
+        dataLoading={[masterLoading, chainLoading, usageLoading]}
+        dataValidating={[masterValidating, chainValidating, usageValidating]}
       />
       <Container className="flex w-full mt-[65px] md:mt-[45px]">
         {master && (
@@ -310,7 +310,7 @@ const Chain = ({ params }: { params: any }) => {
             // data={!chainEcosystemFilter || chainEcosystemFilter=== "all-chains" ? usageData.data.chains : )}
           />
         </>
-      )} 
+      )}
     </>
   );
 };
