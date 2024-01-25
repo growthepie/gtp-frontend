@@ -35,7 +35,14 @@ const MetricsTable = ({
 
   const [lastSelectedChains, setLastSelectedChains] = useSessionStorage(
     "lastSelectedChains",
-    selectedChains,
+    AllChains.filter(
+      (chain) =>
+        (chain.ecosystem.includes("all-chains") &&
+          ["arbitrum", "optimism", "base", "linea", "zksync_era"].includes(
+            chain.key,
+          )) ||
+        chain.key === "ethereum",
+    ).map((chain) => chain.key),
   );
 
   type ChainSelectToggle = "all" | "none" | "normal";
