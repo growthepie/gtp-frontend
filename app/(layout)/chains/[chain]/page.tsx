@@ -111,7 +111,7 @@ const Chain = ({ params }: { params: any }) => {
     <>
       <ShowLoading
         dataLoading={[masterLoading, chainLoading, usageLoading]}
-        dataValidating={[masterValidating, chainValidating, usageValidating]}
+        dataValidating={[masterValidating, chainValidating, usageLoading]}
       />
       <Container className="flex w-full mt-[65px] md:mt-[45px]">
         {master && (
@@ -322,7 +322,6 @@ const Chain = ({ params }: { params: any }) => {
             setSelectedTimespan={setSelectedTimespan}
             data={chainFilter}
             forceSelectedChain={chainKey[0]}
-            // data={!chainEcosystemFilter || chainEcosystemFilter=== "all-chains" ? usageData.data.chains : )}
           />
         </>
       )}

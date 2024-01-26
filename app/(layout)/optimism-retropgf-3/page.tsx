@@ -1687,7 +1687,6 @@ export default function Page() {
   }, [contentWidth, tableWidth]);
 
   const compileCSV = () => {
-    console.log(projects.length, listAmountsByProjectId);
     if (!projects || !listAmountsByProjectId) return "";
 
     const data = projects.map((d) => {

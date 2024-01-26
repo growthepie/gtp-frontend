@@ -8,11 +8,11 @@ import { useTransition, animated } from "@react-spring/web";
 import { useUIContext } from "@/contexts/UIContext";
 import { navigationItems } from "@/lib/navigation";
 import { CorporateContactJsonLd } from "next-seo";
-import { set } from "lodash";
+import { intersection } from "lodash";
 
 const MetricsTable = ({
   data,
-  chains,
+  chainKeys,
   selectedChains,
   setSelectedChains,
   metric_id,
@@ -21,7 +21,7 @@ const MetricsTable = ({
   timeIntervalKey,
 }: {
   data: any;
-  chains: any;
+  chainKeys: string[];
   selectedChains: any;
   setSelectedChains: any;
   metric_id: string;
@@ -35,48 +35,85 @@ const MetricsTable = ({
 
   const [lastSelectedChains, setLastSelectedChains] = useSessionStorage(
     "lastSelectedChains",
-    selectedChains,
+    AllChains.filter(
+      (chain) =>
+        (chain.ecosystem.includes("all-chains") &&
+          ["arbitrum", "optimism", "base", "linea", "zksync_era"].includes(
+            chain.key,
+          )) ||
+        chain.key === "ethereum",
+    ).map((chain) => chain.key),
   );
 
-  type ChainSelectToggle = "all" | "none" | "normal";
+  const chainSelectToggleState = useMemo(() => {
+    if (intersection(selectedChains, chainKeys).length === 1) return "none";
 
-  const [chainSelectToggle, setChainSelectToggle] =
-    useSessionStorage<ChainSelectToggle>("chainSelectToggle", "normal");
+    if (intersection(selectedChains, chainKeys).length === chainKeys.length)
+      return "all";
+
+    return "normal";
+
+    // ethereum always selected
+    if (selectedChains.length === 1) return "none";
+
+    if (selectedChains.length === chainKeys.length) return "all";
+
+    return "normal";
+  }, [chainKeys, selectedChains]);
 
   const onChainSelectToggle = useCallback(() => {
-    switch (chainSelectToggle) {
-      case "normal":
-        setLastSelectedChains(selectedChains);
-        setChainSelectToggle("all");
+    // if all chains are selected, unselect all
+    if (chainSelectToggleState === "all") {
+      setSelectedChains(["ethereum"]);
+    }
 
-        setSelectedChains(
-          AllChains.filter(
-            (chain) =>
-              chain.ecosystem.includes("all-chains") ||
-              chain.key === "ethereum",
-          ).map((chain) => chain.key),
-        );
-        break;
-      case "all":
-        setChainSelectToggle("none");
-        setSelectedChains(["ethereum"]);
-        break;
-      case "none":
-        setChainSelectToggle("normal");
-        setSelectedChains([...lastSelectedChains, "ethereum"]);
-        break;
-      default:
-        break;
+    // if no chains are selected, select last selected chains
+    if (chainSelectToggleState === "none") {
+      setSelectedChains(lastSelectedChains);
+    }
+
+    // if some chains are selected, select all chains
+    if (chainSelectToggleState === "normal") {
+      setSelectedChains(chainKeys);
     }
   }, [
-    chainSelectToggle,
-    chains,
+    chainSelectToggleState,
+    chainKeys,
     lastSelectedChains,
-    selectedChains,
-    setChainSelectToggle,
-    setLastSelectedChains,
     setSelectedChains,
   ]);
+
+  const handleChainClick = useCallback(
+    (chainKey: string) => {
+      if (chainKey === "ethereum") {
+        if (showEthereumMainnet) {
+          setShowEthereumMainnet(false);
+        } else {
+          setShowEthereumMainnet(true);
+        }
+        return;
+      }
+
+      let selected = [...selectedChains];
+
+      if (selectedChains.includes(chainKey)) {
+        selected = selected.filter((c) => c !== chainKey);
+      } else {
+        selected = [...selected, chainKey];
+      }
+
+      setLastSelectedChains(selected);
+      setSelectedChains(selected);
+    },
+
+    [
+      selectedChains,
+      setLastSelectedChains,
+      setSelectedChains,
+      setShowEthereumMainnet,
+      showEthereumMainnet,
+    ],
+  );
 
   const isMobile = useMediaQuery("(max-width: 1023px)");
 
@@ -309,17 +346,17 @@ const MetricsTable = ({
     <div className="flex flex-col mt-3 md:mt-0 ml-0 lg:-ml-2 font-semibold space-y-[5px] overflow-x-scroll md:overflow-x-visible z-100 w-full py-5 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
       <div className="min-w-[570px] md:min-w-[600px] lg:min-w-full pr-[20px] md:pr-[50px] lg:pr-2 w-full">
         <div
-          className={`relative flex items-center justify-between py-1 pl-4 pr-7 lg:pl-2 lg:pr-12 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
+          className={`flex items-center justify-between py-1 pl-4 pr-7 lg:pl-2 lg:pr-12 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
         >
           <div
-            className={`${
+            className={` ${
               isSidebarOpen ? "w-1/4 2xl:w-1/3" : "w-1/3"
             } pl-[44px] lg:pl-[52px]`}
           >
             {timeIntervalKey === "monthly" ? "Last 30d" : "Yesterday"}
           </div>
           <div
-            className={`${
+            className={`relative ${
               isSidebarOpen ? "w-3/4 2xl:w-2/3" : "w-2/3"
             } flex pr-7 lg:pr-4`}
           >
@@ -345,60 +382,65 @@ const MetricsTable = ({
                 {label}
               </div>
             ))}
-          </div>
-          <div
-            className={`absolute right-[25px]  cursor-pointer `}
-            onClick={onChainSelectToggle}
-          >
             <div
-              className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-              style={{
-                color: chainSelectToggle === "all" ? undefined : "#5A6462",
-              }}
+              className={`absolute -right-[4px] -top-[4px] lg:top-0 lg:-right-[24px] cursor-pointer `}
+              onClick={onChainSelectToggle}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className={`w-6 h-6 ${
-                  chainSelectToggle === "none" ? "opacity-100" : "opacity-0"
-                }`}
-              >
-                <circle
-                  xmlns="http://www.w3.org/2000/svg"
-                  cx="12"
-                  cy="12"
-                  r="8"
-                />
-              </svg>
-            </div>
-            <div
-              className={`p-1 rounded-full ${
-                chainSelectToggle === "none"
-                  ? "bg-forest-50 dark:bg-[#1F2726]"
-                  : "bg-white dark:bg-forest-1000"
-              }`}
-            >
-              <Icon
-                icon="feather:check-circle"
-                className={`w-[17.65px] h-[17.65px] ${
-                  chainSelectToggle === "none" ? "opacity-0" : "opacity-100"
-                }`}
+              <div
+                className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
                 style={{
                   color:
-                    chainSelectToggle === "all"
-                      ? undefined
-                      : chainSelectToggle === "normal"
-                      ? "#5A646"
-                      : "#5A6462",
+                    chainSelectToggleState === "all" ? undefined : "#5A6462",
                 }}
-              />
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`w-6 h-6 ${
+                    chainSelectToggleState === "none"
+                      ? "opacity-100"
+                      : "opacity-0"
+                  }`}
+                >
+                  <circle
+                    xmlns="http://www.w3.org/2000/svg"
+                    cx="12"
+                    cy="12"
+                    r="8"
+                  />
+                </svg>
+              </div>
+              <div
+                className={`p-1 rounded-full ${
+                  chainSelectToggleState === "none"
+                    ? "bg-forest-50 dark:bg-[#1F2726]"
+                    : "bg-white dark:bg-forest-1000"
+                }`}
+              >
+                <Icon
+                  icon="feather:check-circle"
+                  className={`w-[17.65px] h-[17.65px] ${
+                    chainSelectToggleState === "none"
+                      ? "opacity-0"
+                      : "opacity-100"
+                  }`}
+                  style={{
+                    color:
+                      chainSelectToggleState === "all"
+                        ? undefined
+                        : chainSelectToggleState === "normal"
+                        ? "#5A6462"
+                        : "#5A6462",
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -435,24 +477,25 @@ const MetricsTable = ({
                   ? "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/10"
                   : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 transition-all duration-100"
               } `}
-                  onClick={() => {
-                    if (item.chain.key === "ethereum") {
-                      if (showEthereumMainnet) {
-                        setShowEthereumMainnet(false);
-                      } else {
-                        setShowEthereumMainnet(true);
-                      }
-                    } else {
-                      setChainSelectToggle("normal");
-                      if (selectedChains.includes(item.chain.key)) {
-                        setSelectedChains(
-                          selectedChains.filter((c) => c !== item.chain.key),
-                        );
-                      } else {
-                        setSelectedChains([...selectedChains, item.chain.key]);
-                      }
-                    }
-                  }}
+                  onClick={() => handleChainClick(item.chain.key)}
+                  // onClick={() => {
+                  //   if (item.chain.key === "ethereum") {
+                  //     if (showEthereumMainnet) {
+                  //       setShowEthereumMainnet(false);
+                  //     } else {
+                  //       setShowEthereumMainnet(true);
+                  //     }
+                  //   } else {
+                  //     setChainSelectToggle("normal");
+                  //     if (selectedChains.includes(item.chain.key)) {
+                  //       setSelectedChains(
+                  //         selectedChains.filter((c) => c !== item.chain.key),
+                  //       );
+                  //     } else {
+                  //       setSelectedChains([...selectedChains, item.chain.key]);
+                  //     }
+                  //   }
+                  // }}
                 >
                   <div className="w-full h-full absolute left-0 bottom-0 rounded-full overflow-clip">
                     <div className="relative w-full h-full">

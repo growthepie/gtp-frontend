@@ -434,7 +434,6 @@ export default function Treemap({ d }: { d?: any }) {
 
   const tooltipFormatter = useCallback(
     function (this: Highcharts.TooltipFormatterContextObject) {
-      console.log("this", this);
       // return;
       const { point, color, series, key } = this;
 
