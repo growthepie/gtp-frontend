@@ -17,9 +17,10 @@ import {
   ChainOverviewResponse,
   Chains,
 } from "@/types/api/ChainOverviewResponse";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useSessionStorage } from "usehooks-ts";
 import { notFound } from "next/navigation";
+import { ChainsData } from "@/types/api/ChainResponse";
 
 const Chain = ({ params }: { params: any }) => {
   const { chain } = params;
@@ -29,6 +30,11 @@ const Chain = ({ params }: { params: any }) => {
       ? [AllChains.find((c) => c.urlKey === chain)?.key as string]
       : [],
   );
+
+  const [chainError, setChainError] = useState(null);
+  const [chainData, setChainData] = useState<ChainsData[] | null>(null);
+  const [chainValidating, setChainValidating] = useState(true);
+  const [chainLoading, setChainLoading] = useState(true);
   const [openChainList, setOpenChainList] = useState<boolean>(false);
 
   const {
@@ -38,33 +44,38 @@ const Chain = ({ params }: { params: any }) => {
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
-  const {
-    data: chainData,
-    error: chainError,
-    isValidating: chainValidating,
-    isLoading: chainLoading,
-  } = useSWR(chainKey ? chainKey : null, async (key) => {
-    if (!key || key.length === 0) {
-      return null;
+  const fetchChainData = async () => {
+    if (!chainKey || chainKey.length === 0) {
+      return;
     }
 
-    const fetchPromises = key.map(async (chainKey) => {
-      const response = await fetch(ChainURLs[chainKey]);
-      const data = await response.json();
-      return data;
-    });
+    try {
+      const fetchPromises = chainKey.map(async (chainKey) => {
+        const response = await fetch(ChainURLs[chainKey]);
+        const data = await response.json();
+        return data;
+      });
 
-    const responseData = await Promise.all(fetchPromises);
+      const responseData = await Promise.all(fetchPromises);
 
-    // Flatten the structure by removing the "data" layer
-    const flattenedData = responseData.map((item) => item.data);
+      // Flatten the structure by removing the "data" layer
+      const flattenedData = responseData.map((item) => item.data);
 
-    // You can use otherArgument as needed
+      setChainData(flattenedData);
+      setChainError(null);
+    } catch (error) {
+      setChainData(null);
+      setChainError(error);
+    } finally {
+      setChainValidating(false);
+      setChainLoading(false);
+    }
+  };
 
-    return flattenedData;
-  });
+  useEffect(() => {
+    fetchChainData();
+  }, [chainKey]);
 
-  console.log(chainData);
   const {
     data: usageData,
     error: usageError,
