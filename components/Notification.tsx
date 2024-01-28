@@ -48,6 +48,7 @@ const Notification = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [openNotif, setOpenNotif] = useState(false);
   const mobileRef = useRef(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { theme } = useTheme();
 
   const isMobile = useMediaQuery("(max-width: 767px)");
@@ -372,6 +373,22 @@ const Notification = () => {
 
   // console.log(cachedNotifications);
 
+  const handleMouseEnter = () => {
+    hoverTimeoutRef.current = setTimeout(() => {
+      track("hovered Notification Center", {
+        location: "desktop header",
+        page: window.location.pathname,
+      });
+      setOpenNotif(true);
+    }, 300);
+  };
+
+  const handleMouseLeave = () => {
+    clearTimeout(hoverTimeoutRef.current as NodeJS.Timeout);
+    setOpenNotif(false);
+    storeLocalNotifications();
+  };
+
   return (
     <div className="relative">
       {filteredData && (
@@ -382,15 +399,10 @@ const Notification = () => {
                 openNotif ? "z-[110]" : "z-10"
               }`}
               onMouseEnter={() => {
-                track("hovered Notification Center", {
-                  location: "desktop header",
-                  page: window.location.pathname,
-                });
-                setOpenNotif(true);
+                handleMouseEnter();
               }}
               onMouseLeave={() => {
-                setOpenNotif(false);
-                storeLocalNotifications();
+                handleMouseLeave();
               }}
             >
               <button
