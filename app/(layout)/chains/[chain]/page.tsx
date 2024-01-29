@@ -304,7 +304,7 @@ const Chain = ({ params }: { params: any }) => {
                   className="text-[20px] leading-snug lg:text-[30px]"
                   as="h2"
                 >
-                  {AllChainsByKeys[chainKey[0]].label} Usage
+                  {AllChainsByKeys[chainKey[0]].label} Blockspace
                 </Heading>
               </div>
             </div>

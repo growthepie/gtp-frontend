@@ -459,7 +459,6 @@ export const navigationItems: NavigationItem[] = [
         key: "mantle",
         rootKey: "chainsMantle",
         urlKey: "mantle",
-        hide: true, // remove when unhiding from the UI
       },
       {
         label: "Immutable X",

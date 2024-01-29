@@ -322,7 +322,7 @@ export const AllChains: Chain[] = [
     key: "mantle",
     urlKey: "mantle",
     chainType: "L2",
-    ecosystem: [], // add ecosystems when unhiding from the UI
+    ecosystem: ["all-chains"], // add ecosystems when unhiding from the UI
     description:
       "Mantle is an OVM based EVM-compatible rollup. Public launch was in July 2023.",
     border: {
