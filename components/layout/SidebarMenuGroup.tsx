@@ -277,7 +277,8 @@ export default function SidebarMenuGroup({
                   Object.keys(navigationCategories).includes(option.category) &&
                   (i === 0 ||
                     (i > 0 &&
-                      item.options[i - 1].category != option.category)) && (
+                      item.options.filter((o) => o.hide !== true)[i - 1]
+                        .category != option.category)) && (
                     <div className="px-0 md:px-5 mt-[7px] mb-[2px] overflow-visible text-forest-800">
                       <div className="flex items-center justify-items-center rounded-full md:rounded-l-full relative">
                         <div className={`w-6 absolute left-[13px]`}>
@@ -319,7 +320,8 @@ export default function SidebarMenuGroup({
                   Object.keys(chainGroup).includes(option.category) &&
                   (i === 0 ||
                     (i > 0 &&
-                      item.options[i - 1].category != option.category)) && (
+                      item.options.filter((o) => o.hide !== true)[i - 1]
+                        .category != option.category)) && (
                     <div className="px-0 md:px-5 mt-[7px] mb-[2px] overflow-visible text-forest-800">
                       <div className="flex items-center justify-items-center rounded-full md:rounded-l-full relative">
                         <div className={`w-6 absolute left-[13px]`}>

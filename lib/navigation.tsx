@@ -449,19 +449,6 @@ export const navigationItems: NavigationItem[] = [
         hide: true, // remove when unhiding from the UI
       },
       {
-        label: "Mantle",
-        category: "optimium",
-        page: {
-          description:
-            "Mantle is an OVM based EVM-compatible rollup. Public launch was in July 2023.",
-        },
-        icon: "gtp:mantle-logo-monochrome",
-        key: "mantle",
-        rootKey: "chainsMantle",
-        urlKey: "mantle",
-        hide: true, // remove when unhiding from the UI
-      },
-      {
         label: "Immutable X",
         category: "validium",
         page: {
@@ -472,6 +459,18 @@ export const navigationItems: NavigationItem[] = [
         key: "imx",
         rootKey: "chainsImmutableX",
         urlKey: "immutable-x",
+      },
+      {
+        label: "Mantle",
+        category: "validium",
+        page: {
+          description:
+            "Mantle is an OVM based EVM-compatible rollup. Public launch was in July 2023.",
+        },
+        icon: "gtp:mantle-logo-monochrome",
+        key: "mantle",
+        rootKey: "chainsMantle",
+        urlKey: "mantle",
       },
 
       // {

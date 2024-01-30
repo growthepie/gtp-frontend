@@ -140,7 +140,8 @@ const MetricsTable = ({
   const dataKey = useMemo(() => {
     if (!data) return;
 
-    const sampleChainDataTypes = data[Object.keys(data)[0]].daily.types;
+    const sampleChainDataTypes =
+      data[Object.keys(data)[0]][timeIntervalKey].types;
 
     if (sampleChainDataTypes.includes("usd")) {
       if (showUsd) {
@@ -151,7 +152,7 @@ const MetricsTable = ({
     } else {
       return 1;
     }
-  }, [data, showUsd]);
+  }, [data, showUsd, timeIntervalKey]);
 
   const valueKey = useMemo(() => {
     if (!data) return;
@@ -179,13 +180,13 @@ const MetricsTable = ({
         ...Object.keys(data)
           .filter((chain) => chain !== "ethereum")
           .map((chain) => {
-            return data[chain].daily.data[data[chain].daily.data.length - 1][
-              dataKey
-            ];
+            return data[chain][timeIntervalKey].data[
+              data[chain][timeIntervalKey].data.length - 1
+            ][dataKey];
           }),
       ),
     );
-  }, [data, dataKey, showUsd]);
+  }, [data, dataKey, showUsd, timeIntervalKey]);
 
   const rows = useCallback(() => {
     if (!data || maxVal === null) return [];
@@ -198,7 +199,9 @@ const MetricsTable = ({
       )
       .map((chain: any) => {
         const lastVal =
-          data[chain].daily.data[data[chain].daily.data.length - 1][dataKey];
+          data[chain][timeIntervalKey].data[
+            data[chain][timeIntervalKey].data.length - 1
+          ][dataKey];
         return {
           data: data[chain],
           chain: AllChainsByKeys[chain],
@@ -242,7 +245,14 @@ const MetricsTable = ({
           }
         }
       });
-  }, [data, maxVal, dataKey, reversePerformer, selectedChains]);
+  }, [
+    data,
+    maxVal,
+    timeIntervalKey,
+    dataKey,
+    reversePerformer,
+    selectedChains,
+  ]);
 
   let height = 0;
   const transitions = useTransition(
@@ -293,10 +303,15 @@ const MetricsTable = ({
       let prefix = "";
       let suffix = "";
 
-      let types = item.data.daily.types;
-      let values = item.data.daily.data[item.data.daily.data.length - 1];
+      let types = item.data[timeIntervalKey].types;
+      let values =
+        item.data[timeIntervalKey].data[
+          item.data[timeIntervalKey].data.length - 1
+        ];
       let value = formatNumber(
-        item.data.daily.data[item.data.daily.data.length - 1][1],
+        item.data[timeIntervalKey].data[
+          item.data[timeIntervalKey].data.length - 1
+        ][1],
       );
 
       if (timeIntervalKey === "monthly") {

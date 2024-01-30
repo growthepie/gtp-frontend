@@ -17,9 +17,10 @@ import {
   ChainOverviewResponse,
   Chains,
 } from "@/types/api/ChainOverviewResponse";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useSessionStorage } from "usehooks-ts";
 import { notFound } from "next/navigation";
+import { ChainsData } from "@/types/api/ChainResponse";
 
 const Chain = ({ params }: { params: any }) => {
   const { chain } = params;
@@ -29,6 +30,11 @@ const Chain = ({ params }: { params: any }) => {
       ? [AllChains.find((c) => c.urlKey === chain)?.key as string]
       : [],
   );
+
+  const [chainError, setChainError] = useState(null);
+  const [chainData, setChainData] = useState<ChainsData[] | null>(null);
+  const [chainValidating, setChainValidating] = useState(true);
+  const [chainLoading, setChainLoading] = useState(true);
   const [openChainList, setOpenChainList] = useState<boolean>(false);
 
   const {
@@ -38,55 +44,61 @@ const Chain = ({ params }: { params: any }) => {
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
-  const {
-    data: chainData,
-    error: chainError,
-    isValidating: chainValidating,
-    isLoading: chainLoading,
-  } = useSWR(chainKey ? chainKey : null, async (key) => {
-    if (!key || key.length === 0) {
-      return null;
+  const fetchChainData = async () => {
+    if (!chainKey || chainKey.length === 0) {
+      return;
     }
 
-    const fetchPromises = key.map(async (chainKey) => {
-      const response = await fetch(ChainURLs[chainKey]);
-      const data = await response.json();
-      return data;
-    });
+    try {
+      const fetchPromises = chainKey.map(async (chainKey) => {
+        const response = await fetch(ChainURLs[chainKey]);
+        const data = await response.json();
+        return data;
+      });
 
-    const responseData = await Promise.all(fetchPromises);
+      const responseData = await Promise.all(fetchPromises);
 
-    // Flatten the structure by removing the "data" layer
-    const flattenedData = responseData.map((item) => item.data);
+      // Flatten the structure by removing the "data" layer
+      const flattenedData = responseData.map((item) => item.data);
 
-    // You can use otherArgument as needed
+      setChainData(flattenedData);
+      setChainError(null);
+    } catch (error) {
+      setChainData(null);
+      setChainError(error);
+    } finally {
+      setChainValidating(false);
+      setChainLoading(false);
+    }
+  };
 
-    return flattenedData;
-  });
+  useEffect(() => {
+    fetchChainData();
+  }, [chainKey]);
 
-  // const {
-  //   data: usageData,
-  //   error: usageError,
-  //   isLoading: usageLoading,
-  //   isValidating: usageValidating,
-  // } = useSWR<ChainOverviewResponse>(BlockspaceURLs["chain-overview"]);
+  const {
+    data: usageData,
+    error: usageError,
+    isLoading: usageLoading,
+    isValidating: usageValidating,
+  } = useSWR<ChainOverviewResponse>(BlockspaceURLs["chain-overview"]);
 
-  // const chainFilter = useMemo(() => {
-  //   const filteredChains: Chains = Object.keys(AllChainsByKeys)
-  //     .filter((key) => key === chainKey[0] || key === "all_l2s")
-  //     .reduce((result, chain) => {
-  //       const filterKey = AllChainsByKeys[chain].key;
-  //       const chainData = usageData?.data.chains[filterKey];
+  const chainFilter = useMemo(() => {
+    const filteredChains: Chains = Object.keys(AllChainsByKeys)
+      .filter((key) => key === chainKey[0] || key === "all_l2s")
+      .reduce((result, chain) => {
+        const filterKey = AllChainsByKeys[chain].key;
+        const chainData = usageData?.data.chains[filterKey];
 
-  //       if (chainData) {
-  //         result[filterKey] = chainData;
-  //       }
+        if (chainData) {
+          result[filterKey] = chainData;
+        }
 
-  //       return result;
-  //     }, {});
+        return result;
+      }, {});
 
-  //   return filteredChains;
-  // }, [chainKey, usageData?.data.chains]);
+    return filteredChains;
+  }, [chainKey, usageData?.data.chains]);
 
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
@@ -98,8 +110,8 @@ const Chain = ({ params }: { params: any }) => {
   return (
     <>
       <ShowLoading
-        dataLoading={[masterLoading, chainLoading]}
-        dataValidating={[masterValidating, chainValidating]}
+        dataLoading={[masterLoading, chainLoading, usageLoading]}
+        dataValidating={[masterValidating, chainValidating, usageLoading]}
       />
       <Container className="flex w-full mt-[65px] md:mt-[45px]">
         {master && (
@@ -276,7 +288,7 @@ const Chain = ({ params }: { params: any }) => {
           </div>
         )}
       </Container>
-      {/* {usageData && chainKey[0] !== "ethereum" && (
+      {usageData && chainKey[0] !== "ethereum" && (
         <>
           <Container className="flex flex-col w-full mt-[65px] md:mt-[60px]">
             <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] relative">
@@ -292,7 +304,7 @@ const Chain = ({ params }: { params: any }) => {
                   className="text-[20px] leading-snug lg:text-[30px]"
                   as="h2"
                 >
-                  {AllChainsByKeys[chainKey[0]].label} Usage
+                  {AllChainsByKeys[chainKey[0]].label} Blockspace
                 </Heading>
               </div>
             </div>
@@ -312,7 +324,7 @@ const Chain = ({ params }: { params: any }) => {
             forceSelectedChain={chainKey[0]}
           />
         </>
-      )} */}
+      )}
     </>
   );
 };

@@ -47,13 +47,32 @@ export default function LandingMetricsTable({
               EnabledChainsByKeys[chain].chainType != "L1",
           )
           .map((chain) => {
-            return data.chains[chain].data.data[
-              data.chains[chain].data.data.length - 1
-            ][1];
+            return data.chains[chain].data.data.length > 0
+              ? data.chains[chain].data.data[
+                  data.chains[chain].data.data.length - 1
+                ][1]
+              : -1;
           }),
       ),
     );
   }, [data, data.chains, showUsd]);
+
+  const lastValsByChainKey = useMemo(() => {
+    if (!data) return {};
+    return Object.keys(data.chains)
+      .filter((chain) => {
+        return Object.keys(EnabledChainsByKeys).includes(chain);
+      })
+      .reduce((acc, chain) => {
+        acc[chain] =
+          data.chains[chain].data.data.length > 0
+            ? data.chains[chain].data.data[
+                data.chains[chain].data.data.length - 1
+              ][1]
+            : -1;
+        return acc;
+      }, {});
+  }, [data]);
 
   const rows = useCallback(() => {
     if (!data) return [];
@@ -65,10 +84,7 @@ export default function LandingMetricsTable({
         return {
           data: data[chain],
           chain: EnabledChainsByKeys[chain],
-          lastVal:
-            data.chains[chain].data.data[
-              data.chains[chain].data.data.length - 1
-            ][1],
+          lastVal: lastValsByChainKey[chain],
         };
       })
       .filter(
@@ -94,7 +110,7 @@ export default function LandingMetricsTable({
           }
         }
       });
-  }, [data, selectedChains]);
+  }, [data, lastValsByChainKey, selectedChains]);
 
   let height = 0;
   const transitions = useTransition(
@@ -201,10 +217,7 @@ export default function LandingMetricsTable({
                                     background:
                                       item.chain.colors[theme ?? "dark"][1],
                                     width: `${
-                                      (data.chains[item.chain.key].data.data[
-                                        data.chains[item.chain.key].data.data
-                                          .length - 1
-                                      ][1] /
+                                      (lastValsByChainKey[item.chain.key] /
                                         maxVal) *
                                       100
                                     }%`,
@@ -462,10 +475,7 @@ export default function LandingMetricsTable({
                                     ? item.chain.colors[theme ?? "dark"][1]
                                     : "#5A6462",
                                   width: `${
-                                    (data.chains[item.chain.key].data.data[
-                                      data.chains[item.chain.key].data.data
-                                        .length - 1
-                                    ][1] /
+                                    (lastValsByChainKey[item.chain.key] /
                                       maxVal) *
                                     100
                                   }%`,
@@ -613,12 +623,7 @@ export default function LandingMetricsTable({
                                 notation: "compact",
                                 maximumFractionDigits: 2,
                                 minimumFractionDigits: 2,
-                              }).format(
-                                data.chains[item.chain.key].data.data[
-                                  data.chains[item.chain.key].data.data.length -
-                                    1
-                                ][1],
-                              )}
+                              }).format(lastValsByChainKey[item.chain.key])}
                           {/* <div className="absolute -bottom-[6px] right-0 w-full h-1 bg-black/10 rounded-none"></div>
                           <div
                             className={`absolute -bottom-[6px] right-0 h-1 bg-forest-900 dark:bg-forest-50 rounded-none`}

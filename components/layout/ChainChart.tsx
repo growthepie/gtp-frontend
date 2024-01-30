@@ -444,6 +444,8 @@ export default function ChainChart({
     return p;
   }, [data, showUsd, intervalShown]);
 
+  console.log(displayValues);
+
   const tooltipFormatter = useCallback(
     function (this: Highcharts.TooltipFormatterContextObject) {
       const { x, points } = this;
@@ -473,98 +475,63 @@ export default function ChainChart({
           return pointsSum;
         }, 0);
 
-      const tooltipPoints = points
+      let num = 0;
+      const tooltipData = points
+
         .sort((a: any, b: any) => b.y - a.y)
         .map((point: any) => {
-          const { series, y, percentage } = point;
-          const { name } = series;
-          if (selectedScale === "percentage")
-            return `
-              <div class="flex w-full space-x-2 items-center font-medium mb-1">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-                  AllChainsByKeys[data[0].chain_id].colors[theme][0]
-                }"></div>
-                <!--
-                <div class="tooltip-point-name">${
-                  AllChainsByKeys[data[0].chain_id].label
-                }</div>
-                -->
-                <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                  percentage,
-                  2,
-                )}%</div>
-              </div>
-              <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
-                <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
+          num = num += 1;
+          const tooltipPoints = data
+            .map((item) => {
+              const { series, y } = point;
+              const { name } = series;
 
-                <div class="h-[2px] rounded-full absolute left-0 top-0" style="width: ${Highcharts.numberFormat(
-                  percentage,
-                  2,
-                )}%; background-color: ${
-              AllChainsByKeys[data[0].chain_id].colors[theme][0]
-            };"> </div>
-              </div> -->`;
+              let prefix = displayValues[series.name[0]]?.prefix;
+              let suffix = displayValues[series.name[0]]?.suffix;
+              let value = y;
 
-          let prefix = displayValues[series.name].prefix;
-          let suffix = displayValues[series.name].suffix;
-          let value = y;
+              if (
+                !showUsd &&
+                item.metrics[series.name[0]]?.daily.types.includes("eth")
+              ) {
+                if (showGwei(series.name[0])) {
+                  prefix = "";
+                  suffix = " Gwei";
+                }
+              }
 
-          if (
-            !showUsd &&
-            data[0].metrics[series.name].daily.types.includes("eth")
-          ) {
-            if (showGwei(series.name)) {
-              prefix = "";
-              suffix = " Gwei";
-            }
-          }
+              if (series.name[1] === item.chain_name) {
+                return `
+                <div class="flex w-full space-x-2 items-center font-medium mb-1">
+                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                    AllChainsByKeys[item.chain_id].colors[theme][0]
+                  }"></div>
+                  <div class="flex-1 text-left justify-start font-inter flex">
+                      <div class="opacity-70 mr-0.5 ${
+                        !prefix && "hidden"
+                      }">${prefix}</div>
+                      ${parseFloat(value).toLocaleString(undefined, {
+                        minimumFractionDigits: prefix ? 2 : 0,
+                        maximumFractionDigits: prefix ? 2 : 0,
+                      })}
+                      <div class="opacity-70 ml-0.5 ${
+                        !suffix && "hidden"
+                      }">${suffix}</div>
+                  </div>
+                </div>`;
+              } else {
+                return "";
+              }
+            })
+            .join("");
 
-          return `
-          <div class="flex w-full space-x-2 items-center font-medium mb-1">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-              AllChainsByKeys[data[0].chain_id].colors[theme][0]
-            }"></div>
-            <!--
-            <div class="tooltip-point-name text-md">${
-              AllChainsByKeys[data[0].chain_id].label
-            }</div>
-            -->
-            <div class="flex-1 text-left justify-start font-inter flex">
-                <div class="opacity-70 mr-0.5 ${
-                  !prefix && "hidden"
-                }">${prefix}</div>
-                ${parseFloat(value).toLocaleString(undefined, {
-                  minimumFractionDigits: prefix ? 2 : 0,
-                  maximumFractionDigits: prefix ? 2 : 0,
-                })}
-                <div class="opacity-70 ml-0.5 ${
-                  !suffix && "hidden"
-                }">${suffix}</div>
-            </div>
-          </div>
-          <!-- <div class="flex ml-4 w-[calc(100% - 1rem)] relative mb-1">
-            <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
-
-            <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
-              name,
-              (y / pointsSum) * 100,
-            )}%; background-color: ${
-            AllChainsByKeys[data[0].chain_id].colors[theme][0]
-          }33;"></div>
-          </div> -->`;
+          return tooltipPoints;
         })
         .join("");
-      return tooltip + tooltipPoints + tooltipEnd;
+
+      return tooltip + tooltipData + tooltipEnd;
     },
-    [
-      data,
-      displayValues,
-      formatNumber,
-      selectedScale,
-      showGwei,
-      showUsd,
-      theme,
-    ],
+    [data, displayValues, selectedScale, showGwei, showUsd, theme],
   );
 
   const tooltipPositioner =
@@ -1428,52 +1395,87 @@ export default function ChainChart({
                               : timespans[selectedTimespan].xMax,
                           },
 
-                          series: [
-                            {
-                              name: key,
-                              crisp: false,
-                              data: data[0].metrics[key].daily.types.includes(
-                                "eth",
-                              )
-                                ? showUsd
-                                  ? data[0].metrics[key].daily.data.map((d) => [
-                                      d[0],
-                                      d[
-                                        data[0].metrics[
-                                          key
-                                        ].daily.types.indexOf("usd")
-                                      ],
-                                    ])
-                                  : data[0].metrics[key].daily.data.map((d) => [
-                                      d[0],
-                                      showGwei(key)
-                                        ? d[
-                                            data[0].metrics[
-                                              key
-                                            ].daily.types.indexOf("eth")
-                                          ] * 1000000000
-                                        : d[
-                                            data[0].metrics[
-                                              key
-                                            ].daily.types.indexOf("eth")
-                                          ],
-                                    ])
-                                : data[0].metrics[key].daily.data.map((d) => [
+                          series: data.map((item) => ({
+                            name: [key, item.chain_name],
+                            crisp: false,
+                            data: item.metrics[key]?.daily.types.includes("eth")
+                              ? showUsd
+                                ? item.metrics[key].daily.data.map((d) => [
                                     d[0],
-                                    d[1],
-                                  ]),
-                              showInLegend: false,
-                              marker: {
-                                enabled: false,
-                              },
-                              point: {
-                                events: {
-                                  mouseOver: pointHover,
-                                  mouseOut: pointHover,
-                                },
+                                    d[
+                                      item.metrics[key].daily.types.indexOf(
+                                        "usd",
+                                      )
+                                    ],
+                                  ])
+                                : item.metrics[key].daily.data.map((d) => [
+                                    d[0],
+                                    showGwei(key)
+                                      ? d[
+                                          item.metrics[key].daily.types.indexOf(
+                                            "eth",
+                                          )
+                                        ] * 1000000000
+                                      : d[
+                                          item.metrics[key].daily.types.indexOf(
+                                            "eth",
+                                          )
+                                        ],
+                                  ])
+                              : item.metrics[key]?.daily.data.map((d) => [
+                                  d[0],
+                                  d[1],
+                                ]),
+                            showInLegend: false,
+                            marker: {
+                              enabled: false,
+                            },
+                            point: {
+                              events: {
+                                mouseOver: pointHover,
+                                mouseOut: pointHover,
                               },
                             },
-                          ],
+                            type: data.length > 1 ? "line" : "area", // Set type conditionally
+                            lineColor:
+                              AllChainsByKeys[item.chain_id].colors[
+                                theme ?? "dark"
+                              ][0], // Set line color
+                            fillColor: {
+                              linearGradient: {
+                                x1: 0,
+                                y1: 0,
+                                x2: 0,
+                                y2: 1,
+                              },
+                              stops: [
+                                [
+                                  0,
+                                  AllChainsByKeys[item.chain_id].colors[
+                                    theme
+                                  ][0] + "33",
+                                ],
+                                [
+                                  1,
+                                  AllChainsByKeys[item.chain_id].colors[
+                                    theme
+                                  ][1] + "33",
+                                ],
+                              ],
+                            },
+                            shadow: {
+                              color:
+                                AllChainsByKeys[item.chain_id]?.colors[
+                                  theme ?? "dark"
+                                ][1] + "33",
+                              width: 10,
+                            },
+                            borderColor:
+                              AllChainsByKeys[item.chain_id].colors[
+                                theme ?? "dark"
+                              ][0],
+                            borderWidth: 1,
+                          })),
                         }}
                         ref={(chart) => {
                           if (chart) {
