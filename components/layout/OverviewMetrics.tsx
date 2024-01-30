@@ -111,7 +111,7 @@ export default function OverviewMetrics({
   const [isCategoryMenuExpanded, setIsCategoryMenuExpanded] = useState(true);
   const [contractCategory, setContractCategory] = useState("value");
   const [sortOrder, setSortOrder] = useState(true);
-
+  const [allCats, setAllCats] = useState(forceSelectedChain ? true : false);
   const [showMore, setShowMore] = useState(false);
   const [maxDisplayedContracts, setMaxDisplayedContracts] = useState(10);
   const [contractHover, setContractHover] = useState({});
@@ -614,23 +614,35 @@ export default function OverviewMetrics({
       //   dataKey: dataKey,
       //   data: data[selectedChain].daily[selectedCategory].data.length,
       // });
-      return [
-        ...Object.keys(data[selectedChain]?.daily || {})
-          .filter((category) => category !== "types") // Exclude the "types" category
-          .reverse()
-          .map((category) => ({
-            id: [selectedChain, category, selectedMode].join("_"),
+      if (allCats) {
+        return [
+          ...Object.keys(data[selectedChain]?.daily || {})
+            .filter((category) => category !== "types") // Exclude the "types" category
+            .reverse()
+            .map((category) => ({
+              id: [selectedChain, category, selectedMode].join("_"),
+              name: selectedChain,
+              unixKey: "unix",
+              dataKey: dataKey,
+              data: data[selectedChain]?.daily[category]?.data || [],
+              fillOpacity: categoryKeyToFillOpacity[category],
+              lineWidth: 0,
+              custom: {
+                tooltipLabel: categories[category],
+              },
+            })),
+        ];
+      } else {
+        return [
+          {
+            id: [selectedChain, selectedCategory, selectedMode].join("_"),
             name: selectedChain,
             unixKey: "unix",
             dataKey: dataKey,
-            data: data[selectedChain]?.daily[category]?.data || [],
-            fillOpacity: categoryKeyToFillOpacity[category],
-            lineWidth: 0,
-            custom: {
-              tooltipLabel: categories[category],
-            },
-          })),
-      ];
+            data: data[selectedChain].daily[selectedCategory].data,
+          },
+        ];
+      }
     }
 
     // return Object.keys(data)
@@ -668,6 +680,7 @@ export default function OverviewMetrics({
     data,
     chartStack,
     categoryKeyToFillOpacity,
+    allCats,
   ]);
 
   useEffect(() => {
@@ -1297,6 +1310,8 @@ export default function OverviewMetrics({
     }
   }
 
+  console.log(allCats);
+
   return (
     <div className="w-full flex-col relative">
       <Container>
@@ -1404,14 +1419,17 @@ export default function OverviewMetrics({
                 <div
                   className={`relative flex w-[138px] h-full justify-center items-center`}
                 >
-                  <button className="flex flex-col flex-1 h-full justify-center items-center border-x border-transparent overflow-hidden">
-                    <div
-                      className={`relative -left-[39px] top-[17px] text-xs font-medium`}
-                    ></div>
-                    <div
-                      className={`relative left-[30px] -top-[17px] text-xs font-medium`}
-                    ></div>
-                  </button>
+                  <button
+                    className={`flex flex-col flex-1 h-full justify-center items-center border-x border-transparent overflow-hidden`}
+                    onClick={() => {
+                      if (forceSelectedChain) {
+                        setAllCats(!allCats);
+                      }
+                    }}
+                    style={{
+                      backgroundColor: allCats ? "#5A6462" : "",
+                    }}
+                  ></button>
                 </div>
                 <div className="flex flex-1">
                   {Object.keys(categories)
@@ -1440,7 +1458,7 @@ export default function OverviewMetrics({
                         }}
                         style={{
                           backgroundColor:
-                            selectedCategory === category
+                            selectedCategory === category && !allCats
                               ? "#5A6462"
                               : `rgba(0, 0, 0, ${
                                   0.06 +
@@ -1465,6 +1483,7 @@ export default function OverviewMetrics({
                           }`}
                           onClick={() => {
                             setSelectedCategory(category);
+                            if (forceSelectedChain) setAllCats(false);
                             if (!forceSelectedChain) setSelectedChain(null);
                           }}
                         >
@@ -1825,10 +1844,14 @@ export default function OverviewMetrics({
             chartHeight="196px"
             chartWidth="100%"
             maxY={chartMax}
-            chartAvg={chartAvg || undefined}
+            chartAvg={!allCats ? chartAvg || undefined : undefined}
           />
           {chartAvg && (
-            <div className="flex items-end relative top-[2px] h-[180px] min-w-[50px] lg:min-w-[70px] ">
+            <div
+              className={` items-end relative top-[2px] h-[180px] min-w-[50px] lg:min-w-[70px] ${
+                allCats ? "hidden" : "flex"
+              }`}
+            >
               <animated.div
                 className="flex h-[28px] relative items-center justify-center rounded-full w-full px-2.5 lg:text-base text-sm font-medium"
                 style={{
