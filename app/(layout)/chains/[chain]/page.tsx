@@ -98,7 +98,7 @@ const Chain = ({ params }: { params: any }) => {
       }, {});
 
     return filteredChains;
-  }, [chainKey, usageData?.data.chains]);
+  }, [usageData?.data.chains]);
 
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
