@@ -592,14 +592,18 @@ export default function OverviewMetrics({
     });
 
     return chartData;
-  }, [
-    data,
-    selectedCategory,
-    chainEcosystemFilter,
-    chainEcosystemFilter,
-    showUsd,
-    selectedMode,
-  ]);
+  }, [data, selectedCategory, selectedMode]);
+
+  const categoryKeyToFillOpacity = {
+    nft: 1 - 0,
+    token_transfers: 1 - 0.196,
+    defi: 1 - 0.33,
+    social: 1 - 0.463,
+    cefi: 1 - 0.596,
+    utility: 1 - 0.733,
+    cross_chain: 1 - 0.867,
+    unlabeled: 1 - 0.92,
+  };
 
   const chartSeries = useMemo(() => {
     const dataKey = selectedMode;
@@ -611,13 +615,21 @@ export default function OverviewMetrics({
       //   data: data[selectedChain].daily[selectedCategory].data.length,
       // });
       return [
-        {
-          id: [selectedChain, selectedCategory, selectedMode].join("_"),
-          name: selectedChain,
-          unixKey: "unix",
-          dataKey: dataKey,
-          data: data[selectedChain].daily[selectedCategory].data,
-        },
+        ...Object.keys(data[selectedChain]?.daily || {})
+          .filter((category) => category !== "types") // Exclude the "types" category
+          .reverse()
+          .map((category) => ({
+            id: [selectedChain, category, selectedMode].join("_"),
+            name: selectedChain,
+            unixKey: "unix",
+            dataKey: dataKey,
+            data: data[selectedChain]?.daily[category]?.data || [],
+            fillOpacity: categoryKeyToFillOpacity[category],
+            lineWidth: 0,
+            custom: {
+              tooltipLabel: categories[category],
+            },
+          })),
       ];
     }
 
@@ -651,9 +663,11 @@ export default function OverviewMetrics({
   }, [
     selectedMode,
     selectedChain,
-    data,
     selectedCategory,
     chainEcosystemFilter,
+    data,
+    chartStack,
+    categoryKeyToFillOpacity,
   ]);
 
   useEffect(() => {
@@ -1034,6 +1048,16 @@ export default function OverviewMetrics({
     let returnValue = 0;
     let typeIndex = data["all_l2s"].daily["types"].indexOf(selectedMode);
 
+    if (forceSelectedChain) {
+      // if share mode, return 100
+      if (selectedMode.includes("share")) {
+        return 1;
+      }
+
+      // if absolute mode, return undefined so that the chart can auto-scale
+      return undefined;
+    }
+
     if (selectedChain) {
       for (
         let i = 0;
@@ -1236,15 +1260,16 @@ export default function OverviewMetrics({
   ]);
 
   const avgHeight = useSpring({
-    y: chartAvg
-      ? -1 *
-        (163 * (chartAvg / chartMax) +
-          (chartAvg / chartMax > 0.45
-            ? chartAvg / chartMax > 0.5
-              ? 7
-              : 10
-            : 14))
-      : 0,
+    y:
+      chartAvg && chartMax
+        ? -1 *
+          (163 * (chartAvg / chartMax) +
+            (chartAvg / chartMax > 0.45
+              ? chartAvg / chartMax > 0.5
+                ? 7
+                : 10
+              : 14))
+        : 0,
     config: { mass: 1, tension: 70, friction: 20 },
   });
 
@@ -1785,7 +1810,7 @@ export default function OverviewMetrics({
             : {categories[selectedCategory]}
           </h2>
         </div>
-        <div className="flex items-center w-full ">
+        <div className="flex items-center w-full">
           <Chart
             types={
               selectedChain === null
