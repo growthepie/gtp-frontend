@@ -117,25 +117,25 @@ export const tooltipFormatter = (
       </div>`;
       });
 
-    // if (stacked) {
-    let value = formatNumber(pointsSum, false, true);
+    // // if (stacked) {
+    // let value = formatNumber(pointsSum, false, true);
 
-    if (valueFormatter) {
-      value = valueFormatter(value);
-    }
-
-    tooltip += `
-          <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
-            <div class="w-4 h-1.5 rounded-r-full" style=""></div>
-            <div class="tooltip-point-name text-md">Total</div>
-            <div class="flex-1 text-right justify-end font-inter flex">
-                ${value}
-            </div>
-          </div>
-          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-            <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
-          </div>`;
+    // if (valueFormatter) {
+    //   value = valueFormatter(value);
     // }
+
+    // tooltip += `
+    //       <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
+    //         <div class="w-4 h-1.5 rounded-r-full" style=""></div>
+    //         <div class="tooltip-point-name text-md">Total</div>
+    //         <div class="flex-1 text-right justify-end font-inter flex">
+    //             ${pointsSum}
+    //         </div>
+    //       </div>
+    //       <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+    //         <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
+    //       </div>`;
+    // // }
 
     tooltip += `
         </div>

@@ -107,13 +107,9 @@ export const Chart = ({
   const drawChartSeries = useCallback(() => {
     const areaStacking =
       yScale === "percentage" ? "percent" : stack ? "normal" : undefined;
+
     if (chartComponent.current) {
       const currentSeries = chartComponent.current.series;
-
-      // remove all series
-      // for (var i = chartComponent.current.series.length - 1; i >= 0; i--) {
-      //   chartComponent.current.series[i].remove(false);
-      // }
 
       const seriesToRemove = currentSeries.filter(
         (cs) => !series.find((s) => s.id === cs.options.id),
@@ -125,7 +121,19 @@ export const Chart = ({
 
       // add new series
       series.forEach((s) => {
-        if (!s.data || s.data.length === 0) return;
+        if (!s.data || s.data.length === 0) {
+          if (
+            currentSeries &&
+            currentSeries.find((cs) => cs.options.id === s.id)
+          ) {
+            const seriesToUpdate = currentSeries.find(
+              (cs) => cs.options.id === s.id,
+            );
+            if (seriesToUpdate) {
+              seriesToUpdate.remove(false);
+            }
+          }
+        }
 
         const fillHexColorOpacity = s.fillOpacity
           ? decimalPercentageToHex(s.fillOpacity)
@@ -150,7 +158,7 @@ export const Chart = ({
 
             seriesToUpdate.update(
               { type: chartType, stacking: areaStacking },
-              true,
+              false,
             );
           }
         } else {

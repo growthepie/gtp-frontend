@@ -79,8 +79,8 @@ export default function ChainChart({
   const { width, height } = useWindowSize();
   const isMobile = useMediaQuery("(max-width: 767px)");
 
-  const zoomedMargin = [1, 15, 0, 0];
-  const defaultMargin = [1, 15, 0, 0];
+  const zoomedMargin = [49, 15, 0, 0];
+  const defaultMargin = [49, 15, 0, 0];
 
   const timespans = useMemo(() => {
     let max = 0;
@@ -457,7 +457,7 @@ export default function ChainChart({
 
       if (!points || !x) return;
 
-      const series = points[0].series;
+      // const series = points[0].series;
 
       const date = new Date(x);
 
@@ -480,36 +480,36 @@ export default function ChainChart({
           return pointsSum;
         }, 0);
 
+      console.log("tooltipFormatter::this", this);
+
       let num = 0;
       const tooltipData = points
-
         .sort((a: any, b: any) => b.y - a.y)
         .map((point: any) => {
           num = num += 1;
-          const tooltipPoints = data
-            .map((item) => {
-              const { series, y } = point;
-              const { name } = series;
 
-              let prefix = displayValues[series.name[0]]?.prefix;
-              let suffix = displayValues[series.name[0]]?.suffix;
-              let value = y;
+          const { series, y } = point;
+          const { name } = series;
 
-              if (
-                !showUsd &&
-                item.metrics[series.name[0]]?.daily.types.includes("eth")
-              ) {
-                if (showGwei(series.name[0])) {
-                  prefix = "";
-                  suffix = " Gwei";
-                }
-              }
+          const dataTypes = series.options.custom.types;
+          const metricKey = series.options.custom.metric;
 
-              if (series.name[1] === item.chain_name) {
-                return `
+          let prefix = displayValues[metricKey].prefix;
+          let suffix = displayValues[metricKey].suffix;
+          let value = y;
+
+          if (!showUsd && dataTypes?.includes("eth")) {
+            if (showGwei(name)) {
+              prefix = "";
+              suffix = " Gwei";
+            }
+          }
+
+          // if (series.name === item.chain_name) {
+          return `
                 <div class="flex w-full space-x-2 items-center font-medium mb-1">
                   <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-                    AllChainsByKeys[item.chain_id].colors[theme][0]
+                    AllChainsByKeys[name].colors[theme][0]
                   }"></div>
                   <div class="flex-1 text-left justify-start font-inter flex">
                       <div class="opacity-70 mr-0.5 ${
@@ -524,19 +524,15 @@ export default function ChainChart({
                       }">${suffix}</div>
                   </div>
                 </div>`;
-              } else {
-                return "";
-              }
-            })
-            .join("");
-
-          return tooltipPoints;
+          // } else {
+          //   return "";
+          // }
         })
         .join("");
 
       return tooltip + tooltipData + tooltipEnd;
     },
-    [data, displayValues, selectedScale, showGwei, showUsd, theme],
+    [displayValues, selectedScale, showGwei, showUsd, theme],
   );
 
   const tooltipPositioner =
@@ -711,10 +707,11 @@ export default function ChainChart({
     chart: {
       type: "area",
       animation: isAnimate,
-      height: 142 - 15,
+      height: 176,
       backgroundColor: undefined,
-      margin: [1, 0, 0, 0],
+      margin: [1, 0, 40, 0],
       spacingBottom: 0,
+      spacingTop: 40,
       panning: { enabled: true },
       panKey: "shift",
       zooming: {
@@ -945,11 +942,11 @@ export default function ChainChart({
   );
 
   const lastPointLines = useMemo<{
-    [key: string]: Highcharts.SVGElement;
+    [key: string]: Highcharts.SVGElement[];
   }>(() => ({}), []);
 
   const lastPointCircles = useMemo<{
-    [key: string]: Highcharts.SVGElement;
+    [key: string]: Highcharts.SVGElement[];
   }>(() => ({}), []);
 
   const resetXAxisExtremes = useCallback(() => {
@@ -1033,7 +1030,129 @@ export default function ChainChart({
     .filter((chain) => !chain.hide)
     .map((chain) => chain.key);
 
-  //Allows tracking of keys based off their index.
+  useEffect(() => {
+    // if (chartComponents.current.length > 0) {
+    enabledFundamentalsKeys.forEach((key, i) => {
+      if (chartComponents.current[i]) {
+        // get current series displayed on this chart
+        const currentSeries = chartComponents.current[i].series;
+
+        // ["ethereum", "bsc", "polygon"]
+        const seriesToAdd = data.map((item) => item.chain_id);
+
+        // find the series to remove
+        const seriesToRemove = currentSeries.filter(
+          (s: Highcharts.Series) => !seriesToAdd.includes(s.name),
+        );
+
+        // remove the series we don't need
+        chartComponents.current[i].series.forEach((s) => {
+          if (seriesToRemove.includes(s)) {
+            s.remove(false);
+          }
+        });
+
+        // loop through the series we need to add/update
+        data.forEach((item) => {
+          // calculate series name
+          const seriesName = item.chain_id;
+          // const id = [key, item.chain_name].join("_");
+
+          // find the series we need to update
+          const series = currentSeries.find((s) => s.name === seriesName);
+
+          // if series exists, update it
+          if (series) {
+            const seriesData = item.metrics[key]?.daily.types.includes("eth")
+              ? showUsd
+                ? item.metrics[key].daily.data.map((d) => [
+                    d[0],
+                    d[item.metrics[key].daily.types.indexOf("usd")],
+                  ])
+                : item.metrics[key].daily.data.map((d) => [
+                    d[0],
+                    showGwei(key)
+                      ? d[item.metrics[key].daily.types.indexOf("eth")] *
+                        1000000000
+                      : d[item.metrics[key].daily.types.indexOf("eth")],
+                  ])
+              : item.metrics[key]?.daily.data.map((d) => [d[0], d[1]]);
+
+            const seriesTypes = item.metrics[key]?.daily.types;
+            // update series
+            series.update(
+              {
+                ...series.options,
+                custom: { types: seriesTypes, metric: key },
+              },
+              false,
+            );
+            series.setData(seriesData, false);
+          } else {
+            // if series does not exist, add it
+            chartComponents.current[i].addSeries({
+              name: seriesName,
+              crisp: false,
+              custom: { types: item.metrics[key]?.daily.types, metric: key },
+              data: item.metrics[key]?.daily.types.includes("eth")
+                ? showUsd
+                  ? item.metrics[key].daily.data.map((d) => [
+                      d[0],
+                      d[item.metrics[key].daily.types.indexOf("usd")],
+                    ])
+                  : item.metrics[key].daily.data.map((d) => [
+                      d[0],
+                      showGwei(key)
+                        ? d[item.metrics[key].daily.types.indexOf("eth")] *
+                          1000000000
+                        : d[item.metrics[key].daily.types.indexOf("eth")],
+                    ])
+                : item.metrics[key]?.daily.data.map((d) => [d[0], d[1]]),
+              showInLegend: false,
+              marker: {
+                enabled: false,
+              },
+              point: {
+                events: {
+                  mouseOver: pointHover,
+                  mouseOut: pointHover,
+                },
+              },
+              type: "area",
+              lineColor:
+                AllChainsByKeys[item.chain_id].colors[theme ?? "dark"][0], // Set line color
+              fillColor: {
+                linearGradient: {
+                  x1: 0,
+                  y1: 0,
+                  x2: 0,
+                  y2: 1,
+                },
+                stops: [
+                  [0, AllChainsByKeys[item.chain_id].colors[theme][0] + "33"],
+                  [1, AllChainsByKeys[item.chain_id].colors[theme][1] + "33"],
+                ],
+              },
+              shadow: {
+                color:
+                  AllChainsByKeys[item.chain_id]?.colors[theme ?? "dark"][1] +
+                  "33",
+                width: 10,
+              },
+              borderColor:
+                AllChainsByKeys[item.chain_id].colors[theme ?? "dark"][0],
+              borderWidth: 1,
+            });
+          }
+        });
+
+        // redraw the chart
+        chartComponents.current[i].redraw();
+      }
+    });
+
+    // }
+  }, [data, showUsd, theme, pointHover, enabledFundamentalsKeys, showGwei]);
 
   if (!data) {
     return (
@@ -1268,7 +1387,7 @@ export default function ChainChart({
                         <div className="absolute right-[15px] h-full border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
                       </div>
                       <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] text-forest-50 rounded-[15px] opacity-30 z-30"></div>
-                      <div className="absolute w-full h-[142px] top-[49px]"></div>
+                      <div className="absolute w-full h-[191px] top-[0px]"></div>
                       <div className="absolute top-[14px] w-full flex justify-between items-center space-x-4 px-[26px] opacity-30">
                         <div className="text-[20px] leading-snug font-bold break-inside-avoid">
                           {
@@ -1426,7 +1545,7 @@ export default function ChainChart({
                 <div key={key} className="w-full h-fit relative">
                   <div className="w-full h-[176px] relative">
                     <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] rounded-[15px]"></div>
-                    <div className="absolute w-full h-[142px] top-[49px]">
+                    <div className="absolute w-full h-[191px] top-[0px]">
                       <HighchartsReact
                         // containerProps={{
                         //   className: isVisible
@@ -1454,65 +1573,117 @@ export default function ChainChart({
                               },
                               render: function () {
                                 const chart: Highcharts.Chart = this;
-                                const lastPoint: Highcharts.Point =
-                                  chart.series[0].points[
-                                    chart.series[0].points.length - 1
-                                  ];
 
-                                if (lastPointLines[i]) {
-                                  lastPointLines[i].destroy();
-                                }
+                                // destroy the last point lines and circles
+                                lastPointLines[i]?.length > 0 &&
+                                  lastPointLines[i].forEach((line) => {
+                                    line.destroy();
+                                  });
 
-                                if (lastPointCircles[i]) {
-                                  lastPointCircles[i].destroy();
-                                }
+                                // destroy the last point lines and circles
+                                lastPointCircles[i]?.length > 0 &&
+                                  lastPointCircles[i].forEach((circle) => {
+                                    circle.destroy();
+                                  });
+
+                                // if (chart.series.length === 0) {
+                                //   return;
+                                // }
+
+                                lastPointLines[i] = [];
+                                lastPointCircles[i] = [];
+
+                                // const lastPoints: Highcharts.Point[] =
+                                //   chart.series.reduce<Highcharts.Point[]>(
+                                //     (acc, s) => {
+                                //       if (s.points.length === 0) return acc;
+
+                                //       acc.push(s.points[s.points.length - 1]);
+
+                                //       return acc;
+                                //     },
+                                //     [],
+                                //   );
+
+                                // console.log("lastPoints", lastPoints);
+
                                 // calculate the fraction that 15px is in relation to the pixel width of the chart
                                 const fraction = 15 / chart.chartWidth;
+                                chart.series.forEach((series, seriesIndex) => {
+                                  const lastPoint =
+                                    series.points[series.points.length - 1];
 
-                                // create a bordered line from the last point to the top of the chart's container
-                                lastPointLines[i] = chart.renderer
-                                  .path(
-                                    chart.renderer.crispLine(
-                                      [
-                                        //@ts-ignore
-                                        "M",
-                                        //@ts-ignore
-                                        chart.chartWidth * (1 - fraction),
-                                        //@ts-ignore
-                                        lastPoint.plotY + chart.plotTop,
-                                        //@ts-ignore
-                                        "L",
-                                        //@ts-ignore
-                                        chart.chartWidth * (1 - fraction),
-                                        //@ts-ignore
-                                        chart.plotTop,
-                                      ],
-                                      1,
-                                    ),
-                                  )
-                                  .attr({
-                                    stroke: "#4B5563",
-                                    "stroke-width": 1,
-                                  })
-                                  .add();
+                                  if (!lastPoint || !lastPoint.plotY) return;
 
-                                // lastPointCircles[i] = chart.renderer
-                                //   .circle(
-                                //     chart.chartWidth * (1 - fraction),
-                                //     lastPoint.plotY + chart.plotTop,
-                                //     3
-                                //   )
-                                //   .attr({
-                                //     fill:
-                                //       // AllChainsByKeys[data.chain_id].colors[
-                                //       //   theme ?? "dark"
-                                //       // ][0]
-                                //       "#ffffff" + "80",
+                                  // create a bordered line from the last point to the top of the chart's container
+                                  lastPointLines[i][seriesIndex] =
+                                    chart.renderer
+                                      .path(
+                                        chart.renderer.crispLine(
+                                          [
+                                            //@ts-ignore
+                                            "M",
+                                            //@ts-ignore
+                                            chart.chartWidth * (1 - fraction),
+                                            //@ts-ignore
+                                            lastPoint.plotY + chart.plotTop,
+                                            //@ts-ignore
+                                            "L",
+                                            //@ts-ignore
+                                            chart.chartWidth * (1 - fraction),
+                                            //@ts-ignore
+                                            chart.plotTop -
+                                              (seriesIndex === 0 ? 24 : 8),
+                                            //@ts-ignore
+                                            "L",
+                                            //@ts-ignore
+                                            chart.chartWidth * (1 - fraction) -
+                                              5,
+                                            //@ts-ignore
+                                            chart.plotTop -
+                                              (seriesIndex === 0 ? 24 : 8),
+                                          ],
+                                          1,
+                                        ),
+                                      )
+                                      .attr({
+                                        stroke:
+                                          AllChainsByKeys[series.name].colors[
+                                            theme ?? "dark"
+                                          ][0],
+                                        "stroke-width": 1,
+                                        "stroke-dasharray":
+                                          seriesIndex === 0 ? "2 4" : "0 2 0",
+                                        zIndex: seriesIndex === 0 ? 9997 : 9998,
+                                        rendering: "crispEdges",
+                                      })
+                                      .add();
 
-                                //     r: 2,
-                                //     zIndex: 9999,
-                                //   })
-                                //   .add();
+                                  lastPointCircles[i][seriesIndex] =
+                                    chart.renderer
+                                      .circle(
+                                        chart.chartWidth * (1 - fraction) - 5,
+                                        chart.plotTop -
+                                          (seriesIndex === 0 ? 24 : 8),
+                                        3,
+                                      )
+                                      .attr({
+                                        fill:
+                                          // AllChainsByKeys[data.chain_id].colors[
+                                          //   theme ?? "dark"
+                                          // ][0]
+                                          AllChainsByKeys[series.name].colors[
+                                            theme ?? "dark"
+                                          ][0] + "80",
+
+                                        r: seriesIndex === 0 ? 3 : 2,
+                                        zIndex: 9999,
+                                        rendering: "crispEdges",
+                                      })
+                                      .add();
+                                });
+
+                                // lastPointCircles[i] =
                               },
                             },
                           },
@@ -1542,87 +1713,87 @@ export default function ChainChart({
                               : timespans[selectedTimespan].xMax,
                           },
 
-                          series: data.map((item) => ({
-                            name: [key, item.chain_name],
-                            crisp: false,
-                            data: item.metrics[key]?.daily.types.includes("eth")
-                              ? showUsd
-                                ? item.metrics[key].daily.data.map((d) => [
-                                    d[0],
-                                    d[
-                                      item.metrics[key].daily.types.indexOf(
-                                        "usd",
-                                      )
-                                    ],
-                                  ])
-                                : item.metrics[key].daily.data.map((d) => [
-                                    d[0],
-                                    showGwei(key)
-                                      ? d[
-                                          item.metrics[key].daily.types.indexOf(
-                                            "eth",
-                                          )
-                                        ] * 1000000000
-                                      : d[
-                                          item.metrics[key].daily.types.indexOf(
-                                            "eth",
-                                          )
-                                        ],
-                                  ])
-                              : item.metrics[key]?.daily.data.map((d) => [
-                                  d[0],
-                                  d[1],
-                                ]),
-                            showInLegend: false,
-                            marker: {
-                              enabled: false,
-                            },
-                            point: {
-                              events: {
-                                mouseOver: pointHover,
-                                mouseOut: pointHover,
-                              },
-                            },
-                            type: "area",
-                            lineColor:
-                              AllChainsByKeys[item.chain_id].colors[
-                                theme ?? "dark"
-                              ][0], // Set line color
-                            fillColor: {
-                              linearGradient: {
-                                x1: 0,
-                                y1: 0,
-                                x2: 0,
-                                y2: 1,
-                              },
-                              stops: [
-                                [
-                                  0,
-                                  AllChainsByKeys[item.chain_id].colors[
-                                    theme
-                                  ][0] + "33",
-                                ],
-                                [
-                                  1,
-                                  AllChainsByKeys[item.chain_id].colors[
-                                    theme
-                                  ][1] + "33",
-                                ],
-                              ],
-                            },
-                            shadow: {
-                              color:
-                                AllChainsByKeys[item.chain_id]?.colors[
-                                  theme ?? "dark"
-                                ][1] + "33",
-                              width: 10,
-                            },
-                            borderColor:
-                              AllChainsByKeys[item.chain_id].colors[
-                                theme ?? "dark"
-                              ][0],
-                            borderWidth: 1,
-                          })),
+                          // series: data.map((item) => ({
+                          //   name: [key, item.chain_name].join("_"),
+                          //   crisp: false,
+                          //   data: item.metrics[key]?.daily.types.includes("eth")
+                          //     ? showUsd
+                          //       ? item.metrics[key].daily.data.map((d) => [
+                          //           d[0],
+                          //           d[
+                          //             item.metrics[key].daily.types.indexOf(
+                          //               "usd",
+                          //             )
+                          //           ],
+                          //         ])
+                          //       : item.metrics[key].daily.data.map((d) => [
+                          //           d[0],
+                          //           showGwei(key)
+                          //             ? d[
+                          //                 item.metrics[key].daily.types.indexOf(
+                          //                   "eth",
+                          //                 )
+                          //               ] * 1000000000
+                          //             : d[
+                          //                 item.metrics[key].daily.types.indexOf(
+                          //                   "eth",
+                          //                 )
+                          //               ],
+                          //         ])
+                          //     : item.metrics[key]?.daily.data.map((d) => [
+                          //         d[0],
+                          //         d[1],
+                          //       ]),
+                          //   showInLegend: false,
+                          //   marker: {
+                          //     enabled: false,
+                          //   },
+                          //   point: {
+                          //     events: {
+                          //       mouseOver: pointHover,
+                          //       mouseOut: pointHover,
+                          //     },
+                          //   },
+                          //   type: "area",
+                          //   lineColor:
+                          //     AllChainsByKeys[item.chain_id].colors[
+                          //       theme ?? "dark"
+                          //     ][0], // Set line color
+                          //   fillColor: {
+                          //     linearGradient: {
+                          //       x1: 0,
+                          //       y1: 0,
+                          //       x2: 0,
+                          //       y2: 1,
+                          //     },
+                          //     stops: [
+                          //       [
+                          //         0,
+                          //         AllChainsByKeys[item.chain_id].colors[
+                          //           theme
+                          //         ][0] + "33",
+                          //       ],
+                          //       [
+                          //         1,
+                          //         AllChainsByKeys[item.chain_id].colors[
+                          //           theme
+                          //         ][1] + "33",
+                          //       ],
+                          //     ],
+                          //   },
+                          //   shadow: {
+                          //     color:
+                          //       AllChainsByKeys[item.chain_id]?.colors[
+                          //         theme ?? "dark"
+                          //       ][1] + "33",
+                          //     width: 10,
+                          //   },
+                          //   borderColor:
+                          //     AllChainsByKeys[item.chain_id].colors[
+                          //       theme ?? "dark"
+                          //     ][0],
+                          //   borderWidth: 1,
+                          // })),
                         }}
                         ref={(chart) => {
                           if (chart) {
@@ -1648,15 +1819,15 @@ export default function ChainChart({
                           {displayValues[key].suffix}
                         </div>
                       </div>
-                      <div
+                      {/* <div
                         className={`absolute -bottom-[12px] top-1/2 right-[15px] w-[5px] rounded-sm border-r border-t`}
                         style={{
                           borderColor: "#4B5563",
                         }}
-                      ></div>
-                      <div
+                      ></div> */}
+                      {/* <div
                         className={`absolute top-[calc(50% - 0.5px)] right-[20px] w-[4px] h-[4px] rounded-full bg-forest-900 dark:bg-forest-50`}
-                      ></div>
+                      ></div> */}
                     </div>
                     <div>
                       <Icon
