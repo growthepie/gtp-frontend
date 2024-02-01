@@ -608,7 +608,7 @@ export default function ComparisonChart({
       [isMobile],
     );
 
-  const timespans = useMemo(() => {
+  const maxDate = useMemo(() => {
     let maxDate = new Date();
     if (filteredData && filteredData[0].name !== "") {
       maxDate = new Date(
@@ -617,6 +617,18 @@ export default function ComparisonChart({
           : 0,
       );
     }
+    return maxDate;
+  }, [filteredData]);
+
+  const timespans = useMemo(() => {
+    // let maxDate = new Date();
+    // if (filteredData && filteredData[0].name !== "") {
+    //   maxDate = new Date(
+    //     filteredData.length > 0
+    //       ? filteredData[0].data[filteredData[0].data.length - 1][0]
+    //       : 0,
+    //   );
+    // }
 
     const buffer = 0.5 * 24 * 60 * 60 * 1000;
     const maxPlusBuffer = maxDate.valueOf() + buffer;
@@ -700,7 +712,7 @@ export default function ComparisonChart({
         xMax: maxPlusBuffer,
       },
     };
-  }, [filteredData]);
+  }, [filteredData, maxDate]);
 
   useEffect(() => {
     if (chartComponent.current) {
@@ -917,107 +929,74 @@ export default function ComparisonChart({
         };
       }
 
+      const columnFillColor = {
+        linearGradient: {
+          x1: 0,
+          y1: 0,
+          x2: 0,
+          y2: 1,
+        },
+        stops: [
+          [0, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "FF"],
+          [0.349, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "88"],
+          [1, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "00"],
+        ],
+      };
+
+      const columnColor = {
+        linearGradient: {
+          x1: 0,
+          y1: 0,
+          x2: 0,
+          y2: 1,
+        },
+        stops: [
+          [0, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "FF"],
+          [0.349, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "88"],
+          [1, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "00"],
+        ],
+      };
+
+      const dottedColumnColor = {
+        pattern: {
+          path: {
+            d: "M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11",
+            strokeWidth: 3,
+          },
+          width: 10,
+          height: 10,
+          opacity: 1,
+          color: AllChainsByKeys[name].colors[theme ?? "dark"][0] + "CC",
+        },
+      };
+
+      const secondZoneDottedColumnColor =
+        maxDate.getUTCDate() === 1 ? columnColor : dottedColumnColor;
+
+      const secondZoneDashStyle = maxDate.getUTCDate() === 1 ? "Solid" : "Dot";
+
       // if it is not the last day of the month, add a zone to the chart to indicate that the data is incomplete
-      if (new Date().getUTCDate() !== 1) {
-        zoneAxis = "x";
-        zones = [
-          {
-            value: seriesData[seriesData.length - 2][0] + 1,
-            dashStyle: "Solid",
-            fillColor: isColumnChart
-              ? {
-                  linearGradient: {
-                    x1: 0,
-                    y1: 0,
-                    x2: 0,
-                    y2: 1,
-                  },
-                  stops: [
-                    [
-                      0,
-                      AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "FF",
-                    ],
-                    [
-                      0.349,
-                      AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "88",
-                    ],
-                    [
-                      1,
-                      AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "00",
-                    ],
-                  ],
-                }
-              : seriesFill,
-            color: isColumnChart
-              ? {
-                  linearGradient: {
-                    x1: 0,
-                    y1: 0,
-                    x2: 0,
-                    y2: 1,
-                  },
-                  stops: [
-                    [
-                      0,
-                      AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "FF",
-                    ],
-                    [
-                      0.349,
-                      AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "88",
-                    ],
-                    [
-                      1,
-                      AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "00",
-                    ],
-                  ],
-                }
-              : AllChainsByKeys[name].colors[theme ?? "dark"][0],
-          },
-          {
-            // value: monthlyData[monthlyData.length - 2][0],
-            dashStyle: "Dot",
-            fillColor: isColumnChart
-              ? {
-                  linearGradient: {
-                    x1: 0,
-                    y1: 0,
-                    x2: 0,
-                    y2: 1,
-                  },
-                  stops: [
-                    [
-                      0,
-                      AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "FF",
-                    ],
-                    [
-                      0.349,
-                      AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "88",
-                    ],
-                    [
-                      1,
-                      AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "00",
-                    ],
-                  ],
-                }
-              : seriesFill,
-            color: isColumnChart
-              ? {
-                  pattern: {
-                    path: {
-                      d: "M 0 0 L 10 10 M 9 -1 L 11 1 M -1 9 L 1 11",
-                      strokeWidth: 3,
-                    },
-                    width: 10,
-                    height: 10,
-                    opacity: 1,
-                    color:
-                      AllChainsByKeys[name].colors[theme ?? "dark"][0] + "CC",
-                  },
-                }
-              : AllChainsByKeys[name].colors[theme ?? "dark"][0],
-          },
-        ];
-      }
+      // if (new Date().getUTCDate() !== 1) {
+      zoneAxis = "x";
+      zones = [
+        {
+          value: seriesData[seriesData.length - 2][0] + 1,
+          dashStyle: "Solid",
+          fillColor: isColumnChart ? columnFillColor : seriesFill,
+          color: isColumnChart
+            ? columnColor
+            : AllChainsByKeys[name].colors[theme ?? "dark"][0],
+        },
+        {
+          // value: monthlyData[monthlyData.length - 2][0],
+          dashStyle: secondZoneDashStyle,
+          fillColor: isColumnChart ? columnFillColor : seriesFill,
+          color: isColumnChart
+            ? secondZoneDottedColumnColor
+            : AllChainsByKeys[name].colors[theme ?? "dark"][0],
+        },
+      ];
+      // }
 
       return {
         data: seriesData,
