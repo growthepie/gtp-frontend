@@ -295,7 +295,7 @@ const Chain = ({ params }: { params: any }) => {
           </div>
         )}
       </Container>
-      {/* {usageData && chainKey[0] !== "ethereum" && (
+      {usageData && chainKey[0] !== "ethereum" && (
         <>
           <Container className="flex flex-col w-full mt-[65px] md:mt-[60px]">
             <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] relative">
@@ -331,7 +331,7 @@ const Chain = ({ params }: { params: any }) => {
             forceSelectedChain={chainKey[0]}
           />
         </>
-      )} */}
+      )}
     </>
   );
 };
