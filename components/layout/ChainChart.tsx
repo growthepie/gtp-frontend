@@ -1174,7 +1174,7 @@ export default function ChainChart({
         (chain.ecosystem.includes("all-chains") || chain.key == "ethereum") &&
         !["all_l2s", chainKey[0]].includes(chain.key),
     );
-  }, []);
+  }, [chainKey]);
 
   const compChain = useMemo(() => {
     return chainKey.length > 1 ? chainKey[1] : null;
@@ -1362,36 +1362,33 @@ export default function ChainChart({
                 />
                 <div className="">None</div>
               </div>
-              {compareTo &&
-                CompChains.map((chain, index) => (
-                  <div
-                    className="flex py-[5px] gap-x-[10px] items-center text-base leading-[150%] hover:cursor-pointer"
-                    onClick={() => {
-                      setCompareTo(false);
-                      updateChainKey([chainKey[0], chain.key]);
+              {CompChains.map((chain, index) => (
+                <div
+                  className="flex py-[5px] gap-x-[10px] items-center text-base leading-[150%] hover:cursor-pointer"
+                  onClick={() => {
+                    setCompareTo(false);
+                    updateChainKey([chainKey[0], chain.key]);
+                  }}
+                  key={chain.key}
+                >
+                  <Icon
+                    icon="feather:arrow-right-circle"
+                    className="w-6 h-6"
+                    visibility={compChain === chain.key ? "visible" : "hidden"}
+                  />
+                  <Icon
+                    icon={`gtp:${chain.urlKey}-logo-monochrome`}
+                    className={`w-[22px] h-[22px]`}
+                    style={{
+                      color:
+                        compChain === chain.key
+                          ? AllChainsByKeys[chain.key].colors[theme][0]
+                          : "#5A6462",
                     }}
-                    key={chain.key}
-                  >
-                    <Icon
-                      icon="feather:arrow-right-circle"
-                      className="w-6 h-6"
-                      visibility={
-                        compChain === chain.key ? "visible" : "hidden"
-                      }
-                    />
-                    <Icon
-                      icon={`gtp:${chain.urlKey}-logo-monochrome`}
-                      className={`w-[22px] h-[22px]`}
-                      style={{
-                        color:
-                          compChain === chain.key
-                            ? AllChainsByKeys[chain.key].colors[theme][0]
-                            : "#5A6462",
-                      }}
-                    />
-                    <div key={chain.label}>{chain.label}</div>
-                  </div>
-                ))}
+                  />
+                  <div key={chain.label}>{chain.label}</div>
+                </div>
+              ))}
             </div>
 
             {/* Your content here */}

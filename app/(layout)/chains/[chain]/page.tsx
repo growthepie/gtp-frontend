@@ -51,6 +51,8 @@ const Chain = ({ params }: { params: any }) => {
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
+  const { cache, mutate } = useSWRConfig();
+
   const fetchChainData = async () => {
     if (chainKeys.length === 0) {
       return;
@@ -58,8 +60,20 @@ const Chain = ({ params }: { params: any }) => {
 
     try {
       const fetchPromises = chainKeys.map(async (chainKey) => {
+        // check if the chain is in the cache
+        const cachedData = cache.get(ChainURLs[chainKey]);
+
+        if (cachedData) {
+          return cachedData.data;
+        }
+
+        // if not, fetch the data
         const response = await fetch(ChainURLs[chainKey]);
         const data = await response.json();
+
+        // store the data in the cache
+        mutate(ChainURLs[chainKey], data, false);
+
         return data;
       });
 
