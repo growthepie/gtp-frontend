@@ -1,4 +1,4 @@
-import million from "million/compiler";
+// import million from "million/compiler";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -17,10 +17,10 @@ const nextConfig = {
   },
 };
 
-const millionConfig = {
-  auto: true,
-};
+// const millionConfig = {
+//   auto: true,
+// };
 
-// module.exports = nextConfig;
+module.exports = nextConfig;
 
-export default million.next(nextConfig, millionConfig);
+// export default million.next(nextConfig, millionConfig);
