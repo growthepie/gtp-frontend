@@ -1009,7 +1009,7 @@ export default function ComparisonChart({
         color,
       };
     },
-    [getSeriesType, selectedTimeInterval, theme, maxDate, showUsd, showGwei],
+    [getSeriesType, selectedTimeInterval, theme, showUsd, showGwei],
   );
 
   const getChartHeight = useCallback(() => {
