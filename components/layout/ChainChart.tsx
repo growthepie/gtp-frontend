@@ -1156,7 +1156,7 @@ export default function ChainChart({
     return AllChains.filter(
       (chain) =>
         (chain.ecosystem.includes("all-chains") || chain.key == "ethereum") &&
-        chain.key !== "all_l2s",
+        !["all_l2s", chainKey[0]].includes(chain.key),
     );
   }, []);
 
@@ -1196,7 +1196,7 @@ export default function ChainChart({
     if (compChain) {
       updateChainKey([chainKey[0], compChain]);
     }
-  }, [chainKey, compChain, updateChainKey]);
+  }, [chainKey, compChain]);
 
   if (!data) {
     return (
