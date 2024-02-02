@@ -69,7 +69,7 @@ export default function ChainChart({
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
   const [compareTo, setCompareTo] = useState(false);
-  const [compChain, setCompChain] = useState<string | null>(null);
+  // const [compChain, setCompChain] = useState<string | null>(null);
   // const [compChainIndex, setCompChainIndex] = useState<number>(-1);
   const [zoomed, setZoomed] = useState(false);
   const [zoomMin, setZoomMin] = useState<number | null>(null);
@@ -1160,9 +1160,13 @@ export default function ChainChart({
     );
   }, []);
 
+  const compChain = useMemo(() => {
+    return chainKey.length > 1 ? chainKey[1] : null;
+  }, [chainKey]);
+
   const handleNextCompChain = () => {
     if (!compChain) {
-      setCompChain(CompChains[0].key);
+      updateChainKey([chainKey[0], CompChains[0].key]);
     }
 
     const currentIndex = CompChains.findIndex(
@@ -1170,15 +1174,15 @@ export default function ChainChart({
     );
 
     if (currentIndex === CompChains.length - 1) {
-      setCompChain(null);
+      updateChainKey([chainKey[0]]);
     } else {
-      setCompChain(CompChains[currentIndex + 1].key);
+      updateChainKey([chainKey[0], CompChains[currentIndex + 1].key]);
     }
   };
 
   const handlePrevCompChain = () => {
     if (!compChain) {
-      setCompChain(CompChains[CompChains.length - 1].key);
+      updateChainKey([chainKey[0], CompChains[CompChains.length - 1].key]);
     }
 
     const currentIndex = CompChains.findIndex(
@@ -1186,17 +1190,11 @@ export default function ChainChart({
     );
 
     if (currentIndex === 0) {
-      setCompChain(null);
+      updateChainKey([chainKey[0]]);
     } else {
-      setCompChain(CompChains[currentIndex - 1].key);
+      updateChainKey([chainKey[0], CompChains[currentIndex - 1].key]);
     }
   };
-
-  useEffect(() => {
-    if (compChain) {
-      updateChainKey([chainKey[0], compChain]);
-    }
-  }, [chainKey, compChain]);
 
   if (!data) {
     return (
@@ -1326,7 +1324,7 @@ export default function ChainChart({
               <div
                 className="flex py-[5px] gap-x-[10px] items-center text-base leading-[150%] hover:cursor-pointer"
                 onClick={() => {
-                  setCompChain(null);
+                  updateChainKey([chainKey[0]]);
                 }}
               >
                 <Icon
@@ -1348,7 +1346,6 @@ export default function ChainChart({
                   <div
                     className="flex py-[5px] gap-x-[10px] items-center text-base leading-[150%] hover:cursor-pointer"
                     onClick={() => {
-                      setCompChain(chain.key);
                       updateChainKey([chainKey[0], chain.key]);
                     }}
                     key={chain.key}
