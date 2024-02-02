@@ -564,7 +564,7 @@ export default function ChainChart({
           }
           return {
             x: tooltipX,
-            y: 0,
+            y: 50,
           };
         }
 
