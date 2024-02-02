@@ -28,9 +28,12 @@ import { useMemo, useState, useEffect } from "react";
 import { useSessionStorage } from "usehooks-ts";
 import { notFound } from "next/navigation";
 import { ChainsData } from "@/types/api/ChainResponse";
+import { useTheme } from "next-themes";
 
 const Chain = ({ params }: { params: any }) => {
   const { chain } = params;
+
+  const { theme } = useTheme();
 
   const [chainKeys, setChainKeys] = useState<string[]>(
     AllChains.find((c) => c.urlKey === chain)?.key
@@ -127,15 +130,26 @@ const Chain = ({ params }: { params: any }) => {
         {master && (
           <div className="flex flex-col w-full">
             <div className="flex flex-col md:flex-row justify-between items-start w-full">
-              <div className="flex flex-col md:flex-row mb-[15px] md:mb-[19px] items-start">
-                <div className="flex">
-                  <Image
+              <div className="flex flex-col md:flex-row mb-[15px] md:mb-[15px] items-start">
+                <div className="flex gap-x-[8px] items-center">
+                  {/* <Image
                     src="/GTP-Link.svg"
                     alt="GTP Chain"
                     className="object-contain w-[32px] h-[32px] self-center mr-[8px]"
                     height={36}
                     width={36}
-                  />
+                  /> */}
+                  <div className="w-9 h-9">
+                    <Icon
+                      icon={`gtp:${
+                        AllChainsByKeys[chainKeys[0]].urlKey
+                      }-logo-monochrome`}
+                      className="w-9 h-9"
+                      style={{
+                        color: AllChainsByKeys[chainKeys[0]].colors[theme][1],
+                      }}
+                    />
+                  </div>
                   <Heading
                     className="text-2xl leading-snug text-[36px] break-inside-avoid"
                     as="h1"
@@ -143,7 +157,7 @@ const Chain = ({ params }: { params: any }) => {
                     {AllChainsByKeys[chainKeys[0]].label}
                   </Heading>
                 </div>
-                <div className="hidden md:flex items-start space-x-[7px] font-inter uppercase">
+                <div className="hidden md:flex items-start space-x-[7px] font-inter uppercase pt-[11px]">
                   <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm ml-[19px]">
                     {master.chains[chainKeys[0]].technology}
                   </div>
@@ -168,31 +182,6 @@ const Chain = ({ params }: { params: any }) => {
                 </div>
               </div>
               <div className="hidden lg:flex space-x-[10px] text-sm md:text-sm xl:text-base items-start">
-                {/* <div
-                  className={`flex flex-col bg-forest-900  px-4 py-2 
-                  ${openChainList ? "rounded-2xl" : "rounded-full"}`}
-                  onClick={() => {
-                    setOpenChainList(!openChainList);
-                  }}
-                >
-                  Chain List
-                  {openChainList ? (
-                    <div className="border-white border-[1px] ">
-                      {AllChains.map((chainItem, index) => (
-                        <div
-                          key={index}
-                          onClick={() => {
-                            setChainKey([...chainKey, chainItem.key]);
-                          }}
-                        >
-                          {chainItem.key}
-                        </div>
-                      ))}{" "}
-                    </div>
-                  ) : (
-                    <></>
-                  )}
-                </div> */}
                 <Link
                   href={master.chains[chainKeys[0]].block_explorer}
                   className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
@@ -227,7 +216,7 @@ const Chain = ({ params }: { params: any }) => {
                 </Link>
               </div>
             </div>
-            <div className="flex items-center w-[99%] mx-auto  mb-[30px]">
+            <div className="flex items-center mb-[15px]">
               <div className="text-[16px]">
                 {AllChainsByKeys[chainKeys[0]].description
                   ? AllChainsByKeys[chainKeys[0]].description
@@ -308,7 +297,7 @@ const Chain = ({ params }: { params: any }) => {
       {overviewData !== null && chainKeys[0] !== "ethereum" && (
         <>
           <Container className="flex flex-col w-full mt-[65px] md:mt-[60px]">
-            <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] relative">
+            <div className="flex items-center justify-between md:text-[36px] mb-[15px] relative">
               <div className="flex gap-x-[8px] items-center">
                 <Image
                   src="/GTP-Package.svg"
@@ -325,7 +314,7 @@ const Chain = ({ params }: { params: any }) => {
                 </Heading>
               </div>
             </div>
-            <div className="flex items-center w-[99%] mx-auto mb-[30px]">
+            <div className="flex items-center mb-[30px]">
               <div className="text-[16px]">
                 An overview of {AllChainsByKeys[chainKeys[0]].label} high-level
                 blockspace usage. All expressed in share of chain usage. You can

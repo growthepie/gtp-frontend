@@ -138,7 +138,7 @@ export const AllChains: Chain[] = [
     darkTextOnBackground: false,
   },
   {
-    label: "Arbitrum",
+    label: "Arbitrum One",
     icon: "/icons/arbitrum.png",
     key: "arbitrum",
     urlKey: "arbitrum",

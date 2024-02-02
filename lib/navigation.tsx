@@ -363,7 +363,7 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "zora",
       },
       {
-        label: "Arbitrum",
+        label: "Arbitrum One",
         category: "other-optimistic",
         page: {
           description:

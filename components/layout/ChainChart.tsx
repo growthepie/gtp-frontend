@@ -1231,7 +1231,7 @@ export default function ChainChart({
           stroke-width: 0px !important;
         `}
       </style>
-      <div className="flex w-full justify-between items-stretch text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] mb-[32px] z-50 cursor-pointer">
+      <div className="flex w-full justify-between items-stretch text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] mb-[30px] z-50 cursor-pointer">
         <div className="flex relative h-[54px]">
           <div
             className={`relative flex rounded-full h-full w-[271px] z-50 p-[5px] ${
