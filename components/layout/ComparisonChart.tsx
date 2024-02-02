@@ -970,10 +970,12 @@ export default function ComparisonChart({
         },
       };
 
-      const secondZoneDottedColumnColor =
-        maxDate.getUTCDate() === 1 ? columnColor : dottedColumnColor;
+      const todaysDate = new Date().getUTCDate();
 
-      const secondZoneDashStyle = maxDate.getUTCDate() === 1 ? "Solid" : "Dot";
+      const secondZoneDottedColumnColor =
+        todaysDate === 1 ? columnColor : dottedColumnColor;
+
+      const secondZoneDashStyle = todaysDate === 1 ? "Solid" : "Dot";
 
       // if it is not the last day of the month, add a zone to the chart to indicate that the data is incomplete
       // if (new Date().getUTCDate() !== 1) {
@@ -1007,16 +1009,7 @@ export default function ComparisonChart({
         color,
       };
     },
-    [
-      getSeriesType,
-      avgMonthlyMetrics,
-      metric_id,
-      selectedScale,
-      selectedTimeInterval,
-      showGwei,
-      showUsd,
-      theme,
-    ],
+    [getSeriesType, selectedTimeInterval, theme, maxDate, showUsd, showGwei],
   );
 
   const getChartHeight = useCallback(() => {
