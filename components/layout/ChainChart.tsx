@@ -20,7 +20,7 @@ import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import d3 from "d3";
-import { AllChainsByKeys } from "@/lib/chains";
+import { AllChains, AllChainsByKeys } from "@/lib/chains";
 import { debounce, forEach } from "lodash";
 
 import { navigationItems, navigationCategories } from "@/lib/navigation";
@@ -70,7 +70,7 @@ export default function ChainChart({
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
   const [compareTo, setCompareTo] = useState(false);
   const [compChain, setCompChain] = useState<string | null>(null);
-  const [compChainIndex, setCompChainIndex] = useState<number>(-1);
+  // const [compChainIndex, setCompChainIndex] = useState<number>(-1);
   const [zoomed, setZoomed] = useState(false);
   const [zoomMin, setZoomMin] = useState<number | null>(null);
   const [zoomMax, setZoomMax] = useState<number | null>(null);
@@ -479,8 +479,6 @@ export default function ChainChart({
           acc += point.y;
           return pointsSum;
         }, 0);
-
-      console.log("tooltipFormatter::this", this);
 
       let num = 0;
       const tooltipData = points
@@ -1154,6 +1152,52 @@ export default function ChainChart({
     // }
   }, [data, showUsd, theme, pointHover, enabledFundamentalsKeys, showGwei]);
 
+  const CompChains = useMemo(() => {
+    return AllChains.filter(
+      (chain) =>
+        (chain.ecosystem.includes("all-chains") || chain.key == "ethereum") &&
+        chain.key !== "all_l2s",
+    );
+  }, []);
+
+  const handleNextCompChain = () => {
+    if (!compChain) {
+      setCompChain(CompChains[0].key);
+    }
+
+    const currentIndex = CompChains.findIndex(
+      (chain) => chain.key === compChain,
+    );
+
+    if (currentIndex === CompChains.length - 1) {
+      setCompChain(null);
+    } else {
+      setCompChain(CompChains[currentIndex + 1].key);
+    }
+  };
+
+  const handlePrevCompChain = () => {
+    if (!compChain) {
+      setCompChain(CompChains[CompChains.length - 1].key);
+    }
+
+    const currentIndex = CompChains.findIndex(
+      (chain) => chain.key === compChain,
+    );
+
+    if (currentIndex === 0) {
+      setCompChain(null);
+    } else {
+      setCompChain(CompChains[currentIndex - 1].key);
+    }
+  };
+
+  useEffect(() => {
+    if (compChain) {
+      updateChainKey([chainKey[0], compChain]);
+    }
+  }, [chainKey, compChain, updateChainKey]);
+
   if (!data) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -1186,27 +1230,28 @@ export default function ChainChart({
             <div
               className="rounded-[40px] w-[54px] h-full bg-[#1F2726] flex items-center justify-center z-50 hover:cursor-pointer"
               onClick={() => {
-                if (compChainIndex > 0) {
-                  setCompChain(enabledChainKeys[compChainIndex - 1] || null);
-                  updateChainKey([
-                    chainKey[0],
-                    enabledChainKeys[compChainIndex - 1] || "",
-                  ]);
-                  setCompChainIndex(compChainIndex - 1);
-                } else if (compChainIndex === 0) {
-                  setCompChain(null);
-                  setCompChainIndex(-1);
-                  updateChainKey([chainKey[0]]);
-                } else {
-                  setCompChain(
-                    enabledChainKeys[enabledChainKeys.length - 1] || null,
-                  );
-                  updateChainKey([
-                    chainKey[0],
-                    enabledChainKeys[enabledChainKeys.length - 1] || "",
-                  ]);
-                  setCompChainIndex(enabledChainKeys.length - 1);
-                }
+                handlePrevCompChain();
+                // if (compChainIndex > 0) {
+                //   setCompChain(enabledChainKeys[compChainIndex - 1] || null);
+                //   updateChainKey([
+                //     chainKey[0],
+                //     enabledChainKeys[compChainIndex - 1] || "",
+                //   ]);
+                //   setCompChainIndex(compChainIndex - 1);
+                // } else if (compChainIndex === 0) {
+                //   setCompChain(null);
+                //   setCompChainIndex(-1);
+                //   updateChainKey([chainKey[0]]);
+                // } else {
+                //   setCompChain(
+                //     enabledChainKeys[enabledChainKeys.length - 1] || null,
+                //   );
+                //   updateChainKey([
+                //     chainKey[0],
+                //     enabledChainKeys[enabledChainKeys.length - 1] || "",
+                //   ]);
+                //   setCompChainIndex(enabledChainKeys.length - 1);
+                // }
               }}
             >
               <Icon icon="feather:arrow-left" className="w-6 h-6" />
@@ -1247,22 +1292,23 @@ export default function ChainChart({
             <div
               className="rounded-[40px] w-[54px] h-full bg-[#1F2726] flex items-center justify-center z-50 hover:cursor-pointer"
               onClick={() => {
-                if (compChainIndex === -1 || compChain === null) {
-                  setCompChain(enabledChainKeys[0] || null);
-                  updateChainKey([chainKey[0], enabledChainKeys[0] || ""]);
-                  setCompChainIndex(0);
-                } else if (compChainIndex < enabledChainKeys.length - 1) {
-                  setCompChain(enabledChainKeys[compChainIndex + 1] || null);
-                  updateChainKey([
-                    chainKey[0],
-                    enabledChainKeys[compChainIndex + 1] || "",
-                  ]);
-                  setCompChainIndex(compChainIndex + 1);
-                } else {
-                  setCompChainIndex(-1);
-                  updateChainKey([chainKey[0]]);
-                  setCompChain(null);
-                }
+                handleNextCompChain();
+                // if (compChainIndex === -1 || compChain === null) {
+                //   setCompChain(enabledChainKeys[0] || null);
+                //   updateChainKey([chainKey[0], enabledChainKeys[0] || ""]);
+                //   setCompChainIndex(0);
+                // } else if (compChainIndex < enabledChainKeys.length - 1) {
+                //   setCompChain(enabledChainKeys[compChainIndex + 1] || null);
+                //   updateChainKey([
+                //     chainKey[0],
+                //     enabledChainKeys[compChainIndex + 1] || "",
+                //   ]);
+                //   setCompChainIndex(compChainIndex + 1);
+                // } else {
+                //   setCompChainIndex(-1);
+                //   updateChainKey([chainKey[0]]);
+                //   setCompChain(null);
+                // }
               }}
             >
               <Icon icon="feather:arrow-right" className="w-6 h-6" />
@@ -1298,37 +1344,35 @@ export default function ChainChart({
                 <div className="">None</div>
               </div>
               {compareTo &&
-                navigationItems[3].options
-                  .filter((chain) => !chain.hide)
-                  .map((chain, index) => (
-                    <div
-                      className="flex py-[5px] gap-x-[10px] items-center text-base leading-[150%] hover:cursor-pointer"
-                      onClick={() => {
-                        setCompChain(chain.key || null);
-                        updateChainKey([chainKey[0], chain.key || ""]);
+                CompChains.map((chain, index) => (
+                  <div
+                    className="flex py-[5px] gap-x-[10px] items-center text-base leading-[150%] hover:cursor-pointer"
+                    onClick={() => {
+                      setCompChain(chain.key);
+                      updateChainKey([chainKey[0], chain.key]);
+                    }}
+                    key={chain.key}
+                  >
+                    <Icon
+                      icon="feather:arrow-right-circle"
+                      className="w-6 h-6"
+                      visibility={
+                        compChain === chain.key ? "visible" : "hidden"
+                      }
+                    />
+                    <Icon
+                      icon={`gtp:${chain.urlKey}-logo-monochrome`}
+                      className={`w-[22px] h-[22px]`}
+                      style={{
+                        color:
+                          compChain === chain.key
+                            ? AllChainsByKeys[chain.key].colors[theme][0]
+                            : "#5A6462",
                       }}
-                      key={chain.key}
-                    >
-                      <Icon
-                        icon="feather:arrow-right-circle"
-                        className="w-6 h-6"
-                        visibility={
-                          compChain === chain.key ? "visible" : "hidden"
-                        }
-                      />
-                      <Icon
-                        icon={chain.icon}
-                        className={`w-[22px] h-[22px]`}
-                        style={{
-                          color:
-                            compChain === chain.key
-                              ? AllChainsByKeys[chain.key].colors[theme][0]
-                              : "#5A6462",
-                        }}
-                      />
-                      <div key={chain.label}>{chain.label}</div>
-                    </div>
-                  ))}
+                    />
+                    <div key={chain.label}>{chain.label}</div>
+                  </div>
+                ))}
             </div>
 
             {/* Your content here */}
