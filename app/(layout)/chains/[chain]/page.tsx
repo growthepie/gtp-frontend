@@ -51,81 +51,36 @@ const Chain = ({ params }: { params: any }) => {
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
-  // const fetchChainData = async () => {
-  //   if (!chainKey || chainKey.length === 0) {
-  //     return;
-  //   }
-
-  //   try {
-  //     const fetchPromises = chainKey.map(async (chainKey) => {
-  //       const response = await fetch(ChainURLs[chainKey]);
-  //       const data = await response.json();
-  //       return data;
-  //     });
-
-  //     const responseData = await Promise.all(fetchPromises);
-
-  //     // Flatten the structure by removing the "data" layer
-  //     const flattenedData = responseData.map((item) => item.data);
-
-  //     setChainData(flattenedData);
-  //     setChainError(null);
-  //   } catch (error) {
-  //     setChainData(null);
-  //     setChainError(error);
-  //   } finally {
-  //     setChainValidating(false);
-  //     setChainLoading(false);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchChainData();
-  // }, [chainKey]);
-
-  const { cache, mutate } = useSWRConfig();
-
-  const fetcher = async (url: string) =>
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => data.data);
-
-  // get cached chain data and fetch if not cached
-  const fetchChainData = async (chainKey: string) => {
-    // swr cache key
-    const cacheKey = ChainURLs[chainKey];
-
-    // get cached data
-    const cachedData = cache.get(cacheKey);
-
-    // return cached data if available
-    if (cachedData) {
-      return cachedData.data;
+  const fetchChainData = async () => {
+    if (chainKeys.length === 0) {
+      return;
     }
 
-    // fetch data and mutate (update) cache with new data
-    const data = await fetcher(cacheKey);
+    try {
+      const fetchPromises = chainKeys.map(async (chainKey) => {
+        const response = await fetch(ChainURLs[chainKey]);
+        const data = await response.json();
+        return data;
+      });
 
-    // update the cache with new data
-    mutate(cacheKey, data, false);
+      const responseData = await Promise.all(fetchPromises);
 
-    // update the state with new data
-    return data;
+      // Flatten the structure by removing the "data" layer
+      const flattenedData = responseData.map((item) => item.data);
+
+      setChainData(flattenedData);
+      setChainError(null);
+    } catch (error) {
+      setChainData([]);
+      setChainError(error);
+    } finally {
+      setChainValidating(false);
+      setChainLoading(false);
+    }
   };
 
   useEffect(() => {
-    if (chainKeys.length === 0) return;
-
-    const fetchPromises = chainKeys.map(async (chainKey) => {
-      return fetchChainData(chainKey);
-    });
-
-    Promise.all(fetchPromises).then((data) => {
-      setChainData(data);
-      setChainValidating(false);
-      setChainLoading(false);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchChainData();
   }, [chainKeys]);
 
   const {
@@ -146,7 +101,7 @@ const Chain = ({ params }: { params: any }) => {
     "max",
   );
 
-  if (!chainKeys) return notFound();
+  if (chainKeys.length === 0) return notFound();
 
   return (
     <>
