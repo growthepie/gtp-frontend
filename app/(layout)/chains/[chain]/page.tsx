@@ -98,7 +98,7 @@ const Chain = ({ params }: { params: any }) => {
       }, {});
 
     return filteredChains;
-  }, [chainKey, usageData?.data.chains]);
+  }, [usageData?.data.chains]);
 
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
@@ -248,7 +248,14 @@ const Chain = ({ params }: { params: any }) => {
                 </>
               )}
             </div>
-            {chainData && <ChainChart chain={chain} data={chainData} />}
+            {chainData && (
+              <ChainChart
+                chain={chain}
+                data={chainData}
+                chainKey={chainKey}
+                updateChainKey={setChainKey}
+              />
+            )}
             <div className="flex lg:hidden justify-between text-base items-start mb-8 mt-[30px] lg:mt-[15px]">
               <Link
                 href={master.chains[chainKey[0]].block_explorer}

@@ -471,92 +471,13 @@ export default function CategoryMetrics({
 
     if (selectedCategory && data) return chartReturn;
     return Object.keys(data["native_transfers"][dailyKey]).map((chain) => ({
-      id: [chain, "native_transfers", selectedType].join("_"),
+      id: [chain, "native_transfers", selectedType].join("||"),
       name: chain,
       unixKey: "unix",
       dataKey: selectedType,
       data: data["native_transfers"][dailyKey][chain],
-      // .map((item, i) => {
-      //   // remap date keys so first is today and each day is subtracted from there
-      //   const date = today - i * 24 * 60 * 60 * 1000;
-      //   item[0] = date;
-      //   return item;
-      // })
-      // .reverse(),
       type: selectedChartType,
     }));
-    return [
-      {
-        id: ["arbitrum", "native_transfers", selectedType].join("_"),
-        name: "arbitrum",
-        unixKey: "unix",
-        dataKey: selectedType,
-        data: data["native_transfers"][dailyKey]["arbitrum"]
-          .map((item, i) => {
-            // remap date keys so first is today and each day is subtracted from there
-            const date = today - i * 24 * 60 * 60 * 1000;
-            item[0] = date;
-            return item;
-          })
-          .reverse(),
-      },
-      {
-        id: ["optimism", "native_transfers", selectedType].join("_"),
-        name: "optimism",
-        unixKey: "unix",
-        dataKey: selectedType,
-        data: data["native_transfers"][dailyKey]["optimism"]
-          .map((item, i) => {
-            // remap date keys so first is today and each day is subtracted from there
-            const date = today - i * 24 * 60 * 60 * 1000;
-            item[0] = date;
-            return item;
-          })
-          .reverse(),
-      },
-      {
-        id: ["zksync_era", "native_transfers", selectedType].join("_"),
-        name: "zksync_era",
-        unixKey: "unix",
-        dataKey: selectedType,
-        data: data["native_transfers"][dailyKey]["zksync_era"]
-          .map((item, i) => {
-            // remap date keys so first is today and each day is subtracted from there
-            const date = today - i * 24 * 60 * 60 * 1000;
-            item[0] = date;
-            return item;
-          })
-          .reverse(),
-      },
-      {
-        id: ["polygon_zkevm", "native_transfers", selectedType].join("_"),
-        name: "polygon_zkevm",
-        unixKey: "unix",
-        dataKey: selectedType,
-        data: data["native_transfers"][dailyKey]["polygon_zkevm"]
-          .map((item, i) => {
-            // remap date keys so first is today and each day is subtracted from there
-            const date = today - i * 24 * 60 * 60 * 1000;
-            item[0] = date;
-            return item;
-          })
-          .reverse(),
-      },
-      {
-        id: ["imx", "native_transfers", selectedType].join("_"),
-        name: "imx",
-        unixKey: "unix",
-        dataKey: selectedType,
-        data: data["native_transfers"][dailyKey]["imx"]
-          .map((item, i) => {
-            // remap date keys so first is today and each day is subtracted from there
-            const date = today - i * 24 * 60 * 60 * 1000;
-            item[0] = date;
-            return item;
-          })
-          .reverse(),
-      },
-    ];
   }, [
     selectedCategory,
     data,
@@ -1705,7 +1626,7 @@ export default function CategoryMetrics({
                         : "linear"
                     }
                     // yScale="linear"
-                    chartHeight={isMobile ? "400" : "500"}
+                    chartHeight={isMobile ? "400" : "560"}
                     chartWidth="100%"
                     decimals={selectedMode === "txcount_" ? 0 : 2}
                   />

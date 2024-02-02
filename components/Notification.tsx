@@ -634,8 +634,8 @@ const Notification = () => {
           ) : (
             <>
               <div
-                className={`relative flex md:hidden mt-[2px] mr-10 justify-self-end hover:pointer cursor-pointer p-3 rounded-full ${
-                  openNotif ? "dark:bg-forest-900 bg-forest-50 z-[110]" : ""
+                className={`relative flex md:hidden top-1.5 mr-10 justify-self-end hover:pointer cursor-pointer p-3 rounded-full ${
+                  openNotif ? "dark:bg-forest-900 bg-forst-50 z-[110]" : ""
                 }
             `}
                 onClick={() => {
