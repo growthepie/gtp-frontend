@@ -1042,7 +1042,7 @@ export default function ChainChart({
   // );
 
   useEffect(() => {
-    const updateChartData = async (key, i) => {
+    enabledFundamentalsKeys.forEach(async (key, i) => {
       if (chartComponents.current[i]) {
         // show loading
         // chartComponents.current[i].showLoading();
@@ -1163,21 +1163,9 @@ export default function ChainChart({
         });
 
         // redraw the chart
-        // chartComponents.current[i].redraw();
-        // chartComponents.current[i].hideLoading();
+        chartComponents.current[i].redraw();
       }
-    };
-
-    const asyncUpdate = async () => {
-      enabledFundamentalsKeys.forEach(async (key, i) => {
-        updateChartData(key, i);
-        chartComponents.current[i]?.redraw(true);
-      });
-    };
-
-    asyncUpdate();
-
-    // }
+    });
   }, [data, enabledFundamentalsKeys, pointHover, showGwei, showUsd, theme]);
 
   const CompChains = useMemo(() => {
@@ -1358,8 +1346,7 @@ export default function ChainChart({
                 onClick={() => {
                   setCompareTo(false);
 
-                  // wait for the animation to finish
-                  setTimeout(() => updateChainKey([chainKey[0]]), 300);
+                  updateChainKey([chainKey[0]]);
                 }}
               >
                 <Icon
@@ -1383,11 +1370,7 @@ export default function ChainChart({
                     onClick={() => {
                       setCompareTo(false);
 
-                      // wait for the animation to finish
-                      setTimeout(
-                        () => updateChainKey([chainKey[0], chain.key]),
-                        300,
-                      );
+                      updateChainKey([chainKey[0], chain.key]);
                     }}
                     key={chain.key}
                   >
