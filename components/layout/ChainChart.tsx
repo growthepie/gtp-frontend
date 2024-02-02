@@ -1357,6 +1357,7 @@ export default function ChainChart({
                 className="flex py-[5px] gap-x-[10px] items-center text-base leading-[150%] hover:cursor-pointer"
                 onClick={() => {
                   updateChainKey([chainKey[0]]);
+                  setCompareTo(false);
                 }}
               >
                 <Icon
@@ -1379,6 +1380,7 @@ export default function ChainChart({
                     className="flex py-[5px] gap-x-[10px] items-center text-base leading-[150%] hover:cursor-pointer"
                     onClick={() => {
                       updateChainKey([chainKey[0], chain.key]);
+                      setCompareTo(false);
                     }}
                     key={chain.key}
                   >
