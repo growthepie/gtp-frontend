@@ -1061,7 +1061,7 @@ export default function ChainChart({
         // remove the series we don't need
         chartComponents.current[i].series.forEach((s) => {
           if (seriesToRemove.includes(s)) {
-            s.remove(true);
+            s.remove(false);
           }
         });
 
@@ -1098,9 +1098,9 @@ export default function ChainChart({
                 ...series.options,
                 custom: { types: seriesTypes, metric: key },
               },
-              true,
+              false,
             );
-            series.setData(seriesData, true);
+            series.setData(seriesData, false);
           } else {
             // if series does not exist, add it
             chartComponents.current[i].addSeries(
@@ -1157,7 +1157,7 @@ export default function ChainChart({
                   AllChainsByKeys[item.chain_id].colors[theme ?? "dark"][0],
                 borderWidth: 1,
               },
-              true,
+              false,
             );
           }
         });
