@@ -1234,39 +1234,15 @@ export default function ChainChart({
       <div className="flex w-full justify-between items-stretch text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] mb-[32px] z-50 cursor-pointer">
         <div className="flex relative h-[54px]">
           <div
-            className="relative flex rounded-full h-full w-[271px] z-50 p-[5px]"
-            style={{
-              backgroundColor: compChain
-                ? AllChainsByKeys[compChain].colors[theme][0]
-                : "#151A19",
-            }}
+            className={`relative flex rounded-full h-full w-[271px] z-50 p-[5px] ${
+              compChain
+                ? AllChainsByKeys[compChain].backgrounds[theme][0]
+                : "bg-white dark:bg-[#151A19]"
+            }`}
           >
             <div
-              className="rounded-[40px] w-[54px] h-full bg-[#1F2726] flex items-center justify-center z-50 hover:cursor-pointer"
-              onClick={() => {
-                handlePrevCompChain();
-                // if (compChainIndex > 0) {
-                //   setCompChain(enabledChainKeys[compChainIndex - 1] || null);
-                //   updateChainKey([
-                //     chainKey[0],
-                //     enabledChainKeys[compChainIndex - 1] || "",
-                //   ]);
-                //   setCompChainIndex(compChainIndex - 1);
-                // } else if (compChainIndex === 0) {
-                //   setCompChain(null);
-                //   setCompChainIndex(-1);
-                //   updateChainKey([chainKey[0]]);
-                // } else {
-                //   setCompChain(
-                //     enabledChainKeys[enabledChainKeys.length - 1] || null,
-                //   );
-                //   updateChainKey([
-                //     chainKey[0],
-                //     enabledChainKeys[enabledChainKeys.length - 1] || "",
-                //   ]);
-                //   setCompChainIndex(enabledChainKeys.length - 1);
-                // }
-              }}
+              className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-50 hover:cursor-pointer"
+              onClick={handlePrevCompChain}
             >
               <Icon icon="feather:arrow-left" className="w-6 h-6" />
             </div>
@@ -1279,10 +1255,12 @@ export default function ChainChart({
               <div
                 className={` font-[500] leading-[150%] ${
                   compChain
-                    ? AllChainsByKeys[compChain].darkTextOnBackground
-                      ? "text-[#1F2726]"
-                      : "text-forest-50"
-                    : "text-[#5A6462]"
+                    ? !AllChainsByKeys[compChain].darkTextOnBackground ||
+                      (theme === "light" &&
+                        (compChain === "ethereum" || compChain === "imx"))
+                      ? "text-forest-50"
+                      : "text-[#1F2726]"
+                    : "text-forest-400 dark:text-[#5A6462]"
                 }`}
               >
                 Compare to
@@ -1290,9 +1268,11 @@ export default function ChainChart({
               <div
                 className={`flex font-[550] ${
                   compChain
-                    ? AllChainsByKeys[compChain].darkTextOnBackground
-                      ? "text-[#1F2726]"
-                      : "text-forest-50"
+                    ? !AllChainsByKeys[compChain].darkTextOnBackground ||
+                      (theme === "light" &&
+                        (compChain === "ethereum" || compChain === "imx"))
+                      ? "text-forest-50"
+                      : "text-[#1F2726]"
                     : ""
                 } gap-x-[5px] justify-center items-center w-32`}
               >
@@ -1308,41 +1288,23 @@ export default function ChainChart({
               </div>
             </div>
             <div
-              className="rounded-[40px] w-[54px] h-full bg-[#1F2726] flex items-center justify-center z-50 hover:cursor-pointer"
-              onClick={() => {
-                handleNextCompChain();
-                // if (compChainIndex === -1 || compChain === null) {
-                //   setCompChain(enabledChainKeys[0] || null);
-                //   updateChainKey([chainKey[0], enabledChainKeys[0] || ""]);
-                //   setCompChainIndex(0);
-                // } else if (compChainIndex < enabledChainKeys.length - 1) {
-                //   setCompChain(enabledChainKeys[compChainIndex + 1] || null);
-                //   updateChainKey([
-                //     chainKey[0],
-                //     enabledChainKeys[compChainIndex + 1] || "",
-                //   ]);
-                //   setCompChainIndex(compChainIndex + 1);
-                // } else {
-                //   setCompChainIndex(-1);
-                //   updateChainKey([chainKey[0]]);
-                //   setCompChain(null);
-                // }
-              }}
+              className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-50 hover:cursor-pointer"
+              onClick={handleNextCompChain}
             >
               <Icon icon="feather:arrow-right" className="w-6 h-6" />
             </div>
           </div>
           <div
-            className={`flex flex-col absolute top-[27px] bottom-auto left-0 right-0 bg-[#1F2726] rounded-t-none rounded-b-2xl border-b border-l border-r transition-all ease-in-out duration-300 ${
+            className={`flex flex-col absolute top-[27px] bottom-auto left-0 right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none rounded-b-2xl border-b border-l border-r transition-all ease-in-out duration-300 ${
               compareTo
-                ? `max-h-[600px] z-40 border-forest-500 shadow-[0px_4px_46.2px_#000000]`
+                ? `max-h-[600px] z-40 border-forest-200 dark:border-forest-500 shadow-[0px_4px_46.2px_#00000066] dark:shadow-[0px_4px_46.2px_#000000]`
                 : "max-h-0 z-10 overflow-hidden border-transparent"
             }`}
           >
-            <div className="pb-[10px] px-[21px] pr-[15px]">
-              <div className="h-[35px]"></div>
+            <div className="pb-[10px]">
+              <div className="h-[28px]"></div>
               <div
-                className="flex py-[5px] gap-x-[10px] items-center text-base leading-[150%] hover:cursor-pointer"
+                className="flex pl-[21px] pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
                 onClick={() => {
                   setCompareTo(false);
                   updateChainKey([chainKey[0]]);
@@ -1364,7 +1326,7 @@ export default function ChainChart({
               </div>
               {CompChains.map((chain, index) => (
                 <div
-                  className="flex py-[5px] gap-x-[10px] items-center text-base leading-[150%] hover:cursor-pointer"
+                  className="flex pl-[21px] pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
                   onClick={() => {
                     setCompareTo(false);
                     updateChainKey([chainKey[0], chain.key]);

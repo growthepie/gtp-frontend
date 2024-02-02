@@ -32,15 +32,15 @@ export const AllChains: Chain[] = [
     description:
       "Ethereum was proposed by Vitalik Buterin in 2013 and launched in 2015. It is arguably the most decentralized smart contract platform to date. The goal is to scale Ethereum through the usage of Layer 2s.",
     border: {
-      light: ["border-[#293305]", "border-[#293305]"],
+      light: ["border-[#8B8B8B]", "border-[#8B8B8B]"],
       dark: ["border-[#C1C1C1]", "border-[#C1C1C1]"],
     },
     colors: {
-      light: ["#293305", "#293305"], // text color
+      light: ["#8B8B8B", "#8B8B8B"], // text color
       dark: ["#C1C1C1", "#C1C1C1"], // text color
     }, // yellow-orange
     backgrounds: {
-      light: ["bg-[#293305]", "bg-[#293305]"],
+      light: ["bg-[#8B8B8B]", "bg-[#8B8B8B]"],
       dark: ["bg-[#C1C1C1]", "bg-[#C1C1C1]"],
     },
     darkTextOnBackground: true,
@@ -281,15 +281,15 @@ export const AllChains: Chain[] = [
     description:
       "Immutable X is an optimized game-specific zk rollup. It is designed to mint, transfer, and trade tokens and NFTs at higher volumes and zero gas fees. It is not EVM compatible but its easy-to-use APIs and SDKs aim to make development for game devs as easy as possible. It launched in April 2021.",
     border: {
-      light: ["border-[#08373C]", "border-[#08373C]"],
+      light: ["border-[#3ECDA7]", "border-[#3ECDA7]"],
       dark: ["border-[#3AFCC9]", "border-[#3AFCC9]"],
     },
     colors: {
-      light: ["#08373C", "#08373C"], // dark sea
+      light: ["#3ECDA7", "#3ECDA7"], // dark sea
       dark: ["#3AFCC9", "#3AFCC9"], // dark sea
     },
     backgrounds: {
-      light: ["bg-[#08373C]", "bg-[#08373C]"],
+      light: ["bg-[#3ECDA7]", "bg-[#3ECDA7]"],
       dark: ["bg-[#3AFCC9]", "bg-[#3AFCC9]"],
     },
     darkTextOnBackground: true,
