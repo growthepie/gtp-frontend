@@ -1036,8 +1036,12 @@ export default function ChainChart({
     .filter((chain) => !chain.hide)
     .map((chain) => chain.key);
 
+  // const updateChartData = useCallback(
+  //   ,
+  //   [data, pointHover, showGwei, showUsd, theme],
+  // );
+
   useEffect(() => {
-    // if (chartComponents.current.length > 0) {
     const updateChartData = async (key, i) => {
       if (chartComponents.current[i]) {
         // show loading
@@ -1057,7 +1061,7 @@ export default function ChainChart({
         // remove the series we don't need
         chartComponents.current[i].series.forEach((s) => {
           if (seriesToRemove.includes(s)) {
-            s.remove(false);
+            s.remove(true);
           }
         });
 
@@ -1094,9 +1098,9 @@ export default function ChainChart({
                 ...series.options,
                 custom: { types: seriesTypes, metric: key },
               },
-              false,
+              true,
             );
-            series.setData(seriesData, false);
+            series.setData(seriesData, true);
           } else {
             // if series does not exist, add it
             chartComponents.current[i].addSeries(
@@ -1153,32 +1157,28 @@ export default function ChainChart({
                   AllChainsByKeys[item.chain_id].colors[theme ?? "dark"][0],
                 borderWidth: 1,
               },
-              false,
+              true,
             );
           }
         });
 
         // redraw the chart
-        chartComponents.current[i].redraw();
+        // chartComponents.current[i].redraw();
         // chartComponents.current[i].hideLoading();
       }
     };
-
-    const asyncUpdate = () => {
+    const asyncUpdate = async () => {
       enabledFundamentalsKeys.forEach(async (key, i) => {
-        // chartComponents.current[i]?.showLoading();
-
         updateChartData(key, i);
-        await delay(500);
-
-        // chartComponents.current[i]?.hideLoading();
+        chartComponents.current[i]?.redraw(false);
+        await delay(10);
       });
     };
 
     asyncUpdate();
 
     // }
-  }, [data, showUsd, theme, pointHover, enabledFundamentalsKeys, showGwei]);
+  }, [data, enabledFundamentalsKeys, pointHover, showGwei, showUsd, theme]);
 
   const CompChains = useMemo(() => {
     return AllChains.filter(
