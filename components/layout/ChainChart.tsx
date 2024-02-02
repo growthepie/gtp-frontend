@@ -1167,8 +1167,8 @@ export default function ChainChart({
         // chartComponents.current[i].hideLoading();
       }
     };
+
     const asyncUpdate = async () => {
-      await delay(300);
       enabledFundamentalsKeys.forEach(async (key, i) => {
         updateChartData(key, i);
         chartComponents.current[i]?.redraw(false);
@@ -1357,8 +1357,10 @@ export default function ChainChart({
               <div
                 className="flex py-[5px] gap-x-[10px] items-center text-base leading-[150%] hover:cursor-pointer"
                 onClick={() => {
-                  updateChainKey([chainKey[0]]);
                   setCompareTo(false);
+
+                  // wait for the animation to finish
+                  setTimeout(() => updateChainKey([chainKey[0]]), 300);
                 }}
               >
                 <Icon
@@ -1380,8 +1382,13 @@ export default function ChainChart({
                   <div
                     className="flex py-[5px] gap-x-[10px] items-center text-base leading-[150%] hover:cursor-pointer"
                     onClick={() => {
-                      updateChainKey([chainKey[0], chain.key]);
                       setCompareTo(false);
+
+                      // wait for the animation to finish
+                      setTimeout(
+                        () => updateChainKey([chainKey[0], chain.key]),
+                        300,
+                      );
                     }}
                     key={chain.key}
                   >
