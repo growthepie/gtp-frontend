@@ -1171,8 +1171,7 @@ export default function ChainChart({
     const asyncUpdate = async () => {
       enabledFundamentalsKeys.forEach(async (key, i) => {
         updateChartData(key, i);
-        chartComponents.current[i]?.redraw(false);
-        await delay(50);
+        chartComponents.current[i]?.redraw(true);
       });
     };
 
