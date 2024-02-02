@@ -134,6 +134,8 @@ export default function OverviewMetrics({
     "all-chains",
   );
 
+  const standardChainKey = forceSelectedChain ? forceSelectedChain : "all_l2s";
+
   // const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
   //   {},
   // );
@@ -377,11 +379,11 @@ export default function OverviewMetrics({
     for (const category of Object.keys(data)) {
       if (data) {
         const contractsData =
-          data.all_l2s["overview"][selectedTimespan][selectedCategory].contracts
-            .data;
+          data[standardChainKey]["overview"][selectedTimespan][selectedCategory]
+            .contracts.data;
         const types =
-          data.all_l2s["overview"][selectedTimespan][selectedCategory].contracts
-            .types;
+          data[standardChainKey]["overview"][selectedTimespan][selectedCategory]
+            .contracts.types;
 
         for (const contract of Object.keys(contractsData)) {
           const dataArray = contractsData[contract];
@@ -499,10 +501,10 @@ export default function OverviewMetrics({
   const chartStack = useMemo(() => {
     let ecosystemData: any[][] = [];
 
-    const txIndex = data["all_l2s"].daily.types.findIndex(
+    const txIndex = data[standardChainKey].daily.types.findIndex(
       (item) => item === "txcount_absolute",
     );
-    const gasIndex = data["all_l2s"].daily.types.findIndex(
+    const gasIndex = data[standardChainKey].daily.types.findIndex(
       (item) =>
         item ===
         (selectedMode.includes("usd")
@@ -564,17 +566,17 @@ export default function OverviewMetrics({
                 ];
             }
 
-            for (let category in data["all_l2s"].daily) {
+            for (let category in data[standardChainKey].daily) {
               if (category !== "types") {
-                let checkIndex = data["all_l2s"].daily[category].data.findIndex(
-                  (item) => item[0] === findUnix,
-                );
+                let checkIndex = data[standardChainKey].daily[
+                  category
+                ].data.findIndex((item) => item[0] === findUnix);
                 allTotal +=
                   checkIndex !== -1
-                    ? data["all_l2s"].daily[selectedCategory].data[
-                        data["all_l2s"].daily[selectedCategory].data.findIndex(
-                          (item) => item[0] === findUnix,
-                        )
+                    ? data[standardChainKey].daily[selectedCategory].data[
+                        data[standardChainKey].daily[
+                          selectedCategory
+                        ].data.findIndex((item) => item[0] === findUnix)
                       ][selectedMode.includes("txcount") ? txIndex : gasIndex]
                     : 0;
               }
@@ -1059,7 +1061,7 @@ export default function OverviewMetrics({
 
   const chartMax = useMemo(() => {
     let returnValue = 0;
-    let typeIndex = data["all_l2s"].daily["types"].indexOf(selectedMode);
+    let typeIndex = data[standardChainKey].daily["types"].indexOf(selectedMode);
 
     if (forceSelectedChain) {
       // if share mode, return 100
@@ -1103,22 +1105,25 @@ export default function OverviewMetrics({
           let i = 0;
           i <
           (selectedTimespan === "max"
-            ? data["all_l2s"].daily[selectedCategory].data.length
+            ? data[standardChainKey].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value);
           i++
         ) {
           if (
-            data["all_l2s"].daily[selectedCategory].data.length - (i + 1) >=
+            data[standardChainKey].daily[selectedCategory].data.length -
+              (i + 1) >=
             0
           ) {
             if (
-              data["all_l2s"].daily[selectedCategory].data[
-                data["all_l2s"].daily[selectedCategory].data.length - (i + 1)
+              data[standardChainKey].daily[selectedCategory].data[
+                data[standardChainKey].daily[selectedCategory].data.length -
+                  (i + 1)
               ][typeIndex] > returnValue
             ) {
               returnValue =
-                data["all_l2s"].daily[selectedCategory].data[
-                  data["all_l2s"].daily[selectedCategory].data.length - (i + 1)
+                data[standardChainKey].daily[selectedCategory].data[
+                  data[standardChainKey].daily[selectedCategory].data.length -
+                    (i + 1)
                 ][typeIndex];
             }
           }
@@ -1161,8 +1166,9 @@ export default function OverviewMetrics({
   ]);
 
   const chartAvg = useMemo(() => {
-    let typeIndex = data["all_l2s"].daily["types"].indexOf(selectedMode);
-    let overviewIndex = data.all_l2s["overview"]["types"].indexOf(selectedMode);
+    let typeIndex = data[standardChainKey].daily["types"].indexOf(selectedMode);
+    let overviewIndex =
+      data[standardChainKey]["overview"]["types"].indexOf(selectedMode);
 
     let returnValue = 0;
 
@@ -1215,17 +1221,19 @@ export default function OverviewMetrics({
           let i = 0;
           i <
           (selectedTimespan === "max"
-            ? data["all_l2s"].daily[selectedCategory].data.length
+            ? data[standardChainKey].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value);
           i++
         ) {
           if (
-            data["all_l2s"].daily[selectedCategory].data.length - (i + 1) >=
+            data[standardChainKey].daily[selectedCategory].data.length -
+              (i + 1) >=
             0
           ) {
             sum +=
-              data["all_l2s"].daily[selectedCategory].data[
-                data["all_l2s"].daily[selectedCategory].data.length - (i + 1)
+              data[standardChainKey].daily[selectedCategory].data[
+                data[standardChainKey].daily[selectedCategory].data.length -
+                  (i + 1)
               ][typeIndex];
           }
         }
@@ -1233,10 +1241,10 @@ export default function OverviewMetrics({
         returnValue =
           sum /
           (selectedTimespan === "max"
-            ? data["all_l2s"].daily[selectedCategory].data.length
+            ? data[standardChainKey].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value >=
-              data["all_l2s"].daily[selectedCategory].data.length
-            ? data["all_l2s"].daily[selectedCategory].data.length
+              data[standardChainKey].daily[selectedCategory].data.length
+            ? data[standardChainKey].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value);
       } else {
         let sum = 0;
@@ -1833,7 +1841,7 @@ export default function OverviewMetrics({
           <Chart
             types={
               selectedChain === null
-                ? data.all_l2s.daily.types
+                ? data[standardChainKey].daily.types
                 : data[selectedChain].daily.types
             }
             chartType="area"

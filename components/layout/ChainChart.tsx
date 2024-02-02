@@ -1173,136 +1173,152 @@ export default function ChainChart({
           stroke-width: 0px !important;
         `}
       </style>
-      <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] py-0.5 mb-[32px] z-40">
-        <div className="relative">
+      <div className="flex w-full justify-between items-stretch text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] mb-[32px] z-50 cursor-pointer">
+        <div className="flex relative h-[54px]">
           <div
-            className="relative flex rounded-full  w-[271px] z-20"
+            className="relative flex rounded-full h-full w-[271px] z-50 p-[5px]"
             style={{
               backgroundColor: compChain
                 ? AllChainsByKeys[compChain].colors[theme][0]
-                : "#CDD8D3",
+                : "#151A19",
             }}
           >
-            <div className="flex w-[25%] p-1 items-center justify-center">
-              <div
-                className="rounded-[40px] w-[54px] h-[44px] bg-[#1F2726] flex items-center justify-center z-20 hover:cursor-pointer"
-                onClick={() => {
-                  if (compChainIndex > 0) {
-                    setCompChain(enabledChainKeys[compChainIndex - 1] || null);
-                    updateChainKey([
-                      chainKey[0],
-                      enabledChainKeys[compChainIndex - 1] || "",
-                    ]);
-                    setCompChainIndex(compChainIndex - 1);
-                  } else if (compChainIndex === 0) {
-                    setCompChain(null);
-                    setCompChainIndex(-1);
-                    updateChainKey([chainKey[0]]);
-                  } else {
-                    setCompChain(
-                      enabledChainKeys[enabledChainKeys.length - 1] || null,
-                    );
-                    updateChainKey([
-                      chainKey[0],
-                      enabledChainKeys[enabledChainKeys.length - 1] || "",
-                    ]);
-                    setCompChainIndex(enabledChainKeys.length - 1);
-                  }
-                }}
-              >
-                <Icon icon="feather:arrow-left" className="w-6 h-6" />
-              </div>
+            <div
+              className="rounded-[40px] w-[54px] h-full bg-[#1F2726] flex items-center justify-center z-50 hover:cursor-pointer"
+              onClick={() => {
+                if (compChainIndex > 0) {
+                  setCompChain(enabledChainKeys[compChainIndex - 1] || null);
+                  updateChainKey([
+                    chainKey[0],
+                    enabledChainKeys[compChainIndex - 1] || "",
+                  ]);
+                  setCompChainIndex(compChainIndex - 1);
+                } else if (compChainIndex === 0) {
+                  setCompChain(null);
+                  setCompChainIndex(-1);
+                  updateChainKey([chainKey[0]]);
+                } else {
+                  setCompChain(
+                    enabledChainKeys[enabledChainKeys.length - 1] || null,
+                  );
+                  updateChainKey([
+                    chainKey[0],
+                    enabledChainKeys[enabledChainKeys.length - 1] || "",
+                  ]);
+                  setCompChainIndex(enabledChainKeys.length - 1);
+                }
+              }}
+            >
+              <Icon icon="feather:arrow-left" className="w-6 h-6" />
             </div>
             <div
-              className="w-[50%] flex flex-col items-center justify-self-center py-[2px] z-20 gap-y-[1px]"
+              className="flex flex-1 flex-col items-center justify-self-center z-50 gap-y-[1px]"
               onClick={() => {
                 setCompareTo(!compareTo);
               }}
             >
-              <div className="text-[#1F2726]">Compare to</div>
-              <div className="flex text-[#1F2726] gap-x-[5px] items-center">
-                <div className="h-[22px] leading-[150%] flex items-center">
-                  {compChain ? AllChainsByKeys[compChain].label : ""}
+              <div
+                className={` font-[500] leading-[150%] ${
+                  compChain ? "text-[#1F2726]" : "text-[#5A6462]"
+                }`}
+              >
+                Compare to
+              </div>
+              <div
+                className={`flex font-[550] ${
+                  compChain
+                    ? AllChainsByKeys[compChain].darkTextOnBackground
+                      ? "text-[#1F2726]"
+                      : "text-forest-50"
+                    : ""
+                } gap-x-[5px] justify-center items-center w-32`}
+              >
+                {compChain && (
+                  <Icon
+                    icon={`gtp:${AllChainsByKeys[compChain].urlKey}-logo-monochrome`}
+                    className="w-[22px] h-[22px]"
+                  />
+                )}
+                <div className="text-sm overflow-ellipsis truncate whitespace-nowrap">
+                  {compChain ? AllChainsByKeys[compChain].label : "None"}
                 </div>
               </div>
             </div>
-            <div className="flex w-[25%] py-1 items-center justify-center">
-              <div
-                className="rounded-[40px] w-[54px] h-[44px] bg-[#1F2726] flex items-center justify-center z-20 hover:cursor-pointer"
-                onClick={() => {
-                  if (compChainIndex === -1 || compChain === null) {
-                    setCompChain(enabledChainKeys[0] || null);
-                    updateChainKey([chainKey[0], enabledChainKeys[0] || ""]);
-                    setCompChainIndex(0);
-                  } else if (compChainIndex < enabledChainKeys.length - 1) {
-                    setCompChain(enabledChainKeys[compChainIndex + 1] || null);
-                    updateChainKey([
-                      chainKey[0],
-                      enabledChainKeys[compChainIndex + 1] || "",
-                    ]);
-                    setCompChainIndex(compChainIndex + 1);
-                  } else {
-                    setCompChainIndex(-1);
-                    updateChainKey([chainKey[0]]);
-                    setCompChain(null);
-                  }
-                }}
-              >
-                <Icon icon="feather:arrow-right" className="w-6 h-6" />
-              </div>
+            <div
+              className="rounded-[40px] w-[54px] h-full bg-[#1F2726] flex items-center justify-center z-50 hover:cursor-pointer"
+              onClick={() => {
+                if (compChainIndex === -1 || compChain === null) {
+                  setCompChain(enabledChainKeys[0] || null);
+                  updateChainKey([chainKey[0], enabledChainKeys[0] || ""]);
+                  setCompChainIndex(0);
+                } else if (compChainIndex < enabledChainKeys.length - 1) {
+                  setCompChain(enabledChainKeys[compChainIndex + 1] || null);
+                  updateChainKey([
+                    chainKey[0],
+                    enabledChainKeys[compChainIndex + 1] || "",
+                  ]);
+                  setCompChainIndex(compChainIndex + 1);
+                } else {
+                  setCompChainIndex(-1);
+                  updateChainKey([chainKey[0]]);
+                  setCompChain(null);
+                }
+              }}
+            >
+              <Icon icon="feather:arrow-right" className="w-6 h-6" />
             </div>
           </div>
           <div
-            className={`flex flex-col gap-y-[10px] absolute top-[2px] left-0 right-0 bg-[#1F2726] p-4 z-10 rounded-t-[40px] rounded-b-2xl border-forest-50 border-[1px] transition-height ease-in-out duration-300 ${
-              compareTo ? "h-auto" : "h-0"
+            className={`flex flex-col absolute top-[27px] bottom-auto left-0 right-0 bg-[#1F2726] rounded-t-none rounded-b-2xl border-b border-l border-r transition-all ease-in-out duration-300 ${
+              compareTo
+                ? `max-h-[600px] z-40 border-forest-500 `
+                : "max-h-0 z-10 overflow-hidden border-transparent"
             }`}
           >
-            <div className="h-[35px]"></div>
-            <div
-              className="flex pl-[5px] h-[24px] gap-x-[10px] items-center text-[15px] leading-[150%] hover:cursor-pointer"
-              onClick={() => {
-                setCompChain(null);
-              }}
-            >
+            <div className="pb-[10px] px-[21px] pr-[15px]">
+              <div className="h-[35px]"></div>
               <div
-                className={`w-[24px] h-[24px] ${
-                  compChain === null ? "visible" : "invisible"
-                }`}
+                className="flex py-[5px] gap-x-[10px] items-center text-base leading-[150%] hover:cursor-pointer"
+                onClick={() => {
+                  setCompChain(null);
+                }}
               >
-                <Icon icon="feather:arrow-right-circle" className="w-6 h-6" />
+                <Icon
+                  icon="feather:arrow-right-circle"
+                  className="w-6 h-6"
+                  visibility={compChain === null ? "visible" : "hidden"}
+                />
+                <Icon
+                  icon="feather:x"
+                  className="w-[22px] h-[22px]"
+                  style={{
+                    color: compChain === null ? "" : "#5A6462",
+                  }}
+                />
+                <div className="">None</div>
               </div>
-              <div className="w-[15px] h-[15px] pl-1">
-                <Icon icon="feather:x" className="w-[15px] h-[15px]" />
-              </div>
-              <div className="pl-1">None</div>
-            </div>
-            {compareTo ? (
-              navigationItems[3].options
-                .filter((chain) => !chain.hide)
-                .map((chain, index) => (
-                  <div
-                    className="flex pl-[5px] h-[24px] gap-x-[10px] items-center text-[15px] leading-[150%] hover:cursor-pointer"
-                    onClick={() => {
-                      setCompChain(chain.key || null);
-                      updateChainKey([chainKey[0], chain.key || ""]);
-                    }}
-                    key={chain.key}
-                  >
+              {compareTo &&
+                navigationItems[3].options
+                  .filter((chain) => !chain.hide)
+                  .map((chain, index) => (
                     <div
-                      className={`w-[24px] h-[24px] ${
-                        compChain === chain.key ? "visible" : "invisible"
-                      }`}
+                      className="flex py-[5px] gap-x-[10px] items-center text-base leading-[150%] hover:cursor-pointer"
+                      onClick={() => {
+                        setCompChain(chain.key || null);
+                        updateChainKey([chainKey[0], chain.key || ""]);
+                      }}
                       key={chain.key}
                     >
                       <Icon
                         icon="feather:arrow-right-circle"
                         className="w-6 h-6"
+                        visibility={
+                          compChain === chain.key ? "visible" : "hidden"
+                        }
                       />
-                    </div>
-                    <div className="w-[15px] h-[15px] pl-1">
                       <Icon
                         icon={chain.icon}
-                        className={`w-[15px] h-[15px]`}
+                        className={`w-[22px] h-[22px]`}
                         style={{
                           color:
                             compChain === chain.key
@@ -1310,26 +1326,21 @@ export default function ChainChart({
                               : "#5A6462",
                         }}
                       />
+                      <div key={chain.label}>{chain.label}</div>
                     </div>
-                    <div key={chain.label} className={`pl-1`}>
-                      {chain.label}
-                    </div>
-                  </div>
-                ))
-            ) : (
-              <></>
-            )}
+                  ))}
+            </div>
 
             {/* Your content here */}
           </div>
         </div>
 
-        <div className="flex w-full md:w-auto justify-between md:justify-center items-stretch md:items-center space-x-[4px] md:space-x-1">
+        <div className="flex w-full md:w-auto justify-between md:justify-center items-stretch md:items-center space-x-[4px] md:space-x-1 py-[3px] pr-[3px] leading-[150%]">
           {!zoomed ? (
             Object.keys(timespans).map((timespan) => (
               <button
                 key={timespan}
-                className={`rounded-full grow px-[16px] py-[8px] text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
+                className={`rounded-full grow px-[16px] py-[8px] text-sm md:text-base lg:px-4 lg:py-3 font-medium ${
                   selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
@@ -1344,7 +1355,7 @@ export default function ChainChart({
           ) : (
             <div className="flex w-full">
               <button
-                className={`rounded-full flex items-center space-x-3 px-[15px] py-[7px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium border-[0.5px] border-forest-400`}
+                className={`rounded-full flex items-center space-x-3 px-[15px] py-[7px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-3 font-medium border-[0.5px] border-forest-400`}
                 onClick={() => {
                   //chartComponent?.current?.xAxis[0].setExtremes(
                   //timespans[selectedTimespan].xMin,
@@ -1359,7 +1370,7 @@ export default function ChainChart({
                 <div className="block md:hidden">Reset</div>
               </button>
               <button
-                className={`rounded-full px-[16px] py-[8px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4  bg-forest-100 dark:bg-forest-1000`}
+                className={`rounded-full px-[16px] py-[8px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-3  bg-forest-100 dark:bg-forest-1000`}
               >
                 {intervalShown?.label}
               </button>

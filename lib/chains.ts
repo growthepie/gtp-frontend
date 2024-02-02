@@ -43,7 +43,7 @@ export const AllChains: Chain[] = [
       light: ["bg-[#293305]", "bg-[#293305]"],
       dark: ["bg-[#C1C1C1]", "bg-[#C1C1C1]"],
     },
-    darkTextOnBackground: false,
+    darkTextOnBackground: true,
   },
   {
     label: "Arbitrum",
