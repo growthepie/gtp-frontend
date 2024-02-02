@@ -1731,8 +1731,14 @@ export default function ChainChart({
                           yAxis: {
                             ...options.yAxis,
                             // if all values are 0, set the min to 0
-                            min: isAllZeroValues ? 0 : undefined,
-                            max: isAllZeroValues ? 1 : undefined,
+                            min:
+                              isAllZeroValues && data.length === 1
+                                ? 0
+                                : undefined,
+                            max:
+                              isAllZeroValues && data.length === 1
+                                ? 1
+                                : undefined,
 
                             labels: {
                               ...(options.yAxis as Highcharts.YAxisOptions)
