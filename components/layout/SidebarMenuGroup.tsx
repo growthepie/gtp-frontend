@@ -49,8 +49,6 @@ export default function SidebarMenuGroup({
           acc[chainInfo.bucket] = [];
         }
 
-        console.log(chainInfo.bucket, chainInfo);
-
         if (chainItemsByKey[chainKey])
           acc[chainInfo.bucket].push(chainItemsByKey[chainKey]);
 
@@ -61,8 +59,6 @@ export default function SidebarMenuGroup({
 
     return chainsByBucket;
   }, [master]);
-
-  console.log("chainGroups", ChainGroups);
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
