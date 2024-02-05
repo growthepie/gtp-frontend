@@ -189,7 +189,11 @@ const MetricsTable = ({
   }, [data, dataKey, showUsd, timeIntervalKey]);
 
   const rows = useCallback(() => {
+    const lastValIntervalKey =
+      timeIntervalKey === "daily_7d_rolling" ? "daily" : timeIntervalKey;
+
     if (!data || maxVal === null) return [];
+
     return Object.keys(data)
       .filter(
         (chain) =>
@@ -199,8 +203,8 @@ const MetricsTable = ({
       )
       .map((chain: any) => {
         const lastVal =
-          data[chain][timeIntervalKey].data[
-            data[chain][timeIntervalKey].data.length - 1
+          data[chain][lastValIntervalKey].data[
+            data[chain][lastValIntervalKey].data.length - 1
           ][dataKey];
         return {
           data: data[chain],
@@ -303,14 +307,17 @@ const MetricsTable = ({
       let prefix = "";
       let suffix = "";
 
+      const displayValueIntervalKey =
+        timeIntervalKey === "daily_7d_rolling" ? "daily" : timeIntervalKey;
+
       let types = item.data[timeIntervalKey].types;
       let values =
-        item.data[timeIntervalKey].data[
-          item.data[timeIntervalKey].data.length - 1
+        item.data[displayValueIntervalKey].data[
+          item.data[displayValueIntervalKey].data.length - 1
         ];
       let value = formatNumber(
-        item.data[timeIntervalKey].data[
-          item.data[timeIntervalKey].data.length - 1
+        item.data[displayValueIntervalKey].data[
+          item.data[displayValueIntervalKey].data.length - 1
         ][1],
       );
 
