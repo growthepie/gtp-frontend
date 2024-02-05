@@ -454,7 +454,6 @@ export default function ChainChart({
         };
       });
     });
-
     return p;
   }, [data, showUsd, intervalShown]);
 

@@ -11,7 +11,9 @@ export interface Chains {
 
 export interface ChainInfo {
   name: string;
+  name_short: string;
   symbol: string;
+  bucket: string;
   technology: string;
   purpose: string;
   launch_date: string;

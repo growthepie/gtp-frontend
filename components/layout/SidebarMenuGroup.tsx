@@ -6,11 +6,12 @@ import useSWR from "swr";
 import { usePathname } from "next/navigation";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./Tooltip";
 import { MasterURL } from "@/lib/urls";
-import { NavigationItem } from "@/lib/navigation";
+import { NavigationItem, navigationItems } from "@/lib/navigation";
 import { IS_PREVIEW } from "@/lib/helpers";
-import { navigationCategories, chainGroup } from "@/lib/navigation";
+import { navigationCategories } from "@/lib/navigation";
 import rpgf from "@/icons/svg/rpgf.svg";
 import Image from "next/image";
+import { MasterResponse } from "@/types/api/MasterResponse";
 
 type SidebarProps = {
   item: NavigationItem;
@@ -27,7 +28,37 @@ export default function SidebarMenuGroup({
   onClose,
   sidebarOpen,
 }: SidebarProps) {
-  const { data: master } = useSWR<any>(MasterURL);
+  const { data: master } = useSWR<MasterResponse>(MasterURL);
+
+  const ChainGroups = useMemo(() => {
+    if (!master) return {};
+
+    // const chainGroups = {};
+
+    const chainItemsByKey = navigationItems[3].options
+      .filter((option) => option.hide !== true)
+      .reduce((acc, option) => {
+        if (option.key) acc[option.key] = option;
+        return acc;
+      }, {});
+
+    // group master.chains by bucket
+    const chainsByBucket = Object.entries(master.chains).reduce(
+      (acc, [chainKey, chainInfo]) => {
+        if (!acc[chainInfo.bucket]) {
+          acc[chainInfo.bucket] = [];
+        }
+
+        if (chainItemsByKey[chainKey])
+          acc[chainInfo.bucket].push(chainItemsByKey[chainKey]);
+
+        return acc;
+      },
+      {},
+    );
+
+    return chainsByBucket;
+  }, [master]);
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -196,6 +227,181 @@ export default function SidebarMenuGroup({
       </div>
     );
 
+  if (item.key === "chains") {
+    return (
+      <div key={item.key} className="flex flex-col " suppressHydrationWarning>
+        <Tooltip placement="right">
+          <TooltipTrigger className="h-6 pl-0 md:pl-8 overflow-visible">
+            <div
+              className="group flex items-center justify-items-start mb-2 cursor-pointer relative"
+              onClick={handleToggle}
+            >
+              <div className="w-6 mx-0">
+                <div className="w-6 mx-auto">
+                  {!item.name.includes("RPGF3 Tracker") ? (
+                    <Icon icon={item.icon} className="h-7 w-7 p-0.5 mx-auto" />
+                  ) : (
+                    <Icon
+                      icon={item.icon}
+                      className="h-7 w-7 p-0 mx-auto fill-[#FF0420] text-[#FF0420]"
+                    />
+                  )}
+                </div>
+              </div>
+
+              <div
+                className={`absolute flex-1 flex items-center transition-all duration-300 origin-[-10px_10px]  ${
+                  isOpen
+                    ? "rotate-90 bottom-[12px] left-[20px]"
+                    : "rotate-0 bottom-[7px] left-[22px]"
+                }`}
+              >
+                <Icon
+                  icon={"feather:chevron-right"}
+                  className="w-[12px] h-[12px] mr-2"
+                />
+              </div>
+              {sidebarOpen && (
+                <div className={`flex-1 flex items-start justify-between`}>
+                  <div className="text-base font-bold mx-3 py-0.5 break-inside-avoid">
+                    {item.name === "RPGF3 Tracker" ? (
+                      <>
+                        <span className="text-[#FF0420]">RetroPGF 3</span>{" "}
+                        <span className="text-black">Tracker</span>
+                      </>
+                    ) : (
+                      item.label
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </TooltipTrigger>
+          {!sidebarOpen && (
+            <TooltipContent className="bg-forest-900 text-forest-50 dark:bg-forest-50 dark:text-forest-900 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md z-50">
+              {item.label}
+            </TooltipContent>
+          )}
+        </Tooltip>
+
+        <div
+          className={`flex flex-col overflow-hidden mb-8 w-full md:w-80 transition-all duration-300 ease-out  ${
+            isOpen ? "h-auto mt-4" : "h-0 mt-0"
+          }`}
+        >
+          {Object.keys(ChainGroups).length > 0 &&
+            Object.entries(ChainGroups).map(([bucket, chains]: any) => {
+              if (chains.length === 0) return null;
+
+              return (
+                <>
+                  <div
+                    key={bucket}
+                    className="px-0 md:px-5 mt-[7px] mb-[2px] overflow-visible text-forest-800"
+                  >
+                    <div className="flex items-center justify-items-center rounded-full md:rounded-l-full relative">
+                      <div className={`w-6 absolute left-[13px]`}>
+                        <Icon
+                          icon="feather:clock"
+                          className={"h-[15px] w-[15px] mx-auto"}
+                        />
+                      </div>
+                      <div
+                        className={`text-[10px] w-48 font-medium break-inside-auto text-left ml-12 uppercase`}
+                      >
+                        {sidebarOpen ? bucket : <span>&nbsp;</span>}
+                      </div>
+                    </div>
+                  </div>
+                  {chains.map((option, i) => {
+                    return (
+                      <Tooltip key={option.key} placement="top-start">
+                        <TooltipTrigger className="px-0 md:px-5">
+                          <Link
+                            className={`group flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
+                              urlParts[1]
+                                .trim()
+                                .localeCompare(option.urlKey) === 0
+                                ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                                : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                            }`}
+                            href={`/${item.name.toLowerCase()}/${
+                              option.urlKey
+                            }`}
+                          >
+                            <div
+                              className={`absolute top-0 left-[4px] w-[64px] h-[28px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726] transition-opacity  ease-in-out ${
+                                sidebarOpen
+                                  ? "opacity-0 duration-0"
+                                  : "opacity-100 duration-500"
+                              }`}
+                            ></div>
+
+                            <div
+                              className={`w-6 absolute left-[13px]  ${
+                                urlParts[1]
+                                  .trim()
+                                  .localeCompare(option.urlKey) === 0
+                                  ? "text-inherit"
+                                  : "text-[#5A6462] group-hover:text-inherit"
+                              }`}
+                            >
+                              {["Blockspace"].includes(item.name) && (
+                                <Icon
+                                  icon={option.icon}
+                                  className={`${
+                                    item.name === "Fundamentals"
+                                      ? "h-4 w-4 mx-auto"
+                                      : "h-[15px] w-[15px] mx-auto"
+                                  } `}
+                                />
+                              )}
+                            </div>
+                            {option.category ? (
+                              <div
+                                className={`text-sm py-1 w-48 font-normal break-inside-auto transition-all duration-300 ease-in text-left ${
+                                  sidebarOpen ? "ml-12" : "ml-4"
+                                }`}
+                              >
+                                {option.label}
+                              </div>
+                            ) : (
+                              <div
+                                className={`text-sm py-1 w-48 font-normal break-inside-auto text-left ml-12`}
+                              >
+                                {sidebarOpen ? (
+                                  option.label
+                                ) : (
+                                  <span>&nbsp;</span>
+                                )}
+                              </div>
+                            )}
+                          </Link>
+                        </TooltipTrigger>
+                        {!sidebarOpen && (
+                          <TooltipContent
+                            className={`text-forest-900 dark:text-forest-50 py-1 px-4 text-base break-inside-auto shadow-md z-50 pointer-events-none ml-[8px] mt-[36px] flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
+                              urlParts[1]
+                                .trim()
+                                .localeCompare(option.urlKey) === 0
+                                ? "bg-[#CDD8D3] dark:bg-forest-1000"
+                                : "bg-[#F0F5F3] dark:bg-[#5A6462]"
+                            }`}
+                          >
+                            {option.label}
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    );
+                  })}
+                </>
+              );
+            })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div key={item.key} className="flex flex-col " suppressHydrationWarning>
       <Tooltip placement="right">
@@ -216,17 +422,7 @@ export default function SidebarMenuGroup({
                 )}
               </div>
             </div>
-            {/* {sidebarOpen ? (
-              <div className={`flex-1 flex items-start justify-between`}>
-                <div className="text-base font-bold mx-3 py-0.5">
-                  {item.label}
-                </div>
-                <Icon
-                  icon={"feather:chevron-right"}
-                  className="w-[13px] h-[13px] mr-[5px] md:mr-5 my-auto"
-                />
-              </div>
-            ) : ( */}
+
             <div
               className={`absolute flex-1 flex items-center transition-all duration-300 origin-[-10px_10px]  ${
                 isOpen
@@ -253,7 +449,6 @@ export default function SidebarMenuGroup({
                 </div>
               </div>
             )}
-            {/* )} */}
           </div>
         </TooltipTrigger>
         {!sidebarOpen && (
@@ -292,65 +487,12 @@ export default function SidebarMenuGroup({
                               }
                             />
                           )}
-                          {/* {chainGroup[option.category].icon && (
-                          <Icon
-                            icon={chainGroup[option.category].icon}
-                            className={
-                              item.name === "Chains"
-                                ? "h-4 w-4 mx-auto"
-                                : "h-[15px] w-[15px] mx-auto"
-                            }
-                          />
-                        )} */}
                         </div>
                         <div
                           className={`text-[10px] w-48 font-medium break-inside-auto text-left ml-12 uppercase`}
                         >
                           {sidebarOpen ? (
                             navigationCategories[option.category].label
-                          ) : (
-                            <span>&nbsp;</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                {option.category &&
-                  Object.keys(chainGroup).includes(option.category) &&
-                  (i === 0 ||
-                    (i > 0 &&
-                      item.options.filter((o) => o.hide !== true)[i - 1]
-                        .category != option.category)) && (
-                    <div className="px-0 md:px-5 mt-[7px] mb-[2px] overflow-visible text-forest-800">
-                      <div className="flex items-center justify-items-center rounded-full md:rounded-l-full relative">
-                        <div className={`w-6 absolute left-[13px]`}>
-                          {chainGroup[option.category].icon && (
-                            <Icon
-                              icon={chainGroup[option.category].icon}
-                              className={
-                                item.name === "Chains"
-                                  ? "h-4 w-4 mx-auto"
-                                  : "h-[15px] w-[15px] mx-auto"
-                              }
-                            />
-                          )}
-                          {/* {chainGroup[option.category].icon && (
-                          <Icon
-                            icon={chainGroup[option.category].icon}
-                            className={
-                              item.name === "Chains"
-                                ? "h-4 w-4 mx-auto"
-                                : "h-[15px] w-[15px] mx-auto"
-                            }
-                          />
-                        )} */}
-                        </div>
-                        <div
-                          className={`text-[10px] w-48 font-medium break-inside-auto text-left ml-12 uppercase`}
-                        >
-                          {sidebarOpen ? (
-                            chainGroup[option.category].label
                           ) : (
                             <span>&nbsp;</span>
                           )}
