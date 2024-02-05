@@ -1318,8 +1318,6 @@ export default function OverviewMetrics({
     }
   }
 
-  console.log(allCats);
-
   return (
     <div className="w-full flex-col relative">
       <Container>

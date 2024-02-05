@@ -398,7 +398,6 @@ export default function ChainChart({
       };
     }[] = [];
     data.forEach((item, chainIndex) => {
-      console.log(item.chain_id, "item", item);
       Object.keys(item.metrics).forEach((key) => {
         let prefix = "";
         let suffix = "";
@@ -455,7 +454,6 @@ export default function ChainChart({
         };
       });
     });
-    console.log("p", p);
     return p;
   }, [data, showUsd, intervalShown]);
 

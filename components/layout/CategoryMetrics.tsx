@@ -451,7 +451,6 @@ export default function CategoryMetrics({
         }
       }
     }
-    console.log("chainArray", chainArray);
     return chainArray;
   }, [
     selectedSubcategories,

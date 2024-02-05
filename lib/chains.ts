@@ -294,30 +294,6 @@ export const AllChains: Chain[] = [
     },
     darkTextOnBackground: true,
   },
-
-  {
-    label: "Loopring",
-    icon: "/icons/loopring.png",
-    key: "loopring",
-    urlKey: "loopring",
-    chainType: "L2",
-    ecosystem: [],
-    description: "",
-    border: {
-      light: ["border-[#000000]", "border-[#000000]"],
-      dark: ["border-[#000000]", "border-[#000000]"],
-    },
-    colors: {
-      light: ["#000000", "#000000"], // black
-      dark: ["#000000", "#000000"], // black
-    },
-    backgrounds: {
-      light: ["bg-[#000000]", "bg-[#000000]"],
-      dark: ["bg-[#000000]", "bg-[#000000]"],
-    },
-    darkTextOnBackground: false,
-  },
-
   {
     label: "Mantle",
     icon: "/icons/mantle.png",
@@ -369,7 +345,7 @@ export const AllChains: Chain[] = [
     key: "loopring",
     urlKey: "loopring",
     chainType: "L2",
-    ecosystem: [], // add ecosystems when unhiding from the UI
+    ecosystem: ["all-chains"], // add ecosystems when unhiding from the UI
     description: "",
     border: {
       light: ["border-[#4F5EDF]", "border-[#4F5EDF]"],
