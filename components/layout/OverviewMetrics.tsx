@@ -378,9 +378,28 @@ export default function OverviewMetrics({
     const result: { [key: string]: ContractInfo } = {};
     for (const category of Object.keys(data)) {
       if (data) {
-        const contractsData =
-          data[standardChainKey]["overview"][selectedTimespan][selectedCategory]
-            .contracts.data;
+        const contractsData = allCats
+          ? (() => {
+              let contractArray = [];
+
+              for (const categoryKey in data[standardChainKey]["overview"][
+                selectedTimespan
+              ]) {
+                const categoryData =
+                  data[standardChainKey]["overview"][selectedTimespan][
+                    categoryKey
+                  ].contracts.data;
+
+                // Concatenate and flatten data to the contractArray
+                contractArray = contractArray.concat(categoryData);
+              }
+
+              return contractArray;
+            })()
+          : data[standardChainKey]["overview"][selectedTimespan][
+              selectedCategory
+            ].contracts.data;
+
         const types =
           data[standardChainKey]["overview"][selectedTimespan][selectedCategory]
             .contracts.types;
@@ -433,7 +452,7 @@ export default function OverviewMetrics({
 
     // Update the contracts state with the new data
     return result;
-  }, [data, selectedCategory, selectedTimespan]);
+  }, [data, selectedCategory, selectedTimespan, allCats]);
 
   const [selectedChain, setSelectedChain] = useState<string | null>(
     forceSelectedChain ?? null,
@@ -705,8 +724,9 @@ export default function OverviewMetrics({
         const isAllChainsSelected = selectedChain === null;
         const isChainSelected =
           isAllChainsSelected || contract.chain === selectedChain;
-        const isCategoryMatched =
-          contract.main_category_key === selectedCategory;
+        const isCategoryMatched = allCats
+          ? true
+          : contract.main_category_key === selectedCategory;
         const isEcosystemSelected = Object.keys(data).includes(contract.chain);
 
         return isChainSelected && isCategoryMatched && isEcosystemSelected;
@@ -1318,8 +1338,6 @@ export default function OverviewMetrics({
     }
   }
 
-  console.log(allCats);
-
   return (
     <div className="w-full flex-col relative">
       <Container>
@@ -1437,7 +1455,9 @@ export default function OverviewMetrics({
                     style={{
                       backgroundColor: allCats ? "#5A6462" : "",
                     }}
-                  ></button>
+                  >
+                    All
+                  </button>
                 </div>
                 <div className="flex flex-1">
                   {Object.keys(categories)
@@ -1834,10 +1854,10 @@ export default function OverviewMetrics({
               : chainEcosystemFilter === "op-stack"
               ? "OP Stack Chains"
               : "OP Superchain"}
-            : {categories[selectedCategory]}
+            : {allCats ? "All Categories " : categories[selectedCategory]}
           </h2>
         </div>
-        <div className="flex items-center w-full">
+        <div className="flex items-center w-full ">
           <Chart
             types={
               selectedChain === null
@@ -1849,7 +1869,7 @@ export default function OverviewMetrics({
             timespan={selectedTimespan}
             series={chartSeries}
             yScale={selectedValue === "share" ? "percentageDecimal" : "linear"}
-            chartHeight="196px"
+            chartHeight={forceSelectedChain ? "259px" : "196px"}
             chartWidth="100%"
             maxY={chartMax}
             chartAvg={!allCats ? chartAvg || undefined : undefined}
@@ -1883,7 +1903,11 @@ export default function OverviewMetrics({
         </div>
       </Container>
       <Container className="w-[98%] ml-4">
-        <div className="flex flex-wrap items-center w-[100%] gap-y-2 invisible lg:visible">
+        <div
+          className={`flex flex-wrap items-center w-[100%] gap-y-2 ${
+            allCats ? "invisible" : "invisible lg:visible"
+          }`}
+        >
           <h1 className="font-bold text-sm pr-2 pl-2">
             {master &&
               master.blockspace_categories.main_categories[selectedCategory]}
