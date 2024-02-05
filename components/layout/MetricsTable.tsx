@@ -137,11 +137,19 @@ const MetricsTable = ({
     return "changes";
   }, [timeIntervalKey]);
 
-  const dataKey = useMemo(() => {
+  const lastValueTimeIntervalKey = useMemo(() => {
+    if (timeIntervalKey === "daily_7d_rolling") {
+      return "daily";
+    }
+
+    return timeIntervalKey;
+  }, [timeIntervalKey]);
+
+  const valueIndex = useMemo(() => {
     if (!data) return;
 
     const sampleChainDataTypes =
-      data[Object.keys(data)[0]][timeIntervalKey].types;
+      data[Object.keys(data)[0]][lastValueTimeIntervalKey].types;
 
     if (sampleChainDataTypes.includes("usd")) {
       if (showUsd) {
@@ -152,9 +160,9 @@ const MetricsTable = ({
     } else {
       return 1;
     }
-  }, [data, showUsd, timeIntervalKey]);
+  }, [data, showUsd, lastValueTimeIntervalKey]);
 
-  const valueKey = useMemo(() => {
+  const changesValueIndex = useMemo(() => {
     if (!data) return;
 
     const sampleChainChangesTypes =
@@ -171,28 +179,56 @@ const MetricsTable = ({
     }
   }, [changesKey, data, showUsd]);
 
+  const lastValues = useMemo(() => {
+    if (!data) return null;
+
+    return Object.keys(data)
+      .filter((chain) => chain !== "ethereum")
+      .reduce((acc, chain) => {
+        let types = data[chain][lastValueTimeIntervalKey].types;
+        let values =
+          data[chain][lastValueTimeIntervalKey].data[
+            data[chain][lastValueTimeIntervalKey].data.length - 1
+          ];
+        let lastVal = values[valueIndex];
+
+        if (lastValueTimeIntervalKey === "monthly") {
+          types = data[chain].last_30d.types;
+          values = data[chain].last_30d.data;
+
+          let monthlyValueIndex = 0;
+
+          if (types.includes("usd")) {
+            if (showUsd) {
+              monthlyValueIndex = types.indexOf("usd");
+            } else {
+              monthlyValueIndex = types.indexOf("eth");
+            }
+          }
+
+          lastVal = values[monthlyValueIndex];
+        }
+
+        return {
+          ...acc,
+          [chain]: lastVal,
+        };
+      }, {});
+  }, [data, valueIndex, lastValueTimeIntervalKey, showUsd]);
+
   // set maxVal
   useEffect(() => {
-    if (!data) return;
+    if (!data || !lastValues) return;
 
-    setMaxVal(
-      Math.max(
-        ...Object.keys(data)
-          .filter((chain) => chain !== "ethereum")
-          .map((chain) => {
-            return data[chain][timeIntervalKey].data[
-              data[chain][timeIntervalKey].data.length - 1
-            ][dataKey];
-          }),
-      ),
-    );
-  }, [data, dataKey, showUsd, timeIntervalKey]);
+    const valuesArray = Object.values<number>(lastValues);
+
+    const maxVal = Math.max(...valuesArray);
+
+    setMaxVal(maxVal);
+  }, [data, valueIndex, lastValueTimeIntervalKey, showUsd, lastValues]);
 
   const rows = useCallback(() => {
-    const lastValIntervalKey =
-      timeIntervalKey === "daily_7d_rolling" ? "daily" : timeIntervalKey;
-
-    if (!data || maxVal === null) return [];
+    if (!data || maxVal === null || lastValues === null) return [];
 
     return Object.keys(data)
       .filter(
@@ -202,15 +238,11 @@ const MetricsTable = ({
           AllChainsByKeys[chain].ecosystem.includes("all-chains"),
       )
       .map((chain: any) => {
-        const lastVal =
-          data[chain][lastValIntervalKey].data[
-            data[chain][lastValIntervalKey].data.length - 1
-          ][dataKey];
         return {
           data: data[chain],
           chain: AllChainsByKeys[chain],
-          lastVal: lastVal,
-          barWidth: `${(Math.max(lastVal, 0) / maxVal) * 100}%`,
+          lastVal: lastValues[chain],
+          barWidth: `${(Math.max(lastValues[chain], 0) / maxVal) * 100}%`,
         };
       })
       .sort((a, b) => {
@@ -249,14 +281,7 @@ const MetricsTable = ({
           }
         }
       });
-  }, [
-    data,
-    maxVal,
-    timeIntervalKey,
-    dataKey,
-    reversePerformer,
-    selectedChains,
-  ]);
+  }, [data, maxVal, lastValues, reversePerformer, selectedChains]);
 
   let height = 0;
   const transitions = useTransition(
@@ -304,28 +329,29 @@ const MetricsTable = ({
 
   const getDisplayValue = useCallback(
     (item: any) => {
+      if (!lastValues) return { value: "0", prefix: "", suffix: "" };
+
       let prefix = "";
       let suffix = "";
 
-      const displayValueIntervalKey =
-        timeIntervalKey === "daily_7d_rolling" ? "daily" : timeIntervalKey;
-
-      let types = item.data[timeIntervalKey].types;
+      let types = item.data[lastValueTimeIntervalKey].types;
       let values =
-        item.data[displayValueIntervalKey].data[
-          item.data[displayValueIntervalKey].data.length - 1
+        item.data[lastValueTimeIntervalKey].data[
+          item.data[lastValueTimeIntervalKey].data.length - 1
         ];
-      let value = formatNumber(
-        item.data[displayValueIntervalKey].data[
-          item.data[displayValueIntervalKey].data.length - 1
-        ][1],
-      );
+      // let value = formatNumber(
+      //   item.data[lastValueTimeIntervalKey].data[
+      //     item.data[lastValueTimeIntervalKey].data.length - 1
+      //   ][1],
+      // );
 
-      if (timeIntervalKey === "monthly") {
+      if (lastValueTimeIntervalKey === "monthly") {
         types = item.data.last_30d.types;
         values = item.data.last_30d.data;
-        value = formatNumber(values[0]);
+        // value = formatNumber(values[0]);
       }
+
+      let value = formatNumber(lastValues[item.chain.key]);
 
       if (types.includes("eth")) {
         if (!showUsd) {
@@ -349,7 +375,7 @@ const MetricsTable = ({
       }
       return { value, prefix, suffix };
     },
-    [metric_id, showUsd, timeIntervalKey],
+    [lastValueTimeIntervalKey, lastValues, metric_id, showUsd],
   );
 
   const timespanLabels = {
@@ -574,44 +600,11 @@ const MetricsTable = ({
                     <div className="flex-1 break-inside-avoid">
                       <div className="flex-1 flex flex-col">
                         <div className="flex w-full items-baseline text-sm font-bold leading-snug">
-                          {/* {item.data.daily.types.includes("usd") && (
-                          <> */}
-                          {/* {showUsd ? (
-                              <div className="text-[13px] font-normal">$</div>
-                            ) : (
-                              <div className="text-[13px] font-normal">Ξ</div>
-                            )} */}
                           {getDisplayValue(item).prefix && (
                             <div className="text-[13px] font-normal mr-[1px] leading-snug">
                               {getDisplayValue(item).prefix}
                             </div>
                           )}
-                          {/* </> */}
-                          {/* )} */}
-                          {/* {item.data.daily.types.includes("usd")
-                          ? Intl.NumberFormat(undefined, {
-                              notation: "compact",
-                              maximumFractionDigits: 2,
-                              minimumFractionDigits: 2,
-                            }).format(
-                              item.data.daily.data[
-                                item.data.daily.data.length - 1
-                              ][
-                                !showUsd &&
-                                item.data.daily.types.includes("usd")
-                                  ? 2
-                                  : 1
-                              ],
-                            )
-                          : Intl.NumberFormat(undefined, {
-                              notation: "compact",
-                              maximumFractionDigits: 2,
-                              minimumFractionDigits: 2,
-                            }).format(
-                              item.data.daily.data[
-                                item.data.daily.data.length - 1
-                              ][1],
-                            )} */}
                           {getDisplayValue(item).value}
                           {getDisplayValue(item).suffix && (
                             <div className="text-[13px] font-normal ml-0.5 leading-snug">
@@ -619,19 +612,6 @@ const MetricsTable = ({
                             </div>
                           )}
                         </div>
-                        {/* <div className="relative w-full">
-                        {item.chain.key !== "ethereum" && (
-                          <>
-                            <div className="absolute left-0 -top-[3px] w-full h-1 bg-black/10"></div>
-                            <div
-                              className={`absolute left-0 -top-[3px] h-1 bg-forest-900 dark:bg-forest-50 rounded-none font-semibold transition-width duration-300 `}
-                              style={{
-                                width: item.barWidth,
-                              }}
-                            ></div>
-                          </>
-                        )}
-                      </div> */}
                         <div
                           className={`font-medium leading-snug text-ellipsis overflow-hidden ${
                             isSidebarOpen
@@ -669,19 +649,24 @@ const MetricsTable = ({
                           : ""
                       }`}
                       >
-                        {item.data[changesKey][timespan][valueKey] === null ? (
+                        {item.data[changesKey][timespan][changesValueIndex] ===
+                        null ? (
                           <span className="text-gray-500 text-center mx-4 inline-block">
                             —
                           </span>
                         ) : (
                           <>
                             {(reversePerformer ? -1.0 : 1.0) *
-                              item.data[changesKey][timespan][valueKey] >=
+                              item.data[changesKey][timespan][
+                                changesValueIndex
+                              ] >=
                             0 ? (
                               <div
                                 className={`text-[#45AA6F] dark:text-[#4CFF7E] ${
                                   Math.abs(
-                                    item.data[changesKey][timespan][valueKey],
+                                    item.data[changesKey][timespan][
+                                      changesValueIndex
+                                    ],
                                   ) >= 10
                                     ? "lg:text-[13px] lg:font-[550] 2xl:text-[14px] 2xl:font-[600]"
                                     : ""
@@ -697,7 +682,7 @@ const MetricsTable = ({
                                   const rawPercentage = Math.abs(
                                     Math.round(
                                       item.data[changesKey][timespan][
-                                        valueKey
+                                        changesValueIndex
                                       ] * 1000,
                                     ) / 10,
                                   ).toFixed(1);
@@ -724,7 +709,9 @@ const MetricsTable = ({
                               <div
                                 className={`text-[#DD3408] dark:text-[#FF3838] ${
                                   Math.abs(
-                                    item.data[changesKey][timespan][valueKey],
+                                    item.data[changesKey][timespan][
+                                      changesValueIndex
+                                    ],
                                   ) >= 10
                                     ? "lg:text-[13px] lg:font-[550]  2xl:text-[14px] 2xl:font-[600]"
                                     : ""
@@ -749,7 +736,7 @@ const MetricsTable = ({
                                   Math.abs(
                                     Math.round(
                                       item.data[changesKey][timespan][
-                                        valueKey
+                                        changesValueIndex
                                       ] * 1000,
                                     ) / 10,
                                   ).toFixed(1)
