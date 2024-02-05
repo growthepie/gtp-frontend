@@ -1897,7 +1897,7 @@ export default function ChainChart({
                     <div>
                       <Icon
                         icon={getNavIcon(key)}
-                        className="absolute h-[40px] w-[40px] top-[116px] left-[24px] dark:text-[#CDD8D3] opacity-20 pointer-events-none"
+                        className="absolute h-[40px] w-[40px] top-[116px] left-[24px] dark:text-[#CDD8D3] pointer-events-none"
                       />
                     </div>
                   </div>
