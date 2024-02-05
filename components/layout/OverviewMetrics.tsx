@@ -1304,7 +1304,7 @@ export default function OverviewMetrics({
     y:
       chartAvg && chartMax
         ? -1 *
-          (163 * (chartAvg / chartMax) +
+          ((forceSelectedChain ? 200 : 163) * (chartAvg / chartMax) +
             (chartAvg / chartMax > 0.45
               ? chartAvg / chartMax > 0.5
                 ? 7
@@ -1876,9 +1876,9 @@ export default function OverviewMetrics({
           />
           {chartAvg && (
             <div
-              className={` items-end relative top-[2px] h-[180px] min-w-[50px] lg:min-w-[70px] ${
+              className={` items-end relative top-[2px] min-w-[50px] lg:min-w-[70px] ${
                 allCats ? "hidden" : "flex"
-              }`}
+              } ${forceSelectedChain ? "h-[230px]" : "h-[180px]"}`}
             >
               <animated.div
                 className="flex h-[28px] relative items-center justify-center rounded-full w-full px-2.5 lg:text-base text-sm font-medium"
@@ -1887,7 +1887,7 @@ export default function OverviewMetrics({
                     AllChainsByKeys[selectedChain ? selectedChain : "all_l2s"]
                       ?.colors[theme ?? "dark"][0],
                   color: selectedChain
-                    ? selectedChain === "arbitrum"
+                    ? selectedChain === "arbitrum" || "linea"
                       ? "black"
                       : "white"
                     : "black",
