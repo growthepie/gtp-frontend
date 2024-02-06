@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Icon } from "@iconify/react";
+import Icon from "@/components/layout/ServerIcon";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { BASE_URLS } from "@/lib/helpers";
@@ -71,7 +71,9 @@ export default function Share() {
             setOpenShare(true);
           }}
         >
-          <Icon className="w-5 h-5 font-semibold" icon="feather:share-2" />
+          <div className="w-5 h-5">
+            <Icon className="w-5 h-5 font-semibold" icon="feather:share-2" />
+          </div>
           <div className="font-semibold">Share</div>
         </button>
         {openShare && (
