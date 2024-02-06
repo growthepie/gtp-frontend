@@ -1181,6 +1181,7 @@ export default function ChainChart({
   const handleNextCompChain = () => {
     if (!compChain) {
       updateChainKey([chainKey[0], CompChains[0].key]);
+      return;
     }
 
     const currentIndex = CompChains.findIndex(
@@ -1197,6 +1198,7 @@ export default function ChainChart({
   const handlePrevCompChain = () => {
     if (!compChain) {
       updateChainKey([chainKey[0], CompChains[CompChains.length - 1].key]);
+      return;
     }
 
     const currentIndex = CompChains.findIndex(
@@ -1208,6 +1210,19 @@ export default function ChainChart({
     } else {
       updateChainKey([chainKey[0], CompChains[currentIndex - 1].key]);
     }
+  };
+
+  const getNoDataMessage = (chainKey, metricKey) => {
+    if (
+      chainKey === "ethereum" &&
+      ["tvl", "rent_paid", "profit"].includes(metricKey)
+    )
+      return `Data is not available for ${AllChainsByKeys[chainKey].label}`;
+
+    if (chainKey === "imx" && metricKey === "txcosts")
+      return `${AllChainsByKeys[chainKey].label} does not charge Transaction Costs`;
+
+    return `Data is not available for ${AllChainsByKeys[chainKey].label}`;
   };
 
   if (!data) {
@@ -1436,27 +1451,8 @@ export default function ChainChart({
                           }
                         </div>
                         <div className="lg:hidden text-xs flex-1 text-right leading-snug">
-                          {data[0].chain_id === "ethereum" && (
-                            <>
-                              {["tvl", "rent_paid", "profit"].includes(key) && (
-                                <>Data is not available for Ethereum</>
-                              )}
-                            </>
-                          )}
-                          {data[0].chain_id === "imx" && (
-                            <>
-                              {["rent_paid", "profit"].includes(key) && (
-                                <>Data is not available for Ethereum</>
-                              )}
-                            </>
-                          )}
-                          {data[0].chain_id === "imx" && (
-                            <>
-                              {key === "txcosts" && (
-                                <>IMX does not charge Transaction Costs</>
-                              )}
-                            </>
-                          )}
+                          {!Object.keys(data[0].metrics).includes(key) &&
+                            getNoDataMessage(data[0].chain_id, key)}
                         </div>
                         {/* <div className="text-[18px] leading-snug flex space-x-[2px]">
                           Unavailable
@@ -1473,34 +1469,8 @@ export default function ChainChart({
                       </div>
                       <div>
                         <div className="absolute inset-0 hidden lg:flex font-medium opacity-30 select-none justify-center items-center text-xs lg:text-sm">
-                          {data[0].chain_id === "ethereum" && (
-                            <>
-                              {["tvl", "rent_paid", "profit"].includes(key) && (
-                                <>
-                                  Data is not available for {data[0].chain_name}
-                                </>
-                              )}
-                            </>
-                          )}
-                          {data[0].chain_id === "imx" && (
-                            <>
-                              {["rent_paid", "profit"].includes(key) && (
-                                <>
-                                  Data is not available for {data[0].chain_name}
-                                </>
-                              )}
-                            </>
-                          )}
-                          {data[0].chain_id === "imx" && (
-                            <>
-                              {key === "txcosts" && (
-                                <>
-                                  {data[0].chain_name} does not charge
-                                  Transaction Costs
-                                </>
-                              )}
-                            </>
-                          )}
+                          {!Object.keys(data[0].metrics).includes(key) &&
+                            getNoDataMessage(data[0].chain_id, key)}
                         </div>
                         <Icon
                           icon={getNavIcon(key)}
@@ -1584,7 +1554,7 @@ export default function ChainChart({
                 <div key={key} className="w-full h-fit relative">
                   <div className="w-full h-[176px] relative">
                     <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] rounded-[15px]"></div>
-                    <div className="absolute w-full h-[191px] top-[0px]">
+                    <div className="absolute w-full h-[191px] top-[0px] z-[5]">
                       <HighchartsReact
                         // containerProps={{
                         //   className: isVisible
@@ -1647,7 +1617,48 @@ export default function ChainChart({
                                 // console.log("lastPoints", lastPoints);
 
                                 // calculate the fraction that 15px is in relation to the pixel width of the chart
-                                const fraction = 15 / chart.chartWidth;
+                                const linesXPos =
+                                  chart.chartWidth *
+                                  (1 - 15 / chart.chartWidth);
+
+                                let primaryLineStartPos = chart.plotTop - 24;
+                                let primaryLineEndPos: number | null = null;
+
+                                let secondaryLineStartPos = chart.plotTop;
+                                let secondaryLineEndPos: number | null = null;
+
+                                let lastPointYDiff = 0;
+
+                                if (chart.series.length > 0) {
+                                  const lastPoint =
+                                    chart.series[0].points[
+                                      chart.series[0].points.length - 1
+                                    ];
+                                  if (lastPoint && lastPoint.plotY) {
+                                    primaryLineEndPos =
+                                      chart.plotTop + lastPoint.plotY;
+                                  }
+
+                                  if (chart.series.length > 1) {
+                                    const lastPoint =
+                                      chart.series[1].points[
+                                        chart.series[1].points.length - 1
+                                      ];
+                                    if (
+                                      lastPoint &&
+                                      lastPoint.plotY &&
+                                      primaryLineEndPos
+                                    ) {
+                                      secondaryLineEndPos =
+                                        chart.plotTop + lastPoint.plotY;
+
+                                      lastPointYDiff =
+                                        primaryLineEndPos - secondaryLineEndPos;
+                                    }
+                                  }
+                                }
+
+                                // loop through the series and create the last point lines and circles
                                 chart.series.forEach((series, seriesIndex) => {
                                   const lastPoint =
                                     series.points[series.points.length - 1];
@@ -1655,32 +1666,28 @@ export default function ChainChart({
                                   if (!lastPoint || !lastPoint.plotY) return;
 
                                   // create a bordered line from the last point to the top of the chart's container
-                                  lastPointLines[i][seriesIndex] =
-                                    chart.renderer
+                                  if (
+                                    seriesIndex === 0 &&
+                                    secondaryLineEndPos !== null
+                                  ) {
+                                    lastPointLines[i][
+                                      lastPointLines[i].length
+                                    ] = chart.renderer
                                       .path(
                                         chart.renderer.crispLine(
                                           [
                                             //@ts-ignore
                                             "M",
                                             //@ts-ignore
-                                            chart.chartWidth * (1 - fraction),
+                                            linesXPos,
                                             //@ts-ignore
-                                            lastPoint.plotY + chart.plotTop,
-                                            //@ts-ignore
-                                            "L",
-                                            //@ts-ignore
-                                            chart.chartWidth * (1 - fraction),
-                                            //@ts-ignore
-                                            chart.plotTop -
-                                              (seriesIndex === 0 ? 24 : 0),
+                                            primaryLineStartPos,
                                             //@ts-ignore
                                             "L",
                                             //@ts-ignore
-                                            chart.chartWidth * (1 - fraction) -
-                                              5,
+                                            linesXPos,
                                             //@ts-ignore
-                                            chart.plotTop -
-                                              (seriesIndex === 0 ? 24 : 0),
+                                            chart.plotTop,
                                           ],
                                           1,
                                         ),
@@ -1691,31 +1698,136 @@ export default function ChainChart({
                                             theme ?? "dark"
                                           ][0],
                                         "stroke-width": 1,
-                                        "stroke-dasharray":
-                                          seriesIndex === 0 ? "4 4" : "0 4 0",
+                                        "stroke-dasharray": 2,
                                         zIndex: seriesIndex === 0 ? 9997 : 9998,
                                         rendering: "crispEdges",
                                       })
                                       .add();
 
+                                    lastPointLines[i][
+                                      lastPointLines[i].length
+                                    ] = chart.renderer
+                                      .path(
+                                        chart.renderer.crispLine(
+                                          [
+                                            //@ts-ignore
+                                            "M",
+                                            //@ts-ignore
+                                            linesXPos,
+                                            //@ts-ignore
+                                            secondaryLineStartPos,
+                                            //@ts-ignore
+                                            "L",
+                                            //@ts-ignore
+                                            linesXPos,
+                                            //@ts-ignore
+                                            lastPointYDiff > 0
+                                              ? secondaryLineEndPos
+                                              : primaryLineEndPos,
+                                          ],
+                                          1,
+                                        ),
+                                      )
+                                      .attr({
+                                        stroke:
+                                          AllChainsByKeys[series.name].colors[
+                                            theme ?? "dark"
+                                          ][0],
+                                        "stroke-width": 1,
+                                        zIndex: seriesIndex === 0 ? 9997 : 9998,
+                                        rendering: "crispEdges",
+                                      })
+                                      .add();
+
+                                    if (lastPointYDiff > 0) {
+                                      lastPointLines[i][
+                                        lastPointLines[i].length
+                                      ] = chart.renderer
+                                        .path(
+                                          chart.renderer.crispLine(
+                                            [
+                                              //@ts-ignore
+                                              "M",
+                                              //@ts-ignore
+                                              linesXPos,
+                                              //@ts-ignore
+                                              secondaryLineEndPos,
+                                              //@ts-ignore
+                                              "L",
+                                              //@ts-ignore
+                                              linesXPos,
+                                              //@ts-ignore
+                                              primaryLineEndPos,
+                                            ],
+                                            1,
+                                          ),
+                                        )
+                                        .attr({
+                                          stroke:
+                                            AllChainsByKeys[series.name].colors[
+                                              theme ?? "dark"
+                                            ][0],
+                                          "stroke-width": 1,
+                                          "stroke-dasharray": 2,
+                                          zIndex:
+                                            seriesIndex === 0 ? 9997 : 9998,
+                                          rendering: "crispEdges",
+                                        })
+                                        .add();
+                                    }
+                                  } else {
+                                    lastPointLines[i][
+                                      lastPointLines[i].length
+                                    ] = chart.renderer
+                                      .path(
+                                        chart.renderer.crispLine(
+                                          [
+                                            //@ts-ignore
+                                            "M",
+                                            //@ts-ignore
+                                            linesXPos,
+                                            //@ts-ignore
+                                            seriesIndex === 0
+                                              ? primaryLineStartPos
+                                              : secondaryLineStartPos,
+                                            //@ts-ignore
+                                            "L",
+                                            //@ts-ignore
+                                            linesXPos,
+                                            //@ts-ignore
+                                            seriesIndex === 0
+                                              ? primaryLineEndPos
+                                              : secondaryLineEndPos,
+                                          ],
+                                          1,
+                                        ),
+                                      )
+                                      .attr({
+                                        stroke:
+                                          AllChainsByKeys[series.name].colors[
+                                            theme ?? "dark"
+                                          ][0],
+                                        "stroke-width": 1,
+                                        "stroke-dasharray": 2,
+                                        zIndex: seriesIndex === 0 ? 9997 : 9998,
+                                        rendering: "crispEdges",
+                                      })
+                                      .add();
+                                  }
+
                                   lastPointCircles[i][seriesIndex] =
                                     chart.renderer
                                       .circle(
-                                        chart.chartWidth * (1 - fraction) - 5,
+                                        linesXPos,
                                         chart.plotTop -
                                           (seriesIndex === 0 ? 24 : 0),
                                         3,
                                       )
                                       .attr({
-                                        fill:
-                                          // AllChainsByKeys[data.chain_id].colors[
-                                          //   theme ?? "dark"
-                                          // ][0]
-                                          AllChainsByKeys[series.name].colors[
-                                            theme ?? "dark"
-                                          ][0],
+                                        fill: AllChainsByKeys[series.name]
+                                          .colors[theme ?? "dark"][0],
 
-                                        r: seriesIndex === 0 ? 3 : 2,
+                                        r: seriesIndex === 0 ? 4.5 : 4.5,
                                         zIndex: 9999,
                                         rendering: "crispEdges",
                                       })
@@ -1850,7 +1962,7 @@ export default function ChainChart({
                         <ChartWatermark className="w-[102.936px] h-[24.536px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                       </div>
                     </div>
-                    <div className="absolute top-[14px] w-full flex justify-between items-center px-[26px]">
+                    <div className="absolute top-[14px] w-full flex justify-between items-center pl-[23px] pr-[23px]">
                       <div className="text-[20px] leading-snug font-bold">
                         {
                           navigationItems[1].options.find((o) => o.key === key)
@@ -1874,7 +1986,7 @@ export default function ChainChart({
                         className={`absolute top-[calc(50% - 0.5px)] right-[20px] w-[4px] h-[4px] rounded-full bg-forest-900 dark:bg-forest-50`}
                       ></div> */}
                     </div>
-                    <div className="absolute top-[41px] w-full flex justify-end items-center px-[26px] text-[#5A6462]">
+                    <div className="absolute top-[41px] w-full flex justify-end items-center pl-[23px] pr-[23px] text-[#5A6462]">
                       {displayValues[1] && displayValues[1][key] && (
                         <div className="text-[14px] leading-snug font-medium flex space-x-[2px]">
                           <div>{displayValues[1][key].prefix}</div>
@@ -1894,12 +2006,12 @@ export default function ChainChart({
                         className={`absolute top-[calc(50% - 0.5px)] right-[20px] w-[4px] h-[4px] rounded-full bg-forest-900 dark:bg-forest-50`}
                       ></div> */}
                     </div>
-                    <div>
-                      <Icon
-                        icon={getNavIcon(key)}
-                        className="absolute h-[40px] w-[40px] top-[116px] left-[24px] dark:text-[#CDD8D3] pointer-events-none"
-                      />
-                    </div>
+                    {/* <div> */}
+                    <Icon
+                      icon={getNavIcon(key)}
+                      className="absolute h-[40px] w-[40px] top-[116px] left-[24px] dark:text-[#CDD8D3] opacity-20 z-0 pointer-events-none"
+                    />
+                    {/* </div> */}
                   </div>
                   <div className="w-full h-[15px] relative text-[10px] z-30">
                     <div className="absolute left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
