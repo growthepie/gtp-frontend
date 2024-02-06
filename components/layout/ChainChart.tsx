@@ -616,13 +616,18 @@ export default function ChainChart({
         chartComponents.current.forEach((chart) => {
           if (!chart || chart.index === hoveredChart.index) return;
 
-          if (event.type === "mouseOver" || event.type === "mouseMove") {
-            if (chart.series[hoveredSeries.index]) {
+          let wasCrosshairDrawn = false;
+
+          const chartSeries = chart.series;
+          chartSeries.forEach((series, seriesIndex) => {
+            if (event.type === "mouseOver" || event.type === "mouseMove") {
+              // if (chart.series[hoveredSeries.index]) {
+
               if (event.target !== null) {
                 const pointerEvent =
                   event.target as unknown as Highcharts.PointerEventObject;
                 const point =
-                  chart.series[hoveredSeries.index].points.find(
+                  series.points.find(
                     (p) =>
                       p.x ===
                       (event.target as unknown as Highcharts.PointerEventObject)
@@ -634,18 +639,23 @@ export default function ChainChart({
                     chartY: point.plotY ?? 0,
                   };
                   point.setState("hover");
-                  chart.xAxis[0].drawCrosshair(simulatedPointerEvent);
+                  if (!wasCrosshairDrawn) {
+                    chart.xAxis[0].drawCrosshair(simulatedPointerEvent);
+                    wasCrosshairDrawn = true;
+                  }
                 }
                 return;
               }
+              // }
             }
-          }
-          if (chart && chart.xAxis[0]) {
-            chart.xAxis[0].hideCrosshair();
-            chart.series[hoveredSeries.index].points.forEach((point) => {
-              point.setState();
-            });
-          }
+            if (chart && chart.xAxis[0]) {
+              if (seriesIndex === hoveredSeries.index)
+                chart.xAxis[0].hideCrosshair();
+              series.points.forEach((point) => {
+                point.setState();
+              });
+            }
+          });
         });
       }
     },
@@ -1244,10 +1254,10 @@ export default function ChainChart({
           stroke-width: 0px !important;
         `}
       </style>
-      <div className="flex w-full justify-between items-stretch text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] mb-[30px] z-50 cursor-pointer">
+      <div className="flex w-full justify-between items-stretch text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] mb-[30px] z-50">
         <div className="flex relative h-[54px]">
           <div
-            className={`relative flex rounded-full h-full w-[271px] z-50 p-[5px] ${
+            className={`relative flex rounded-full h-full w-[271px] z-50 p-[5px] cursor-pointer ${
               compChain
                 ? AllChainsByKeys[compChain].backgrounds[theme][0]
                 : "bg-white dark:bg-[#151A19]"
