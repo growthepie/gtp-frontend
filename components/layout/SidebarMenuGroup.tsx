@@ -264,14 +264,7 @@ export default function SidebarMenuGroup({
               {sidebarOpen && (
                 <div className={`flex-1 flex items-start justify-between`}>
                   <div className="text-base font-bold mx-3 py-0.5 break-inside-avoid">
-                    {item.name === "RPGF3 Tracker" ? (
-                      <>
-                        <span className="text-[#FF0420]">RetroPGF 3</span>{" "}
-                        <span className="text-black">Tracker</span>
-                      </>
-                    ) : (
-                      item.label
-                    )}
+                    {item.label}
                   </div>
                 </div>
               )}
@@ -357,25 +350,13 @@ export default function SidebarMenuGroup({
                                 />
                               )}
                             </div>
-                            {option.category ? (
-                              <div
-                                className={`text-sm py-1 w-48 font-normal break-inside-auto transition-all duration-300 ease-in text-left ${
-                                  sidebarOpen ? "ml-12" : "ml-4"
-                                }`}
-                              >
-                                {option.label}
-                              </div>
-                            ) : (
-                              <div
-                                className={`text-sm py-1 w-48 font-normal break-inside-auto text-left ml-12`}
-                              >
-                                {sidebarOpen ? (
-                                  option.label
-                                ) : (
-                                  <span>&nbsp;</span>
-                                )}
-                              </div>
-                            )}
+                            <div
+                              className={`text-sm py-1 w-48 font-normal break-inside-auto transition-all duration-300 ease-in text-left ${
+                                sidebarOpen ? "ml-12" : "ml-4"
+                              }`}
+                            >
+                              {option.label}
+                            </div>
                           </Link>
                         </TooltipTrigger>
                         {!sidebarOpen && (
