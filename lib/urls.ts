@@ -33,6 +33,25 @@ export const BlockspaceURLs = {
     "https://api.growthepie.xyz/v1/blockspace/category_comparison.json",
 };
 
+export const ChainBlockspaceURLs = {
+  ethereum: "https://api.growthepie.xyz/v1/chains/blockspace/ethereum.json",
+  arbitrum: "https://api.growthepie.xyz/v1/chains/blockspace/arbitrum.json",
+  polygon_zkevm:
+    "https://api.growthepie.xyz/v1/chains/blockspace/polygon_zkevm.json",
+  optimism: "https://api.growthepie.xyz/v1/chains/blockspace/optimism.json",
+  imx: "https://api.growthepie.xyz/v1/chains/blockspace/imx.json",
+  zksync_era: "https://api.growthepie.xyz/v1/chains/blockspace/zksync_era.json",
+  base: "https://api.growthepie.xyz/v1/chains/blockspace/base.json",
+  gitcoin_pgn:
+    "https://api.growthepie.xyz/v1/chains/blockspace/gitcoin_pgn.json",
+  zora: "https://api.growthepie.xyz/v1/chains/blockspace/zora.json",
+  linea: "https://api.growthepie.xyz/v1/chains/blockspace/linea.json",
+  scroll: "https://api.growthepie.xyz/v1/chains/blockspace/scroll.json",
+  mantle: "https://api.growthepie.xyz/v1/chains/blockspace/mantle.json",
+  starknet: "https://api.growthepie.xyz/v1/chains/blockspace/starknet.json",
+  loopring: "https://api.growthepie.xyz/v1/chains/blockspace/loopring.json",
+};
+
 export const LandingURL = "https://api.growthepie.xyz/v1/landing_page.json";
 
 export const MasterURL = "https://api.growthepie.xyz/v1/master.json";

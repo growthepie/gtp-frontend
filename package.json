@@ -26,6 +26,7 @@
     "highcharts-react-official": "^3.1.0",
     "highcharts-rounded-corners": "https://github.com/highcharts/rounded-corners/",
     "lodash": "^4.17.21",
+    "million": "^2.6.4",
     "moment": "^2.29.4",
     "next": "^14.0.4",
     "next-seo": "^6.1.0",

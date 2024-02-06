@@ -111,7 +111,7 @@ export default function OverviewMetrics({
   const [isCategoryMenuExpanded, setIsCategoryMenuExpanded] = useState(true);
   const [contractCategory, setContractCategory] = useState("value");
   const [sortOrder, setSortOrder] = useState(true);
-
+  const [allCats, setAllCats] = useState(forceSelectedChain ? true : false);
   const [showMore, setShowMore] = useState(false);
   const [maxDisplayedContracts, setMaxDisplayedContracts] = useState(10);
   const [contractHover, setContractHover] = useState({});
@@ -133,6 +133,8 @@ export default function OverviewMetrics({
     "chainEcosystemFilter",
     "all-chains",
   );
+
+  const standardChainKey = forceSelectedChain ? forceSelectedChain : "all_l2s";
 
   // const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
   //   {},
@@ -376,12 +378,31 @@ export default function OverviewMetrics({
     const result: { [key: string]: ContractInfo } = {};
     for (const category of Object.keys(data)) {
       if (data) {
-        const contractsData =
-          data.all_l2s["overview"][selectedTimespan][selectedCategory].contracts
-            .data;
+        const contractsData = allCats
+          ? (() => {
+              let contractArray = [];
+
+              for (const categoryKey in data[standardChainKey]["overview"][
+                selectedTimespan
+              ]) {
+                const categoryData =
+                  data[standardChainKey]["overview"][selectedTimespan][
+                    categoryKey
+                  ].contracts.data;
+
+                // Concatenate and flatten data to the contractArray
+                contractArray = contractArray.concat(categoryData);
+              }
+
+              return contractArray;
+            })()
+          : data[standardChainKey]["overview"][selectedTimespan][
+              selectedCategory
+            ].contracts.data;
+
         const types =
-          data.all_l2s["overview"][selectedTimespan][selectedCategory].contracts
-            .types;
+          data[standardChainKey]["overview"][selectedTimespan][selectedCategory]
+            .contracts.types;
 
         for (const contract of Object.keys(contractsData)) {
           const dataArray = contractsData[contract];
@@ -431,7 +452,7 @@ export default function OverviewMetrics({
 
     // Update the contracts state with the new data
     return result;
-  }, [data, selectedCategory, selectedTimespan]);
+  }, [data, selectedCategory, selectedTimespan, allCats]);
 
   const [selectedChain, setSelectedChain] = useState<string | null>(
     forceSelectedChain ?? null,
@@ -499,10 +520,10 @@ export default function OverviewMetrics({
   const chartStack = useMemo(() => {
     let ecosystemData: any[][] = [];
 
-    const txIndex = data["all_l2s"].daily.types.findIndex(
+    const txIndex = data[standardChainKey].daily.types.findIndex(
       (item) => item === "txcount_absolute",
     );
-    const gasIndex = data["all_l2s"].daily.types.findIndex(
+    const gasIndex = data[standardChainKey].daily.types.findIndex(
       (item) =>
         item ===
         (selectedMode.includes("usd")
@@ -564,17 +585,17 @@ export default function OverviewMetrics({
                 ];
             }
 
-            for (let category in data["all_l2s"].daily) {
+            for (let category in data[standardChainKey].daily) {
               if (category !== "types") {
-                let checkIndex = data["all_l2s"].daily[category].data.findIndex(
-                  (item) => item[0] === findUnix,
-                );
+                let checkIndex = data[standardChainKey].daily[
+                  category
+                ].data.findIndex((item) => item[0] === findUnix);
                 allTotal +=
                   checkIndex !== -1
-                    ? data["all_l2s"].daily[selectedCategory].data[
-                        data["all_l2s"].daily[selectedCategory].data.findIndex(
-                          (item) => item[0] === findUnix,
-                        )
+                    ? data[standardChainKey].daily[selectedCategory].data[
+                        data[standardChainKey].daily[
+                          selectedCategory
+                        ].data.findIndex((item) => item[0] === findUnix)
                       ][selectedMode.includes("txcount") ? txIndex : gasIndex]
                     : 0;
               }
@@ -592,14 +613,18 @@ export default function OverviewMetrics({
     });
 
     return chartData;
-  }, [
-    data,
-    selectedCategory,
-    chainEcosystemFilter,
-    chainEcosystemFilter,
-    showUsd,
-    selectedMode,
-  ]);
+  }, [data, selectedCategory, selectedMode]);
+
+  const categoryKeyToFillOpacity = {
+    nft: 1 - 0,
+    token_transfers: 1 - 0.196,
+    defi: 1 - 0.33,
+    social: 1 - 0.463,
+    cefi: 1 - 0.596,
+    utility: 1 - 0.733,
+    cross_chain: 1 - 0.867,
+    unlabeled: 1 - 0.92,
+  };
 
   const chartSeries = useMemo(() => {
     const dataKey = selectedMode;
@@ -610,15 +635,35 @@ export default function OverviewMetrics({
       //   dataKey: dataKey,
       //   data: data[selectedChain].daily[selectedCategory].data.length,
       // });
-      return [
-        {
-          id: [selectedChain, selectedCategory, selectedMode].join("_"),
-          name: selectedChain,
-          unixKey: "unix",
-          dataKey: dataKey,
-          data: data[selectedChain].daily[selectedCategory].data,
-        },
-      ];
+      if (allCats) {
+        return [
+          ...Object.keys(data[selectedChain]?.daily || {})
+            .filter((category) => category !== "types") // Exclude the "types" category
+            .reverse()
+            .map((category) => ({
+              id: [selectedChain, category, selectedMode].join("_"),
+              name: selectedChain,
+              unixKey: "unix",
+              dataKey: dataKey,
+              data: data[selectedChain]?.daily[category]?.data || [],
+              fillOpacity: categoryKeyToFillOpacity[category],
+              lineWidth: 0,
+              custom: {
+                tooltipLabel: categories[category],
+              },
+            })),
+        ];
+      } else {
+        return [
+          {
+            id: [selectedChain, selectedCategory, selectedMode].join("_"),
+            name: selectedChain,
+            unixKey: "unix",
+            dataKey: dataKey,
+            data: data[selectedChain].daily[selectedCategory].data,
+          },
+        ];
+      }
     }
 
     // return Object.keys(data)
@@ -651,9 +696,12 @@ export default function OverviewMetrics({
   }, [
     selectedMode,
     selectedChain,
-    data,
     selectedCategory,
     chainEcosystemFilter,
+    data,
+    chartStack,
+    categoryKeyToFillOpacity,
+    allCats,
   ]);
 
   useEffect(() => {
@@ -676,8 +724,9 @@ export default function OverviewMetrics({
         const isAllChainsSelected = selectedChain === null;
         const isChainSelected =
           isAllChainsSelected || contract.chain === selectedChain;
-        const isCategoryMatched =
-          contract.main_category_key === selectedCategory;
+        const isCategoryMatched = allCats
+          ? true
+          : contract.main_category_key === selectedCategory;
         const isEcosystemSelected = Object.keys(data).includes(contract.chain);
 
         return isChainSelected && isCategoryMatched && isEcosystemSelected;
@@ -1032,7 +1081,17 @@ export default function OverviewMetrics({
 
   const chartMax = useMemo(() => {
     let returnValue = 0;
-    let typeIndex = data["all_l2s"].daily["types"].indexOf(selectedMode);
+    let typeIndex = data[standardChainKey].daily["types"].indexOf(selectedMode);
+
+    if (forceSelectedChain) {
+      // if share mode, return 100
+      if (selectedMode.includes("share")) {
+        return 1;
+      }
+
+      // if absolute mode, return undefined so that the chart can auto-scale
+      return undefined;
+    }
 
     if (selectedChain) {
       for (
@@ -1066,22 +1125,25 @@ export default function OverviewMetrics({
           let i = 0;
           i <
           (selectedTimespan === "max"
-            ? data["all_l2s"].daily[selectedCategory].data.length
+            ? data[standardChainKey].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value);
           i++
         ) {
           if (
-            data["all_l2s"].daily[selectedCategory].data.length - (i + 1) >=
+            data[standardChainKey].daily[selectedCategory].data.length -
+              (i + 1) >=
             0
           ) {
             if (
-              data["all_l2s"].daily[selectedCategory].data[
-                data["all_l2s"].daily[selectedCategory].data.length - (i + 1)
+              data[standardChainKey].daily[selectedCategory].data[
+                data[standardChainKey].daily[selectedCategory].data.length -
+                  (i + 1)
               ][typeIndex] > returnValue
             ) {
               returnValue =
-                data["all_l2s"].daily[selectedCategory].data[
-                  data["all_l2s"].daily[selectedCategory].data.length - (i + 1)
+                data[standardChainKey].daily[selectedCategory].data[
+                  data[standardChainKey].daily[selectedCategory].data.length -
+                    (i + 1)
                 ][typeIndex];
             }
           }
@@ -1124,8 +1186,9 @@ export default function OverviewMetrics({
   ]);
 
   const chartAvg = useMemo(() => {
-    let typeIndex = data["all_l2s"].daily["types"].indexOf(selectedMode);
-    let overviewIndex = data.all_l2s["overview"]["types"].indexOf(selectedMode);
+    let typeIndex = data[standardChainKey].daily["types"].indexOf(selectedMode);
+    let overviewIndex =
+      data[standardChainKey]["overview"]["types"].indexOf(selectedMode);
 
     let returnValue = 0;
 
@@ -1178,17 +1241,19 @@ export default function OverviewMetrics({
           let i = 0;
           i <
           (selectedTimespan === "max"
-            ? data["all_l2s"].daily[selectedCategory].data.length
+            ? data[standardChainKey].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value);
           i++
         ) {
           if (
-            data["all_l2s"].daily[selectedCategory].data.length - (i + 1) >=
+            data[standardChainKey].daily[selectedCategory].data.length -
+              (i + 1) >=
             0
           ) {
             sum +=
-              data["all_l2s"].daily[selectedCategory].data[
-                data["all_l2s"].daily[selectedCategory].data.length - (i + 1)
+              data[standardChainKey].daily[selectedCategory].data[
+                data[standardChainKey].daily[selectedCategory].data.length -
+                  (i + 1)
               ][typeIndex];
           }
         }
@@ -1196,10 +1261,10 @@ export default function OverviewMetrics({
         returnValue =
           sum /
           (selectedTimespan === "max"
-            ? data["all_l2s"].daily[selectedCategory].data.length
+            ? data[standardChainKey].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value >=
-              data["all_l2s"].daily[selectedCategory].data.length
-            ? data["all_l2s"].daily[selectedCategory].data.length
+              data[standardChainKey].daily[selectedCategory].data.length
+            ? data[standardChainKey].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value);
       } else {
         let sum = 0;
@@ -1236,15 +1301,16 @@ export default function OverviewMetrics({
   ]);
 
   const avgHeight = useSpring({
-    y: chartAvg
-      ? -1 *
-        (163 * (chartAvg / chartMax) +
-          (chartAvg / chartMax > 0.45
-            ? chartAvg / chartMax > 0.5
-              ? 7
-              : 10
-            : 14))
-      : 0,
+    y:
+      chartAvg && chartMax
+        ? -1 *
+          ((forceSelectedChain ? 200 : 163) * (chartAvg / chartMax) +
+            (chartAvg / chartMax > 0.45
+              ? chartAvg / chartMax > 0.5
+                ? 7
+                : 10
+              : 14))
+        : 0,
     config: { mass: 1, tension: 70, friction: 20 },
   });
 
@@ -1379,13 +1445,18 @@ export default function OverviewMetrics({
                 <div
                   className={`relative flex w-[138px] h-full justify-center items-center`}
                 >
-                  <button className="flex flex-col flex-1 h-full justify-center items-center border-x border-transparent overflow-hidden">
-                    <div
-                      className={`relative -left-[39px] top-[17px] text-xs font-medium`}
-                    ></div>
-                    <div
-                      className={`relative left-[30px] -top-[17px] text-xs font-medium`}
-                    ></div>
+                  <button
+                    className={`flex flex-col flex-1 h-full justify-center items-center border-x border-transparent overflow-hidden`}
+                    onClick={() => {
+                      if (forceSelectedChain) {
+                        setAllCats(!allCats);
+                      }
+                    }}
+                    style={{
+                      backgroundColor: allCats ? "#5A6462" : "",
+                    }}
+                  >
+                    All
                   </button>
                 </div>
                 <div className="flex flex-1">
@@ -1415,7 +1486,7 @@ export default function OverviewMetrics({
                         }}
                         style={{
                           backgroundColor:
-                            selectedCategory === category
+                            selectedCategory === category && !allCats
                               ? "#5A6462"
                               : `rgba(0, 0, 0, ${
                                   0.06 +
@@ -1440,6 +1511,7 @@ export default function OverviewMetrics({
                           }`}
                           onClick={() => {
                             setSelectedCategory(category);
+                            if (forceSelectedChain) setAllCats(false);
                             if (!forceSelectedChain) setSelectedChain(null);
                           }}
                         >
@@ -1782,14 +1854,14 @@ export default function OverviewMetrics({
               : chainEcosystemFilter === "op-stack"
               ? "OP Stack Chains"
               : "OP Superchain"}
-            : {categories[selectedCategory]}
+            : {allCats ? "All Categories " : categories[selectedCategory]}
           </h2>
         </div>
         <div className="flex items-center w-full ">
           <Chart
             types={
               selectedChain === null
-                ? data.all_l2s.daily.types
+                ? data[standardChainKey].daily.types
                 : data[selectedChain].daily.types
             }
             chartType="area"
@@ -1797,13 +1869,17 @@ export default function OverviewMetrics({
             timespan={selectedTimespan}
             series={chartSeries}
             yScale={selectedValue === "share" ? "percentageDecimal" : "linear"}
-            chartHeight="196px"
+            chartHeight={forceSelectedChain ? "259px" : "196px"}
             chartWidth="100%"
             maxY={chartMax}
-            chartAvg={chartAvg || undefined}
+            chartAvg={!allCats ? chartAvg || undefined : undefined}
           />
           {chartAvg && (
-            <div className="flex items-end relative top-[2px] h-[180px] min-w-[50px] lg:min-w-[70px] ">
+            <div
+              className={` items-end relative top-[2px] min-w-[50px] lg:min-w-[70px] ${
+                allCats ? "hidden" : "flex"
+              } ${forceSelectedChain ? "h-[230px]" : "h-[180px]"}`}
+            >
               <animated.div
                 className="flex h-[28px] relative items-center justify-center rounded-full w-full px-2.5 lg:text-base text-sm font-medium"
                 style={{
@@ -1811,7 +1887,7 @@ export default function OverviewMetrics({
                     AllChainsByKeys[selectedChain ? selectedChain : "all_l2s"]
                       ?.colors[theme ?? "dark"][0],
                   color: selectedChain
-                    ? selectedChain === "arbitrum"
+                    ? selectedChain === "arbitrum" || "linea"
                       ? "black"
                       : "white"
                     : "black",
@@ -1827,7 +1903,11 @@ export default function OverviewMetrics({
         </div>
       </Container>
       <Container className="w-[98%] ml-4">
-        <div className="flex flex-wrap items-center w-[100%] gap-y-2 invisible lg:visible">
+        <div
+          className={`flex flex-wrap items-center w-[100%] gap-y-2 ${
+            allCats ? "invisible" : "invisible lg:visible"
+          }`}
+        >
           <h1 className="font-bold text-sm pr-2 pl-2">
             {master &&
               master.blockspace_categories.main_categories[selectedCategory]}
