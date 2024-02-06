@@ -8,6 +8,7 @@ import Icon from "@/components/layout/Icon";
 // import { Splide, SplideSlide, SplideTrack } from "@splidejs/react-splide";
 // import { useUIContext } from "@/contexts/UIContext";
 import { LandingURL } from "@/lib/urls";
+import { navigationItems } from "@/lib/navigation";
 
 import "@splidejs/splide/css";
 // import ShowLoading from "./ShowLoading";
@@ -30,6 +31,10 @@ export default function SwiperItem({
   //   next: { revalidate: 3600 },
   // }).then((res) => res.json());
 
+  const urlKey = navigationItems[1].options.find(
+    (item) => item.key === metric_id,
+  )?.urlKey;
+
   return (
     <>
       <ChainComponent
@@ -41,7 +46,7 @@ export default function SwiperItem({
       />
       <Link
         className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 delay-[1000ms] group-hover:delay-[0ms] -z-10"
-        href="/fundamentals/fees-paid-by-users"
+        href={`/fundamentals/${urlKey}`}
       >
         Compare{" "}
         <Icon icon="feather:chevron-right" className="w-4 h-4 md:w-6 md:h-6" />{" "}
