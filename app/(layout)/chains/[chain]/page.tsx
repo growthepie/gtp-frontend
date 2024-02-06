@@ -104,18 +104,18 @@ const Chain = ({ params }: { params: any }) => {
     fetchChainData();
   }, [chainKeys]);
 
-  // const {
-  //   data: usageData,
-  //   error: usageError,
-  //   isLoading: usageLoading,
-  //   isValidating: usageValidating,
-  // } = useSWR<ChainData>(ChainBlockspaceURLs[chainKeys[0]]);
+  const {
+    data: usageData,
+    error: usageError,
+    isLoading: usageLoading,
+    isValidating: usageValidating,
+  } = useSWR<ChainData>(ChainBlockspaceURLs[chainKeys[0]]);
 
-  // const overviewData = useMemo(() => {
-  //   if (!usageData) return null;
+  const overviewData = useMemo(() => {
+    if (!usageData) return null;
 
-  //   return { [chainKeys[0]]: usageData };
-  // }, [chainKeys, usageData]);
+    return { [chainKeys[0]]: usageData };
+  }, [chainKeys, usageData]);
 
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
@@ -127,8 +127,8 @@ const Chain = ({ params }: { params: any }) => {
   return (
     <>
       <ShowLoading
-        dataLoading={[masterLoading, chainLoading]}
-        dataValidating={[masterValidating, chainValidating]}
+        dataLoading={[masterLoading, chainLoading, usageLoading]}
+        dataValidating={[masterValidating, chainValidating, usageValidating]}
       />
       <Container className="flex w-full mt-[65px] md:mt-[45px]">
         {master && (
@@ -298,7 +298,7 @@ const Chain = ({ params }: { params: any }) => {
           </div>
         )}
       </Container>
-      {/* {overviewData !== null && chainKeys[0] !== "ethereum" && (
+      {overviewData !== null && chainKeys[0] !== "ethereum" && (
         <>
           <Container className="flex flex-col w-full mt-[65px] md:mt-[60px]">
             <div className="flex items-center justify-between md:text-[36px] mb-[15px] relative">
@@ -334,7 +334,7 @@ const Chain = ({ params }: { params: any }) => {
             forceSelectedChain={chainKeys[0]}
           />
         </>
-      )} */}
+      )}
     </>
   );
 };

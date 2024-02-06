@@ -1256,157 +1256,138 @@ export default function ChainChart({
         `}
       </style>
       <div className="flex w-full justify-between items-stretch text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] mb-[30px] z-50">
-        {IS_PREVIEW ? (
-          <div className="flex relative h-[54px]">
+        <div className="flex relative h-[54px]">
+          <div
+            className={`relative flex rounded-full h-full w-[271px] z-50 p-[5px] cursor-pointer ${
+              compChain
+                ? AllChainsByKeys[compChain].backgrounds[theme][0]
+                : "bg-white dark:bg-[#151A19]"
+            }`}
+          >
             <div
-              className={`relative flex rounded-full h-full w-[271px] z-50 p-[5px] cursor-pointer ${
-                compChain
-                  ? AllChainsByKeys[compChain].backgrounds[theme][0]
-                  : "bg-white dark:bg-[#151A19]"
-              }`}
+              className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-50 hover:cursor-pointer"
+              onClick={handlePrevCompChain}
+            >
+              <Icon icon="feather:arrow-left" className="w-6 h-6" />
+            </div>
+            <div
+              className="flex flex-1 flex-col items-center justify-self-center z-50 gap-y-[1px]"
+              onClick={() => {
+                setCompareTo(!compareTo);
+              }}
             >
               <div
-                className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-50 hover:cursor-pointer"
-                onClick={handlePrevCompChain}
+                className={` font-[500] leading-[150%] ${
+                  compChain
+                    ? !AllChainsByKeys[compChain].darkTextOnBackground ||
+                      (theme === "light" &&
+                        (compChain === "ethereum" || compChain === "imx"))
+                      ? "text-forest-50"
+                      : "text-[#1F2726]"
+                    : "text-forest-400 dark:text-[#5A6462]"
+                }`}
               >
-                <Icon icon="feather:arrow-left" className="w-6 h-6" />
+                Compare to
               </div>
               <div
-                className="flex flex-1 flex-col items-center justify-self-center z-50 gap-y-[1px]"
-                onClick={() => {
-                  setCompareTo(!compareTo);
-                }}
+                className={`flex font-[550] ${
+                  compChain
+                    ? !AllChainsByKeys[compChain].darkTextOnBackground ||
+                      (theme === "light" &&
+                        (compChain === "ethereum" || compChain === "imx"))
+                      ? "text-forest-50"
+                      : "text-[#1F2726]"
+                    : ""
+                } gap-x-[5px] justify-center items-center w-32`}
               >
-                <div
-                  className={` font-[500] leading-[150%] ${
-                    compChain
-                      ? !AllChainsByKeys[compChain].darkTextOnBackground ||
-                        (theme === "light" &&
-                          (compChain === "ethereum" || compChain === "imx"))
-                        ? "text-forest-50"
-                        : "text-[#1F2726]"
-                      : "text-forest-400 dark:text-[#5A6462]"
-                  }`}
-                >
-                  Compare to
+                {compChain && (
+                  <Icon
+                    icon={`gtp:${AllChainsByKeys[compChain].urlKey}-logo-monochrome`}
+                    className="w-[22px] h-[22px]"
+                  />
+                )}
+                <div className="text-sm overflow-ellipsis truncate whitespace-nowrap">
+                  {compChain ? AllChainsByKeys[compChain].label : "None"}
                 </div>
-                <div
-                  className={`flex font-[550] ${
-                    compChain
-                      ? !AllChainsByKeys[compChain].darkTextOnBackground ||
-                        (theme === "light" &&
-                          (compChain === "ethereum" || compChain === "imx"))
-                        ? "text-forest-50"
-                        : "text-[#1F2726]"
-                      : ""
-                  } gap-x-[5px] justify-center items-center w-32`}
-                >
-                  {compChain && (
-                    <Icon
-                      icon={`gtp:${AllChainsByKeys[compChain].urlKey}-logo-monochrome`}
-                      className="w-[22px] h-[22px]"
-                    />
-                  )}
-                  <div className="text-sm overflow-ellipsis truncate whitespace-nowrap">
-                    {compChain ? AllChainsByKeys[compChain].label : "None"}
-                  </div>
-                </div>
-              </div>
-              <div
-                className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-50 hover:cursor-pointer"
-                onClick={handleNextCompChain}
-              >
-                <Icon icon="feather:arrow-right" className="w-6 h-6" />
               </div>
             </div>
             <div
-              className={`flex flex-col absolute top-[27px] bottom-auto left-0 right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none rounded-b-2xl border-b border-l border-r transition-all ease-in-out duration-300 ${
-                compareTo
-                  ? `max-h-[600px] z-40 border-forest-200 dark:border-forest-500 shadow-[0px_4px_46.2px_#00000066] dark:shadow-[0px_4px_46.2px_#000000]`
-                  : "max-h-0 z-10 overflow-hidden border-transparent"
-              }`}
+              className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-50 hover:cursor-pointer"
+              onClick={handleNextCompChain}
             >
-              <div className="pb-[10px]">
-                <div className="h-[28px]"></div>
+              <Icon icon="feather:arrow-right" className="w-6 h-6" />
+            </div>
+          </div>
+          <div
+            className={`flex flex-col absolute top-[27px] bottom-auto left-0 right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none rounded-b-2xl border-b border-l border-r transition-all ease-in-out duration-300 ${
+              compareTo
+                ? `max-h-[600px] z-40 border-forest-200 dark:border-forest-500 shadow-[0px_4px_46.2px_#00000066] dark:shadow-[0px_4px_46.2px_#000000]`
+                : "max-h-0 z-10 overflow-hidden border-transparent"
+            }`}
+          >
+            <div className="pb-[10px]">
+              <div className="h-[28px]"></div>
+              <div
+                className="flex pl-[21px] pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
+                onClick={() => {
+                  setCompareTo(false);
+                  updateChainKey([chainKey[0]]);
+                }}
+              >
+                <Icon
+                  icon="feather:arrow-right-circle"
+                  className="w-6 h-6"
+                  visibility={compChain === null ? "visible" : "hidden"}
+                />
+                <Icon
+                  icon="feather:x"
+                  className="w-[22px] h-[22px]"
+                  style={{
+                    color: compChain === null ? "" : "#5A6462",
+                  }}
+                />
+                <div className="">None</div>
+              </div>
+              {CompChains.map((chain, index) => (
                 <div
                   className="flex pl-[21px] pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
                   onClick={() => {
                     setCompareTo(false);
-                    updateChainKey([chainKey[0]]);
+                    updateChainKey([chainKey[0], chain.key]);
                   }}
+                  key={chain.key}
                 >
                   <Icon
                     icon="feather:arrow-right-circle"
                     className="w-6 h-6"
-                    visibility={compChain === null ? "visible" : "hidden"}
+                    visibility={compChain === chain.key ? "visible" : "hidden"}
                   />
                   <Icon
-                    icon="feather:x"
-                    className="w-[22px] h-[22px]"
+                    icon={`gtp:${chain.urlKey}-logo-monochrome`}
+                    className={`w-[22px] h-[22px]`}
                     style={{
-                      color: compChain === null ? "" : "#5A6462",
+                      color:
+                        compChain === chain.key
+                          ? AllChainsByKeys[chain.key].colors[theme][0]
+                          : "#5A6462",
                     }}
                   />
-                  <div className="">None</div>
+                  <div key={chain.label}>{chain.label}</div>
                 </div>
-                {CompChains.map((chain, index) => (
-                  <div
-                    className="flex pl-[21px] pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
-                    onClick={() => {
-                      setCompareTo(false);
-                      updateChainKey([chainKey[0], chain.key]);
-                    }}
-                    key={chain.key}
-                  >
-                    <Icon
-                      icon="feather:arrow-right-circle"
-                      className="w-6 h-6"
-                      visibility={
-                        compChain === chain.key ? "visible" : "hidden"
-                      }
-                    />
-                    <Icon
-                      icon={`gtp:${chain.urlKey}-logo-monochrome`}
-                      className={`w-[22px] h-[22px]`}
-                      style={{
-                        color:
-                          compChain === chain.key
-                            ? AllChainsByKeys[chain.key].colors[theme][0]
-                            : "#5A6462",
-                      }}
-                    />
-                    <div key={chain.label}>{chain.label}</div>
-                  </div>
-                ))}
-              </div>
+              ))}
+            </div>
 
-              {/* Your content here */}
-            </div>
-            {compareTo && (
-              <div
-                className={`fixed inset-0 z-20`}
-                onClick={() => {
-                  setCompareTo(false);
-                }}
-              />
-            )}
+            {/* Your content here */}
           </div>
-        ) : (
-          <div className="flex items-center">
-            <div className="hidden md:flex justify-center items-center space-x-[8px]">
-              <Image
-                src="/GTP-Metrics.png"
-                alt="pie slice"
-                width={36}
-                height={36}
-                className="ml-[21px]"
-              />
-              <h2 className="text-[24px] xl:text-[30px] leading-snug font-bold hidden lg:block my-[10px]">
-                All Chain Metrics
-              </h2>
-            </div>
-          </div>
-        )}
+          {compareTo && (
+            <div
+              className={`fixed inset-0 z-20`}
+              onClick={() => {
+                setCompareTo(false);
+              }}
+            />
+          )}
+        </div>
 
         <div className="flex w-full md:w-auto justify-between md:justify-center items-stretch md:items-center space-x-[4px] md:space-x-1 py-[3px] pr-[3px] leading-[150%]">
           {!zoomed ? (
