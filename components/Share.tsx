@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import Icon from "@/components/layout/ServerIcon";
+import Icon from "@/components/layout/Icon";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { BASE_URLS } from "@/lib/helpers";
