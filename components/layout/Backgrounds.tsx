@@ -79,14 +79,14 @@ export default function Backgrounds({ isMobileMenu }: BackgroundsProps) {
           style={{
             height: "1215px",
             width: "1026px",
-            left: "131px",
+            left: "0px",
             right: "-6px",
             top: "-90px",
             bottom: "602px",
-            backgroundImage: `-webkit-radial-gradient(45% 45% at 50% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
-            background: `radial-gradient(45% 45% at 50% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
-            WebkitMaskImage: `-webkit-radial-gradient(45% 45% at 50% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
-            maskImage: `radial-gradient(45% 45% at 50% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
+            backgroundImage: `-webkit-radial-gradient(45% 45% at 30% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
+            background: `radial-gradient(45% 45% at 30% 50%, #FBB90D 0%, rgba(217, 217, 217, 0) 100%, rgba(251, 185, 13, 0) 100%)`,
+            WebkitMaskImage: `-webkit-radial-gradient(45% 45% at 20% 50%, #FBB90D 0%, rgba(217, 217, 217, 0.1) 100%, rgba(251, 185, 13, 0) 100%)`,
+            maskImage: `radial-gradient(45% 45% at 20% 50%, #FBB90D 0%, rgba(217, 217, 217, 0.1) 100%, rgba(251, 185, 13, 0) 100%)`,
           }}
           className="absolute z-0 mouse-events-none"
         ></div>

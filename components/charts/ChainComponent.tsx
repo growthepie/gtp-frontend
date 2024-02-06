@@ -1087,10 +1087,10 @@ export default function ChainComponent({
       .attr({
         x1: chart.chartWidth * (1 - fraction) + 0.5,
         y1: chart.plotTop / 2 + 0.00005,
-        x2: chart.chartWidth * (1 - fraction) - 8,
+        x2: chart.chartWidth * (1 - fraction),
         y2: chart.plotTop / 2,
         stroke: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1],
-        "stroke-dasharray": "2",
+        "stroke-dasharray": 2,
         "stroke-width": 1,
         rendering: "crispEdges",
       })
@@ -1098,30 +1098,30 @@ export default function ChainComponent({
 
     // create a circle at the end of the line
     lastPointLines[i][lastPointLines[i].length] = chart.renderer
-      .circle(chart.chartWidth * (1 - fraction) - 8, chart.plotTop / 2, 3)
+      .circle(chart.chartWidth * (1 - fraction), chart.plotTop / 2, 3)
       .attr({
         fill: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1],
-        r: 2,
+        r: 4.5,
         zIndex: 9999,
         rendering: "crispEdges",
       })
       .add();
 
     // create a circle at the end of the line
-    lastPointLines[i][lastPointLines[i].length] = chart.renderer
-      .circle(
-        lastPoint.plotX,
-        lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
-        2,
-      )
-      .attr({
-        stroke: "#CDD8D3",
-        opacity: 0.44,
-        r: 1,
-        zIndex: 9999,
-        rendering: "crispEdges",
-      })
-      .add();
+    // lastPointLines[i][lastPointLines[i].length] = chart.renderer
+    //   .circle(
+    //     lastPoint.plotX,
+    //     lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
+    //     2,
+    //   )
+    //   .attr({
+    //     stroke: "#CDD8D3",
+    //     opacity: 0.44,
+    //     r: 1,
+    //     zIndex: 9999,
+    //     rendering: "crispEdges",
+    //   })
+    //   .add();
   };
 
   const resituateChart = debounce(() => {
@@ -1356,7 +1356,7 @@ export default function ChainComponent({
             }}
           />
         </div>
-        <div className="absolute top-[14px] w-full flex justify-between items-center px-[26px]">
+        <div className="absolute top-[14px] w-full flex justify-between items-center px-[23px]">
           <div className="text-[20px] leading-snug font-bold">
             {
               navigationItems[1].options.find((o) => o.key === category)?.page

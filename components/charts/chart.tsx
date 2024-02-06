@@ -26,6 +26,7 @@ import { debounce } from "lodash";
 export const Chart = ({
   // data,
   chartType,
+  backgroundColor = "transparent",
   stack = false,
   types,
   timespan,
@@ -39,15 +40,22 @@ export const Chart = ({
 }: {
   // data: { [chain: string]: number[][] };
   chartType: "area" | "line";
+  backgroundColor?: string;
   stack?: boolean;
   types: string[];
   timespan: string;
   series: {
     id: string;
     name: string;
+    custom?: {
+      tooltipLabel: string;
+    };
+    type?: string;
     unixKey: string;
     dataKey: string;
     data: number[][];
+    fillOpacity?: number;
+    lineWidth?: number;
   }[];
   yScale?: "linear" | "logarithmic" | "percentage" | "percentageDecimal";
   chartHeight: string;
@@ -90,19 +98,21 @@ export const Chart = ({
     setHighchartsLoaded(true);
   }, []);
 
+  const decimalPercentageToHex = (percentage: number) => {
+    const hex = Math.round(percentage * 255).toString(16);
+
+    return hex.length === 1 ? "0" + hex : hex;
+  };
+
   const drawChartSeries = useCallback(() => {
     const areaStacking =
       yScale === "percentage" ? "percent" : stack ? "normal" : undefined;
+
     if (chartComponent.current) {
       const currentSeries = chartComponent.current.series;
 
-      // remove all series
-      // for (var i = chartComponent.current.series.length - 1; i >= 0; i--) {
-      //   chartComponent.current.series[i].remove(false);
-      // }
-
       const seriesToRemove = currentSeries.filter(
-        (cs) => !series.find((s) => s.name === cs.name),
+        (cs) => !series.find((s) => s.id === cs.options.id),
       );
 
       seriesToRemove.forEach((s) => {
@@ -111,8 +121,31 @@ export const Chart = ({
 
       // add new series
       series.forEach((s) => {
-        if (currentSeries && currentSeries.find((cs) => cs.name === s.name)) {
-          const seriesToUpdate = currentSeries.find((cs) => cs.name === s.name);
+        if (!s.data || s.data.length === 0) {
+          if (
+            currentSeries &&
+            currentSeries.find((cs) => cs.options.id === s.id)
+          ) {
+            const seriesToUpdate = currentSeries.find(
+              (cs) => cs.options.id === s.id,
+            );
+            if (seriesToUpdate) {
+              seriesToUpdate.remove(false);
+            }
+          }
+        }
+
+        const fillHexColorOpacity = s.fillOpacity
+          ? decimalPercentageToHex(s.fillOpacity)
+          : "33";
+
+        if (
+          currentSeries &&
+          currentSeries.find((cs) => cs.options.id === s.id)
+        ) {
+          const seriesToUpdate = currentSeries.find(
+            (cs) => cs.options.id === s.id,
+          );
 
           if (seriesToUpdate) {
             seriesToUpdate.setData(
@@ -125,13 +158,16 @@ export const Chart = ({
 
             seriesToUpdate.update(
               { type: chartType, stacking: areaStacking },
-              true,
+              false,
             );
           }
         } else {
+          const chainKey = s.name;
           chartComponent.current?.addSeries(
             {
+              id: s.id,
               name: s.name,
+              custom: s.custom,
               data: s.data.map((d) => [
                 d[types.indexOf(s.unixKey)],
                 d[types.indexOf(s.dataKey)],
@@ -139,7 +175,7 @@ export const Chart = ({
               type: chartType,
               stacking: areaStacking,
               clip: true,
-              fillOpacity: 1,
+              fillOpacity: s.fillOpacity,
               fillColor: {
                 linearGradient: {
                   x1: 0,
@@ -150,25 +186,28 @@ export const Chart = ({
                 stops: [
                   [
                     0,
-                    AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] + "33",
+                    AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
+                      fillHexColorOpacity,
                   ],
                   [
                     1,
-                    AllChainsByKeys[s.name]?.colors[theme ?? "dark"][1] + "33",
+                    AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
+                      fillHexColorOpacity,
                   ],
                 ],
               },
-              borderColor: AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0],
-              borderWidth: 1,
-              lineWidth: 2,
+              borderColor:
+                AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0],
+              borderWidth: s.lineWidth === undefined ? 1 : s.lineWidth,
+              lineWidth: s.lineWidth === undefined ? 2 : s.lineWidth,
               ...// @ts-ignore
               (chartType !== "column"
                 ? {
                     shadow: {
                       color:
-                        AllChainsByKeys[s.name]?.colors[theme ?? "dark"][1] +
-                        "33",
-                      width: 10,
+                        AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
+                        (s.fillOpacity ? "11" : "33"),
+                      width: s.fillOpacity ? 6 : 10,
                     },
                     color: {
                       linearGradient: {
@@ -180,17 +219,17 @@ export const Chart = ({
                       stops: [
                         [
                           0,
-                          AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0],
+                          AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0],
                         ],
                         // [0.33, AllChainsByKeys[series.name].colors[1]],
                         [
                           1,
-                          AllChainsByKeys[s.name]?.colors[theme ?? "dark"][1],
+                          AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1],
                         ],
                       ],
                     },
                   }
-                : s.name === "all_l2s"
+                : chainKey === "all_l2s"
                 ? {
                     borderColor: "transparent",
 
@@ -215,7 +254,7 @@ export const Chart = ({
                           ? [
                               [
                                 0,
-                                AllChainsByKeys[s.name]?.colors[
+                                AllChainsByKeys[chainKey]?.colors[
                                   theme ?? "dark"
                                 ][0] + "E6",
                               ],
@@ -227,7 +266,7 @@ export const Chart = ({
                               // ],
                               [
                                 1,
-                                AllChainsByKeys[s.name]?.colors[
+                                AllChainsByKeys[chainKey]?.colors[
                                   theme ?? "dark"
                                 ][1] + "E6",
                               ],
@@ -235,7 +274,7 @@ export const Chart = ({
                           : [
                               [
                                 0,
-                                AllChainsByKeys[s.name]?.colors[
+                                AllChainsByKeys[chainKey]?.colors[
                                   theme ?? "dark"
                                 ][0] + "E6",
                               ],
@@ -246,7 +285,7 @@ export const Chart = ({
                               // ],
                               [
                                 1,
-                                AllChainsByKeys[s.name]?.colors[
+                                AllChainsByKeys[chainKey]?.colors[
                                   theme ?? "dark"
                                 ][1] + "E6",
                               ],
@@ -271,18 +310,21 @@ export const Chart = ({
                       stops: [
                         [
                           0,
-                          AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] +
-                            "FF",
+                          AllChainsByKeys[chainKey]?.colors[
+                            theme ?? "dark"
+                          ][0] + "FF",
                         ],
                         [
                           0.349,
-                          AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] +
-                            "88",
+                          AllChainsByKeys[chainKey]?.colors[
+                            theme ?? "dark"
+                          ][0] + "88",
                         ],
                         [
                           1,
-                          AllChainsByKeys[s.name]?.colors[theme ?? "dark"][0] +
-                            "00",
+                          AllChainsByKeys[chainKey]?.colors[
+                            theme ?? "dark"
+                          ][0] + "00",
                         ],
                       ],
                     },
@@ -435,6 +477,7 @@ export const Chart = ({
                     chart: {
                       ...baseOptions.chart,
                       type: chartType,
+                      backgroundColor: backgroundColor,
                       height: parseFloat(chartHeight),
                       events: {
                         load: function () {

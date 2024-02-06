@@ -28,6 +28,7 @@ export const tooltipFormatter = (
   ) {
     // shared tooltip
     const { points } = this;
+
     if (!points || points.length < 1) {
       return "";
     }
@@ -43,6 +44,11 @@ export const tooltipFormatter = (
 
     let tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
         <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
+
+    let pointsSum = points.reduce((acc: number, point: any) => {
+      acc += point.y ? point.y : point.percentage;
+      return acc;
+    }, 0);
 
     let maxPercentage = points.reduce((acc: number, point: any) => {
       if (point.percentage > acc) {
@@ -60,6 +66,10 @@ export const tooltipFormatter = (
       .forEach((point: any) => {
         const { y, color, series, percentage } = point;
         const name = series.name;
+        const label = series.options.custom?.tooltipLabel
+          ? series.options.custom.tooltipLabel
+          : AllChainsByKeys[name].label;
+        const fillOpacity = series.options.fillOpacity;
 
         const date = x ? new Date(x) : new Date();
         const dateString = date.toLocaleDateString(undefined, {
@@ -69,7 +79,7 @@ export const tooltipFormatter = (
           year: "numeric",
         });
 
-        let value = y ? formatNumber(y, false, true) : 0;
+        let value = y ? formatNumber(y, false, true) : percentage;
         // let value = y;
 
         if (valueFormatter) {
@@ -80,22 +90,53 @@ export const tooltipFormatter = (
 
         tooltip += `
         <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-        <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-          AllChainsByKeys[name].colors["dark"][0]
-        }"></div>
-        <div class="tooltip-point-name">${AllChainsByKeys[name].label}</div>
+        <div class="relative w-4 h-1.5 rounded-r-full bg-white dark:bg-forest-1000">
+
+          <div class="absolute w-4 h-1.5 rounded-r-full" style="
+            background-color: ${AllChainsByKeys[name].colors["dark"][0]};
+            opacity: ${fillOpacity};
+          ">
+          </div>
+        
+        </div>
+        <div class="tooltip-point-name">${label}</div>
         <div class="flex-1 text-right font-inter">${value}</div>
       </div>
       <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-        <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+        <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white dark:bg-forest-1000" style="
+          width: ${(percentage / maxPercentage) * 100}%;
+        ">
+        </div>
 
-        <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
-        style="
+        <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" style="
           width: ${(percentage / maxPercentage) * 100}%;
           background-color: ${AllChainsByKeys[name].colors["dark"][0]};
-        "></div>
+          opacity: ${fillOpacity};
+        ">
+        </div>
       </div>`;
       });
+
+    // // if (stacked) {
+    // let value = formatNumber(pointsSum, false, true);
+
+    // if (valueFormatter) {
+    //   value = valueFormatter(value);
+    // }
+
+    // tooltip += `
+    //       <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
+    //         <div class="w-4 h-1.5 rounded-r-full" style=""></div>
+    //         <div class="tooltip-point-name text-md">Total</div>
+    //         <div class="flex-1 text-right justify-end font-inter flex">
+    //             ${pointsSum}
+    //         </div>
+    //       </div>
+    //       <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+    //         <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
+    //       </div>`;
+    // // }
+
     tooltip += `
         </div>
       </div>`;
@@ -155,6 +196,10 @@ export const tooltipFormatter = (
       .forEach((point: any) => {
         const { y, color, series, percentage } = point;
         const name = series.name;
+        const label = series.options.custom?.tooltipLabel
+          ? series.options.custom.tooltipLabel
+          : AllChainsByKeys[name].label;
+        const fillOpacity = series.options.fillOpacity;
 
         const date = x ? new Date(x) : new Date();
         const dateString = date.toLocaleDateString(undefined, {
@@ -175,10 +220,13 @@ export const tooltipFormatter = (
 
         tooltip += `
         <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-        <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-          AllChainsByKeys[name].colors["dark"][0]
-        }"></div>
-        <div class="tooltip-point-name">${AllChainsByKeys[name].label}</div>
+        <div class="relative w-4 h-1.5 rounded-r-full bg-white dark:bg-forest-1000">
+          <div class="w-4 h-1.5 rounded-r-full" style="
+            background-color: ${AllChainsByKeys[name].colors["dark"][0]};
+            opacity: ${fillOpacity};
+          "></div>
+        </div>
+        <div class="tooltip-point-name">${label}</div>
         <div class="flex-1 text-right justify-end font-inter flex">
           <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">${prefix}</div>
           ${parseFloat(value).toLocaleString(undefined, {
@@ -189,12 +237,15 @@ export const tooltipFormatter = (
         </div>
       </div>
       <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-        <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+        <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white dark:bg-forest-1000" style="
+          width: ${(y / maxPoint) * 100}%;
+        ">
+        </div>
 
-        <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
-        style="
+        <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" style="
           width: ${(y / maxPoint) * 100}%;
           background-color: ${AllChainsByKeys[name].colors["dark"][0]};
+          opacity: ${fillOpacity};
         "></div>
       </div>`;
       });
