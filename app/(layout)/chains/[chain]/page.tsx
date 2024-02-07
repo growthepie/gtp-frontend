@@ -43,8 +43,8 @@ const Chain = ({ params }: { params: any }) => {
 
   const [chainError, setChainError] = useState(null);
   const [chainData, setChainData] = useState<ChainsData[]>([]);
-  const [chainValidating, setChainValidating] = useState(true);
-  const [chainLoading, setChainLoading] = useState(true);
+  const [chainValidating, setChainValidating] = useState(false);
+  const [chainLoading, setChainLoading] = useState(false);
   const [openChainList, setOpenChainList] = useState<boolean>(false);
 
   const {
@@ -97,6 +97,10 @@ const Chain = ({ params }: { params: any }) => {
   };
 
   useEffect(() => {
+    if (chainData.length === 0) {
+      setChainLoading(true);
+      setChainValidating(true);
+    }
     fetchChainData();
   }, [chainKeys]);
 
@@ -124,7 +128,7 @@ const Chain = ({ params }: { params: any }) => {
     <>
       <ShowLoading
         dataLoading={[masterLoading, chainLoading, usageLoading]}
-        dataValidating={[masterValidating, chainValidating, usageLoading]}
+        dataValidating={[masterValidating, chainValidating, usageValidating]}
       />
       <Container className="flex w-full mt-[65px] md:mt-[45px]">
         {master && (
