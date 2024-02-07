@@ -280,6 +280,7 @@ export default function OverviewMetrics({
     }
 
     return {
+      all_chain: false,
       native_transfers: false,
       token_transfers: false,
       nft_fi: false,
@@ -910,7 +911,7 @@ export default function OverviewMetrics({
 
       const dataTypes = data[chainKey].overview.types;
 
-      const isSelectedCategory = selectedCategory === categoryKey;
+      const isSelectedCategory = selectedCategory === categoryKey && !allCats;
 
       const isSelectedChainOrNoSelectedChain =
         selectedChain === chainKey || !selectedChain;
@@ -1446,17 +1447,35 @@ export default function OverviewMetrics({
                   className={`relative flex w-[138px] h-full justify-center items-center`}
                 >
                   <button
-                    className={`flex flex-col flex-1 h-full justify-center items-center border-x border-transparent overflow-hidden`}
+                    className={`flex flex-col flex-1 h-full justify-center items-center border-x border-transparent overflow-hidden  ${
+                      forceSelectedChain ? "cursor-pointer" : "cursor-default"
+                    }
+                    ${
+                      forceSelectedChain
+                        ? allCats
+                          ? "bg-[#5A6462] "
+                          : "bg-inherit hover:bg-forest-800/50"
+                        : "bg-inherit"
+                    } `}
                     onClick={() => {
                       if (forceSelectedChain) {
                         setAllCats(!allCats);
                       }
                     }}
-                    style={{
-                      backgroundColor: allCats ? "#5A6462" : "",
+                    onMouseEnter={() => {
+                      setIsCategoryHovered((prev) => ({
+                        ...prev,
+                        ["all_chain"]: true,
+                      }));
+                    }}
+                    onMouseLeave={() => {
+                      setIsCategoryHovered((prev) => ({
+                        ...prev,
+                        ["all_chain"]: false,
+                      }));
                     }}
                   >
-                    All
+                    {forceSelectedChain && "All"}
                   </button>
                 </div>
                 <div className="flex flex-1">
@@ -1602,7 +1621,31 @@ export default function OverviewMetrics({
                               : "text-white"
                           } ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`}
                         >
-                          <div className="flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px]">
+                          <div
+                            className={`flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px] ${
+                              forceSelectedChain
+                                ? isCategoryHovered["all_chain"]
+                                  ? isCategoryHovered["all_chain"] && allCats
+                                    ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
+                                    : `rounded-l-full py-[24px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
+                                  : allCats
+                                  ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
+                                  : "z-1"
+                                : ""
+                            } `}
+                            onMouseEnter={() => {
+                              setIsCategoryHovered((prev) => ({
+                                ...prev,
+                                ["all_chain"]: true,
+                              }));
+                            }}
+                            onMouseLeave={() => {
+                              setIsCategoryHovered((prev) => ({
+                                ...prev,
+                                ["all_chain"]: false,
+                              }));
+                            }}
+                          >
                             <div className="flex justify-center items-center w-[30px]">
                               <Icon
                                 icon={`gtp:${chainKey.replace(
@@ -1847,14 +1890,18 @@ export default function OverviewMetrics({
       <Container>
         <div className="mt-[20px] lg:mt-[50px] mb-[38px] ">
           <h2 className="text-[20px] font-bold">
-            {selectedChain
-              ? AllChainsByKeys[selectedChain].label
-              : chainEcosystemFilter === "all-chains"
-              ? "All Chains"
-              : chainEcosystemFilter === "op-stack"
-              ? "OP Stack Chains"
-              : "OP Superchain"}
-            : {allCats ? "All Categories " : categories[selectedCategory]}
+            {!forceSelectedChain ? (
+              (selectedChain
+                ? AllChainsByKeys[selectedChain].label
+                : chainEcosystemFilter === "all-chains"
+                ? "All Chains"
+                : chainEcosystemFilter === "op-stack"
+                ? "OP Stack Chains"
+                : "OP Superchain") +
+              (": " + categories[selectedCategory])
+            ) : (
+              <></>
+            )}
           </h2>
         </div>
         <div className="flex items-center w-full ">
@@ -1903,29 +1950,31 @@ export default function OverviewMetrics({
         </div>
       </Container>
       <Container className="w-[98%] ml-4">
-        <div
-          className={`flex flex-wrap items-center w-[100%] gap-y-2 ${
-            allCats ? "invisible" : "invisible lg:visible"
-          }`}
-        >
+        <div className={`flex flex-wrap items-center w-[100%] gap-y-2 `}>
           <h1 className="font-bold text-sm pr-2 pl-2">
-            {master &&
-              master.blockspace_categories.main_categories[selectedCategory]}
+            {!allCats
+              ? master &&
+                master.blockspace_categories.main_categories[selectedCategory]
+              : "All"}
           </h1>
-          {master &&
+          {!allCats ? (
+            master &&
             Object.keys(
               master.blockspace_categories["mapping"][selectedCategory],
-            ).map((key) => {
-              return (
-                <p className="text-xs px-[4px] py-[5px] mx-[5px]" key={key}>
-                  {formatSubcategories(
-                    master.blockspace_categories["mapping"][selectedCategory][
-                      key
-                    ],
-                  )}
-                </p>
-              );
-            })}
+            ).map((key) => (
+              <p className="text-xs px-[4px] py-[5px] mx-[5px]" key={key}>
+                {formatSubcategories(
+                  master.blockspace_categories["mapping"][selectedCategory][
+                    key
+                  ],
+                )}
+              </p>
+            ))
+          ) : (
+            <p className="text-xs px-[4px] py-[5px] mx-[5px]">
+              All Categories Selected
+            </p>
+          )}
         </div>
       </Container>
       <Container>
