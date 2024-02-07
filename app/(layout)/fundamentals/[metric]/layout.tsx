@@ -71,60 +71,60 @@ export default async function Layout({
 
   let jsonLd: null | WithContext<CompleteDataFeed> = null;
 
-  if (url) {
-    // fetch data from API
-    const res: MetricsResponse = await fetch(MetricsURLs[params.metric], {
-      cache: "no-store",
-    }).then((r) => r.json());
+  // if (url) {
+  //   // fetch data from API
+  //   const res: MetricsResponse = await fetch(MetricsURLs[params.metric], {
+  //     cache: "no-store",
+  //   }).then((r) => r.json());
 
-    if (res && res.data && res.data.chains) {
-      jsonLd = {
-        "@context": "https://schema.org",
-        "@type": "CompleteDataFeed",
-        name: res.data.metric_name,
-        dateModified: new Date(
-          res.data.chains[Object.keys(res.data.chains)[0]].daily.data[
-            res.data.chains[Object.keys(res.data.chains)[0]].daily.data.length -
-              1
-          ][
-            res.data.chains[
-              Object.keys(res.data.chains)[0]
-            ].daily.types.indexOf("unix")
-          ],
-        ).toISOString(),
-        description: "growthepie",
-        dataFeedElement: Object.keys(res.data.chains).map((chain) => ({
-          "@type": "DataFeedItem",
-          dateModified: new Date(
-            res.data.chains[Object.keys(res.data.chains)[0]].daily.data[
-              res.data.chains[Object.keys(res.data.chains)[0]].daily.data
-                .length - 1
-            ][
-              res.data.chains[
-                Object.keys(res.data.chains)[0]
-              ].daily.types.indexOf("unix")
-            ],
-          ).toISOString(),
-          item: {
-            "@type": "PropertyValue",
-            dateModified: new Date(
-              res.data.chains[chain].daily.data[
-                res.data.chains[chain].daily.data.length - 1
-              ][res.data.chains[chain].daily.types.indexOf("unix")],
-            ).toISOString(),
-            name: res.data.chains[chain].chain_name,
-            value: `${
-              Math.round(
-                res.data.chains[chain].daily.data[
-                  res.data.chains[chain].daily.data.length - 1
-                ][1] * 100,
-              ) / 100
-            } ${unitsMap[res.data.chains[chain].daily.types[1]]}`,
-          },
-        })),
-      };
-    }
-  }
+  //   if (res && res.data && res.data.chains) {
+  //     jsonLd = {
+  //       "@context": "https://schema.org",
+  //       "@type": "CompleteDataFeed",
+  //       name: res.data.metric_name,
+  //       dateModified: new Date(
+  //         res.data.chains[Object.keys(res.data.chains)[0]].daily.data[
+  //           res.data.chains[Object.keys(res.data.chains)[0]].daily.data.length -
+  //             1
+  //         ][
+  //           res.data.chains[
+  //             Object.keys(res.data.chains)[0]
+  //           ].daily.types.indexOf("unix")
+  //         ],
+  //       ).toISOString(),
+  //       description: "growthepie",
+  //       dataFeedElement: Object.keys(res.data.chains).map((chain) => ({
+  //         "@type": "DataFeedItem",
+  //         dateModified: new Date(
+  //           res.data.chains[Object.keys(res.data.chains)[0]].daily.data[
+  //             res.data.chains[Object.keys(res.data.chains)[0]].daily.data
+  //               .length - 1
+  //           ][
+  //             res.data.chains[
+  //               Object.keys(res.data.chains)[0]
+  //             ].daily.types.indexOf("unix")
+  //           ],
+  //         ).toISOString(),
+  //         item: {
+  //           "@type": "PropertyValue",
+  //           dateModified: new Date(
+  //             res.data.chains[chain].daily.data[
+  //               res.data.chains[chain].daily.data.length - 1
+  //             ][res.data.chains[chain].daily.types.indexOf("unix")],
+  //           ).toISOString(),
+  //           name: res.data.chains[chain].chain_name,
+  //           value: `${
+  //             Math.round(
+  //               res.data.chains[chain].daily.data[
+  //                 res.data.chains[chain].daily.data.length - 1
+  //               ][1] * 100,
+  //             ) / 100
+  //           } ${unitsMap[res.data.chains[chain].daily.types[1]]}`,
+  //         },
+  //       })),
+  //     };
+  //   }
+  // }
 
   return (
     <>
@@ -174,14 +174,14 @@ export default async function Layout({
           )}
         </Subheading>
       </Container>
-      {jsonLd && (
+      {/* {jsonLd && (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(jsonLd),
           }}
         />
-      )}
+      )} */}
       {children}
       <Container className="flex flex-col space-y-[15px] mt-[30px]">
         <QuestionAnswer
