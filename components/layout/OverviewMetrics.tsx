@@ -1339,6 +1339,8 @@ export default function OverviewMetrics({
     }
   }
 
+  console.log(selectedCategory);
+
   return (
     <div className="w-full flex-col relative">
       <Container>
@@ -1632,6 +1634,10 @@ export default function OverviewMetrics({
                                   ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
                                   : "z-1"
                                 : ""
+                            }  ${
+                              forceSelectedChain
+                                ? "hover:cursor-pointer"
+                                : "hover:cursor-default"
                             } `}
                             onMouseEnter={() => {
                               setIsCategoryHovered((prev) => ({
@@ -1644,6 +1650,11 @@ export default function OverviewMetrics({
                                 ...prev,
                                 ["all_chain"]: false,
                               }));
+                            }}
+                            onClick={() => {
+                              if (forceSelectedChain) {
+                                setAllCats(!allCats);
+                              }
                             }}
                           >
                             <div className="flex justify-center items-center w-[30px]">
@@ -1719,6 +1730,7 @@ export default function OverviewMetrics({
                                       }
                                     } else {
                                       setSelectedCategory(categoryKey);
+                                      if (forceSelectedChain) setAllCats(false);
                                       if (!forceSelectedChain)
                                         setSelectedChain(null);
                                     }
