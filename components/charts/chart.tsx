@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import highchartsAnnotations from "highcharts/modules/annotations";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
+import highchartsPatternFill from "highcharts/modules/pattern-fill";
 import HighchartsReact from "highcharts-react-official";
 import Highcharts, {
   AxisLabelsFormatterContextObject,
+  GradientColorStopObject,
 } from "highcharts/highstock";
 
 import { useTheme } from "next-themes";
@@ -31,6 +33,8 @@ export const Chart = ({
   types,
   timespan,
   series,
+  forceHoveredChartSeriesId,
+  setHoveredChartSeriesId,
   yScale = "linear",
   chartHeight,
   chartWidth,
@@ -57,6 +61,8 @@ export const Chart = ({
     fillOpacity?: number;
     lineWidth?: number;
   }[];
+  forceHoveredChartSeriesId?: string;
+  setHoveredChartSeriesId?: (ids: string) => void;
   yScale?: "linear" | "logarithmic" | "percentage" | "percentageDecimal";
   chartHeight: string;
   chartWidth: string;
@@ -94,7 +100,7 @@ export const Chart = ({
     });
     highchartsRoundedCorners(Highcharts);
     highchartsAnnotations(Highcharts);
-
+    highchartsPatternFill(Highcharts);
     setHighchartsLoaded(true);
   }, []);
 
@@ -163,6 +169,39 @@ export const Chart = ({
           }
         } else {
           const chainKey = s.name;
+
+          let fillColor =
+            AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] +
+            fillHexColorOpacity;
+
+          let color = s.id.includes("unlabeled")
+            ? {
+                pattern: {
+                  color: AllChainsByKeys[chainKey].colors["dark"][0] + "55",
+                  path: {
+                    d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
+                    strokeWidth: 3,
+                  },
+                  width: 10,
+                  height: 10,
+                  opacity: 0.99,
+                },
+              }
+            : AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] +
+              fillHexColorOpacity;
+          // {
+          //   linearGradient: {
+          //     x1: 0,
+          //     y1: 0,
+          //     x2: 1,
+          //     y2: 0,
+          //   },
+          //   stops: [
+          //     [0, AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0]],
+          //     // [0.33, AllChainsByKeys[series.name].colors[1]],
+          //     [1, AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1]],
+          //   ],
+          // };
           chartComponent.current?.addSeries(
             {
               id: s.id,
@@ -174,28 +213,10 @@ export const Chart = ({
               ]),
               type: chartType,
               stacking: areaStacking,
-              clip: true,
+              trackByArea: true,
+              clip: false,
               fillOpacity: s.fillOpacity,
-              fillColor: {
-                linearGradient: {
-                  x1: 0,
-                  y1: 0,
-                  x2: 0,
-                  y2: 1,
-                },
-                stops: [
-                  [
-                    0,
-                    AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
-                      fillHexColorOpacity,
-                  ],
-                  [
-                    1,
-                    AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
-                      fillHexColorOpacity,
-                  ],
-                ],
-              },
+              // fillColor: fillColor,
               borderColor:
                 AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0],
               borderWidth: s.lineWidth === undefined ? 1 : s.lineWidth,
@@ -209,25 +230,7 @@ export const Chart = ({
                         (s.fillOpacity ? "11" : "33"),
                       width: s.fillOpacity ? 6 : 10,
                     },
-                    color: {
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 1,
-                        y2: 0,
-                      },
-                      stops: [
-                        [
-                          0,
-                          AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0],
-                        ],
-                        // [0.33, AllChainsByKeys[series.name].colors[1]],
-                        [
-                          1,
-                          AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1],
-                        ],
-                      ],
-                    },
+                    color: color,
                   }
                 : chainKey === "all_l2s"
                 ? {
@@ -341,6 +344,20 @@ export const Chart = ({
   useEffect(() => {
     drawChartSeries();
   }, [drawChartSeries, series, types, maxY, yScale, stack]);
+
+  useEffect(() => {
+    if (forceHoveredChartSeriesId) {
+      if (chartComponent.current) {
+        chartComponent.current.series.forEach((s) => {
+          if (s.options.id === forceHoveredChartSeriesId) {
+            s.setState("hover");
+          } else {
+            s.setState("inactive");
+          }
+        });
+      }
+    }
+  }, [forceHoveredChartSeriesId]);
 
   const resetXAxisExtremes = useCallback(() => {
     if (chartComponent.current) {
@@ -472,132 +489,163 @@ export const Chart = ({
               >
                 <HighchartsReact
                   highcharts={Highcharts}
-                  options={{
-                    ...baseOptions,
-                    chart: {
-                      ...baseOptions.chart,
-                      type: chartType,
-                      backgroundColor: backgroundColor,
-                      height: parseFloat(chartHeight),
-                      events: {
-                        load: function () {
-                          chartComponent.current = this;
-                          drawChartSeries();
+                  options={
+                    {
+                      ...baseOptions,
+                      chart: {
+                        ...baseOptions.chart,
+                        type: chartType,
+                        backgroundColor: backgroundColor,
+                        height: parseFloat(chartHeight),
+                        events: {
+                          load: function () {
+                            chartComponent.current = this;
+                            drawChartSeries();
+                          },
                         },
                       },
-                    },
-                    plotOptions: {
-                      ...baseOptions.plotOptions,
-                      line: {
-                        stacking: undefined,
-                      },
-                      area: {
-                        ...baseOptions.plotOptions.area,
-                        stacking:
-                          yScale === "percentage"
-                            ? "percent"
-                            : stack
-                            ? "normal"
-                            : undefined,
-                      },
-                    },
-                    tooltip: {
-                      ...baseOptions.tooltip,
-                      formatter:
-                        yScale === "percentageDecimal"
-                          ? tooltipFormatter(true, true, decimalToPercent)
-                          : yScale === "percentage"
-                          ? tooltipFormatter(true, true, null)
-                          : tooltipFormatter(
-                              true,
-                              false,
-                              (x) => {
-                                return parseFloat(x).toFixed(decimals);
-                              },
-                              series.length > 0 ? series[0].dataKey : undefined,
-                              false,
-                              stack,
-                            ),
-                    },
-                    xAxis: {
-                      ...baseOptions.xAxis,
-                      min: timespans[timespan].xMin,
-                      max: timespans[timespan].xMax,
-                      minorTicks: true,
-                      minorTickLength: 2,
-                      minorTickWidth: 2,
-                      minorGridLineWidth: 0,
-                      minorTickInterval: ["7d", "30d"].includes(timespan)
-                        ? 1000 * 60 * 60 * 24 * 1
-                        : 1000 * 60 * 60 * 24 * 7,
-                      tickPositions: displayMinorTicksOnly
-                        ? undefined
-                        : tickPositions,
-                      labels: getXAxisLabels(),
-                    },
-                    yAxis: {
-                      ...baseOptions.yAxis,
-                      type: yScale,
-                      min: yScale === "percentage" ? 0 : undefined,
-                      max: maxY ? maxY : undefined,
-                      tickPositions: maxY
-                        ? Array.from(
-                            { length: numIntervals + 1 },
-                            (_, i) => i * intervalSize,
-                          )
-                        : undefined,
-                      tickInterval: maxY ? yAxisTicks.interval : undefined,
-                      gridLineColor:
-                        theme === "dark"
-                          ? "rgba(215, 223, 222, 0.11)"
-                          : "rgba(41, 51, 50, 0.11)",
-                      plotLines: [
-                        {
-                          color: chartColor ? chartColor : null,
-                          width: 1,
-                          value: chartAvg ? chartAvg : null,
-                          dashStyle: "Dash",
+                      plotOptions: {
+                        ...baseOptions.plotOptions,
+                        line: {
+                          stacking: undefined,
                         },
-                      ],
-                      labels: {
-                        ...baseOptions.yAxis.labels,
-                        formatter: function (
-                          t: Highcharts.AxisLabelsFormatterContextObject,
-                        ) {
-                          const isPercentage =
-                            yScale === "percentage" ||
-                            yScale === "percentageDecimal";
-                          let prefix = "";
-                          let suffix = "";
+                        area: {
+                          ...baseOptions.plotOptions.area,
+                          stacking:
+                            yScale === "percentage"
+                              ? "percent"
+                              : stack
+                              ? "normal"
+                              : undefined,
+                        },
+                        series: {
+                          trackByArea: true,
+                          point: {
+                            events: {
+                              mouseOver: function (this, e) {
+                                const seriesId = this.series.options.id;
+                                if (seriesId && setHoveredChartSeriesId) {
+                                  setHoveredChartSeriesId(seriesId);
+                                }
+                              } as Highcharts.PointMouseOverCallbackFunction,
+                            },
+                          },
+                          events: {
+                            mouseOut: function (this, e) {
+                              if (setHoveredChartSeriesId) {
+                                setHoveredChartSeriesId("");
+                              }
+                            } as Highcharts.SeriesMouseOutCallbackFunction,
+                          },
+                        },
+                      },
+                      // series: {
+                      //   states: {
+                      //     hover: {
+                      //       enabled: false,
+                      //     },
+                      //   },
+                      // },
+                      tooltip: {
+                        ...baseOptions.tooltip,
+                        formatter:
+                          yScale === "percentageDecimal"
+                            ? tooltipFormatter(true, true, decimalToPercent)
+                            : yScale === "percentage"
+                            ? tooltipFormatter(true, true, null)
+                            : tooltipFormatter(
+                                true,
+                                false,
+                                (x) => {
+                                  return parseFloat(x).toFixed(decimals);
+                                },
+                                series.length > 0
+                                  ? series[0].dataKey
+                                  : undefined,
+                                false,
+                                stack,
+                              ),
+                      },
+                      xAxis: {
+                        ...baseOptions.xAxis,
+                        min: timespans[timespan].xMin,
+                        max: timespans[timespan].xMax,
+                        minorTicks: true,
+                        minorTickLength: 2,
+                        minorTickWidth: 2,
+                        minorGridLineWidth: 0,
+                        minorTickInterval: ["7d", "30d"].includes(timespan)
+                          ? 1000 * 60 * 60 * 24 * 1
+                          : 1000 * 60 * 60 * 24 * 7,
+                        tickPositions: displayMinorTicksOnly
+                          ? undefined
+                          : tickPositions,
+                        labels: getXAxisLabels(),
+                      },
+                      yAxis: {
+                        ...baseOptions.yAxis,
+                        type: yScale,
+                        min: yScale === "percentage" ? 0 : undefined,
+                        max: maxY ? maxY : undefined,
+                        tickPositions: maxY
+                          ? Array.from(
+                              { length: numIntervals + 1 },
+                              (_, i) => i * intervalSize,
+                            )
+                          : undefined,
+                        tickInterval: maxY ? yAxisTicks.interval : undefined,
+                        gridLineColor:
+                          theme === "dark"
+                            ? "rgba(215, 223, 222, 0.11)"
+                            : "rgba(41, 51, 50, 0.11)",
+                        plotLines: [
+                          {
+                            color: chartColor ? chartColor : null,
+                            width: 1,
+                            value: chartAvg ? chartAvg : null,
+                            dashStyle: "Dash",
+                          },
+                        ],
+                        labels: {
+                          ...baseOptions.yAxis.labels,
+                          formatter: function (
+                            t: Highcharts.AxisLabelsFormatterContextObject,
+                          ) {
+                            const isPercentage =
+                              yScale === "percentage" ||
+                              yScale === "percentageDecimal";
+                            let prefix = "";
+                            let suffix = "";
 
-                          if (isPercentage) {
-                            prefix = "";
-                            suffix = "%";
-                          } else if (series.length > 0) {
-                            if (series[0].dataKey.includes("usd")) {
-                              prefix = "$";
-                              suffix = "";
-                            } else if (
-                              series.length > 0 &&
-                              series[0].dataKey.includes("eth")
-                            ) {
+                            if (isPercentage) {
                               prefix = "";
-                              suffix = "Ξ";
+                              suffix = "%";
+                            } else if (series.length > 0) {
+                              if (series[0].dataKey.includes("usd")) {
+                                prefix = "$";
+                                suffix = "";
+                              } else if (
+                                series.length > 0 &&
+                                series[0].dataKey.includes("eth")
+                              ) {
+                                prefix = "";
+                                suffix = "Ξ";
+                              }
                             }
-                          }
 
-                          return formatNumber(
-                            t.value,
-                            true,
-                            yScale === "percentageDecimal",
-                            prefix,
-                            suffix,
-                          );
-                          // return t.value;
+                            return formatNumber(
+                              t.value,
+                              true,
+                              yScale === "percentageDecimal",
+                              prefix,
+                              suffix,
+                            );
+                            // return t.value;
+                          },
                         },
                       },
-                    },
-                  }}
+                    } as Highcharts.Options
+                  }
                   constructorType={"stockChart"}
                   ref={(chart) => {
                     chartComponent.current = chart?.chart;

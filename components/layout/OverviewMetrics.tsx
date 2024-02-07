@@ -7,6 +7,7 @@ import {
   useRef,
   useCallback,
   CSSProperties,
+  memo,
 } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import Link from "next/link";
@@ -25,6 +26,9 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { useLocalStorage } from "usehooks-ts";
 import { animated, useSpring } from "@react-spring/web";
 import ContractLabelModal from "./ContractLabelModal";
+import { intersection } from "lodash";
+
+const MemoizedChart = memo(Chart);
 
 const DisabledStates: {
   [mode: string]: {
@@ -136,81 +140,7 @@ export default function OverviewMetrics({
 
   const standardChainKey = forceSelectedChain ? forceSelectedChain : "all_l2s";
 
-  // const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
-  //   {},
-  // );
-  // const [contracts, setContracts] = useState<{ [key: string]: ContractInfo }>(
-  //   {},
-  // );
-
-  //   import Airtable from "airtable";
-
-  // //connect to table
-  // const base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(
-  //   "appZWDvjvDmVnOici",
-  // );
-
-  // //state managers
-  // const [projectName, setProjectName] = useState("");
-  // const [contractName, setContractName] = useState("");
-
-  // //send data
-  //   function sendRow(contract: ContractInfo) {
-  //     let dataToInsert: ContractSubmission = {
-  //       address: contract.address,
-  //       origin_key: contract.chain,
-  //       gas_eth: contract.gas_fees_absolute_eth,
-  //       txcount: contract.txcount_absolute,
-  //       project_name: projectName,
-  //       contract_name: contractName,
-  //     };
-
-  //     base("tblU8WV0sxYUz6Kcp").create(dataToInsert, function (err, record) {
-  //       if (err) {
-  //         console.error("Error inserting record:", err);
-  //         return;
-  //       }
-
-  //       console.log("Inserted Record:", record);
-  //     });
-  //   }
-
-  //   <div
-  //     className={`border-forest-50 text-forest-50 border-[1px] rounded-b-full mx-auto h-[50px] w-[95%] items-center justify-center ${
-  //       optOpen ? "flex " : "hidden"
-  //     }`}
-  //   >
-  //     <div className="flex justify-between mx-auto w-[94%]">
-  //       <div className="flex gap-x-[170px]">
-  //         <input
-  //           type="text"
-  //           className="w-full px-3 py-[2px] bg-forest-900 border-forest-200 border-b-[1px] rounded-t-md shadow-sm focus:ring focus:ring-forest-300"
-  //           placeholder="Project Name"
-  //           onChange={(e) => setProjectName(e.target.value)}
-  //         />
-  //         <input
-  //           type="text"
-  //           className="w-full px-3 py-[2px] bg-forest-900 border-forest-200 border-b-[1px] rounded-t-md shadow-sm focus:ring focus:ring-forest-300"
-  //           placeholder="Contract Name"
-  //           onChange={(e) =>
-  //             setContractName(e.target.value)
-  //           }
-  //         />
-  //       </div>
-
-  //       <button
-  //         className="w-8 h-8 bg-forest-900 hover:bg-forest-700  rounded-full flex items-center justify-center"
-  //         onClick={() => {
-  //           sendRow(sortedContracts[key]);
-  //         }}
-  //       >
-  //         <Icon
-  //           icon="tabler:check"
-  //           className="w-4 h-4 text-forest-100 hover:text-forest-200"
-  //         />
-  //       </button>
-  //     </div>
-  //   </div>
+  const [hoveredSeriesId, setHoveredChartSeriesId] = useState<string>("");
 
   const isMobile = useMediaQuery("(max-width: 1023px)");
 
@@ -264,98 +194,48 @@ export default function OverviewMetrics({
     return {};
   }, [master]);
 
-  const [isCategoryHovered, setIsCategoryHovered] = useState<{
-    [key: string]: boolean;
-  }>(() => {
-    if (master) {
-      const initialIsCategoryHovered: { [key: string]: boolean } = {};
-      Object.keys(master.blockspace_categories.main_categories).forEach(
-        (key) => {
-          if (key !== "cross_chain") {
-            initialIsCategoryHovered[key] = false;
-          }
-        },
-      );
-      return initialIsCategoryHovered;
+  const [selectedChain, setSelectedChain] = useState<string | null>(
+    forceSelectedChain ?? null,
+  );
+
+  const [hoveredCategories, setHoveredCategories] = useState<string[]>([]);
+
+  const hoverCategory = (category: string) => {
+    if (!hoveredCategories.includes(category)) {
+      setHoveredCategories([category]);
+    }
+  };
+
+  const unhoverCategory = (category: string) => {
+    if (hoveredCategories.includes(category)) {
+      setHoveredCategories(hoveredCategories.filter((c) => c !== category));
+    }
+  };
+
+  const isCategoryHovered = (category: string) => {
+    return hoveredCategories.includes(category);
+  };
+
+  useEffect(() => {
+    if (!hoveredSeriesId) {
+      setHoveredCategories([]);
     }
 
-    return {
-      all_chain: false,
-      native_transfers: false,
-      token_transfers: false,
-      nft_fi: false,
-      defi: false,
-      cefi: false,
-      utility: false,
-      scaling: false,
-      gaming: false,
-    };
-  });
+    if (allCats) {
+      const hoveredChartSeriesCategory = hoveredSeriesId.split("::")[1];
+      setHoveredCategories([hoveredChartSeriesCategory]);
+    }
+  }, [allCats, hoveredSeriesId]);
+
+  const forceHoveredChartSeriesId = useMemo(() => {
+    if (allCats) {
+      return selectedChain + "::" + hoveredCategories[0] + "::" + selectedMode;
+    }
+
+    return "";
+  }, [allCats, hoveredCategories, selectedChain, selectedMode]);
 
   const [selectedCategory, setSelectedCategory] = useState("nft");
-
-  // useEffect(() => {
-  //   // Process the data and create the contracts object
-  //   const result: { [key: string]: ContractInfo } = {};
-
-  //   for (const category of Object.keys(data)) {
-  //     if (data) {
-  //       const contractsData =
-  //         data.all_l2s["overview"][selectedTimespan][selectedCategory].contracts
-  //           .data;
-  //       const types =
-  //         data.all_l2s["overview"][selectedTimespan][selectedCategory].contracts
-  //           .types;
-
-  //       for (const contract of Object.keys(contractsData)) {
-  //         const dataArray = contractsData[contract];
-  //         const key = dataArray[0] + dataArray[4];
-  //         const values = dataArray;
-
-  //         // Check if the key already exists in the result object
-  //         if (result.hasOwnProperty(key)) {
-  //           // If the key exists, update the values
-  //           result[key] = {
-  //             ...result[key],
-  //             address: values[types.indexOf("address")],
-  //             project_name: values[types.indexOf("project_name")],
-  //             name: values[types.indexOf("name")],
-  //             main_category_key: values[types.indexOf("main_category_key")],
-  //             sub_category_key: values[types.indexOf("sub_category_key")],
-  //             chain: values[types.indexOf("chain")],
-  //             gas_fees_absolute_eth:
-  //               values[types.indexOf("gas_fees_absolute_eth")],
-  //             gas_fees_absolute_usd:
-  //               values[types.indexOf("gas_fees_absolute_usd")],
-  //             gas_fees_share: values[types.indexOf("gas_fees_share")] ?? "",
-  //             txcount_absolute: values[types.indexOf("txcount_absolute")],
-  //             txcount_share: values[types.indexOf("txcount_share")] ?? "",
-  //           };
-  //         } else {
-  //           // If the key doesn't exist, create a new entry
-  //           result[key] = {
-  //             address: values[types.indexOf("address")],
-  //             project_name: values[types.indexOf("project_name")],
-  //             name: values[types.indexOf("name")],
-  //             main_category_key: values[types.indexOf("main_category_key")],
-  //             sub_category_key: values[types.indexOf("sub_category_key")],
-  //             chain: values[types.indexOf("chain")],
-  //             gas_fees_absolute_eth:
-  //               values[types.indexOf("gas_fees_absolute_eth")],
-  //             gas_fees_absolute_usd:
-  //               values[types.indexOf("gas_fees_absolute_usd")],
-  //             gas_fees_share: values[types.indexOf("gas_fees_share")] ?? "",
-  //             txcount_absolute: values[types.indexOf("txcount_absolute")],
-  //             txcount_share: values[types.indexOf("txcount_share")] ?? "",
-  //           };
-  //         }
-  //       }
-  //     }
-  //   }
-
-  //   // Update the contracts state with the new data
-  //   setContracts(result);
-  // }, [data, selectedCategory, selectedTimespan]);
 
   const formatSubcategories = useCallback(
     (str: string) => {
@@ -454,10 +334,6 @@ export default function OverviewMetrics({
     // Update the contracts state with the new data
     return result;
   }, [data, selectedCategory, selectedTimespan, allCats]);
-
-  const [selectedChain, setSelectedChain] = useState<string | null>(
-    forceSelectedChain ?? null,
-  );
 
   const relativePercentageByChain = useMemo(() => {
     return Object.keys(data).reduce((acc, chainKey) => {
@@ -642,7 +518,7 @@ export default function OverviewMetrics({
             .filter((category) => category !== "types") // Exclude the "types" category
             .reverse()
             .map((category) => ({
-              id: [selectedChain, category, selectedMode].join("_"),
+              id: [selectedChain, category, selectedMode].join("::"),
               name: selectedChain,
               unixKey: "unix",
               dataKey: dataKey,
@@ -657,7 +533,7 @@ export default function OverviewMetrics({
       } else {
         return [
           {
-            id: [selectedChain, selectedCategory, selectedMode].join("_"),
+            id: [selectedChain, selectedCategory, selectedMode].join("::"),
             name: selectedChain,
             unixKey: "unix",
             dataKey: dataKey,
@@ -684,7 +560,7 @@ export default function OverviewMetrics({
     //   });
     return [
       {
-        id: ["all_l2s", selectedCategory, selectedMode].join("_"),
+        id: ["all_l2s", selectedCategory, selectedMode].join("::"),
         name: "all_l2s",
         unixKey: "unix",
         dataKey: selectedMode,
@@ -928,7 +804,7 @@ export default function OverviewMetrics({
       if (!categoryData) {
         if (
           (isSelectedCategory && isSelectedChainOrNoSelectedChain) ||
-          isCategoryHovered[categoryKey]
+          isCategoryHovered(categoryKey)
         ) {
           if (isSelectedCategory && isSelectedChainOrNoSelectedChain) {
             style.backgroundColor = "rgba(255,255,255, 0.88)";
@@ -944,7 +820,7 @@ export default function OverviewMetrics({
             style.borderRadius = "5px";
           }
           style.transform =
-            isCategoryHovered[categoryKey] && !isSelectedCategory
+            isCategoryHovered(categoryKey) && !isSelectedCategory
               ? "scale(1.2)"
               : isSelectedChainOrNoSelectedChain
               ? "scale(1.30)"
@@ -952,7 +828,7 @@ export default function OverviewMetrics({
 
           if (isLastCategory && isSelectedChainOrNoSelectedChain)
             style.transform += " translateX(3px)";
-          style.zIndex = isCategoryHovered[categoryKey] ? 2 : 5;
+          style.zIndex = isCategoryHovered(categoryKey) ? 2 : 5;
         } else {
           style.backgroundColor = "rgba(255,255,255, 0.60)";
           if (isLastCategory) {
@@ -965,7 +841,7 @@ export default function OverviewMetrics({
         style.paddingTop = "0px";
         style.paddingBottom = "0px";
         style.width =
-          isCategoryHovered[categoryKey] || selectedCategory === categoryKey
+          isCategoryHovered(categoryKey) || selectedCategory === categoryKey
             ? "45px"
             : "10px";
 
@@ -975,7 +851,7 @@ export default function OverviewMetrics({
       }
       if (
         (isSelectedCategory && isSelectedChainOrNoSelectedChain) ||
-        isCategoryHovered[categoryKey]
+        isCategoryHovered(categoryKey)
       ) {
         if (isLastCategory) {
           style.borderRadius = "20000px 99999px 99999px 20000px";
@@ -1002,7 +878,7 @@ export default function OverviewMetrics({
           // if()
         }
         style.transform =
-          isCategoryHovered[categoryKey] && !isSelectedCategory
+          isCategoryHovered(categoryKey) && !isSelectedCategory
             ? "scaleY(1.01)"
             : isSelectedChainOrNoSelectedChain
             ? "scaleY(1.08)"
@@ -1016,7 +892,7 @@ export default function OverviewMetrics({
         //     ? "3px solid rgba(255,255,255, 1)"
         //     : "3px solid rgba(255,255,255, 0.33)";
 
-        style.zIndex = isCategoryHovered[categoryKey] ? 2 : 5;
+        style.zIndex = isCategoryHovered(categoryKey) ? 2 : 5;
 
         style.backgroundColor = "";
       } else {
@@ -1343,6 +1219,9 @@ export default function OverviewMetrics({
 
   return (
     <div className="w-full flex-col relative">
+      {/* <div>{JSON.stringify(hoveredSeriesId)}</div> */}
+      {/* <div>{JSON.stringify(isCategoryHovered)}</div> */}
+      {/* <div>{JSON.stringify(hoveredCategories)}</div> */}
       <Container>
         <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 lg:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
           <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
@@ -1455,8 +1334,8 @@ export default function OverviewMetrics({
                     ${
                       forceSelectedChain
                         ? allCats
-                          ? "bg-[#5A6462] "
-                          : "bg-inherit hover:bg-forest-800/50"
+                          ? "bg-[#5A6462] text-sm font-semibold"
+                          : "bg-inherit hover:bg-forest-800/50 text-xs font-medium"
                         : "bg-inherit"
                     } `}
                     onClick={() => {
@@ -1465,89 +1344,103 @@ export default function OverviewMetrics({
                       }
                     }}
                     onMouseEnter={() => {
-                      setIsCategoryHovered((prev) => ({
-                        ...prev,
-                        ["all_chain"]: true,
-                      }));
+                      hoverCategory("all_chain");
                     }}
                     onMouseLeave={() => {
-                      setIsCategoryHovered((prev) => ({
-                        ...prev,
-                        ["all_chain"]: false,
-                      }));
+                      unhoverCategory("all_chain");
                     }}
                   >
                     {forceSelectedChain && "All"}
                   </button>
                 </div>
                 <div className="flex flex-1">
-                  {Object.keys(categories)
-                    .filter((category) => categories[category] !== "Chains")
-                    .map((category, i) => (
-                      <div
-                        key={category}
-                        className={`relative flex h-full justify-center items-center 
+                  {master &&
+                    Object.keys(master.blockspace_categories.main_categories)
+                      // .filter((category) => categories[category] !== "Chains")
+                      .map((category, i) => (
+                        <div
+                          key={category}
+                          className={`relative flex h-full justify-center items-center 
                           ${category === "unlabeled" ? "flex-1" : "flex-1"}
                           ${
                             selectedCategory === category
                               ? "borden-hidden rounded-[0px]"
                               : "h-full"
                           }`}
-                        onMouseEnter={() => {
-                          setIsCategoryHovered((prev) => ({
-                            ...prev,
-                            [category]: true,
-                          }));
-                        }}
-                        onMouseLeave={() => {
-                          setIsCategoryHovered((prev) => ({
-                            ...prev,
-                            [category]: false,
-                          }));
-                        }}
-                        style={{
-                          backgroundColor:
-                            selectedCategory === category && !allCats
-                              ? "#5A6462"
-                              : `rgba(0, 0, 0, ${
-                                  0.06 +
-                                  (i / Object.keys(categories).length) * 0.94
-                                })`,
-                        }}
-                      >
-                        <button
-                          key={category}
-                          className={`flex flex-col w-full h-full justify-center items-center overflow-hidden border-l border-[
-                          1px 
-                        ] border-forest-50 dark:border-forest-800
+                          onMouseEnter={() => {
+                            hoverCategory(category);
+                          }}
+                          onMouseLeave={() => {
+                            unhoverCategory(category);
+                          }}
+                          style={{
+                            backgroundColor:
+                              selectedCategory === category && !allCats
+                                ? "#5A6462"
+                                : `rgba(0, 0, 0, ${
+                                    0.06 +
+                                    (i / Object.keys(categories).length) * 0.94
+                                  })`,
+                          }}
+                        >
+                          <button
+                            key={category}
+                            className={`flex flex-col w-full h-full justify-center items-center overflow-hidden border-l border-[1px] border-forest-50 dark:border-forest-800 ${
+                              selectedCategory === category
+                                ? "bg-forest-800/[0.025]"
+                                : ""
+                            } 
                           ${
-                            selectedCategory === category
-                              ? "bg-forest-800/[0.025]"
-                              : ""
-                          } 
-                          ${
-                            isCategoryHovered[category]
+                            isCategoryHovered(category)
                               ? "bg-forest-800/50"
                               : ""
                           }`}
-                          onClick={() => {
-                            setSelectedCategory(category);
-                            if (forceSelectedChain) setAllCats(false);
-                            if (!forceSelectedChain) setSelectedChain(null);
-                          }}
-                        >
-                          <div
-                            className={`${
-                              selectedCategory === category
-                                ? "text-sm font-semibold"
-                                : "text-xs font-medium"
-                            }`}
+                            onClick={() => {
+                              if (forceSelectedChain) {
+                                // if no data, return
+                                if (
+                                  !data[forceSelectedChain].overview[
+                                    selectedTimespan
+                                  ][category]["data"]
+                                ) {
+                                  return;
+                                }
+                                setSelectedCategory(category);
+                                if (selectedCategory === category) {
+                                  if (allCats) {
+                                    setAllCats(false);
+                                  } else {
+                                    setAllCats(true);
+                                  }
+                                } else {
+                                  setAllCats(false);
+                                }
+                              } else {
+                                setSelectedCategory(category);
+                                setSelectedChain(null);
+                              }
+                              // if (forceSelectedChain) setAllCats(false);
+                              // if (!forceSelectedChain) setSelectedChain(null);
+                            }}
                           >
-                            {categories[category]}
-                          </div>
-                        </button>
-                      </div>
-                    ))}
+                            <div
+                              className={`${
+                                forceSelectedChain
+                                  ? allCats
+                                    ? "text-xs font-medium"
+                                    : selectedCategory === category
+                                    ? "text-sm font-semibold"
+                                    : "text-xs font-medium"
+                                  : selectedCategory === category
+                                  ? "text-sm font-semibold"
+                                  : "text-xs font-medium"
+                              }`}
+                            >
+                              {categories[category]}
+                            </div>
+                          </button>
+                        </div>
+                      ))}
                 </div>
               </div>
             </div>
@@ -1626,8 +1519,8 @@ export default function OverviewMetrics({
                           <div
                             className={`flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px] ${
                               forceSelectedChain
-                                ? isCategoryHovered["all_chain"]
-                                  ? isCategoryHovered["all_chain"] && allCats
+                                ? isCategoryHovered("all_chain")
+                                  ? allCats
                                     ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
                                     : `rounded-l-full py-[24px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
                                   : allCats
@@ -1640,16 +1533,18 @@ export default function OverviewMetrics({
                                 : "hover:cursor-default"
                             } `}
                             onMouseEnter={() => {
-                              setIsCategoryHovered((prev) => ({
-                                ...prev,
-                                ["all_chain"]: true,
-                              }));
+                              // setIsCategoryHovered((prev) => ({
+                              //   ...prev,
+                              //   ["all_chain"]: true,
+                              // }));
+                              hoverCategory("all_chain");
                             }}
                             onMouseLeave={() => {
-                              setIsCategoryHovered((prev) => ({
-                                ...prev,
-                                ["all_chain"]: false,
-                              }));
+                              // setIsCategoryHovered((prev) => ({
+                              //   ...prev,
+                              //   ["all_chain"]: false,
+                              // }));
+                              unhoverCategory("all_chain");
                             }}
                             onClick={() => {
                               if (forceSelectedChain) {
@@ -1710,42 +1605,60 @@ export default function OverviewMetrics({
                                 <div
                                   key={categoryKey}
                                   onClick={() => {
-                                    if (selectedCategory === categoryKey) {
-                                      if (
-                                        !data[chainKey].overview[
-                                          selectedTimespan
-                                        ][categoryKey]["data"]
-                                      ) {
-                                        return;
-                                      }
-                                      if (
-                                        selectedChain === chainKey &&
-                                        !forceSelectedChain
-                                      ) {
-                                        // setSelectedCategory(categoryKey);
-                                        setSelectedChain(null);
+                                    if (forceSelectedChain) {
+                                      // forceSelectedChain == if on Chain BS section
+                                      if (allCats) {
+                                        setAllCats(false);
+                                        setSelectedCategory(categoryKey);
                                       } else {
-                                        // setSelectedCategory(categoryKey);
-                                        setSelectedChain(chainKey);
+                                        if (selectedCategory === categoryKey) {
+                                          setAllCats(true);
+                                        } else {
+                                          // if no data, return
+                                          if (
+                                            !data[chainKey].overview[
+                                              selectedTimespan
+                                            ][categoryKey]["data"]
+                                          ) {
+                                            return;
+                                          }
+                                          // if we're on Chain BS page, set all cats to false
+                                          setAllCats(false);
+                                          setSelectedCategory(categoryKey);
+                                        }
                                       }
                                     } else {
-                                      setSelectedCategory(categoryKey);
-                                      if (forceSelectedChain) setAllCats(false);
-                                      if (!forceSelectedChain)
-                                        setSelectedChain(null);
+                                      if (selectedCategory === categoryKey) {
+                                        // else set selected chain to null if its selected
+                                        if (selectedChain === chainKey) {
+                                          setSelectedChain(null);
+                                        } else {
+                                          // if no data, return
+                                          if (
+                                            !data[chainKey].overview[
+                                              selectedTimespan
+                                            ][categoryKey]["data"]
+                                          ) {
+                                            return;
+                                          }
+                                          setSelectedChain(chainKey);
+                                        }
+                                      } else {
+                                        setSelectedCategory(categoryKey);
+                                        // else set selected chain to null if its selected
+                                        if (selectedChain === chainKey) {
+                                          setSelectedChain(chainKey);
+                                        } else {
+                                          setSelectedChain(null);
+                                        }
+                                      }
                                     }
                                   }}
                                   onMouseEnter={() => {
-                                    setIsCategoryHovered((prev) => ({
-                                      ...prev,
-                                      [categoryKey]: true,
-                                    }));
+                                    hoverCategory(categoryKey);
                                   }}
                                   onMouseLeave={() => {
-                                    setIsCategoryHovered((prev) => ({
-                                      ...prev,
-                                      [categoryKey]: false,
-                                    }));
+                                    unhoverCategory(categoryKey);
                                   }}
                                   className={`flex flex-col h-[41px] justify-center items-center py-5 cursor-pointer relative transition-all duration-200 ease-in-out
                                     ${
@@ -1753,11 +1666,13 @@ export default function OverviewMetrics({
                                         categoryKey
                                       ]
                                         ? (selectedCategory === categoryKey &&
+                                            !allCats &&
                                             (selectedChain === chainKey ||
-                                              selectedChain === null)) ||
-                                          isCategoryHovered[categoryKey]
-                                          ? isCategoryHovered[categoryKey] &&
-                                            selectedCategory !== categoryKey
+                                              selectedChain === null) &&
+                                            !allCats) ||
+                                          isCategoryHovered(categoryKey)
+                                          ? selectedCategory !== categoryKey &&
+                                            !allCats
                                             ? `py-[23px] -my-[3px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
                                             : `py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
                                           : `z-[1]`
@@ -1781,11 +1696,12 @@ export default function OverviewMetrics({
                                   <div
                                     className={`mix-blend-luminosity font-medium w-full absolute inset-0 flex items-center justify-center ${
                                       (selectedCategory === categoryKey &&
+                                        !allCats &&
                                         (selectedChain === chainKey ||
-                                          selectedChain === null)) ||
-                                      isCategoryHovered[categoryKey]
+                                          selectedChain === null) &&
+                                        !allCats) ||
+                                      isCategoryHovered(categoryKey)
                                         ? `${
-                                            isCategoryHovered[categoryKey] &&
                                             selectedCategory !== categoryKey
                                               ? "text-xs"
                                               : "text-sm font-semibold"
@@ -1845,7 +1761,7 @@ export default function OverviewMetrics({
                                       <div
                                         className={`text-black/80
                                         ${
-                                          isCategoryHovered[categoryKey] ||
+                                          isCategoryHovered(categoryKey) ||
                                           selectedCategory === categoryKey
                                             ? "opacity-100 py-8"
                                             : "opacity-0"
@@ -1917,7 +1833,7 @@ export default function OverviewMetrics({
           </h2>
         </div>
         <div className="flex items-center w-full ">
-          <Chart
+          <MemoizedChart
             types={
               selectedChain === null
                 ? data[standardChainKey].daily.types
@@ -1932,6 +1848,8 @@ export default function OverviewMetrics({
             chartWidth="100%"
             maxY={chartMax}
             chartAvg={!allCats ? chartAvg || undefined : undefined}
+            forceHoveredChartSeriesId={forceHoveredChartSeriesId}
+            setHoveredChartSeriesId={setHoveredChartSeriesId}
           />
           {chartAvg && (
             <div
