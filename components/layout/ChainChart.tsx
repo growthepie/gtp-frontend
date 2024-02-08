@@ -857,7 +857,7 @@ export default function ChainChart({
       stickOnContact: false,
       useHTML: true,
       shared: true,
-      outside: isMobile ? false : true,
+      outside: true,
       formatter: tooltipFormatter,
       positioner: tooltipPositioner,
       split: false,
@@ -1255,28 +1255,27 @@ export default function ChainChart({
         {`
         .highcharts-tooltip-container {
           z-index: 9999 !important;
-        }console
+        }
         .highcharts-grid.highcharts-yaxis-grid > .highcharts-grid-line:first-child {
           stroke-width: 0px !important;
         `}
       </style>
       <div
-        className={`flex w-full justify-between items-stretch text-xs  bg-forest-50 dark:bg-[#1F2726] z-30 ${
-          isMobile
-            ? "flex-col-reverse rounded-2xl px-0.5"
-            : "flex-row rounded-full px-auto"
-        } ${compareTo && isMobile ? "mb-[500px]" : "mb-[30px]"} `}
+        className={`flex w-full justify-between items-stretch text-xs bg-forest-50 dark:bg-[#1F2726] lg:z-30 flex-col-reverse rounded-t-[15px] rounded-b-[30px] px-0.5 pb-0.5 lg:pb-0 lg:pl-0 lg:flex-row lg:rounded-full lg:px-auto mb-[15px] lg:mb-[30px] transition-shadow duration-300 ${
+          compareTo &&
+          "shadow-[0px_4px_4px_#00000033] dark:shadow-[0px_4px_4px_#0000003F] lg:shadow-none lg:dark:shadow-none"
+        }`}
       >
-        <div className="flex relative h-[54px]">
+        <div className="flex flex-col relative h-full lg:h-[54px] lg:w-[271px]">
           <div
-            className={`relative flex rounded-full h-full mx-auto z-[20] p-[5px] cursor-pointer ${
+            className={`relative flex rounded-full h-full w-full lg:z-30 p-[5px] cursor-pointer ${
               compChain
                 ? AllChainsByKeys[compChain].backgrounds[theme][0]
                 : "bg-white dark:bg-[#151A19]"
             } ${isMobile ? "w-full" : "w-[271px]"} `}
           >
             <div
-              className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
+              className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
               onClick={handlePrevCompChain}
             >
               <Icon icon="feather:arrow-left" className="w-6 h-6" />
@@ -1323,25 +1322,21 @@ export default function ChainChart({
               </div>
             </div>
             <div
-              className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
+              className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
               onClick={handleNextCompChain}
             >
               <Icon icon="feather:arrow-right" className="w-6 h-6" />
             </div>
           </div>
           <div
-            className={`flex flex-col absolute top-[27px] bottom-auto left-0 right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none  border-b border-l border-r transition-all ease-in-out duration-300 ${
+            className={`flex flex-col relative lg:absolute lg:top-[27px] bottom-auto left-[-2px] right-[-2px] lg:left-0 lg:right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${
               compareTo
-                ? `max-h-[600px] z-[15] ${
-                    isMobile
-                      ? "border-none rounded-b-[48px]"
-                      : "border-forest-200 dark:border-forest-500 rounded-b-2xl"
-                  }  shadow-[0px_4px_46.2px_#00000066] dark:shadow-[0px_4px_46.2px_#000000]`
-                : "max-h-0 z-[5] overflow-hidden border-transparent rounded-b-2xl"
+                ? `max-h-[550px] lg:z-[25] border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-2xl lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
+                : "max-h-0 -z-10 overflow-hidden border-transparent rounded-b-[22px]"
             } `}
           >
             <div className="pb-[10px]">
-              <div className="h-[28px]"></div>
+              <div className="h-[10px] lg:h-[28px]"></div>
               <div
                 className="flex pl-[21px] pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
                 onClick={() => {
@@ -1367,8 +1362,8 @@ export default function ChainChart({
                 <div
                   className="flex pl-[21px] pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
                   onClick={() => {
-                    setCompareTo(false);
                     updateChainKey([chainKey[0], chain.key]);
+                    setCompareTo(false);
                   }}
                   key={chain.key}
                 >
@@ -1396,7 +1391,7 @@ export default function ChainChart({
           </div>
           {compareTo && (
             <div
-              className={`fixed inset-0 z-20`}
+              className={`hidden lg:block lg:fixed inset-0 z-20`}
               onClick={() => {
                 setCompareTo(false);
               }}
@@ -1544,7 +1539,7 @@ export default function ChainChart({
                               key === "txcosts" ? "hidden lg:block" : ""
                             }`}
                           >
-                            <div className="absolute left-[15px] align-bottom flex items-end z-30 ">
+                            <div className="absolute left-[15px] align-bottom flex items-end z-10">
                               {new Date(intervalShown.min).toLocaleDateString(
                                 undefined,
                                 {
@@ -1555,7 +1550,7 @@ export default function ChainChart({
                                 },
                               )}
                             </div>
-                            <div className="absolute right-[15px] align-bottom flex items-end z-30">
+                            <div className="absolute right-[15px] align-bottom flex items-end z-10">
                               {new Date(intervalShown.max).toLocaleDateString(
                                 undefined,
                                 {
@@ -2039,7 +2034,7 @@ export default function ChainChart({
                     />
                     {/* </div> */}
                   </div>
-                  <div className="w-full h-[15px] relative text-[10px] z-30">
+                  <div className="w-full h-[15px] relative text-[10px] z-10">
                     <div className="absolute left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
                     <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
                   </div>
@@ -2052,7 +2047,7 @@ export default function ChainChart({
                               : ""
                           }`}
                         >
-                          <div className="absolute left-[15px] align-bottom flex items-end z-30">
+                          <div className="absolute left-[15px] align-bottom flex items-end z-10">
                             {new Date(
                               timespans[selectedTimespan].xMin,
                             ).toLocaleDateString(undefined, {
@@ -2062,7 +2057,7 @@ export default function ChainChart({
                               year: "numeric",
                             })}
                           </div>
-                          <div className="absolute right-[15px] align-bottom flex items-end z-30">
+                          <div className="absolute right-[15px] align-bottom flex items-end z-10">
                             {new Date(
                               timespans[selectedTimespan].xMax,
                             ).toLocaleDateString(undefined, {
