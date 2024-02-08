@@ -21,13 +21,13 @@ import Container from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
 
 export default function Home() {
-  const isLargeScreen = useMediaQuery("(min-width: 768px)");
+  // const isLargeScreen = useMediaQuery("(min-width: 1280px)");
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  // const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    setIsSidebarOpen(isLargeScreen);
-  }, [isLargeScreen]);
+  // useEffect(() => {
+  //   setIsSidebarOpen(isLargeScreen);
+  // }, [isLargeScreen]);
 
   const {
     data: landing,

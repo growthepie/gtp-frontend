@@ -186,6 +186,11 @@ export default function RootLayout({
                   </div>
                 </div>
               </div>
+              {/* <div className="fixed bottom-[20px] right-[20px] md:right-[50px] flex justify-center items-center z-50">
+                <div className="relative flex gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#5A6462] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
+                  <Share />
+                </div>
+              </div> */}
             </div>
           </div>
           {process.env.NODE_ENV === "development" && (
@@ -198,14 +203,7 @@ export default function RootLayout({
               <div className="hidden 2xl:block">{"2xl"}</div>
             </div>
           )}
-          {/* <div className="fixed bottom-0 right-0 left-0 flex justify-center items-center z-50">
-            <div className="flex w-full max-w-[1680px] justify-end items-center p-[20px] md:pb-[20px] md:pr-[50px]">
-              <div className="relative flex gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#5A6462] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
-                <Embed />
-                <Share />
-              </div>
-            </div>
-          </div> */}
+
           <CookieConsent />
         </Providers>
         <Analytics />

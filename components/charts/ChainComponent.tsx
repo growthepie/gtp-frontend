@@ -1073,7 +1073,7 @@ export default function ChainComponent({
       .attr({
         x1: chart.chartWidth * (1 - fraction) + 0.00005,
         y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
-        x2: chart.chartWidth * (1 - fraction),
+        x2: chart.chartWidth * (1 - fraction) - 0.00005,
         y2: chart.plotTop / 2,
         stroke: "url('#gradient0')",
         "stroke-dasharray": "2",
