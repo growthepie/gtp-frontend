@@ -13,7 +13,12 @@ import {
   useCallback,
   useLayoutEffect,
 } from "react";
-import { useLocalStorage, useWindowSize, useIsMounted } from "usehooks-ts";
+import {
+  useLocalStorage,
+  useWindowSize,
+  useIsMounted,
+  useMediaQuery,
+} from "usehooks-ts";
 import fullScreen from "highcharts/modules/full-screen";
 import _merge from "lodash/merge";
 import { useTheme } from "next-themes";
@@ -25,7 +30,7 @@ import { debounce, forEach } from "lodash";
 
 import { navigationItems, navigationCategories } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
-import { useMediaQuery } from "usehooks-ts";
+
 import ChartWatermark from "./ChartWatermark";
 import { ChainsData } from "@/types/api/ChainResponse";
 import { IS_PREVIEW } from "@/lib/helpers";
@@ -1255,14 +1260,20 @@ export default function ChainChart({
           stroke-width: 0px !important;
         `}
       </style>
-      <div className="flex w-full justify-between items-stretch text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] mb-[30px] z-50">
+      <div
+        className={`flex w-full justify-between items-stretch text-xs  bg-forest-50 dark:bg-[#1F2726] z-50 ${
+          isMobile
+            ? "flex-col-reverse rounded-2xl px-0.5"
+            : "flex-row rounded-full px-auto"
+        } ${compareTo ? "mb-[500px]" : "mb-[30px]"} `}
+      >
         <div className="flex relative h-[54px]">
           <div
-            className={`relative flex rounded-full h-full w-[271px] z-50 p-[5px] cursor-pointer ${
+            className={`relative flex rounded-full h-full mx-auto z-50 p-[5px] cursor-pointer ${
               compChain
                 ? AllChainsByKeys[compChain].backgrounds[theme][0]
                 : "bg-white dark:bg-[#151A19]"
-            }`}
+            } ${isMobile ? "w-full" : "w-[271px]"} `}
           >
             <div
               className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-50 hover:cursor-pointer"
@@ -1319,11 +1330,15 @@ export default function ChainChart({
             </div>
           </div>
           <div
-            className={`flex flex-col absolute top-[27px] bottom-auto left-0 right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none rounded-b-2xl border-b border-l border-r transition-all ease-in-out duration-300 ${
+            className={`flex flex-col absolute top-[27px] bottom-auto left-0 right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none  border-b border-l border-r transition-all ease-in-out duration-300 ${
               compareTo
-                ? `max-h-[600px] z-40 border-forest-200 dark:border-forest-500 shadow-[0px_4px_46.2px_#00000066] dark:shadow-[0px_4px_46.2px_#000000]`
-                : "max-h-0 z-10 overflow-hidden border-transparent"
-            }`}
+                ? `max-h-[600px] z-40 ${
+                    isMobile
+                      ? "border-none rounded-b-[48px]"
+                      : "border-forest-200 dark:border-forest-500 rounded-b-2xl"
+                  }  shadow-[0px_4px_46.2px_#00000066] dark:shadow-[0px_4px_46.2px_#000000]`
+                : "max-h-0 z-10 overflow-hidden border-transparent rounded-b-2xl"
+            } `}
           >
             <div className="pb-[10px]">
               <div className="h-[28px]"></div>
@@ -1394,11 +1409,11 @@ export default function ChainChart({
             Object.keys(timespans).map((timespan) => (
               <button
                 key={timespan}
-                className={`rounded-full grow px-[16px] py-[8px] text-sm md:text-base lg:px-4 lg:py-3 font-medium ${
+                className={`rounded-full grow  text-sm md:text-base py-[8px] lg:px-4 lg:py-3 font-medium ${
                   selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
-                }`}
+                } ${isMobile ? " px-[8px]" : " px-[16px]"} `}
                 onClick={() => {
                   setSelectedTimespan(timespan);
                 }}
@@ -1435,7 +1450,7 @@ export default function ChainChart({
 
       {data && (
         <div
-          className="grid grid-rows-8 lg:grid-rows-4 lg:grid-cols-2 lg:grid-flow-row gap-y-0 gap-x-[15px]"
+          className={`grid grid-rows-8 lg:grid-rows-4 lg:grid-cols-2 lg:grid-flow-row gap-y-0 gap-x-[15px] `}
           // style={{
           //   gridRow: `span ${Math.ceil(enabledFundamentalsKeys.length / 2)}`,
           // }}

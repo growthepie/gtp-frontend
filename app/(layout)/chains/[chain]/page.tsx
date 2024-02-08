@@ -29,6 +29,7 @@ import { useSessionStorage } from "usehooks-ts";
 import { notFound } from "next/navigation";
 import { ChainsData } from "@/types/api/ChainResponse";
 import { useTheme } from "next-themes";
+import { useMediaQuery } from "usehooks-ts";
 
 const Chain = ({ params }: { params: any }) => {
   const { chain } = params;
@@ -46,6 +47,7 @@ const Chain = ({ params }: { params: any }) => {
   const [chainValidating, setChainValidating] = useState(false);
   const [chainLoading, setChainLoading] = useState(false);
   const [openChainList, setOpenChainList] = useState<boolean>(false);
+  const isMobile = useMediaQuery("(max-width: 767px)");
 
   const {
     data: master,
@@ -161,8 +163,12 @@ const Chain = ({ params }: { params: any }) => {
                     {AllChainsByKeys[chainKeys[0]].label}
                   </Heading>
                 </div>
-                <div className="hidden md:flex items-start space-x-[7px] font-inter uppercase pt-[11px]">
-                  <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm ml-[19px]">
+                <div className="hidden md:flex items-start space-x-[7px] font-inter uppercase pt-[11px] ">
+                  <div
+                    className={`inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm  ${
+                      isMobile ? "ml-[0px]" : "ml-[19px]"
+                    } `}
+                  >
                     {master.chains[chainKeys[0]].technology}
                   </div>
                   {master.chains[chainKeys[0]].purpose.includes("(EVM)") ? (
@@ -228,8 +234,8 @@ const Chain = ({ params }: { params: any }) => {
               </div>
             </div>
 
-            <div className="flex md:hidden items-start space-x-[7px] font-inter uppercase px-[7px] mb-[21px]">
-              <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm ml-[19px]">
+            <div className="flex md:hidden items-start space-x-[7px] font-inter uppercase  mb-[21px] ">
+              <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm ">
                 {master.chains[chainKeys[0]].technology}
               </div>
               {master.chains[chainKeys[0]].purpose.includes("(EVM)") ? (
