@@ -1329,19 +1329,19 @@ export default function ChainChart({
             </div>
           </div>
           <div
-            className={`flex flex-col relative lg:absolute lg:top-[27px] bottom-auto left-[-2px] right-[-2px] lg:left-0 lg:right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${
+            className={`flex flex-col relative lg:absolute lg:top-[27px] bottom-auto mx-[-2px] lg:mx-0 lg:left-0 lg:right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${
               compareTo
                 ? `max-h-[550px] lg:z-[25] border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-2xl lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
-                : "max-h-0 overflow-hidden border-transparent rounded-b-[22px]"
+                : "max-h-0 z-20 overflow-hidden border-transparent rounded-b-[22px]"
             } `}
           >
-            <div className="pb-[10px]">
+            <div className="pb-[20px] lg:pb-[10px]">
               <div className="h-[10px] lg:h-[28px]"></div>
               <div
-                className="flex pl-[21px] pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
+                className="flex pl-[21px] pr-[19px] lg:pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
                 onClick={() => {
                   setCompareTo(false);
-                  updateChainKey([chainKey[0]]);
+                  delay(300).then(() => updateChainKey([chainKey[0]]));
                 }}
               >
                 <Icon
@@ -1349,21 +1349,29 @@ export default function ChainChart({
                   className="w-6 h-6"
                   visibility={compChain === null ? "visible" : "hidden"}
                 />
-                <Icon
-                  icon="feather:x"
-                  className="w-[22px] h-[22px]"
-                  style={{
-                    color: compChain === null ? "" : "#5A6462",
-                  }}
-                />
+                <div className="flex w-[22px] h-[22px] items-center justify-center">
+                  <Icon
+                    icon="feather:x"
+                    className={`transition-all duration-300 ${
+                      compChain === null
+                        ? "w-[22px] h-[22px]"
+                        : "w-[15px] h-[15px]"
+                    }`}
+                    style={{
+                      color: compChain === null ? "" : "#5A6462",
+                    }}
+                  />
+                </div>
                 <div className="">None</div>
               </div>
               {CompChains.map((chain, index) => (
                 <div
                   className="flex pl-[21px] pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
                   onClick={() => {
-                    updateChainKey([chainKey[0], chain.key]);
                     setCompareTo(false);
+                    delay(300).then(() =>
+                      updateChainKey([chainKey[0], chain.key]),
+                    );
                   }}
                   key={chain.key}
                 >
@@ -1372,16 +1380,22 @@ export default function ChainChart({
                     className="w-6 h-6"
                     visibility={compChain === chain.key ? "visible" : "hidden"}
                   />
-                  <Icon
-                    icon={`gtp:${chain.urlKey}-logo-monochrome`}
-                    className={`w-[22px] h-[22px]`}
-                    style={{
-                      color:
+                  <div className="flex w-[22px] h-[22px] items-center justify-center">
+                    <Icon
+                      icon={`gtp:${chain.urlKey}-logo-monochrome`}
+                      className={`transition-all duration-300 ${
                         compChain === chain.key
-                          ? AllChainsByKeys[chain.key].colors[theme][0]
-                          : "#5A6462",
-                    }}
-                  />
+                          ? "w-[22px] h-[22px]"
+                          : "w-[15px] h-[15px]"
+                      }`}
+                      style={{
+                        color:
+                          compChain === chain.key
+                            ? AllChainsByKeys[chain.key].colors[theme][0]
+                            : "#5A6462",
+                      }}
+                    />
+                  </div>
                   <div key={chain.label}>{chain.label}</div>
                 </div>
               ))}
