@@ -608,6 +608,8 @@ const Notification = () => {
                               : "border-b-0 pb-1"
                           }`}
                           href={item.url}
+                          rel="noopener noreferrer"
+                          target="_blank"
                         >
                           <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[8px]">
                             <div className="h-[17px] font-bold text-[16px]">
