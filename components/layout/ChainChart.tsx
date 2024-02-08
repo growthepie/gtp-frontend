@@ -1261,28 +1261,28 @@ export default function ChainChart({
         `}
       </style>
       <div
-        className={`flex w-full justify-between items-stretch text-xs  bg-forest-50 dark:bg-[#1F2726] z-50 ${
+        className={`flex w-full justify-between items-stretch text-xs  bg-forest-50 dark:bg-[#1F2726] z-30 ${
           isMobile
             ? "flex-col-reverse rounded-2xl px-0.5"
             : "flex-row rounded-full px-auto"
-        } ${compareTo ? "mb-[500px]" : "mb-[30px]"} `}
+        } ${compareTo && isMobile ? "mb-[500px]" : "mb-[30px]"} `}
       >
         <div className="flex relative h-[54px]">
           <div
-            className={`relative flex rounded-full h-full mx-auto z-50 p-[5px] cursor-pointer ${
+            className={`relative flex rounded-full h-full mx-auto z-[20] p-[5px] cursor-pointer ${
               compChain
                 ? AllChainsByKeys[compChain].backgrounds[theme][0]
                 : "bg-white dark:bg-[#151A19]"
             } ${isMobile ? "w-full" : "w-[271px]"} `}
           >
             <div
-              className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-50 hover:cursor-pointer"
+              className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
               onClick={handlePrevCompChain}
             >
               <Icon icon="feather:arrow-left" className="w-6 h-6" />
             </div>
             <div
-              className="flex flex-1 flex-col items-center justify-self-center z-50 gap-y-[1px]"
+              className="flex flex-1 flex-col items-center justify-self-center  gap-y-[1px]"
               onClick={() => {
                 setCompareTo(!compareTo);
               }}
@@ -1323,7 +1323,7 @@ export default function ChainChart({
               </div>
             </div>
             <div
-              className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-50 hover:cursor-pointer"
+              className="rounded-[40px] w-[54px] h-full bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
               onClick={handleNextCompChain}
             >
               <Icon icon="feather:arrow-right" className="w-6 h-6" />
@@ -1332,12 +1332,12 @@ export default function ChainChart({
           <div
             className={`flex flex-col absolute top-[27px] bottom-auto left-0 right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none  border-b border-l border-r transition-all ease-in-out duration-300 ${
               compareTo
-                ? `max-h-[600px] z-40 ${
+                ? `max-h-[600px] z-[15] ${
                     isMobile
                       ? "border-none rounded-b-[48px]"
                       : "border-forest-200 dark:border-forest-500 rounded-b-2xl"
                   }  shadow-[0px_4px_46.2px_#00000066] dark:shadow-[0px_4px_46.2px_#000000]`
-                : "max-h-0 z-10 overflow-hidden border-transparent rounded-b-2xl"
+                : "max-h-0 z-[5] overflow-hidden border-transparent rounded-b-2xl"
             } `}
           >
             <div className="pb-[10px]">
@@ -1504,9 +1504,9 @@ export default function ChainChart({
                         />
                       </div>
                     </div>
-                    <div className="w-full h-[15px] relative text-[10px]">
-                      <div className="absolute left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
-                      <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
+                    <div className="w-full h-[15px] z-[5] relative text-[10px]">
+                      <div className="absolute z-[5] left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
+                      <div className="absolute z-[5] right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
                     </div>
                     {!zoomed
                       ? (key === "profit" || key === "txcosts") && (

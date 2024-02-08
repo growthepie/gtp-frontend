@@ -57,7 +57,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
     return (
       <>
         <button
-          className={`z-[40] transition-colors duration-500 ${
+          className={`z-[999] transition-colors duration-500 ${
             isMobileSidebarOpen ? "hidden" : "block"
           } ${
             // if scroll position is 20px or more from top, add bg and shadow
@@ -95,7 +95,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           }`}
         >
           <Backgrounds isMobileMenu />
-          <div className="fixed inset-0 p-[20px] z-[60] flex flex-col justify-items-start select-none overflow-hidden">
+          <div className="fixed inset-0 p-[20px] z-[999] flex flex-col justify-items-start select-none overflow-hidden">
             <div className="flex justify-between space-x-[20px] items-end w-full">
               <Link href="/" className="h-[36px] w-[34px] relative">
                 <Image
@@ -107,7 +107,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                 />
               </Link>
               <div className="flex space-x-[20px] items-end">
-                <div className="z-10 flex items-center space-x-[16px] mb-0.5 w-full px-2">
+                <div className="z-[999] flex items-center space-x-[16px] mb-0.5 w-full px-2">
                   <Link
                     href="https://twitter.com/growthepie_eth"
                     target="_blank"
@@ -187,7 +187,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                 </button>
               </div>
             </div>
-            <div className="z-20 mt-[30px] h-[calc(100vh-100px)] w-full flex flex-col justify-between overflow-hidden relative">
+            <div className="z-[999] mt-[30px] h-[calc(100vh-100px)] w-full flex flex-col justify-between overflow-hidden relative">
               <div className="flex-1 w-full overflow-x-hidden relative overflow-y-scroll scrollbar-thin scrollbar-thumb-forest-1000/50 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
                 {navigationItems.map((item) => (
                   <SidebarMenuGroup
@@ -205,7 +205,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                   sidebarOpen={isMobileSidebarOpen}
                 />
                 <div
-                  className={`flex w-[94%] h-[25px] rounded-full mb-3 z-10 ${
+                  className={`flex w-[94%] h-[25px] rounded-full mb-3 z-[999] ${
                     isMobileSidebarOpen ? "" : "bg-inherit "
                   }`}
                 >
@@ -237,13 +237,13 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                     Feedback
                   </Link>
                 </div>
-                <div className="items-end justify-center z-10 flex space-x-[15px] mt-[2px] mb-[17px]">
+                <div className="items-end justify-center z-[999] flex space-x-[15px] mt-[2px] mb-[17px]">
                   <DarkModeSwitch isMobile />
                   <EthUsdSwitch isMobile />
                 </div>
               </div>
               <div className="mt-24 w-full text-center py-6 absolute bottom-0">
-                <div className="text-[0.7rem] text-inherit leading-[2] z-20">
+                <div className="text-[0.7rem] text-inherit leading-[2] z-[999]">
                   © {new Date().getFullYear()} growthepie 🥧
                 </div>
               </div>
@@ -277,7 +277,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
       </div>
       <div className="flex flex-col justify-end pt-6 pb-3 relative">
         <div
-          className={`flex w-[94%] h-[25px] mb-3 z-10 rounded-full bg-inherit
+          className={`flex w-[94%] h-[25px] mb-3 z-[999] rounded-full bg-inherit
             }`}
         >
           {/* <Image
