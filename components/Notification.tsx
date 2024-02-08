@@ -251,7 +251,6 @@ const Notification = () => {
           };
           if (newEntry.branch) {
             returnArray.push(newEntry);
-            returnArray.push(newEntry);
           }
         }
       });
