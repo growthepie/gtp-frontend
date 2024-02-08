@@ -1261,7 +1261,7 @@ export default function ChainChart({
         `}
       </style>
       <div
-        className={`flex w-full justify-between items-stretch text-xs bg-forest-50 dark:bg-[#1F2726] lg:z-30 flex-col-reverse rounded-t-[15px] rounded-b-[30px] px-0.5 pb-0.5 lg:pb-0 lg:pl-0 lg:flex-row lg:rounded-full lg:px-auto mb-[15px] lg:mb-[30px] transition-shadow duration-300 ${
+        className={`flex w-full justify-between items-stretch text-xs bg-forest-50 dark:bg-[#1F2726] lg:z-30 flex-col-reverse rounded-t-[15px] md:rounded-t-[20px] rounded-b-[30px] px-[3px] pb-[3px] lg:pb-0 lg:pl-0 lg:flex-row lg:rounded-full lg:px-auto mb-[15px] lg:mb-[30px] transition-shadow duration-300 ${
           compareTo &&
           "shadow-[0px_4px_4px_#00000033] dark:shadow-[0px_4px_4px_#0000003F] lg:shadow-none lg:dark:shadow-none"
         }`}
@@ -1332,7 +1332,7 @@ export default function ChainChart({
             className={`flex flex-col relative lg:absolute lg:top-[27px] bottom-auto left-[-2px] right-[-2px] lg:left-0 lg:right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${
               compareTo
                 ? `max-h-[550px] lg:z-[25] border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-2xl lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
-                : "max-h-0 -z-10 overflow-hidden border-transparent rounded-b-[22px]"
+                : "max-h-0 overflow-hidden border-transparent rounded-b-[22px]"
             } `}
           >
             <div className="pb-[10px]">
@@ -1399,12 +1399,12 @@ export default function ChainChart({
           )}
         </div>
 
-        <div className="flex w-full md:w-auto justify-between md:justify-center items-stretch md:items-center space-x-[4px] md:space-x-1 py-[3px] pr-[3px] leading-[150%]">
+        <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center space-x-[4px] pt-[3px] pb-[10px] lg:space-x-1 lg:py-[3px]">
           {!zoomed ? (
             Object.keys(timespans).map((timespan) => (
               <button
                 key={timespan}
-                className={`rounded-full grow  text-sm md:text-base py-[8px] lg:px-4 lg:py-3 font-medium ${
+                className={`rounded-full grow text-xs md:text-base px-[16px] py-[4px] md:px-[15px] md:py-[7px] leading-[20px] md:leading-normal lg:px-[16px] lg:py-[12px] font-medium ${
                   selectedTimespan === timespan
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
@@ -1417,9 +1417,9 @@ export default function ChainChart({
               </button>
             ))
           ) : (
-            <div className="flex w-full">
+            <div className="flex w-full gap-x-1">
               <button
-                className={`rounded-full flex items-center space-x-3 px-[15px] py-[7px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-3 font-medium border-[0.5px] border-forest-400`}
+                className={`rounded-full flex items-center justify-center space-x-1 md:space-x-3 px-[16px] py-[3px] md:px-[15px] md:py-[6px] leading-[20px] md:leading-normal lg:px-[16px] lg:py-[11px] w-full lg:w-auto text-xs md:text-base font-medium border-[0.5px] border-forest-400`}
                 onClick={() => {
                   //chartComponent?.current?.xAxis[0].setExtremes(
                   //timespans[selectedTimespan].xMin,
@@ -1429,12 +1429,15 @@ export default function ChainChart({
                   resituateChart();
                 }}
               >
-                <Icon icon="feather:zoom-out" className="w-5 h-5" />
+                <Icon
+                  icon="feather:zoom-out"
+                  className="w-4 h-4 md:w-5 md:h-5"
+                />
                 <div className="hidden md:block">Reset Zoom</div>
                 <div className="block md:hidden">Reset</div>
               </button>
               <button
-                className={`rounded-full px-[16px] py-[8px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-3  bg-forest-100 dark:bg-forest-1000`}
+                className={`rounded-full px-[16px] py-[4px] md:px-[15px] md:py-[7px] leading-[20px] md:leading-normal lg:px-[16px] lg:py-[12px] w-full lg:w-auto text-xs md:text-base bg-forest-100 dark:bg-forest-1000`}
               >
                 {intervalShown?.label}
               </button>
