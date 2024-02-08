@@ -1,7 +1,7 @@
 const notificationTable = "tblA4NwUahsIldb6x";
 const baseId = "appZWDvjvDmVnOici";
 const table = "tblU8WV0sxYUz6Kcp";
-const CACHE_TTL_SECONDS = 600; // 10 minutes
+const CACHE_TTL_SECONDS = 300; // 5 minutes
 
 async function fetchData() {
   const url = `https://api.airtable.com/v0/${baseId}/${notificationTable}`;
