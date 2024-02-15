@@ -174,6 +174,7 @@ const Notification = () => {
         page: currentPath,
       });
       setOpenNotif(true);
+      updateSeenNotifications();
     } else {
       // show after a delay on desktop
       hoverTimeoutRef.current = setTimeout(() => {
@@ -182,6 +183,7 @@ const Notification = () => {
           page: currentPath,
         });
         setOpenNotif(true);
+        updateSeenNotifications();
       }, 300);
     }
   };
@@ -189,7 +191,6 @@ const Notification = () => {
   const handleHideNotifications = () => {
     clearTimeout(hoverTimeoutRef.current as NodeJS.Timeout);
     setOpenNotif(false);
-    updateSeenNotifications();
   };
 
   // clear the timeout when the component unmounts
@@ -229,23 +230,9 @@ const Notification = () => {
               >
                 {openNotif || filteredData.length === 0 ? (
                   <div className="w-full flex">
-                    {!hasUnseenNotifications ? (
-                      <Image
-                        src="/FiBellRead.svg"
-                        width={16}
-                        height={16}
-                        alt="Bell image"
-                        className="text-forest-900"
-                      />
-                    ) : (
-                      <Image
-                        src="/FiBell.svg"
-                        width={16}
-                        height={16}
-                        alt="Bell image"
-                        className="text-forest-900"
-                      />
-                    )}
+                    <div className="w-[16px] h-[16px] relative">
+                      <Icon icon="feather:bell" className="w-[16px] h-[16px]" />
+                    </div>
                     <p className="text-[12px] font-[500] pl-[7px]">
                       Notification Center
                     </p>{" "}
@@ -261,36 +248,47 @@ const Notification = () => {
                 ) : (
                   <>
                     <div
-                      className={`px-[0px] relative w-[16px] h-[16px] rounded-full z-30 ${
-                        filteredData[currentIndex] &&
-                        filteredData[currentIndex]["backgroundColor"]
-                          ? `bg-[${filteredData[currentIndex]["backgroundColor"]}]`
-                          : "dark:border-forest-50 border-black bg-white dark:bg-forest-900"
+                      className={`relative w-[16px] h-[16px] rounded-full z-30 ${
+                        (!filteredData[currentIndex] ||
+                          !filteredData[currentIndex]["backgroundColor"]) &&
+                        "dark:border-forest-50 border-black bg-white dark:bg-forest-900"
                       }`}
+                      style={{
+                        backgroundColor:
+                          filteredData[currentIndex] &&
+                          filteredData[currentIndex]["backgroundColor"]
+                            ? filteredData[currentIndex]["backgroundColor"]
+                            : undefined,
+                      }}
                     >
+                      {hasUnseenNotifications && (
+                        <div
+                          className={`w-[8px] h-[8px] bg-red-500 rounded-full absolute -top-0.5 -right-0.5 border-2 ${
+                            (!filteredData[currentIndex] ||
+                              !filteredData[currentIndex]["backgroundColor"]) &&
+                            "border-white dark:border-forest-900"
+                          }`}
+                          style={{
+                            borderColor:
+                              filteredData[currentIndex] &&
+                              filteredData[currentIndex]["backgroundColor"]
+                                ? filteredData[currentIndex]["backgroundColor"]
+                                : undefined,
+                          }}
+                        ></div>
+                      )}
                       {filteredData[currentIndex] &&
                       filteredData[currentIndex]["icon"] ? (
                         <Icon
                           icon={
                             filteredData[currentIndex]["icon"] || "default-icon"
                           }
-                          className={`w-[16px] h-[16px] text-forest-50`}
-                        />
-                      ) : !hasUnseenNotifications ? (
-                        <Image
-                          src="/FiBellRead.svg"
-                          width={16}
-                          height={16}
-                          alt="Bell image"
-                          className="text-forest-900"
+                          className={`w-[16px] h-[16px]`}
                         />
                       ) : (
-                        <Image
-                          src="/FiBell.svg"
-                          width={16}
-                          height={16}
-                          alt="Bell image"
-                          className="text-forest-900"
+                        <Icon
+                          icon="feather:bell"
+                          className="w-[16px] h-[16px]"
                         />
                       )}
                     </div>
@@ -443,43 +441,27 @@ const Notification = () => {
           ) : (
             <>
               <div
-                className={`relative flex md:hidden top-1.5 mr-10 justify-self-end hover:pointer cursor-pointer p-3 rounded-full ${
-                  openNotif ? "dark:bg-forest-900 bg-forst-50 z-[110]" : ""
+                className={`relative flex md:hidden top-1.5 mr-10 justify-self-end hover:pointer cursor-pointer p-2 rounded-full ${
+                  openNotif ? "dark:bg-forest-900 bg-forst-50 z-40" : ""
                 }
             `}
                 onClick={() => {
-                  track("clicked Notification Center", {
-                    location: "mobile header",
-                    page: window.location.pathname,
-                  });
-                  setOpenNotif(!openNotif);
+                  handleShowNotifications(true);
                 }}
               >
-                {" "}
-                {!hasUnseenNotifications ? (
-                  <Image
-                    src="/FiBellRead.svg"
-                    width={16}
-                    height={16}
-                    alt="Bell image"
-                    className="text-forest-900"
-                  />
-                ) : (
-                  <Image
-                    src="/FiBell.svg"
-                    width={16}
-                    height={16}
-                    alt="Bell image"
-                    className="text-forest-900"
-                  />
-                )}
+                <div className="w-[24px] h-[24px] relative">
+                  {hasUnseenNotifications && (
+                    <div className="w-[10px] h-[10px] bg-red-500 rounded-full absolute top-0 right-0.5 border-2 border-white dark:border-forest-1000"></div>
+                  )}
+                  <Icon icon="feather:bell" className="w-[24px] h-[24px]" />
+                </div>
               </div>
 
               <div
-                className={`fixed top-[80px] left-0 right-0 w-[95%] h-auto bg-forest-900 rounded-2xl transition-max-height border-forest-50  overflow-hidden break-inside-avoid z-[110] ${
+                className={`fixed top-[80px] left-0 right-0 w-[95%] h-auto bg-forest-900 rounded-2xl transition-max-height border-forest-50  overflow-hidden break-inside-avoid ${
                   openNotif
-                    ? "bg-blend-darken duration-300 ease-in-out z-[110] border-[1px]"
-                    : "bg-blend-normal duration-300 ease-in-out z-50 border-[0px] "
+                    ? "bg-blend-darken duration-300 ease-in-out z-40 border-[1px]"
+                    : "bg-blend-normal duration-300 ease-in-out border-[0px] "
                 }`}
                 style={{
                   maxHeight: openNotif ? "100vh" : "0",
@@ -547,10 +529,10 @@ const Notification = () => {
       )}
       {openNotif && (
         <div
-          className="fixed inset-0 bg-black opacity-0 transition-opacity duration-500 z-[100]"
+          className="fixed inset-0 bg-black opacity-0 transition-opacity duration-500 z-30"
           style={{ opacity: 0.3 }}
           onClick={() => {
-            setOpenNotif(!openNotif);
+            setOpenNotif(false);
           }}
         />
       )}
