@@ -1,3 +1,5 @@
+export const IS_DEVELOPMENT =
+  process.env.NEXT_PUBLIC_VERCEL_ENV === "development";
 export const IS_PREVIEW = process.env.NEXT_PUBLIC_VERCEL_ENV === "preview";
 
 export const BASE_URLS = {

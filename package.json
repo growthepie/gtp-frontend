@@ -17,6 +17,7 @@
     "@tanstack/react-table": "^8.10.7",
     "@tanstack/react-virtual": "^3.0.0-beta.65",
     "@vercel/analytics": "^1.1.1",
+    "airtable": "^0.12.2",
     "concurrently": "^8.2.1",
     "cookies-next": "^2.1.1",
     "framer-motion": "^10.3.2",
