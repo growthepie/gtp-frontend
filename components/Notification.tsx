@@ -1,233 +1,73 @@
 "use client";
 import { useEffect, useMemo, useState, useRef } from "react";
-import { useSpring, animated, config, useTransition } from "react-spring";
-import Image from "next/image";
 import { Icon } from "@iconify/react";
 import ReactMarkdown from "react-markdown";
-import { useLocalStorage, useMediaQuery } from "usehooks-ts";
+import { useLocalStorage } from "usehooks-ts";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { BASE_URL } from "@/lib/helpers";
 import { useTheme } from "next-themes";
-import moment from "moment";
 import { track } from "@vercel/analytics";
-
-type AirtableRow = {
-  id: string;
-  body: string;
-  desc: string;
-  url?: string;
-  icon?: string;
-  color?: string;
-  textColor?: string;
-  branch: boolean;
-};
-
-type NotificationType = {
-  id: string;
-  key: string;
-};
+import useSWR from "swr";
+import { Notification } from "@/app/api/notifications/route";
 
 const NOTICACHE = "NotificationCache";
 
 const currentDateTime = new Date().getTime();
 
 const Notification = () => {
-  const [data, setData] = useState<Array<object> | null>(null);
-  const [isFormSubmitting, setIsFormSubmitting] = useState(false);
-  const [loadedMessages, setLoadedMessages] = useState<string[]>([]);
-  const [circleStart, setCircleStart] = useState(false);
-  const [currentURL, setCurrentURL] = useState<string | null>(null);
-  const [pathname, setPathname] = useState<string | null>(null);
-  const [sessionArray, setSessionArray] = useState<NotificationType[] | null>(
-    null,
-  );
-  // const [cachedNotifications, setCachedNotifications] = useState<string[]>([]);
-
   const [currentIndex, setCurrentIndex] = useState(0);
   const [openNotif, setOpenNotif] = useState(false);
   const mobileRef = useRef(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { theme } = useTheme();
 
-  const isMobile = useMediaQuery("(max-width: 767px)");
   const currentPath = usePathname();
 
-  useEffect(() => {
-    setCurrentURL(window.location.href);
-    setPathname(window.location.pathname);
-    const storedArray = JSON.parse(
-      window.sessionStorage.getItem("mySessionArray") || "[]",
-    ) as NotificationType[];
-    setSessionArray(storedArray);
-  }, [currentPath]);
+  const [seenNotifications, setSeenNotifications] = useLocalStorage<
+    Notification[]
+  >("seenNotifications", []);
 
-  const [cachedNotifications, setCachedNotifications] = useLocalStorage<
-    string[]
-  >(NOTICACHE, []);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(BASE_URL + "/api/notifications", {
-          method: "GET",
-        });
-        const result = await response.json();
-
-        setData(result.records);
-      } catch (error) {
-        console.error("Error fetching data: ", error);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  // useEffect(() => {
-  //   // Attach event listener when the component mounts
-  //   document.addEventListener("mousedown", handleClickOutside);
-
-  //   // Detach event listener when the component unmounts
-  //   return () => {
-  //     document.removeEventListener("mousedown", handleClickOutside);
-  //   };
-  // }, []);
-
-  function DateEnabled(startTime, startDate, endTime, endDate) {
-    const startDateTime = moment.utc(`${startDate}T${startTime}Z`).valueOf();
-    const endDateTime = moment.utc(`${endDate}T${endTime}Z`).valueOf();
-
-    if (endDateTime && startDateTime) {
-      if (currentDateTime < endDateTime && currentDateTime > startDateTime) {
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  }
-
-  function urlEnabled(url) {
-    let retValue = true;
-
-    if (url !== "" && url[0] !== "all" && currentURL && pathname) {
-      if (!(pathname === "/") && url[0] === "home") {
-        if (!currentURL.includes(url[0])) {
-          retValue = false;
-        }
-      } else if (!currentURL.includes(url[0]) && url[0] !== "home") {
-        retValue = false;
-      }
-    }
-    return retValue;
-  }
-
-  // const handleClickOutside = (event: MouseEvent) => {
-  //   if (
-  //     mobileRef.current &&
-  //     "contains" in mobileRef.current &&
-  //     !(mobileRef.current as Element).contains(event.target as Node)
-  //   ) {
-  //     setOpenNotif(false);
-  //   }
-  // };
-
-  const addItemToArray = (newData: string) => {
-    if (newData.trim() !== "") {
-      const newItem: NotificationType = {
-        id: "LoadedNotifications",
-        key: newData,
-      };
-
-      setSessionArray((prevArray) => [...(prevArray || []), newItem]);
-    }
-  };
+  const { data, isLoading, isValidating, error } = useSWR(
+    BASE_URL + "/api/notifications",
+    {
+      refreshInterval: 1000 * 60 * 5,
+    },
+  );
 
   const filteredData = useMemo(() => {
-    const returnArray: AirtableRow[] = [];
+    if (!data) return null;
 
-    if (data && sessionArray) {
-      Object.keys(data).forEach((item) => {
-        let passingDate = DateEnabled(
-          data[item]["fields"]["Start Time"],
-          data[item]["fields"]["Start Date"],
-          data[item]["fields"]["End Time"],
-          data[item]["fields"]["End Date"],
-        );
-        let enabled = data[item]["fields"]["Status"] === "Enabled";
-        let passingURL = urlEnabled(
-          data[item]["fields"]["Display Page"]
-            ? data[item]["fields"]["Display Page"]
-            : "",
-        );
+    // Filter out records that are not within the start and end timestamps
+    const filtered = data.filter(
+      (record) =>
+        currentDateTime >= record.startTimestamp &&
+        currentDateTime < record.endTimestamp,
+    );
 
-        let prevLoaded = true;
-        //defaults to true if we find a prevLoaded value we set false
+    return filtered;
+  }, [data]);
 
-        Object.keys(sessionArray).forEach((index) => {
-          if (sessionArray[index].key === data[item].id) {
-            prevLoaded = false;
-          }
-        });
-
-        //Check if notification is enabled, available/current date range and selected url
-
-        const branch = data[item]["fields"]["Branch"];
-
-        if (enabled && passingDate && passingURL && prevLoaded) {
-          let newEntry: AirtableRow = {
-            id: data[item]["id"],
-            body: data[item]["fields"]["Body"],
-            desc: data[item]["fields"]["Head"],
-            url: data[item]["fields"]["URL"]
-              ? data[item]["fields"]["URL"]
-              : null,
-            icon: data[item]["fields"]["Icon"]
-              ? data[item]["fields"]["Icon"]
-              : null,
-            color: data[item]["fields"]["Color"]
-              ? data[item]["fields"]["Color"]
-              : null,
-            textColor: data[item]["fields"]["Text Color"]
-              ? data[item]["fields"]["Text Color"]
-              : null,
-            branch: data[item]["fields"]["Branch"]
-              ? ["Development", "Production", "All"].includes(
-                  data[item]["fields"]["Branch"],
-                ) &&
-                (process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ||
-                  process.env.NEXT_PUBLIC_VERCEL_ENV === "preview")
-                ? true
-                : ["Production", "All"].includes(
-                    data[item]["fields"]["Branch"],
-                  ) &&
-                  process.env.NEXT_PUBLIC_VERCEL_ENV !== "development" &&
-                  process.env.NEXT_PUBLIC_VERCEL_ENV !== "preview"
-                ? true
-                : false
-              : false,
-          };
-          if (newEntry.branch) {
-            returnArray.push(newEntry);
-          }
-        }
-      });
+  const hasUnseenNotifications = useMemo(() => {
+    if (!filteredData) {
+      return false;
     }
-
-    return returnArray;
-  }, [data, currentURL]);
+    return filteredData.some(
+      (notification) =>
+        !seenNotifications.map((n) => n.id).includes(notification.id),
+    );
+  }, [filteredData, seenNotifications]);
 
   useEffect(() => {
+    if (!filteredData) return;
     const interval = setInterval(() => {
       // Increment the index to show the next item in the carousel
-
       setCurrentIndex((prevIndex) => (prevIndex + 1) % filteredData.length);
-    }, 5000); // Adjust the interval as needed
+    }, 5000);
 
     // Cleanup interval on component unmount
     return () => clearInterval(interval);
-  }, [filteredData]); // Remove currentIndex from the dependency array
+  }, [filteredData]);
 
   const Items = useMemo(() => {
     if (!filteredData) {
@@ -258,10 +98,9 @@ const Notification = () => {
                   {item.icon && (
                     <Icon
                       icon={item.icon || "default-icon"}
-                      className={`w-[12px] h-[12px] text-forest-1000 dark:text-forest-800 dark:hover:text-forest-200  ${
+                      className={`w-[12px] h-[12px] text-forest-1000 dark:text-forest-800 dark:group-hover:text-forest-200  ${
                         item.icon ? "visible" : "invisible"
-                      } 
-                      `}
+                      }`}
                     />
                   )}
                 </div>
@@ -291,55 +130,45 @@ const Notification = () => {
     );
   }, [filteredData]);
 
-  function hexToRgba(hexColor) {
-    // This function will always set the alpha to 0
-    const cleanHexColor = hexColor.replace("#", "");
-
-    const hexValue = parseInt(cleanHexColor, 16);
-    const red = (hexValue >> 16) & 255;
-    const green = (hexValue >> 8) & 255;
-    const blue = hexValue & 255;
-
-    return `rgba(${red}, ${green}, ${blue}, 0)`;
+  function updateSeenNotifications() {
+    // Add the notification id to the seenNotifications array
+    setSeenNotifications(filteredData);
   }
 
-  function storeLocalNotifications() {
-    const cached = cachedNotifications;
-
-    filteredData.forEach((element, index) => {
-      let arrSearch = cached.indexOf(element["id"]);
-      if (arrSearch === -1) {
-        cached.push(element["id"]);
-      }
-    });
-
-    //Search local storage for notification. If not stored push it onto array and store locally.
-    setCachedNotifications(cached);
-  }
-
-  const hasUnreadNotifications = useMemo(() => {
-    return filteredData.some(
-      (notification) => !cachedNotifications.includes(notification["id"]),
-    );
-  }, [filteredData, cachedNotifications]);
-
-  // console.log(cachedNotifications);
-
-  const handleMouseEnter = () => {
-    hoverTimeoutRef.current = setTimeout(() => {
-      track("hovered Notification Center", {
-        location: "desktop header",
-        page: window.location.pathname,
+  const handleShowNotifications = (isMobile = false) => {
+    if (isMobile) {
+      // show immediately on mobile
+      track("opened Notification Center", {
+        location: "mobile header",
+        page: currentPath,
       });
       setOpenNotif(true);
-    }, 300);
+      updateSeenNotifications();
+    } else {
+      // show after a delay on desktop
+      hoverTimeoutRef.current = setTimeout(() => {
+        track("opened Notification Center", {
+          location: "desktop header",
+          page: currentPath,
+        });
+        setOpenNotif(true);
+        updateSeenNotifications();
+      }, 300);
+    }
   };
 
-  const handleMouseLeave = () => {
+  const handleHideNotifications = () => {
     clearTimeout(hoverTimeoutRef.current as NodeJS.Timeout);
     setOpenNotif(false);
-    storeLocalNotifications();
   };
+
+  // clear the timeout when the component unmounts
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current)
+        clearTimeout(hoverTimeoutRef.current as NodeJS.Timeout);
+    };
+  }, []);
 
   return (
     <div className="relative">
@@ -350,19 +179,19 @@ const Notification = () => {
               openNotif ? "z-[110]" : "z-10"
             }`}
             onMouseEnter={() => {
-              handleMouseEnter();
+              handleShowNotifications();
             }}
             onMouseLeave={() => {
-              handleMouseLeave();
+              handleHideNotifications();
             }}
           >
             <button
               className={`hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[305px] mdl:w-[343px] xl:w-[600px] 2xl:w-[770px] border-[1px] h-[28px] rounded-full px-[10px] relative z-30 ${
                 filteredData[currentIndex] &&
-                filteredData[currentIndex]["color"]
+                filteredData[currentIndex]["backgroundColor"]
                   ? openNotif
                     ? "border-forest-1000 dark:border-forest-500 bg-white dark:bg-[#1F2726]"
-                    : `bg-[${filteredData[currentIndex]["color"]}]`
+                    : `bg-[${filteredData[currentIndex]["backgroundColor"]}]`
                   : "border-forest-1000 dark:border-forest-500 bg-white dark:bg-[#1F2726]"
               }
                 `}
@@ -373,15 +202,9 @@ const Notification = () => {
                 }`}
               >
                 <div className="flex items-center gap-x-[10px]">
-                  <Image
-                    src={
-                      hasUnreadNotifications ? "/FiBell.svg" : "/FiBellRead.svg"
-                    }
-                    width={16}
-                    height={16}
-                    alt="Bell image"
-                    className="text-[#1F2726]"
-                  />
+                  <div className="w-[16px] h-[16px] relative">
+                    <Icon icon="feather:bell" className="w-[16px] h-[16px]" />
+                  </div>
                   <p className="text-[12px] font-[500]">Notification Center</p>
                 </div>
               </div>
@@ -400,8 +223,8 @@ const Notification = () => {
 
                       backgroundImage:
                         filteredData[currentIndex] &&
-                        filteredData[currentIndex]["color"]
-                          ? `linear-gradient(90deg, ${filteredData[currentIndex]["color"]}00 75%, ${filteredData[currentIndex]["color"]}FF 100%)`
+                        filteredData[currentIndex]["backgroundColor"]
+                          ? `linear-gradient(90deg, ${filteredData[currentIndex]["backgroundColor"]}00 75%, ${filteredData[currentIndex]["backgroundColor"]}FF 100%)`
                           : theme === "dark"
                           ? "linear-gradient(90deg, #1F272600 75%, #1F2726FF 100%)"
                           : "linear-gradient(90deg, #FFFFFF00 75%, #FFFFFFFF 100%)",
@@ -410,38 +233,62 @@ const Notification = () => {
                 )}
                 <div className="flex items-center">
                   <div
-                    className={`px-[0px] relative w-[16px] h-[16px] rounded-full z-30  ${
-                      filteredData[currentIndex] &&
-                      filteredData[currentIndex]["color"]
-                        ? `bg-[${filteredData[currentIndex]["color"]}]`
-                        : "border-forest-1000 dark:border-forest-500 bg-white dark:bg-[#1F2726]"
+                    className={`relative w-[16px] h-[16px] rounded-full z-30 ${
+                      (!filteredData[currentIndex] ||
+                        !filteredData[currentIndex]["backgroundColor"]) &&
+                      "border-forest-1000 dark:border-forest-500 bg-white dark:bg-[#1F2726]"
                     }`}
+                    style={{
+                      backgroundColor:
+                        filteredData[currentIndex] &&
+                        filteredData[currentIndex]["backgroundColor"]
+                          ? filteredData[currentIndex]["backgroundColor"]
+                          : undefined,
+                    }}
                   >
+                    {hasUnseenNotifications && (
+                      <div
+                        className={`w-[8px] h-[8px] bg-red-500 rounded-full absolute -top-0.5 -right-0.5 border-2 ${
+                          (!filteredData[currentIndex] ||
+                            !filteredData[currentIndex]["backgroundColor"]) &&
+                          "border-white dark:border-[#1F2726]"
+                        }`}
+                        style={{
+                          borderColor:
+                            filteredData[currentIndex] &&
+                            filteredData[currentIndex]["backgroundColor"]
+                              ? filteredData[currentIndex]["backgroundColor"]
+                              : undefined,
+                        }}
+                      ></div>
+                    )}
                     {filteredData[currentIndex] &&
                     filteredData[currentIndex]["icon"] ? (
                       <Icon
                         icon={
                           filteredData[currentIndex]["icon"] || "default-icon"
                         }
-                        className={`w-[16px] h-[16px] light:text-forest-50`}
+                        className={`w-[16px] h-[16px] light:text-[#1F2726]`}
+                        style={{
+                          color:
+                            (filteredData[currentIndex] &&
+                              filteredData[currentIndex]["textColor"]) ||
+                            "inherit",
+                        }}
                       />
                     ) : (
-                      <Image
-                        src={
-                          filteredData.every((notification) =>
-                            cachedNotifications.includes(notification["id"]),
-                          )
-                            ? "/FiBellRead.svg"
-                            : "/FiBell.svg"
-                        }
-                        width={16}
-                        height={16}
-                        alt="Bell image"
-                        className="text-[#1F2726]"
+                      <Icon
+                        icon="feather:bell"
+                        className="w-[16px] h-[16px] text-[#1F2726]"
+                        style={{
+                          color:
+                            (filteredData[currentIndex] &&
+                              filteredData[currentIndex]["textColor"]) ||
+                            "inherit",
+                        }}
                       />
                     )}
                   </div>
-
                   <div
                     className="flex transition-transform duration-500 overflow-clip w-full"
                     style={{
@@ -523,6 +370,12 @@ const Notification = () => {
                     });
                     setOpenNotif(!openNotif);
                   }}
+                  style={{
+                    color:
+                      (filteredData[currentIndex] &&
+                        filteredData[currentIndex]["textColor"]) ||
+                      "inherit",
+                  }}
                 />
               </div>
             </button>
@@ -555,34 +408,27 @@ const Notification = () => {
           </div>
           <div className="md:hidden">
             <div
-              className={`relative flex md:hidden top-1.5 mr-10 justify-self-end hover:pointer cursor-pointer p-3 rounded-full ${
-                openNotif ? "dark:bg-[#1F2726] bg-forst-50 z-[110]" : ""
-              }`}
+              className={`relative flex md:hidden top-0.5 mr-10 justify-self-end hover:pointer cursor-pointer p-3 rounded-full ${
+                openNotif ? "dark:bg-[#1F2726] bg-forst-50 z-40" : ""
+              }
+                `}
               onClick={() => {
-                track("clicked Notification Center", {
-                  location: "mobile header",
-                  page: window.location.pathname,
-                });
-
-                if (!openNotif) storeLocalNotifications();
-
-                setOpenNotif(!openNotif);
+                handleShowNotifications(true);
               }}
             >
-              <Image
-                src={hasUnreadNotifications ? "/FiBell.svg" : "/FiBellRead.svg"}
-                width={16}
-                height={16}
-                alt="Bell image"
-                className="text-[#1F2726]"
-              />
+              <div className="w-[24px] h-[24px] relative">
+                {hasUnseenNotifications && (
+                  <div className="w-[10px] h-[10px] bg-red-500 rounded-full absolute top-0 right-0.5 border-2 border-white dark:border-forest-1000"></div>
+                )}
+                <Icon icon="feather:bell" className="w-[24px] h-[24px]" />
+              </div>
             </div>
 
             <div
-              className={`fixed top-[80px] left-0 right-0 w-[95%] h-auto bg-[#1F2726] rounded-2xl transition-max-height border-forest-1000 dark:border-forest-500 overflow-hidden break-inside-avoid z-[110] ${
+              className={`fixed top-[80px] left-0 right-0 w-[95%] h-auto bg-white dark:bg-[#1F2726] rounded-2xl transition-max-height border-forest-1000 dark:border-forest-500 overflow-hidden break-inside-avoid ${
                 openNotif
-                  ? "bg-blend-darken duration-300 ease-in-out z-[110] border-[1px]"
-                  : "bg-blend-normal duration-300 ease-in-out z-50 border-[0px] "
+                  ? "bg-blend-darken duration-300 ease-in-out z-40 border-[1px]"
+                  : "bg-blend-normal duration-300 ease-in-out border-[0px] "
               }`}
               style={{
                 maxHeight: openNotif ? "100vh" : "0",
@@ -652,7 +498,7 @@ const Notification = () => {
 
       <div
         className={`fixed inset-0 bg-black transition-opacity duration-300 ${
-          openNotif ? "opacity-30 z-[100]" : "opacity-0 pointer-events-none"
+          openNotif ? "opacity-30  z-30" : "opacity-0 pointer-events-none"
         }`}
         // style={{ opacity: 0.3 }}
         onClick={() => {

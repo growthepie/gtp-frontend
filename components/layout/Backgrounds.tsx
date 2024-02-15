@@ -13,7 +13,7 @@ export default function Backgrounds({ isMobileMenu }: BackgroundsProps) {
             pointerEvents: "none",
             // background: `radial-gradient(90.11% 90.11% at 77.71% 27.89%, #1B2524 0%, #364240 100%) fixed`,
           }}
-          className="fixed inset-0 z-20 mouse-events-none overflow-hidden w-full h-full bg-white dark:bg-[#1F2726]"
+          className="fixed inset-0 z-50 mouse-events-none overflow-hidden w-full h-full bg-white dark:bg-[#1F2726]"
         ></div>
         <div
           style={{
@@ -21,7 +21,7 @@ export default function Backgrounds({ isMobileMenu }: BackgroundsProps) {
             opacity: 0.065,
             pointerEvents: "none",
           }}
-          className="fixed inset-0 z-20 mouse-events-none overflow-hidden w-full h-full  hidden md:dark:block antialiased"
+          className="fixed inset-0 z-50 mouse-events-none overflow-hidden w-full h-full  hidden md:dark:block antialiased"
         >
           <div
             style={{
