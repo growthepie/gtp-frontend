@@ -1,15 +1,10 @@
 import { IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
-import Airtable from "airtable";
 import moment from "moment";
 
 const notificationTable = "tblA4NwUahsIldb6x";
 const baseId = "appZWDvjvDmVnOici";
 
 const CACHE_TTL_SECONDS = 300; // 5 minutes
-
-const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(
-  baseId,
-);
 
 export type Notification = {
   id: string;
@@ -30,9 +25,26 @@ const BranchesToInclude =
     ? ["Preview", "Development", "All"]
     : ["Production", "All"];
 
+const url = `https://api.airtable.com/v0/${baseId}/${notificationTable}`;
+
 async function fetchData() {
   try {
-    const data = await base(notificationTable).select().all();
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
+      },
+      next: { revalidate: CACHE_TTL_SECONDS },
+    });
+
+    // as records
+    const data = (await response.json()).records.map((record: any) => {
+      return {
+        id: record.id,
+        get: (field: string) => record.fields[field],
+      };
+    });
 
     // filter out records that are not enabled or not in the branches to include and map them to the Notification type
     const records: Notification[] = data

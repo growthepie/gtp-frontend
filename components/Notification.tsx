@@ -40,6 +40,9 @@ const Notification = () => {
 
   const { data, isLoading, isValidating, error } = useSWR(
     BASE_URL + "/api/notifications",
+    {
+      refreshInterval: 1000 * 60 * 5,
+    },
   );
 
   const filteredData = useMemo(() => {
