@@ -12,8 +12,6 @@ import useSWR from "swr";
 import { Notification } from "@/app/api/notifications/route";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
-const NOTICACHE = "NotificationCache";
-
 const currentDateTime = new Date().getTime();
 
 const Notification = () => {
@@ -61,7 +59,7 @@ const Notification = () => {
 
   const [hideText, setHideText] = useState(false);
 
-  const TEXT_ROTATION_INTERVAL = 5000;
+  const TEXT_ROTATION_INTERVAL = 6000;
   const TEXT_FADE_INTERVAL = 300;
 
   useEffect(() => {
