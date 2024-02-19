@@ -30,10 +30,8 @@ const Notification = () => {
   const mobileRef = useRef(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { theme } = useTheme();
-
   const isMobile = useMediaQuery("(max-width: 767px)");
   const currentPath = usePathname();
-
   const [seenNotifications, setSeenNotifications] = useLocalStorage<
     Notification[]
   >("seenNotifications", []);
@@ -45,6 +43,21 @@ const Notification = () => {
     },
   );
 
+  function urlEnabled(url) {
+    let retValue = true;
+
+    if (url !== "" && url[0] !== "all") {
+      if (!(currentPath === "/") && url[0] === "home") {
+        if (!currentPath.includes(url[0])) {
+          retValue = false;
+        }
+      } else if (!currentPath.includes(url[0]) && url[0] !== "home") {
+        retValue = false;
+      }
+    }
+    return retValue;
+  }
+
   const filteredData = useMemo(() => {
     if (!data) return null;
 
@@ -52,11 +65,12 @@ const Notification = () => {
     const filtered = data.filter(
       (record) =>
         currentDateTime >= record.startTimestamp &&
-        currentDateTime < record.endTimestamp,
+        currentDateTime < record.endTimestamp &&
+        urlEnabled(record.displayPages ? record.displayPages : ""),
     );
 
     return filtered;
-  }, [data]);
+  }, [data, currentPath]);
 
   const hasUnseenNotifications = useMemo(() => {
     if (!filteredData) {
