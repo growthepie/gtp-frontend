@@ -10,6 +10,7 @@ import { useTheme } from "next-themes";
 import { track } from "@vercel/analytics";
 import useSWR from "swr";
 import { Notification } from "@/app/api/notifications/route";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 const NOTICACHE = "NotificationCache";
 
@@ -58,15 +59,43 @@ const Notification = () => {
     );
   }, [filteredData, seenNotifications]);
 
+  const [hideText, setHideText] = useState(false);
+
+  const TEXT_ROTATION_INTERVAL = 5000;
+  const TEXT_FADE_INTERVAL = 300;
+
   useEffect(() => {
     if (!filteredData) return;
+
+    let showTextTimeout;
+
+    let hideTextTimeout = setTimeout(() => {
+      setHideText(true);
+
+      showTextTimeout = setTimeout(() => {
+        setHideText(false);
+      }, TEXT_FADE_INTERVAL);
+    }, TEXT_ROTATION_INTERVAL - TEXT_FADE_INTERVAL);
+
     const interval = setInterval(() => {
       // Increment the index to show the next item in the carousel
       setCurrentIndex((prevIndex) => (prevIndex + 1) % filteredData.length);
-    }, 5000);
+
+      hideTextTimeout = setTimeout(() => {
+        setHideText(true);
+
+        showTextTimeout = setTimeout(() => {
+          setHideText(false);
+        }, TEXT_FADE_INTERVAL);
+      }, TEXT_ROTATION_INTERVAL - TEXT_FADE_INTERVAL);
+    }, TEXT_ROTATION_INTERVAL);
 
     // Cleanup interval on component unmount
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(hideTextTimeout);
+      clearTimeout(showTextTimeout);
+    };
   }, [filteredData]);
 
   const Items = useMemo(() => {
@@ -170,6 +199,31 @@ const Notification = () => {
     };
   }, []);
 
+  const currentItemBackgroundColor = useMemo(() => {
+    if (!filteredData) return null;
+
+    if (
+      !filteredData[currentIndex] ||
+      !filteredData[currentIndex].backgroundColor
+    ) {
+      return theme === "dark" ? "#1F2726" : "#FFFFFF";
+    }
+
+    return filteredData[currentIndex].backgroundColor;
+  }, [filteredData, currentIndex, theme]);
+
+  const currentItemTextColor = useMemo(() => {
+    if (!filteredData) return null;
+
+    if (!filteredData[currentIndex] || !filteredData[currentIndex].textColor) {
+      return theme === "dark" ? "#CDD8D3" : "#151A19";
+    }
+
+    return filteredData[currentIndex].textColor;
+  }, [filteredData, currentIndex, theme]);
+
+  const [ref, width] = useElementSizeObserver<HTMLDivElement>();
+
   return (
     <div className="relative">
       {filteredData && (
@@ -185,16 +239,13 @@ const Notification = () => {
               handleHideNotifications();
             }}
           >
-            <button
-              className={`hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[305px] mdl:w-[343px] xl:w-[600px] 2xl:w-[770px] border-[1px] h-[28px] rounded-full px-[10px] relative z-30 ${
-                filteredData[currentIndex] &&
-                filteredData[currentIndex]["backgroundColor"]
-                  ? openNotif
-                    ? "border-forest-1000 dark:border-forest-500 bg-white dark:bg-[#1F2726]"
-                    : `bg-[${filteredData[currentIndex]["backgroundColor"]}]`
-                  : "border-forest-1000 dark:border-forest-500 bg-white dark:bg-[#1F2726]"
-              }
-                `}
+            <div
+              className={`hidden mb-[10px] lg:mb-0 md:flex items-center gap-x-[10px] overflow-hidden w-[305px] mdl:w-[343px] xl:w-[600px] 2xl:w-[770px] border-[1px] h-[28px] rounded-full px-[10px] relative z-30 border-forest-1000 dark:border-forest-500 hover:dark:!bg-[#1F2726] hover:!bg-[#FFFFFF] hover:dark:!border-[#CDD8D3] hover:!border-[#151A19] tansition-all duration-300`}
+              style={{
+                borderColor: currentItemTextColor,
+                backgroundColor: currentItemBackgroundColor,
+              }}
+              ref={ref}
             >
               <div
                 className={`w-full flex items-center justify-between ${
@@ -211,153 +262,54 @@ const Notification = () => {
               <div
                 className={`${
                   !openNotif && filteredData.length > 0
-                    ? "relative flex items-center justify-between w-full overflow-hidden"
+                    ? "relative flex items-center gap-x-[10px] text-[12px] leading-[1.5] w-full overflow-hidden transition-opacity duration-300"
                     : "hidden"
-                }`}
+                } ${hideText ? "opacity-0" : "opacity-100"}`}
+                style={{
+                  color: currentItemTextColor,
+                }}
               >
-                {filteredData.length && (
-                  <div
-                    className={`absolute top-0 bottom-0 left-0 right-0 z-30`}
-                    style={{
-                      // color: filteredData[currentIndex]["color"] || "inherit",
-
-                      backgroundImage:
-                        filteredData[currentIndex] &&
-                        filteredData[currentIndex]["backgroundColor"]
-                          ? `linear-gradient(90deg, ${filteredData[currentIndex]["backgroundColor"]}00 75%, ${filteredData[currentIndex]["backgroundColor"]}FF 100%)`
-                          : theme === "dark"
-                          ? "linear-gradient(90deg, #1F272600 75%, #1F2726FF 100%)"
-                          : "linear-gradient(90deg, #FFFFFF00 75%, #FFFFFFFF 100%)",
-                    }}
-                  ></div>
-                )}
-                <div className="flex items-center">
-                  <div
-                    className={`relative w-[16px] h-[16px] rounded-full z-30 ${
-                      (!filteredData[currentIndex] ||
-                        !filteredData[currentIndex]["backgroundColor"]) &&
-                      "border-forest-1000 dark:border-forest-500 bg-white dark:bg-[#1F2726]"
-                    }`}
-                    style={{
-                      backgroundColor:
-                        filteredData[currentIndex] &&
-                        filteredData[currentIndex]["backgroundColor"]
-                          ? filteredData[currentIndex]["backgroundColor"]
-                          : undefined,
-                    }}
-                  >
-                    {hasUnseenNotifications && (
-                      <div
-                        className={`w-[8px] h-[8px] bg-red-500 rounded-full absolute -top-0.5 -right-0.5 border-2 ${
-                          (!filteredData[currentIndex] ||
-                            !filteredData[currentIndex]["backgroundColor"]) &&
-                          "border-white dark:border-[#1F2726]"
-                        }`}
-                        style={{
-                          borderColor:
-                            filteredData[currentIndex] &&
-                            filteredData[currentIndex]["backgroundColor"]
-                              ? filteredData[currentIndex]["backgroundColor"]
-                              : undefined,
-                        }}
-                      ></div>
-                    )}
-                    {filteredData[currentIndex] &&
-                    filteredData[currentIndex]["icon"] ? (
-                      <Icon
-                        icon={
-                          filteredData[currentIndex]["icon"] || "default-icon"
-                        }
-                        className={`w-[16px] h-[16px] light:text-[#1F2726]`}
-                        style={{
-                          color:
-                            (filteredData[currentIndex] &&
-                              filteredData[currentIndex]["textColor"]) ||
-                            "inherit",
-                        }}
-                      />
-                    ) : (
-                      <Icon
-                        icon="feather:bell"
-                        className="w-[16px] h-[16px] text-[#1F2726]"
-                        style={{
-                          color:
-                            (filteredData[currentIndex] &&
-                              filteredData[currentIndex]["textColor"]) ||
-                            "inherit",
-                        }}
-                      />
-                    )}
+                <div className={`relative w-[16px] h-[16px] rounded-full z-20`}>
+                  {hasUnseenNotifications && (
+                    <div
+                      className={`w-[6px] h-[6px] bg-red-500 rounded-full absolute -top-0 right-[1px] border tansition-colors duration-300 ${
+                        (!filteredData[currentIndex] ||
+                          !filteredData[currentIndex]["backgroundColor"]) &&
+                        "border-white dark:border-[#1F2726]"
+                      }`}
+                      style={{
+                        borderColor:
+                          filteredData[currentIndex] &&
+                          filteredData[currentIndex]["backgroundColor"]
+                            ? filteredData[currentIndex]["backgroundColor"]
+                            : undefined,
+                      }}
+                    ></div>
+                  )}
+                  <Icon
+                    icon={filteredData[currentIndex]["icon"] || "feather:bell"}
+                    className={`w-[16px] h-[16px] light:text-[#1F2726]`}
+                  />
+                </div>
+                <div
+                  className="flex gap-x-[5px] whitespace-nowrap overflow-hidden w-full"
+                  style={{
+                    maskImage:
+                      "linear-gradient(to right, black 90%, transparent 100%)",
+                    WebkitMaskImage:
+                      "linear-gradient(to right, black 90%, transparent 100%)",
+                  }}
+                >
+                  <div className="font-semibold">
+                    {filteredData[currentIndex].desc}
                   </div>
-                  <div
-                    className="flex transition-transform duration-500 overflow-clip w-full"
-                    style={{
-                      transform: `translateX(-${
-                        (100 / filteredData.length) * currentIndex
-                      }%)`,
-                    }}
-                  >
-                    {filteredData.map((item, i) => {
-                      return (
-                        <div
-                          className={`relative w-full overflow-hidden pl-[10px] ${
-                            i === currentIndex ? "visible" : "invisible"
-                          }`}
-                          onClick={() => {
-                            setOpenNotif(!openNotif);
-                          }}
-                          key={item.id + item.desc}
-                        >
-                          <div
-                            key={item.id}
-                            className={`flex border-b-forest-1000 dark:border-b-forest-500 border-dashed items-center overflow-hidden relative truncate`}
-                          >
-                            <div
-                              className={`flex items-center whitespace-nowrap gap-x-2 overflow-hidden relative truncate`}
-                            >
-                              <div
-                                className="font-bold text-[12px]"
-                                style={{
-                                  color: item.textColor || "inherit",
-                                }}
-                              >
-                                {item.desc}
-                              </div>
-                              <div
-                                className=""
-                                style={{
-                                  color: item.textColor || "inherit",
-                                }}
-                              >
-                                -
-                              </div>
-                              <div className="flex text-[12px] font-medium items-center whitespace-nowrap relative overflow-hidden truncate">
-                                <ReactMarkdown
-                                  components={{
-                                    p: ({ node, ...props }) => (
-                                      <p
-                                        style={{
-                                          color: item.textColor || "inherit",
-                                        }}
-                                        {...props}
-                                      />
-                                    ),
-                                  }}
-                                >
-                                  {item.body}
-                                </ReactMarkdown>
-                                {/* Pseudo-element for gradient fade effect */}
-                                {/* Mask for gradient fade effect */}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <div>-</div>
+                  <ReactMarkdown>
+                    {filteredData[currentIndex].body}
+                  </ReactMarkdown>
                 </div>
               </div>
-              <div className={`w-[24px] h-[24px]`}>
+              <div className={`w-[24px] h-[24px] z-30`}>
                 <Icon
                   icon="feather:chevron-right"
                   className={`w-[24px] h-[24px] transition-transform duration-300 ${
@@ -378,7 +330,7 @@ const Notification = () => {
                   }}
                 />
               </div>
-            </button>
+            </div>
             <div
               className={`absolute top-[14px] hidden mb-[10px] lg:mb-0 md:flex flex-col w-[305px] mdl:w-[343px] xl:w-[600px] 2xl:w-[770px] dark:bg-[#1F2726] bg-white border-forest-1000 dark:border-forest-500 rounded-b-xl z-1 overflow-hidden transition-all duration-300 ease-in-out ${
                 openNotif ? "border" : "border-0"
