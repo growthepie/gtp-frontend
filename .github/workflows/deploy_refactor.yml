@@ -1,12 +1,12 @@
-name: Deploy on mokelgit push
+name: Deploy on refactor push
 on:
   push:
     branches:
-    - mokelgit
+    - refactor
     
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger rebuild on vercel
-        run: curl -X POST ${{ secrets.MOKELGIT_DEPLOY_HOOK }}
+        run: curl -X POST ${{ secrets.REFACTOR_DEPLOY_HOOK }}
