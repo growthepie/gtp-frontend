@@ -73,9 +73,8 @@ export const viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.growthepie.xyz"),
   title: {
-    absolute:
-      "growthepie - Growing Ethereum’s Ecosystem Together - Layer 2 User Base",
     template: "%s - growthepie",
+    default: "growthepie - Growing Ethereum’s Ecosystem Together",
   },
   description:
     "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",

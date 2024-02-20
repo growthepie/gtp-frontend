@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { Icon } from "@iconify/react";
 import ReactMarkdown from "react-markdown";
 import { useLocalStorage } from "usehooks-ts";
@@ -20,9 +20,7 @@ const Notification = () => {
   const mobileRef = useRef(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { theme } = useTheme();
-
   const currentPath = usePathname();
-
   const [seenNotifications, setSeenNotifications] = useLocalStorage<
     Notification[]
   >("seenNotifications", []);
@@ -34,6 +32,24 @@ const Notification = () => {
     },
   );
 
+  const urlEnabled = useCallback(
+    (url: string[] | string) => {
+      let retValue = true;
+
+      if (url !== "" && url[0] !== "all") {
+        if (!(currentPath === "/") && url[0] === "home") {
+          if (!currentPath.includes(url[0])) {
+            retValue = false;
+          }
+        } else if (!currentPath.includes(url[0]) && url[0] !== "home") {
+          retValue = false;
+        }
+      }
+      return retValue;
+    },
+    [currentPath],
+  );
+
   const filteredData = useMemo(() => {
     if (!data) return null;
 
@@ -41,11 +57,12 @@ const Notification = () => {
     const filtered = data.filter(
       (record) =>
         currentDateTime >= record.startTimestamp &&
-        currentDateTime < record.endTimestamp,
+        currentDateTime < record.endTimestamp &&
+        urlEnabled(record.displayPages ? record.displayPages : ""),
     );
 
     return filtered;
-  }, [data]);
+  }, [data, urlEnabled]);
 
   const hasUnseenNotifications = useMemo(() => {
     if (!filteredData) {
@@ -122,14 +139,12 @@ const Notification = () => {
                 } w-auto ${item.url ? "cursor-pointer" : "cursor-normal"} flex`}
               >
                 <div className="w-[12px] h-[12px]">
-                  {item.icon && (
-                    <Icon
-                      icon={item.icon || "default-icon"}
-                      className={`w-[12px] h-[12px] text-forest-1000 dark:text-forest-800 dark:group-hover:text-forest-200  ${
-                        item.icon ? "visible" : "invisible"
-                      }`}
-                    />
-                  )}
+                  <Icon
+                    icon={item.icon ? item.icon : "feather:bell"}
+                    className={`w-[12px] h-[12px] text-forest-1000 dark:text-forest-800 dark:group-hover:text-forest-200  ${
+                      item.icon ? "visible" : "invisible"
+                    }`}
+                  />
                 </div>
                 <div className={`flex w-full flex-col z-20`}>
                   <div className="h-[17px] font-bold text-[14px] leading-[1.2]">
