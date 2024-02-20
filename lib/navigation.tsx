@@ -406,19 +406,20 @@ export const navigationItems: NavigationItem[] = [
       {
         label: "Starknet",
         page: {
-          description: "",
+          description:
+            "Starknet is a ZK Rollup developed by Starkware. The rollup was launched on mainnet in November 2021.",
         },
         icon: "gtp:starknet-logo-monochrome",
         key: "starknet",
         rootKey: "chainsStarknet",
         urlKey: "starknet",
-        hide: true, // remove when unhiding from the UI
+        // hide: true, // remove when unhiding from the UI
       },
       {
         label: "Immutable X",
         page: {
           description:
-            "Immutable X is an optimized game-specific zk rollup. It is designed to mint, transfer, and trade tokens and NFTs at higher volumes and zero gas fees. It is not EVM compatible but its easy-to-use APIs and SDKs aim to make development for game devs as easy as possible. It launched in April 2021.",
+            "Immutable X is an optimized game-specific ZK Rollup. It is designed to mint, transfer, and trade tokens and NFTs at higher volumes and zero gas fees. It is not EVM compatible but its easy-to-use APIs and SDKs aim to make development for game devs as easy as possible. It launched in April 2021.",
         },
         icon: "gtp:immutable-x-logo-monochrome",
         key: "imx",

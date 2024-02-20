@@ -323,8 +323,9 @@ export const AllChains: Chain[] = [
     key: "starknet",
     urlKey: "starknet",
     chainType: "L2",
-    ecosystem: [], // add ecosystems when unhiding from the UI
-    description: "",
+    ecosystem: ["all-chains"], // add ecosystems when unhiding from the UI
+    description:
+      "Starknet is a ZK Rollup developed by Starkware. The rollup was launched on mainnet in November 2021.",
     border: {
       light: ["border-[#EC796B]", "border-[#EC796B]"],
       dark: ["border-[#EC796B]", "border-[#EC796B]"],
