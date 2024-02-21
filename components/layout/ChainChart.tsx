@@ -2056,7 +2056,7 @@ export default function ChainChart({
                     <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
                   </div>
                   {!zoomed
-                    ? (key === "profit" || key === "txcosts") && (
+                    ? (key === "market_cap" || key === "txcosts") && (
                         <div
                           className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
                             enabledFundamentalsKeys.length - 2 === i
@@ -2086,7 +2086,7 @@ export default function ChainChart({
                           </div>
                         </div>
                       )
-                    : (key === "profit" || key === "txcosts") &&
+                    : (key === "market_cap" || key === "txcosts") &&
                       intervalShown && (
                         <div
                           className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${

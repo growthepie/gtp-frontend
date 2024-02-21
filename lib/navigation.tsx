@@ -196,7 +196,7 @@ export const navigationItems: NavigationItem[] = [
         },
         icon: "gtp:transaction-costs",
         key: "fdv",
-        rootKey: "metricsTxCosts",
+        rootKey: "fullyDilutedValue",
         urlKey: "fdv",
       },
       {
@@ -214,7 +214,7 @@ export const navigationItems: NavigationItem[] = [
         },
         icon: "gtp:transaction-costs",
         key: "market_cap",
-        rootKey: "metricsTxCosts",
+        rootKey: "marketCap",
         urlKey: "market_cap",
       },
       {
