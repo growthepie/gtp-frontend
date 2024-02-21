@@ -28,7 +28,7 @@ import { animated, useSpring } from "@react-spring/web";
 import ContractLabelModal from "./ContractLabelModal";
 import { intersection } from "lodash";
 
-const MemoizedChart = memo(Chart);
+// const MemoizedChart = memo(Chart);
 
 const DisabledStates: {
   [mode: string]: {
@@ -500,7 +500,7 @@ export default function OverviewMetrics({
     cefi: 1 - 0.596,
     utility: 1 - 0.733,
     cross_chain: 1 - 0.867,
-    unlabeled: 1 - 0.92,
+    unlabeled: 1 - 0,
   };
 
   const chartSeries = useMemo(() => {
@@ -1219,7 +1219,7 @@ export default function OverviewMetrics({
 
   return (
     <div className="w-full flex-col relative">
-      {/* <div>{JSON.stringify(hoveredSeriesId)}</div> */}
+      <div>{JSON.stringify(forceHoveredChartSeriesId)}</div>
       {/* <div>{JSON.stringify(isCategoryHovered)}</div> */}
       {/* <div>{JSON.stringify(hoveredCategories)}</div> */}
       <Container>
@@ -1833,7 +1833,7 @@ export default function OverviewMetrics({
           </h2>
         </div>
         <div className="flex items-center w-full ">
-          <MemoizedChart
+          <Chart
             types={
               selectedChain === null
                 ? data[standardChainKey].daily.types

@@ -19,6 +19,7 @@ import {
   decimalToPercent,
   tooltipFormatter,
   formatNumber,
+  tooltipPositioner,
 } from "@/lib/chartUtils";
 import ChartWatermark from "../layout/ChartWatermark";
 import { Icon } from "@iconify/react";
@@ -174,6 +175,8 @@ export const Chart = ({
             AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] +
             fillHexColorOpacity;
 
+          console.log("fillColor", fillColor, s.id, chainKey, theme, s.name);
+
           let color = s.id.includes("unlabeled")
             ? {
                 pattern: {
@@ -187,8 +190,7 @@ export const Chart = ({
                   opacity: 0.99,
                 },
               }
-            : AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] +
-              fillHexColorOpacity;
+            : AllChainsByKeys[chainKey].colors[theme ?? "dark"][0];
           // {
           //   linearGradient: {
           //     x1: 0,
@@ -206,15 +208,21 @@ export const Chart = ({
             {
               id: s.id,
               name: s.name,
-              custom: s.custom,
+              custom: {
+                ...s.custom,
+                chainColor:
+                  AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0],
+                fillHexColorOpacity: fillHexColorOpacity,
+                color: color,
+              },
               data: s.data.map((d) => [
                 d[types.indexOf(s.unixKey)],
                 d[types.indexOf(s.dataKey)],
               ]),
               type: chartType,
               stacking: areaStacking,
-              trackByArea: true,
               clip: false,
+              // opacity: s.fillOpacity,
               fillOpacity: s.fillOpacity,
               // fillColor: fillColor,
               borderColor:
@@ -303,34 +311,10 @@ export const Chart = ({
                       offsetY: 0,
                       width: 2,
                     },
-                    color: {
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 0,
-                        y2: 1,
-                      },
-                      stops: [
-                        [
-                          0,
-                          AllChainsByKeys[chainKey]?.colors[
-                            theme ?? "dark"
-                          ][0] + "FF",
-                        ],
-                        [
-                          0.349,
-                          AllChainsByKeys[chainKey]?.colors[
-                            theme ?? "dark"
-                          ][0] + "88",
-                        ],
-                        [
-                          1,
-                          AllChainsByKeys[chainKey]?.colors[
-                            theme ?? "dark"
-                          ][0] + "00",
-                        ],
-                      ],
-                    },
+                    color: color,
+                    // fillColor: color + fillHexColorOpacity,
+                    // opacity: s.fillOpacity,
+                    // fillColor: color,
                   }),
             },
             false,
@@ -345,19 +329,93 @@ export const Chart = ({
     drawChartSeries();
   }, [drawChartSeries, series, types, maxY, yScale, stack]);
 
-  useEffect(() => {
-    if (forceHoveredChartSeriesId) {
+  const resetColorsAndOpacity = useCallback(() => {
+    if (chartComponent.current) {
+      chartComponent.current.series.forEach((s: Highcharts.Series) => {
+        s.setState("normal");
+
+        // s.options.opacity = 1;
+
+        if (s.options.custom) {
+          s.color = s.options.custom.color;
+          s.options["fillOpacity"] = s.options.custom.fillHexColorOpacity;
+        }
+      });
+    }
+  }, []);
+
+  const hoverSeriesCallback = useCallback(() => {
+    if (forceHoveredChartSeriesId !== undefined) {
       if (chartComponent.current) {
-        chartComponent.current.series.forEach((s) => {
-          if (s.options.id === forceHoveredChartSeriesId) {
-            s.setState("hover");
-          } else {
-            s.setState("inactive");
-          }
-        });
+        if (forceHoveredChartSeriesId === "") {
+          // chartComponent.current.series.forEach((s: Highcharts.Series) => {
+          //   s.setState("normal");
+
+          //   s.options.opacity = 1;
+
+          //   if (s.options.custom) {
+          //     s.color = s.options.custom.color;
+          //     s.options["fillOpacity"] = 1;
+          //   }
+          // });
+          resetColorsAndOpacity();
+        } else {
+          chartComponent.current.series.forEach((s: Highcharts.Series) => {
+            if (s.options.id === forceHoveredChartSeriesId) {
+              s.setState("hover");
+              // s.options.opacity = 1;
+
+              if (s.options.custom) {
+                s.color = s.options.custom.chainColor;
+                s.options["fillOpacity"] = 1;
+              }
+            } else {
+              s.setState("inactive");
+              // s.options.opacity = 0;
+              if (s.options.custom) {
+                s.color = s.options.custom.color;
+                s.options["fillOpacity"] = 0;
+              }
+            }
+          });
+        }
       }
     }
-  }, [forceHoveredChartSeriesId]);
+  }, [forceHoveredChartSeriesId, resetColorsAndOpacity]);
+
+  useEffect(() => {
+    //   if (forceHoveredChartSeriesId !== undefined) {
+    //     if (chartComponent.current) {
+    //       if (forceHoveredChartSeriesId === "") {
+    //         chartComponent.current.series.forEach((s: Highcharts.Series) => {
+    //           s.setState("normal");
+
+    //           // s.options.opacity = 1;
+
+    //           if (s.options.custom)
+    //             s.options.color =
+    //               s.options.custom.chainColor +
+    //               s.options.custom.fillHexColorOpacity;
+    //         });
+    //       } else {
+    //         chartComponent.current.series.forEach((s: Highcharts.Series) => {
+    //           if (s.options.id === forceHoveredChartSeriesId) {
+    //             s.setState("hover");
+    //             // s.options.opacity = 1;
+    //             if (s.options.custom)
+    //               s.options.color = s.options.custom.chainColor + "FF";
+    //           } else {
+    //             // s.setState("inactive");
+    //             // s.options.opacity = 0;
+    //             if (s.options.custom)
+    //               s.options.color = s.options.custom.chainColor + "00";
+    //           }
+    //         });
+    //       }
+    //     }
+    //   }
+    hoverSeriesCallback();
+  }, [hoverSeriesCallback]);
 
   const resetXAxisExtremes = useCallback(() => {
     if (chartComponent.current) {
@@ -486,6 +544,14 @@ export const Chart = ({
                   height: chartHeight,
                   width: chartWidth,
                 }}
+                onMouseOut={() => {
+                  if (
+                    setHoveredChartSeriesId &&
+                    forceHoveredChartSeriesId !== ""
+                  ) {
+                    resetColorsAndOpacity();
+                  }
+                }}
               >
                 <HighchartsReact
                   highcharts={Highcharts}
@@ -502,6 +568,22 @@ export const Chart = ({
                             chartComponent.current = this;
                             drawChartSeries();
                           },
+                          // mouseOver: function (this, e) {
+                          //   if (
+                          //     setHoveredChartSeriesId &&
+                          //     forceHoveredChartSeriesId !== ""
+                          //   ) {
+                          //     setHoveredChartSeriesId("");
+                          //   }
+                          // },
+                          mouseOut: function (this, e) {
+                            if (
+                              setHoveredChartSeriesId &&
+                              forceHoveredChartSeriesId !== ""
+                            ) {
+                              setHoveredChartSeriesId("");
+                            }
+                          },
                         },
                       },
                       plotOptions: {
@@ -511,6 +593,9 @@ export const Chart = ({
                         },
                         area: {
                           ...baseOptions.plotOptions.area,
+                          trackByArea: forceHoveredChartSeriesId
+                            ? false
+                            : false,
                           stacking:
                             yScale === "percentage"
                               ? "percent"
@@ -519,35 +604,102 @@ export const Chart = ({
                               : undefined,
                         },
                         series: {
-                          trackByArea: true,
-                          point: {
-                            events: {
-                              mouseOver: function (this, e) {
-                                const seriesId = this.series.options.id;
-                                if (seriesId && setHoveredChartSeriesId) {
-                                  setHoveredChartSeriesId(seriesId);
-                                }
-                              } as Highcharts.PointMouseOverCallbackFunction,
+                          // point: {
+                          //   events: {
+                          //     mouseOver: function (this, e) {
+                          //       const seriesId = this.series.options.id;
+                          //       if (seriesId && setHoveredChartSeriesId) {
+                          //         setHoveredChartSeriesId(seriesId);
+                          //       }
+                          //     } as Highcharts.PointMouseOverCallbackFunction,
+                          //   },
+                          // },
+                          animation: false,
+                          states: {
+                            hover: {
+                              enabled: false,
+                            },
+                            animation: {
+                              duration: 0,
+                            },
+                            inactive: {
+                              animation: false,
                             },
                           },
+
+                          stickyTracking:
+                            forceHoveredChartSeriesId !== undefined
+                              ? false
+                              : true,
                           events: {
+                            // points: {
+                            //   mouseOver: function (this, e) {
+                            //     const seriesId = this.options.id;
+                            //     if (
+                            //       seriesId &&
+                            //       setHoveredChartSeriesId &&
+                            //       forceHoveredChartSeriesId !== seriesId
+                            //     ) {
+                            //       setHoveredChartSeriesId(seriesId);
+                            //     }
+                            //     return true;
+                            //   } as Highcharts.SeriesMouseOutCallbackFunction,
+                            //   mouseOut: function (this, e) {
+                            //     if (
+                            //       setHoveredChartSeriesId &&
+                            //       !forceHoveredChartSeriesId
+                            //     ) {
+                            //       setHoveredChartSeriesId("");
+                            //     }
+                            //     return true;
+                            //   } as Highcharts.SeriesMouseOutCallbackFunction,
+                            // },
+                            mouseOver: function (this, e) {
+                              const seriesId = this.options.id;
+                              if (
+                                setHoveredChartSeriesId &&
+                                forceHoveredChartSeriesId !== seriesId
+                              ) {
+                                setHoveredChartSeriesId(seriesId || "");
+                              }
+                              return true;
+                            } as Highcharts.SeriesMouseOutCallbackFunction,
                             mouseOut: function (this, e) {
-                              if (setHoveredChartSeriesId) {
+                              if (
+                                setHoveredChartSeriesId &&
+                                !forceHoveredChartSeriesId
+                              ) {
                                 setHoveredChartSeriesId("");
                               }
+                              return true;
                             } as Highcharts.SeriesMouseOutCallbackFunction,
                           },
                         },
                       },
                       // series: {
+                      //   ...baseOptions.series,
                       //   states: {
                       //     hover: {
                       //       enabled: false,
+                      //     },
+                      //     animation: {
+                      //       duration: 0,
                       //     },
                       //   },
                       // },
                       tooltip: {
                         ...baseOptions.tooltip,
+                        // positioner: function (
+                        //   boxWidth: number,
+                        //   boxHeight: number,
+                        //   point: Highcharts.TooltipPositionerPointObject,
+                        // ) {
+                        //   return {
+                        //     x: 10,
+                        //     y: 10,
+                        //   };
+                        // },
+                        positioner: tooltipPositioner,
                         formatter:
                           yScale === "percentageDecimal"
                             ? tooltipFormatter(true, true, decimalToPercent)
