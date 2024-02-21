@@ -23,8 +23,9 @@ import { LandingURL, MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useLocalStorage } from "usehooks-ts";
-import { animated, useSpring } from "@react-spring/web";
+
 import ContractLabelModal from "./ContractLabelModal";
+import OverviewChart from "./BlockspaceOverview/OverviewChart";
 
 const DisabledStates: {
   [mode: string]: {
@@ -1301,20 +1302,6 @@ export default function OverviewMetrics({
     chainEcosystemFilter,
   ]);
 
-  const avgHeight = useSpring({
-    y:
-      chartAvg && chartMax
-        ? -1 *
-          ((forceSelectedChain ? 200 : 163) * (chartAvg / chartMax) +
-            (chartAvg / chartMax > 0.45
-              ? chartAvg / chartMax > 0.5
-                ? 7
-                : 10
-              : 14))
-        : 0,
-    config: { mass: 1, tension: 70, friction: 20 },
-  });
-
   function formatNumber(number: number): string {
     if (number === 0) {
       return "0";
@@ -1900,66 +1887,18 @@ export default function OverviewMetrics({
         </div>
       </Container>
       <Container>
-        <div className="mt-[20px] lg:mt-[50px] mb-[38px] ">
-          <h2 className="text-[20px] font-bold">
-            {!forceSelectedChain ? (
-              (selectedChain
-                ? AllChainsByKeys[selectedChain].label
-                : chainEcosystemFilter === "all-chains"
-                ? "All Chains"
-                : chainEcosystemFilter === "op-stack"
-                ? "OP Stack Chains"
-                : "OP Superchain") +
-              (": " + categories[selectedCategory])
-            ) : (
-              <></>
-            )}
-          </h2>
-        </div>
-        <div className="flex items-center w-full ">
-          <Chart
-            types={
-              selectedChain === null
-                ? data[standardChainKey].daily.types
-                : data[selectedChain].daily.types
-            }
-            chartType="area"
-            stack
-            timespan={selectedTimespan}
-            series={chartSeries}
-            yScale={selectedValue === "share" ? "percentageDecimal" : "linear"}
-            chartHeight={forceSelectedChain ? "259px" : "196px"}
-            chartWidth="100%"
-            maxY={chartMax}
-            chartAvg={!allCats ? chartAvg || undefined : undefined}
-          />
-          {chartAvg && (
-            <div
-              className={` items-end relative top-[2px] min-w-[50px] lg:min-w-[70px] ${
-                allCats ? "hidden" : "flex"
-              } ${forceSelectedChain ? "h-[230px]" : "h-[180px]"}`}
-            >
-              <animated.div
-                className="flex h-[28px] relative items-center justify-center rounded-full w-full px-2.5 lg:text-base text-sm font-medium"
-                style={{
-                  backgroundColor:
-                    AllChainsByKeys[selectedChain ? selectedChain : "all_l2s"]
-                      ?.colors[theme ?? "dark"][0],
-                  color: selectedChain
-                    ? selectedChain === "arbitrum" || "linea"
-                      ? "black"
-                      : "white"
-                    : "black",
-                  ...avgHeight,
-                }}
-              >
-                {selectedMode.includes("share")
-                  ? (chartAvg * 100).toFixed(2) + "%"
-                  : (showUsd ? "$ " : "Ξ ") + formatNumber(chartAvg)}
-              </animated.div>
-            </div>
-          )}
-        </div>
+        <OverviewChart
+          data={data}
+          master={master}
+          selectedTimespan={selectedTimespan}
+          setSelectedTimespan={setSelectedTimespan}
+          selectedMode={selectedMode}
+          selectedValue={selectedValue}
+          selectedCategory={selectedCategory}
+          selectedChain={selectedChain}
+          forceSelectedChain={forceSelectedChain}
+          categories={categories}
+        />
       </Container>
       <Container className="w-[98%] ml-4">
         <div className={`flex flex-wrap items-center w-[100%] gap-y-2 `}>
