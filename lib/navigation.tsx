@@ -18,7 +18,7 @@ export type NavigationItem = {
     page?: {
       title?: string;
       tags?: React.ReactNode[];
-      description: string | React.ReactNode;
+      description: string;
       note?: string | React.ReactNode;
       why?: string;
       icon?: string;
