@@ -147,7 +147,8 @@ export default async function Layout({
           className="text-[16px] mb-[30px] w-[99.5%] mx-auto"
           iconContainerClassName="items-center mb-[15px] md:mb-[32px] relative"
         >
-          {pageData.description.includes("L2Beat.com.") ? (
+          {typeof pageData.description === "string" &&
+          pageData.description.includes("L2Beat.com.") ? (
             <div>
               <p>
                 {pageData.description.replace("L2Beat.com.", "")}
@@ -170,6 +171,13 @@ export default async function Layout({
                 Note:{" "}
               </span>
               {pageData.note}
+            </div>
+          )}
+          {pageData.tags && (
+            <div className="flex items-center mt-[5px]">
+              {pageData.tags.map((tag) => (
+                <div key={tag}>{tag}</div>
+              ))}
             </div>
           )}
         </Subheading>

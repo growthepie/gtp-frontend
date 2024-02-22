@@ -1,6 +1,7 @@
 import { IS_PREVIEW } from "./helpers";
 import { MasterURL } from "./urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import Icon from "@/components/layout/Icon";
 
 export type NavigationItem = {
   name: string;
@@ -16,7 +17,8 @@ export type NavigationItem = {
     category?: string;
     page?: {
       title?: string;
-      description: string;
+      tags?: React.ReactNode[];
+      description: string | React.ReactNode;
       note?: string | React.ReactNode;
       why?: string;
       icon?: string;
@@ -187,8 +189,28 @@ export const navigationItems: NavigationItem[] = [
         page: {
           title: "Fully Diluted Valuation",
           description:
-            "FDV is the theoretical market cap of a token if all its planned tokens (total supply) were issued at the current price. Total supply * Price.",
-
+            "The Fully Diluted Valuation is the theoretical market cap of a token if all its planned tokens (total supply) were issued at the current price.",
+          tags: [
+            <div
+              className="flex items-center space-x-1 font-inter text-lg"
+              key="fdv-title-tags"
+            >
+              <span className="font-inter text-xs px-1.5 py-0.5 rounded bg-forest-900 dark:bg-forest-500 font-medium text-white dark:text-forest-1000">
+                FDV
+              </span>
+              <div>=</div>
+              <span className="font-inter text-xs px-1.5 py-[1px] rounded border border-forest-900 dark:border-forest-500 font-medium">
+                Total Token Supply
+              </span>
+              <Icon
+                className="text-forest-900 dark:text-forest-500 text-base"
+                icon="feather:x"
+              />
+              <span className="font-inter text-xs px-1.5 py-[1px] rounded border border-forest-900 dark:border-forest-500 font-medium">
+                Token Price
+              </span>
+            </div>,
+          ],
           why: "FDV helps investors understand the potential size and value of a token, which can be useful for comparing similar assets and assessing the risk of dilution.",
           icon: "gtp:transaction-costs",
           showGwei: false,
@@ -203,8 +225,30 @@ export const navigationItems: NavigationItem[] = [
         category: "economics",
         page: {
           title: "Market Cap",
+          tags: [
+            <div
+              className="flex items-center space-x-1 font-inter text-lg"
+              key="market-cap-title-tags"
+            >
+              <span className="font-inter text-xs px-1.5 py-0.5 rounded bg-forest-900 dark:bg-forest-500 font-medium text-white dark:text-forest-1000">
+                MC
+              </span>
+              <div>=</div>
+              <span className="font-inter text-xs px-1.5 py-[1px] rounded border border-forest-900 dark:border-forest-500 font-medium">
+                Circulating Token Supply
+              </span>
+              <Icon
+                className="text-forest-900 dark:text-forest-500 text-base"
+                icon="feather:x"
+              />
+
+              <span className="font-inter text-xs px-1.5 py-[1px] rounded border border-forest-900 dark:border-forest-500 font-medium">
+                Token Price
+              </span>
+            </div>,
+          ],
           description:
-            "Market cap is the total value of all circulating tokens, calculated by multiplying the current price of a single token by the total number of tokens in circulation: Circulating token supply * Price.",
+            "The Market Cap is the total value of all circulating tokens, calculated by multiplying the current price of a single token by the total number of tokens in circulation.",
 
           why: "Market cap is an important metric because it provides a quick snapshot of a token's relative size, market dominance, and economic footprint within the crypto ecosystem, helping investors assess its popularity, stability, and potential for growth compared to other cryptocurrencies. It is important though to also consider a tokens issuance rate (Circulating supply / Total supply) in order to paint a full picture. Also see FDV.",
           icon: "gtp:transaction-costs",
