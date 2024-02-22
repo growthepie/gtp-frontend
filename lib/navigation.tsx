@@ -191,7 +191,7 @@ export const navigationItems: NavigationItem[] = [
 
           why: "FDV helps investors understand the potential size and value of a token, which can be useful for comparing similar assets and assessing the risk of dilution.",
           icon: "gtp:transaction-costs",
-          showGwei: true,
+          showGwei: false,
         },
         icon: "gtp:transaction-costs",
         key: "fdv",
@@ -208,7 +208,7 @@ export const navigationItems: NavigationItem[] = [
 
           why: "Market cap is an important metric because it provides a quick snapshot of a token's relative size, market dominance, and economic footprint within the crypto ecosystem, helping investors assess its popularity, stability, and potential for growth compared to other cryptocurrencies. It is important though to also consider a tokens issuance rate (Circulating supply / Total supply) in order to paint a full picture. Also see FDV.",
           icon: "gtp:transaction-costs",
-          showGwei: true,
+          showGwei: false,
         },
         icon: "gtp:transaction-costs",
         key: "market_cap",
