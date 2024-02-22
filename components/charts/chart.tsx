@@ -4,8 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import highchartsAnnotations from "highcharts/modules/annotations";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
 import HighchartsReact from "highcharts-react-official";
+import highchartsPatternFill from "highcharts/modules/pattern-fill";
 import Highcharts, {
   AxisLabelsFormatterContextObject,
+  GradientColorStopObject,
 } from "highcharts/highstock";
 
 import { useTheme } from "next-themes";
@@ -17,6 +19,7 @@ import {
   decimalToPercent,
   tooltipFormatter,
   formatNumber,
+  tooltipPositioner,
 } from "@/lib/chartUtils";
 import ChartWatermark from "../layout/ChartWatermark";
 import { Icon } from "@iconify/react";
@@ -37,6 +40,10 @@ export const Chart = ({
   decimals = 2,
   maxY,
   chartAvg,
+  forceHoveredChartSeriesId,
+  hoveredChartSeriesId,
+  setHoveredChartSeriesId,
+  allCats,
 }: {
   // data: { [chain: string]: number[][] };
   chartType: "area" | "line";
@@ -63,6 +70,10 @@ export const Chart = ({
   decimals?: number;
   maxY?: number;
   chartAvg?: number;
+  forceHoveredChartSeriesId?: string;
+  hoveredChartSeriesId?: string;
+  setHoveredChartSeriesId?: (ids: string) => void;
+  allCats?: boolean;
 }) => {
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
@@ -94,7 +105,7 @@ export const Chart = ({
     });
     highchartsRoundedCorners(Highcharts);
     highchartsAnnotations(Highcharts);
-
+    highchartsPatternFill(Highcharts);
     setHighchartsLoaded(true);
   }, []);
 
@@ -163,11 +174,80 @@ export const Chart = ({
           }
         } else {
           const chainKey = s.name;
+
+          let fillColor =
+            AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] +
+            fillHexColorOpacity;
+
+          const normalAreaColor = {
+            linearGradient: {
+              x1: 0,
+              y1: 0,
+              x2: 0,
+              y2: 1,
+            },
+            stops:
+              theme === "dark"
+                ? [
+                    [
+                      0,
+                      AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
+                        "E6",
+                    ],
+                    [
+                      1,
+                      AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
+                        "E6",
+                    ],
+                  ]
+                : [
+                    [
+                      0,
+                      AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
+                        "E6",
+                    ],
+                    [
+                      1,
+                      AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
+                        "E6",
+                    ],
+                  ],
+          };
+
+          let blockspaceAreaColor =
+            s.custom?.tooltipLabel === "Unlabeled"
+              ? {
+                  pattern: {
+                    color: AllChainsByKeys[chainKey].colors["dark"][0] + "55",
+                    path: {
+                      d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
+                      strokeWidth: 3,
+                    },
+                    width: 10,
+                    height: 10,
+                    opacity: 0.99,
+                  },
+                }
+              : AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] +
+                fillHexColorOpacity;
+
+          const color =
+            allCats === true && series.length > 1
+              ? blockspaceAreaColor
+              : normalAreaColor;
+
           chartComponent.current?.addSeries(
+            // @ts-ignore
             {
               id: s.id,
               name: s.name,
-              custom: s.custom,
+              custom: {
+                ...s.custom,
+                chainColor:
+                  AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0],
+                fillHexColorOpacity: fillHexColorOpacity,
+                color: color,
+              },
               data: s.data.map((d) => [
                 d[types.indexOf(s.unixKey)],
                 d[types.indexOf(s.dataKey)],
@@ -176,26 +256,7 @@ export const Chart = ({
               stacking: areaStacking,
               clip: true,
               fillOpacity: s.fillOpacity,
-              fillColor: {
-                linearGradient: {
-                  x1: 0,
-                  y1: 0,
-                  x2: 0,
-                  y2: 1,
-                },
-                stops: [
-                  [
-                    0,
-                    AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
-                      fillHexColorOpacity,
-                  ],
-                  [
-                    1,
-                    AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
-                      fillHexColorOpacity,
-                  ],
-                ],
-              },
+              fillColor: allCats === true ? undefined : fillColor,
               borderColor:
                 AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0],
               borderWidth: s.lineWidth === undefined ? 1 : s.lineWidth,
@@ -209,25 +270,7 @@ export const Chart = ({
                         (s.fillOpacity ? "11" : "33"),
                       width: s.fillOpacity ? 6 : 10,
                     },
-                    color: {
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 1,
-                        y2: 0,
-                      },
-                      stops: [
-                        [
-                          0,
-                          AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0],
-                        ],
-                        // [0.33, AllChainsByKeys[series.name].colors[1]],
-                        [
-                          1,
-                          AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1],
-                        ],
-                      ],
-                    },
+                    color: color,
                   }
                 : chainKey === "all_l2s"
                 ? {
@@ -242,55 +285,7 @@ export const Chart = ({
                       offsetY: 0,
                       width: 2,
                     },
-                    color: {
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 0,
-                        y2: 1,
-                      },
-                      stops:
-                        theme === "dark"
-                          ? [
-                              [
-                                0,
-                                AllChainsByKeys[chainKey]?.colors[
-                                  theme ?? "dark"
-                                ][0] + "E6",
-                              ],
-                              // [
-                              //   0.3,
-                              //   //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
-                              //   AllChainsByKeys[series.name].colors[theme][0] +
-                              //     "FF",
-                              // ],
-                              [
-                                1,
-                                AllChainsByKeys[chainKey]?.colors[
-                                  theme ?? "dark"
-                                ][1] + "E6",
-                              ],
-                            ]
-                          : [
-                              [
-                                0,
-                                AllChainsByKeys[chainKey]?.colors[
-                                  theme ?? "dark"
-                                ][0] + "E6",
-                              ],
-                              // [
-                              //   0.7,
-                              //   AllChainsByKeys[series.name].colors[theme][0] +
-                              //     "88",
-                              // ],
-                              [
-                                1,
-                                AllChainsByKeys[chainKey]?.colors[
-                                  theme ?? "dark"
-                                ][1] + "E6",
-                              ],
-                            ],
-                    },
+                    color: color,
                   }
                 : {
                     borderColor: "transparent",
@@ -300,34 +295,7 @@ export const Chart = ({
                       offsetY: 0,
                       width: 2,
                     },
-                    color: {
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 0,
-                        y2: 1,
-                      },
-                      stops: [
-                        [
-                          0,
-                          AllChainsByKeys[chainKey]?.colors[
-                            theme ?? "dark"
-                          ][0] + "FF",
-                        ],
-                        [
-                          0.349,
-                          AllChainsByKeys[chainKey]?.colors[
-                            theme ?? "dark"
-                          ][0] + "88",
-                        ],
-                        [
-                          1,
-                          AllChainsByKeys[chainKey]?.colors[
-                            theme ?? "dark"
-                          ][0] + "00",
-                        ],
-                      ],
-                    },
+                    color: color,
                   }),
             },
             false,
@@ -336,11 +304,57 @@ export const Chart = ({
       });
       chartComponent.current?.redraw();
     }
-  }, [chartType, series, theme, types, maxY, yScale, stack]);
+  }, [yScale, stack, series, chartType, types, theme, allCats]);
 
   useEffect(() => {
     drawChartSeries();
   }, [drawChartSeries, series, types, maxY, yScale, stack]);
+
+  useEffect(() => {
+    console.log("forceHoveredChartSeriesId", forceHoveredChartSeriesId);
+    // if (allCats === undefined || allCats === false) return;
+    // if (forceHoveredChartSeriesId === undefined) return;
+
+    if (allCats === true && chartComponent.current && series.length > 1) {
+      if (
+        !forceHoveredChartSeriesId ||
+        forceHoveredChartSeriesId.includes("all_chain")
+      ) {
+        chartComponent.current.series.forEach((s: Highcharts.Series) => {
+          s.setState("normal");
+
+          // s.options.opacity = 1;
+
+          if (s.options.custom) {
+            //   s.color = s.options.custom.color;
+            s.options["fillColor"] = s.options.custom.fillColor;
+            // s.options["fillOpacity"] = 1;
+          }
+        });
+      } else {
+        chartComponent.current.series.forEach((s: Highcharts.Series) => {
+          if (s.options.id === forceHoveredChartSeriesId) {
+            s.setState("hover");
+            // s.options.opacity = 1;
+
+            if (s.options.custom) {
+              //   s.color = s.options.custom.chainColor;
+              s.options["fillColor"] = s.options.custom.chainColor;
+              // s.options["fillOpacity"] = 1;
+            }
+          } else {
+            s.setState("inactive");
+            // s.options.opacity = 0;
+            if (s.options.custom) {
+              //   s.color = s.options.custom.color;
+              s.options["fillColor"] = s.options.custom.fillColor;
+              // s.options["fillOpacity"] = 0;
+            }
+          }
+        });
+      }
+    }
+  }, [forceHoveredChartSeriesId, series, allCats]);
 
   const resetXAxisExtremes = useCallback(() => {
     if (chartComponent.current) {
@@ -447,18 +461,6 @@ export const Chart = ({
         // Object.values(series)[0].data.length > 0 &&
         timespans && highchartsLoaded ? (
           <div className="w-full py-4 rounded-xl">
-            {/* <div>{JSON.stringify(timespans[timespan])}</div>
-          <div>
-            {JSON.stringify(
-              Object.keys(data).map((chain) => ({
-                chain,
-                unixKey: series[0].unixKey,
-                dataKey: series[0].dataKey,
-                dataFirst: data[chain][0],
-                dataLast: data[chain][data[chain].length - 1],
-              })),
-            )}
-          </div> */}
             <div
               className="relative"
               style={{ height: chartHeight, width: chartWidth }}
@@ -472,132 +474,136 @@ export const Chart = ({
               >
                 <HighchartsReact
                   highcharts={Highcharts}
-                  options={{
-                    ...baseOptions,
-                    chart: {
-                      ...baseOptions.chart,
-                      type: chartType,
-                      backgroundColor: backgroundColor,
-                      height: parseFloat(chartHeight),
-                      events: {
-                        load: function () {
-                          chartComponent.current = this;
-                          drawChartSeries();
+                  options={
+                    {
+                      ...baseOptions,
+                      chart: {
+                        ...baseOptions.chart,
+                        type: chartType,
+                        backgroundColor: backgroundColor,
+                        height: parseFloat(chartHeight),
+                        events: {
+                          load: function () {
+                            chartComponent.current = this;
+                            drawChartSeries();
+                          },
                         },
                       },
-                    },
-                    plotOptions: {
-                      ...baseOptions.plotOptions,
-                      line: {
-                        stacking: undefined,
-                      },
-                      area: {
-                        ...baseOptions.plotOptions.area,
-                        stacking:
-                          yScale === "percentage"
-                            ? "percent"
-                            : stack
-                            ? "normal"
-                            : undefined,
-                      },
-                    },
-                    tooltip: {
-                      ...baseOptions.tooltip,
-                      formatter:
-                        yScale === "percentageDecimal"
-                          ? tooltipFormatter(true, true, decimalToPercent)
-                          : yScale === "percentage"
-                          ? tooltipFormatter(true, true, null)
-                          : tooltipFormatter(
-                              true,
-                              false,
-                              (x) => {
-                                return parseFloat(x).toFixed(decimals);
-                              },
-                              series.length > 0 ? series[0].dataKey : undefined,
-                              false,
-                              stack,
-                            ),
-                    },
-                    xAxis: {
-                      ...baseOptions.xAxis,
-                      min: timespans[timespan].xMin,
-                      max: timespans[timespan].xMax,
-                      minorTicks: true,
-                      minorTickLength: 2,
-                      minorTickWidth: 2,
-                      minorGridLineWidth: 0,
-                      minorTickInterval: ["7d", "30d"].includes(timespan)
-                        ? 1000 * 60 * 60 * 24 * 1
-                        : 1000 * 60 * 60 * 24 * 7,
-                      tickPositions: displayMinorTicksOnly
-                        ? undefined
-                        : tickPositions,
-                      labels: getXAxisLabels(),
-                    },
-                    yAxis: {
-                      ...baseOptions.yAxis,
-                      type: yScale,
-                      min: yScale === "percentage" ? 0 : undefined,
-                      max: maxY ? maxY : undefined,
-                      tickPositions: maxY
-                        ? Array.from(
-                            { length: numIntervals + 1 },
-                            (_, i) => i * intervalSize,
-                          )
-                        : undefined,
-                      tickInterval: maxY ? yAxisTicks.interval : undefined,
-                      gridLineColor:
-                        theme === "dark"
-                          ? "rgba(215, 223, 222, 0.11)"
-                          : "rgba(41, 51, 50, 0.11)",
-                      plotLines: [
-                        {
-                          color: chartColor ? chartColor : null,
-                          width: 1,
-                          value: chartAvg ? chartAvg : null,
-                          dashStyle: "Dash",
+                      plotOptions: {
+                        ...baseOptions.plotOptions,
+                        line: {
+                          stacking: undefined,
                         },
-                      ],
-                      labels: {
-                        ...baseOptions.yAxis.labels,
-                        formatter: function (
-                          t: Highcharts.AxisLabelsFormatterContextObject,
-                        ) {
-                          const isPercentage =
-                            yScale === "percentage" ||
-                            yScale === "percentageDecimal";
-                          let prefix = "";
-                          let suffix = "";
+                        area: {
+                          ...baseOptions.plotOptions.area,
+                          stacking:
+                            yScale === "percentage"
+                              ? "percent"
+                              : stack
+                              ? "normal"
+                              : undefined,
+                        },
+                      },
+                      tooltip: {
+                        ...baseOptions.tooltip,
+                        formatter:
+                          yScale === "percentageDecimal"
+                            ? tooltipFormatter(true, true, decimalToPercent)
+                            : yScale === "percentage"
+                            ? tooltipFormatter(true, true, null)
+                            : tooltipFormatter(
+                                true,
+                                false,
+                                (x) => {
+                                  return parseFloat(x).toFixed(decimals);
+                                },
+                                series.length > 0
+                                  ? series[0].dataKey
+                                  : undefined,
+                                false,
+                                stack,
+                              ),
+                      },
+                      xAxis: {
+                        ...baseOptions.xAxis,
+                        min: timespans[timespan].xMin,
+                        max: timespans[timespan].xMax,
+                        minorTicks: true,
+                        minorTickLength: 2,
+                        minorTickWidth: 2,
+                        minorGridLineWidth: 0,
+                        minorTickInterval: ["7d", "30d"].includes(timespan)
+                          ? 1000 * 60 * 60 * 24 * 1
+                          : 1000 * 60 * 60 * 24 * 7,
+                        tickPositions: displayMinorTicksOnly
+                          ? undefined
+                          : tickPositions,
+                        labels: getXAxisLabels(),
+                      },
+                      yAxis: {
+                        ...baseOptions.yAxis,
+                        type: yScale,
+                        min: yScale === "percentage" ? 0 : undefined,
+                        max: maxY ? maxY : undefined,
+                        tickPositions: maxY
+                          ? Array.from(
+                              { length: numIntervals + 1 },
+                              (_, i) => i * intervalSize,
+                            )
+                          : undefined,
+                        tickInterval: maxY ? yAxisTicks.interval : undefined,
+                        gridLineColor:
+                          theme === "dark"
+                            ? "rgba(215, 223, 222, 0.11)"
+                            : "rgba(41, 51, 50, 0.11)",
+                        plotLines: [
+                          {
+                            color: chartColor ? chartColor : null,
+                            width: 1,
+                            value: chartAvg ? chartAvg : null,
+                            dashStyle: "Dash",
+                          },
+                        ],
+                        labels: {
+                          ...baseOptions.yAxis.labels,
+                          formatter: function (
+                            t: Highcharts.AxisLabelsFormatterContextObject,
+                          ) {
+                            const isPercentage =
+                              yScale === "percentage" ||
+                              yScale === "percentageDecimal";
+                            let prefix = "";
+                            let suffix = "";
 
-                          if (isPercentage) {
-                            prefix = "";
-                            suffix = "%";
-                          } else if (series.length > 0) {
-                            if (series[0].dataKey.includes("usd")) {
-                              prefix = "$";
-                              suffix = "";
-                            } else if (
-                              series.length > 0 &&
-                              series[0].dataKey.includes("eth")
-                            ) {
+                            if (isPercentage) {
                               prefix = "";
-                              suffix = "Ξ";
+                              suffix = "%";
+                            } else if (series.length > 0) {
+                              if (series[0].dataKey.includes("usd")) {
+                                prefix = "$";
+                                suffix = "";
+                              } else if (
+                                series.length > 0 &&
+                                series[0].dataKey.includes("eth")
+                              ) {
+                                prefix = "";
+                                suffix = "Ξ";
+                              }
                             }
-                          }
 
-                          return formatNumber(
-                            t.value,
-                            true,
-                            yScale === "percentageDecimal",
-                            prefix,
-                            suffix,
-                          );
-                          // return t.value;
+                            return formatNumber(
+                              t.value,
+                              true,
+                              yScale === "percentageDecimal",
+                              prefix,
+                              suffix,
+                            );
+                            // return t.value;
+                          },
                         },
                       },
-                    },
-                  }}
+                    } as Highcharts.Options
+                  }
                   constructorType={"stockChart"}
                   ref={(chart) => {
                     chartComponent.current = chart?.chart;
