@@ -9,7 +9,7 @@ export const MetricsURLs = {
   "rent-paid": "https://api.growthepie.xyz/v1/metrics/rent_paid.json",
   profit: "https://api.growthepie.xyz/v1/metrics/profit.json",
   fdv: "https://api.growthepie.xyz/v1/metrics/fdv.json",
-  market_cap: "https://api.growthepie.xyz/v1/metrics/market_cap.json",
+  "market-cap": "https://api.growthepie.xyz/v1/metrics/market_cap.json",
 };
 
 export const ChainURLs = {

@@ -257,7 +257,7 @@ export const navigationItems: NavigationItem[] = [
         icon: "gtp:transaction-costs",
         key: "market_cap",
         rootKey: "marketCap",
-        urlKey: "market_cap",
+        urlKey: "market-cap",
       },
       {
         label: "Transaction Costs",
