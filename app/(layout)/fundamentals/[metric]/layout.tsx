@@ -175,8 +175,8 @@ export default async function Layout({
           )}
           {pageData.tags && (
             <div className="flex items-center mt-[5px]">
-              {pageData.tags.map((tag) => (
-                <div key={tag}>{tag}</div>
+              {pageData.tags.map((tag, i) => (
+                <div key={i}>{tag}</div>
               ))}
             </div>
           )}
