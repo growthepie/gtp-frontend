@@ -114,7 +114,7 @@ const Notification = () => {
   }, [filteredData]);
 
   const Items = useMemo(() => {
-    if (!filteredData) {
+    if (!filteredData || filteredData.length === 0) {
       return null;
     }
     return (
@@ -132,18 +132,16 @@ const Notification = () => {
             >
               <div
                 key={item.id + item.url}
-                className={`flex items-center pl-[12px] pr-[10px] relative pt-[10px] gap-x-[12px] ${
-                  i >= filteredData.length - 1
-                    ? "pb-[10px]"
-                    : "pb-[10px] border-b border-dashed border-forest-1000 dark:border-forest-500"
-                } w-auto ${item.url ? "cursor-pointer" : "cursor-normal"} flex`}
+                className={`flex items-center pl-[12px] pr-[10px] relative pt-[10px] gap-x-[12px] ${i >= filteredData.length - 1
+                  ? "pb-[10px]"
+                  : "pb-[10px] border-b border-dashed border-forest-1000 dark:border-forest-500"
+                  } w-auto ${item.url ? "cursor-pointer" : "cursor-normal"} flex`}
               >
                 <div className="w-[12px] h-[12px]">
                   <Icon
                     icon={item.icon ? item.icon : "feather:bell"}
-                    className={`w-[12px] h-[12px] text-forest-1000 dark:text-forest-800 dark:group-hover:text-forest-200  ${
-                      item.icon ? "visible" : "invisible"
-                    }`}
+                    className={`w-[12px] h-[12px] text-forest-1000 dark:text-forest-800 dark:group-hover:text-forest-200  ${item.icon ? "visible" : "invisible"
+                      }`}
                   />
                 </div>
                 <div className={`flex w-full flex-col z-20`}>
@@ -155,9 +153,8 @@ const Notification = () => {
                   </div>
                 </div>
                 <div
-                  className={`w-[24px] h-[24px]  ${
-                    item.url ? "visible" : "invisible"
-                  }`}
+                  className={`w-[24px] h-[24px]  ${item.url ? "visible" : "invisible"
+                    }`}
                 >
                   <Icon
                     icon="feather:chevron-right"
@@ -237,14 +234,15 @@ const Notification = () => {
 
   const [ref, width] = useElementSizeObserver<HTMLDivElement>();
 
+  if (!filteredData || filteredData.length === 0) return null;
+
   return (
     <div className="relative">
       {filteredData && (
         <>
           <div
-            className={`hidden md:flex w-full relative ${
-              openNotif ? "z-[110]" : "z-10"
-            }`}
+            className={`hidden md:flex w-full relative ${openNotif ? "z-[110]" : "z-10"
+              }`}
             onMouseEnter={() => {
               handleShowNotifications();
             }}
@@ -261,9 +259,8 @@ const Notification = () => {
               ref={ref}
             >
               <div
-                className={`w-full flex items-center justify-between ${
-                  openNotif || filteredData.length === 0 ? "block" : "hidden"
-                }`}
+                className={`w-full flex items-center justify-between ${openNotif || filteredData.length === 0 ? "block" : "hidden"
+                  }`}
               >
                 <div className="flex items-center gap-x-[10px]">
                   <div className="w-[16px] h-[16px] relative">
@@ -272,62 +269,61 @@ const Notification = () => {
                   <p className="text-[12px] font-[500]">Notification Center</p>
                 </div>
               </div>
-              <div
-                className={`${
-                  !openNotif && filteredData.length > 0
+              {filteredData.length > 0 && (
+                <div
+                  className={`${!openNotif && filteredData.length > 0
                     ? "relative flex items-center gap-x-[10px] text-[12px] leading-[1.5] w-full overflow-hidden transition-opacity duration-300"
                     : "hidden"
-                } ${hideText ? "opacity-0" : "opacity-100"}`}
-                style={{
-                  color: currentItemTextColor,
-                }}
-              >
-                <div className={`relative w-[16px] h-[16px] rounded-full z-20`}>
-                  {hasUnseenNotifications && (
-                    <div
-                      className={`w-[6px] h-[6px] bg-red-500 rounded-full absolute -top-0 right-[1px] border tansition-colors duration-300 ${
-                        (!filteredData[currentIndex] ||
-                          !filteredData[currentIndex]["backgroundColor"]) &&
-                        "border-white dark:border-[#1F2726]"
-                      }`}
-                      style={{
-                        borderColor:
-                          filteredData[currentIndex] &&
-                          filteredData[currentIndex]["backgroundColor"]
-                            ? filteredData[currentIndex]["backgroundColor"]
-                            : undefined,
-                      }}
-                    ></div>
-                  )}
-                  <Icon
-                    icon={filteredData[currentIndex]["icon"] || "feather:bell"}
-                    className={`w-[16px] h-[16px] light:text-[#1F2726]`}
-                  />
-                </div>
-                <div
-                  className="flex gap-x-[5px] whitespace-nowrap overflow-hidden w-full"
+                    } ${hideText ? "opacity-0" : "opacity-100"}`}
                   style={{
-                    maskImage:
-                      "linear-gradient(to right, black 90%, transparent 100%)",
-                    WebkitMaskImage:
-                      "linear-gradient(to right, black 90%, transparent 100%)",
+                    color: currentItemTextColor,
                   }}
                 >
-                  <div className="font-semibold">
-                    {filteredData[currentIndex].desc}
+                  <div className={`relative w-[16px] h-[16px] rounded-full z-20`}>
+                    {hasUnseenNotifications && (
+                      <div
+                        className={`w-[6px] h-[6px] bg-red-500 rounded-full absolute -top-0 right-[1px] border tansition-colors duration-300 ${(!filteredData[currentIndex] ||
+                          !filteredData[currentIndex]["backgroundColor"]) &&
+                          "border-white dark:border-[#1F2726]"
+                          }`}
+                        style={{
+                          borderColor:
+                            filteredData[currentIndex] &&
+                              filteredData[currentIndex]["backgroundColor"]
+                              ? filteredData[currentIndex]["backgroundColor"]
+                              : undefined,
+                        }}
+                      ></div>
+                    )}
+                    <Icon
+                      icon={filteredData[currentIndex] && filteredData[currentIndex].icon ? filteredData[currentIndex].icon : "feather:bell"}
+                      className={`w-[16px] h-[16px] light:text-[#1F2726]`}
+                    />
                   </div>
-                  <div>-</div>
-                  <ReactMarkdown>
-                    {filteredData[currentIndex].body}
-                  </ReactMarkdown>
+                  <div
+                    className="flex gap-x-[5px] whitespace-nowrap overflow-hidden w-full"
+                    style={{
+                      maskImage:
+                        "linear-gradient(to right, black 90%, transparent 100%)",
+                      WebkitMaskImage:
+                        "linear-gradient(to right, black 90%, transparent 100%)",
+                    }}
+                  >
+                    <div className="font-semibold">
+                      {filteredData[currentIndex] && filteredData[currentIndex].desc ? filteredData[currentIndex].desc : ""}
+                    </div>
+                    <div>-</div>
+                    <ReactMarkdown>
+                      {filteredData[currentIndex] && filteredData[currentIndex].body ? filteredData[currentIndex].body : ""}
+                    </ReactMarkdown>
+                  </div>
                 </div>
-              </div>
+              )}
               <div className={`w-[24px] h-[24px] z-30`}>
                 <Icon
                   icon="feather:chevron-right"
-                  className={`w-[24px] h-[24px] transition-transform duration-300 ${
-                    openNotif ? "rotate-90" : "rotate-0"
-                  }`}
+                  className={`w-[24px] h-[24px] transition-transform duration-300 ${openNotif ? "rotate-90" : "rotate-0"
+                    }`}
                   onClick={() => {
                     track("clicked Notification Center", {
                       location: "desktop header",
@@ -345,9 +341,8 @@ const Notification = () => {
               </div>
             </div>
             <div
-              className={`absolute top-[14px] hidden mb-[10px] lg:mb-0 md:flex flex-col w-[305px] mdl:w-[343px] xl:w-[600px] 2xl:w-[770px] dark:bg-[#1F2726] bg-white border-forest-1000 dark:border-forest-500 rounded-b-xl z-1 overflow-hidden transition-all duration-300 ease-in-out ${
-                openNotif ? "border" : "border-0"
-              }`}
+              className={`absolute top-[14px] hidden mb-[10px] lg:mb-0 md:flex flex-col w-[305px] mdl:w-[343px] xl:w-[600px] 2xl:w-[770px] dark:bg-[#1F2726] bg-white border-forest-1000 dark:border-forest-500 rounded-b-xl z-1 overflow-hidden transition-all duration-300 ease-in-out ${openNotif ? "border" : "border-0"
+                }`}
               style={{
                 maxHeight: openNotif ? filteredData.length * 200 + "px" : "0",
               }}
@@ -373,9 +368,8 @@ const Notification = () => {
           </div>
           <div className="md:hidden">
             <div
-              className={`relative flex md:hidden top-0.5 mr-10 justify-self-end hover:pointer cursor-pointer p-3 rounded-full ${
-                openNotif ? "dark:bg-[#1F2726] bg-forst-50 z-40" : ""
-              }
+              className={`relative flex md:hidden top-0.5 mr-10 justify-self-end hover:pointer cursor-pointer p-3 rounded-full ${openNotif ? "dark:bg-[#1F2726] bg-forst-50 z-40" : ""
+                }
                 `}
               onClick={() => {
                 handleShowNotifications(true);
@@ -390,11 +384,10 @@ const Notification = () => {
             </div>
 
             <div
-              className={`fixed top-[80px] left-0 right-0 w-[95%] h-auto bg-white dark:bg-[#1F2726] rounded-2xl transition-max-height border-forest-1000 dark:border-forest-500 overflow-hidden break-inside-avoid ${
-                openNotif
-                  ? "bg-blend-darken duration-300 ease-in-out z-40 border-[1px]"
-                  : "bg-blend-normal duration-300 ease-in-out border-[0px] "
-              }`}
+              className={`fixed top-[80px] left-0 right-0 w-[95%] h-auto bg-white dark:bg-[#1F2726] rounded-2xl transition-max-height border-forest-1000 dark:border-forest-500 overflow-hidden break-inside-avoid ${openNotif
+                ? "bg-blend-darken duration-300 ease-in-out z-40 border-[1px]"
+                : "bg-blend-normal duration-300 ease-in-out border-[0px] "
+                }`}
               style={{
                 maxHeight: openNotif ? "100vh" : "0",
                 margin: "auto",
@@ -413,11 +406,10 @@ const Notification = () => {
                     <div key={item.id}>
                       {item.url ? (
                         <Link
-                          className={`flex border-forest-1000 dark:border-forest-500 border-dashed w-full mt-[8px] hover:cursor-pointer  ${
-                            index < filteredData.length - 1
-                              ? "border-b pb-1"
-                              : "border-b-0 pb-1"
-                          }`}
+                          className={`flex border-forest-1000 dark:border-forest-500 border-dashed w-full mt-[8px] hover:cursor-pointer  ${index < filteredData.length - 1
+                            ? "border-b pb-1"
+                            : "border-b-0 pb-1"
+                            }`}
                           href={item.url}
                           rel="noopener noreferrer"
                           target="_blank"
@@ -436,11 +428,10 @@ const Notification = () => {
                         </Link>
                       ) : (
                         <div
-                          className={`flex border-forest-1000 dark:border-forest-500 border-dashed w-full mt-[8px] ${
-                            index < filteredData.length - 1
-                              ? "border-b pb-1"
-                              : "border-b-0 pb-1"
-                          }`}
+                          className={`flex border-forest-1000 dark:border-forest-500 border-dashed w-full mt-[8px] ${index < filteredData.length - 1
+                            ? "border-b pb-1"
+                            : "border-b-0 pb-1"
+                            }`}
                         >
                           <div className="flex flex-col w-full pl-[35px] pb-[8px] gap-y-[8px] ">
                             <div className="h-[17px] font-bold text-[16px]">
@@ -462,9 +453,8 @@ const Notification = () => {
       )}
 
       <div
-        className={`fixed inset-0 bg-black transition-opacity duration-300 ${
-          openNotif ? "opacity-30  z-30" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 bg-black transition-opacity duration-300 ${openNotif ? "opacity-30  z-30" : "opacity-0 pointer-events-none"
+          }`}
         // style={{ opacity: 0.3 }}
         onClick={() => {
           setOpenNotif(!openNotif);
