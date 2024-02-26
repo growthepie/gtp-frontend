@@ -19,6 +19,7 @@ export default function OverviewChart({
   data,
   master,
   selectedTimespan,
+  timespans,
   setSelectedTimespan,
   selectedMode,
   selectedValue,
@@ -30,6 +31,7 @@ export default function OverviewChart({
   data: Chains;
   master: Object;
   selectedTimespan: string;
+  timespans: Object;
   setSelectedTimespan: (timespan: string) => void;
   selectedMode: string;
   selectedValue: string;
@@ -155,123 +157,67 @@ export default function OverviewChart({
   }, [data, selectedCategory, selectedMode]);
 
   const chartAvg = useMemo(() => {
-    let typeIndex = data[standardChainKey].daily["types"].indexOf(selectedMode);
-    let overviewIndex =
+    const typeIndex =
+      data[standardChainKey].daily["types"].indexOf(selectedMode);
+    const overviewIndex =
       data[standardChainKey]["overview"]["types"].indexOf(selectedMode);
-
-    let returnValue = 0;
 
     if (selectedMode.includes("absolute")) {
       return null;
     }
 
+    let selectedData;
     if (selectedChain) {
-      let sum = 0;
-      if (selectedMode.includes("share")) {
-        returnValue = data[selectedChain].overview[selectedTimespan][
-          selectedCategory
-        ].data
-          ? data[selectedChain].overview[selectedTimespan][selectedCategory]
-              .data[overviewIndex]
-          : [];
-      } else {
-        for (
-          let i = 0;
-          i <
-          (selectedTimespan === "max"
-            ? data[selectedChain].daily[selectedCategory].data.length
-            : timespans[selectedTimespan].value);
-          i++
-        ) {
-          if (
-            data[selectedChain].daily[selectedCategory].data.length - (i + 1) >=
-            0
-          ) {
-            sum +=
-              data[selectedChain].daily[selectedCategory].data[
-                data[selectedChain].daily[selectedCategory].data.length -
-                  (i + 1)
-              ][typeIndex];
-          }
-        }
-        returnValue =
-          sum /
-          (selectedTimespan === "max"
-            ? data[selectedChain].daily[selectedCategory].data.length
-            : timespans[selectedTimespan].value >=
-              data[selectedChain].daily[selectedCategory].data.length
-            ? data[selectedChain].daily[selectedCategory].data.length
-            : timespans[selectedTimespan].value);
-      }
+      selectedData = data[selectedChain].daily[selectedCategory].data;
     } else {
-      if (chainEcosystemFilter === "all-chains") {
-        let sum = 0;
-        for (
-          let i = 0;
-          i <
-          (selectedTimespan === "max"
-            ? data[standardChainKey].daily[selectedCategory].data.length
-            : timespans[selectedTimespan].value);
-          i++
-        ) {
-          if (
-            data[standardChainKey].daily[selectedCategory].data.length -
-              (i + 1) >=
-            0
-          ) {
-            sum +=
-              data[standardChainKey].daily[selectedCategory].data[
-                data[standardChainKey].daily[selectedCategory].data.length -
-                  (i + 1)
-              ][typeIndex];
-          }
-        }
+      selectedData =
+        chainEcosystemFilter === "all-chains"
+          ? data[standardChainKey].daily[selectedCategory].data
+          : chartStack;
+    }
 
-        returnValue =
-          sum /
-          (selectedTimespan === "max"
-            ? data[standardChainKey].daily[selectedCategory].data.length
-            : timespans[selectedTimespan].value >=
-              data[standardChainKey].daily[selectedCategory].data.length
-            ? data[standardChainKey].daily[selectedCategory].data.length
-            : timespans[selectedTimespan].value);
-      } else {
-        let sum = 0;
-        for (
-          let i = 0;
-          i <
-          (selectedTimespan === "max"
-            ? chartStack.length
-            : timespans[selectedTimespan].value);
-          i++
-        ) {
-          if (chartStack.length - (i + 1) >= 0) {
-            sum += chartStack[chartStack.length - (i + 1)][typeIndex];
-          }
+    const length =
+      selectedTimespan === "max"
+        ? selectedData.length
+        : timespans[selectedTimespan].value;
 
-          returnValue =
-            sum /
-            (selectedTimespan === "max"
-              ? chartStack.length
-              : timespans[selectedTimespan].value >= chartStack.length
-              ? chartStack.length
-              : timespans[selectedTimespan].value);
-        }
+    let sum = 0;
+    for (let i = 0; i < length; i++) {
+      const traverse = selectedData[selectedData.length - (i + 1)];
+      if (traverse && traverse[typeIndex]) {
+        sum += traverse[typeIndex];
       }
     }
 
-    return returnValue;
+    return sum / length;
   }, [
-    selectedTimespan,
+    data,
+    standardChainKey,
     selectedMode,
-    selectedCategory,
     selectedChain,
+    selectedCategory,
     chainEcosystemFilter,
+    chartStack,
+    selectedTimespan,
+    timespans,
   ]);
 
   const chartMax = useMemo(() => {
     let returnValue = 0;
     let typeIndex = data[standardChainKey].daily["types"].indexOf(selectedMode);
+
+    //define data set to be used
+    const selectedData = selectedChain
+      ? data[selectedChain].daily[selectedCategory].data
+      : chainEcosystemFilter === "all-chains"
+      ? data[standardChainKey].daily[selectedCategory].data
+      : chartStack;
+
+    //Determine array length based on selection
+    const length =
+      selectedTimespan === "max"
+        ? selectedData.length
+        : timespans[selectedTimespan].value;
 
     if (forceSelectedChain) {
       // if share mode, return 100
@@ -283,73 +229,10 @@ export default function OverviewChart({
       return undefined;
     }
 
-    if (selectedChain) {
-      for (
-        let i = 0;
-        i <
-        (selectedTimespan === "max"
-          ? data[selectedChain].daily[selectedCategory].data.length
-          : timespans[selectedTimespan].value);
-        i++
-      ) {
-        const traverse = data[selectedChain].daily[selectedCategory];
-        if (traverse.data.length - (i + 1) >= 0) {
-          if (
-            traverse.data[
-              data[selectedChain].daily[selectedCategory].data.length - (i + 1)
-            ][typeIndex] > returnValue
-          ) {
-            returnValue =
-              traverse.data[
-                data[selectedChain].daily[selectedCategory].data.length -
-                  (i + 1)
-              ][typeIndex];
-          }
-        }
-      }
-    } else {
-      if (chainEcosystemFilter === "all-chains") {
-        for (
-          let i = 0;
-          i <
-          (selectedTimespan === "max"
-            ? data[standardChainKey].daily[selectedCategory].data.length
-            : timespans[selectedTimespan].value);
-          i++
-        ) {
-          const traverse = data[standardChainKey].daily[selectedCategory];
-          if (traverse.data.length - (i + 1) >= 0) {
-            if (
-              traverse.data[
-                data[standardChainKey].daily[selectedCategory].data.length -
-                  (i + 1)
-              ][typeIndex] > returnValue
-            ) {
-              returnValue =
-                traverse.data[
-                  data[standardChainKey].daily[selectedCategory].data.length -
-                    (i + 1)
-                ][typeIndex];
-            }
-          }
-        }
-      } else {
-        for (
-          let i = 0;
-          i <
-          (selectedTimespan === "max"
-            ? chartStack.length
-            : timespans[selectedTimespan].value);
-          i++
-        ) {
-          if (chartStack.length - (i + 1) >= 0) {
-            if (
-              chartStack[chartStack.length - (i + 1)][typeIndex] > returnValue
-            ) {
-              returnValue = chartStack[chartStack.length - (i + 1)][typeIndex];
-            }
-          }
-        }
+    for (let i = 0; i < length; i++) {
+      const traverse = selectedData[selectedData.length - (i + 1)];
+      if (traverse && traverse[typeIndex] > returnValue) {
+        returnValue = traverse[typeIndex];
       }
     }
 
@@ -488,22 +371,6 @@ export default function OverviewChart({
 
   return (
     <>
-      <div className="mt-[20px] lg:mt-[50px] mb-[38px] ">
-        <h2 className="text-[20px] font-bold">
-          {!forceSelectedChain ? (
-            (selectedChain
-              ? AllChainsByKeys[selectedChain].label
-              : chainEcosystemFilter === "all-chains"
-              ? "All Chains"
-              : chainEcosystemFilter === "op-stack"
-              ? "OP Stack Chains"
-              : "OP Superchain") +
-            (": " + categories[selectedCategory])
-          ) : (
-            <></>
-          )}
-        </h2>
-      </div>
       <div className="flex items-center w-full ">
         <Chart
           types={

@@ -114,7 +114,7 @@ const Notification = () => {
   }, [filteredData]);
 
   const Items = useMemo(() => {
-    if (!filteredData) {
+    if (!filteredData || filteredData.length === 0) {
       return null;
     }
     return (
@@ -237,6 +237,8 @@ const Notification = () => {
 
   const [ref, width] = useElementSizeObserver<HTMLDivElement>();
 
+  if (!filteredData || filteredData.length === 0) return null;
+
   return (
     <div className="relative">
       {filteredData && (
@@ -272,56 +274,71 @@ const Notification = () => {
                   <p className="text-[12px] font-[500]">Notification Center</p>
                 </div>
               </div>
-              <div
-                className={`${
-                  !openNotif && filteredData.length > 0
-                    ? "relative flex items-center gap-x-[10px] text-[12px] leading-[1.5] w-full overflow-hidden transition-opacity duration-300"
-                    : "hidden"
-                } ${hideText ? "opacity-0" : "opacity-100"}`}
-                style={{
-                  color: currentItemTextColor,
-                }}
-              >
-                <div className={`relative w-[16px] h-[16px] rounded-full z-20`}>
-                  {hasUnseenNotifications && (
-                    <div
-                      className={`w-[6px] h-[6px] bg-red-500 rounded-full absolute -top-0 right-[1px] border tansition-colors duration-300 ${
-                        (!filteredData[currentIndex] ||
-                          !filteredData[currentIndex]["backgroundColor"]) &&
-                        "border-white dark:border-[#1F2726]"
-                      }`}
-                      style={{
-                        borderColor:
-                          filteredData[currentIndex] &&
-                          filteredData[currentIndex]["backgroundColor"]
-                            ? filteredData[currentIndex]["backgroundColor"]
-                            : undefined,
-                      }}
-                    ></div>
-                  )}
-                  <Icon
-                    icon={filteredData[currentIndex]["icon"] || "feather:bell"}
-                    className={`w-[16px] h-[16px] light:text-[#1F2726]`}
-                  />
-                </div>
+              {filteredData.length > 0 && (
                 <div
-                  className="flex gap-x-[5px] whitespace-nowrap overflow-hidden w-full"
+                  className={`${
+                    !openNotif && filteredData.length > 0
+                      ? "relative flex items-center gap-x-[10px] text-[12px] leading-[1.5] w-full overflow-hidden transition-opacity duration-300"
+                      : "hidden"
+                  } ${hideText ? "opacity-0" : "opacity-100"}`}
                   style={{
-                    maskImage:
-                      "linear-gradient(to right, black 90%, transparent 100%)",
-                    WebkitMaskImage:
-                      "linear-gradient(to right, black 90%, transparent 100%)",
+                    color: currentItemTextColor,
                   }}
                 >
-                  <div className="font-semibold">
-                    {filteredData[currentIndex].desc}
+                  <div
+                    className={`relative w-[16px] h-[16px] rounded-full z-20`}
+                  >
+                    {hasUnseenNotifications && (
+                      <div
+                        className={`w-[6px] h-[6px] bg-red-500 rounded-full absolute -top-0 right-[1px] border tansition-colors duration-300 ${
+                          (!filteredData[currentIndex] ||
+                            !filteredData[currentIndex]["backgroundColor"]) &&
+                          "border-white dark:border-[#1F2726]"
+                        }`}
+                        style={{
+                          borderColor:
+                            filteredData[currentIndex] &&
+                            filteredData[currentIndex]["backgroundColor"]
+                              ? filteredData[currentIndex]["backgroundColor"]
+                              : undefined,
+                        }}
+                      ></div>
+                    )}
+                    <Icon
+                      icon={
+                        filteredData[currentIndex] &&
+                        filteredData[currentIndex].icon
+                          ? filteredData[currentIndex].icon
+                          : "feather:bell"
+                      }
+                      className={`w-[16px] h-[16px] light:text-[#1F2726]`}
+                    />
                   </div>
-                  <div>-</div>
-                  <ReactMarkdown>
-                    {filteredData[currentIndex].body}
-                  </ReactMarkdown>
+                  <div
+                    className="flex gap-x-[5px] whitespace-nowrap overflow-hidden w-full"
+                    style={{
+                      maskImage:
+                        "linear-gradient(to right, black 90%, transparent 100%)",
+                      WebkitMaskImage:
+                        "linear-gradient(to right, black 90%, transparent 100%)",
+                    }}
+                  >
+                    <div className="font-semibold">
+                      {filteredData[currentIndex] &&
+                      filteredData[currentIndex].desc
+                        ? filteredData[currentIndex].desc
+                        : ""}
+                    </div>
+                    <div>-</div>
+                    <ReactMarkdown>
+                      {filteredData[currentIndex] &&
+                      filteredData[currentIndex].body
+                        ? filteredData[currentIndex].body
+                        : ""}
+                    </ReactMarkdown>
+                  </div>
                 </div>
-              </div>
+              )}
               <div className={`w-[24px] h-[24px] z-30`}>
                 <Icon
                   icon="feather:chevron-right"
