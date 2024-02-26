@@ -75,19 +75,6 @@ export default function RowChildren({
             2,
       };
     }, {});
-    // return {
-    //   optimism:
-    //     100 -
-    //     (Object.keys(data["optimism"].overview[selectedTimespan]).length - 1) *
-    //       2,
-    //   arbitrum:
-    //     100 -
-    //     (Object.keys(data["arbitrum"].overview[selectedTimespan]).length - 1) *
-    //       2,
-    //   imx:
-    //     100 -
-    //     (Object.keys(data["imx"].overview[selectedTimespan]).length - 1) * 2,
-    // };
   }, [data, selectedTimespan]);
 
   const getBarSectionStyle = useCallback(

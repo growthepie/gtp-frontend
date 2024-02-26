@@ -59,23 +59,20 @@ export default function OverviewMetrics({
     isLoading: masterLoading,
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
+  const { theme } = useTheme();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [selectedMode, setSelectedMode] = useState(
     forceSelectedChain === "imx" ? "txcount_share" : "gas_fees_share_usd",
   );
   const [isCategoryMenuExpanded, setIsCategoryMenuExpanded] = useState(true);
-
   const [allCats, setAllCats] = useState(forceSelectedChain ? true : false);
-
+  const [selectedCategory, setSelectedCategory] = useState("nft");
   const [selectedValue, setSelectedValue] = useState("share");
-
   const [chainEcosystemFilter, setChainEcosystemFilter] = useLocalStorage(
     "chainEcosystemFilter",
     "all-chains",
   );
-
   const standardChainKey = forceSelectedChain ? forceSelectedChain : "all_l2s";
-
   const isMobile = useMediaQuery("(max-width: 1023px)");
 
   const categories: { [key: string]: string } = useMemo(() => {
@@ -152,71 +149,6 @@ export default function OverviewMetrics({
     };
   });
 
-  const [selectedCategory, setSelectedCategory] = useState("nft");
-
-  // useEffect(() => {
-  //   // Process the data and create the contracts object
-  //   const result: { [key: string]: ContractInfo } = {};
-
-  //   for (const category of Object.keys(data)) {
-  //     if (data) {
-  //       const contractsData =
-  //         data.all_l2s["overview"][selectedTimespan][selectedCategory].contracts
-  //           .data;
-  //       const types =
-  //         data.all_l2s["overview"][selectedTimespan][selectedCategory].contracts
-  //           .types;
-
-  //       for (const contract of Object.keys(contractsData)) {
-  //         const dataArray = contractsData[contract];
-  //         const key = dataArray[0] + dataArray[4];
-  //         const values = dataArray;
-
-  //         // Check if the key already exists in the result object
-  //         if (result.hasOwnProperty(key)) {
-  //           // If the key exists, update the values
-  //           result[key] = {
-  //             ...result[key],
-  //             address: values[types.indexOf("address")],
-  //             project_name: values[types.indexOf("project_name")],
-  //             name: values[types.indexOf("name")],
-  //             main_category_key: values[types.indexOf("main_category_key")],
-  //             sub_category_key: values[types.indexOf("sub_category_key")],
-  //             chain: values[types.indexOf("chain")],
-  //             gas_fees_absolute_eth:
-  //               values[types.indexOf("gas_fees_absolute_eth")],
-  //             gas_fees_absolute_usd:
-  //               values[types.indexOf("gas_fees_absolute_usd")],
-  //             gas_fees_share: values[types.indexOf("gas_fees_share")] ?? "",
-  //             txcount_absolute: values[types.indexOf("txcount_absolute")],
-  //             txcount_share: values[types.indexOf("txcount_share")] ?? "",
-  //           };
-  //         } else {
-  //           // If the key doesn't exist, create a new entry
-  //           result[key] = {
-  //             address: values[types.indexOf("address")],
-  //             project_name: values[types.indexOf("project_name")],
-  //             name: values[types.indexOf("name")],
-  //             main_category_key: values[types.indexOf("main_category_key")],
-  //             sub_category_key: values[types.indexOf("sub_category_key")],
-  //             chain: values[types.indexOf("chain")],
-  //             gas_fees_absolute_eth:
-  //               values[types.indexOf("gas_fees_absolute_eth")],
-  //             gas_fees_absolute_usd:
-  //               values[types.indexOf("gas_fees_absolute_usd")],
-  //             gas_fees_share: values[types.indexOf("gas_fees_share")] ?? "",
-  //             txcount_absolute: values[types.indexOf("txcount_absolute")],
-  //             txcount_share: values[types.indexOf("txcount_share")] ?? "",
-  //           };
-  //         }
-  //       }
-  //     }
-  //   }
-
-  //   // Update the contracts state with the new data
-  //   setContracts(result);
-  // }, [data, selectedCategory, selectedTimespan]);
-
   const formatSubcategories = useCallback(
     (str: string) => {
       const masterStr =
@@ -239,7 +171,6 @@ export default function OverviewMetrics({
     forceSelectedChain ?? null,
   );
 
-  const { theme } = useTheme();
   const timespans = useMemo(() => {
     return {
       "7d": {
@@ -374,6 +305,7 @@ export default function OverviewMetrics({
           </div>
         </div>
       </Container>
+      {/*Chain Rows/List */}
       <Container className="block w-full !pr-0 lg:!px-[50px]">
         <RowProvider
           value={{
