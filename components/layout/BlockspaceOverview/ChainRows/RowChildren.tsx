@@ -1,18 +1,21 @@
 import { useTheme } from "next-themes";
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, CSSProperties } from "react";
 import { Icon } from "@iconify/react";
 import { useLocalStorage } from "usehooks-ts";
 import { AllChainsByKeys } from "@/lib/chains";
 import { useRowContext } from "./RowContext";
+import { RowChildrenInterface } from "./ContextInterface";
+
 export default function RowChildren({
   chainKey,
   categoryKey,
   i,
   categoryIndex,
   chainCategories,
-}: {}) {
+}) {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { theme } = useTheme();
+
   const {
     data,
     selectedMode,
@@ -28,7 +31,7 @@ export default function RowChildren({
     setSelectedCategory,
     setAllCats,
     setIsCategoryHovered,
-  } = useRowContext();
+  } = useRowContext() as RowChildrenInterface;
 
   const sumChainValue = useMemo(() => {
     const chainValues = {};

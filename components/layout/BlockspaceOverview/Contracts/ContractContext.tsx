@@ -1,6 +1,8 @@
 import React, { createContext, useContext } from "react";
 
-const ContractContext = createContext();
+const defaultValue = {}; // Define your default context value here
+
+const ContractContext = createContext(defaultValue);
 
 export const useContractContext = () => useContext(ContractContext);
 

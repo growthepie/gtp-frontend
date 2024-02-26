@@ -1,7 +1,9 @@
 // RowContext.js
 import React, { createContext, useContext } from "react";
 
-const RowContext = createContext();
+const defaultValue = {}; // Define your default context value here
+
+const RowContext = createContext(defaultValue);
 
 export const useRowContext = () => useContext(RowContext);
 

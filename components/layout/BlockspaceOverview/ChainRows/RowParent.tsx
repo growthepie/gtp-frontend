@@ -4,7 +4,9 @@ import { Icon } from "@iconify/react";
 import { AllChainsByKeys } from "@/lib/chains";
 import { useRowContext } from "./RowContext";
 import RowChildren from "./RowChildren";
-export default function RowParent({ chainKey, index }: {}) {
+import { RowParentInterface } from "./ContextInterface";
+
+export default function RowParent({ chainKey, index }) {
   const { theme } = useTheme();
 
   const {
@@ -12,17 +14,13 @@ export default function RowParent({ chainKey, index }: {}) {
     selectedMode,
     forceSelectedChain,
     isCategoryHovered,
-    selectedCategory,
     selectedChain,
     selectedTimespan,
-    selectedValue,
     categories,
     allCats,
-    setSelectedChain,
-    setSelectedCategory,
     setAllCats,
     setIsCategoryHovered,
-  } = useRowContext();
+  } = useRowContext() as RowParentInterface;
 
   const DisabledStates: {
     [mode: string]: {
@@ -147,6 +145,7 @@ export default function RowParent({ chainKey, index }: {}) {
 
               return (
                 <RowChildren
+                  key={chainKey}
                   chainKey={chainKey}
                   categoryKey={categoryKey}
                   i={i}

@@ -1,5 +1,6 @@
 import RowParent from "./RowParent";
 import { useRowContext } from "./RowContext";
+import { RowContainerInterface } from "./ContextInterface";
 
 export default function RowContainer() {
   const {
@@ -14,7 +15,7 @@ export default function RowContainer() {
     setSelectedCategory,
     setAllCats,
     setIsCategoryHovered,
-  } = useRowContext();
+  } = useRowContext() as RowContainerInterface;
 
   return (
     <div className="overflow-x-scroll lg:overflow-x-visible z-100 w-full scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
@@ -138,7 +139,9 @@ export default function RowContainer() {
           Object.keys(data)
             .filter((c) => c !== "all_l2s")
             .map((chainKey, index) => {
-              return <RowParent chainKey={chainKey} index={index} />;
+              return (
+                <RowParent key={chainKey} chainKey={chainKey} index={index} />
+              );
             })
             .concat(
               <div

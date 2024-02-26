@@ -14,6 +14,7 @@ import { useTheme } from "next-themes";
 import { Chains } from "@/types/api/ChainOverviewResponse";
 import { animated, useSpring } from "@react-spring/web";
 import { AllChainsByKeys } from "@/lib/chains";
+import { MasterResponse } from "@/types/api/MasterResponse";
 
 export default function OverviewChart({
   data,
@@ -29,14 +30,14 @@ export default function OverviewChart({
   categories,
 }: {
   data: Chains;
-  master: Object;
+  master: MasterResponse | undefined;
   selectedTimespan: string;
   timespans: Object;
   setSelectedTimespan: (timespan: string) => void;
   selectedMode: string;
   selectedValue: string;
   selectedCategory: string;
-  selectedChain: string;
+  selectedChain: string | null;
   forceSelectedChain?: string;
   categories: Object;
 }) {
@@ -45,7 +46,7 @@ export default function OverviewChart({
     "chainEcosystemFilter",
     "all-chains",
   );
-
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { theme } = useTheme();
   const categoryKeyToFillOpacity = {
     nft: 1 - 0,

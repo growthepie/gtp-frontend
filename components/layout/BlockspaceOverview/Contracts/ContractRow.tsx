@@ -4,6 +4,10 @@ import { useMemo, useEffect, useState, CSSProperties } from "react";
 import { AllChainsByKeys } from "@/lib/chains";
 import { useLocalStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
+import { ContractRowInterface } from "./ContextInterface";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../../Tooltip";
+import ContractLabelModal from "../../ContractLabelModal";
+import { ContractInfo } from "./ContextInterface";
 
 import Link from "next/link";
 
@@ -14,8 +18,24 @@ export default function ContractRow({
   sortedContracts,
   sortOrder,
   setSortOrder,
+  setSelectedContract,
+}: {
+  rowKey: string;
+  i: number;
+  selectedContract: ContractInfo | null;
+  sortedContracts: Object;
+  sortOrder: boolean;
+  setSortOrder: (order: boolean) => void;
+  setSelectedContract: (contract: ContractInfo | null) => void;
 }) {
   const [copyContract, setCopyContract] = useState(false);
+  const [isFormSubmitting, setIsFormSubmitting] = useState(false);
+  const [labelFormMainCategoryKey, setLabelFormMainCategoryKey] = useState<
+    string | null
+  >("nft");
+  const [isContractLabelModalOpen, setIsContractLabelModalOpen] =
+    useState(false);
+
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { theme } = useTheme();
 
@@ -27,7 +47,8 @@ export default function ContractRow({
     selectedTimespan,
     selectedValue,
     setSelectedCategory,
-  } = useContractContext();
+    formatSubcategories,
+  } = useContractContext() as ContractRowInterface;
 
   const largestContractValue = useMemo(() => {
     let retValue = 0;
@@ -215,7 +236,7 @@ export default function ContractRow({
                           className="bg-transparent border border-forest-200 dark:border-forest-500 rounded-full w-full px-[15px] py-[4px]"
                           name="main_category_key"
                           onChange={(e) => {
-                            setLabelFormMainCategorykey(e.target.value);
+                            setLabelFormMainCategoryKey(e.target.value);
                           }}
                         >
                           <option value="" disabled selected>
@@ -247,10 +268,10 @@ export default function ContractRow({
                           <option value="" disabled selected>
                             Category
                           </option>
-                          {labelFormMainCategorykey &&
+                          {labelFormMainCategoryKey &&
                             master &&
                             master.blockspace_categories["mapping"][
-                              labelFormMainCategorykey
+                              labelFormMainCategoryKey
                             ].map((key) => (
                               <option
                                 key={key}

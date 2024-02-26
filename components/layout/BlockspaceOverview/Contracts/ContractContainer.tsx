@@ -3,8 +3,10 @@ import { Icon } from "@iconify/react";
 import { useMemo, useEffect, useState, CSSProperties } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
+import { ContractContainerInterface } from "./ContextInterface";
 import ContractRow from "./ContractRow";
 import Link from "next/link";
+import { ContractInfo } from "./ContextInterface";
 
 export default function ContractContainer() {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -15,10 +17,11 @@ export default function ContractContainer() {
     null,
   );
   const [showMore, setShowMore] = useState(false);
+  const [contractCategory, setContractCategory] = useState("value");
+
   const {
     data,
     selectedMode,
-    contractCategory,
     selectedCategory,
     selectedChain,
     selectedTimespan,
@@ -27,8 +30,7 @@ export default function ContractContainer() {
     timespans,
     standardChainKey,
     setAllCats,
-    setContractCategory,
-  } = useContractContext();
+  } = useContractContext() as ContractContainerInterface;
 
   const [sortedContracts, setSortedContracts] = useState<{
     [key: string]: ContractInfo;
@@ -349,12 +351,14 @@ export default function ContractContainer() {
 
               return (
                 <ContractRow
+                  key={key}
                   rowKey={key}
                   i={i}
                   selectedContract={selectedContract}
                   sortedContracts={sortedContracts}
                   sortOrder={sortOrder}
                   setSortOrder={setSortOrder}
+                  setSelectedContract={setSelectedContract}
                 />
               );
             })}

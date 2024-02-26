@@ -9,7 +9,6 @@ import {
   useContext,
   CSSProperties,
 } from "react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
 import { Chains } from "@/types/api/ChainOverviewResponse";
@@ -23,7 +22,7 @@ import { LandingURL, MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useLocalStorage } from "usehooks-ts";
-import ContractLabelModal from "./ContractLabelModal";
+
 import OverviewChart from "./BlockspaceOverview/OverviewChart";
 import RowContainer from "./BlockspaceOverview/ChainRows/RowContainer";
 import { RowProvider } from "./BlockspaceOverview/ChainRows/RowContext";
@@ -41,20 +40,6 @@ const AllowedModes: {
     metric: ["txcount"],
     scale: ["absolute", "share"],
   },
-};
-
-type ContractInfo = {
-  address: string;
-  project_name: string;
-  name: string;
-  main_category_key: string;
-  sub_category_key: string;
-  chain: string;
-  gas_fees_absolute_eth: number;
-  gas_fees_absolute_usd: number;
-  gas_fees_share: number;
-  txcount_absolute: number;
-  txcount_share: number;
 };
 
 export default function OverviewMetrics({
@@ -79,20 +64,10 @@ export default function OverviewMetrics({
     forceSelectedChain === "imx" ? "txcount_share" : "gas_fees_share_usd",
   );
   const [isCategoryMenuExpanded, setIsCategoryMenuExpanded] = useState(true);
-  const [contractCategory, setContractCategory] = useState("value");
 
   const [allCats, setAllCats] = useState(forceSelectedChain ? true : false);
 
   const [selectedValue, setSelectedValue] = useState("share");
-
-  const [isContractLabelModalOpen, setIsContractLabelModalOpen] =
-    useState(false);
-
-  const [labelFormMainCategoryKey, setLabelFormMainCategoryKey] = useState<
-    string | null
-  >("nft");
-
-  const [isFormSubmitting, setIsFormSubmitting] = useState(false);
 
   const [chainEcosystemFilter, setChainEcosystemFilter] = useLocalStorage(
     "chainEcosystemFilter",
@@ -559,7 +534,6 @@ export default function OverviewMetrics({
             master,
             selectedMode,
             forceSelectedChain,
-            contractCategory,
             selectedCategory,
             selectedChain,
             selectedTimespan,
@@ -571,7 +545,7 @@ export default function OverviewMetrics({
             setSelectedChain,
             setSelectedCategory,
             setAllCats,
-            setContractCategory,
+            formatSubcategories,
           }}
         >
           <ContractContainer />
