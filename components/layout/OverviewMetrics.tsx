@@ -270,25 +270,25 @@ export default function OverviewMetrics({
       if (data) {
         const contractsData = allCats
           ? (() => {
-              let contractArray = [];
+            let contractArray = [];
 
-              for (const categoryKey in data[standardChainKey]["overview"][
-                selectedTimespan
-              ]) {
-                const categoryData =
-                  data[standardChainKey]["overview"][selectedTimespan][
-                    categoryKey
-                  ].contracts.data;
+            for (const categoryKey in data[standardChainKey]["overview"][
+              selectedTimespan
+            ]) {
+              const categoryData =
+                data[standardChainKey]["overview"][selectedTimespan][
+                  categoryKey
+                ].contracts.data;
 
-                // Concatenate and flatten data to the contractArray
-                contractArray = contractArray.concat(categoryData);
-              }
+              // Concatenate and flatten data to the contractArray
+              contractArray = contractArray.concat(categoryData);
+            }
 
-              return contractArray;
-            })()
+            return contractArray;
+          })()
           : data[standardChainKey]["overview"][selectedTimespan][
-              selectedCategory
-            ].contracts.data;
+            selectedCategory
+          ].contracts.data;
 
         const types =
           data[standardChainKey]["overview"][selectedTimespan][selectedCategory]
@@ -351,7 +351,7 @@ export default function OverviewMetrics({
         [chainKey]:
           100 -
           (Object.keys(data[chainKey].overview[selectedTimespan]).length - 1) *
-            2,
+          2,
       };
     }, {});
     // return {
@@ -467,7 +467,7 @@ export default function OverviewMetrics({
             for (let j = 0; j < numArrays; j++) {
               txTotal +=
                 unixDataList[j][
-                  selectedMode.includes("txcount") ? txIndex : gasIndex
+                selectedMode.includes("txcount") ? txIndex : gasIndex
                 ];
             }
 
@@ -479,10 +479,10 @@ export default function OverviewMetrics({
                 allTotal +=
                   checkIndex !== -1
                     ? data[standardChainKey].daily[selectedCategory].data[
-                        data[standardChainKey].daily[
-                          selectedCategory
-                        ].data.findIndex((item) => item[0] === findUnix)
-                      ][selectedMode.includes("txcount") ? txIndex : gasIndex]
+                    data[standardChainKey].daily[
+                      selectedCategory
+                    ].data.findIndex((item) => item[0] === findUnix)
+                    ][selectedMode.includes("txcount") ? txIndex : gasIndex]
                     : 0;
               }
             }
@@ -831,8 +831,8 @@ export default function OverviewMetrics({
             isCategoryHovered(categoryKey) && !isSelectedCategory
               ? "scale(1.2)"
               : isSelectedChainOrNoSelectedChain
-              ? "scale(1.30)"
-              : "scale(1.2)";
+                ? "scale(1.30)"
+                : "scale(1.2)";
 
           if (isLastCategory && isSelectedChainOrNoSelectedChain)
             style.transform += " translateX(3px)";
@@ -870,18 +870,18 @@ export default function OverviewMetrics({
         if (selectedValue === "share") {
           style.width = categoryData
             ? categoryData[dataTypes.indexOf(selectedMode)] *
-                relativePercentageByChain[chainKey] +
-              8 +
-              "%"
+            relativePercentageByChain[chainKey] +
+            8 +
+            "%"
             : "0px";
           // if()
         } else {
           style.width = categoryData
             ? (categoryData[dataTypes.indexOf(selectedMode)] /
-                sumChainValue[chainKey]) *
-                relativePercentageByChain[chainKey] +
-              8 +
-              "%"
+              sumChainValue[chainKey]) *
+            relativePercentageByChain[chainKey] +
+            8 +
+            "%"
             : "0px";
           // if()
         }
@@ -889,8 +889,8 @@ export default function OverviewMetrics({
           isCategoryHovered(categoryKey) && !isSelectedCategory
             ? "scaleY(1.01)"
             : isSelectedChainOrNoSelectedChain
-            ? "scaleY(1.08)"
-            : "scaleY(1.01)";
+              ? "scaleY(1.08)"
+              : "scaleY(1.01)";
 
         if (isLastCategory && isSelectedChainOrNoSelectedChain)
           style.transform += " translateX(3px)";
@@ -907,18 +907,18 @@ export default function OverviewMetrics({
         if (selectedValue === "share") {
           style.width = categoryData
             ? categoryData[dataTypes.indexOf(selectedMode)] *
-                relativePercentageByChain[chainKey] +
-              8 +
-              "%"
+            relativePercentageByChain[chainKey] +
+            8 +
+            "%"
             : "0px";
           // if()
         } else {
           style.width = categoryData
             ? (categoryData[dataTypes.indexOf(selectedMode)] /
-                sumChainValue[chainKey]) *
-                relativePercentageByChain[chainKey] +
-              8 +
-              "%"
+              sumChainValue[chainKey]) *
+            relativePercentageByChain[chainKey] +
+            8 +
+            "%"
             : "0px";
         }
 
@@ -945,38 +945,31 @@ export default function OverviewMetrics({
           style.animation = "unlabeled-gradient 20s linear infinite";
           style.backgroundSize = "10px 10px";
         } else {
-          style.backgroundColor = `rgba(0, 0, 0, ${
-            0.06 + (dataIndex / (Object.keys(categories).length - 1)) * 0.94
-          })`;
+          style.backgroundColor = `rgba(0, 0, 0, ${0.06 + (dataIndex / (Object.keys(categories).length - 1)) * 0.94
+            })`;
         }
       }
       return style;
     },
-    [
-      selectedCategory,
-      selectedMode,
-      selectedChain,
-      data,
-      relativePercentageByChain,
-      isCategoryHovered,
-      categories,
-      selectedTimespan,
-    ],
+    [categories, data, selectedTimespan, selectedCategory, allCats, selectedChain, isCategoryHovered, selectedValue, selectedMode, relativePercentageByChain, sumChainValue],
   );
+
+  const chartComponent = useRef<Highcharts.Chart | null>(null);
 
   const chartMax = useMemo(() => {
     let returnValue = 0;
     let typeIndex = data[standardChainKey].daily["types"].indexOf(selectedMode);
 
-    if (forceSelectedChain) {
-      // if share mode, return 100
-      if (selectedMode.includes("share") && allCats) {
-        return 1;
-      }
-
-      // if absolute mode, return undefined so that the chart can auto-scale
-      return undefined;
+    // if (forceSelectedChain) {
+    // if share mode, return 100
+    if (forceSelectedChain && selectedMode.includes("share") && allCats) {
+      return 1;
     }
+
+
+    //   // if absolute mode, return undefined so that the chart can auto-scale
+    //   return chartComponent.current?.yAxis[0].max;
+    // }
 
     if (selectedChain) {
       for (
@@ -993,13 +986,13 @@ export default function OverviewMetrics({
         ) {
           if (
             data[selectedChain].daily[selectedCategory].data[
-              data[selectedChain].daily[selectedCategory].data.length - (i + 1)
+            data[selectedChain].daily[selectedCategory].data.length - (i + 1)
             ][typeIndex] > returnValue
           ) {
             returnValue =
               data[selectedChain].daily[selectedCategory].data[
-                data[selectedChain].daily[selectedCategory].data.length -
-                  (i + 1)
+              data[selectedChain].daily[selectedCategory].data.length -
+              (i + 1)
               ][typeIndex];
           }
         }
@@ -1016,19 +1009,19 @@ export default function OverviewMetrics({
         ) {
           if (
             data[standardChainKey].daily[selectedCategory].data.length -
-              (i + 1) >=
+            (i + 1) >=
             0
           ) {
             if (
               data[standardChainKey].daily[selectedCategory].data[
-                data[standardChainKey].daily[selectedCategory].data.length -
-                  (i + 1)
+              data[standardChainKey].daily[selectedCategory].data.length -
+              (i + 1)
               ][typeIndex] > returnValue
             ) {
               returnValue =
                 data[standardChainKey].daily[selectedCategory].data[
-                  data[standardChainKey].daily[selectedCategory].data.length -
-                    (i + 1)
+                data[standardChainKey].daily[selectedCategory].data.length -
+                (i + 1)
                 ][typeIndex];
             }
           }
@@ -1089,7 +1082,7 @@ export default function OverviewMetrics({
           selectedCategory
         ].data
           ? data[selectedChain].overview[selectedTimespan][selectedCategory]
-              .data[overviewIndex]
+            .data[overviewIndex]
           : [];
       } else {
         for (
@@ -1106,8 +1099,8 @@ export default function OverviewMetrics({
           ) {
             sum +=
               data[selectedChain].daily[selectedCategory].data[
-                data[selectedChain].daily[selectedCategory].data.length -
-                  (i + 1)
+              data[selectedChain].daily[selectedCategory].data.length -
+              (i + 1)
               ][typeIndex];
           }
         }
@@ -1117,8 +1110,8 @@ export default function OverviewMetrics({
             ? data[selectedChain].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value >=
               data[selectedChain].daily[selectedCategory].data.length
-            ? data[selectedChain].daily[selectedCategory].data.length
-            : timespans[selectedTimespan].value);
+              ? data[selectedChain].daily[selectedCategory].data.length
+              : timespans[selectedTimespan].value);
       }
     } else {
       if (chainEcosystemFilter === "all-chains") {
@@ -1133,13 +1126,13 @@ export default function OverviewMetrics({
         ) {
           if (
             data[standardChainKey].daily[selectedCategory].data.length -
-              (i + 1) >=
+            (i + 1) >=
             0
           ) {
             sum +=
               data[standardChainKey].daily[selectedCategory].data[
-                data[standardChainKey].daily[selectedCategory].data.length -
-                  (i + 1)
+              data[standardChainKey].daily[selectedCategory].data.length -
+              (i + 1)
               ][typeIndex];
           }
         }
@@ -1150,8 +1143,8 @@ export default function OverviewMetrics({
             ? data[standardChainKey].daily[selectedCategory].data.length
             : timespans[selectedTimespan].value >=
               data[standardChainKey].daily[selectedCategory].data.length
-            ? data[standardChainKey].daily[selectedCategory].data.length
-            : timespans[selectedTimespan].value);
+              ? data[standardChainKey].daily[selectedCategory].data.length
+              : timespans[selectedTimespan].value);
       } else {
         let sum = 0;
         for (
@@ -1171,8 +1164,8 @@ export default function OverviewMetrics({
             (selectedTimespan === "max"
               ? chartStack.length
               : timespans[selectedTimespan].value >= chartStack.length
-              ? chartStack.length
-              : timespans[selectedTimespan].value);
+                ? chartStack.length
+                : timespans[selectedTimespan].value);
         }
       }
     }
@@ -1190,12 +1183,12 @@ export default function OverviewMetrics({
     y:
       chartAvg && chartMax
         ? -1 *
-          ((forceSelectedChain ? 200 : 163) * (chartAvg / chartMax) +
-            (chartAvg / chartMax > 0.45
-              ? chartAvg / chartMax > 0.5
-                ? 7
-                : 10
-              : 14))
+        ((forceSelectedChain ? 215 : 163) * (chartAvg / chartMax) +
+          (chartAvg / chartMax > 0.45
+            ? chartAvg / chartMax > 0.5
+              ? 7
+              : 10
+            : 14))
         : 0,
     config: { mass: 1, tension: 70, friction: 20 },
   });
@@ -1226,6 +1219,8 @@ export default function OverviewMetrics({
 
   console.log(selectedCategory);
 
+
+
   return (
     <div className="w-full flex-col relative">
       <Container>
@@ -1233,11 +1228,10 @@ export default function OverviewMetrics({
           <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
             <button
               disabled={forceSelectedChain === "imx"}
-              className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium disabled:opacity-30 ${
-                selectedMode.includes("gas_fees")
-                  ? "bg-forest-500 dark:bg-forest-1000"
-                  : "hover:bg-forest-500/10"
-              }`}
+              className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium disabled:opacity-30 ${selectedMode.includes("gas_fees")
+                ? "bg-forest-500 dark:bg-forest-1000"
+                : "hover:bg-forest-500/10"
+                }`}
               onClick={() => {
                 setSelectedMode(
                   selectedValue === "absolute"
@@ -1245,19 +1239,18 @@ export default function OverviewMetrics({
                       ? "gas_fees_usd_absolute"
                       : "gas_fees_eth_absolute"
                     : showUsd
-                    ? "gas_fees_share_usd"
-                    : "gas_fees_share_eth",
+                      ? "gas_fees_share_usd"
+                      : "gas_fees_share_eth",
                 );
               }}
             >
               Gas Fees
             </button>
             <button
-              className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
-                selectedMode.includes("txcount")
-                  ? "bg-forest-500 dark:bg-forest-1000"
-                  : "hover:bg-forest-500/10"
-              }`}
+              className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${selectedMode.includes("txcount")
+                ? "bg-forest-500 dark:bg-forest-1000"
+                : "hover:bg-forest-500/10"
+                }`}
               onClick={() => {
                 setSelectedMode(
                   selectedValue === "absolute"
@@ -1277,11 +1270,10 @@ export default function OverviewMetrics({
               <button
                 key={timespan}
                 //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
-                  selectedTimespan === timespan
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
+                className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${selectedTimespan === timespan
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
+                  }`}
                 onClick={() => {
                   setSelectedTimespan(timespan);
                   // setXAxis();
@@ -1300,7 +1292,7 @@ export default function OverviewMetrics({
               </button>
             ))}
           </div>
-          <div
+          {/* <div
             className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[30px] right-[20px] md:right-[45px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${
               !isMobile
                 ? ["max", "180d"].includes(selectedTimespan)
@@ -1314,7 +1306,7 @@ export default function OverviewMetrics({
             <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
               7-day rolling average
             </div>
-          </div>
+          </div> */}
         </div>
       </Container>
       <Container className="block w-full !pr-0 lg:!px-[50px]">
@@ -1334,16 +1326,14 @@ export default function OverviewMetrics({
                   className={`relative flex w-[138px] h-full justify-center items-center`}
                 >
                   <button
-                    className={`flex flex-col flex-1 h-full justify-center items-center border-x border-transparent overflow-hidden  ${
-                      forceSelectedChain ? "cursor-pointer" : "cursor-default"
-                    }
-                    ${
-                      forceSelectedChain
+                    className={`flex flex-col flex-1 h-full justify-center items-center border-x border-transparent overflow-hidden  ${forceSelectedChain ? "cursor-pointer" : "cursor-default"
+                      }
+                    ${forceSelectedChain
                         ? allCats
                           ? "bg-[#5A6462] text-sm font-semibold"
                           : "bg-inherit hover:bg-forest-800/50 text-xs font-medium"
                         : "bg-inherit"
-                    } `}
+                      } `}
                     onClick={() => {
                       if (forceSelectedChain) {
                         setAllCats(!allCats);
@@ -1368,10 +1358,9 @@ export default function OverviewMetrics({
                         key={category}
                         className={`relative flex h-full justify-center items-center 
                           ${category === "unlabeled" ? "flex-1" : "flex-1"}
-                          ${
-                            selectedCategory === category
-                              ? "borden-hidden rounded-[0px]"
-                              : "h-full"
+                          ${selectedCategory === category
+                            ? "borden-hidden rounded-[0px]"
+                            : "h-full"
                           }`}
                         onMouseEnter={() => {
                           hoverCategory(category);
@@ -1383,30 +1372,27 @@ export default function OverviewMetrics({
                           backgroundColor:
                             selectedCategory === category && !allCats
                               ? "#5A6462"
-                              : `rgba(0, 0, 0, ${
-                                  0.06 +
-                                  (i / Object.keys(categories).length) * 0.94
-                                })`,
+                              : `rgba(0, 0, 0, ${0.06 +
+                              (i / Object.keys(categories).length) * 0.94
+                              })`,
                         }}
                       >
                         <button
                           key={category}
-                          className={`flex flex-col w-full h-full justify-center items-center overflow-hidden border-l border-[1px] border-forest-50 dark:border-forest-800 ${
-                            selectedCategory === category
-                              ? "bg-forest-800/[0.025]"
-                              : ""
-                          } 
-                          ${
-                            isCategoryHovered(category)
+                          className={`flex flex-col w-full h-full justify-center items-center overflow-hidden border-l border-[1px] border-forest-50 dark:border-forest-800 ${selectedCategory === category
+                            ? "bg-forest-800/[0.025]"
+                            : ""
+                            } 
+                          ${isCategoryHovered(category)
                               ? "bg-forest-800/50"
                               : ""
-                          }`}
+                            }`}
                           onClick={() => {
                             if (forceSelectedChain) {
                               // if no data, return
                               if (
                                 !data[forceSelectedChain].overview[
-                                  selectedTimespan
+                                selectedTimespan
                                 ][category]["data"]
                               ) {
                                 return;
@@ -1430,17 +1416,16 @@ export default function OverviewMetrics({
                           }}
                         >
                           <div
-                            className={`${
-                              forceSelectedChain
-                                ? allCats
-                                  ? "text-xs font-medium"
-                                  : selectedCategory === category
+                            className={`${forceSelectedChain
+                              ? allCats
+                                ? "text-xs font-medium"
+                                : selectedCategory === category
                                   ? "text-sm font-semibold"
                                   : "text-xs font-medium"
-                                : selectedCategory === category
+                              : selectedCategory === category
                                 ? "text-sm font-semibold"
                                 : "text-xs font-medium"
-                            }`}
+                              }`}
                           >
                             {categories[category]}
                           </div>
@@ -1462,17 +1447,15 @@ export default function OverviewMetrics({
                   return (
                     <div key={index} className="w-full h-full relative">
                       {DisabledStates[selectedMode] &&
-                      DisabledStates[selectedMode][chainKey] ? (
+                        DisabledStates[selectedMode][chainKey] ? (
                         <>
                           <div
-                            className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${
-                              AllChainsByKeys[chainKey].darkTextOnBackground ===
+                            className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${AllChainsByKeys[chainKey].darkTextOnBackground ===
                               true
-                                ? "text-white dark:text-black"
-                                : "text-white"
-                            } ${
-                              AllChainsByKeys[chainKey].backgrounds[theme][1]
-                            }`}
+                              ? "text-white dark:text-black"
+                              : "text-white"
+                              } ${AllChainsByKeys[chainKey].backgrounds[theme][1]
+                              }`}
                           >
                             <div className="flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px] z-10">
                               <div className="flex justify-center items-center w-[30px]">
@@ -1515,29 +1498,26 @@ export default function OverviewMetrics({
                         </>
                       ) : (
                         <div
-                          className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${
-                            AllChainsByKeys[chainKey].darkTextOnBackground ===
+                          className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${AllChainsByKeys[chainKey].darkTextOnBackground ===
                             true
-                              ? "text-white dark:text-black"
-                              : "text-white"
-                          } ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`}
+                            ? "text-white dark:text-black"
+                            : "text-white"
+                            } ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`}
                         >
                           <div
-                            className={`flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px] ${
-                              forceSelectedChain
-                                ? isCategoryHovered("all_chain")
-                                  ? allCats
-                                    ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
-                                    : `rounded-l-full py-[24px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
-                                  : allCats
+                            className={`flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px] ${forceSelectedChain
+                              ? isCategoryHovered("all_chain")
+                                ? allCats
+                                  ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
+                                  : `rounded-l-full py-[24px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
+                                : allCats
                                   ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
                                   : "z-1"
-                                : ""
-                            }  ${
-                              forceSelectedChain
+                              : ""
+                              }  ${forceSelectedChain
                                 ? "hover:cursor-pointer"
                                 : "hover:cursor-default"
-                            } `}
+                              } `}
                             onMouseEnter={() => {
                               // setIsCategoryHovered((prev) => ({
                               //   ...prev,
@@ -1623,7 +1603,7 @@ export default function OverviewMetrics({
                                           // if no data, return
                                           if (
                                             !data[chainKey].overview[
-                                              selectedTimespan
+                                            selectedTimespan
                                             ][categoryKey]["data"]
                                           ) {
                                             return;
@@ -1642,7 +1622,7 @@ export default function OverviewMetrics({
                                           // if no data, return
                                           if (
                                             !data[chainKey].overview[
-                                              selectedTimespan
+                                            selectedTimespan
                                             ][categoryKey]["data"]
                                           ) {
                                             return;
@@ -1667,32 +1647,30 @@ export default function OverviewMetrics({
                                     unhoverCategory(categoryKey);
                                   }}
                                   className={`flex flex-col h-[41px] justify-center items-center py-5 cursor-pointer relative transition-all duration-200 ease-in-out
-                                    ${
-                                      data[chainKey].overview[selectedTimespan][
-                                        categoryKey
-                                      ]
-                                        ? (selectedCategory === categoryKey &&
-                                            !allCats &&
-                                            (selectedChain === chainKey ||
-                                              selectedChain === null) &&
-                                            !allCats) ||
-                                          isCategoryHovered(categoryKey)
-                                          ? selectedCategory !== categoryKey &&
-                                            !allCats
-                                            ? `py-[23px] -my-[3px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
-                                            : `py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
-                                          : `z-[1]`
-                                        : "py-[23px] -my-[3px] z-[2] shadow-lg"
+                                    ${data[chainKey].overview[selectedTimespan][
+                                      categoryKey
+                                    ]
+                                      ? (selectedCategory === categoryKey &&
+                                        !allCats &&
+                                        (selectedChain === chainKey ||
+                                          selectedChain === null) &&
+                                        !allCats) ||
+                                        isCategoryHovered(categoryKey)
+                                        ? selectedCategory !== categoryKey &&
+                                          !allCats
+                                          ? `py-[23px] -my-[3px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
+                                          : `py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
+                                        : `z-[1]`
+                                      : "py-[23px] -my-[3px] z-[2] shadow-lg"
                                     } 
-                                    ${
-                                      categoryIndex ===
+                                    ${categoryIndex ===
                                       Object.keys(categories).length - 1
-                                        ? selectedCategory === categoryKey &&
-                                          (selectedChain === chainKey ||
-                                            selectedChain === null)
-                                          ? ""
-                                          : "rounded-r-full"
-                                        : ""
+                                      ? selectedCategory === categoryKey &&
+                                        (selectedChain === chainKey ||
+                                          selectedChain === null)
+                                        ? ""
+                                        : "rounded-r-full"
+                                      : ""
                                     }`}
                                   style={getBarSectionStyle(
                                     chainKey,
@@ -1700,32 +1678,29 @@ export default function OverviewMetrics({
                                   )}
                                 >
                                   <div
-                                    className={`mix-blend-luminosity font-medium w-full absolute inset-0 flex items-center justify-center ${
-                                      (selectedCategory === categoryKey &&
-                                        !allCats &&
-                                        (selectedChain === chainKey ||
-                                          selectedChain === null) &&
-                                        !allCats) ||
+                                    className={`mix-blend-luminosity font-medium w-full absolute inset-0 flex items-center justify-center ${(selectedCategory === categoryKey &&
+                                      !allCats &&
+                                      (selectedChain === chainKey ||
+                                        selectedChain === null) &&
+                                      !allCats) ||
                                       isCategoryHovered(categoryKey)
-                                        ? `${
-                                            selectedCategory !== categoryKey
-                                              ? "text-xs"
-                                              : "text-sm font-semibold"
-                                          } ${
-                                            AllChainsByKeys[chainKey]
-                                              .darkTextOnBackground === true
-                                              ? "text-black"
-                                              : "text-white"
-                                          }`
-                                        : AllChainsByKeys[chainKey]
-                                            .darkTextOnBackground === true
+                                      ? `${selectedCategory !== categoryKey
+                                        ? "text-xs"
+                                        : "text-sm font-semibold"
+                                      } ${AllChainsByKeys[chainKey]
+                                        .darkTextOnBackground === true
+                                        ? "text-black"
+                                        : "text-white"
+                                      }`
+                                      : AllChainsByKeys[chainKey]
+                                        .darkTextOnBackground === true
                                         ? i > 4
                                           ? "text-white/60 text-xs"
                                           : "text-black text-xs"
                                         : i > 4
-                                        ? "text-white/60 text-xs"
-                                        : "text-white/80 text-xs"
-                                    }`}
+                                          ? "text-white/60 text-xs"
+                                          : "text-white/80 text-xs"
+                                      }`}
                                   >
                                     {data[chainKey].overview[selectedTimespan][
                                       categoryKey
@@ -1735,50 +1710,49 @@ export default function OverviewMetrics({
                                           ? selectedMode.includes("txcount")
                                             ? ""
                                             : showUsd
-                                            ? "$ "
-                                            : "Ξ "
+                                              ? "$ "
+                                              : "Ξ "
                                           : ""}
                                         {selectedValue === "share"
                                           ? (
-                                              data[chainKey].overview[
-                                                selectedTimespan
-                                              ][categoryKey]["data"][
-                                                data[
-                                                  chainKey
-                                                ].overview.types.indexOf(
-                                                  selectedMode,
-                                                )
-                                              ] * 100.0
-                                            ).toFixed(2)
+                                            data[chainKey].overview[
+                                            selectedTimespan
+                                            ][categoryKey]["data"][
+                                            data[
+                                              chainKey
+                                            ].overview.types.indexOf(
+                                              selectedMode,
+                                            )
+                                            ] * 100.0
+                                          ).toFixed(2)
                                           : formatNumber(
-                                              data[chainKey].overview[
-                                                selectedTimespan
-                                              ][categoryKey]["data"][
-                                                data[
-                                                  chainKey
-                                                ].overview.types.indexOf(
-                                                  selectedMode,
-                                                )
-                                              ],
-                                            )}
+                                            data[chainKey].overview[
+                                            selectedTimespan
+                                            ][categoryKey]["data"][
+                                            data[
+                                              chainKey
+                                            ].overview.types.indexOf(
+                                              selectedMode,
+                                            )
+                                            ],
+                                          )}
                                         {selectedValue === "share" ? "%" : ""}{" "}
                                       </>
                                     ) : (
                                       <div
                                         className={`text-black/80
-                                        ${
-                                          isCategoryHovered(categoryKey) ||
-                                          selectedCategory === categoryKey
+                                        ${isCategoryHovered(categoryKey) ||
+                                            selectedCategory === categoryKey
                                             ? "opacity-100 py-8"
                                             : "opacity-0"
-                                        } transition-opacity duration-300 ease-in-out`}
+                                          } transition-opacity duration-300 ease-in-out`}
                                       >
                                         {selectedValue === "absolute"
                                           ? selectedMode.includes("txcount")
                                             ? ""
                                             : showUsd
-                                            ? "$ "
-                                            : "Ξ "
+                                              ? "$ "
+                                              : "Ξ "
                                           : ""}
                                         0 {selectedValue === "share" ? "%" : ""}{" "}
                                       </div>
@@ -1828,10 +1802,10 @@ export default function OverviewMetrics({
               (selectedChain
                 ? AllChainsByKeys[selectedChain].label
                 : chainEcosystemFilter === "all-chains"
-                ? "All Chains"
-                : chainEcosystemFilter === "op-stack"
-                ? "OP Stack Chains"
-                : "OP Superchain") +
+                  ? "All Chains"
+                  : chainEcosystemFilter === "op-stack"
+                    ? "OP Stack Chains"
+                    : "OP Superchain") +
               (": " + categories[selectedCategory])
             ) : (
               <></>
@@ -1858,12 +1832,12 @@ export default function OverviewMetrics({
             setHoveredChartSeriesId={setHoveredChartSeriesId}
             hoveredChartSeriesId={hoveredChartSeriesId}
             allCats={allCats}
+            chartRef={chartComponent}
           />
           {chartAvg && (
             <div
-              className={` items-end relative top-[2px] min-w-[50px] lg:min-w-[70px] ${
-                allCats ? "hidden" : "flex"
-              } ${forceSelectedChain ? "h-[230px]" : "h-[180px]"}`}
+              className={` items-end relative top-[2px] min-w-[50px] lg:min-w-[70px] ${allCats ? "hidden" : "flex"
+                } ${forceSelectedChain ? "h-[230px]" : "h-[180px]"}`}
             >
               <animated.div
                 className="flex h-[28px] relative items-center justify-center rounded-full w-full px-2.5 lg:text-base text-sm font-medium"
@@ -1892,7 +1866,7 @@ export default function OverviewMetrics({
           <h1 className="font-bold text-sm pr-2 pl-2">
             {!allCats
               ? master &&
-                master.blockspace_categories.main_categories[selectedCategory]
+              master.blockspace_categories.main_categories[selectedCategory]
               : "All"}
           </h1>
           {!allCats ? (
@@ -1903,7 +1877,7 @@ export default function OverviewMetrics({
               <p className="text-xs px-[4px] py-[5px] mx-[5px]" key={key}>
                 {formatSubcategories(
                   master.blockspace_categories["mapping"][selectedCategory][
-                    key
+                  key
                   ],
                 )}
               </p>
@@ -1922,11 +1896,10 @@ export default function OverviewMetrics({
           {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
           {/* toggle ETH */}
           <button
-            className={`px-[16px] py-[4px]  rounded-full ${
-              selectedValue === "absolute"
-                ? "bg-forest-500 dark:bg-forest-1000"
-                : "hover:bg-forest-500/10"
-            }`}
+            className={`px-[16px] py-[4px]  rounded-full ${selectedValue === "absolute"
+              ? "bg-forest-500 dark:bg-forest-1000"
+              : "hover:bg-forest-500/10"
+              }`}
             onClick={() => {
               setSelectedValue("absolute");
               if (!selectedMode.includes("absolute")) {
@@ -1945,11 +1918,10 @@ export default function OverviewMetrics({
             Absolute
           </button>
           <button
-            className={`px-[16px] py-[4px]  rounded-full ${
-              selectedValue === "share"
-                ? "bg-forest-500 dark:bg-forest-1000"
-                : "hover:bg-forest-500/10"
-            }`}
+            className={`px-[16px] py-[4px]  rounded-full ${selectedValue === "share"
+              ? "bg-forest-500 dark:bg-forest-1000"
+              : "hover:bg-forest-500/10"
+              }`}
             onClick={() => {
               setSelectedValue("share");
 
@@ -1981,9 +1953,8 @@ export default function OverviewMetrics({
 
       <Container className="lg:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-4">
         <div
-          className={`fixed inset-0 z-[90] flex items-center justify-center transition-opacity duration-200  ${
-            selectedContract ? "opacity-80" : "opacity-0 pointer-events-none"
-          }`}
+          className={`fixed inset-0 z-[90] flex items-center justify-center transition-opacity duration-200  ${selectedContract ? "opacity-80" : "opacity-0 pointer-events-none"
+            }`}
         >
           <div
             className={`absolute inset-0 bg-white dark:bg-black`}
@@ -2013,9 +1984,8 @@ export default function OverviewMetrics({
                         : "formkit:arrowup"
                       : "formkit:arrowdown"
                   }
-                  className={` dark:text-white text-black ${
-                    contractCategory === "chain" ? "opacity-100" : "opacity-20"
-                  }`}
+                  className={` dark:text-white text-black ${contractCategory === "chain" ? "opacity-100" : "opacity-20"
+                    }`}
                 />
               </button>
 
@@ -2039,11 +2009,10 @@ export default function OverviewMetrics({
                         : "formkit:arrowup"
                       : "formkit:arrowdown"
                   }
-                  className={` dark:text-white text-black ${
-                    contractCategory === "contract"
-                      ? "opacity-100"
-                      : "opacity-20"
-                  }`}
+                  className={` dark:text-white text-black ${contractCategory === "contract"
+                    ? "opacity-100"
+                    : "opacity-20"
+                    }`}
                 />
               </button>
             </div>
@@ -2069,11 +2038,10 @@ export default function OverviewMetrics({
                         : "formkit:arrowup"
                       : "formkit:arrowdown"
                   }
-                  className={` dark:text-white text-black ${
-                    contractCategory === "subcategory"
-                      ? "opacity-100"
-                      : "opacity-20"
-                  }`}
+                  className={` dark:text-white text-black ${contractCategory === "subcategory"
+                    ? "opacity-100"
+                    : "opacity-20"
+                    }`}
                 />
               </button>
             </div>
@@ -2103,9 +2071,8 @@ export default function OverviewMetrics({
                         : "formkit:arrowup"
                       : "formkit:arrowdown"
                   }
-                  className={` dark:text-white text-black ${
-                    contractCategory === "value" ? "opacity-100" : "opacity-20"
-                  }`}
+                  className={` dark:text-white text-black ${contractCategory === "value" ? "opacity-100" : "opacity-20"
+                    }`}
                 />
               </button>
 
@@ -2407,42 +2374,39 @@ export default function OverviewMetrics({
                           </div>
                           <div className="flex flex-grow">
                             <div
-                              className={`flex flex-none items-center space-x-2 w-0 ${
-                                copyContract ? " delay-1000" : ""
-                              } overflow-clip transition-all duration-200 ease-in-out ${
-                                sortedContracts[key].name &&
-                                sortedContracts[key].project_name
+                              className={`flex flex-none items-center space-x-2 w-0 ${copyContract ? " delay-1000" : ""
+                                } overflow-clip transition-all duration-200 ease-in-out ${sortedContracts[key].name &&
+                                  sortedContracts[key].project_name
                                   ? "group-hover:w-[48px]"
                                   : "group-hover:w-[96px]"
-                              }`}
+                                }`}
                             >
                               {!(
                                 sortedContracts[key].name &&
                                 sortedContracts[key].project_name
                               ) && (
-                                <div
-                                  className="rounded-full p-2 bg-forest-50 dark:bg-forest-1000 text-black dark:text-white cursor-pointer"
-                                  onClick={() => {
-                                    setSelectedContract(sortedContracts[key]);
-                                    setIsContractLabelModalOpen(true);
-                                  }}
-                                >
-                                  <Icon
-                                    icon="gtp:add-tag"
-                                    className="w-6 h-6"
-                                  />
-                                  {/* <Icon
+                                  <div
+                                    className="rounded-full p-2 bg-forest-50 dark:bg-forest-1000 text-black dark:text-white cursor-pointer"
+                                    onClick={() => {
+                                      setSelectedContract(sortedContracts[key]);
+                                      setIsContractLabelModalOpen(true);
+                                    }}
+                                  >
+                                    <Icon
+                                      icon="gtp:add-tag"
+                                      className="w-6 h-6"
+                                    />
+                                    {/* <Icon
                                       icon="feather:plus"
                                       className="absolute right-0 top-2 stroke-2 stroke-forest-900"
                                     /> */}
-                                </div>
-                              )}
+                                  </div>
+                                )}
                               <div
-                                className={`rounded-full p-2 ${
-                                  copyContract
-                                    ? "bg-forest-50/60 dark:bg-forest-1000/60"
-                                    : "bg-forest-50 dark:bg-forest-1000"
-                                } text-white cursor-pointer`}
+                                className={`rounded-full p-2 ${copyContract
+                                  ? "bg-forest-50/60 dark:bg-forest-1000/60"
+                                  : "bg-forest-50 dark:bg-forest-1000"
+                                  } text-white cursor-pointer`}
                                 onClick={() => {
                                   navigator.clipboard.writeText(
                                     sortedContracts[key].address,
@@ -2471,14 +2435,13 @@ export default function OverviewMetrics({
                               className={`flex flex-col flex-grow h-full justify-start text-ellipsis overflow-hidden whitespace-nowrap `}
                             >
                               {sortedContracts[key].name ||
-                              sortedContracts[key].project_name ? (
+                                sortedContracts[key].project_name ? (
                                 <>
                                   <div
-                                    className={`min-w-full max-w-full text-base ${
-                                      sortedContracts[key].project_name
-                                        ? "font-bold"
-                                        : "opacity-30 italic"
-                                    }`}
+                                    className={`min-w-full max-w-full text-base ${sortedContracts[key].project_name
+                                      ? "font-bold"
+                                      : "opacity-30 italic"
+                                      }`}
                                   >
                                     {sortedContracts[key].project_name
                                       ? sortedContracts[key].project_name
@@ -2486,11 +2449,10 @@ export default function OverviewMetrics({
                                   </div>
 
                                   <div
-                                    className={`min-w-full max-w-full text-sm ${
-                                      sortedContracts[key].name
-                                        ? ""
-                                        : "opacity-30 italic"
-                                    }`}
+                                    className={`min-w-full max-w-full text-sm ${sortedContracts[key].name
+                                      ? ""
+                                      : "opacity-30 italic"
+                                      }`}
                                   >
                                     {sortedContracts[key].name
                                       ? sortedContracts[key].name
@@ -2517,18 +2479,18 @@ export default function OverviewMetrics({
                           <div className="flex w-[40%]">
                             {master &&
                               master.blockspace_categories.main_categories[
-                                sortedContracts[key].main_category_key
+                              sortedContracts[key].main_category_key
                               ]}
                           </div>
                           <div className="flex">
                             {" "}
                             {master &&
-                            master.blockspace_categories.sub_categories[
+                              master.blockspace_categories.sub_categories[
                               sortedContracts[key].sub_category_key
-                            ]
+                              ]
                               ? master.blockspace_categories.sub_categories[
-                                  sortedContracts[key].sub_category_key
-                                ]
+                              sortedContracts[key].sub_category_key
+                              ]
                               : "Unlabeled"}
                           </div>
                         </div>
@@ -2546,20 +2508,20 @@ export default function OverviewMetrics({
                               {selectedMode.includes("gas_fees_")
                                 ? showUsd
                                   ? Number(
-                                      sortedContracts[
-                                        key
-                                      ].gas_fees_absolute_usd.toFixed(0),
-                                    ).toLocaleString("en-US")
-                                  : Number(
-                                      sortedContracts[
-                                        key
-                                      ].gas_fees_absolute_eth.toFixed(2),
-                                    ).toLocaleString("en-US")
-                                : Number(
                                     sortedContracts[
                                       key
-                                    ].txcount_absolute.toFixed(0),
-                                  ).toLocaleString("en-US")}
+                                    ].gas_fees_absolute_usd.toFixed(0),
+                                  ).toLocaleString("en-US")
+                                  : Number(
+                                    sortedContracts[
+                                      key
+                                    ].gas_fees_absolute_eth.toFixed(2),
+                                  ).toLocaleString("en-US")
+                                : Number(
+                                  sortedContracts[
+                                    key
+                                  ].txcount_absolute.toFixed(0),
+                                ).toLocaleString("en-US")}
                             </div>
 
                             {/* <div className="h-[3px] w-[110px] bg-forest-100 dark:bg-forest-900 flex justify-end">
@@ -2598,16 +2560,14 @@ export default function OverviewMetrics({
               })}
             <div className="w-full flex justify-center mb-2">
               <button
-                className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${
-                  Object.keys(sortedContracts).length <= 10
-                    ? "hidden"
-                    : "visible"
-                } ${
-                  Object.keys(sortedContracts).length <=
+                className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${Object.keys(sortedContracts).length <= 10
+                  ? "hidden"
+                  : "visible"
+                  } ${Object.keys(sortedContracts).length <=
                     maxDisplayedContracts || maxDisplayedContracts >= 50
                     ? "hidden"
                     : "visible"
-                }`}
+                  }`}
                 onClick={() => {
                   setShowMore(!showMore);
                   if (

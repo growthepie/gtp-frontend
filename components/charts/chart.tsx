@@ -44,6 +44,7 @@ export const Chart = ({
   hoveredChartSeriesId,
   setHoveredChartSeriesId,
   allCats,
+  chartRef,
 }: {
   // data: { [chain: string]: number[][] };
   chartType: "area" | "line";
@@ -74,6 +75,7 @@ export const Chart = ({
   hoveredChartSeriesId?: string;
   setHoveredChartSeriesId?: (ids: string) => void;
   allCats?: boolean;
+  chartRef?: React.MutableRefObject<Highcharts.Chart | null | undefined>;
 }) => {
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
@@ -131,7 +133,76 @@ export const Chart = ({
       });
 
       // add new series
-      series.forEach((s) => {
+      series.forEach((s, seriesIndex) => {
+        const chainKey = s.name;
+
+        const fillHexColorOpacity = s.fillOpacity
+          ? decimalPercentageToHex(s.fillOpacity)
+          : "33";
+
+        let fillColor = allCats === true ? undefined :
+          AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] +
+          fillHexColorOpacity;
+
+        const normalAreaColor = {
+          linearGradient: {
+            x1: 0,
+            y1: 0,
+            x2: 0,
+            y2: 1,
+          },
+          stops:
+            theme === "dark"
+              ? [
+                [
+                  0,
+                  AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
+                  "E6",
+                ],
+                [
+                  1,
+                  AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
+                  "E6",
+                ],
+              ]
+              : [
+                [
+                  0,
+                  AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
+                  "E6",
+                ],
+                [
+                  1,
+                  AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
+                  "E6",
+                ],
+              ],
+        };
+
+        let blockspaceAreaColor =
+          s.custom?.tooltipLabel === "Unlabeled" && allCats === true
+            ? {
+              pattern: {
+                color: AllChainsByKeys[chainKey].colors["dark"][0] + "55",
+                path: {
+                  d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
+                  strokeWidth: 3,
+                },
+                width: 10,
+                height: 10,
+                opacity: 0.99,
+              },
+            }
+            : AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] +
+            fillHexColorOpacity;
+
+        const color =
+          allCats === true && series.length > 1
+            ? blockspaceAreaColor
+            : normalAreaColor;
+
+
+        // Remove series if no data
         if (!s.data || s.data.length === 0) {
           if (
             currentSeries &&
@@ -146,10 +217,8 @@ export const Chart = ({
           }
         }
 
-        const fillHexColorOpacity = s.fillOpacity
-          ? decimalPercentageToHex(s.fillOpacity)
-          : "33";
 
+        // Update series if it already exists
         if (
           currentSeries &&
           currentSeries.find((cs) => cs.options.id === s.id)
@@ -159,6 +228,7 @@ export const Chart = ({
           );
 
           if (seriesToUpdate) {
+
             seriesToUpdate.setData(
               s.data.map((d) => [
                 d[types.indexOf(s.unixKey)],
@@ -168,78 +238,35 @@ export const Chart = ({
             );
 
             seriesToUpdate.update(
-              { type: chartType, stacking: areaStacking },
+              {
+                type: chartType, stacking: areaStacking, index: seriesIndex, borderColor: "transparent",
+                ...(chartType !== "column" && {
+                  shadow: {
+                    color:
+                      AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
+                      (s.fillOpacity ? "11" : "33"),
+                    width: s.fillOpacity ? 6 : 10,
+                  },
+                  color: color,
+                  fillOpacity: s.fillOpacity,
+                  fillColor: fillColor,
+                  borderColor:
+                    AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0],
+                  borderWidth: s.lineWidth === undefined ? 1 : s.lineWidth,
+                  lineWidth: s.lineWidth === undefined ? 2 : s.lineWidth,
+                })
+              },
               false,
             );
           }
         } else {
-          const chainKey = s.name;
 
-          let fillColor =
-            AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] +
-            fillHexColorOpacity;
-
-          const normalAreaColor = {
-            linearGradient: {
-              x1: 0,
-              y1: 0,
-              x2: 0,
-              y2: 1,
-            },
-            stops:
-              theme === "dark"
-                ? [
-                    [
-                      0,
-                      AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
-                        "E6",
-                    ],
-                    [
-                      1,
-                      AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
-                        "E6",
-                    ],
-                  ]
-                : [
-                    [
-                      0,
-                      AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
-                        "E6",
-                    ],
-                    [
-                      1,
-                      AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
-                        "E6",
-                    ],
-                  ],
-          };
-
-          let blockspaceAreaColor =
-            s.custom?.tooltipLabel === "Unlabeled"
-              ? {
-                  pattern: {
-                    color: AllChainsByKeys[chainKey].colors["dark"][0] + "55",
-                    path: {
-                      d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
-                      strokeWidth: 3,
-                    },
-                    width: 10,
-                    height: 10,
-                    opacity: 0.99,
-                  },
-                }
-              : AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] +
-                fillHexColorOpacity;
-
-          const color =
-            allCats === true && series.length > 1
-              ? blockspaceAreaColor
-              : normalAreaColor;
 
           chartComponent.current?.addSeries(
             // @ts-ignore
             {
               id: s.id,
+              index: seriesIndex,
               name: s.name,
               custom: {
                 ...s.custom,
@@ -256,7 +283,7 @@ export const Chart = ({
               stacking: areaStacking,
               clip: true,
               fillOpacity: s.fillOpacity,
-              fillColor: allCats === true ? undefined : fillColor,
+              fillColor: fillColor,
               borderColor:
                 AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0],
               borderWidth: s.lineWidth === undefined ? 1 : s.lineWidth,
@@ -264,16 +291,16 @@ export const Chart = ({
               ...// @ts-ignore
               (chartType !== "column"
                 ? {
-                    shadow: {
-                      color:
-                        AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
-                        (s.fillOpacity ? "11" : "33"),
-                      width: s.fillOpacity ? 6 : 10,
-                    },
-                    color: color,
-                  }
+                  shadow: {
+                    color:
+                      AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
+                      (s.fillOpacity ? "11" : "33"),
+                    width: s.fillOpacity ? 6 : 10,
+                  },
+                  color: color,
+                }
                 : chainKey === "all_l2s"
-                ? {
+                  ? {
                     borderColor: "transparent",
 
                     shadow: {
@@ -287,7 +314,7 @@ export const Chart = ({
                     },
                     color: color,
                   }
-                : {
+                  : {
                     borderColor: "transparent",
                     shadow: {
                       color: "#CDD8D3" + "FF",
@@ -311,10 +338,6 @@ export const Chart = ({
   }, [drawChartSeries, series, types, maxY, yScale, stack]);
 
   useEffect(() => {
-    console.log("forceHoveredChartSeriesId", forceHoveredChartSeriesId);
-    // if (allCats === undefined || allCats === false) return;
-    // if (forceHoveredChartSeriesId === undefined) return;
-
     if (allCats === true && chartComponent.current && series.length > 1) {
       if (
         !forceHoveredChartSeriesId ||
@@ -322,33 +345,21 @@ export const Chart = ({
       ) {
         chartComponent.current.series.forEach((s: Highcharts.Series) => {
           s.setState("normal");
-
-          // s.options.opacity = 1;
-
           if (s.options.custom) {
-            //   s.color = s.options.custom.color;
             s.options["fillColor"] = s.options.custom.fillColor;
-            // s.options["fillOpacity"] = 1;
           }
         });
       } else {
         chartComponent.current.series.forEach((s: Highcharts.Series) => {
           if (s.options.id === forceHoveredChartSeriesId) {
             s.setState("hover");
-            // s.options.opacity = 1;
-
             if (s.options.custom) {
-              //   s.color = s.options.custom.chainColor;
               s.options["fillColor"] = s.options.custom.chainColor;
-              // s.options["fillOpacity"] = 1;
             }
           } else {
             s.setState("inactive");
-            // s.options.opacity = 0;
             if (s.options.custom) {
-              //   s.color = s.options.custom.color;
               s.options["fillColor"] = s.options.custom.fillColor;
-              // s.options["fillOpacity"] = 0;
             }
           }
         });
@@ -456,6 +467,7 @@ export const Chart = ({
 
   return (
     <>
+
       {
         // series.length > 0 &&
         // Object.values(series)[0].data.length > 0 &&
@@ -500,8 +512,8 @@ export const Chart = ({
                             yScale === "percentage"
                               ? "percent"
                               : stack
-                              ? "normal"
-                              : undefined,
+                                ? "normal"
+                                : undefined,
                         },
                       },
                       tooltip: {
@@ -510,8 +522,8 @@ export const Chart = ({
                           yScale === "percentageDecimal"
                             ? tooltipFormatter(true, true, decimalToPercent)
                             : yScale === "percentage"
-                            ? tooltipFormatter(true, true, null)
-                            : tooltipFormatter(
+                              ? tooltipFormatter(true, true, null)
+                              : tooltipFormatter(
                                 true,
                                 false,
                                 (x) => {
@@ -547,9 +559,9 @@ export const Chart = ({
                         max: maxY ? maxY : undefined,
                         tickPositions: maxY
                           ? Array.from(
-                              { length: numIntervals + 1 },
-                              (_, i) => i * intervalSize,
-                            )
+                            { length: numIntervals + 1 },
+                            (_, i) => i * intervalSize,
+                          )
                           : undefined,
                         tickInterval: maxY ? yAxisTicks.interval : undefined,
                         gridLineColor:
@@ -607,6 +619,7 @@ export const Chart = ({
                   constructorType={"stockChart"}
                   ref={(chart) => {
                     chartComponent.current = chart?.chart;
+                    if (chartRef !== undefined) chartRef.current = chart?.chart;
                   }}
                 />
               </div>
@@ -620,11 +633,10 @@ export const Chart = ({
                 }}
               >
                 <ChartWatermark
-                  className={`h-[30.67px] md:h-[46px] ${
-                    parseInt(chartHeight, 10) > 200
-                      ? "w-[128px] md:w-[163px]"
-                      : "w-[128.67px] md:w-[193px] "
-                  } text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten`}
+                  className={`h-[30.67px] md:h-[46px] ${parseInt(chartHeight, 10) > 200
+                    ? "w-[128px] md:w-[163px]"
+                    : "w-[128.67px] md:w-[193px] "
+                    } text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten`}
                 />
               </div>
             </div>
