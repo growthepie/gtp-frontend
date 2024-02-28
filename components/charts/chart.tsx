@@ -47,7 +47,7 @@ export const Chart = ({
   chartRef,
 }: {
   // data: { [chain: string]: number[][] };
-  chartType: "area" | "line";
+  chartType: "area" | "line" | "column";
   backgroundColor?: string;
   stack?: boolean;
   types: string[];
@@ -238,6 +238,7 @@ export const Chart = ({
             );
 
             seriesToUpdate.update(
+              // @ts-ignore
               {
                 type: chartType, stacking: areaStacking, index: seriesIndex, borderColor: "transparent",
                 ...(chartType !== "column" && {

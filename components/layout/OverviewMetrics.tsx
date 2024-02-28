@@ -962,8 +962,12 @@ export default function OverviewMetrics({
 
     // if (forceSelectedChain) {
     // if share mode, return 100
-    if (forceSelectedChain && selectedMode.includes("share") && allCats) {
-      return 1;
+    if (forceSelectedChain) {
+      if (selectedMode.includes("share")) {
+        if (allCats) return 1;
+      } else {
+        return undefined;
+      }
     }
 
 
