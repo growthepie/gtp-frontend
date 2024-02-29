@@ -31,6 +31,7 @@ import { debounce, forEach } from "lodash";
 import { navigationItems, navigationCategories } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
 import { MasterURL } from "@/lib/urls";
+import { MasterResponse } from "@/types/api/MasterResponse";
 import useSWR from "swr";
 import ChartWatermark from "./ChartWatermark";
 import { ChainsData } from "@/types/api/ChainResponse";
