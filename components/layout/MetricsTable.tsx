@@ -127,7 +127,7 @@ const MetricsTable = ({
     return [item?.page?.showGwei, item?.page?.reversePerformer];
   }, [metric_id]);
 
-  const { isSidebarOpen } = useUIContext();
+  const { isSidebarOpen, isSafariBrowser } = useUIContext();
 
   const changesKey = useMemo(() => {
     if (timeIntervalKey === "monthly") {
@@ -188,7 +188,7 @@ const MetricsTable = ({
         let types = data[chain][lastValueTimeIntervalKey].types;
         let values =
           data[chain][lastValueTimeIntervalKey].data[
-            data[chain][lastValueTimeIntervalKey].data.length - 1
+          data[chain][lastValueTimeIntervalKey].data.length - 1
           ];
         let lastVal = values[valueIndex];
 
@@ -337,7 +337,7 @@ const MetricsTable = ({
       let types = item.data[lastValueTimeIntervalKey].types;
       let values =
         item.data[lastValueTimeIntervalKey].data[
-          item.data[lastValueTimeIntervalKey].data.length - 1
+        item.data[lastValueTimeIntervalKey].data.length - 1
         ];
       // let value = formatNumber(
       //   item.data[lastValueTimeIntervalKey].data[
@@ -394,21 +394,19 @@ const MetricsTable = ({
 
   return (
     <div className="flex flex-col mt-3 md:mt-0 ml-0 lg:-ml-2 font-semibold space-y-[5px] overflow-x-scroll md:overflow-x-visible z-100 w-full py-5 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
-      <div className="min-w-[570px] md:min-w-[600px] lg:min-w-full pr-[20px] md:pr-[50px] lg:pr-2 w-full">
+      <div className="relative min-w-[570px] md:min-w-[600px] lg:min-w-full pr-[20px] md:pr-[50px] lg:pr-2 w-full">
         <div
           className={`flex items-center justify-between py-1 pl-4 pr-7 lg:pl-2 lg:pr-12 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
         >
           <div
-            className={` ${
-              isSidebarOpen ? "w-1/4 2xl:w-1/3" : "w-1/3"
-            } pl-[44px] lg:pl-[52px]`}
+            className={` ${isSidebarOpen ? "w-1/4 2xl:w-1/3" : "w-1/3"
+              } pl-[44px] lg:pl-[52px]`}
           >
             {timeIntervalKey === "monthly" ? "Last 30d" : "Yesterday"}
           </div>
           <div
-            className={`relative ${
-              isSidebarOpen ? "w-3/4 2xl:w-2/3" : "w-2/3"
-            } flex pr-7 lg:pr-4`}
+            className={`${isSidebarOpen ? "w-3/4 2xl:w-2/3" : "w-2/3"
+              } flex pr-7 lg:pr-4`}
           >
             {/* <div className={`w-1/5 text-right capitalize`}>
               Current
@@ -420,20 +418,18 @@ const MetricsTable = ({
             ).map(([timespan, label]) => (
               <div
                 key={timespan}
-                className={`text-right ${
-                  isSidebarOpen ? "w-1/3 2xl:w-1/4" : "w-1/4"
-                }
-                ${
-                  isSidebarOpen && (timespan === "7d" || timespan === "90d")
+                className={`text-right ${isSidebarOpen ? "w-1/3 2xl:w-1/4" : "w-1/4"
+                  }
+                ${isSidebarOpen && (timespan === "7d" || timespan === "90d")
                     ? "hidden 2xl:block"
                     : "block"
-                }`}
+                  }`}
               >
                 {label}
               </div>
             ))}
             <div
-              className={`absolute -right-[4px] -top-[4px] lg:top-0 lg:-right-[24px] cursor-pointer `}
+              className={`absolute ${isSafariBrowser ? "right-[37px] top-[0px] md:right-[32px] md:top-[21px]" : "right-[46px] top-[0px] md:right-[35px] md:top-[21px]"} cursor-pointer`}
               onClick={onChainSelectToggle}
             >
               <div
@@ -453,11 +449,10 @@ const MetricsTable = ({
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className={`w-6 h-6 ${
-                    chainSelectToggleState === "none"
-                      ? "opacity-100"
-                      : "opacity-0"
-                  }`}
+                  className={`w-6 h-6 ${chainSelectToggleState === "none"
+                    ? "opacity-100"
+                    : "opacity-0"
+                    }`}
                 >
                   <circle
                     xmlns="http://www.w3.org/2000/svg"
@@ -468,26 +463,24 @@ const MetricsTable = ({
                 </svg>
               </div>
               <div
-                className={`p-1 rounded-full ${
-                  chainSelectToggleState === "none"
-                    ? "bg-forest-50 dark:bg-[#1F2726]"
-                    : "bg-white dark:bg-forest-1000"
-                }`}
+                className={`p-1 rounded-full ${chainSelectToggleState === "none"
+                  ? "bg-forest-50 dark:bg-[#1F2726]"
+                  : "bg-white dark:bg-forest-1000"
+                  }`}
               >
                 <Icon
                   icon="feather:check-circle"
-                  className={`w-[17.65px] h-[17.65px] ${
-                    chainSelectToggleState === "none"
-                      ? "opacity-0"
-                      : "opacity-100"
-                  }`}
+                  className={`w-[17.65px] h-[17.65px] ${chainSelectToggleState === "none"
+                    ? "opacity-0"
+                    : "opacity-100"
+                    }`}
                   style={{
                     color:
                       chainSelectToggleState === "all"
                         ? undefined
                         : chainSelectToggleState === "normal"
-                        ? "#5A6462"
-                        : "#5A6462",
+                          ? "#5A6462"
+                          : "#5A6462",
                   }}
                 />
               </div>
@@ -508,7 +501,7 @@ const MetricsTable = ({
           <div
             className="w-full relative"
             style={{ height: height, direction: "ltr" }}
-            // style={{ height: height, direction: "ltr" }}
+          // style={{ height: height, direction: "ltr" }}
           >
             {transitions((style, item, t, index) => (
               <animated.div
@@ -518,34 +511,33 @@ const MetricsTable = ({
                 <div
                   key={item.chain.key}
                   className={`flex items-center justify-between cursor-pointer p-1.5 pl-4 py-[4px] lg:pr-2 lg:py-[10.5px] lg:pl-2 rounded-full w-full font-[400] border-[1px] whitespace-nowrap text-xs lg:text-[0.95rem] group relative
-              ${
-                item.chain.key === "ethereum"
-                  ? showEthereumMainnet
-                    ? "border-black/[16%] dark:border-[#5A6462] hover:border hover:p-1.5 p-[7px] py-[4px] lg:p-[13px] lg:py-[8px] hover:lg:p-3 hover:lg:py-[7px]"
-                    : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 p-[7px] py-[4px] lg:p-[13px] lg:py-[8px]"
-                  : selectedChains.includes(item.chain.key)
-                  ? "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/10"
-                  : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 transition-all duration-100"
-              } `}
+              ${item.chain.key === "ethereum"
+                      ? showEthereumMainnet
+                        ? "border-black/[16%] dark:border-[#5A6462] hover:border hover:p-1.5 p-[7px] py-[4px] lg:p-[13px] lg:py-[8px] hover:lg:p-3 hover:lg:py-[7px]"
+                        : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 p-[7px] py-[4px] lg:p-[13px] lg:py-[8px]"
+                      : selectedChains.includes(item.chain.key)
+                        ? "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/10"
+                        : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 transition-all duration-100"
+                    } `}
                   onClick={() => handleChainClick(item.chain.key)}
-                  // onClick={() => {
-                  //   if (item.chain.key === "ethereum") {
-                  //     if (showEthereumMainnet) {
-                  //       setShowEthereumMainnet(false);
-                  //     } else {
-                  //       setShowEthereumMainnet(true);
-                  //     }
-                  //   } else {
-                  //     setChainSelectToggle("normal");
-                  //     if (selectedChains.includes(item.chain.key)) {
-                  //       setSelectedChains(
-                  //         selectedChains.filter((c) => c !== item.chain.key),
-                  //       );
-                  //     } else {
-                  //       setSelectedChains([...selectedChains, item.chain.key]);
-                  //     }
-                  //   }
-                  // }}
+                // onClick={() => {
+                //   if (item.chain.key === "ethereum") {
+                //     if (showEthereumMainnet) {
+                //       setShowEthereumMainnet(false);
+                //     } else {
+                //       setShowEthereumMainnet(true);
+                //     }
+                //   } else {
+                //     setChainSelectToggle("normal");
+                //     if (selectedChains.includes(item.chain.key)) {
+                //       setSelectedChains(
+                //         selectedChains.filter((c) => c !== item.chain.key),
+                //       );
+                //     } else {
+                //       setSelectedChains([...selectedChains, item.chain.key]);
+                //     }
+                //   }
+                // }}
                 >
                   <div className="w-full h-full absolute left-0 bottom-0 rounded-full overflow-clip">
                     <div className="relative w-full h-full">
@@ -567,9 +559,8 @@ const MetricsTable = ({
                     </div>
                   </div>
                   <div
-                    className={`flex ${
-                      isSidebarOpen ? "w-1/4 2xl:w-1/3" : "w-1/3"
-                    } items-center pl-[44px] lg:pl-[52px]`}
+                    className={`flex ${isSidebarOpen ? "w-1/4 2xl:w-1/3" : "w-1/3"
+                      } items-center pl-[44px] lg:pl-[52px]`}
                     style={{
                       color: selectedChains.includes(item.chain.key)
                         ? undefined
@@ -613,11 +604,10 @@ const MetricsTable = ({
                           )}
                         </div>
                         <div
-                          className={`font-medium leading-snug text-ellipsis overflow-hidden ${
-                            isSidebarOpen
-                              ? "text-[10px] 2xl:text-xs"
-                              : "text-xs"
-                          }`}
+                          className={`font-medium leading-snug text-ellipsis overflow-hidden ${isSidebarOpen
+                            ? "text-[10px] 2xl:text-xs"
+                            : "text-xs"
+                            }`}
                         >
                           {item.chain.label}
                         </div>
@@ -625,9 +615,8 @@ const MetricsTable = ({
                     </div>
                   </div>
                   <div
-                    className={`${
-                      isSidebarOpen ? "w-3/4 2xl:w-2/3" : "w-2/3"
-                    } flex pr-4 font-medium`}
+                    className={`${isSidebarOpen ? "w-3/4 2xl:w-2/3" : "w-2/3"
+                      } flex pr-4 font-medium`}
                   >
                     {Object.keys(
                       timeIntervalKey === "monthly"
@@ -637,20 +626,18 @@ const MetricsTable = ({
                       <div
                         key={timespan}
                         className={`text-right  
-                      ${
-                        isSidebarOpen
-                          ? "w-1/3 text-sm 2xl:text-base 2xl:w-1/4"
-                          : "w-1/4 text-base"
-                      }
-                      ${
-                        isSidebarOpen &&
-                        (timespan === "7d" || timespan === "90d")
-                          ? "hidden 2xl:block"
-                          : ""
-                      }`}
+                      ${isSidebarOpen
+                            ? "w-1/3 text-sm 2xl:text-base 2xl:w-1/4"
+                            : "w-1/4 text-base"
+                          }
+                      ${isSidebarOpen &&
+                            (timespan === "7d" || timespan === "90d")
+                            ? "hidden 2xl:block"
+                            : ""
+                          }`}
                       >
                         {item.data[changesKey][timespan][changesValueIndex] ===
-                        null ? (
+                          null ? (
                           <span className="text-gray-500 text-center mx-4 inline-block">
                             —
                           </span>
@@ -658,19 +645,18 @@ const MetricsTable = ({
                           <>
                             {(reversePerformer ? -1.0 : 1.0) *
                               item.data[changesKey][timespan][
-                                changesValueIndex
+                              changesValueIndex
                               ] >=
-                            0 ? (
+                              0 ? (
                               <div
-                                className={`text-[#45AA6F] dark:text-[#4CFF7E] ${
-                                  Math.abs(
-                                    item.data[changesKey][timespan][
-                                      changesValueIndex
-                                    ],
-                                  ) >= 10
-                                    ? "lg:text-[13px] lg:font-[550] 2xl:text-[14px] 2xl:font-[600]"
-                                    : ""
-                                }`}
+                                className={`text-[#45AA6F] dark:text-[#4CFF7E] ${Math.abs(
+                                  item.data[changesKey][timespan][
+                                  changesValueIndex
+                                  ],
+                                ) >= 10
+                                  ? "lg:text-[13px] lg:font-[550] 2xl:text-[14px] 2xl:font-[600]"
+                                  : ""
+                                  }`}
                                 style={{
                                   color: selectedChains.includes(item.chain.key)
                                     ? undefined
@@ -682,7 +668,7 @@ const MetricsTable = ({
                                   const rawPercentage = Math.abs(
                                     Math.round(
                                       item.data[changesKey][timespan][
-                                        changesValueIndex
+                                      changesValueIndex
                                       ] * 1000,
                                     ) / 10,
                                   ).toFixed(1);
@@ -707,15 +693,14 @@ const MetricsTable = ({
                               </div>
                             ) : (
                               <div
-                                className={`text-[#DD3408] dark:text-[#FF3838] ${
-                                  Math.abs(
-                                    item.data[changesKey][timespan][
-                                      changesValueIndex
-                                    ],
-                                  ) >= 10
-                                    ? "lg:text-[13px] lg:font-[550]  2xl:text-[14px] 2xl:font-[600]"
-                                    : ""
-                                }`}
+                                className={`text-[#DD3408] dark:text-[#FF3838] ${Math.abs(
+                                  item.data[changesKey][timespan][
+                                  changesValueIndex
+                                  ],
+                                ) >= 10
+                                  ? "lg:text-[13px] lg:font-[550]  2xl:text-[14px] 2xl:font-[600]"
+                                  : ""
+                                  }`}
                                 style={{
                                   color: selectedChains.includes(item.chain.key)
                                     ? undefined
@@ -736,7 +721,7 @@ const MetricsTable = ({
                                   Math.abs(
                                     Math.round(
                                       item.data[changesKey][timespan][
-                                        changesValueIndex
+                                      changesValueIndex
                                       ] * 1000,
                                     ) / 10,
                                   ).toFixed(1)
@@ -750,13 +735,12 @@ const MetricsTable = ({
                     ))}
                   </div>
                   <div
-                    className={`absolute  ${
-                      item.chain.key === "ethereum"
-                        ? showEthereumMainnet
-                          ? "-right-[19px] group-hover:-right-[20px]"
-                          : "-right-[19px]"
-                        : "-right-[20px]"
-                    }`}
+                    className={`absolute  ${item.chain.key === "ethereum"
+                      ? showEthereumMainnet
+                        ? "-right-[19px] group-hover:-right-[20px]"
+                        : "-right-[19px]"
+                      : "-right-[20px]"
+                      }`}
                   >
                     <div
                       className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
@@ -776,15 +760,14 @@ const MetricsTable = ({
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        className={`w-6 h-6 ${
-                          item.chain.key === "ethereum"
-                            ? showEthereumMainnet
-                              ? "opacity-0"
-                              : "opacity-100"
-                            : selectedChains.includes(item.chain.key)
+                        className={`w-6 h-6 ${item.chain.key === "ethereum"
+                          ? showEthereumMainnet
                             ? "opacity-0"
                             : "opacity-100"
-                        }`}
+                          : selectedChains.includes(item.chain.key)
+                            ? "opacity-0"
+                            : "opacity-100"
+                          }`}
                       >
                         <circle
                           xmlns="http://www.w3.org/2000/svg"
@@ -795,23 +778,21 @@ const MetricsTable = ({
                       </svg>
                     </div>
                     <div
-                      className={`p-1 rounded-full ${
-                        selectedChains.includes(item.chain.key)
-                          ? "bg-white dark:bg-forest-1000"
-                          : "bg-forest-50 dark:bg-[#1F2726]"
-                      }`}
+                      className={`p-1 rounded-full ${selectedChains.includes(item.chain.key)
+                        ? "bg-white dark:bg-forest-1000"
+                        : "bg-forest-50 dark:bg-[#1F2726]"
+                        }`}
                     >
                       <Icon
                         icon="feather:check-circle"
-                        className={`w-6 h-6 ${
-                          item.chain.key === "ethereum"
-                            ? showEthereumMainnet
-                              ? "opacity-100"
-                              : "opacity-0"
-                            : selectedChains.includes(item.chain.key)
+                        className={`w-6 h-6 ${item.chain.key === "ethereum"
+                          ? showEthereumMainnet
                             ? "opacity-100"
                             : "opacity-0"
-                        }`}
+                          : selectedChains.includes(item.chain.key)
+                            ? "opacity-100"
+                            : "opacity-0"
+                          }`}
                         style={{
                           color: selectedChains.includes(item.chain.key)
                             ? undefined

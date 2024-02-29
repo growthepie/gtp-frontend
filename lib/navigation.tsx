@@ -55,6 +55,10 @@ export const navigationCategories = {
     label: "Convenience",
     icon: "gtp:transaction-costs",
   },
+  "public-goods-funding": {
+    label: "Public Goods Funding",
+    icon: "feather:sun",
+  },
 };
 
 export const navigationItems: NavigationItem[] = [
@@ -519,11 +523,26 @@ export const navigationItems: NavigationItem[] = [
   },
 
   {
-    name: "Wiki",
-    label: "Wiki",
+    name: "Knowledge",
+    label: "Knowledge",
     icon: "gtp:book-open",
     options: [],
     href: "https://docs.growthepie.xyz/",
+  },
+  {
+    name: "Trackers",
+    label: "Trackers",
+    icon: "gtp:tracker",
+    options: [
+      {
+        label: "OP RetroPGF 3",
+        icon: "gtp:optimism-logo-monochrome",
+        category: "public-goods-funding",
+        key: "rpgf3",
+        rootKey: "rpgf3",
+        urlKey: "optimism-retropgf-3",
+      }
+    ],
   },
 
   // // put navigation items that we want to hide in production here
@@ -536,6 +555,7 @@ export const navigationItems: NavigationItem[] = [
     options: [],
     href: "https://mirror.xyz/blog.growthepie.eth",
   },
+
   //   ]
   // : []),
 ];
@@ -548,13 +568,13 @@ export const contributorsItem: NavigationItem = {
   href: "/contributors",
 };
 
-export const rpgfItem: NavigationItem = {
-  name: "RPGF3 Tracker",
-  label: "RPGF3 Tracker",
-  icon: "gtp:optimism-logo-monochrome",
-  options: [],
-  href: "/optimism-retropgf-3",
-};
+// export const rpgfItem: NavigationItem = {
+//   name: "RPGF3 Tracker",
+//   label: "RPGF3 Tracker",
+//   icon: "gtp:optimism-logo-monochrome",
+//   options: [],
+//   href: "/optimism-retropgf-3",
+// };
 
 export const apiDocsItem: NavigationItem = {
   name: "API Documentation",

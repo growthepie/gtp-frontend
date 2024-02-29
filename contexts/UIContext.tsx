@@ -1,17 +1,22 @@
-import { createContext, useContext, useState, useMemo } from "react";
+'use client';
+import { createContext, useContext, useState, useMemo, useEffect, useLayoutEffect } from "react";
 
 type UIContextState = {
   isSidebarOpen: boolean;
+  isMobile: boolean;
   isMobileSidebarOpen: boolean;
   toggleSidebar: () => void;
   toggleMobileSidebar: () => void;
+  isSafariBrowser: boolean;
 };
 
 const UIContext = createContext<UIContextState>({
   isSidebarOpen: true,
+  isMobile: false,
   isMobileSidebarOpen: false,
-  toggleSidebar: () => {},
-  toggleMobileSidebar: () => {},
+  toggleSidebar: () => { },
+  toggleMobileSidebar: () => { },
+  isSafariBrowser: false,
 });
 
 export const useUIContext = () => useContext(UIContext);
@@ -19,9 +24,11 @@ export const useUIContext = () => useContext(UIContext);
 export const UIContextProvider = ({ children }) => {
   const [state, setState] = useState<UIContextState>({
     isSidebarOpen: true,
+    isMobile: false,
     isMobileSidebarOpen: false,
-    toggleSidebar: () => {},
-    toggleMobileSidebar: () => {},
+    toggleSidebar: () => { },
+    toggleMobileSidebar: () => { },
+    isSafariBrowser: false,
   });
 
   const value = useMemo<UIContextState>(() => {
@@ -43,6 +50,34 @@ export const UIContextProvider = ({ children }) => {
       toggleMobileSidebar,
     };
   }, [state]);
+
+  useEffect(() => {
+    //prevent scrolling on mobile when sidebar is open
+    if (state.isMobileSidebarOpen && state.isMobile) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  }, [state.isMobileSidebarOpen, state.isMobile]);
+
+  useLayoutEffect(() => {
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+    setState({
+      ...state,
+      isSafariBrowser: isSafari,
+    });
+
+    const updateSize = () => {
+      setState({
+        ...state,
+        isMobile: window.innerWidth < 768,
+      });
+    };
+    window.addEventListener("resize", updateSize);
+    updateSize();
+    return () => window.removeEventListener("resize", updateSize);
+  }, []);
 
   return <UIContext.Provider value={value}>{children}</UIContext.Provider>;
 };

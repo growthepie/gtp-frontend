@@ -305,7 +305,7 @@ const Chain = ({ params }: { params: any }) => {
           </div>
         )}
       </Container>
-      {/*
+
       {overviewData !== null && chainKeys[0] !== "ethereum" && (
         <>
           <Container className="flex flex-col w-full mt-[65px] md:mt-[60px]">
@@ -343,7 +343,6 @@ const Chain = ({ params }: { params: any }) => {
           />
         </>
       )}
-      */}
     </>
   );
 };

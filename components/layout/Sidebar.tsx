@@ -7,7 +7,7 @@ import {
   navigationItems,
   contributorsItem,
   apiDocsItem,
-  rpgfItem,
+  // rpgfItem,
 } from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
 import { Icon } from "@iconify/react";
@@ -57,14 +57,13 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
     return (
       <>
         <button
-          className={`z-[999] transition-colors duration-500 ${
-            isMobileSidebarOpen ? "hidden" : "block"
-          } ${
+          className={`z-[999] transition-colors duration-200 ${isMobileSidebarOpen ? "hidden" : "block"
+            } ${
             // if scroll position is 20px or more from top, add bg and shadow
             scrollHeight > 0
               ? "fixed bg-white dark:bg-forest-1000 shadow-md rounded-full border-2 border-forest-900 dark:border-forest-200 p-2 right-[6px] top-[18px]"
               : `fixed right-[16px] top-[28px] border-transparent`
-          }`}
+            }`}
           // style={{
           //   top: scrollHeight >= 15 ? "20px" : `calc(28px - ${scrollHeight}px)`,
           // }}
@@ -88,15 +87,14 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
         {/* {isMobileSidebarOpen && ( */}
         <div
           suppressHydrationWarning
-          className={`transition-all z-50 ${
-            isMobileSidebarOpen
-              ? "opacity-100 pointer-events-auto"
-              : "opacity-0 pointer-events-none"
-          }`}
+          className={`transition-opacity z-[999] ${isMobileSidebarOpen
+            ? "opacity-100 pointer-events-none"
+            : "opacity-0 pointer-events-none"
+            }`}
         >
-          <Backgrounds isMobileMenu />
+
           <div className="fixed inset-0 p-[20px] z-[999] flex flex-col justify-items-start select-none overflow-hidden">
-            <div className="flex justify-between space-x-[20px] items-end w-full">
+            <div className="flex justify-between space-x-[20px] items-end w-full pointer-events-auto">
               <Link href="/" className="h-[36px] w-[34px] relative">
                 <Image
                   src="/logo_pie_only.png"
@@ -187,7 +185,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                 </button>
               </div>
             </div>
-            <div className="z-[999] mt-[30px] h-[calc(100vh-100px)] w-full flex flex-col justify-between overflow-hidden relative">
+            <div className="z-[999] mt-[30px] h-[calc(100vh-100px)] w-full flex flex-col justify-between overflow-hidden relative pointer-events-auto">
               <div className="flex-1 w-full overflow-x-hidden relative overflow-y-scroll scrollbar-thin scrollbar-thumb-forest-1000/50 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
                 {navigationItems.map((item) => (
                   <SidebarMenuGroup
@@ -198,23 +196,12 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                 ))}
               </div>
 
-              <div className="flex flex-col justify-end pt-3 pb-6 relative mb-[17px]">
+              <div className="flex flex-col justify-end pt-3 pb-6 relative mb-[17px] pointer-events-auto">
                 <SidebarMenuGroup
                   key={apiDocsItem.name + "_item"}
                   item={apiDocsItem}
                   sidebarOpen={isMobileSidebarOpen}
                 />
-                <div
-                  className={`flex w-[94%] h-[25px] rounded-full mb-3 z-[999] ${
-                    isMobileSidebarOpen ? "" : "bg-inherit "
-                  }`}
-                >
-                  <SidebarMenuGroup
-                    key={rpgfItem.name + "_item"}
-                    item={rpgfItem}
-                    sidebarOpen={isMobileSidebarOpen}
-                  />
-                </div>
                 <SidebarMenuGroup
                   key={contributorsItem.name + "_item"}
                   item={contributorsItem}
@@ -249,6 +236,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
               </div>
             </div>
           </div>
+          <Backgrounds isMobileMenu />
         </div>
         {/* )} */}
       </>
@@ -256,9 +244,8 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
 
   return (
     <motion.div
-      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden  ${
-        isSidebarOpen ? "w-[18rem]" : ""
-      }`}
+      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden  ${isSidebarOpen ? "w-[18rem]" : ""
+        }`}
       animate={{
         width: isSidebarOpen ? "18rem" : "5.5rem",
       }}
@@ -312,13 +299,18 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
               }`}
           /> */}
 
-          <SidebarMenuGroup
+          {/* <SidebarMenuGroup
             key={rpgfItem.name + "_item"}
             item={rpgfItem}
             sidebarOpen={isSidebarOpen}
-          />
+          /> */}
         </div>
 
+        <SidebarMenuGroup
+          key={apiDocsItem.name + "_item"}
+          item={apiDocsItem}
+          sidebarOpen={isSidebarOpen}
+        />
         <SidebarMenuGroup
           key={contributorsItem.name + "_item"}
           item={contributorsItem}
@@ -362,14 +354,10 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
             </Link>
           </div>
         )}
-        {isSidebarOpen ? (
-          <div className="relative flex bottom-2 right-4  justify-center w-full h-full pt-6 ">
-            <DarkModeSwitch isMobile />
-          </div>
-        ) : (
-          <></>
-        )}
+        <div className={`flex justify-center w-full h-full pb-[8px] pt-[17px] ${isSidebarOpen ? "" : "hidden"}`}>
+          <DarkModeSwitch isMobile />
+        </div>
       </div>
-    </motion.div>
+    </motion.div >
   );
 }

@@ -2,6 +2,15 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/optimism-retropgf-3",
+        destination: "/trackers/optimism-retropgf-3",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     // domains: ["ipfs.io", "content.optimism.io"],
     remotePatterns: [
