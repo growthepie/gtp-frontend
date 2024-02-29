@@ -263,49 +263,6 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
         ))}
       </div>
       <div className="flex flex-col justify-end pt-6 pb-3 relative">
-        <div
-          className={`flex w-[94%] h-[25px] mb-3 z-[999] rounded-full bg-inherit
-            }`}
-        >
-          {/* <Image
-            src={rpgf}
-            alt="RPGF"
-            width={30}
-            height={30}
-            className={` absolute  self-center ${isSidebarOpen
-              ? " left-[30px] h-[30px] w-[30px]"
-              : "left-[32px] h-[30px] w-[30px]"
-              }`}
-          /> */}
-          {/* <Icon
-            icon="material-symbols:star"
-            className={` text-[#FF0420] absolute  self-center ${isSidebarOpen
-              ? "animate-bounce visible left-[220px] h-[8px] w-[8px]"
-              : "animate-none invisible left-[32px] h-[5px] w-[5px]"
-              }`}
-          />
-          <Icon
-            icon="material-symbols:star"
-            className={` text-[#FF0420] absolute  self-center ${isSidebarOpen
-              ? "animate-bounce visible left-[230px] h-[8px] w-[8px]"
-              : "animate-none invisible left-[32px] h-[5px] w-[5px]"
-              }`}
-          />
-          <Icon
-            icon="material-symbols:star"
-            className={` text-[#FF0420] absolute  self-center ${isSidebarOpen
-              ? "animate-bounce visible left-[240px] h-[8px] w-[8px] "
-              : "animate-none invisible left-[32px] h-[5px] w-[5px]"
-              }`}
-          /> */}
-
-          {/* <SidebarMenuGroup
-            key={rpgfItem.name + "_item"}
-            item={rpgfItem}
-            sidebarOpen={isSidebarOpen}
-          /> */}
-        </div>
-
         <SidebarMenuGroup
           key={apiDocsItem.name + "_item"}
           item={apiDocsItem}
