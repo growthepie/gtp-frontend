@@ -10,10 +10,9 @@ export default function Backgrounds({ isMobileMenu }: BackgroundsProps) {
       <>
         <div
           style={{
-            pointerEvents: "none",
             // background: `radial-gradient(90.11% 90.11% at 77.71% 27.89%, #1B2524 0%, #364240 100%) fixed`,
           }}
-          className="fixed inset-0 z-50 mouse-events-none overflow-hidden w-full h-full bg-white dark:bg-[#1F2726]"
+          className="fixed inset-0 !z-[998] mouse-events-none overflow-hidden w-full h-full bg-white dark:bg-[#1F2726]"
         ></div>
         <div
           style={{

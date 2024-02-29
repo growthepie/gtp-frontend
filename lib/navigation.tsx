@@ -555,6 +555,7 @@ export const navigationItems: NavigationItem[] = [
     options: [],
     href: "https://mirror.xyz/blog.growthepie.eth",
   },
+
   //   ]
   // : []),
 ];
