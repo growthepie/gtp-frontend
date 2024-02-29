@@ -13,6 +13,6 @@ module.exports = {
   ],
   robotsTxtOptions: {
     exclude: ["/server-sitemap.xml"],
-    // additionalSitemaps: ["https://www.growthepie.xyz/server-sitemap.xml"],
+    additionalSitemaps: ["https://www.growthepie.xyz/server-sitemap.xml"],
   },
 };
