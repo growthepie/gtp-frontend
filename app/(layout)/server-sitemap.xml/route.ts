@@ -6,6 +6,7 @@ export async function GET(request: Request) {
   const fundamentals = navigationItems[1];
   const blockspace = navigationItems[2];
   const chains = navigationItems[3];
+  const trackers = navigationItems[5];
 
   const pages = [
     ...fundamentals.options.map(
@@ -17,6 +18,9 @@ export async function GET(request: Request) {
     ...chains.options
       .filter((c) => c.hide !== true)
       .map((option) => `https://www.growthepie.xyz/chains/${option.urlKey}`),
+    ...trackers.options
+      .filter((c) => c.hide !== true)
+      .map((option) => `https://www.growthepie.xyz/trackers/${option.urlKey}`),
   ];
 
   const getDate = () => {
@@ -29,14 +33,22 @@ export async function GET(request: Request) {
   };
 
   return getServerSideSitemap([
-    ...pages.map(
-      (page): ISitemapField => ({
-        loc: page,
-        // set last mod to todays date at 8:00 am UTC
-        lastmod: getDate(),
-        changefreq: "daily",
-        priority: 0.9,
-      }),
-    ),
+    ...pages
+      .filter(
+        (page) =>
+          !page.includes("/api/") &&
+          !page.includes("/[") &&
+          !page.includes("/_") &&
+          !page.includes("404"),
+      )
+      .map(
+        (page): ISitemapField => ({
+          loc: page,
+          // set last mod to todays date at 8:00 am UTC
+          lastmod: getDate(),
+          changefreq: "daily",
+          priority: 0.9,
+        }),
+      ),
   ]);
 }
