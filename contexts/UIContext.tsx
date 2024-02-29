@@ -1,3 +1,4 @@
+'use client';
 import { createContext, useContext, useState, useMemo, useEffect, useLayoutEffect } from "react";
 
 type UIContextState = {
@@ -31,7 +32,6 @@ export const UIContextProvider = ({ children }) => {
   });
 
   const value = useMemo<UIContextState>(() => {
-
     const toggleSidebar = () =>
       setState({
         ...state,
@@ -44,15 +44,10 @@ export const UIContextProvider = ({ children }) => {
         isMobileSidebarOpen: !state.isMobileSidebarOpen,
       });
 
-    const isSafariBrowser = /^((?!chrome|android).)*safari/i.test(
-      navigator.userAgent,
-    );
-
     return {
       ...state,
       toggleSidebar,
       toggleMobileSidebar,
-      isSafariBrowser,
     };
   }, [state]);
 
@@ -66,6 +61,13 @@ export const UIContextProvider = ({ children }) => {
   }, [state.isMobileSidebarOpen, state.isMobile]);
 
   useLayoutEffect(() => {
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+    setState({
+      ...state,
+      isSafariBrowser: isSafari,
+    });
+
     const updateSize = () => {
       setState({
         ...state,
