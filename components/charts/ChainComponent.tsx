@@ -62,7 +62,7 @@ export default function ChainComponent({
 }) {
   // Keep track of the mounted state
   const isMounted = useIsMounted();
-  const { isSidebarOpen } = useUIContext();
+  const { isSidebarOpen, isSafariBrowser } = useUIContext();
   const { width, height } = useWindowSize();
   const { theme } = useTheme();
   const isMobile = useMediaQuery("(max-width: 767px)");
@@ -1063,11 +1063,11 @@ export default function ChainComponent({
     lastPointLines[i][lastPointLines[i].length] = chart.renderer
       .createElement("line")
       .attr({
-        x1: chart.chartWidth * (1 - fraction) + 0.0005,
+        x1: chart.chartWidth * (1 - fraction) + 0.00005,
         y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
-        x2: chart.chartWidth * (1 - fraction) - 0.0005,
+        x2: chart.chartWidth * (1 - fraction) - 0.00005,
         y2: chart.plotTop / 2,
-        stroke: "url('#gradient0')",
+        stroke: isSafariBrowser ? AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1] : "url('#gradient0')",
         "stroke-dasharray": "2",
         "stroke-width": 1,
         rendering: "crispEdges",
@@ -1077,9 +1077,9 @@ export default function ChainComponent({
     lastPointLines[i][lastPointLines[i].length] = chart.renderer
       .createElement("line")
       .attr({
-        x1: chart.chartWidth * (1 - fraction) + 0.0005,
+        x1: chart.chartWidth * (1 - fraction) + 0.5,
         y1: chart.plotTop / 2 + 0.00005,
-        x2: chart.chartWidth * (1 - fraction) - 0.0005,
+        x2: chart.chartWidth * (1 - fraction),
         y2: chart.plotTop / 2,
         stroke: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1],
         "stroke-dasharray": 2,

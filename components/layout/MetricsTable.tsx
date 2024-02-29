@@ -127,7 +127,7 @@ const MetricsTable = ({
     return [item?.page?.showGwei, item?.page?.reversePerformer];
   }, [metric_id]);
 
-  const { isSidebarOpen } = useUIContext();
+  const { isSidebarOpen, isSafariBrowser } = useUIContext();
 
   const changesKey = useMemo(() => {
     if (timeIntervalKey === "monthly") {
@@ -394,7 +394,7 @@ const MetricsTable = ({
 
   return (
     <div className="flex flex-col mt-3 md:mt-0 ml-0 lg:-ml-2 font-semibold space-y-[5px] overflow-x-scroll md:overflow-x-visible z-100 w-full py-5 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
-      <div className="min-w-[570px] md:min-w-[600px] lg:min-w-full pr-[20px] md:pr-[50px] lg:pr-2 w-full">
+      <div className="relative min-w-[570px] md:min-w-[600px] lg:min-w-full pr-[20px] md:pr-[50px] lg:pr-2 w-full">
         <div
           className={`flex items-center justify-between py-1 pl-4 pr-7 lg:pl-2 lg:pr-12 rounded-full font-semibold whitespace-nowrap text-xs lg:text-sm lg:mt-4`}
         >
@@ -405,7 +405,7 @@ const MetricsTable = ({
             {timeIntervalKey === "monthly" ? "Last 30d" : "Yesterday"}
           </div>
           <div
-            className={`relative ${isSidebarOpen ? "w-3/4 2xl:w-2/3" : "w-2/3"
+            className={`${isSidebarOpen ? "w-3/4 2xl:w-2/3" : "w-2/3"
               } flex pr-7 lg:pr-4`}
           >
             {/* <div className={`w-1/5 text-right capitalize`}>
@@ -429,7 +429,7 @@ const MetricsTable = ({
               </div>
             ))}
             <div
-              className={`absolute -right-[1px] -top-[4px] lg:top-0 lg:-right-[21px] cursor-pointer `}
+              className={`absolute ${isSafariBrowser ? "right-[37px] top-[0px] md:right-[32px] md:top-[21px]" : "right-[46px] top-[0px] md:right-[35px] md:top-[21px]"} cursor-pointer`}
               onClick={onChainSelectToggle}
             >
               <div

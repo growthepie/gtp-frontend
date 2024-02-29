@@ -5,13 +5,15 @@ type UIContextState = {
   isMobileSidebarOpen: boolean;
   toggleSidebar: () => void;
   toggleMobileSidebar: () => void;
+  isSafariBrowser: boolean;
 };
 
 const UIContext = createContext<UIContextState>({
   isSidebarOpen: true,
   isMobileSidebarOpen: false,
-  toggleSidebar: () => {},
-  toggleMobileSidebar: () => {},
+  toggleSidebar: () => { },
+  toggleMobileSidebar: () => { },
+  isSafariBrowser: false,
 });
 
 export const useUIContext = () => useContext(UIContext);
@@ -20,8 +22,9 @@ export const UIContextProvider = ({ children }) => {
   const [state, setState] = useState<UIContextState>({
     isSidebarOpen: true,
     isMobileSidebarOpen: false,
-    toggleSidebar: () => {},
-    toggleMobileSidebar: () => {},
+    toggleSidebar: () => { },
+    toggleMobileSidebar: () => { },
+    isSafariBrowser: false,
   });
 
   const value = useMemo<UIContextState>(() => {
@@ -37,10 +40,15 @@ export const UIContextProvider = ({ children }) => {
         isMobileSidebarOpen: !state.isMobileSidebarOpen,
       });
 
+    const isSafariBrowser = /^((?!chrome|android).)*safari/i.test(
+      navigator.userAgent,
+    );
+
     return {
       ...state,
       toggleSidebar,
       toggleMobileSidebar,
+      isSafariBrowser,
     };
   }, [state]);
 
