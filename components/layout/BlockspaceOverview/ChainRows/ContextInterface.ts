@@ -1,26 +1,28 @@
 import { Chains } from "@/types/api/ChainOverviewResponse";
+import { MasterResponse } from "@/types/api/MasterResponse";
 
 export interface RowContainerInterface {
+  master: MasterResponse;
   data: Chains;
   forceSelectedChain?: string;
-  isCategoryHovered: { [key: string]: boolean };
+  isCategoryHovered: (category: string) => boolean; // Function to check if category is hovered
   selectedCategory: string;
   selectedChain: string | null;
+  selectedTimespan: string;
   categories: Object;
   allCats: boolean;
   setSelectedChain: (chain: string | null) => void;
   setSelectedCategory: (category: string) => void;
   setAllCats: (cats: boolean) => void;
-  setIsCategoryHovered: React.Dispatch<
-    React.SetStateAction<{ [key: string]: boolean }>
-  >;
+  hoverCategory: (category: string) => void; // Function to hover category
+  unhoverCategory: (category: string) => void; // Function to unhover category
 }
 
 export interface RowChildrenInterface {
   data: Chains;
   selectedMode: string;
   forceSelectedChain?: string;
-  isCategoryHovered: { [key: string]: boolean };
+  isCategoryHovered: (category: string) => boolean; // Function to check if category is hovered
   selectedCategory: string;
   selectedChain: string | null;
   selectedTimespan: string;
@@ -30,22 +32,20 @@ export interface RowChildrenInterface {
   setSelectedChain: (chain: string | null) => void;
   setSelectedCategory: (category: string) => void;
   setAllCats: (cats: boolean) => void;
-  setIsCategoryHovered: React.Dispatch<
-    React.SetStateAction<{ [key: string]: boolean }>
-  >;
+  hoverCategory: (category: string) => void; // Function to hover category
+  unhoverCategory: (category: string) => void; // Function to unhover category
 }
 
 export interface RowParentInterface {
   data: Chains;
   selectedMode: string;
   forceSelectedChain?: string;
-  isCategoryHovered: { [key: string]: boolean };
+  isCategoryHovered: (category: string) => boolean; // Function to check if category is hovered
   selectedChain: string | null;
   selectedTimespan: string;
   categories: Object;
   allCats: boolean;
   setAllCats: (cats: boolean) => void;
-  setIsCategoryHovered: React.Dispatch<
-    React.SetStateAction<{ [key: string]: boolean }>
-  >;
+  hoverCategory: (category: string) => void; // Function to hover category
+  unhoverCategory: (category: string) => void; // Function to unhover category
 }

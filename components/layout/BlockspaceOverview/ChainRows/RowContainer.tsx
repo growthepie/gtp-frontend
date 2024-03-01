@@ -4,17 +4,20 @@ import { RowContainerInterface } from "./ContextInterface";
 
 export default function RowContainer() {
   const {
+    master,
     data,
     forceSelectedChain,
     isCategoryHovered,
     selectedCategory,
     selectedChain,
+    selectedTimespan,
     categories,
     allCats,
     setSelectedChain,
     setSelectedCategory,
     setAllCats,
-    setIsCategoryHovered,
+    hoverCategory,
+    unhoverCategory,
   } = useRowContext() as RowContainerInterface;
 
   return (
@@ -48,58 +51,47 @@ export default function RowContainer() {
                   }
                 }}
                 onMouseEnter={() => {
-                  setIsCategoryHovered((prev) => ({
-                    ...prev,
-                    ["all_chain"]: true,
-                  }));
+                  hoverCategory("all_chain");
                 }}
                 onMouseLeave={() => {
-                  setIsCategoryHovered((prev) => ({
-                    ...prev,
-                    ["all_chain"]: false,
-                  }));
+                  unhoverCategory("all_chain");
                 }}
               >
                 {forceSelectedChain && "All"}
               </button>
             </div>
             <div className="flex flex-1">
-              {Object.keys(categories)
-                .filter((category) => categories[category] !== "Chains")
-                .map((category, i) => (
-                  <div
-                    key={category}
-                    className={`relative flex h-full justify-center items-center 
+              {master &&
+                Object.keys(master.blockspace_categories.main_categories).map(
+                  (category, i) => (
+                    <div
+                      key={category}
+                      className={`relative flex h-full justify-center items-center 
                     ${category === "unlabeled" ? "flex-1" : "flex-1"}
                     ${
                       selectedCategory === category
                         ? "borden-hidden rounded-[0px]"
                         : "h-full"
                     }`}
-                    onMouseEnter={() => {
-                      setIsCategoryHovered((prev) => ({
-                        ...prev,
-                        [category]: true,
-                      }));
-                    }}
-                    onMouseLeave={() => {
-                      setIsCategoryHovered((prev) => ({
-                        ...prev,
-                        [category]: false,
-                      }));
-                    }}
-                    style={{
-                      backgroundColor:
-                        selectedCategory === category && !allCats
-                          ? "#5A6462"
-                          : `rgba(0, 0, 0, ${
-                              0.06 + (i / Object.keys(categories).length) * 0.94
-                            })`,
-                    }}
-                  >
-                    <button
-                      key={category}
-                      className={`flex flex-col w-full h-full justify-center items-center overflow-hidden border-l border-[
+                      onMouseEnter={() => {
+                        hoverCategory(category);
+                      }}
+                      onMouseLeave={() => {
+                        unhoverCategory(category);
+                      }}
+                      style={{
+                        backgroundColor:
+                          selectedCategory === category && !allCats
+                            ? "#5A6462"
+                            : `rgba(0, 0, 0, ${
+                                0.06 +
+                                (i / Object.keys(categories).length) * 0.94
+                              })`,
+                      }}
+                    >
+                      <button
+                        key={category}
+                        className={`flex flex-col w-full h-full justify-center items-center overflow-hidden border-l border-[
                     1px 
                   ] border-forest-50 dark:border-forest-800
                     ${
@@ -107,25 +99,48 @@ export default function RowContainer() {
                         ? "bg-forest-800/[0.025]"
                         : ""
                     } 
-                    ${isCategoryHovered[category] ? "bg-forest-800/50" : ""}`}
-                      onClick={() => {
-                        setSelectedCategory(category);
-                        if (forceSelectedChain) setAllCats(false);
-                        if (!forceSelectedChain) setSelectedChain(null);
-                      }}
-                    >
-                      <div
-                        className={`${
-                          selectedCategory === category
-                            ? "text-sm font-semibold"
-                            : "text-xs font-medium"
-                        }`}
+                    ${isCategoryHovered(category) ? "bg-forest-800/50" : ""}`}
+                        onClick={() => {
+                          if (forceSelectedChain) {
+                            // if no data, return
+                            if (
+                              !data[forceSelectedChain].overview[
+                                selectedTimespan
+                              ][category]["data"]
+                            ) {
+                              return;
+                            }
+                            setSelectedCategory(category);
+                            if (selectedCategory === category) {
+                              if (allCats) {
+                                setAllCats(false);
+                              } else {
+                                setAllCats(true);
+                              }
+                            } else {
+                              setAllCats(false);
+                            }
+                          } else {
+                            setSelectedCategory(category);
+                            setSelectedChain(null);
+                          }
+                          // if (forceSelectedChain) setAllCats(false);
+                          // if (!forceSelectedChain) setSelectedChain(null);
+                        }}
                       >
-                        {categories[category]}
-                      </div>
-                    </button>
-                  </div>
-                ))}
+                        <div
+                          className={`${
+                            selectedCategory === category
+                              ? "text-sm font-semibold"
+                              : "text-xs font-medium"
+                          }`}
+                        >
+                          {categories[category]}
+                        </div>
+                      </button>
+                    </div>
+                  ),
+                )}
             </div>
           </div>
         </div>

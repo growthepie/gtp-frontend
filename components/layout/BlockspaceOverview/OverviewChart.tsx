@@ -28,6 +28,12 @@ export default function OverviewChart({
   selectedChain,
   forceSelectedChain,
   categories,
+  hoveredCategories,
+  allCats,
+  forceHoveredChartSeriesId,
+  setHoveredChartSeriesId,
+  hoveredChartSeriesId,
+  chartComponent,
 }: {
   data: Chains;
   master: MasterResponse | undefined;
@@ -40,6 +46,12 @@ export default function OverviewChart({
   selectedChain: string | null;
   forceSelectedChain?: string;
   categories: Object;
+  hoveredCategories: string[];
+  allCats: boolean;
+  hoveredChartSeriesId: string;
+  forceHoveredChartSeriesId: string;
+  setHoveredChartSeriesId: (series: string) => void;
+  chartComponent: React.MutableRefObject<Highcharts.Chart | null | undefined>;
 }) {
   const standardChainKey = forceSelectedChain ? forceSelectedChain : "all_l2s";
   const [chainEcosystemFilter, setChainEcosystemFilter] = useLocalStorage(
@@ -47,6 +59,7 @@ export default function OverviewChart({
     "all-chains",
   );
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+
   const { theme } = useTheme();
   const categoryKeyToFillOpacity = {
     nft: 1 - 0,
@@ -158,49 +171,118 @@ export default function OverviewChart({
   }, [data, selectedCategory, selectedMode]);
 
   const chartAvg = useMemo(() => {
-    const typeIndex =
-      data[standardChainKey].daily["types"].indexOf(selectedMode);
-    const overviewIndex =
+    let typeIndex = data[standardChainKey].daily["types"].indexOf(selectedMode);
+    let overviewIndex =
       data[standardChainKey]["overview"]["types"].indexOf(selectedMode);
+
+    let returnValue = 0;
 
     if (selectedMode.includes("absolute")) {
       return null;
     }
 
-    let selectedData;
     if (selectedChain) {
-      selectedData = data[selectedChain].daily[selectedCategory].data;
+      let sum = 0;
+      if (selectedMode.includes("share")) {
+        returnValue = data[selectedChain].overview[selectedTimespan][
+          selectedCategory
+        ].data
+          ? data[selectedChain].overview[selectedTimespan][selectedCategory]
+              .data[overviewIndex]
+          : [];
+      } else {
+        for (
+          let i = 0;
+          i <
+          (selectedTimespan === "max"
+            ? data[selectedChain].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value);
+          i++
+        ) {
+          if (
+            data[selectedChain].daily[selectedCategory].data.length - (i + 1) >=
+            0
+          ) {
+            sum +=
+              data[selectedChain].daily[selectedCategory].data[
+                data[selectedChain].daily[selectedCategory].data.length -
+                  (i + 1)
+              ][typeIndex];
+          }
+        }
+        returnValue =
+          sum /
+          (selectedTimespan === "max"
+            ? data[selectedChain].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value >=
+              data[selectedChain].daily[selectedCategory].data.length
+            ? data[selectedChain].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value);
+      }
     } else {
-      selectedData =
-        chainEcosystemFilter === "all-chains"
-          ? data[standardChainKey].daily[selectedCategory].data
-          : chartStack;
-    }
+      if (chainEcosystemFilter === "all-chains") {
+        let sum = 0;
+        for (
+          let i = 0;
+          i <
+          (selectedTimespan === "max"
+            ? data[standardChainKey].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value);
+          i++
+        ) {
+          if (
+            data[standardChainKey].daily[selectedCategory].data.length -
+              (i + 1) >=
+            0
+          ) {
+            sum +=
+              data[standardChainKey].daily[selectedCategory].data[
+                data[standardChainKey].daily[selectedCategory].data.length -
+                  (i + 1)
+              ][typeIndex];
+          }
+        }
 
-    const length =
-      selectedTimespan === "max"
-        ? selectedData.length
-        : timespans[selectedTimespan].value;
+        returnValue =
+          sum /
+          (selectedTimespan === "max"
+            ? data[standardChainKey].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value >=
+              data[standardChainKey].daily[selectedCategory].data.length
+            ? data[standardChainKey].daily[selectedCategory].data.length
+            : timespans[selectedTimespan].value);
+      } else {
+        let sum = 0;
+        for (
+          let i = 0;
+          i <
+          (selectedTimespan === "max"
+            ? chartStack.length
+            : timespans[selectedTimespan].value);
+          i++
+        ) {
+          if (chartStack.length - (i + 1) >= 0) {
+            sum += chartStack[chartStack.length - (i + 1)][typeIndex];
+          }
 
-    let sum = 0;
-    for (let i = 0; i < length; i++) {
-      const traverse = selectedData[selectedData.length - (i + 1)];
-      if (traverse && traverse[typeIndex]) {
-        sum += traverse[typeIndex];
+          returnValue =
+            sum /
+            (selectedTimespan === "max"
+              ? chartStack.length
+              : timespans[selectedTimespan].value >= chartStack.length
+              ? chartStack.length
+              : timespans[selectedTimespan].value);
+        }
       }
     }
 
-    return sum / length;
+    return returnValue;
   }, [
-    data,
-    standardChainKey,
-    selectedMode,
-    selectedChain,
-    selectedCategory,
-    chainEcosystemFilter,
-    chartStack,
     selectedTimespan,
-    timespans,
+    selectedMode,
+    selectedCategory,
+    selectedChain,
+    chainEcosystemFilter,
   ]);
 
   const chartMax = useMemo(() => {
@@ -254,6 +336,16 @@ export default function OverviewChart({
     chainEcosystemFilter,
   ]);
 
+  const categoriesList = useMemo(() => {
+    return Object.keys(data[standardChainKey].daily)
+      .filter((category) => category !== "types")
+      .reverse();
+  }, [data, standardChainKey]);
+
+  const categoriesAllCatChartListOrder = useMemo(() => {
+    return categoriesList.reverse();
+  }, [categoriesList]);
+
   const chartSeries = useMemo(() => {
     const dataKey = selectedMode;
     if (selectedChain) {
@@ -263,32 +355,30 @@ export default function OverviewChart({
       //   dataKey: dataKey,
       //   data: data[selectedChain].daily[selectedCategory].data.length,
       // });
-      if (forceSelectedChain) {
-        return [
-          ...Object.keys(data[selectedChain]?.daily || {})
-            .filter((category) => category !== "types") // Exclude the "types" category
-            .reverse()
-            .map((category) => ({
-              id: [selectedChain, category, selectedMode].join("_"),
-              name: selectedChain,
-              unixKey: "unix",
-              dataKey: dataKey,
-              data: data[selectedChain]?.daily[category]?.data || [],
-              fillOpacity: categoryKeyToFillOpacity[category],
-              lineWidth: 0,
-              custom: {
-                tooltipLabel: categories[category],
-              },
-            })),
-        ];
+      if (allCats) {
+        return categoriesList.map((category) => ({
+          id: [selectedChain, category, selectedMode].join("::"),
+          name: selectedChain,
+          unixKey: "unix",
+          dataKey: dataKey,
+          data: data[selectedChain]?.daily[category]?.data || [],
+          fillOpacity: categoryKeyToFillOpacity[category],
+          lineWidth: 0,
+          custom: {
+            tooltipLabel: categories[category],
+          },
+        }));
       } else {
         return [
           {
-            id: [selectedChain, selectedCategory, selectedMode].join("_"),
+            id: [selectedChain, selectedCategory, selectedMode].join("::"),
             name: selectedChain,
             unixKey: "unix",
             dataKey: dataKey,
             data: data[selectedChain].daily[selectedCategory].data,
+            custom: {
+              tooltipLabel: categories[selectedCategory],
+            },
           },
         ];
       }
@@ -311,7 +401,7 @@ export default function OverviewChart({
     //   });
     return [
       {
-        id: ["all_l2s", selectedCategory, selectedMode].join("_"),
+        id: ["all_l2s", selectedCategory, selectedMode].join("::"),
         name: "all_l2s",
         unixKey: "unix",
         dataKey: selectedMode,
@@ -328,8 +418,10 @@ export default function OverviewChart({
     chainEcosystemFilter,
     data,
     chartStack,
-    categoryKeyToFillOpacity,
-    forceSelectedChain,
+    allCats,
+    categoriesList,
+    categoriesAllCatChartListOrder,
+    categories,
   ]);
 
   const avgHeight = useSpring({
@@ -370,6 +462,8 @@ export default function OverviewChart({
     }
   }
 
+  console.log(chartSeries);
+
   return (
     <>
       <div className="flex items-center w-full ">
@@ -387,12 +481,17 @@ export default function OverviewChart({
           chartHeight={forceSelectedChain ? "259px" : "196px"}
           chartWidth="100%"
           maxY={chartMax}
-          chartAvg={!forceSelectedChain ? chartAvg || undefined : undefined}
+          chartAvg={!allCats ? chartAvg || undefined : undefined}
+          forceHoveredChartSeriesId={forceHoveredChartSeriesId}
+          setHoveredChartSeriesId={setHoveredChartSeriesId}
+          hoveredChartSeriesId={hoveredChartSeriesId}
+          allCats={allCats}
+          chartRef={chartComponent}
         />
         {chartAvg && (
           <div
             className={` items-end relative top-[2px] min-w-[50px] lg:min-w-[70px] ${
-              forceSelectedChain ? "hidden" : "flex"
+              allCats ? "hidden" : "flex"
             } ${forceSelectedChain ? "h-[230px]" : "h-[180px]"}`}
           >
             <animated.div

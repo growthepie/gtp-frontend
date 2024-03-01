@@ -19,7 +19,8 @@ export default function RowParent({ chainKey, index }) {
     categories,
     allCats,
     setAllCats,
-    setIsCategoryHovered,
+    unhoverCategory,
+    hoverCategory,
   } = useRowContext() as RowParentInterface;
 
   const DisabledStates: {
@@ -91,8 +92,8 @@ export default function RowParent({ chainKey, index }) {
           <div
             className={`flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px] ${
               forceSelectedChain
-                ? isCategoryHovered["all_chain"]
-                  ? isCategoryHovered["all_chain"] && allCats
+                ? isCategoryHovered("all_chain")
+                  ? isCategoryHovered("all_chain") && allCats
                     ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
                     : `rounded-l-full py-[24px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
                   : allCats
@@ -105,16 +106,18 @@ export default function RowParent({ chainKey, index }) {
                 : "hover:cursor-default"
             } `}
             onMouseEnter={() => {
-              setIsCategoryHovered((prev) => ({
-                ...prev,
-                ["all_chain"]: true,
-              }));
+              // setIsCategoryHovered((prev) => ({
+              //   ...prev,
+              //   ["all_chain"]: true,
+              // }));
+              hoverCategory("all_chain");
             }}
             onMouseLeave={() => {
-              setIsCategoryHovered((prev) => ({
-                ...prev,
-                ["all_chain"]: false,
-              }));
+              // setIsCategoryHovered((prev) => ({
+              //   ...prev,
+              //   ["all_chain"]: false,
+              // }));
+              unhoverCategory("all_chain");
             }}
             onClick={() => {
               if (forceSelectedChain) {

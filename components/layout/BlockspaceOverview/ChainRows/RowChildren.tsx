@@ -30,7 +30,8 @@ export default function RowChildren({
     setSelectedChain,
     setSelectedCategory,
     setAllCats,
-    setIsCategoryHovered,
+    unhoverCategory,
+    hoverCategory,
   } = useRowContext() as RowChildrenInterface;
 
   const sumChainValue = useMemo(() => {
@@ -123,7 +124,7 @@ export default function RowChildren({
       if (!categoryData) {
         if (
           (isSelectedCategory && isSelectedChainOrNoSelectedChain) ||
-          isCategoryHovered[categoryKey]
+          isCategoryHovered(categoryKey)
         ) {
           if (isSelectedCategory && isSelectedChainOrNoSelectedChain) {
             style.backgroundColor = "rgba(255,255,255, 0.88)";
@@ -139,7 +140,7 @@ export default function RowChildren({
             style.borderRadius = "5px";
           }
           style.transform =
-            isCategoryHovered[categoryKey] && !isSelectedCategory
+            isCategoryHovered(categoryKey) && !isSelectedCategory
               ? "scale(1.2)"
               : isSelectedChainOrNoSelectedChain
               ? "scale(1.30)"
@@ -147,7 +148,7 @@ export default function RowChildren({
 
           if (isLastCategory && isSelectedChainOrNoSelectedChain)
             style.transform += " translateX(3px)";
-          style.zIndex = isCategoryHovered[categoryKey] ? 2 : 5;
+          style.zIndex = isCategoryHovered(categoryKey) ? 2 : 5;
         } else {
           style.backgroundColor = "rgba(255,255,255, 0.60)";
           if (isLastCategory) {
@@ -160,7 +161,7 @@ export default function RowChildren({
         style.paddingTop = "0px";
         style.paddingBottom = "0px";
         style.width =
-          isCategoryHovered[categoryKey] || selectedCategory === categoryKey
+          isCategoryHovered(categoryKey) || selectedCategory === categoryKey
             ? "45px"
             : "10px";
 
@@ -170,7 +171,7 @@ export default function RowChildren({
       }
       if (
         (isSelectedCategory && isSelectedChainOrNoSelectedChain) ||
-        isCategoryHovered[categoryKey]
+        isCategoryHovered(categoryKey)
       ) {
         if (isLastCategory) {
           style.borderRadius = "20000px 99999px 99999px 20000px";
@@ -197,7 +198,7 @@ export default function RowChildren({
           // if()
         }
         style.transform =
-          isCategoryHovered[categoryKey] && !isSelectedCategory
+          isCategoryHovered(categoryKey) && !isSelectedCategory
             ? "scaleY(1.01)"
             : isSelectedChainOrNoSelectedChain
             ? "scaleY(1.08)"
@@ -211,7 +212,7 @@ export default function RowChildren({
         //     ? "3px solid rgba(255,255,255, 1)"
         //     : "3px solid rgba(255,255,255, 0.33)";
 
-        style.zIndex = isCategoryHovered[categoryKey] ? 2 : 5;
+        style.zIndex = isCategoryHovered(categoryKey) ? 2 : 5;
 
         style.backgroundColor = "";
       } else {
@@ -321,16 +322,10 @@ export default function RowChildren({
         }
       }}
       onMouseEnter={() => {
-        setIsCategoryHovered((prev) => ({
-          ...prev,
-          [categoryKey]: true,
-        }));
+        hoverCategory(categoryKey);
       }}
       onMouseLeave={() => {
-        setIsCategoryHovered((prev) => ({
-          ...prev,
-          [categoryKey]: false,
-        }));
+        unhoverCategory(categoryKey);
       }}
       className={`flex flex-col h-[41px] justify-center items-center py-5 cursor-pointer relative transition-all duration-200 ease-in-out
                         ${
@@ -338,8 +333,8 @@ export default function RowChildren({
                             ? (selectedCategory === categoryKey &&
                                 (selectedChain === chainKey ||
                                   selectedChain === null)) ||
-                              isCategoryHovered[categoryKey]
-                              ? isCategoryHovered[categoryKey] &&
+                              isCategoryHovered(categoryKey)
+                              ? isCategoryHovered(categoryKey) &&
                                 selectedCategory !== categoryKey
                                 ? `py-[23px] -my-[3px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
                                 : `py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
@@ -361,9 +356,9 @@ export default function RowChildren({
         className={`mix-blend-luminosity font-medium w-full absolute inset-0 flex items-center justify-center ${
           (selectedCategory === categoryKey &&
             (selectedChain === chainKey || selectedChain === null)) ||
-          isCategoryHovered[categoryKey]
+          isCategoryHovered(categoryKey)
             ? `${
-                isCategoryHovered[categoryKey] &&
+                isCategoryHovered(categoryKey) &&
                 selectedCategory !== categoryKey
                   ? "text-xs"
                   : "text-sm font-semibold"
@@ -407,7 +402,7 @@ export default function RowChildren({
           <div
             className={`text-black/80
                             ${
-                              isCategoryHovered[categoryKey] ||
+                              isCategoryHovered(categoryKey) ||
                               selectedCategory === categoryKey
                                 ? "opacity-100 py-8"
                                 : "opacity-0"

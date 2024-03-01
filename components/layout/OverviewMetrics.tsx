@@ -75,6 +75,50 @@ export default function OverviewMetrics({
   const standardChainKey = forceSelectedChain ? forceSelectedChain : "all_l2s";
   const isMobile = useMediaQuery("(max-width: 1023px)");
 
+  const [hoveredSeriesId, setHoveredSeriesId] = useState<string>("");
+  const [hoveredChartSeriesId, setHoveredChartSeriesId] = useState<string>("");
+  const [hoveredCategories, setHoveredCategories] = useState<string[]>([]);
+
+  const [selectedChain, setSelectedChain] = useState<string | null>(
+    forceSelectedChain ?? null,
+  );
+
+  const chartComponent = useRef<Highcharts.Chart | null>(null);
+  const hoverCategory = (category: string) => {
+    if (!hoveredCategories.includes(category)) {
+      setHoveredCategories([category]);
+    }
+  };
+
+  const unhoverCategory = (category: string) => {
+    if (hoveredCategories.includes(category)) {
+      setHoveredCategories(hoveredCategories.filter((c) => c !== category));
+    }
+  };
+
+  const isCategoryHovered = (category: string) => {
+    return hoveredCategories.includes(category);
+  };
+
+  useEffect(() => {
+    if (!hoveredSeriesId) {
+      setHoveredCategories([]);
+    }
+
+    if (allCats && hoveredSeriesId) {
+      const hoveredChartSeriesCategory = hoveredSeriesId.split("::")[1];
+      setHoveredCategories([hoveredChartSeriesCategory]);
+    }
+  }, [allCats, hoveredSeriesId]);
+
+  const forceHoveredChartSeriesId = useMemo(() => {
+    if (allCats && hoveredCategories.length > 0) {
+      return selectedChain + "::" + hoveredCategories[0] + "::" + selectedMode;
+    }
+
+    return "";
+  }, [allCats, hoveredCategories, selectedChain, selectedMode]);
+
   const categories: { [key: string]: string } = useMemo(() => {
     if (master) {
       const result: { [key: string]: string } = {};
@@ -121,34 +165,6 @@ export default function OverviewMetrics({
     return {};
   }, [master]);
 
-  const [isCategoryHovered, setIsCategoryHovered] = useState<{
-    [key: string]: boolean;
-  }>(() => {
-    if (master) {
-      const initialIsCategoryHovered: { [key: string]: boolean } = {};
-      Object.keys(master.blockspace_categories.main_categories).forEach(
-        (key) => {
-          if (key !== "cross_chain") {
-            initialIsCategoryHovered[key] = false;
-          }
-        },
-      );
-      return initialIsCategoryHovered;
-    }
-
-    return {
-      all_chain: false,
-      native_transfers: false,
-      token_transfers: false,
-      nft_fi: false,
-      defi: false,
-      cefi: false,
-      utility: false,
-      scaling: false,
-      gaming: false,
-    };
-  });
-
   const formatSubcategories = useCallback(
     (str: string) => {
       const masterStr =
@@ -165,10 +181,6 @@ export default function OverviewMetrics({
       return formatted.join(" ");
     },
     [master],
-  );
-
-  const [selectedChain, setSelectedChain] = useState<string | null>(
-    forceSelectedChain ?? null,
   );
 
   const timespans = useMemo(() => {
@@ -213,6 +225,9 @@ export default function OverviewMetrics({
       );
     }
   }, [selectedMode, showUsd]);
+
+  console.log(hoveredChartSeriesId);
+  console.log(hoveredCategories);
 
   return (
     <div className="w-full flex-col relative">
@@ -309,6 +324,7 @@ export default function OverviewMetrics({
       <Container className="block w-full !pr-0 lg:!px-[50px]">
         <RowProvider
           value={{
+            master,
             data,
             selectedMode,
             forceSelectedChain,
@@ -322,7 +338,8 @@ export default function OverviewMetrics({
             setSelectedChain,
             setSelectedCategory,
             setAllCats,
-            setIsCategoryHovered,
+            hoverCategory,
+            unhoverCategory,
           }}
         >
           <RowContainer />
@@ -362,6 +379,12 @@ export default function OverviewMetrics({
           selectedChain={selectedChain}
           forceSelectedChain={forceSelectedChain}
           categories={categories}
+          hoveredCategories={hoveredCategories}
+          allCats={allCats}
+          setHoveredChartSeriesId={setHoveredChartSeriesId}
+          hoveredChartSeriesId={hoveredChartSeriesId}
+          forceHoveredChartSeriesId={forceHoveredChartSeriesId}
+          chartComponent={chartComponent}
         />
       </Container>
       {/*Chart Footer*/}
