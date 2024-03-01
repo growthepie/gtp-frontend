@@ -115,7 +115,7 @@ export default function SidebarMenuGroup({
     return (
       <div className="group flex flex-col">
         <Tooltip key={item.name} placement="right">
-          <TooltipTrigger className="h-6 mb-8 cursor-default pl-0 md:pl-8 overflow-visible">
+          <TooltipTrigger className="h-6 mb-[17px] cursor-default pl-0 md:pl-8 overflow-visible">
             <div className="flex items-center justify-items-center opacity-70">
               <div className="w-6 mx-0">
                 <div className="w-6 mx-auto grayscale">
@@ -160,7 +160,7 @@ export default function SidebarMenuGroup({
       <div key={item.name} className="group flex flex-col">
         {/* open in new tab */}
         <Tooltip placement="right">
-          <TooltipTrigger className="h-6 mb-8 cursor-default pl-0 md:pl-8 overflow-visible">
+          <TooltipTrigger className="h-6 mb-[17px] cursor-default pl-0 md:pl-8 overflow-visible">
             <Link
               target={
                 ["API Documentation", "Knowledge", "Blog"].includes(item.name)
@@ -248,16 +248,15 @@ export default function SidebarMenuGroup({
                   )}
                 </div>
               </div>
-
               <div
-                className={`absolute flex-1 flex items-center transition-all duration-300 origin-[-10px_10px]  ${isOpen
-                  ? "rotate-90 bottom-[12px] left-[20px]"
-                  : "rotate-0 bottom-[7px] left-[22px]"
+                className={`absolute bottom-[10px] left-[23px] flex-1 flex items-center transition-all duration-300 origin-[-10px_4px]  ${isOpen
+                  ? "rotate-90"
+                  : "rotate-0"
                   }`}
               >
                 <Icon
-                  icon={"feather:chevron-right"}
-                  className="w-[12px] h-[12px] mr-2"
+                  icon={"gtp:chevron-right"}
+                  className="w-[8px] h-[8px] mr-2"
                 />
               </div>
               {sidebarOpen && (
@@ -277,7 +276,7 @@ export default function SidebarMenuGroup({
         </Tooltip>
 
         <div
-          className={`flex flex-col overflow-hidden mb-8 w-full md:w-80 transition-all duration-300 ease-out  ${isOpen ? "h-auto mt-4" : "h-0 mt-0"
+          className={`flex flex-col overflow-hidden mb-[17px] w-full md:w-80 transition-all duration-300 ease-out  ${isOpen ? "h-auto mt-1" : "h-0 mt-0"
             }`}
         >
           {Object.keys(ChainGroups).length > 0 &&
@@ -396,14 +395,14 @@ export default function SidebarMenuGroup({
             </div>
 
             <div
-              className={`absolute flex-1 flex items-center transition-all duration-300 origin-[-10px_10px]  ${isOpen
-                ? "rotate-90 bottom-[12px] left-[20px]"
-                : "rotate-0 bottom-[7px] left-[22px]"
+              className={`absolute bottom-[10px] left-[23px] flex-1 flex items-center transition-all duration-300 origin-[-10px_4px]  ${isOpen
+                ? "rotate-90"
+                : "rotate-0"
                 }`}
             >
               <Icon
-                icon={"feather:chevron-right"}
-                className="w-[12px] h-[12px] mr-2"
+                icon="gtp:chevron-right"
+                className="w-[8px] h-[8px] mr-2"
               />
             </div>
             {sidebarOpen && (
@@ -430,7 +429,7 @@ export default function SidebarMenuGroup({
       </Tooltip>
 
       <div
-        className={`flex flex-col overflow-hidden mb-8 w-full md:w-80 transition-all duration-300 ease-out  ${isOpen ? "h-auto mt-4" : "h-0 mt-0"
+        className={`flex flex-col overflow-hidden mb-[17px] w-full md:w-80 transition-all duration-300 ease-out  ${isOpen ? "h-auto mt-1" : "h-0 mt-0"
           }`}
       >
         {item.options
