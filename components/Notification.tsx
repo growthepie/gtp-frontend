@@ -115,6 +115,7 @@ const Notification = () => {
 
   const Items = useMemo(() => {
     if (!filteredData || filteredData.length === 0) {
+    if (!filteredData || filteredData.length === 0) {
       return null;
     }
     return (
@@ -233,6 +234,8 @@ const Notification = () => {
   }, [filteredData, currentIndex, theme]);
 
   const [ref, width] = useElementSizeObserver<HTMLDivElement>();
+
+  if (!filteredData || filteredData.length === 0) return null;
 
   if (!filteredData || filteredData.length === 0) return null;
 
