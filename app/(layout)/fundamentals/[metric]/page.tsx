@@ -57,7 +57,7 @@ const Chain = ({ params }: { params: any }) => {
     AllChains.filter(
       (chain) =>
         (chain.ecosystem.includes("all-chains") &&
-          ["arbitrum", "optimism", "base", "linea", "zksync_era"].includes(
+          ["arbitrum", "optimism", "starknet", "base", "zksync_era"].includes(
             chain.key,
           )) ||
         chain.key === "ethereum",
