@@ -57,13 +57,14 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
     return (
       <>
         <button
-          className={`z-[999] transition-colors duration-200 ${isMobileSidebarOpen ? "hidden" : "block"
-            } ${
+          className={`z-[999] transition-colors duration-200 ${
+            isMobileSidebarOpen ? "hidden" : "block"
+          } ${
             // if scroll position is 20px or more from top, add bg and shadow
             scrollHeight > 0
               ? "fixed bg-white dark:bg-forest-1000 shadow-md rounded-full border-2 border-forest-900 dark:border-forest-200 p-2 right-[6px] top-[18px]"
               : `fixed right-[16px] top-[28px] border-transparent`
-            }`}
+          }`}
           // style={{
           //   top: scrollHeight >= 15 ? "20px" : `calc(28px - ${scrollHeight}px)`,
           // }}
@@ -85,167 +86,173 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           <Icon icon="feather:menu" className="h-8 w-8" />
         </button>
         {/* {isMobileSidebarOpen && ( */}
-        <div
-          suppressHydrationWarning
-          className={`transition-opacity z-[999] ${isMobileSidebarOpen
-            ? "opacity-100 pointer-events-none"
-            : "opacity-0 pointer-events-none"
+        {isMobileSidebarOpen && (
+          <div
+            suppressHydrationWarning
+            className={`transition-opacity z-[999] ${
+              isMobileSidebarOpen
+                ? "opacity-100 pointer-events-none"
+                : "opacity-0 pointer-events-none"
             }`}
-        >
+          >
+            <div className="fixed inset-0 p-[20px] z-[999] flex flex-col justify-items-start select-none overflow-hidden">
+              <div className="flex justify-between space-x-[20px] items-end w-full pointer-events-auto">
+                <Link href="/" className="h-[36px] w-[34px] relative">
+                  <Image
+                    src="/logo_pie_only.png"
+                    alt="Forest"
+                    className="antialiased"
+                    fill={true}
+                    quality={100}
+                  />
+                </Link>
+                <div className="flex space-x-[20px] items-end">
+                  <div className="z-[999] flex items-center space-x-[16px] mb-0.5 w-full px-2">
+                    <Link
+                      href="https://twitter.com/growthepie_eth"
+                      target="_blank"
+                      rel="noopener"
+                      onClick={() => {
+                        track("clicked Twitter link", {
+                          location: "mobile sidebar",
+                          page: window.location.pathname,
+                        });
+                      }}
+                    >
+                      <Icon icon="gtp:twitter" className="h-[19px] w-[19px]" />
+                    </Link>
+                    <Link
+                      href="https://share.lens.xyz/u/growthepie.lens"
+                      target="_blank"
+                      rel="noopener"
+                      className=" dark:text-forest-200 text-forest-900"
+                      onClick={() => {
+                        track("clicked Lens link", {
+                          location: "mobile sidebar",
+                          page: window.location.pathname,
+                        });
+                      }}
+                    >
+                      <Icon icon="gtp:lens" className="h-[19px] w-[24px]" />
+                    </Link>
 
-          <div className="fixed inset-0 p-[20px] z-[999] flex flex-col justify-items-start select-none overflow-hidden">
-            <div className="flex justify-between space-x-[20px] items-end w-full pointer-events-auto">
-              <Link href="/" className="h-[36px] w-[34px] relative">
-                <Image
-                  src="/logo_pie_only.png"
-                  alt="Forest"
-                  className="antialiased"
-                  fill={true}
-                  quality={100}
-                />
-              </Link>
-              <div className="flex space-x-[20px] items-end">
-                <div className="z-[999] flex items-center space-x-[16px] mb-0.5 w-full px-2">
-                  <Link
-                    href="https://twitter.com/growthepie_eth"
-                    target="_blank"
-                    rel="noopener"
-                    onClick={() => {
-                      track("clicked Twitter link", {
-                        location: "mobile sidebar",
-                        page: window.location.pathname,
-                      });
-                    }}
+                    <Link
+                      href="https://warpcast.com/growthepie"
+                      target="_blank"
+                      rel="noopener"
+                      className=" dark:text-forest-200 text-forest-900"
+                      onClick={() => {
+                        track("clicked Warpcast link", {
+                          location: "mobile sidebar",
+                          page: window.location.pathname,
+                        });
+                      }}
+                    >
+                      <Icon
+                        icon="gtp:farcaster"
+                        className="h-[19px] w-[19px]"
+                      />
+                    </Link>
+                    <Link
+                      href="https://discord.gg/fxjJFe7QyN"
+                      target="_blank"
+                      rel="noopener"
+                      className=" dark:text-forest-200 text-forest-900"
+                      onClick={() => {
+                        track("clicked Discord link", {
+                          location: "mobile sidebar",
+                          page: window.location.pathname,
+                        });
+                      }}
+                    >
+                      <Icon icon="cib:discord" className="h-[19px] w-[19px]" />
+                    </Link>
+                    <Link
+                      href="https://www.github.com/growthepie"
+                      target="_blank"
+                      rel="noopener"
+                      className=" dark:text-forest-200 text-forest-900"
+                      onClick={() => {
+                        track("clicked Github link", {
+                          location: "mobile sidebar",
+                          page: window.location.pathname,
+                        });
+                      }}
+                    >
+                      <Icon icon="cib:github" className="h-[19px] w-[19px]" />
+                    </Link>
+                  </div>
+                  <button
+                    className="!-mb-1  !-mr-1"
+                    onClick={toggleMobileSidebar}
                   >
-                    <Icon icon="gtp:twitter" className="h-[19px] w-[19px]" />
-                  </Link>
-                  <Link
-                    href="https://share.lens.xyz/u/growthepie.lens"
-                    target="_blank"
-                    rel="noopener"
-                    className=" dark:text-forest-200 text-forest-900"
-                    onClick={() => {
-                      track("clicked Lens link", {
-                        location: "mobile sidebar",
-                        page: window.location.pathname,
-                      });
-                    }}
-                  >
-                    <Icon icon="gtp:lens" className="h-[19px] w-[24px]" />
-                  </Link>
-
-                  <Link
-                    href="https://warpcast.com/growthepie"
-                    target="_blank"
-                    rel="noopener"
-                    className=" dark:text-forest-200 text-forest-900"
-                    onClick={() => {
-                      track("clicked Warpcast link", {
-                        location: "mobile sidebar",
-                        page: window.location.pathname,
-                      });
-                    }}
-                  >
-                    <Icon icon="gtp:farcaster" className="h-[19px] w-[19px]" />
-                  </Link>
-                  <Link
-                    href="https://discord.gg/fxjJFe7QyN"
-                    target="_blank"
-                    rel="noopener"
-                    className=" dark:text-forest-200 text-forest-900"
-                    onClick={() => {
-                      track("clicked Discord link", {
-                        location: "mobile sidebar",
-                        page: window.location.pathname,
-                      });
-                    }}
-                  >
-                    <Icon icon="cib:discord" className="h-[19px] w-[19px]" />
-                  </Link>
-                  <Link
-                    href="https://www.github.com/growthepie"
-                    target="_blank"
-                    rel="noopener"
-                    className=" dark:text-forest-200 text-forest-900"
-                    onClick={() => {
-                      track("clicked Github link", {
-                        location: "mobile sidebar",
-                        page: window.location.pathname,
-                      });
-                    }}
-                  >
-                    <Icon icon="cib:github" className="h-[19px] w-[19px]" />
-                  </Link>
+                    <Icon icon="feather:x" className="h-8 w-8" />
+                  </button>
                 </div>
-                <button
-                  className="!-mb-1  !-mr-1"
-                  onClick={toggleMobileSidebar}
-                >
-                  <Icon icon="feather:x" className="h-8 w-8" />
-                </button>
               </div>
-            </div>
-            <div className="z-[999] mt-[30px] h-[calc(100vh-100px)] w-full flex flex-col justify-between overflow-hidden relative pointer-events-auto">
-              <div className="flex-1 w-full overflow-x-hidden relative overflow-y-scroll scrollbar-thin scrollbar-thumb-forest-1000/50 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
-                {navigationItems.map((item) => (
+              <div className="z-[999] mt-[30px] h-[calc(100vh-100px)] w-full flex flex-col justify-between overflow-hidden relative pointer-events-auto">
+                <div className="flex-1 w-full overflow-x-hidden relative overflow-y-scroll scrollbar-thin scrollbar-thumb-forest-1000/50 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
+                  {navigationItems.map((item) => (
+                    <SidebarMenuGroup
+                      key={item.name + "_item"}
+                      item={item}
+                      sidebarOpen={isMobileSidebarOpen}
+                    />
+                  ))}
+                </div>
+
+                <div className="flex flex-col justify-end pt-3 pb-6 relative mb-[17px] pointer-events-auto">
                   <SidebarMenuGroup
-                    key={item.name + "_item"}
-                    item={item}
+                    key={apiDocsItem.name + "_item"}
+                    item={apiDocsItem}
                     sidebarOpen={isMobileSidebarOpen}
                   />
-                ))}
-              </div>
-
-              <div className="flex flex-col justify-end pt-3 pb-6 relative mb-[17px] pointer-events-auto">
-                <SidebarMenuGroup
-                  key={apiDocsItem.name + "_item"}
-                  item={apiDocsItem}
-                  sidebarOpen={isMobileSidebarOpen}
-                />
-                <SidebarMenuGroup
-                  key={contributorsItem.name + "_item"}
-                  item={contributorsItem}
-                  sidebarOpen={isMobileSidebarOpen}
-                />
-                <div className="text-[0.7rem] flex justify-evenly w-full gap-x-12 text-inherit leading-[1] px-2  mb-[17px]">
-                  <Link href="/privacy-policy">Privacy Policy</Link>
-                  <Link href="/imprint">Imprint</Link>
-                  <Link
-                    rel="noopener"
-                    target="_blank"
-                    href="https://discord.com/channels/1070991734139531294/1095735245678067753"
-                    onClick={() => {
-                      track("clicked feedback link", {
-                        location: "mobile sidebar",
-                        page: window.location.pathname,
-                      });
-                    }}
-                  >
-                    Feedback
-                  </Link>
+                  <SidebarMenuGroup
+                    key={contributorsItem.name + "_item"}
+                    item={contributorsItem}
+                    sidebarOpen={isMobileSidebarOpen}
+                  />
+                  <div className="text-[0.7rem] flex justify-evenly w-full gap-x-12 text-inherit leading-[1] px-2  mb-[17px]">
+                    <Link href="/privacy-policy">Privacy Policy</Link>
+                    <Link href="/imprint">Imprint</Link>
+                    <Link
+                      rel="noopener"
+                      target="_blank"
+                      href="https://discord.com/channels/1070991734139531294/1095735245678067753"
+                      onClick={() => {
+                        track("clicked feedback link", {
+                          location: "mobile sidebar",
+                          page: window.location.pathname,
+                        });
+                      }}
+                    >
+                      Feedback
+                    </Link>
+                  </div>
+                  <div className="items-end justify-center z-[999] flex space-x-[15px] mt-[2px] mb-[17px]">
+                    <DarkModeSwitch isMobile />
+                    <EthUsdSwitch isMobile />
+                  </div>
                 </div>
-                <div className="items-end justify-center z-[999] flex space-x-[15px] mt-[2px] mb-[17px]">
-                  <DarkModeSwitch isMobile />
-                  <EthUsdSwitch isMobile />
-                </div>
-              </div>
-              <div className="mt-24 w-full text-center py-6 absolute bottom-0">
-                <div className="text-[0.7rem] text-inherit leading-[2] z-[999]">
-                  © {new Date().getFullYear()} growthepie 🥧
+                <div className="mt-24 w-full text-center py-6 absolute bottom-0">
+                  <div className="text-[0.7rem] text-inherit leading-[2] z-[999]">
+                    © {new Date().getFullYear()} growthepie 🥧
+                  </div>
                 </div>
               </div>
             </div>
+            <Backgrounds isMobileMenu />
           </div>
-          <Backgrounds isMobileMenu />
-        </div>
+        )}
         {/* )} */}
       </>
     );
 
   return (
     <motion.div
-      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden  ${isSidebarOpen ? "w-[18rem]" : ""
-        }`}
+      className={`flex-1 flex flex-col justify-items-start select-none overflow-y-hidden overflow-x-hidden  ${
+        isSidebarOpen ? "w-[18rem]" : ""
+      }`}
       animate={{
         width: isSidebarOpen ? "18rem" : "5.5rem",
       }}
@@ -311,10 +318,14 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
             </Link>
           </div>
         )}
-        <div className={`flex justify-center w-full h-full pb-[8px] pt-[17px] ${isSidebarOpen ? "" : "hidden"}`}>
+        <div
+          className={`flex justify-center w-full h-full pb-[8px] pt-[17px] ${
+            isSidebarOpen ? "" : "hidden"
+          }`}
+        >
           <DarkModeSwitch isMobile />
         </div>
       </div>
-    </motion.div >
+    </motion.div>
   );
 }

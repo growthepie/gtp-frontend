@@ -1,12 +1,19 @@
 // @ts-ignore
 import { ISitemapField, getServerSideSitemap } from "next-sitemap";
 import { navigationItems } from "@/lib/navigation";
+import { MasterURL } from "@/lib/urls";
+import { MasterResponse } from "@/types/api/MasterResponse";
 
 export async function GET(request: Request) {
   const fundamentals = navigationItems[1];
   const blockspace = navigationItems[2];
   const chains = navigationItems[3];
   const trackers = navigationItems[5];
+
+  const master = await fetch(MasterURL);
+  const masterData: MasterResponse = await master.json();
+
+  const masterChainKeys = Object.keys(masterData.chains);
 
   const pages = [
     ...fundamentals.options.map(
@@ -16,6 +23,7 @@ export async function GET(request: Request) {
       (option) => `https://www.growthepie.xyz/blockspace/${option.urlKey}`,
     ),
     ...chains.options
+      .filter((c) => masterChainKeys.includes(c.urlKey))
       .filter((c) => c.hide !== true)
       .map((option) => `https://www.growthepie.xyz/chains/${option.urlKey}`),
     ...trackers.options
