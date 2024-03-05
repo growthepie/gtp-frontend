@@ -129,8 +129,8 @@ const Chain = ({ params }: { params: any }) => {
   return (
     <>
       <ShowLoading
-        dataLoading={[masterLoading, chainLoading, usageLoading]}
-        dataValidating={[masterValidating, chainValidating, usageValidating]}
+        dataLoading={[masterLoading, chainLoading, !usageError && usageLoading]}
+        dataValidating={[masterValidating, chainValidating, !usageError && usageValidating]}
       />
       <Container className="flex w-full mt-[65px] md:mt-[45px]">
         {master && (
@@ -147,9 +147,8 @@ const Chain = ({ params }: { params: any }) => {
                   /> */}
                   <div className="w-9 h-9">
                     <Icon
-                      icon={`gtp:${
-                        AllChainsByKeys[chainKeys[0]].urlKey
-                      }-logo-monochrome`}
+                      icon={`gtp:${AllChainsByKeys[chainKeys[0]].urlKey
+                        }-logo-monochrome`}
                       className="w-9 h-9"
                       style={{
                         color: AllChainsByKeys[chainKeys[0]].colors[theme][1],
@@ -165,9 +164,8 @@ const Chain = ({ params }: { params: any }) => {
                 </div>
                 <div className="hidden md:flex items-start space-x-[7px] font-inter uppercase pt-[11px] ">
                   <div
-                    className={`inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm  ${
-                      isMobile ? "ml-[0px]" : "ml-[19px]"
-                    } `}
+                    className={`inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm  ${isMobile ? "ml-[0px]" : "ml-[19px]"
+                      } `}
                   >
                     {master.chains[chainKeys[0]].technology}
                   </div>
