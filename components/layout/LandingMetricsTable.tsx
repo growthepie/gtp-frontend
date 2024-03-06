@@ -7,6 +7,12 @@ import d3 from "d3";
 import moment from "moment";
 import { Icon } from "@iconify/react";
 import { useTransition, animated } from "@react-spring/web";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/layout/Tooltip";
+import { useUIContext } from "@/contexts/UIContext";
 
 export default function LandingMetricsTable({
   data,
@@ -31,6 +37,10 @@ export default function LandingMetricsTable({
 
   const isMobile = useMediaQuery("(max-width: 1023px)");
 
+  const {
+    isSidebarOpen,
+  } = useUIContext();
+
   const { theme } = useTheme();
 
   // set maxVal
@@ -45,13 +55,11 @@ export default function LandingMetricsTable({
               Object.keys(EnabledChainsByKeys).includes(chain) &&
               EnabledChainsByKeys[chain].chainType != null &&
               EnabledChainsByKeys[chain].chainType != "L1" &&
-              data.chains[chain].data.data.length > 0,
+              data.chains[chain].users > 0,
           )
           .map((chain) => {
-            return data.chains[chain].data.data.length > 0
-              ? data.chains[chain].data.data[
-                  data.chains[chain].data.data.length - 1
-                ][1]
+            return data.chains[chain].users > 0
+              ? data.chains[chain].users
               : -1;
           }),
       ),
@@ -66,10 +74,8 @@ export default function LandingMetricsTable({
       })
       .reduce((acc, chain) => {
         acc[chain] =
-          data.chains[chain].data.data.length > 0
-            ? data.chains[chain].data.data[
-                data.chains[chain].data.data.length - 1
-              ][1]
+          data.chains[chain].users > 0
+            ? data.chains[chain].users
             : -1;
         return acc;
       }, {});
@@ -81,14 +87,14 @@ export default function LandingMetricsTable({
       .filter((chain) => {
         return (
           Object.keys(EnabledChainsByKeys).includes(chain) &&
-          data.chains[chain].data.data.length > 0
+          data.chains[chain].users > 0
         );
       })
       .map((chain: any) => {
         return {
           data: data[chain],
           chain: EnabledChainsByKeys[chain],
-          lastVal: lastValsByChainKey[chain],
+          lastVal: data.chains[chain].users
         };
       })
       .filter(
@@ -122,8 +128,8 @@ export default function LandingMetricsTable({
       // .filter((row) => row.chain.key != "multiple")
       .map((data) => ({
         ...data,
-        y: (height += isMobile ? 44 : 50) - (isMobile ? 44 : 50),
-        height: isMobile ? 44 : 50,
+        y: (height += isMobile ? 43 : 39) - (isMobile ? 43 : 39),
+        height: isMobile ? 43 : 39,
       })),
     {
       key: (d) => d.chain.key,
@@ -156,268 +162,50 @@ export default function LandingMetricsTable({
 
   return (
     <>
-      <div className="flex flex-col space-y-[5px] overflow-y-hidden overflow-x-scroll lg:overflow-x-hidden z-100 w-full p-0 pt-3 pb-2 md:pb-0 md:px-0 md:pt-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
+      <div className={`flex flex-col space-y-[5px] overflow-y-hidden overflow-x-scroll ${isSidebarOpen ? "2xl:overflow-x-hidden" : "min-[1168px]:overflow-x-hidden"} z-100 w-full p-0 pt-3 pb-2 md:pb-0 lg:px-0 md:pt-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}>
         <div
-          className={`min-w-[820px] md:min-w-[850px] pr-[20px] md:pr-[50px] w-full ${
-            interactable ? "pointer-events-auto" : "pointer-events-none"
-          }`}
+          className={`min-w-[920px] min-[1168px]:min-w-[980px] pr-[20px] ${isSidebarOpen ? "2xl:pr-[50px]" : "min-[1168px]:pr-[50px]"}  w-full`}
         >
           <div
-            className={`flex space-x-5 items-end rounded-full font-semibold text-[0.6rem] lg:text-sm pr-3 py-1 pl-10`}
+            className={`flex items-end rounded-full font-semibold text-[0.6rem] lg:text-sm pr-0 py-1`}
           >
-            <div className="w-[22.5%] pl-5 lg:pl-6">Chain</div>
-            <div className="w-1/12">Age</div>
-            <div className="w-1/5">Purpose</div>
-            <div className="w-2/12 pl-1">Technology</div>
-            <div className="flex-1 text-right capitalize">
-              Weekly Active Addresses
+            <div className="w-[20%] pl-[59px] lg:pl-[64px]">Chain</div>
+            <div className="w-[10%]">Age</div>
+            <div className="w-[20%]">Purpose</div>
+            <div className="w-[20%]">Technology</div>
+            <div className="w-[15%] text-right capitalize relative pr-[60px] lg:pr-8">
+              <div className="flex flex-col items-end"><div className="whitespace-nowrap">Weekly Active</div>Addresses</div>
+              <Tooltip placement="left">
+                <TooltipTrigger className="absolute right-[26px] lg:-right-[2px] top-0 bottom-0">
+                  <Icon icon="feather:info" className="w-6 h-6" />
+                </TooltipTrigger>
+                <TooltipContent className="z-[110]">
+                  <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
+                    <div>
+                      Number of Distinct Weekly Active Addresses minus the Addresses with Cross-Chain Activity.
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
             </div>
-            <div className="w-[10%] pr-14 text-right">User Share</div>
+            <div className="w-[15%] pr-14 text-right relative">
+              <div className="flex flex-col items-end"><div className="whitespace-nowrap">Cross-Chain</div>Activity</div>
+              <Tooltip placement="left">
+                <TooltipTrigger className="absolute right-[22px] top-0 bottom-0">
+                  <Icon icon="feather:info" className="w-6 h-6" />
+                </TooltipTrigger>
+                <TooltipContent className="z-[110]">
+                  <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
+                    <div>
+                      Number of Distinct Weekly Active Addresses minus the Addresses with Cross-Chain Activity.
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip></div>
           </div>
           <div className="flex flex-col">
             <div className="w-full relative" style={{ height }}>
               {transitions((style, item, t, index) => {
-                if (item.chain.key === "multiple")
-                  return (
-                    <animated.div
-                      className="absolute w-full"
-                      style={{
-                        zIndex: rows().length - index,
-                        ...style,
-                      }}
-                    >
-                      <div
-                        className={`group flex space-x-5 items-center pointer-events-auto ${
-                          interactable ? "cursor-pointer" : "cursor-default"
-                        } p-1.5 py-[10px] lg:p-3 lg:py-[8px] rounded-full w-full font-[400] border-[1px] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${
-                          selectedChains.includes(item.chain.key)
-                            ? "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/10"
-                            : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 transition-all duration-100"
-                        }`}
-                        onClick={() => {
-                          if (!interactable) return;
-
-                          if (selectedChains.includes(item.chain.key)) {
-                            setSelectedChains(
-                              selectedChains.filter(
-                                (c) => c !== item.chain.key,
-                              ),
-                            );
-                          } else {
-                            setSelectedChains([
-                              ...selectedChains,
-                              item.chain.key,
-                            ]);
-                          }
-                        }}
-                      >
-                        <div className="w-full h-full absolute inset-0 rounded-full overflow-clip">
-                          <div className="relative w-full h-full">
-                            {item.chain.key !== "ethereum" && (
-                              <>
-                                <div
-                                  className={`absolute left-[15px] right-[15px] lg:left-[18px] lg:right-[18px] bottom-[0px] h-[1px] lg:h-[2px] rounded-none font-semibold transition-width duration-300 `}
-                                  style={{
-                                    background:
-                                      item.chain.colors[theme ?? "dark"][1],
-                                    width: `${
-                                      (lastValsByChainKey[item.chain.key] /
-                                        maxVal) *
-                                      100
-                                    }%`,
-                                  }}
-                                ></div>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex w-[22.5%] items-center">
-                          <div className="relative">
-                            <div
-                              className={`absolute -left-[14.5px] -top-[14.5px] w-[29px] h-[29px] rounded-full border-[5px] ${
-                                item.chain.border[theme ?? "dark"][1]
-                              }`}
-                            ></div>
-                            {/* <Icon
-                          icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
-                          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5 h-5"
-                          style={{
-                            color: item.chain.colors[theme ?? "dark"][1],
-                          }}
-                        /> */}
-                            {/* <Icon
-                          icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
-                          className="w-[29px] h-[29px]"
-                          style={{
-                            color: item.chain.colors[theme ?? "dark"][1],
-                          }}
-                        /> */}
-                          </div>
-                          <div className="break-inside-avoid text-xs md:text-sm lg:text-lg pl-8 flex group-hover:hidden">
-                            {item.chain.label}
-                          </div>
-                          <div className="w-full text-xs md:text-sm pl-8 py-0 md:py-0 lg:py-1 pr-64 hidden group-hover:flex">
-                            “Multiple Chains” represents the number of distinct
-                            addresses that were active on multiple Layer 2s in a
-                            given week.
-                          </div>
-                        </div>
-                        <div className="w-2/12">
-                          {/* format as 1 year 2 months */}
-                          {item.chain.chainType === "L2" &&
-                            moment
-                              .duration(
-                                moment().diff(
-                                  moment(
-                                    master.chains[item.chain.key].launch_date,
-                                  ),
-                                ),
-                              )
-                              .humanize()}
-                        </div>
-                        <div className="w-1/5 capitalize group-hover:hidden">
-                          {item.chain.chainType === "L2" &&
-                          master &&
-                          master.chains[item.chain.key].rollup === "-" ? (
-                            " - "
-                          ) : (
-                            <>
-                              {item.chain.chainType === "L2" && (
-                                <>
-                                  <span>
-                                    {master.chains[item.chain.key].rollup}
-                                  </span>{" "}
-                                  <span className="hidden lg:inline-block">
-                                    {master.chains[item.chain.key].technology}
-                                  </span>
-                                </>
-                              )}
-                            </>
-                          )}
-                        </div>
-                        <div className="flex-1 flex justify-end items-center group-hover:hidden">
-                          {/* <div className="flex flex-1 align-middle items-center"> */}
-                          <div className={`relative w-full`}>
-                            <div className="flex w-full justify-end">
-                              {data.chains[item.chain.key].data.types.includes(
-                                "usd",
-                              ) && (
-                                <>
-                                  {showUsd ? (
-                                    <div className="">$</div>
-                                  ) : (
-                                    <div className="">Ξ</div>
-                                  )}
-                                </>
-                              )}
-                              {data.chains[item.chain.key].data.types.includes(
-                                "usd",
-                              )
-                                ? Intl.NumberFormat(undefined, {
-                                    notation: "compact",
-                                    maximumFractionDigits: 2,
-                                    minimumFractionDigits: 2,
-                                  }).format(
-                                    data.chains[item.chain.key].data.data[
-                                      data[item.chain.key].data.data.length - 1
-                                    ][
-                                      !showUsd &&
-                                      data.chains[
-                                        item.chain.key
-                                      ].data.types.includes("usd")
-                                        ? 2
-                                        : 1
-                                    ],
-                                  )
-                                : Intl.NumberFormat(undefined, {
-                                    notation: "compact",
-                                    maximumFractionDigits: 2,
-                                    minimumFractionDigits: 2,
-                                  }).format(
-                                    data.chains[item.chain.key].data.data[
-                                      data.chains[item.chain.key].data.data
-                                        .length - 1
-                                    ][1],
-                                  )}
-                            </div>
-                            {/* <div className="absolute -bottom-[6px] right-0 w-full h-1 bg-black/10 rounded-none"></div>
-                        <div
-                          className={`absolute -bottom-[6px] right-0 h-1 bg-forest-900 dark:bg-forest-50 rounded-none`}
-                          style={{
-                            width: `${
-                              (data.chains[item.chain.key].data.data[
-                                data.chains[item.chain.key].data.data.length - 1
-                              ][1] /
-                                maxVal) *
-                              100
-                            }%`,
-                          }}
-                        ></div> */}
-                          </div>
-                        </div>
-                        <div className="w-[10%] text-right pr-14 group-hover:hidden">
-                          {d3.format(
-                            data.chains[item.chain.key].user_share > 0.01
-                              ? ".1%"
-                              : ".1%",
-                          )(data.chains[item.chain.key].user_share)}
-                        </div>
-                        {interactable && (
-                          <div className={`absolute  ${"-right-[20px]"}`}>
-                            <div
-                              className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-                              style={{
-                                color: selectedChains.includes(item.chain.key)
-                                  ? undefined
-                                  : "#5A6462",
-                              }}
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className={`w-6 h-6 ${
-                                  selectedChains.includes(item.chain.key)
-                                    ? "opacity-0"
-                                    : "opacity-100"
-                                }`}
-                              >
-                                <circle
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  cx="12"
-                                  cy="12"
-                                  r="10"
-                                />
-                              </svg>
-                            </div>
-                            <div
-                              className={`p-1 rounded-full ${
-                                selectedChains.includes(item.chain.key)
-                                  ? "bg-white dark:bg-forest-1000"
-                                  : "bg-forest-50 dark:bg-[#1F2726]"
-                              }`}
-                            >
-                              <Icon
-                                icon="feather:check-circle"
-                                className={`w-6 h-6 ${
-                                  selectedChains.includes(item.chain.key)
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                }`}
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </animated.div>
-                  );
-
                 return (
                   <animated.div
                     className="absolute w-full"
@@ -428,13 +216,11 @@ export default function LandingMetricsTable({
                   >
                     <div
                       key={item.chain.key}
-                      className={`flex space-x-5 items-center cursor-pointer p-1.5 py-[10px] lg:p-3 lg:py-[8px] rounded-full w-full font-[400] border-[1px] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${
-                        index > 0 ? "-mt-[1px]" : ""
-                      } ${
-                        selectedChains.includes(item.chain.key)
+                      className={`flex items-center  ${interactable ? "cursor-pointer pointer-events-auto" : "cursor-default pointer-events-none"} pl-0 pr-0 py-[10px] sm:py-[10px] md:py-[9px] lg:pl-0 lg:py-[4px] rounded-full w-full font-[400] border-[1px] whitespace-nowrap text-xs lg:text-[0.95rem] relative ${index > 0 ? "-mt-[1px]" : ""
+                        } ${selectedChains.includes(item.chain.key)
                           ? "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/10"
                           : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 transition-all duration-100"
-                      }`}
+                        }`}
                       onClick={() => {
                         if (selectedChains.includes(item.chain.key)) {
                           setSelectedChains(
@@ -471,25 +257,24 @@ export default function LandingMetricsTable({
                           {item.chain.key !== "ethereum" && (
                             <>
                               <div
-                                className={`absolute left-[15px] right-[15px] lg:left-[18px] lg:right-[18px] bottom-[0px] h-[1px] lg:h-[2px] rounded-none font-semibold transition-width duration-300 `}
+                                className={`absolute left-[15px] right-[15px] lg:left-[18px] lg:right-[18px] bottom-[1px] h-[1px] md:bottom-0 md:h-[2px] lg:h-[1px] rounded-none font-semibold transition-width duration-300 `}
                                 style={{
                                   background: selectedChains.includes(
                                     item.chain.key,
                                   )
                                     ? item.chain.colors[theme ?? "dark"][1]
                                     : "#5A6462",
-                                  width: `${
-                                    (lastValsByChainKey[item.chain.key] /
-                                      maxVal) *
+                                  width: `${(lastValsByChainKey[item.chain.key] /
+                                    maxVal) *
                                     100
-                                  }%`,
+                                    }%`,
                                 }}
                               ></div>
                             </>
                           )}
                         </div>
                       </div>
-                      <div className="flex w-[22.5%] items-center">
+                      <div className="flex w-[20%] items-center">
                         <div className="relative h-full">
                           {/* <div
                             className={`w-9 h-9 rounded-full border-[5px] ${
@@ -498,7 +283,7 @@ export default function LandingMetricsTable({
                           ></div> */}
                           <Icon
                             icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
-                            className="absolute -left-[14.5px] -top-[14.5px] w-[29px] h-[29px]"
+                            className="absolute left-[13.5px] -top-[13.5px] xl:left-[14.5px] xl:-top-[14.5px] w-[27px] h-[27px] xl:w-[29px] xl:h-[29px]"
                             style={{
                               color: selectedChains.includes(item.chain.key)
                                 ? item.chain.colors[theme ?? "dark"][1]
@@ -513,11 +298,11 @@ export default function LandingMetricsTable({
                             }}
                           /> */}
                         </div>
-                        <div className="break-inside-avoid text-xs md:text-sm lg:text-lg pl-8">
-                          {item.chain.label}
+                        <div className="break-inside-avoid text-xs md:text-sm lg:text-base pl-[59px] lg:pl-[64px]">
+                          {data.chains[item.chain.key].chain_name}
                         </div>
                       </div>
-                      <div className="w-1/12 text-right flex">
+                      <div className="w-[10%] text-right flex">
                         {/* format as 1 year 2 months */}
 
                         {item.chain.chainType === "L2" && (
@@ -568,66 +353,36 @@ export default function LandingMetricsTable({
                           </>
                         )}
                       </div>
-                      <div className="w-1/5 capitalize">
-                        {master && master.chains[item.chain.key].purpose && (
-                          <>{master.chains[item.chain.key].purpose}</>
+                      <div className="w-[20%] capitalize">
+                        {data.chains[item.chain.key].purpose && (
+                          <>{data.chains[item.chain.key].purpose}</>
                         )}
                       </div>
-                      <div className="w-2/12 capitalize text-left">
+                      <div className="w-[20%] capitalize text-left">
                         {item.chain.chainType === "L2" &&
-                        master &&
-                        master.chains[item.chain.key].rollup === "-" ? (
+
+                          data.chains[item.chain.key].rollup === "-" ? (
                           " - "
                         ) : (
                           <>
                             {item.chain.chainType === "L2" && (
                               <>
-                                {master.chains[item.chain.key].rollup}{" "}
-                                {master.chains[item.chain.key].technology}
+                                {data.chains[item.chain.key].rollup}{" "}
+                                {data.chains[item.chain.key].technology}
                               </>
                             )}
                           </>
                         )}
                       </div>
 
-                      <div className="flex-1 flex justify-end items-center">
+                      <div className="w-[15%] flex justify-end items-center  pr-[60px] lg:pr-8">
                         {/* <div className="flex flex-1 align-middle items-center"> */}
                         <div className="flex w-full justify-end">
-                          {data.chains[item.chain.key].data.types.includes(
-                            "usd",
-                          ) && (
-                            <>
-                              {showUsd ? (
-                                <div className="">$</div>
-                              ) : (
-                                <div className="">Ξ</div>
-                              )}
-                            </>
-                          )}
-                          {data.chains[item.chain.key].data.types.includes(
-                            "usd",
-                          )
-                            ? Intl.NumberFormat(undefined, {
-                                notation: "compact",
-                                maximumFractionDigits: 2,
-                                minimumFractionDigits: 2,
-                              }).format(
-                                data.chains[item.chain.key].data.data[
-                                  data[item.chain.key].data.data.length - 1
-                                ][
-                                  !showUsd &&
-                                  data.chains[
-                                    item.chain.key
-                                  ].data.types.includes("usd")
-                                    ? 2
-                                    : 1
-                                ],
-                              )
-                            : Intl.NumberFormat(undefined, {
-                                notation: "compact",
-                                maximumFractionDigits: 2,
-                                minimumFractionDigits: 2,
-                              }).format(lastValsByChainKey[item.chain.key])}
+                          {Intl.NumberFormat(undefined, {
+                            notation: "compact",
+                            maximumFractionDigits: 2,
+                            minimumFractionDigits: 2,
+                          }).format(lastValsByChainKey[item.chain.key])}
                           {/* <div className="absolute -bottom-[6px] right-0 w-full h-1 bg-black/10 rounded-none"></div>
                           <div
                             className={`absolute -bottom-[6px] right-0 h-1 bg-forest-900 dark:bg-forest-50 rounded-none`}
@@ -644,12 +399,12 @@ export default function LandingMetricsTable({
                           ></div> */}
                         </div>
                       </div>
-                      <div className="w-[10%] text-right pr-14">
+                      <div className="w-[15%] text-right pr-14">
                         {d3.format(
-                          data.chains[item.chain.key].user_share > 0.01
+                          data.chains[item.chain.key].cross_chain_activity > 0.01
                             ? ".1%"
                             : ".1%",
-                        )(data.chains[item.chain.key].user_share)}
+                        )(data.chains[item.chain.key].cross_chain_activity)}
                       </div>
                       {interactable && (
                         <div className={`absolute  ${"-right-[20px]"}`}>
@@ -671,11 +426,10 @@ export default function LandingMetricsTable({
                               strokeWidth="2"
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              className={`w-6 h-6 ${
-                                selectedChains.includes(item.chain.key)
-                                  ? "opacity-0"
-                                  : "opacity-100"
-                              }`}
+                              className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
+                                ? "opacity-0"
+                                : "opacity-100"
+                                }`}
                             >
                               <circle
                                 xmlns="http://www.w3.org/2000/svg"
@@ -686,19 +440,17 @@ export default function LandingMetricsTable({
                             </svg>
                           </div>
                           <div
-                            className={`p-1 rounded-full ${
-                              selectedChains.includes(item.chain.key)
-                                ? "bg-white dark:bg-forest-1000"
-                                : "bg-forest-50 dark:bg-[#1F2726]"
-                            }`}
+                            className={`p-1 rounded-full ${selectedChains.includes(item.chain.key)
+                              ? "bg-white dark:bg-forest-1000"
+                              : "bg-forest-50 dark:bg-[#1F2726]"
+                              }`}
                           >
                             <Icon
                               icon="feather:check-circle"
-                              className={`w-6 h-6 ${
-                                selectedChains.includes(item.chain.key)
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              }`}
+                              className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
+                                ? "opacity-100"
+                                : "opacity-0"
+                                }`}
                             />
                           </div>
                         </div>
@@ -716,7 +468,7 @@ export default function LandingMetricsTable({
                 ))} */}
           </div>
         </div>
-      </div>
+      </div >
     </>
   );
 }

@@ -56,6 +56,7 @@ export default function LandingUserBaseChart() {
     }
   }, [landing, selectedTimeInterval]);
 
+
   useEffect(() => {
     if (!data) return;
 
@@ -118,13 +119,14 @@ export default function LandingUserBaseChart() {
           </Container>
           <Container className="!pr-0">
             <LandingMetricsTable
-              data={data}
+              data={{ chains: landing.data.metrics.table_visual }}
               selectedChains={selectedChains}
               setSelectedChains={setSelectedChains}
               chains={chains}
               metric={selectedTimeInterval}
               master={master}
               interactable={selectedMetric !== "Total Users"}
+            // interactable
             />
           </Container>
         </>

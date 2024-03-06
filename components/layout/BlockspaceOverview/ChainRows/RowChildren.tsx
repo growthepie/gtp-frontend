@@ -73,7 +73,7 @@ export default function RowChildren({
         [chainKey]:
           100 -
           (Object.keys(data[chainKey].overview[selectedTimespan]).length - 1) *
-            2,
+          2,
       };
     }, {});
   }, [data, selectedTimespan]);
@@ -143,8 +143,8 @@ export default function RowChildren({
             isCategoryHovered(categoryKey) && !isSelectedCategory
               ? "scale(1.2)"
               : isSelectedChainOrNoSelectedChain
-              ? "scale(1.30)"
-              : "scale(1.2)";
+                ? "scale(1.30)"
+                : "scale(1.2)";
 
           if (isLastCategory && isSelectedChainOrNoSelectedChain)
             style.transform += " translateX(3px)";
@@ -182,18 +182,18 @@ export default function RowChildren({
         if (selectedValue === "share") {
           style.width = categoryData
             ? categoryData[dataTypes.indexOf(selectedMode)] *
-                relativePercentageByChain[chainKey] +
-              8 +
-              "%"
+            relativePercentageByChain[chainKey] +
+            8 +
+            "%"
             : "0px";
           // if()
         } else {
           style.width = categoryData
             ? (categoryData[dataTypes.indexOf(selectedMode)] /
-                sumChainValue[chainKey]) *
-                relativePercentageByChain[chainKey] +
-              8 +
-              "%"
+              sumChainValue[chainKey]) *
+            relativePercentageByChain[chainKey] +
+            8 +
+            "%"
             : "0px";
           // if()
         }
@@ -201,8 +201,8 @@ export default function RowChildren({
           isCategoryHovered(categoryKey) && !isSelectedCategory
             ? "scaleY(1.01)"
             : isSelectedChainOrNoSelectedChain
-            ? "scaleY(1.08)"
-            : "scaleY(1.01)";
+              ? "scaleY(1.08)"
+              : "scaleY(1.01)";
 
         if (isLastCategory && isSelectedChainOrNoSelectedChain)
           style.transform += " translateX(3px)";
@@ -219,18 +219,18 @@ export default function RowChildren({
         if (selectedValue === "share") {
           style.width = categoryData
             ? categoryData[dataTypes.indexOf(selectedMode)] *
-                relativePercentageByChain[chainKey] +
-              8 +
-              "%"
+            relativePercentageByChain[chainKey] +
+            8 +
+            "%"
             : "0px";
           // if()
         } else {
           style.width = categoryData
             ? (categoryData[dataTypes.indexOf(selectedMode)] /
-                sumChainValue[chainKey]) *
-                relativePercentageByChain[chainKey] +
-              8 +
-              "%"
+              sumChainValue[chainKey]) *
+            relativePercentageByChain[chainKey] +
+            8 +
+            "%"
             : "0px";
         }
 
@@ -257,9 +257,8 @@ export default function RowChildren({
           style.animation = "unlabeled-gradient 20s linear infinite";
           style.backgroundSize = "10px 10px";
         } else {
-          style.backgroundColor = `rgba(0, 0, 0, ${
-            0.06 + (dataIndex / (Object.keys(categories).length - 1)) * 0.94
-          })`;
+          style.backgroundColor = `rgba(0, 0, 0, ${0.06 + (dataIndex / (Object.keys(categories).length - 1)) * 0.94
+            })`;
         }
       }
       return style;
@@ -328,53 +327,48 @@ export default function RowChildren({
         unhoverCategory(categoryKey);
       }}
       className={`flex flex-col h-[41px] justify-center items-center py-5 cursor-pointer relative transition-all duration-200 ease-in-out
-                        ${
-                          data[chainKey].overview[selectedTimespan][categoryKey]
-                            ? (selectedCategory === categoryKey &&
-                                (selectedChain === chainKey ||
-                                  selectedChain === null)) ||
-                              isCategoryHovered(categoryKey)
-                              ? isCategoryHovered(categoryKey) &&
-                                selectedCategory !== categoryKey
-                                ? `py-[23px] -my-[3px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
-                                : `py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
-                              : `z-[1]`
-                            : "py-[23px] -my-[3px] z-[2] shadow-lg"
-                        } 
-                        ${
-                          categoryIndex === Object.keys(categories).length - 1
-                            ? selectedCategory === categoryKey &&
-                              (selectedChain === chainKey ||
-                                selectedChain === null)
-                              ? ""
-                              : "rounded-r-full"
-                            : ""
-                        }`}
+                        ${data[chainKey].overview[selectedTimespan][categoryKey]
+          ? (selectedCategory === categoryKey &&
+            (!allCats && (selectedChain === chainKey ||
+              selectedChain === null))) ||
+            isCategoryHovered(categoryKey)
+            ? isCategoryHovered(categoryKey) &&
+              selectedCategory !== categoryKey
+              ? `py-[23px] -my-[3px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
+              : `py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme][1]}`
+            : `z-[1]`
+          : "py-[23px] -my-[3px] z-[2] shadow-lg"
+        } 
+                        ${categoryIndex === Object.keys(categories).length - 1
+          ? selectedCategory === categoryKey &&
+            (selectedChain === chainKey ||
+              selectedChain === null)
+            ? ""
+            : "rounded-r-full"
+          : ""
+        }`}
       style={getBarSectionStyle(chainKey, categoryKey)}
     >
       <div
-        className={`mix-blend-luminosity font-medium w-full absolute inset-0 flex items-center justify-center ${
-          (selectedCategory === categoryKey &&
-            (selectedChain === chainKey || selectedChain === null)) ||
+        className={`mix-blend-luminosity font-medium w-full absolute inset-0 flex items-center justify-center ${(selectedCategory === categoryKey &&
+          (selectedChain === chainKey || selectedChain === null)) ||
           isCategoryHovered(categoryKey)
-            ? `${
-                isCategoryHovered(categoryKey) &&
-                selectedCategory !== categoryKey
-                  ? "text-xs"
-                  : "text-sm font-semibold"
-              } ${
-                AllChainsByKeys[chainKey].darkTextOnBackground === true
-                  ? "text-black"
-                  : "text-white"
-              }`
-            : AllChainsByKeys[chainKey].darkTextOnBackground === true
+          ? `${isCategoryHovered(categoryKey) &&
+            selectedCategory !== categoryKey
+            ? "text-xs"
+            : "text-sm font-semibold"
+          } ${AllChainsByKeys[chainKey].darkTextOnBackground === true
+            ? "text-black"
+            : "text-white"
+          }`
+          : AllChainsByKeys[chainKey].darkTextOnBackground === true
             ? i > 4
               ? "text-white/60 text-xs"
               : "text-black text-xs"
             : i > 4
-            ? "text-white/60 text-xs"
-            : "text-white/80 text-xs"
-        }`}
+              ? "text-white/60 text-xs"
+              : "text-white/80 text-xs"
+          }`}
       >
         {data[chainKey].overview[selectedTimespan][categoryKey]["data"] ? (
           <>
@@ -382,38 +376,37 @@ export default function RowChildren({
               ? selectedMode.includes("txcount")
                 ? ""
                 : showUsd
-                ? "$ "
-                : "Ξ "
+                  ? "$ "
+                  : "Ξ "
               : ""}
             {selectedValue === "share"
               ? (
-                  data[chainKey].overview[selectedTimespan][categoryKey][
-                    "data"
-                  ][data[chainKey].overview.types.indexOf(selectedMode)] * 100.0
-                ).toFixed(2)
+                data[chainKey].overview[selectedTimespan][categoryKey][
+                "data"
+                ][data[chainKey].overview.types.indexOf(selectedMode)] * 100.0
+              ).toFixed(2)
               : formatNumber(
-                  data[chainKey].overview[selectedTimespan][categoryKey][
-                    "data"
-                  ][data[chainKey].overview.types.indexOf(selectedMode)],
-                )}
+                data[chainKey].overview[selectedTimespan][categoryKey][
+                "data"
+                ][data[chainKey].overview.types.indexOf(selectedMode)],
+              )}
             {selectedValue === "share" ? "%" : ""}{" "}
           </>
         ) : (
           <div
             className={`text-black/80
-                            ${
-                              isCategoryHovered(categoryKey) ||
-                              selectedCategory === categoryKey
-                                ? "opacity-100 py-8"
-                                : "opacity-0"
-                            } transition-opacity duration-300 ease-in-out`}
+                            ${isCategoryHovered(categoryKey) ||
+                selectedCategory === categoryKey
+                ? "opacity-100 py-8"
+                : "opacity-0"
+              } transition-opacity duration-300 ease-in-out`}
           >
             {selectedValue === "absolute"
               ? selectedMode.includes("txcount")
                 ? ""
                 : showUsd
-                ? "$ "
-                : "Ξ "
+                  ? "$ "
+                  : "Ξ "
               : ""}
             0 {selectedValue === "share" ? "%" : ""}{" "}
           </div>

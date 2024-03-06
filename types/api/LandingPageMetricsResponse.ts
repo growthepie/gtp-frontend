@@ -8,6 +8,17 @@ export interface Data {
 
 export interface Metrics {
   user_base: UserBase;
+  table_visual: TableVisual;
+}
+
+export interface TableVisual {
+  [chain: string]: {
+    chain_name: string;
+    cross_chain_activity: number;
+    purpose: string;
+    technology: string;
+    users: number;
+  };
 }
 
 export interface UserBase {
@@ -15,7 +26,6 @@ export interface UserBase {
   source: string[];
   daily: Daily;
   weekly: Weekly;
-  monthly: Monthly;
 }
 
 export interface Daily {
