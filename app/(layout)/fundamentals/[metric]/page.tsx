@@ -9,7 +9,7 @@ import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import useSWR from "swr";
 import MetricsTable from "@/components/layout/MetricsTable";
 import { MetricsURLs } from "@/lib/urls";
-import { AllChains } from "@/lib/chains";
+import { AllChains, Get_DefaultChainSelectionKeys, Get_SupportedChainKeys } from "@/lib/chains";
 import { intersection } from "lodash";
 import { Icon } from "@iconify/react";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
@@ -17,10 +17,16 @@ import { navigationItems } from "@/lib/navigation";
 import Container from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
 import Image from "next/image";
+import { MasterURL } from "@/lib/urls";
+import { MasterResponse } from "@/types/api/MasterResponse";
 
-const Chain = ({ params }: { params: any }) => {
-  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const [errorCode, setErrorCode] = useState<number | null>(null);
+const Fundamentals = ({ params }: { params: any }) => {
+  const {
+    data: master,
+    error: masterError,
+    isLoading: masterLoading,
+    isValidating: masterValidating,
+  } = useSWR<MasterResponse>(MasterURL);
 
   const {
     data: metricData,
@@ -29,20 +35,45 @@ const Chain = ({ params }: { params: any }) => {
     isValidating: metricValidating,
   } = useSWR<MetricsResponse>(MetricsURLs[params.metric]);
 
+
+  return (
+    <>
+      <ShowLoading
+        dataLoading={[masterLoading, metricLoading]}
+        dataValidating={[masterValidating, metricValidating]}
+      />
+      {master && metricData ? <FundamentalsContent params={{ ...params, master, metricData }} /> :
+        <div className="w-full min-h-[1024px] md:min-h-[1081px] lg:min-h-[637px] xl:min-h-[736px]" />}
+
+    </>
+  );
+};
+
+
+const FundamentalsContent = ({ params }: { params: any }) => {
+  const master = params.master;
+  const metricData = params.metricData;
+  const [errorCode, setErrorCode] = useState<number | null>(null);
+
+
+
   const chainKeys = useMemo(() => {
     if (!metricData)
       return AllChains.filter(
         (chain) =>
-          chain.ecosystem.includes("all-chains") || chain.key === "ethereum",
+          Get_SupportedChainKeys(master).includes(
+            chain.key,
+          ),
       ).map((chain) => chain.key);
 
     return AllChains.filter(
       (chain) =>
-        (Object.keys(metricData.data.chains).includes(chain.key) &&
-          chain.ecosystem.includes("all-chains")) ||
-        chain.key === "ethereum",
+      (Object.keys(metricData.data.chains).includes(chain.key) &&
+        Get_SupportedChainKeys(master).includes(
+          chain.key,
+        )),
     ).map((chain) => chain.key);
-  }, [metricData]);
+  }, [master, metricData]);
 
   // const pageData = navigationItems[1]?.options.find(
   //   (item) => item.urlKey === params.metric,
@@ -54,14 +85,7 @@ const Chain = ({ params }: { params: any }) => {
 
   const [selectedChains, setSelectedChains] = useSessionStorage(
     "fundamentalsChains",
-    AllChains.filter(
-      (chain) =>
-        (chain.ecosystem.includes("all-chains") &&
-          ["arbitrum", "optimism", "starknet", "base", "zksync_era"].includes(
-            chain.key,
-          )) ||
-        chain.key === "ethereum",
-    ).map((chain) => chain.key),
+    Get_DefaultChainSelectionKeys(master)
   );
 
   const [selectedScale, setSelectedScale] = useSessionStorage(
@@ -106,65 +130,51 @@ const Chain = ({ params }: { params: any }) => {
   return (
     <>
       <div className="flex flex-col-reverse xl:flex-row space-x-0 xl:space-x-2">
-        {metricData ? (
-          <ComparisonChart
-            data={Object.keys(metricData.data.chains)
-              .filter((chain) => selectedChains.includes(chain))
-              .map((chain) => {
-                return {
-                  name: chain,
-                  // type: 'spline',
-                  types: metricData.data.chains[chain][timeIntervalKey].types,
-                  data: metricData.data.chains[chain][timeIntervalKey].data,
-                };
-              })}
+        <ComparisonChart
+          data={Object.keys(metricData.data.chains)
+            .filter((chain) => selectedChains.includes(chain))
+            .map((chain) => {
+              return {
+                name: chain,
+                // type: 'spline',
+                types: metricData.data.chains[chain][timeIntervalKey].types,
+                data: metricData.data.chains[chain][timeIntervalKey].data,
+              };
+            })}
+          metric_id={metricData.data.metric_id}
+          timeIntervals={intersection(
+            Object.keys(metricData.data.chains.arbitrum),
+            ["daily", "weekly", "monthly"],
+          )}
+          selectedTimeInterval={selectedTimeInterval}
+          setSelectedTimeInterval={setSelectedTimeInterval}
+          showTimeIntervals={true}
+          sources={metricData.data.source}
+          avg={metricData.data.avg}
+          monthly_agg={metricData.data.monthly_agg}
+          showEthereumMainnet={showEthereumMainnet}
+          setShowEthereumMainnet={setShowEthereumMainnet}
+          selectedTimespan={selectedTimespan}
+          setSelectedTimespan={setSelectedTimespan}
+          selectedScale={
+            params.metric === "transaction-costs" ? "absolute" : selectedScale
+          }
+          setSelectedScale={setSelectedScale}
+        >
+          <MetricsTable
+            data={metricData.data.chains}
+            selectedChains={selectedChains}
+            setSelectedChains={setSelectedChains}
+            chainKeys={chainKeys}
             metric_id={metricData.data.metric_id}
-            timeIntervals={intersection(
-              Object.keys(metricData.data.chains.arbitrum),
-              ["daily", "weekly", "monthly"],
-            )}
-            selectedTimeInterval={selectedTimeInterval}
-            setSelectedTimeInterval={setSelectedTimeInterval}
-            showTimeIntervals={true}
-            sources={metricData.data.source}
-            avg={metricData.data.avg}
-            monthly_agg={metricData.data.monthly_agg}
             showEthereumMainnet={showEthereumMainnet}
             setShowEthereumMainnet={setShowEthereumMainnet}
-            selectedTimespan={selectedTimespan}
-            setSelectedTimespan={setSelectedTimespan}
-            selectedScale={
-              params.metric === "transaction-costs" ? "absolute" : selectedScale
-            }
-            setSelectedScale={setSelectedScale}
-          >
-            <MetricsTable
-              data={metricData.data.chains}
-              selectedChains={selectedChains}
-              setSelectedChains={setSelectedChains}
-              chainKeys={chainKeys}
-              metric_id={metricData.data.metric_id}
-              showEthereumMainnet={showEthereumMainnet}
-              setShowEthereumMainnet={setShowEthereumMainnet}
-              timeIntervalKey={timeIntervalKey}
-            />
-          </ComparisonChart>
-        ) : (
-          <div className="h-[904.8px] sm:h-[908.8px] md:h-[969px] lg:h-[553px] xl:h-[624px] w-full flex items-center justify-center">
-            <ShowLoading section />
-          </div>
-        )}
+            timeIntervalKey={timeIntervalKey}
+          />
+        </ComparisonChart>
       </div>
-      {/* <Container className="flex flex-col space-y-[15px] mt-[30px]">
-        <QuestionAnswer
-          className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[63px] py-[23px] flex flex-col"
-          question={`What does ${pageData.title} tell you?`}
-          answer={pageData.why}
-          startOpen
-        />
-      </Container> */}
     </>
   );
-};
+}
 
-export default Chain;
+export default Fundamentals;

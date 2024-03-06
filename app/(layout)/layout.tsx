@@ -174,7 +174,7 @@ export default function RootLayout({
                 <div className="w-full relative min-h-full">
                   <Backgrounds />
                   <Header />
-                  <main className="flex-1 w-full mx-auto z-10 mb-[165px] md:px-[14px]">
+                  <main className="flex-1 w-full mx-auto z-10 mb-[165px]">
                     {children}
                     <div className="bg-blue-200 z-50"></div>
                   </main>

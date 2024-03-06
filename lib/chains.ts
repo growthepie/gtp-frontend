@@ -1,3 +1,6 @@
+import { MasterResponse } from "@/types/api/MasterResponse";
+import { IS_DEVELOPMENT, IS_PREVIEW } from "./helpers";
+
 export type Chain = {
   label: string;
   icon: string | null;
@@ -436,3 +439,26 @@ export const EnabledChainsByKeys = AllChains.reduce((acc, chain) => {
   }
   return acc;
 }, {});
+
+export const Get_SupportedChainKeys = (data: MasterResponse) => {
+  if (IS_DEVELOPMENT || IS_PREVIEW) {
+    return Object.keys(data.chains)
+      .filter(
+        (key) =>
+          data.chains[key].deployment === "DEV" ||
+          data.chains[key].deployment === "PROD",
+      )
+      .map((key) => key);
+  }
+
+  return Object.keys(data.chains)
+    .filter((key) => data.chains[key].deployment === "PROD")
+    .map((key) => key);
+};
+
+export const Get_DefaultChainSelectionKeys = (master: MasterResponse) => {
+  const supportedChainKeys = Get_SupportedChainKeys(master);
+  return master.default_chain_selection.filter((key) =>
+    supportedChainKeys.includes(key),
+  );
+};

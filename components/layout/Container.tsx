@@ -10,6 +10,6 @@ export default function Container({
   className = "",
 }: ContainerProps) {
   return (
-    <div className={`px-[20px] md:px-[50px] ${className}`} ref={ref ?? null}>{children}</div>
+    <div className={`px-[20px] md:px-[64px] ${className}`} ref={ref ?? null}>{children}</div>
   );
 }

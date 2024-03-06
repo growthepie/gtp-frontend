@@ -148,7 +148,7 @@ export default async function Layout({
           iconContainerClassName="items-center mb-[15px] md:mb-[32px] relative"
         >
           {typeof pageData.description === "string" &&
-          pageData.description.includes("L2Beat.com.") ? (
+            pageData.description.includes("L2Beat.com.") ? (
             <div>
               <p>
                 {pageData.description.replace("L2Beat.com.", "")}
