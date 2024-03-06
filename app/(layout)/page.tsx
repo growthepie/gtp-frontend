@@ -25,31 +25,31 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   return (
     <>
-      <Container className="flex flex-col flex-1 w-full mt-[65px] md:mt-[45px]">
+      <Container className="flex flex-col flex-1 w-full mt-[65px] md:mt-[70px] gap-y-[10px]">
         <Heading
-          className="font-bold leading-snug text-[24px] sm:text-[32px] md:text-[36px] max-w-[900px]"
+          className="font-bold leading-[1.2] text-[24px] sm:text-[32px] md:text-[36px] max-w-[900px]"
           as="h1"
         >
           Mastering Ethereum Layer 2s
         </Heading>
-        <Subheading className="text-xs sm:text-sm md:text-xl font-medium">
+        <Subheading className="text-xs sm:text-sm md:text-[20px] font-semibold leading-[1.2]">
           Your Gateway to Curated Analytics and Knowledge
         </Subheading>
       </Container>
-      <Container className="flex flex-col flex-1 w-full">
-        <div className="flex space-x-2 mt-[30px] md:mt-[60px] mb-[25px] md:mb-[32px] items-center">
+      <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[30px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
+        <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
           <Icon
             icon="gtp:fundamentals"
             className="w-[30px] h-[30px] md:w-9 md:h-9"
           />
           <Heading
             id="layer-2-traction-title"
-            className="text-[20px] md:text-[30px] leading-snug font-bold"
+            className="text-[20px] md:text-[30px] leading-[1.2] font-semibold"
           >
             Layer 2 Traction
           </Heading>
         </div>
-        <Subheading className="text-base leading-normal md:leading-snug mb-[15px] pl-[5px] lg:pl-[45px] flex justify-between items-end space-x-2">
+        <Subheading className="text-base leading-normal md:leading-snug px-[5px] lg:px-[45px]">
           <div>Aggregated daily metrics across all tracked Layer 2s.</div>
         </Subheading>
       </Container>
@@ -60,46 +60,55 @@ export default async function Page() {
         </div> */}
       </Container>
 
-      <Container className="flex flex-col flex-1 w-full">
-        <div className="flex mt-[30px] md:mt-[60px] mb-[25px] md:mb-[32px] space-x-2 items-center">
+      <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
+        <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
           <Icon
             icon="gtp:gtp-pie"
             className="w-[30px] h-[30px] md:w-9 md:h-9"
           />
-          <Heading className="text-[20px] md:text-[30px] leading-snug font-bold">
+          <Heading className="text-[20px] md:text-[30px] leading-[1.2] font-semibold">
             Layer 2 User Base
           </Heading>
         </div>
-        <Subheading className="text-base leading-normal md:leading-snug mb-[15px] px-[5px] lg:px-[45px]">
+        <Subheading className="text-base leading-normal md:leading-snug px-[5px] lg:px-[45px]">
           Number of distinct addresses interacting with one or multiple Layer 2s
           in a given week.
         </Subheading>
       </Container>
       <LandingUserBaseChart />
-      <Container className="flex flex-col flex-1 w-full">
-        <div className="flex space-x-2 mt-[30px] md:mt-[60px] items-center">
+      <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
+        <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
           <Icon
             icon="gtp:package"
             className="w-[30px] h-[30px] md:w-9 md:h-9"
           />
-          <Heading className="text-[20px] md:text-[30px] leading-snug font-bold">
+          <Heading
+            id="layer-2-traction-title"
+            className="text-[20px] md:text-[30px] leading-[1.2] font-semibold"
+          >
             Blockspace
           </Heading>
         </div>
-        <Subheading className="text-base leading-normal md:leading-snug mt-[30px] mb-[15px] px-[5px] w-full lg:w-3/5 lg:px-[45px]">
-          Top 6 gas-consuming contracts across all tracked Layer 2s.
+        <Subheading className="text-base leading-normal md:leading-snug px-[5px] lg:px-[45px]">
+          <div>Top 6 gas-consuming contracts across all tracked Layer 2s.</div>
         </Subheading>
+      </Container>
+
+      <Container className="">
         <LandingTopContracts />
       </Container>
       <Container>
         <div className="flex gap-x-0 md:gap-x-12 w-full ml-0 mt-[30px] md:mt-[60px]">
-          <div className="flex flex-col md:w-1/2 lg:w-2/3">
-            <div className="flex space-x-2 mb-[30px] items-center">
+          <div className="flex flex-col md:w-1/2 lg:w-2/3 ">
+            <div className="flex items-center mb-[15px] md:mb-[15px] gap-x-[8px] py-[10px] md:py-0 ">
               <Icon
                 icon="gtp:gtp-about"
                 className="w-[30px] h-[30px] md:w-9 md:h-9"
               />
-              <Heading className="text-[20px] md:text-[30px] leading-snug font-bold">
+              <Heading
+                id="layer-2-traction-title"
+                className="text-[20px] md:text-[30px] leading-[1.2] font-semibold"
+              >
                 About growthepie
               </Heading>
             </div>
@@ -140,8 +149,11 @@ export default async function Page() {
             icon="gtp:gtp-faq"
             className="w-[30px] h-[30px] md:w-9 md:h-9"
           />
-          <Heading className="text-[20px] md:text-[30px] leading-snug font-bold">
-            Frequently Asked Questions
+          <Heading
+            id="layer-2-traction-title"
+            className="text-[20px] md:text-[30px] leading-[1.2] font-semibold"
+          >
+            <div>Frequently Asked Questions</div>
           </Heading>
         </div>
         <div className="flex flex-col space-y-[15px] my-0 md:my-[30px]">

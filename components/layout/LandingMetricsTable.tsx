@@ -189,7 +189,7 @@ export default function LandingMetricsTable({
               <TooltipContent className="z-[110]">
                 <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
                   <div>
-                    Percentage of active addresses that have interacted with one or more other chains in the last 7 days.
+                    Percentage of active addresses that also interacted with other chains in the last 7 days.
                   </div>
                 </div>
               </TooltipContent>
@@ -344,29 +344,23 @@ export default function LandingMetricsTable({
                       )}
                     </div>
 
-                    <div className="w-[13%] flex justify-end items-center pr-[60px] lg:pr-8 text-sm">
+                    <div className="w-[13%] flex justify-end items-center text-sm relative">
                       {/* <div className="flex flex-1 align-middle items-center"> */}
-                      <div className="flex w-full justify-end">
-                        {Intl.NumberFormat(undefined, {
-                          notation: "compact",
-                          maximumFractionDigits: 2,
-                          minimumFractionDigits: 2,
-                        }).format(lastValsByChainKey[item.chain.key])}
-                        {/* <div className="absolute -bottom-[6px] right-0 w-full h-1 bg-black/10 rounded-none"></div>
-                          <div
-                            className={`absolute -bottom-[6px] right-0 h-1 bg-forest-900 dark:bg-forest-50 rounded-none`}
-                            style={{
-                              width: `${
-                                (data.chains[item.chain.key].data.data[
-                                  data.chains[item.chain.key].data.data.length -
-                                    1
-                                ][1] /
-                                  maxVal) *
-                                100
-                              }%`,
-                            }}
-                          ></div> */}
+                      <div className="flex w-full justify-end items-center pr-[60px] lg:pr-8 ">
+
+                        <div className="flex items-center">
+                          {Intl.NumberFormat(undefined, {
+                            notation: "compact",
+                            maximumFractionDigits: 2,
+                            minimumFractionDigits: 0,
+                          }).format(lastValsByChainKey[item.chain.key])}
+
+                        </div>
+                        <div className="absolute flex justify-start w-20">
+                          <div className="pl-[90px] leading-[1.8] text-forest-400 text-xs"> {(data.chains[item.chain.key].user_share * 100).toFixed(1)}%</div>
+                        </div>
                       </div>
+
                     </div>
                     <div className="w-[15%] text-right pr-14 text-sm">
                       {d3.format(

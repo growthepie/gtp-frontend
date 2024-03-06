@@ -86,7 +86,7 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
   return (
     <>
       {landing ? (
-        <div className="lg:-mt-14 flex flex-col">
+        <div className="lg:-mt-[72px] flex flex-col">
           <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row justify-end items-center ml-0 lg:ml-auto lg:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px] mb-4">
             {/* <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center space-x-[4px] xl:space-x-1">
               <button
@@ -136,11 +136,10 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
                   <button
                     key={timespan}
                     //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                    className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
-                      selectedTimespan === timespan
-                        ? "bg-forest-500 dark:bg-forest-1000"
-                        : "hover:bg-forest-500/10"
-                    }`}
+                    className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${selectedTimespan === timespan
+                      ? "bg-forest-500 dark:bg-forest-1000"
+                      : "hover:bg-forest-500/10"
+                      }`}
                     onClick={() => {
                       setSelectedTimespan(timespan);
                     }}
@@ -157,16 +156,15 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
                 key={i}
                 data={
                   landing.data.top_contracts[selectedTimespan].data[
-                    contractIndex
+                  contractIndex
                   ]
                 }
                 types={landing.data.top_contracts[selectedTimespan].types}
                 metric={metrics[selectedMetric].key}
-                changeSuffix={`in last ${
-                  selectedTimespan === "1d"
-                    ? "1 day"
-                    : `${parseInt(selectedTimespan)} days`
-                }`}
+                changeSuffix={`in last ${selectedTimespan === "1d"
+                  ? "1 day"
+                  : `${parseInt(selectedTimespan)} days`
+                  }`}
               />
             ))}
           </div>

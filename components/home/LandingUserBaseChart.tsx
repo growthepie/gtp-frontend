@@ -105,6 +105,8 @@ export default function LandingUserBaseChart() {
                   };
                 })}
               sources={landing.data.metrics.user_base.source}
+              cross_chain_users={data.cross_chain_users}
+              cross_chain_users_comparison={data.cross_chain_users_comparison}
               latest_total={data.latest_total}
               latest_total_comparison={data.latest_total_comparison}
               l2_dominance={data.l2_dominance}
