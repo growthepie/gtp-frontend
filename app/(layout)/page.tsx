@@ -11,6 +11,7 @@ import SwiperContainer from "@/components/layout/SwiperContainer";
 import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 // import { LandingURL } from "@/lib/urls";
 
 export async function generateMetadata(): Promise<Metadata> {

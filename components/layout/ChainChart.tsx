@@ -25,7 +25,7 @@ import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import d3 from "d3";
-import { AllChains, AllChainsByKeys } from "@/lib/chains";
+import { AllChains, AllChainsByKeys, Get_DefaultChainSelectionKeys } from "@/lib/chains";
 import { debounce, forEach } from "lodash";
 
 import { navigationItems, navigationCategories } from "@/lib/navigation";
@@ -1193,7 +1193,7 @@ export default function ChainChart({
 
     return AllChains.filter(
       (chain) =>
-        ((chain.ecosystem.includes("all-chains") || chain.key == "ethereum") &&
+        (Get_DefaultChainSelectionKeys(master).includes(chain.key) &&
           !["all_l2s", chainKey[0]].includes(chain.key)) && Object.keys(master.chains).includes(chain.key)
     );
   }, [chainKey, master]);

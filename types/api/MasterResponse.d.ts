@@ -2,6 +2,7 @@
   current_version: string;
   chains: Chains;
   metrics: Metrics;
+  default_chain_selection: string[];
   blockspace_categories: BlockspaceCategories;
 }
 
@@ -14,6 +15,7 @@ export interface ChainInfo {
   name_short: string;
   symbol: string;
   bucket: string;
+  deployment: "PROD" | "DEV";
   technology: string;
   purpose: string;
   launch_date: string;

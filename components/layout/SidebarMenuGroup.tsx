@@ -12,6 +12,7 @@ import { navigationCategories } from "@/lib/navigation";
 import rpgf from "@/icons/svg/rpgf.svg";
 import Image from "next/image";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import { Get_SupportedChainKeys } from "@/lib/chains";
 
 type SidebarProps = {
   item: NavigationItem;
@@ -37,6 +38,7 @@ export default function SidebarMenuGroup({
 
     const chainItemsByKey = navigationItems[3].options
       .filter((option) => option.hide !== true)
+      .filter((option) => option.key && Get_SupportedChainKeys(master).includes(option.key))
       .reduce((acc, option) => {
         if (option.key) acc[option.key] = option;
         return acc;

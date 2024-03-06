@@ -19,6 +19,7 @@ import Link from "next/link";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Container from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
+import HorizontalScrollContainer from "../HorizontalScrollContainer";
 
 export default function LandingUserBaseChart() {
   // const isLargeScreen = useMediaQuery("(min-width: 1280px)");
@@ -90,11 +91,7 @@ export default function LandingUserBaseChart() {
       {data && landing && master ? (
         <>
           <Container
-            className={
-              isSidebarOpen
-                ? `w-full h-[470.98px] md:h-[718px] lg:h-[626px] xl:h-[636px] rounded-[15px]`
-                : `w-full h-[470.98px] md:h-[718px] lg:h-[657px] xl:h-[636px] rounded-[15px]`
-            }
+            className={`w-full h-[470.98px] ${isSidebarOpen ? 'md:h-[718px] lg:h-[626px]' : 'md:h-[718px] lg:h-[657px]'} rounded-[15px] pb-[15px] md:pb-[42px]`}
           >
             <LandingChart
               data={Object.keys(data.chains)
@@ -117,7 +114,7 @@ export default function LandingUserBaseChart() {
               setSelectedMetric={setSelectedMetric}
             />
           </Container>
-          <Container className="!pr-0">
+          <HorizontalScrollContainer>
             <LandingMetricsTable
               data={{ chains: landing.data.metrics.table_visual }}
               selectedChains={selectedChains}
@@ -128,7 +125,7 @@ export default function LandingUserBaseChart() {
               interactable={selectedMetric !== "Total Users"}
             // interactable
             />
-          </Container>
+          </HorizontalScrollContainer>
         </>
       ) : (
         <Container>
