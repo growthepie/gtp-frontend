@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { BASE_URLS } from "@/lib/helpers";
 import { useMediaQuery } from "usehooks-ts";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./layout/Tooltip";
 
 export default function Share() {
   const pathname = usePathname();
@@ -12,7 +13,7 @@ export default function Share() {
   const [currentURL, setcurrentURL] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [topSelection, setTopSelection] = useState("social");
-  const [embedCat, setEmbedCat] = useState("absolute");
+  const [isAbsolute, setIsAbsolute] = useState(true);
   const isMobile = useMediaQuery("(max-width: 767px)");
 
   function copyText(entryText) {
@@ -119,7 +120,7 @@ export default function Share() {
                   className={`flex items-center justify-center px-[16px] py-[2px] text-[14px] rounded-full hover:cursor-pointer transition ${
                     topSelection === "social"
                       ? "bg-black"
-                      : "border-white border-[1px]"
+                      : "border-forest-500 border-[1px]"
                   }`}
                   onClick={() => {
                     setTopSelection("social");
@@ -131,7 +132,7 @@ export default function Share() {
                   className={`flex items-center justify-center px-[16px] py-[2px] text-[14px] rounded-full hover:cursor-pointer transition ${
                     topSelection === "embed"
                       ? "bg-black"
-                      : "border-white border-[1px]"
+                      : "border-forest-500 border-[1px]"
                   }`}
                   onClick={() => {
                     setTopSelection("embed");
@@ -171,22 +172,35 @@ export default function Share() {
                       <input
                         type="text"
                         value={currentURL ? currentURL : ""}
-                        className="w-[285px] h-[54px] p-[15px] pr-[45px] pass bg-transparent rounded-full border border-forest-500 dark:border-forest-800 font-medium text-forest-400 dark:text-forest-500 text-base overflow-hidden whitespace-nowrap text-ellipsis focus:outline-none"
+                        className="w-[285px] h-[54px] p-[15px] pr-[45px] pass bg-transparent rounded-full border-[3px] border-forest-500 dark:border-forest-800 font-medium text-forest-400 dark:text-forest-500 text-base overflow-hidden whitespace-nowrap text-ellipsis focus:outline-none"
                         readOnly={isReadOnlyInput}
                         onClick={(e) => {
                           setIsReadOnlyInput(false);
                           e.currentTarget.select();
                         }}
                       />
-
-                      <Icon
-                        className="w-[24px] h-[24px] absolute right-[15px] top-[15px] hover:cursor-pointer"
-                        icon={copied ? "feather:check" : "feather:copy"}
-                        onClick={() => {
-                          copyText(currentURL ? currentURL : "");
-                          triggerCopy();
-                        }}
-                      />
+                      <div>
+                        <Icon
+                          className={`absolute right-[20px] top-[17px]  w-[22px] h-[22px] font-semibold transition-opacity duration-300 ${
+                            copied ? "opacity-0" : "opacity-100"
+                          }`}
+                          icon="feather:copy"
+                          onClick={() => {
+                            copyText(currentURL ? currentURL : "");
+                            triggerCopy();
+                          }}
+                        />
+                        <Icon
+                          className={`absolute right-[20px] top-[17px] w-[22px] h-[22px] font-semibold transition-opacity duration-300 ${
+                            copied ? "opacity-100" : "opacity-0"
+                          }`}
+                          icon="feather:check"
+                          onClick={() => {
+                            copyText(currentURL ? currentURL : "");
+                            triggerCopy();
+                          }}
+                        />
+                      </div>
                       {/* </div> */}
                     </div>
                   </div>
@@ -238,61 +252,99 @@ export default function Share() {
                   <div className="flex flex-col w-[204px] h-full gap-y-[5px]">
                     <div className="flex w-full justify-between">
                       <div className="text-medium">Timeframe</div>
-                      <Icon
-                        className="w-[22px] h-[22px] font-semibold"
-                        icon="feather:info"
-                      />
+                      <Tooltip placement="left" allowInteract>
+                        <TooltipTrigger>
+                          <div className="p-1 z-10 mr-0 md:-mr-0.5">
+                            <Icon icon="feather:info" className="w-6 h-6" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
+                          <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
+                            <div className="flex flex-col space-y-1">
+                              <div className="font-bold text-sm leading-snug"></div>
+                              <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug"></div>
+                            </div>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                     <div className="flex h-[28px] px-[2px] w-full bg-forest-50 justify-between items-center rounded-full">
-                      <div
-                        className={`flex items-center justify-center w-[92px] px-[12px] py-[1px] text-[16px] bg-forest-900 rounded-full hover:cursor-pointer transition duration-300 ${
-                          embedCat === "absolute"
-                            ? "bg-forest-900 text-white"
-                            : "bg-inherit text-forest-900"
-                        }`}
-                        onClick={() => {
-                          setEmbedCat("absolute");
-                        }}
-                      >
-                        Absolute
-                      </div>
-                      <div
-                        className={`flex items-center justify-center w-[92px] px-[12px] py-[1px] text-[16px] rounded-full hover:cursor-pointer transition duration-300 ${
-                          embedCat === "relative"
-                            ? "bg-forest-900 text-white"
-                            : "bg-inherit text-forest-900"
-                        }`}
-                        onClick={() => {
-                          setEmbedCat("relative");
-                        }}
-                      >
-                        Relative
-                      </div>
+                      <label className="inline-flex items-center cursor-pointer w-full">
+                        <input
+                          type="checkbox"
+                          value=""
+                          className="sr-only peer w-full"
+                          checked={isAbsolute}
+                          onChange={() => {
+                            setIsAbsolute(!isAbsolute);
+                          }}
+                        />
+                        <div
+                          className={`flex items-center  text-[15px] justify-between pl-3.5 pr-4 relative w-full h-6 bg-gray-200 peer-focus:outline-none rounded-full peer ${
+                            isAbsolute
+                              ? "peer-checked:after:right-[2px] peer-checked:after:border-white"
+                              : ""
+                          } after:content-[''] after:absolute after:-top-[0.5px] after:right-[112px] after:bg-forest-900  after:border after:rounded-full after:h-[25px] after:w-[86.5px] after:transition-all dark:border-gray-600 ${
+                            isAbsolute ? "" : ""
+                          }`}
+                        >
+                          <div
+                            className={`z-20 transition ${
+                              isAbsolute ? "text-forest-800" : " text-forest-50"
+                            }`}
+                          >
+                            Absolute
+                          </div>
+                          <div
+                            className={`z-20 transition ${
+                              !isAbsolute
+                                ? "text-forest-800"
+                                : " text-forest-50"
+                            }`}
+                          >
+                            Relative
+                          </div>
+                        </div>
+                      </label>
                     </div>
                     <div className="flex items-center gap-x-[10px] h-[54px] w-[204px] rounded-full border-[#5A6462] border-[2px] px-[15px]">
                       <Icon
                         className="w-[22px] h-[22px] font-semibold"
-                        icon="feather:info"
+                        icon="gtp:arrowleftright"
                       />
                       <div>Width</div>
                     </div>
                     <div className="flex items-center gap-x-[10px] h-[54px] w-[204px] rounded-full border-[#5A6462] border-[2px] px-[15px]">
                       <Icon
                         className="w-[22px] h-[22px] font-semibold"
-                        icon="feather:info"
+                        icon="gtp:arrowupdown"
                       />
                       <div>Height</div>
                     </div>
-                    <div className="flex items-center gap-x-[10px] h-[54px] w-[204px] rounded-full border-[#5A6462] border-[2px] px-[15px]">
-                      <Icon
-                        className="w-[22px] h-[22px] font-semibold"
-                        icon={copied ? "feather:check" : "feather:copy"}
-                        onClick={() => {
-                          copyText(currentURL ? currentURL : "");
-                          triggerCopy();
-                        }}
-                      />
-                      <div>Copy Code</div>
+                    <div className="flex items-center gap-x-[10px] h-[54px] w-[204px] rounded-full border-[#5A6462] border-[3px] px-[15px]">
+                      <div className="relative w-[22px] -top-[10px]">
+                        <Icon
+                          className={`absolute  w-[22px] h-[22px] font-semibold transition-opacity duration-300 ${
+                            copied ? "opacity-0" : "opacity-100"
+                          }`}
+                          icon="feather:copy"
+                          onClick={() => {
+                            copyText(currentURL ? currentURL : "");
+                            triggerCopy();
+                          }}
+                        />
+                        <Icon
+                          className={`absolute w-[22px] h-[22px] font-semibold transition-opacity duration-300 ${
+                            copied ? "opacity-100" : "opacity-0"
+                          }`}
+                          icon="feather:check"
+                          onClick={() => {
+                            copyText(currentURL ? currentURL : "");
+                            triggerCopy();
+                          }}
+                        />
+                      </div>
+                      <div>{copied ? "Copied" : "Copy Code"}</div>
                     </div>
                   </div>
                 </div>
