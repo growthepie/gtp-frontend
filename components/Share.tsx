@@ -348,7 +348,7 @@ export default function Share() {
                             className="w-[24px] h-[24px] font-semibold"
                             icon="gtp:arrowleftright"
                           />
-                          <div className="flex items-center underline decoration-dotted ">
+                          <div className="flex items-center underline decoration-dotted decoration-2 ">
                             <div
                               className="outline-none"
                               contentEditable
@@ -369,7 +369,7 @@ export default function Share() {
                             className="w-[24px] h-[24px] font-semibold"
                             icon="gtp:arrowupdown"
                           />
-                          <div className="flex items-center underline decoration-dotted ">
+                          <div className="flex items-center underline decoration-dotted decoration-2  ">
                             <div
                               className="outline-none"
                               contentEditable
