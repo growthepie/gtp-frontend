@@ -234,50 +234,28 @@ const Chain = ({ params }: { params: any }) => {
                   className="flex items-center gap-x-[8px] justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-[16px] py-[8px] transition-all duration-300 peer-hover:[&>div]:w-[0px] [&>div]:w-[99px] peer-hover:gap-x-0"
                   rel="noreferrer"
                   target="_blank"
-                  as="div"
                 >
                   <Icon icon="gtp:gtp-block-explorer" className="w-4 h-4" />
                   <div className="transition-all duration-300 whitespace-nowrap overflow-hidden">Block Explorer</div>
                 </Link>
-                <Link
-                  href={"https://app.rhino.fi/bridge/?refId=PG_GrowThePie"}
-                  className="flex p-[1px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full peer-hover:[&>div>div]:w-[0px] [&>div>div]:w-[45px] peer-hover:[&>div]:gap-x-0"
-                  rel="noreferrer" target="_blank"
-                  onClick={() => {
-                    track("clicked RhinoFi Bridge link", {
-                      location: isMobile ? `mobile Chain page` : `desktop Chain page`,
-                      page: window.location.pathname,
-                    });
-                  }}
-                >
-                  <div className="flex items-center gap-x-[8px] justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-[16px] py-[7px]">
-                    <Icon icon="gtp:gtp-bridge" className="w-4 h-4" />
-                    <div className="transition-all duration-300 whitespace-nowrap overflow-hidden">Bridge</div>
-                  </div>
-                </Link>
-                {/* <Link
-                  href={master.chains[chainKeys[0]].website}
-                  className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  <Icon icon="feather:external-link" className="w-4 h-4" />
-                  <div>Website</div>
-                </Link>
-                <Link
-                  href={master.chains[chainKeys[0]].twitter}
-                  className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  <Icon icon="feather:twitter" className="w-4 h-4" />
-                  <div>
-                    <span className="">@</span>
-                    {master.chains[chainKeys[0]].twitter.split(
-                      "https://twitter.com/",
-                    )}
-                  </div>
-                </Link> */}
+                {process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" && (
+                  <Link
+                    href={"https://app.rhino.fi/bridge/?refId=PG_GrowThePie"}
+                    className="flex p-[1px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full peer-hover:[&>div>div]:w-[0px] [&>div>div]:w-[45px] peer-hover:[&>div]:gap-x-0"
+                    rel="noreferrer" target="_blank"
+                    onClick={() => {
+                      track("clicked RhinoFi Bridge link", {
+                        location: isMobile ? `mobile Chain page` : `desktop Chain page`,
+                        page: window.location.pathname,
+                      });
+                    }}
+                  >
+                    <div className="flex items-center gap-x-[8px] justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-[16px] py-[7px]">
+                      <Icon icon="gtp:gtp-bridge" className="w-4 h-4" />
+                      <div className="transition-all duration-300 whitespace-nowrap overflow-hidden">Bridge</div>
+                    </div>
+                  </Link>
+                )}
               </div>
             </div>
             <div className="flex items-center mb-[15px]">
