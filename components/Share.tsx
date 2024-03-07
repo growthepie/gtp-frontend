@@ -13,6 +13,8 @@ export default function Share() {
   const [currentURL, setcurrentURL] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [topSelection, setTopSelection] = useState("social");
+  const [widthValue, setWidthValue] = useState("960px");
+  const [heightValue, setHeightValue] = useState("480px");
   const [isAbsolute, setIsAbsolute] = useState(true);
   const isMobile = useMediaQuery("(max-width: 767px)");
 
@@ -58,6 +60,20 @@ export default function Share() {
 
   const [isReadOnlyInput, setIsReadOnlyInput] = useState(true);
 
+  const handleWidthChange = (event) => {
+    const newValue = parseInt(event.target.value);
+    if (!isNaN(newValue)) {
+      setWidthValue(newValue.toString()); // Convert newValue to string
+    }
+  };
+
+  const handleHeightChange = (event) => {
+    const newValue = parseInt(event.target.value);
+    if (!isNaN(newValue)) {
+      setHeightValue(newValue.toString()); // Convert newValue to string
+    }
+  };
+
   //Initialize URL
   useEffect(() => {
     setcurrentURL(
@@ -95,8 +111,10 @@ export default function Share() {
                   }}
                 />
                 <div
-                  className="absolute -right-[5px] -bottom-[5px] w-[589px] bg-forest-50 dark:bg-[#1F2726] z-[110] rounded-[40px] shadow-lg py-[30px] px-[30px] 
-        border-[5px] border-forest-500 dark:border-[#5A6462]"
+                  className={`absolute -right-[5px] -bottom-[5px]  bg-forest-50 dark:bg-[#1F2726] z-[110] rounded-[40px] shadow-lg py-[30px] px-[20px] 
+                  border-[5px] border-forest-500 dark:border-[#5A6462] transition-all duration-300 ${
+                    topSelection === "social" ? "w-[453px]" : "w-[579px]"
+                  }`}
                 >
                   <div className="flex w-full h-[32px] justify-between items-center justify-self-start ">
                     <div className="flex items-center gap-x-[10px]">
@@ -118,17 +136,17 @@ export default function Share() {
                       />
                     </div>
                   </div>
-                  <div className="flex flex-col mt-[15px] text-[16px] leading-[150%]">
+                  <div className="flex flex-col mt-[15px] text-[16px] leading-[125%]">
                     <div>
                       Share this page on through one of the following ways:
                     </div>
                   </div>
-                  <div className="flex gap-x-[10px] mt-[10px]">
+                  <div className="flex gap-x-[10px] mt-[15px]">
                     <div
                       className={`flex items-center justify-center px-[16px] py-[2px] text-[14px] rounded-full hover:cursor-pointer transition ${
                         topSelection === "social"
-                          ? "bg-black"
-                          : "border-forest-500 border-[1px]"
+                          ? "bg-[#151A19] border-[#151A19] border-[2px]"
+                          : "border-forest-500 border-[1px] "
                       }`}
                       onClick={() => {
                         setTopSelection("social");
@@ -139,8 +157,8 @@ export default function Share() {
                     <div
                       className={`flex items-center justify-center px-[16px] py-[2px] text-[14px] rounded-full hover:cursor-pointer transition ${
                         topSelection === "embed"
-                          ? "bg-black"
-                          : "border-forest-500 border-[1px]"
+                          ? "bg-[#151A19] border-[#151A19] border-[2px]"
+                          : "border-forest-500 border-[1px] "
                       }`}
                       onClick={() => {
                         setTopSelection("embed");
@@ -175,21 +193,24 @@ export default function Share() {
                       </div>
                     </label> */}
                         </div>
-                        <div className=" mt-[6px] relative">
+                        <div className="flex p-[15px] gap-x-[10px] rounded-full w-[393px] h-[54px]  mt-[6px] relative border-[3px] items-center border-forest-500 dark:border-forest-800">
                           {/* <div className="flex w-[285px] h-[54px] p-[15px] border-[1px] border-[#CDD8D3] gap-x-[10px] items-center"> */}
-                          <input
-                            type="text"
-                            value={currentURL ? currentURL : ""}
-                            className="w-[285px] h-[54px] p-[15px] pr-[45px] pass bg-transparent rounded-full border-[3px] border-forest-500 dark:border-forest-800 font-medium text-forest-400 dark:text-forest-500 text-base overflow-hidden whitespace-nowrap text-ellipsis focus:outline-none"
-                            readOnly={isReadOnlyInput}
-                            onClick={(e) => {
-                              setIsReadOnlyInput(false);
-                              e.currentTarget.select();
-                            }}
+                          <Icon
+                            className="w-[24px] h-[24px] font-semibold"
+                            icon="feather:link"
                           />
-                          <div>
+                          <div
+                            className="whitespace-nowrap text-ellipsis overflow-hidden max-w-[300px] select-none"
+                            onDoubleClick={() => {
+                              triggerCopy();
+                            }}
+                          >
+                            {currentURL}
+                          </div>
+
+                          <div className="ml-auto ">
                             <Icon
-                              className={`absolute right-[20px] top-[17px]  w-[22px] h-[22px] font-semibold transition-opacity duration-300 ${
+                              className={`absolute right-3 top-[14px] w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${
                                 copied ? "opacity-0" : "opacity-100"
                               }`}
                               icon="feather:copy"
@@ -199,7 +220,7 @@ export default function Share() {
                               }}
                             />
                             <Icon
-                              className={`absolute right-[20px] top-[17px] w-[22px] h-[22px] font-semibold transition-opacity duration-300 ${
+                              className={`absolute right-3 top-[14px] w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${
                                 copied ? "opacity-100" : "opacity-0"
                               }`}
                               icon="feather:check"
@@ -214,7 +235,7 @@ export default function Share() {
                       </div>
                       <div className="flex flex-col gap-y-[5px]">
                         <div
-                          className="flex items-center w-[285px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px] "
+                          className="flex items-center w-[393px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px] "
                           onClick={() => {
                             handleSendEmail();
                           }}
@@ -228,7 +249,7 @@ export default function Share() {
                           </div>
                         </div>
                         <div
-                          className="flex items-center w-[285px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
+                          className="flex items-center w-[393px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
                           onClick={() => {
                             shareOnReddit();
                           }}
@@ -243,7 +264,7 @@ export default function Share() {
                         </div>
 
                         <div
-                          className="flex items-center w-[285px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
+                          className="flex items-center w-[393px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
                           onClick={() => {
                             shareOnTwitter();
                           }}
@@ -259,8 +280,8 @@ export default function Share() {
                       </div>
                     </div>
                   ) : (
-                    <div className="flex gap-x-[30px] mt-[30px] h-[234px]">
-                      <div className=" p-[10px] rounded-3xl border-forest-200 border-[1px] w-[285px] h-full">
+                    <div className="flex gap-x-[36px] mt-[30px] h-[234px]">
+                      <div className=" p-[10px] rounded-3xl border-forest-600 border-[1px] w-[285px] h-full">
                         Embed Link Here
                       </div>
                       <div className="flex flex-col w-[204px] h-full gap-y-[5px]">
@@ -294,28 +315,26 @@ export default function Share() {
                               }}
                             />
                             <div
-                              className={`flex items-center  text-[15px] justify-between pl-3.5 pr-4 relative w-full h-6 bg-gray-200 peer-focus:outline-none rounded-full peer ${
+                              className={`flex items-center  text-[16px] justify-between pl-[18px] pr-5 relative w-full h-6 bg-gray-200 peer-focus:outline-none rounded-full peer ${
                                 isAbsolute
-                                  ? "peer-checked:after:right-[2px] peer-checked:after:border-white"
+                                  ? "peer-checked:after:right-[98.5px] peer-checked:after:border-white"
                                   : ""
-                              } after:content-[''] after:absolute after:-top-[0.5px] after:right-[112px] after:bg-forest-900  after:border after:rounded-full after:h-[25px] after:w-[86.5px] after:transition-all dark:border-gray-600 ${
-                                isAbsolute ? "" : ""
-                              }`}
+                              } after:content-[''] after:absolute after:-top-[0.5px] after:-right-[0.5px] after:bg-forest-900  after:border after:rounded-full after:h-[25px] after:w-[102.5px] after:transition-all dark:border-gray-600 `}
                             >
                               <div
-                                className={`z-20 transition ${
+                                className={`z-20 transition select-none ${
                                   isAbsolute
-                                    ? "text-forest-800"
-                                    : " text-forest-50"
+                                    ? "text-forest-50"
+                                    : " text-forest-800"
                                 }`}
                               >
                                 Absolute
                               </div>
                               <div
-                                className={`z-20 transition ${
+                                className={`z-20 transition select-none ${
                                   !isAbsolute
-                                    ? "text-forest-800"
-                                    : " text-forest-50"
+                                    ? "text-forest-50"
+                                    : " text-forest-800"
                                 }`}
                               >
                                 Relative
@@ -323,24 +342,64 @@ export default function Share() {
                             </div>
                           </label>
                         </div>
+
                         <div className="flex items-center gap-x-[10px] h-[54px] w-[204px] rounded-full border-[#5A6462] border-[2px] px-[15px]">
                           <Icon
-                            className="w-[22px] h-[22px] font-semibold"
+                            className="w-[24px] h-[24px] font-semibold"
                             icon="gtp:arrowleftright"
                           />
-                          <div>Width</div>
+                          <div className="flex items-center underline decoration-dotted decoration-2 underline-offset-[5px] ">
+                            <div
+                              className="outline-none"
+                              contentEditable
+                              onBlur={handleWidthChange}
+                              style={{
+                                border: "none", // Remove default border
+                                boxShadow: "none", // Remove default focus box shadow
+                              }}
+                            >
+                              {widthValue}
+                              {"   "}
+                            </div>
+                            <span className="ml-[0.5px] italic text-[#5A6462]">
+                              {" "}
+                              Width
+                            </span>
+                          </div>
                         </div>
                         <div className="flex items-center gap-x-[10px] h-[54px] w-[204px] rounded-full border-[#5A6462] border-[2px] px-[15px]">
                           <Icon
-                            className="w-[22px] h-[22px] font-semibold"
+                            className="w-[24px] h-[24px] font-semibold"
                             icon="gtp:arrowupdown"
                           />
-                          <div>Height</div>
+                          <div className="flex items-center underline decoration-dotted decoration-2  underline-offset-[5px] ">
+                            <div
+                              className="outline-none"
+                              contentEditable
+                              onBlur={handleHeightChange}
+                              style={{
+                                border: "none", // Remove default border
+                                boxShadow: "none", // Remove default focus box shadow
+                              }}
+                            >
+                              {heightValue}
+                              {"   "}
+                            </div>
+                            <span className="ml-[1px] italic text-[#5A6462]">
+                              {" "}
+                              Height
+                            </span>
+                          </div>
                         </div>
                         <div className="flex items-center gap-x-[10px] h-[54px] w-[204px] rounded-full border-[#5A6462] border-[3px] px-[15px]">
-                          <div className="relative w-[22px] -top-[10px]">
+                          <Icon
+                            className={`  w-[24px] h-[24px] font-semibold `}
+                            icon="gtp:code-slash"
+                          />
+                          <div>{copied ? "Copied" : "Copy Code"}</div>
+                          <div className="flex ml-auto relative w-[24px] -top-[10px]">
                             <Icon
-                              className={`absolute  w-[22px] h-[22px] font-semibold transition-opacity duration-300 ${
+                              className={`absolute  w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${
                                 copied ? "opacity-0" : "opacity-100"
                               }`}
                               icon="feather:copy"
@@ -350,7 +409,7 @@ export default function Share() {
                               }}
                             />
                             <Icon
-                              className={`absolute w-[22px] h-[22px] font-semibold transition-opacity duration-300 ${
+                              className={`absolute w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${
                                 copied ? "opacity-100" : "opacity-0"
                               }`}
                               icon="feather:check"
@@ -360,7 +419,6 @@ export default function Share() {
                               }}
                             />
                           </div>
-                          <div>{copied ? "Copied" : "Copy Code"}</div>
                         </div>
                       </div>
                     </div>
