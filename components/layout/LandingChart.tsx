@@ -642,7 +642,17 @@ export default function LandingChart({
       </div>`;
 
       const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway"><div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-6 mb-2 flex justify-between">${dateString}</div>`;
-      const tooltipEnd = `</div>`;
+      let tooltipEnd = `</div>`;
+
+      if (selectedMetric === "Users per Chain")
+        tooltipEnd = `
+          <div class="text-0.55rem] flex flex-col items-start pl-[24px] pt-3 gap-x-1 w-full text-forest-900/60 dark:text-forest-500/60">
+            <div class="font-medium">Note:</div>
+            Addresses exclusively interacting with<br/>respective chain.
+          </div>
+        </div>`;
+
+
 
       let pointsSum = points.reduce((acc: number, point: any) => {
         acc += point.y;
@@ -719,9 +729,11 @@ export default function LandingChart({
           </div>`;
         })
         .join("");
+
+
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [formatNumber, selectedScale, theme],
+    [formatNumber, selectedMetric, selectedScale, theme],
   );
 
   const tooltipPositioner =
@@ -1478,7 +1490,6 @@ export default function LandingChart({
       <div className="h-[225px] lg:h-[81px] xl:h-[60px]">
         <div className="flex flex-col lg:hidden justify-center pb-[15px] gap-y-[5px]">
           <MobileMetricCard icon="feather:users" metric_name="Total Users" metric_value={latest_total} metric_comparison={latest_total_comparison} theme={theme || "dark"} />
-
           <div className="flex justify-center gap-x-[5px]">
             <MobileMetricCard icon="gtp:wallet-chain" metric_name="Active on Multiple Chains" metric_value={cross_chain_users} metric_comparison={cross_chain_users_comparison} theme={theme || "dark"} />
             <MobileMetricCard icon="feather:layers" metric_name="L2 Dominance" metric_value={l2_dominance} metric_comparison={l2_dominance_comparison} theme={theme || "dark"} />
@@ -1637,8 +1648,8 @@ export default function LandingChart({
           <div className="flex justify-end items-center absolute top-[56px] lg:-top-[15px] right-[-1px] rounded-full z-10">
             <div className="flex justify-center items-center">
               <div className="flex items-center justify-center gap-x-[20px] pr-[10px]">
-                <MetricCard icon="gtp:wallet-chain" metric_name="Active on Multiple Chains" metric_value={cross_chain_users} metric_comparison={cross_chain_users_comparison} theme={theme || "dark"} />
                 <MetricCard icon="feather:users" metric_name="Total Users" metric_value={latest_total} metric_comparison={latest_total_comparison} theme={theme || "dark"} />
+                <MetricCard icon="gtp:wallet-chain" metric_name="Active on Multiple Chains" metric_value={cross_chain_users} metric_comparison={cross_chain_users_comparison} theme={theme || "dark"} />
                 <MetricCard icon="feather:layers" metric_name="L2 Dominance" metric_value={l2_dominance} metric_comparison={l2_dominance_comparison} theme={theme || "dark"} />
               </div>
 
@@ -1668,10 +1679,6 @@ export default function LandingChart({
                             </Link>
                           ))
                           .reduce((prev, curr) => [prev, ", ", curr])}
-                      </div>
-                      <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug">
-                        <div>Note:</div>
-                        <div>Addresses exclusively interacting with respective chain</div>
                       </div>
                     </div>
                   </div>
@@ -1705,7 +1712,7 @@ const MobileMetricCard = ({
           icon={icon}
           className="w-[30px] h-[30px]"
         />
-        <div className="block text-[10px] font-medium leading-[1.5]">
+        <div className="block text-[10px] font-medium leading-[1.5] text-center">
           {metric_name}
         </div>
       </div>
