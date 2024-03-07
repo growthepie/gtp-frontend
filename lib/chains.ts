@@ -366,6 +366,28 @@ export const AllChains: Chain[] = [
     darkTextOnBackground: false,
   },
   {
+    label: "RhinoFi",
+    icon: "/icons/rhino.png",
+    key: "rhino",
+    urlKey: "rhino-fi",
+    chainType: "L2",
+    ecosystem: ["all-chains"], // add ecosystems when unhiding from the UI
+    description: "",
+    border: {
+      light: ["border-[#ECB16B]", "border-[#ECB16B]"],
+      dark: ["border-[#ECB16B]", "border-[#ECB16B]"],
+    },
+    colors: {
+      light: ["#ECB16B", "#ECB16B"], // dark greenish
+      dark: ["#ECB16B", "#ECB16B"], // dark greenish
+    },
+    backgrounds: {
+      light: ["bg-[#ECB16B]", "bg-[#ECB16B]"],
+      dark: ["bg-[#ECB16B]", "bg-[#ECB16B]"],
+    },
+    darkTextOnBackground: false,
+  },
+  {
     label: "Multiple Chains",
     icon: null,
     key: "multiple",

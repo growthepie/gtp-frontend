@@ -1,4 +1,4 @@
-import { EnabledChainsByKeys } from "@/lib/chains";
+import { AllChainsByKeys, EnabledChainsByKeys } from "@/lib/chains";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
@@ -13,6 +13,7 @@ import {
   TooltipContent,
 } from "@/components/layout/Tooltip";
 import { useUIContext } from "@/contexts/UIContext";
+import Link from "next/link";
 
 export default function LandingMetricsTable({
   data,
@@ -162,7 +163,7 @@ export default function LandingMetricsTable({
           className={`h-[40px] flex items-center rounded-full font-semibold text-[0.6rem] text-sm leading-[1.2]`}
         >
           <div className="w-[25%] pl-[59px] lg:pl-[64px]">Chain</div>
-          <div className="w-[12%]">Age</div>
+          <div className="w-[12%] pl-1.5 xl:pl-8">Age</div>
           <div className="w-[23%]">Purpose</div>
           <div className="w-[12%]">Technology</div>
           <div className="w-[13%] text-right capitalize relative pr-[60px] lg:pr-8">
@@ -206,219 +207,180 @@ export default function LandingMetricsTable({
                     ...style,
                   }}
                 >
-                  <div
-                    key={item.chain.key}
-                    className={`flex items-center  ${interactable ? "cursor-pointer pointer-events-auto" : "cursor-default pointer-events-none"} h-[34px] rounded-full w-full border-[1px] whitespace-nowrap relative ${selectedChains.includes(item.chain.key)
-                      ? "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/10"
-                      : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 transition-all duration-100"
-                      }`}
-                    onClick={() => {
-                      if (selectedChains.includes(item.chain.key)) {
-                        setSelectedChains(
-                          selectedChains.filter((c) => c !== item.chain.key),
-                        );
-                      } else {
-                        setSelectedChains([
-                          ...selectedChains,
-                          item.chain.key,
-                        ]);
-                      }
-                    }}
-                    style={{
-                      color: selectedChains.includes(item.chain.key)
-                        ? undefined
-                        : "#5A6462",
-                    }}
-                  >
-                    <div className="w-full h-full absolute inset-0 rounded-full overflow-clip">
-                      <div className="relative w-full h-full p-[15px]">
-                        {item.chain.key !== "ethereum" && (
-                          <div
-                            className={`absolute right-[10px] left-[10px] bottom-0`}
-                          >
+                  <Link key={item.chain.key} href={`/chains/${AllChainsByKeys[item.chain.key].urlKey}`}>
+                    <div
+
+                      className={`flex items-center  ${!interactable ? "cursor-pointer pointer-events-auto" : "cursor-default pointer-events-none"} h-[34px] rounded-full w-full border-[1px] whitespace-nowrap relative ${selectedChains.includes(item.chain.key)
+                        ? "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/10"
+                        : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 transition-all duration-100"
+                        }`}
+                      // onClick={() => {
+                      //   if (selectedChains.includes(item.chain.key)) {
+                      //     setSelectedChains(
+                      //       selectedChains.filter((c) => c !== item.chain.key),
+                      //     );
+                      //   } else {
+                      //     setSelectedChains([
+                      //       ...selectedChains,
+                      //       item.chain.key,
+                      //     ]);
+                      //   }
+                      // }}
+                      style={{
+                        color: selectedChains.includes(item.chain.key)
+                          ? undefined
+                          : "#5A6462",
+                      }}
+                    >
+                      <div className="w-full h-full absolute inset-0 rounded-full overflow-clip">
+                        <div className="relative w-full h-full p-[15px]">
+                          {item.chain.key !== "ethereum" && (
                             <div
-                              className={`absolute bottom-0 h-[2px] rounded-none font-semibold transition-width duration-300 `}
-                              style={{
-                                background: selectedChains.includes(
-                                  item.chain.key,
-                                )
-                                  ? item.chain.colors[theme ?? "dark"][1]
-                                  : "#5A6462",
-                                width: `${(lastValsByChainKey[item.chain.key] /
-                                  maxVal) *
-                                  100
-                                  }%`,
-                              }}
+                              className={`absolute right-[10px] left-[10px] bottom-0`}
                             >
+                              <div
+                                className={`absolute bottom-0 h-[2px] rounded-none font-semibold transition-width duration-300 `}
+                                style={{
+                                  background: selectedChains.includes(
+                                    item.chain.key,
+                                  )
+                                    ? item.chain.colors[theme ?? "dark"][1]
+                                    : "#5A6462",
+                                  width: `${(lastValsByChainKey[item.chain.key] /
+                                    maxVal) *
+                                    100
+                                    }%`,
+                                }}
+                              >
+                              </div>
                             </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="relative h-full flex w-[25%] items-center">
-                      <div className="absolute top-0 bottom-0 flex items-center left-[21px]">
-                        <Icon
-                          icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
-                          className="h-[24px] w-[24px]"
-                          style={{
-                            color: selectedChains.includes(item.chain.key)
-                              ? item.chain.colors[theme ?? "dark"][1]
-                              : "#5A6462",
-                          }}
-                        />
-                      </div>
-                      <div className="break-inside-avoid text-base pl-[59px] lg:pl-[64px] leading-tight">
-                        {data.chains[item.chain.key].chain_name}
-                      </div>
-                    </div>
-                    <div className="w-[12%] text-right flex text-base justify-start pr-10">
-                      {/* format as 1 year 2 months */}
-
-                      {item.chain.chainType === "L2" && (
-                        <div className={`${monthsSinceLaunch[item.chain.key][0] === 0 && ''} ml-auto flex gap-x-1`}>
-                          <div className="flex items-end leading-normal gap-x-1">
-                            {/* {monthsSinceLaunch[item.chain.key][0] > 0 && (
-                                <> */}
-                            {monthsSinceLaunch[item.chain.key][0] > 0 ? (
-                              <div>{monthsSinceLaunch[item.chain.key][0]}</div>
-                            ) : (
-                              <div>&nbsp;</div>
-                            )}
-                            <div className="font-[350] text-[11px] inline-block leading-[1.8]">
-                              {monthsSinceLaunch[item.chain.key][0] > 0 ? (
-                                monthsSinceLaunch[item.chain.key][0] > 1 ? (
-                                  <div>Years</div>
-                                ) : (
-                                  <div>
-                                    Year<div className="opacity-0">s</div>
-                                  </div>
-                                )
-                              ) : (
-                                <div className="opacity-0">Years</div>
-                              )}
-                            </div>
-                            {/* </>
-                              )}{" "} */}
-                          </div>
-                          <div className="flex items-end leading-normal space-x-1">
-                            {monthsSinceLaunch[item.chain.key][1] > 0 ? (
-                              <>
-                                <div>{monthsSinceLaunch[item.chain.key][1]}</div>
-                                <div className="font-[350] text-[11px] inline-block leading-[1.7]">
-                                  mo.
-                                </div>
-                              </>
-                            ) : (
-                              <>
-                                <div>{item.chain.key === "base" ? "0" : "\u00A0"}</div>
-                                <div className="font-[350] text-[11px] inline-block">
-                                  {item.chain.key === "base"
-                                    ? " mo."
-                                    : "\u00A0"}
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="w-[23%] capitalize text-sm">
-                      {data.chains[item.chain.key].purpose && (
-                        <>{data.chains[item.chain.key].purpose}</>
-                      )}
-                    </div>
-                    <div className="w-[12%] capitalize text-sm">
-                      {item.chain.chainType === "L2" &&
-
-                        data.chains[item.chain.key].rollup === "-" ? (
-                        " - "
-                      ) : (
-                        <>
-                          {item.chain.chainType === "L2" && (
-                            <>
-                              {data.chains[item.chain.key].rollup}{" "}
-                              {data.chains[item.chain.key].technology}
-                            </>
                           )}
-                        </>
-                      )}
-                    </div>
-
-                    <div className="w-[13%] flex justify-end items-center text-sm relative">
-                      {/* <div className="flex flex-1 align-middle items-center"> */}
-                      <div className="flex w-full justify-end items-center pr-[60px] lg:pr-8 ">
-
-                        <div className="flex items-center">
-                          {Intl.NumberFormat(undefined, {
-                            notation: "compact",
-                            maximumFractionDigits: 2,
-                            minimumFractionDigits: 0,
-                          }).format(lastValsByChainKey[item.chain.key])}
-
-                        </div>
-                        <div className="absolute flex justify-start w-20">
-                          <div className="pl-[90px] leading-[1.8] text-forest-400 text-xs"> {(data.chains[item.chain.key].user_share * 100).toFixed(1)}%</div>
                         </div>
                       </div>
-
-                    </div>
-                    <div className="w-[15%] text-right pr-14 text-sm">
-                      {d3.format(
-                        data.chains[item.chain.key].cross_chain_activity > 0.01
-                          ? ".1%"
-                          : ".1%",
-                      )(data.chains[item.chain.key].cross_chain_activity)}
-                    </div>
-                    {interactable && (
-                      <div className={`absolute  ${"-right-[20px]"}`}>
-                        <div
-                          className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50"
-                          style={{
-                            color: selectedChains.includes(item.chain.key)
-                              ? undefined
-                              : "#5A6462",
-                          }}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
-                              ? "opacity-0"
-                              : "opacity-100"
-                              }`}
-                          >
-                            <circle
-                              xmlns="http://www.w3.org/2000/svg"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                            />
-                          </svg>
-                        </div>
-                        <div
-                          className={`p-1 rounded-full ${selectedChains.includes(item.chain.key)
-                            ? "bg-white dark:bg-forest-1000"
-                            : "bg-forest-50 dark:bg-[#1F2726]"
-                            }`}
-                        >
+                      <div className="relative h-full flex w-[25%] items-center">
+                        <div className="absolute top-0 bottom-0 flex items-center left-[21px]">
                           <Icon
-                            icon="feather:check-circle"
-                            className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
-                              ? "opacity-100"
-                              : "opacity-0"
-                              }`}
+                            icon={`gtp:${item.chain.urlKey}-logo-monochrome`}
+                            className="h-[24px] w-[24px]"
+                            style={{
+                              color: selectedChains.includes(item.chain.key)
+                                ? item.chain.colors[theme ?? "dark"][1]
+                                : "#5A6462",
+                            }}
                           />
                         </div>
+                        <div className="break-inside-avoid text-base pl-[59px] lg:pl-[64px] leading-tight">
+                          {data.chains[item.chain.key].chain_name}
+                        </div>
                       </div>
-                    )}
-                  </div>
+                      <div className="w-[12%] text-right flex text-sm justify-start items-end leading-[1.4] gap-x-1 pr-10">
+                        <div className="ml-auto">{monthsSinceLaunch[item.chain.key][0] || ""}</div>
+                        <div className="text-xs font-[350] flex items-end">
+                          {monthsSinceLaunch[item.chain.key][0] === 0 && ""}
+                          {monthsSinceLaunch[item.chain.key][0] === 1 && <div className="pr-1.5">Year</div>}
+                          {monthsSinceLaunch[item.chain.key][0] > 1 && "Years"}
+                        </div>
+                        <div>{monthsSinceLaunch[item.chain.key][1] || ""}</div>
+                        <div className="text-xs font-[350]">{monthsSinceLaunch[item.chain.key][1] ? "mo." : ""}</div>
+                      </div>
+                      <div className="w-[23%] capitalize text-sm">
+                        {data.chains[item.chain.key].purpose && (
+                          <>{data.chains[item.chain.key].purpose}</>
+                        )}
+                      </div>
+                      <div className="w-[12%] capitalize text-sm">
+                        {item.chain.chainType === "L2" &&
+
+                          data.chains[item.chain.key].rollup === "-" ? (
+                          " - "
+                        ) : (
+                          <>
+                            {item.chain.chainType === "L2" && (
+                              <>
+                                {data.chains[item.chain.key].rollup}{" "}
+                                {data.chains[item.chain.key].technology}
+                              </>
+                            )}
+                          </>
+                        )}
+                      </div>
+
+                      <div className="w-[13%] flex justify-end items-center text-sm relative">
+                        {/* <div className="flex flex-1 align-middle items-center"> */}
+                        <div className="flex w-full justify-end items-center pr-[60px] lg:pr-8 ">
+
+                          <div className="flex items-center">
+                            {Intl.NumberFormat(undefined, {
+                              notation: "compact",
+                              maximumFractionDigits: 2,
+                              minimumFractionDigits: 0,
+                            }).format(lastValsByChainKey[item.chain.key])}
+
+                          </div>
+                          <div className="absolute flex justify-start w-20">
+                            <div className="pl-[90px] leading-[1.8] text-forest-400 text-xs"> {(data.chains[item.chain.key].user_share * 100).toFixed(1)}%</div>
+                          </div>
+                        </div>
+
+                      </div>
+                      <div className="w-[15%] text-right pr-14 text-sm">
+                        {d3.format(
+                          data.chains[item.chain.key].cross_chain_activity > 0.01
+                            ? ".1%"
+                            : ".1%",
+                        )(data.chains[item.chain.key].cross_chain_activity)}
+                      </div>
+                      {interactable && (
+                        <div className={`absolute  ${"-right-[20px]"}`}>
+                          <div
+                            className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50"
+                            style={{
+                              color: selectedChains.includes(item.chain.key)
+                                ? undefined
+                                : "#5A6462",
+                            }}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
+                                ? "opacity-0"
+                                : "opacity-100"
+                                }`}
+                            >
+                              <circle
+                                xmlns="http://www.w3.org/2000/svg"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                              />
+                            </svg>
+                          </div>
+                          <div
+                            className={`p-1 rounded-full ${selectedChains.includes(item.chain.key)
+                              ? "bg-white dark:bg-forest-1000"
+                              : "bg-forest-50 dark:bg-[#1F2726]"
+                              }`}
+                          >
+                            <Icon
+                              icon="feather:check-circle"
+                              className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
+                                ? "opacity-100"
+                                : "opacity-0"
+                                }`}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </Link>
                 </animated.div>
               );
             })}

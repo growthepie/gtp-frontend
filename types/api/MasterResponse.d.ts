@@ -9,13 +9,27 @@
 export interface Chains {
   [key: string]: ChainInfo;
 }
-
+// {
+//   "name": "Base",
+//   "deployment": "PROD",
+//   "name_short": "Base",
+//   "description": "Base is an fully EVM compatible optimistic rollup built on the OP Stack. It is incubated inside of Coinbase. Public mainnet launch was on August 9th 2023.",
+//   "symbol": "-",
+//   "bucket": "OP Chains",
+//   "technology": "Optimistic Rollup",
+//   "purpose": "General Purpose (EVM)",
+//   "launch_date": "2023-07-13",
+//   "website": "https://base.org/",
+//   "twitter": "https://twitter.com/base",
+//   "block_explorer": "https://basescan.org/"
+// }
 export interface ChainInfo {
   name: string;
+  deployment: "PROD" | "DEV";
   name_short: string;
+  description: string;
   symbol: string;
   bucket: string;
-  deployment: "PROD" | "DEV";
   technology: string;
   purpose: string;
   launch_date: string;

@@ -1237,19 +1237,21 @@ export default function ChainChart({
   };
 
   const getNoDataMessage = (chainKey, metricKey) => {
+    if (!master) return "";
+
     if (
       chainKey === "ethereum" &&
       ["tvl", "rent_paid", "profit"].includes(metricKey)
     )
-      return `Data is not available for ${AllChainsByKeys[chainKey].label}`;
+      return `Data is not available for ${master.chains[chainKey].name}`;
 
     if (chainKey === "imx" && metricKey === "txcosts")
-      return `${AllChainsByKeys[chainKey].label} does not charge Transaction Costs`;
+      return `${master.chains[chainKey].name} does not charge Transaction Costs`;
 
-    return `Data is not available for ${AllChainsByKeys[chainKey].label}`;
+    return `Data is not available for ${master.chains[chainKey].name}`;
   };
 
-  if (!data) {
+  if (!master || !data) {
     return (
       <div className="flex justify-center items-center h-screen">
         Loading...
@@ -1321,7 +1323,7 @@ export default function ChainChart({
                   />
                 )}
                 <div className="text-sm overflow-ellipsis truncate whitespace-nowrap">
-                  {compChain ? AllChainsByKeys[compChain].label : "None"}
+                  {compChain ? master.chains[compChain].name : "None"}
                 </div>
               </div>
             </div>
@@ -1397,7 +1399,7 @@ export default function ChainChart({
                       }}
                     />
                   </div>
-                  <div key={chain.label}>{chain.label}</div>
+                  <div>{master.chains[chain.key].name}</div>
                 </div>
               ))}
             </div>

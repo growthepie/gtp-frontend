@@ -159,7 +159,7 @@ const Chain = ({ params }: { params: any }) => {
                     className="text-2xl leading-snug text-[36px] break-inside-avoid"
                     as="h1"
                   >
-                    {AllChainsByKeys[chainKeys[0]].label}
+                    {master.chains[chainKeys[0]].name}
                   </Heading>
                 </div>
                 <div className="hidden md:flex items-start space-x-[7px] font-inter uppercase pt-[11px] ">
@@ -226,8 +226,8 @@ const Chain = ({ params }: { params: any }) => {
             </div>
             <div className="flex items-center mb-[15px]">
               <div className="text-[16px]">
-                {AllChainsByKeys[chainKeys[0]].description
-                  ? AllChainsByKeys[chainKeys[0]].description
+                {master.chains[chainKeys[0]].description
+                  ? master.chains[chainKeys[0]].description
                   : ""}
               </div>
             </div>
@@ -304,7 +304,7 @@ const Chain = ({ params }: { params: any }) => {
         )}
       </Container>
 
-      {overviewData !== null && chainKeys[0] !== "ethereum" && (
+      {master && overviewData !== null && chainKeys[0] !== "ethereum" && (
         <>
           <Container className="flex flex-col w-full mt-[65px] md:mt-[60px]">
             <div className="flex items-center justify-between md:text-[36px] mb-[15px] relative">
@@ -320,13 +320,13 @@ const Chain = ({ params }: { params: any }) => {
                   className="text-[20px] leading-snug lg:text-[30px]"
                   as="h2"
                 >
-                  {AllChainsByKeys[chainKeys[0]].label} Blockspace
+                  {master.chains[chainKeys[0]].name} Blockspace
                 </Heading>
               </div>
             </div>
             <div className="flex items-center mb-[30px]">
               <div className="text-[16px]">
-                An overview of {AllChainsByKeys[chainKeys[0]].label} high-level
+                An overview of {master.chains[chainKeys[0]].name} high-level
                 blockspace usage. All expressed in share of chain usage. You can
                 toggle between share of chain usage or absolute numbers.
               </div>

@@ -124,8 +124,8 @@ export default function LandingUserBaseChart() {
               chains={chains}
               metric={selectedTimeInterval}
               master={master}
-              interactable={selectedMetric !== "Total Users"}
-            // interactable
+              // interactable={selectedMetric !== "Total Users"}
+              interactable={false}
             />
           </HorizontalScrollContainer>
         </>
