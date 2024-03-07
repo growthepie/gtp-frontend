@@ -63,14 +63,14 @@ export default function Share() {
   const handleWidthChange = (event) => {
     const newValue = parseInt(event.target.value);
     if (!isNaN(newValue)) {
-      setWidthValue(newValue);
+      setWidthValue(newValue.toString()); // Convert newValue to string
     }
   };
 
   const handleHeightChange = (event) => {
     const newValue = parseInt(event.target.value);
     if (!isNaN(newValue)) {
-      setHeightValue(newValue);
+      setHeightValue(newValue.toString()); // Convert newValue to string
     }
   };
 
