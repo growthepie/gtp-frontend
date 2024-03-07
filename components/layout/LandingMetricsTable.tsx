@@ -175,7 +175,7 @@ export default function LandingMetricsTable({
               <TooltipContent className="z-[110]">
                 <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex flex-col">
                   <div>
-                    Number of distinct active addresses in last 7 days.
+                    Number of distinct active addresses in last 7 days and share of total L2 addresses.
                   </div>
                 </div>
               </TooltipContent>
@@ -188,7 +188,7 @@ export default function LandingMetricsTable({
                 <Icon icon="feather:info" className="w-6 h-6" />
               </TooltipTrigger>
               <TooltipContent className="z-[110]">
-                <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg w-[420px] flex flex-col">
+                <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex flex-col">
                   <div>
                     Percentage of active addresses that also interacted with other chains in the last 7 days.
                   </div>
