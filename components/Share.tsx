@@ -113,7 +113,7 @@ export default function Share() {
                 <div
                   className={`absolute -right-[5px] -bottom-[5px]  bg-forest-50 dark:bg-[#1F2726] z-[110] rounded-[40px] shadow-lg py-[30px] px-[20px] 
                   border-[5px] border-forest-500 dark:border-[#5A6462] transition-all duration-300 ${
-                    topSelection === "social" ? "w-[453px]" : "w-[589px]"
+                    topSelection === "social" ? "w-[453px]" : "w-[579px]"
                   }`}
                 >
                   <div className="flex w-full h-[32px] justify-between items-center justify-self-start ">
@@ -141,12 +141,12 @@ export default function Share() {
                       Share this page on through one of the following ways:
                     </div>
                   </div>
-                  <div className="flex gap-x-[10px] mt-[10px]">
+                  <div className="flex gap-x-[10px] mt-[15px]">
                     <div
                       className={`flex items-center justify-center px-[16px] py-[2px] text-[14px] rounded-full hover:cursor-pointer transition ${
                         topSelection === "social"
-                          ? "bg-[#151A19] border-[#151A19] border-[1px]"
-                          : "border-forest-500 border-[1px]"
+                          ? "bg-[#151A19] border-[#151A19] border-[2px]"
+                          : "border-forest-500 border-[1px] "
                       }`}
                       onClick={() => {
                         setTopSelection("social");
@@ -157,8 +157,8 @@ export default function Share() {
                     <div
                       className={`flex items-center justify-center px-[16px] py-[2px] text-[14px] rounded-full hover:cursor-pointer transition ${
                         topSelection === "embed"
-                          ? "bg-[#151A19] border-[#151A19] border-[1px]"
-                          : "border-forest-500 border-[1px]"
+                          ? "bg-[#151A19] border-[#151A19] border-[2px]"
+                          : "border-forest-500 border-[1px] "
                       }`}
                       onClick={() => {
                         setTopSelection("embed");
@@ -280,8 +280,8 @@ export default function Share() {
                       </div>
                     </div>
                   ) : (
-                    <div className="flex gap-x-[30px] mt-[30px] h-[234px]">
-                      <div className=" p-[10px] rounded-3xl border-forest-200 border-[1px] w-[285px] h-full">
+                    <div className="flex gap-x-[36px] mt-[30px] h-[234px]">
+                      <div className=" p-[10px] rounded-3xl border-forest-600 border-[1px] w-[285px] h-full">
                         Embed Link Here
                       </div>
                       <div className="flex flex-col w-[204px] h-full gap-y-[5px]">
@@ -348,7 +348,7 @@ export default function Share() {
                             className="w-[24px] h-[24px] font-semibold"
                             icon="gtp:arrowleftright"
                           />
-                          <div className="flex items-center underline decoration-dotted decoration-2 ">
+                          <div className="flex items-center underline decoration-dotted decoration-2 underline-offset-[5px] ">
                             <div
                               className="outline-none"
                               contentEditable
@@ -361,7 +361,10 @@ export default function Share() {
                               {widthValue}
                               {"   "}
                             </div>
-                            <span className="ml-[0.5px] italic"> Width</span>
+                            <span className="ml-[0.5px] italic text-[#5A6462]">
+                              {" "}
+                              Width
+                            </span>
                           </div>
                         </div>
                         <div className="flex items-center gap-x-[10px] h-[54px] w-[204px] rounded-full border-[#5A6462] border-[2px] px-[15px]">
@@ -369,7 +372,7 @@ export default function Share() {
                             className="w-[24px] h-[24px] font-semibold"
                             icon="gtp:arrowupdown"
                           />
-                          <div className="flex items-center underline decoration-dotted decoration-2  ">
+                          <div className="flex items-center underline decoration-dotted decoration-2  underline-offset-[5px] ">
                             <div
                               className="outline-none"
                               contentEditable
@@ -382,7 +385,10 @@ export default function Share() {
                               {heightValue}
                               {"   "}
                             </div>
-                            <span className="ml-[1px] italic"> Height</span>
+                            <span className="ml-[1px] italic text-[#5A6462]">
+                              {" "}
+                              Height
+                            </span>
                           </div>
                         </div>
                         <div className="flex items-center gap-x-[10px] h-[54px] w-[204px] rounded-full border-[#5A6462] border-[3px] px-[15px]">
