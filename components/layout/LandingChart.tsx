@@ -1478,7 +1478,6 @@ export default function LandingChart({
       <div className="h-[225px] lg:h-[81px] xl:h-[60px]">
         <div className="flex flex-col lg:hidden justify-center pb-[15px] gap-y-[5px]">
           <MobileMetricCard icon="feather:users" metric_name="Total Users" metric_value={latest_total} metric_comparison={latest_total_comparison} theme={theme || "dark"} />
-
           <div className="flex justify-center gap-x-[5px]">
             <MobileMetricCard icon="gtp:wallet-chain" metric_name="Active on Multiple Chains" metric_value={cross_chain_users} metric_comparison={cross_chain_users_comparison} theme={theme || "dark"} />
             <MobileMetricCard icon="feather:layers" metric_name="L2 Dominance" metric_value={l2_dominance} metric_comparison={l2_dominance_comparison} theme={theme || "dark"} />
