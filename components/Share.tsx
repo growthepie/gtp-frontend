@@ -141,7 +141,7 @@ export default function Share() {
                       Share this page on through one of the following ways:
                     </div>
                   </div>
-                  <div className="flex gap-x-[10px] mt-[15px]">
+                  {/* <div className="flex gap-x-[10px] mt-[15px]">
                     <div
                       className={`flex items-center justify-center px-[16px] py-[2px] text-[14px] rounded-full hover:cursor-pointer transition ${
                         topSelection === "social"
@@ -166,7 +166,7 @@ export default function Share() {
                     >
                       Embed Code
                     </div>
-                  </div>
+                  </div> */}
                   {topSelection === "social" ? (
                     <div className="flex flex-col-reverse items-center mt-[30px]  text-[16px] leading-[150%] h-[234px]">
                       <div className="flex flex-col w-[285px] items-center justify-center">
