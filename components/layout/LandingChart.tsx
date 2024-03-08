@@ -18,7 +18,7 @@ import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { debounce, merge } from "lodash";
 import { Switch } from "../Switch";
-import { AllChainsByKeys, EnabledChainsByKeys } from "@/lib/chains";
+import { AllChainsByKeys, EnabledChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
 import d3 from "d3";
 import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
@@ -184,6 +184,7 @@ const baseOptions: Highcharts.Options = {
 
 export default function LandingChart({
   data,
+  master,
   cross_chain_users,
   cross_chain_users_comparison,
   latest_total,
@@ -199,6 +200,7 @@ export default function LandingChart({
   // showTimeIntervals = true,
   {
     data: any;
+    master: any;
     cross_chain_users: number;
     cross_chain_users_comparison: number;
     latest_total: number;
@@ -616,6 +618,8 @@ export default function LandingChart({
 
   const tooltipFormatter = useCallback(
     function (this: any) {
+      if (!master)
+        return;
       const { x, points } = this;
       const date = new Date(x);
       const dateString = `
@@ -675,7 +679,7 @@ export default function LandingChart({
           const { series, y, percentage } = point;
           const { name } = series;
 
-          return Object.keys(EnabledChainsByKeys).includes(name);
+          return Object.keys(Get_SupportedChainKeys(master)).includes(name);
         })
         .map((point: any) => {
           const { series, y, percentage } = point;
@@ -733,7 +737,7 @@ export default function LandingChart({
 
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [formatNumber, selectedMetric, selectedScale, theme],
+    [formatNumber, selectedMetric, selectedScale, theme, master],
   );
 
   const tooltipPositioner =

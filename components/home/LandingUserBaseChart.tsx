@@ -6,7 +6,7 @@ import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { AllChains, AllChainsByKeys } from "@/lib/chains";
+import { AllChains, AllChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import LandingChart from "@/components/layout/LandingChart";
 import LandingMetricsTable from "@/components/layout/LandingMetricsTable";
@@ -69,13 +69,13 @@ export default function LandingUserBaseChart() {
   }, [data, landing, selectedMetric, selectedTimeInterval]);
 
   const chains = useMemo(() => {
-    if (!data) return [];
+    if (!data || !master) return [];
 
     return AllChains.filter(
       (chain) =>
-        Object.keys(data.chains).includes(chain.key) && chain.key != "ethereum",
+        Object.keys(data.chains).includes(chain.key) && Get_SupportedChainKeys(master) && chain.key != "ethereum",
     );
-  }, [data]);
+  }, [data, master]);
 
   const [selectedChains, setSelectedChains] = useState(
     AllChains.map((chain) => chain.key),
@@ -104,6 +104,7 @@ export default function LandingUserBaseChart() {
                     data: data.chains[chain].data.data,
                   };
                 })}
+              master={master}
               sources={landing.data.metrics.user_base.source}
               cross_chain_users={data.cross_chain_users}
               cross_chain_users_comparison={data.cross_chain_users_comparison}
