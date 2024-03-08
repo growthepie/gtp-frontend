@@ -1599,7 +1599,7 @@ export default function LandingChart({
           </div>
         </div>
       </div>
-      <div className="flex-1 min-h-0 w-full pt-8 pb-0 md:pt-8 md:pb-4 lg:pt-8 lg:pb-16">
+      <div className="flex-1 min-h-0 w-full pt-8 pb-0 md:pt-[52px] md:pb-4 lg:pt-[52px] lg:pb-16">
         <div className="relative h-full w-full rounded-xl" ref={containerRef}>
           {highchartsLoaded ? (
             <HighchartsReact
@@ -1631,7 +1631,6 @@ export default function LandingChart({
           {/* </div> */}
         </div>
       </div>
-
       <div className="h-[32px] lg:h-[80px] flex flex-col justify-start">
         <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative">
           {/* toggle ETH */}
