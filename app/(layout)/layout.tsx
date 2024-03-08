@@ -180,7 +180,7 @@ export default function RootLayout({
                   </main>
                   <div className="mt-24 w-full text-center py-3 absolute bottom-0">
                     <div className="text-[0.7rem] text-inherit dark:text-forest-400 leading-[2] ml-8 z-20">
-                      © {new Date().getFullYear()} growthepie 🥧
+                      © {new Date().getFullYear()} growthepie 🥧📏
                     </div>
                   </div>
                 </div>

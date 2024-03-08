@@ -618,8 +618,6 @@ export default function LandingChart({
 
   const tooltipFormatter = useCallback(
     function (this: any) {
-      if (!master)
-        return;
       const { x, points } = this;
       const date = new Date(x);
       const dateString = `
@@ -679,7 +677,7 @@ export default function LandingChart({
           const { series, y, percentage } = point;
           const { name } = series;
 
-          return Object.keys(Get_SupportedChainKeys(master)).includes(name);
+          return Object.keys(AllChainsByKeys).includes(name);
         })
         .map((point: any) => {
           const { series, y, percentage } = point;
@@ -737,7 +735,7 @@ export default function LandingChart({
 
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [formatNumber, selectedMetric, selectedScale, theme, master],
+    [formatNumber, selectedMetric, selectedScale, theme],
   );
 
   const tooltipPositioner =
@@ -1495,8 +1493,8 @@ export default function LandingChart({
         <div className="flex flex-col lg:hidden justify-center pb-[15px] gap-y-[5px]">
           <MobileMetricCard icon="feather:users" metric_name="Total Users" metric_value={latest_total} metric_comparison={latest_total_comparison} theme={theme || "dark"} />
           <div className="flex justify-center gap-x-[5px]">
-            <MobileMetricCard icon="gtp:wallet-chain" metric_name="Active on Multiple Chains" metric_value={cross_chain_users} metric_comparison={cross_chain_users_comparison} theme={theme || "dark"} />
-            <MobileMetricCard icon="feather:layers" metric_name="L2 Dominance" metric_value={l2_dominance} metric_comparison={l2_dominance_comparison} theme={theme || "dark"} is_multiple />
+            <MobileMetricCard icon="gtp:wallet-chain" metric_name="Multi-Chain Users" metric_value={cross_chain_users} metric_comparison={cross_chain_users_comparison} theme={theme || "dark"} />
+            <MobileMetricCard icon="feather:layers" metric_name="L2 Dominance" metric_value={(Math.round(l2_dominance * 100) / 100).toFixed(2)} metric_comparison={l2_dominance_comparison} theme={theme || "dark"} is_multiple />
           </div>
         </div>
         <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs xl:text-base xl:flex xl:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 xl:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
@@ -1654,7 +1652,7 @@ export default function LandingChart({
               <div className="flex items-center justify-center gap-x-[20px] pr-[10px]">
                 <MetricCard icon="feather:users" metric_name="Total Users" metric_value={latest_total} metric_comparison={latest_total_comparison} theme={theme || "dark"} />
                 <MetricCard icon="gtp:wallet-chain" metric_name="Active on Multiple Chains" metric_value={cross_chain_users} metric_comparison={cross_chain_users_comparison} theme={theme || "dark"} />
-                <MetricCard icon="feather:layers" metric_name="L2 Dominance" metric_value={l2_dominance} metric_comparison={l2_dominance_comparison} theme={theme || "dark"} is_multiple />
+                <MetricCard icon="feather:layers" metric_name="Layer 2 Dominance" metric_value={(Math.round(l2_dominance * 100) / 100).toFixed(2)} metric_comparison={l2_dominance_comparison} theme={theme || "dark"} is_multiple />
               </div>
 
               <Tooltip placement="left" allowInteract>
@@ -1706,7 +1704,7 @@ const MobileMetricCard = ({
 }: {
   icon: string;
   metric_name: string;
-  metric_value: number;
+  metric_value: number | string;
   metric_comparison: number;
   is_multiple?: boolean;
   theme: string;
@@ -1770,7 +1768,7 @@ const MetricCard = ({
 }: {
   icon: string;
   metric_name: string;
-  metric_value: number;
+  metric_value: number | string;
   metric_comparison: number;
   is_multiple?: boolean;
   theme: string;

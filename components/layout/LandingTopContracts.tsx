@@ -86,8 +86,8 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
   return (
     <>
       {landing ? (
-        <div className="lg:-mt-[72px] flex flex-col">
-          <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row justify-end items-center ml-0 lg:ml-auto lg:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px] mb-4">
+        <div className="xl:-mt-[72px] flex flex-col">
+          <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base justify-end items-center ml-0 xl:ml-auto lg:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px] mb-4">
             {/* <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center space-x-[4px] xl:space-x-1">
               <button
                 className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
@@ -129,14 +129,14 @@ export default function LandingTopContracts({ ariaId }: { ariaId?: string }) {
             <div className="block xl:hidden w-[70%] mx-auto my-[10px]">
               <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
             </div> */}
-            <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
+            <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
               {Object.keys(landing.data.top_contracts)
                 .filter((timespan) => Object.keys(timespans).includes(timespan))
                 .map((timespan) => (
                   <button
                     key={timespan}
                     //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                    className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${selectedTimespan === timespan
+                    className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${selectedTimespan === timespan
                       ? "bg-forest-500 dark:bg-forest-1000"
                       : "hover:bg-forest-500/10"
                       }`}
