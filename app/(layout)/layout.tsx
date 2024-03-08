@@ -185,11 +185,9 @@ export default function RootLayout({
                   </div>
                 </div>
               </div>
-              {process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" && (
-                <div className="fixed bottom-[20px] right-[20px] md:right-[50px] flex justify-center items-center z-50">
-                  <Share />
-                </div>
-              )}
+              <div className="fixed bottom-[20px] right-[20px] md:right-[50px] flex justify-center items-center z-50">
+                <Share />
+              </div>
             </div>
           </div>
           {process.env.NEXT_PUBLIC_VERCEL_ENV === "development" && (
