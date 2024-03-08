@@ -1496,7 +1496,7 @@ export default function LandingChart({
           <MobileMetricCard icon="feather:users" metric_name="Total Users" metric_value={latest_total} metric_comparison={latest_total_comparison} theme={theme || "dark"} />
           <div className="flex justify-center gap-x-[5px]">
             <MobileMetricCard icon="gtp:wallet-chain" metric_name="Active on Multiple Chains" metric_value={cross_chain_users} metric_comparison={cross_chain_users_comparison} theme={theme || "dark"} />
-            <MobileMetricCard icon="feather:layers" metric_name="L2 Dominance" metric_value={l2_dominance} metric_comparison={l2_dominance_comparison} theme={theme || "dark"} />
+            <MobileMetricCard icon="feather:layers" metric_name="L2 Dominance" metric_value={l2_dominance} metric_comparison={l2_dominance_comparison} theme={theme || "dark"} is_multiple />
           </div>
         </div>
         <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs xl:text-base xl:flex xl:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 xl:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
@@ -1654,7 +1654,7 @@ export default function LandingChart({
               <div className="flex items-center justify-center gap-x-[20px] pr-[10px]">
                 <MetricCard icon="feather:users" metric_name="Total Users" metric_value={latest_total} metric_comparison={latest_total_comparison} theme={theme || "dark"} />
                 <MetricCard icon="gtp:wallet-chain" metric_name="Active on Multiple Chains" metric_value={cross_chain_users} metric_comparison={cross_chain_users_comparison} theme={theme || "dark"} />
-                <MetricCard icon="feather:layers" metric_name="L2 Dominance" metric_value={l2_dominance} metric_comparison={l2_dominance_comparison} theme={theme || "dark"} />
+                <MetricCard icon="feather:layers" metric_name="L2 Dominance" metric_value={l2_dominance} metric_comparison={l2_dominance_comparison} theme={theme || "dark"} is_multiple />
               </div>
 
               <Tooltip placement="left" allowInteract>
@@ -1701,12 +1701,14 @@ const MobileMetricCard = ({
   metric_name,
   metric_value,
   metric_comparison,
+  is_multiple = false,
   theme,
 }: {
   icon: string;
   metric_name: string;
   metric_value: number;
   metric_comparison: number;
+  is_multiple?: boolean;
   theme: string;
 }) => {
   return (
@@ -1721,8 +1723,9 @@ const MobileMetricCard = ({
         </div>
       </div>
       <div className="flex flex-col items-center justify-center w-7/12 gap-y-[3px]">
-        <div className="text-[20px] font-[650] leading-[1.2]">
-          {metric_value.toLocaleString()}
+        <div className="text-[20px] font-[650] leading-[1.2] flex items-end">
+          <div className="text-[20px]">{metric_value.toLocaleString()}</div>
+          <div className="text-[20px] leading-tight">{is_multiple && 'x'}</div>
         </div>
         <div className="text-[10px] font-medium leading-[1.5]">
           {metric_comparison > 0 ? (
@@ -1762,12 +1765,14 @@ const MetricCard = ({
   metric_name,
   metric_value,
   metric_comparison,
+  is_multiple = false,
   theme,
 }: {
   icon: string;
   metric_name: string;
   metric_value: number;
   metric_comparison: number;
+  is_multiple?: boolean;
   theme: string;
 }) => {
   return (
@@ -1780,8 +1785,9 @@ const MetricCard = ({
         <div className="text-[10px] font-medium leading-[1.5]">
           {metric_name}
         </div>
-        <div className="text-[24px] font-[650] leading-[1.33]">
-          {metric_value.toLocaleString()}
+        <div className="text-[24px] font-[650] leading-[1.33] flex items-end">
+          <div className="text-[24px]">{metric_value.toLocaleString()}</div>
+          <div className="text-[24px] leading-tight">{is_multiple && 'x'}</div>
         </div>
         <div className="text-[10px] font-medium leading-[1.5]">
           {metric_comparison > 0 ? (
