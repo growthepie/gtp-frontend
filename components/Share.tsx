@@ -201,7 +201,7 @@ export default function Share() {
                           icon="feather:link"
                         />
                         <div
-                          className="whitespace-nowrap text-ellipsis overflow-hidden max-w-full select-none text-xs md:text-base"
+                          className="whitespace-nowrap text-ellipsis overflow-hidden max-w-full select-none text-xs xs:text-base"
 
                         >
                           {copied ? "Copied to clipboard" : currentURL}
