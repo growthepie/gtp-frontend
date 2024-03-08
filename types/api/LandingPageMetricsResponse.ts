@@ -8,6 +8,17 @@ export interface Data {
 
 export interface Metrics {
   user_base: UserBase;
+  table_visual: TableVisual;
+}
+
+export interface TableVisual {
+  [chain: string]: {
+    chain_name: string;
+    cross_chain_activity: number;
+    purpose: string;
+    technology: string;
+    users: number;
+  };
 }
 
 export interface UserBase {
@@ -15,12 +26,15 @@ export interface UserBase {
   source: string[];
   daily: Daily;
   weekly: Weekly;
-  monthly: Monthly;
 }
 
 export interface Daily {
+  cross_chain_users;
+  cross_chain_users_comparison;
   latest_total: number;
+  latest_total_comparison: number;
   l2_dominance: number;
+  l2_dominance_comparison: number;
   chains: Chains;
 }
 
@@ -80,8 +94,12 @@ export interface Multiple {
 }
 
 export interface Weekly {
+  cross_chain_users;
+  cross_chain_users_comparison;
   latest_total: number;
+  latest_total_comparison: number;
   l2_dominance: number;
+  l2_dominance_comparison: number;
   chains: Chains;
 }
 

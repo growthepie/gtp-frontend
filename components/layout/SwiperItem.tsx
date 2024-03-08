@@ -11,6 +11,7 @@ import { LandingURL } from "@/lib/urls";
 import { navigationItems } from "@/lib/navigation";
 
 import "@splidejs/splide/css";
+import { track } from "@vercel/analytics/react";
 // import ShowLoading from "./ShowLoading";
 
 export default function SwiperItem({
@@ -47,6 +48,12 @@ export default function SwiperItem({
       <Link
         className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 delay-[1000ms] group-hover:delay-[0ms] -z-10"
         href={`/fundamentals/${urlKey}`}
+        onClick={() => {
+          track("clicked Compare link", {
+            location: `landing top chart - ${metric_id}`,
+            page: window.location.pathname,
+          });
+        }}
       >
         Compare{" "}
         <Icon icon="feather:chevron-right" className="w-4 h-4 md:w-6 md:h-6" />{" "}

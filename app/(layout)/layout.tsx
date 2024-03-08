@@ -161,7 +161,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <Head />
-      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway overflow-x-hidden overflow-y-scroll">
+      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden overflow-y-scroll">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -174,7 +174,7 @@ export default function RootLayout({
                 <div className="w-full relative min-h-full">
                   <Backgrounds />
                   <Header />
-                  <main className="flex-1 w-full mx-auto z-10 mb-[165px] md:px-[14px]">
+                  <main className="flex-1 w-full mx-auto z-10 mb-[165px]">
                     {children}
                     <div className="bg-blue-200 z-50"></div>
                   </main>
@@ -187,9 +187,7 @@ export default function RootLayout({
               </div>
               {process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" && (
                 <div className="fixed bottom-[20px] right-[20px] md:right-[50px] flex justify-center items-center z-50">
-                  <div className="relative flex gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#5A6462] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
-                    <Share />
-                  </div>
+                  <Share />
                 </div>
               )}
             </div>

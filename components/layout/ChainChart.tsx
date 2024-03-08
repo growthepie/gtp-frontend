@@ -25,7 +25,7 @@ import { useTheme } from "next-themes";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import d3 from "d3";
-import { AllChains, AllChainsByKeys } from "@/lib/chains";
+import { AllChains, AllChainsByKeys, Get_DefaultChainSelectionKeys, Get_SupportedChainKeys } from "@/lib/chains";
 import { debounce, forEach } from "lodash";
 
 import { navigationItems, navigationCategories } from "@/lib/navigation";
@@ -1193,7 +1193,7 @@ export default function ChainChart({
 
     return AllChains.filter(
       (chain) =>
-        ((chain.ecosystem.includes("all-chains") || chain.key == "ethereum") &&
+        (Get_SupportedChainKeys(master).includes(chain.key) &&
           !["all_l2s", chainKey[0]].includes(chain.key)) && Object.keys(master.chains).includes(chain.key)
     );
   }, [chainKey, master]);
@@ -1237,19 +1237,21 @@ export default function ChainChart({
   };
 
   const getNoDataMessage = (chainKey, metricKey) => {
+    if (!master) return "";
+
     if (
       chainKey === "ethereum" &&
       ["tvl", "rent_paid", "profit"].includes(metricKey)
     )
-      return `Data is not available for ${AllChainsByKeys[chainKey].label}`;
+      return `Data is not available for ${master.chains[chainKey].name}`;
 
     if (chainKey === "imx" && metricKey === "txcosts")
-      return `${AllChainsByKeys[chainKey].label} does not charge Transaction Costs`;
+      return `${master.chains[chainKey].name} does not charge Transaction Costs`;
 
-    return `Data is not available for ${AllChainsByKeys[chainKey].label}`;
+    return `Data is not available for ${master.chains[chainKey].name}`;
   };
 
-  if (!data) {
+  if (!master || !data) {
     return (
       <div className="flex justify-center items-center h-screen">
         Loading...
@@ -1321,7 +1323,7 @@ export default function ChainChart({
                   />
                 )}
                 <div className="text-sm overflow-ellipsis truncate whitespace-nowrap">
-                  {compChain ? AllChainsByKeys[compChain].label : "None"}
+                  {compChain ? master.chains[compChain].name : "None"}
                 </div>
               </div>
             </div>
@@ -1397,7 +1399,7 @@ export default function ChainChart({
                       }}
                     />
                   </div>
-                  <div key={chain.label}>{chain.label}</div>
+                  <div>{master.chains[chain.key].name}</div>
                 </div>
               ))}
             </div>
@@ -1510,10 +1512,10 @@ export default function ChainChart({
                           {!Object.keys(data[0].metrics).includes(key) &&
                             getNoDataMessage(data[0].chain_id, key)}
                         </div>
-                        <Icon
+                        {Object.keys(data[0].metrics).includes(key) && <Icon
                           icon={getNavIcon(key)}
                           className="absolute h-[40px] w-[40px] top-[116px] left-[24px] dark:text-[#CDD8D3] opacity-20 pointer-events-none"
-                        />
+                        />}
                       </div>
                     </div>
                     <div className="w-full h-[15px] z-[5] relative text-[10px]">

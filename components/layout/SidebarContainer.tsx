@@ -47,9 +47,8 @@ export default function SidebarContainer() {
             <div>
               <Icon
                 icon="feather:log-out"
-                className={`w-[13px] h-[13px]  cursor-pointer mt-4 transition-transform ${
-                  isSidebarOpen ? "rotate-180" : ""
-                }`}
+                className={`w-[13px] h-[13px]  cursor-pointer mt-4 transition-transform ${isSidebarOpen ? "rotate-180" : ""
+                  }`}
                 onClick={() => {
                   track("clicked Sidebar Close", {
                     location: "desktop sidebar",

@@ -1,3 +1,6 @@
+import { MasterResponse } from "@/types/api/MasterResponse";
+import { IS_DEVELOPMENT, IS_PREVIEW } from "./helpers";
+
 export type Chain = {
   label: string;
   icon: string | null;
@@ -363,6 +366,28 @@ export const AllChains: Chain[] = [
     darkTextOnBackground: false,
   },
   {
+    label: "RhinoFi",
+    icon: "/icons/rhino.png",
+    key: "rhino",
+    urlKey: "rhino-fi",
+    chainType: "L2",
+    ecosystem: ["all-chains"], // add ecosystems when unhiding from the UI
+    description: "",
+    border: {
+      light: ["border-[#ECB16B]", "border-[#ECB16B]"],
+      dark: ["border-[#ECB16B]", "border-[#ECB16B]"],
+    },
+    colors: {
+      light: ["#ECB16B", "#ECB16B"], // dark greenish
+      dark: ["#ECB16B", "#ECB16B"], // dark greenish
+    },
+    backgrounds: {
+      light: ["bg-[#ECB16B]", "bg-[#ECB16B]"],
+      dark: ["bg-[#ECB16B]", "bg-[#ECB16B]"],
+    },
+    darkTextOnBackground: false,
+  },
+  {
     label: "Multiple Chains",
     icon: null,
     key: "multiple",
@@ -436,3 +461,26 @@ export const EnabledChainsByKeys = AllChains.reduce((acc, chain) => {
   }
   return acc;
 }, {});
+
+export const Get_SupportedChainKeys = (data: MasterResponse) => {
+  if (IS_DEVELOPMENT || IS_PREVIEW) {
+    return Object.keys(data.chains)
+      .filter(
+        (key) =>
+          data.chains[key].deployment === "DEV" ||
+          data.chains[key].deployment === "PROD",
+      )
+      .map((key) => key);
+  }
+
+  return Object.keys(data.chains)
+    .filter((key) => data.chains[key].deployment === "PROD")
+    .map((key) => key);
+};
+
+export const Get_DefaultChainSelectionKeys = (master: MasterResponse) => {
+  const supportedChainKeys = Get_SupportedChainKeys(master);
+  return master.default_chain_selection.filter((key) =>
+    supportedChainKeys.includes(key),
+  );
+};

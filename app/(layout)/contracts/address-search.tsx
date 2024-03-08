@@ -323,14 +323,14 @@ export default function AddressSearch() {
                       >
                         <Image
                           src={AllChainsByKeys[chain].icon}
-                          alt={AllChainsByKeys[chain].label}
+                          alt={master.chains[chain].name}
                           className="flex"
                           height={16}
                           width={16}
                           quality={100}
                         />
                         <div className="whitespace-nowrap overflow-hidden text-ellipsis">
-                          {AllChainsByKeys[chain].label}
+                          {master.chains[chain].name}
                         </div>
                       </li>
                     ))}
@@ -547,8 +547,8 @@ export default function AddressSearch() {
                                 )}
                                 <div
                                   className={`whitespace-nowrap overflow-hidden text-ellipsis ${isAllScksSelected
-                                      ? "font-bold"
-                                      : "font-normal"
+                                    ? "font-bold"
+                                    : "font-normal"
                                     }`}
                                 >
                                   {getMainCategoryLabel(subcategoryKey)}
@@ -588,8 +588,8 @@ export default function AddressSearch() {
                               )}
                               <div
                                 className={`whitespace-nowrap overflow-hidden text-ellipsis ${categoryArray.includes(subcategoryKey)
-                                    ? "font-bold"
-                                    : "font-normal"
+                                  ? "font-bold"
+                                  : "font-normal"
                                   }`}
                               >
                                 {getSubcategoryLabel(subcategoryKey)}
