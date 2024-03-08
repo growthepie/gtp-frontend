@@ -250,7 +250,7 @@ const Chain = ({ params }: { params: any }) => {
                       });
                     }}
                   >
-                    <div className="flex items-center gap-x-[8px] justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-[16px] py-[7px]">
+                    <div className="flex items-center gap-x-[8px] justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-[16px] py-[7px] transition-all duration-300">
                       <Icon icon="gtp:gtp-bridge" className="w-4 h-4" />
                       <div className="transition-all duration-300 whitespace-nowrap overflow-hidden">Bridge</div>
                     </div>
@@ -298,41 +298,70 @@ const Chain = ({ params }: { params: any }) => {
                 updateChainKey={setChainKeys}
               />
             )}
-            <div className="flex lg:hidden justify-between text-base items-start mb-8 mt-[30px] lg:mt-[15px]">
+            <div className="flex lg:hidden flex-row-reverse gap-x-[10px] justify-between text-sm mb-8 mt-[30px] lg:mt-[15px]">
+              <div className="peer group relative">
+                <div
+                  className={`relative !z-[1] flex items-center gap-x-[8px] font-semibold border border-forest-50 dark:border-forest-900 bg-forest-50 dark:bg-forest-900 transition-all duration-300 rounded-full px-[16px] py-[7px] w-[91px] group-hover:w-[213px] delay-0`}
+                >
+                  <Icon icon="feather:chevron-right" className={`w-4 h-4 transition-transform duration-300 transform group-hover:rotate-90`} />
+                  <div>More</div>
+                </div>
+
+                <div
+                  className="absolute top-[15px] left-0 !z-[-0] h-0 delay-0 group-hover:h-[119px] overflow-hidden transition-all duration-300 ease-in-out bg-forest-50 dark:bg-forest-1000 rounded-b-[22px] group-hover:pt-[29px] group-hover:pb-[10px] break-inside-avoid w-[91px] group-hover:w-[213px] shadow-transparent group-hover:shadow-[0px_4px_46.2px_0px_#000000]">
+                  <Link
+                    href={master.chains[chainKeys[0]].website}
+                    className="flex items-center gap-x-[10px] font-medium text-sm px-4 py-2 group-hover:w-[213px] w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900"
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <Icon icon="feather:external-link" className="w-4 h-4" />
+                    <div>Website</div>
+                  </Link>
+                  <Link
+                    href={master.chains[chainKeys[0]].twitter}
+                    className="flex items-center gap-x-[10px] font-medium text-sm px-4 py-2 group-hover:w-[213px] w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900"
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <Icon icon="feather:twitter" className="w-4 h-4" />
+                    <div>
+                      <span className="">@</span>
+                      {master.chains[chainKeys[0]].twitter.split(
+                        "https://twitter.com/",
+                      )}
+                    </div>
+                  </Link>
+                </div>
+              </div>
               <Link
                 href={master.chains[chainKeys[0]].block_explorer}
-                className="flex h-[40px] items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
+                // className="flex items-center gap-x-[8px] justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-[16px] py-2"
+                className="flex items-center gap-x-[8px] justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-[16px] py-[8px] transition-all duration-300 peer-hover:[&>div]:w-[0px] [&>div]:w-[59px] peer-hover:gap-x-0"
                 rel="noreferrer"
                 target="_blank"
               >
-                <Icon icon="feather:copy" className="w-4 h-4" />
-                <div className="block">Block Explorer</div>
+                <Icon icon="gtp:gtp-block-explorer" className="w-4 h-4" />
+                <div className="transition-all duration-300 whitespace-nowrap overflow-hidden">Explorer</div>
               </Link>
-              <div className="flex space-x-[10px]">
+              {process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" && (
                 <Link
-                  href={master.chains[chainKeys[0]].website}
-                  className="flex h-[40px] items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
-                  rel="noreferrer"
-                  target="_blank"
+                  href={"https://app.rhino.fi/bridge/?refId=PG_GrowThePie"}
+                  className="flex p-[1px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full peer-hover:[&>div>div]:w-[0px] [&>div>div]:w-[45px] peer-hover:[&>div]:gap-x-0"
+                  rel="noreferrer" target="_blank"
+                  onClick={() => {
+                    track("clicked RhinoFi Bridge link", {
+                      location: isMobile ? `mobile Chain page` : `desktop Chain page`,
+                      page: window.location.pathname,
+                    });
+                  }}
                 >
-                  <Icon icon="feather:external-link" className="w-4 h-4" />
-                  <div className="hidden md:block">Website</div>
-                </Link>
-                <Link
-                  href={master.chains[chainKeys[0]].twitter}
-                  className="flex  h-[40px] items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  <Icon icon="feather:twitter" className="w-4 h-4" />
-                  <div className="hidden md:block">
-                    <span className="">@</span>
-                    {master.chains[chainKeys[0]].twitter.split(
-                      "https://twitter.com/",
-                    )}
+                  <div className="flex items-center gap-x-[8px] justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-[16px] py-[7px] transition-all duration-300">
+                    <Icon icon="gtp:gtp-bridge" className="w-4 h-4" />
+                    <div className="transition-all duration-300 whitespace-nowrap overflow-hidden">Bridge</div>
                   </div>
                 </Link>
-              </div>
+              )}
             </div>
           </div>
         )}

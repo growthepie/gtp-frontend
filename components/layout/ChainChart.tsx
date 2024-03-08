@@ -1512,10 +1512,10 @@ export default function ChainChart({
                           {!Object.keys(data[0].metrics).includes(key) &&
                             getNoDataMessage(data[0].chain_id, key)}
                         </div>
-                        <Icon
+                        {Object.keys(data[0].metrics).includes(key) && <Icon
                           icon={getNavIcon(key)}
                           className="absolute h-[40px] w-[40px] top-[116px] left-[24px] dark:text-[#CDD8D3] opacity-20 pointer-events-none"
-                        />
+                        />}
                       </div>
                     </div>
                     <div className="w-full h-[15px] z-[5] relative text-[10px]">
