@@ -110,8 +110,8 @@ export default function Share() {
                 }}
               />
               <div
-                className={`absolute -right-[5px] -bottom-[5px]  bg-forest-50 dark:bg-[#1F2726] z-[110] rounded-[40px] shadow-lg py-[30px] px-[20px] 
-                  border-[5px] border-forest-500 dark:border-[#5A6462] transition-all duration-300 ${topSelection === "social" ? "w-[453px]" : "w-[579px]"
+                className={`absolute -right-[5px] -bottom-[5px] bg-forest-50 dark:bg-[#1F2726] z-[110] rounded-[40px] shadow-lg py-[30px] px-[20px] 
+                  border-[5px] border-forest-500 dark:border-[#5A6462] transition-all duration-300 ${topSelection === "social" ? "w-[calc(100vw-30px)] xs:w-[calc(100vw-46px)] md:w-[453px]" : "sm:w-[579px]"
                   }`}
               >
                 <div className="flex w-full h-[32px] justify-between items-center justify-self-start ">
@@ -166,15 +166,15 @@ export default function Share() {
                     </div>
                   </div> */}
                 {topSelection === "social" ? (
-                  <div className="flex flex-col-reverse items-center mt-[30px]  text-[16px] leading-[150%] h-[234px]">
-                    <div className="flex flex-col w-[285px] items-center justify-center">
+                  <div className="flex flex-col-reverse items-center mt-[30px] w-full text-[16px] leading-[150%] h-[234px]">
+                    <div className="flex flex-col w-full">
                       {/* <div className="w-[251px] h-[181px]  flex items-center justify-center p-0.5 bg-forest-500 dark:bg-[#5A6462] rounded-[6px]">
                     <div className="w-full h-full flex items-center justify-center bg-white dark:bg-forest-1000 rounded-[5px] text-[#5A6462] text-xs">
                       Image Goes Here
                     </div>
                   </div> */}
-                      <div className="">
-                        {/* <label className="flex items-center cursor-pointer">
+                      {/* <div className="">
+                        <label className="flex items-center cursor-pointer">
                       <div className="flex items-center relative">
                         <input
                           type="checkbox"
@@ -189,9 +189,9 @@ export default function Share() {
                       <div className="ml-3 text-[14px] leading-[150%] font-medium">
                         Include Screenshot
                       </div>
-                    </label> */}
-                      </div>
-                      <div className="group flex p-[15px] gap-x-[10px] rounded-full w-[393px] h-[54px]  mt-[6px] relative border-[3px] items-center border-forest-500 dark:border-forest-800 hover:dark:bg-[#5A6462] hover:cursor-pointer" onClick={() => {
+                    </label>
+                      </div> */}
+                      <div className="group flex p-[15px] pr-[30px] gap-x-[10px] rounded-full w-full h-[54px]  mt-[6px] relative border-[3px] items-center border-forest-500 dark:border-forest-800 hover:dark:bg-[#5A6462] hover:cursor-pointer" onClick={() => {
                         copyText(currentURL ? currentURL : "");
                         triggerCopy();
                       }}>
@@ -201,15 +201,15 @@ export default function Share() {
                           icon="feather:link"
                         />
                         <div
-                          className="whitespace-nowrap text-ellipsis overflow-hidden max-w-[300px] select-none"
+                          className="whitespace-nowrap text-ellipsis overflow-hidden max-w-full select-none text-xs md:text-base"
 
                         >
                           {copied ? "Copied to clipboard" : currentURL}
                         </div>
 
-                        <div className="ml-auto ">
+                        <div className="ml-auto flex items-center">
                           <Icon
-                            className={`absolute right-3 top-[14px] w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] group-hover:text-forest-900  ${copied ? "opacity-0" : "opacity-100"
+                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-opacity duration-300 text-[#5A6462] group-hover:text-forest-900  ${copied ? "opacity-0" : "opacity-100"
                               }`}
                             icon="feather:copy"
                           // onClick={() => {
@@ -218,7 +218,7 @@ export default function Share() {
                           // }}
                           />
                           <Icon
-                            className={`absolute right-3 top-[14px] w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] group-hover:text-forest-900 ${copied ? "opacity-100" : "opacity-0"
+                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-opacity duration-300 text-[#5A6462] group-hover:text-forest-900 ${copied ? "opacity-100" : "opacity-0"
                               }`}
                             icon="feather:check"
                           // onClick={() => {
@@ -230,9 +230,9 @@ export default function Share() {
                         {/* </div> */}
                       </div>
                     </div>
-                    <div className="flex flex-col gap-y-[5px]">
+                    <div className="flex flex-col gap-y-[5px] w-full">
                       <div
-                        className="flex items-center w-[393px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px] "
+                        className="flex items-center w-full h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px] "
                         onClick={() => {
                           handleSendEmail();
                         }}
@@ -246,7 +246,7 @@ export default function Share() {
                         </div>
                       </div>
                       <div
-                        className="flex items-center w-[393px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
+                        className="flex items-center w-full h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
                         onClick={() => {
                           shareOnReddit();
                         }}
@@ -261,7 +261,7 @@ export default function Share() {
                       </div>
 
                       <div
-                        className="flex items-center w-[393px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
+                        className="flex items-center w-full h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
                         onClick={() => {
                           shareOnTwitter();
                         }}
