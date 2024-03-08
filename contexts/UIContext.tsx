@@ -54,9 +54,9 @@ export const UIContextProvider = ({ children }) => {
   useEffect(() => {
     //prevent scrolling on mobile when sidebar is open
     if (state.isMobileSidebarOpen && state.isMobile) {
-      document.body.style.overflow = "hidden";
+      document.body.style.overflowY = "hidden !important";
     } else {
-      document.body.style.overflow = "auto";
+      document.body.style.overflowY = "auto";
     }
   }, [state.isMobileSidebarOpen]);
 
@@ -69,10 +69,16 @@ export const UIContextProvider = ({ children }) => {
     });
 
     const updateSize = () => {
+      const isMobileSize = window.innerWidth < 768;
+
+      if (!isMobileSize) {
+        document.body.style.overflowY = "auto";
+      }
+
       setState({
         ...state,
         isSidebarOpen: window.innerWidth >= 1280,
-        isMobile: window.innerWidth < 768,
+        isMobile: isMobileSize,
       });
     };
     window.addEventListener("resize", updateSize);
