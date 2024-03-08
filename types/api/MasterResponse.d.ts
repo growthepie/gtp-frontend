@@ -36,6 +36,8 @@ export interface ChainInfo {
   website: string;
   twitter: string;
   block_explorer: string;
+  rhino_listed: boolean;
+  rhino_naming: string;
 }
 
 export interface Metrics {

@@ -182,7 +182,7 @@ export default function LandingMetricsTable({
             </Tooltip>
           </div>
           <div className="w-[15%] pr-14 text-right relative">
-            <div className="flex flex-col items-end"><div className="whitespace-nowrap">Cross-Chain</div>Activity</div>
+            <div className="flex flex-col items-end"><div className="whitespace-nowrap">Multi-Chain</div>Activity</div>
             <Tooltip placement="left">
               <TooltipTrigger className="absolute right-[22px] top-0 bottom-0">
                 <Icon icon="feather:info" className="w-6 h-6" />

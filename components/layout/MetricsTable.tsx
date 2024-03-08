@@ -429,7 +429,7 @@ const MetricsTable = ({
               </div>
             ))}
             <div
-              className={`absolute ${isSafariBrowser ? "right-[37px] top-[0px] md:right-[32px] md:top-[21px]" : "right-[46px] top-[0px] md:right-[35px] md:top-[21px]"} cursor-pointer`}
+              className={`absolute ${isSafariBrowser ? "right-[37px] top-[0px] md:right-[32px] md:top-[21px]" : "right-[16px] top-[0px] md:right-[46px] md:top-[1px] lg:right-[36px] lg:top-[20px]"} cursor-pointer`}
               onClick={onChainSelectToggle}
             >
               <div
@@ -495,7 +495,7 @@ const MetricsTable = ({
           }}
         > */}
         <div
-          className="max-h-[381px] overflow-x-visible overflow-y-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pr-8"
+          className="lg:max-h-[381px] overflow-x-visible lg:overflow-y-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pr-[10px] lg:pr-8"
           style={{ direction: "ltr" }}
         >
           <div

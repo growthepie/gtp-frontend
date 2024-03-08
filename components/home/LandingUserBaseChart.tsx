@@ -91,7 +91,7 @@ export default function LandingUserBaseChart() {
       {data && landing && master ? (
         <>
           <Container
-            className={`w-full h-[470.98px] ${isSidebarOpen ? 'md:h-[718px] lg:h-[626px]' : 'md:h-[718px] lg:h-[657px]'} rounded-[15px] pb-[15px] md:pb-[42px]`}
+            className={`w-full h-[540px] ${isSidebarOpen ? 'md:h-[718px] lg:h-[626px]' : 'md:h-[718px] lg:h-[657px]'} rounded-[15px] pb-[15px] md:pb-[42px]`}
           >
             <LandingChart
               data={Object.keys(data.chains)

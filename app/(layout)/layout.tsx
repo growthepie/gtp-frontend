@@ -180,16 +180,14 @@ export default function RootLayout({
                   </main>
                   <div className="mt-24 w-full text-center py-3 absolute bottom-0">
                     <div className="text-[0.7rem] text-inherit dark:text-forest-400 leading-[2] ml-8 z-20">
-                      © {new Date().getFullYear()} growthepie 🥧
+                      © {new Date().getFullYear()} growthepie 🥧📏
                     </div>
                   </div>
                 </div>
               </div>
-              {process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" && (
-                <div className="fixed bottom-[20px] right-[20px] md:right-[50px] flex justify-center items-center z-50">
-                  <Share />
-                </div>
-              )}
+              <div className="fixed bottom-[20px] right-[20px] md:right-[50px] flex justify-center items-center z-50">
+                <Share />
+              </div>
             </div>
           </div>
           {process.env.NEXT_PUBLIC_VERCEL_ENV === "development" && (
