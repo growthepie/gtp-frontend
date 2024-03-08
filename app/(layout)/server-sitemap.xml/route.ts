@@ -3,6 +3,7 @@ import { ISitemapField, getServerSideSitemap } from "next-sitemap";
 import { navigationItems } from "@/lib/navigation";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import { Get_SupportedChainKeys } from "@/lib/chains";
 
 export async function GET(request: Request) {
   const fundamentals = navigationItems[1];
@@ -23,8 +24,9 @@ export async function GET(request: Request) {
       (option) => `https://www.growthepie.xyz/blockspace/${option.urlKey}`,
     ),
     ...chains.options
-      .filter((c) => masterChainKeys.includes(c.urlKey))
-      .filter((c) => c.hide !== true)
+      .filter(
+        (c) => c.key && Get_SupportedChainKeys(masterData).includes(c.key),
+      )
       .map((option) => `https://www.growthepie.xyz/chains/${option.urlKey}`),
     ...trackers.options
       .filter((c) => c.hide !== true)
