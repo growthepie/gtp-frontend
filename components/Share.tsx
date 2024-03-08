@@ -193,7 +193,7 @@ export default function Share() {
                       </div>
                     </label> */}
                         </div>
-                        <div className="flex p-[15px] gap-x-[10px] rounded-full w-[393px] h-[54px]  mt-[6px] relative border-[3px] items-center border-forest-500 dark:border-forest-800">
+                        <div className="flex p-[15px] gap-x-[10px] rounded-full w-[393px] h-[54px]  mt-[6px] relative border-[3px] items-center border-forest-500 dark:border-forest-800 hover:cursor-pointer">
                           {/* <div className="flex w-[285px] h-[54px] p-[15px] border-[1px] border-[#CDD8D3] gap-x-[10px] items-center"> */}
                           <Icon
                             className="w-[24px] h-[24px] font-semibold"
@@ -205,7 +205,7 @@ export default function Share() {
                               triggerCopy();
                             }}
                           >
-                            {currentURL}
+                            {copied ? "Copied to clipboard" : currentURL}
                           </div>
 
                           <div className="ml-auto ">
