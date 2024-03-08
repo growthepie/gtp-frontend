@@ -32,14 +32,14 @@ export default function Share() {
   const handleSendEmail = () => {
     if (currentURL !== null) {
       const mailtoLink = `mailto:${""}?subject=${encodeURIComponent(
-        "GrowThePie",
+        "Check out what I found on growthepie.xyz!",
       )}&body=${encodeURIComponent(currentURL)}`;
       window.location.href = mailtoLink;
     }
   };
 
   const shareOnTwitter = () => {
-    const text = "Share";
+    const text = "Check out what I found on growthepie.xyz!";
     if (currentURL !== null) {
       const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
         currentURL,
@@ -50,7 +50,7 @@ export default function Share() {
 
   const shareOnReddit = () => {
     if (currentURL !== null) {
-      const title = "Share";
+      const title = "Check out what I found on growthepie.xyz!";
       const redditShareUrl = `https://www.reddit.com/submit?url=${encodeURIComponent(
         currentURL,
       )}&title=${encodeURIComponent(title)}`;
@@ -84,64 +84,62 @@ export default function Share() {
   return (
     <>
       {" "}
-      {!isMobile && (
-        <div className="relative flex gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#5A6462] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
-          <div>
-            <button
-              className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
-              onClick={() => {
-                setOpenShare(true);
-              }}
-            >
-              <div className="w-5 h-5">
-                <Icon
-                  className="w-5 h-5 font-semibold"
-                  icon="feather:share-2"
-                />
-              </div>
-              <div className="font-semibold">Share</div>
-            </button>
-            {openShare && (
-              <>
-                <div
-                  className="fixed inset-0 bg-black opacity-0 transition-opacity duration-500 z-[100]"
-                  style={{ opacity: 0.3 }}
-                  onClick={() => {
-                    setOpenShare(!openShare);
-                  }}
-                />
-                <div
-                  className={`absolute -right-[5px] -bottom-[5px]  bg-forest-50 dark:bg-[#1F2726] z-[110] rounded-[40px] shadow-lg py-[30px] px-[20px] 
-                  border-[5px] border-forest-500 dark:border-[#5A6462] transition-all duration-300 ${
-                    topSelection === "social" ? "w-[453px]" : "w-[579px]"
+      <div className="relative flex gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#5A6462] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
+        <div>
+          <button
+            className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
+            onClick={() => {
+              setOpenShare(true);
+            }}
+          >
+            <div className="w-5 h-5">
+              <Icon
+                className="w-5 h-5 font-semibold"
+                icon="feather:share-2"
+              />
+            </div>
+            <div className="font-semibold">Share</div>
+          </button>
+          {openShare && (
+            <>
+              <div
+                className="fixed inset-0 bg-black opacity-0 transition-opacity duration-500 z-[100]"
+                style={{ opacity: 0.3 }}
+                onClick={() => {
+                  setOpenShare(!openShare);
+                }}
+              />
+              <div
+                className={`absolute -right-[5px] -bottom-[5px]  bg-forest-50 dark:bg-[#1F2726] z-[110] rounded-[40px] shadow-lg py-[30px] px-[20px] 
+                  border-[5px] border-forest-500 dark:border-[#5A6462] transition-all duration-300 ${topSelection === "social" ? "w-[453px]" : "w-[579px]"
                   }`}
-                >
-                  <div className="flex w-full h-[32px] justify-between items-center justify-self-start ">
-                    <div className="flex items-center gap-x-[10px]">
-                      <Icon
-                        className="w-[24px] h-[24px] font-semibold"
-                        icon="feather:share-2"
-                      />
-                      <div className="font-bold text-[24px]">Share</div>
-                    </div>
-                    <div
-                      className="w-8 h-8 flex items-center justify-center hover:bg-forest-800 bg-transparent rounded-full hover:cursor-pointer"
-                      onClick={() => {
-                        setOpenShare(false);
-                      }}
-                    >
-                      <Icon
-                        className="w-[24px] h-[24px] font-semibold"
-                        icon="feather:x-circle"
-                      />
-                    </div>
+              >
+                <div className="flex w-full h-[32px] justify-between items-center justify-self-start ">
+                  <div className="flex items-center gap-x-[10px]">
+                    <Icon
+                      className="w-[24px] h-[24px] font-semibold"
+                      icon="feather:share-2"
+                    />
+                    <div className="font-bold text-[24px]">Share</div>
                   </div>
-                  <div className="flex flex-col mt-[15px] text-[16px] leading-[125%]">
-                    <div>
-                      Share this page on through one of the following ways:
-                    </div>
+                  <div
+                    className="w-8 h-8 flex items-center justify-center hover:bg-forest-800 bg-transparent rounded-full hover:cursor-pointer"
+                    onClick={() => {
+                      setOpenShare(false);
+                    }}
+                  >
+                    <Icon
+                      className="w-[24px] h-[24px] font-semibold"
+                      icon="feather:x-circle"
+                    />
                   </div>
-                  {/* <div className="flex gap-x-[10px] mt-[15px]">
+                </div>
+                <div className="flex flex-col mt-[15px] text-[16px] leading-[125%]">
+                  <div>
+                    Share this page on through one of the following ways:
+                  </div>
+                </div>
+                {/* <div className="flex gap-x-[10px] mt-[15px]">
                     <div
                       className={`flex items-center justify-center px-[16px] py-[2px] text-[14px] rounded-full hover:cursor-pointer transition ${
                         topSelection === "social"
@@ -167,16 +165,16 @@ export default function Share() {
                       Embed Code
                     </div>
                   </div> */}
-                  {topSelection === "social" ? (
-                    <div className="flex flex-col-reverse items-center mt-[30px]  text-[16px] leading-[150%] h-[234px]">
-                      <div className="flex flex-col w-[285px] items-center justify-center">
-                        {/* <div className="w-[251px] h-[181px]  flex items-center justify-center p-0.5 bg-forest-500 dark:bg-[#5A6462] rounded-[6px]">
+                {topSelection === "social" ? (
+                  <div className="flex flex-col-reverse items-center mt-[30px]  text-[16px] leading-[150%] h-[234px]">
+                    <div className="flex flex-col w-[285px] items-center justify-center">
+                      {/* <div className="w-[251px] h-[181px]  flex items-center justify-center p-0.5 bg-forest-500 dark:bg-[#5A6462] rounded-[6px]">
                     <div className="w-full h-full flex items-center justify-center bg-white dark:bg-forest-1000 rounded-[5px] text-[#5A6462] text-xs">
                       Image Goes Here
                     </div>
                   </div> */}
-                        <div className="">
-                          {/* <label className="flex items-center cursor-pointer">
+                      <div className="">
+                        {/* <label className="flex items-center cursor-pointer">
                       <div className="flex items-center relative">
                         <input
                           type="checkbox"
@@ -192,245 +190,238 @@ export default function Share() {
                         Include Screenshot
                       </div>
                     </label> */}
+                      </div>
+                      <div className="group flex p-[15px] gap-x-[10px] rounded-full w-[393px] h-[54px]  mt-[6px] relative border-[3px] items-center border-forest-500 dark:border-forest-800 hover:dark:bg-[#5A6462] hover:cursor-pointer" onClick={() => {
+                        copyText(currentURL ? currentURL : "");
+                        triggerCopy();
+                      }}>
+                        {/* <div className="flex w-[285px] h-[54px] p-[15px] border-[1px] border-[#CDD8D3] gap-x-[10px] items-center"> */}
+                        <Icon
+                          className="w-[24px] h-[24px] font-semibold"
+                          icon="feather:link"
+                        />
+                        <div
+                          className="whitespace-nowrap text-ellipsis overflow-hidden max-w-[300px] select-none"
+
+                        >
+                          {copied ? "Copied to clipboard" : currentURL}
                         </div>
-                        <div className="flex p-[15px] gap-x-[10px] rounded-full w-[393px] h-[54px]  mt-[6px] relative border-[3px] items-center border-forest-500 dark:border-forest-800 hover:cursor-pointer">
-                          {/* <div className="flex w-[285px] h-[54px] p-[15px] border-[1px] border-[#CDD8D3] gap-x-[10px] items-center"> */}
+
+                        <div className="ml-auto ">
                           <Icon
-                            className="w-[24px] h-[24px] font-semibold"
-                            icon="feather:link"
+                            className={`absolute right-3 top-[14px] w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] group-hover:text-forest-900  ${copied ? "opacity-0" : "opacity-100"
+                              }`}
+                            icon="feather:copy"
+                          // onClick={() => {
+                          //   copyText(currentURL ? currentURL : "");
+                          //   triggerCopy();
+                          // }}
+                          />
+                          <Icon
+                            className={`absolute right-3 top-[14px] w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] group-hover:text-forest-900 ${copied ? "opacity-100" : "opacity-0"
+                              }`}
+                            icon="feather:check"
+                          // onClick={() => {
+                          //   copyText(currentURL ? currentURL : "");
+                          //   triggerCopy();
+                          // }}
+                          />
+                        </div>
+                        {/* </div> */}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-y-[5px]">
+                      <div
+                        className="flex items-center w-[393px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px] "
+                        onClick={() => {
+                          handleSendEmail();
+                        }}
+                      >
+                        <Icon
+                          className="w-[24px] h-[24px] "
+                          icon="gtp:email"
+                        />
+                        <div className="h-[24px] leading-[150%] text-[16px]">
+                          Share via Email
+                        </div>
+                      </div>
+                      <div
+                        className="flex items-center w-[393px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
+                        onClick={() => {
+                          shareOnReddit();
+                        }}
+                      >
+                        <Icon
+                          className="w-[24px] h-[24px] "
+                          icon="gtp:reddit"
+                        />
+                        <div className="h-[24px] leading-[150%] text-[16px]">
+                          Share on Reddit
+                        </div>
+                      </div>
+
+                      <div
+                        className="flex items-center w-[393px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
+                        onClick={() => {
+                          shareOnTwitter();
+                        }}
+                      >
+                        <Icon
+                          className="w-[24px] h-[24px] "
+                          icon="pajamas:twitter"
+                        />
+                        <div className="h-[24px] leading-[150%] text-[16px]">
+                          Share on X
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-x-[36px] mt-[30px] h-[234px]">
+                    <div className=" p-[10px] rounded-3xl border-forest-600 border-[1px] w-[285px] h-full">
+                      Embed Link Here
+                    </div>
+                    <div className="flex flex-col w-[204px] h-full gap-y-[5px]">
+                      <div className="flex w-full justify-between">
+                        <div className="text-medium">Timeframe</div>
+                        <Tooltip placement="left" allowInteract>
+                          <TooltipTrigger>
+                            <div className="p-1 z-10 mr-0 md:-mr-0.5">
+                              <Icon icon="feather:info" className="w-6 h-6" />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
+                            <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
+                              <div className="flex flex-col space-y-1">
+                                <div className="font-bold text-sm leading-snug"></div>
+                                <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug"></div>
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <div className="flex h-[28px] px-[2px] w-full bg-forest-50 justify-between items-center rounded-full">
+                        <label className="inline-flex items-center cursor-pointer w-full">
+                          <input
+                            type="checkbox"
+                            value=""
+                            className="sr-only peer w-full"
+                            checked={isAbsolute}
+                            onChange={() => {
+                              setIsAbsolute(!isAbsolute);
+                            }}
                           />
                           <div
-                            className="whitespace-nowrap text-ellipsis overflow-hidden max-w-[300px] select-none"
-                            onDoubleClick={() => {
-                              triggerCopy();
+                            className={`flex items-center  text-[16px] justify-between pl-[18px] pr-5 relative w-full h-6 bg-gray-200 peer-focus:outline-none rounded-full peer ${isAbsolute
+                              ? "peer-checked:after:right-[98.5px] peer-checked:after:border-white"
+                              : ""
+                              } after:content-[''] after:absolute after:-top-[0.5px] after:-right-[0.5px] after:bg-forest-900  after:border after:rounded-full after:h-[25px] after:w-[102.5px] after:transition-all dark:border-gray-600 `}
+                          >
+                            <div
+                              className={`z-20 transition select-none ${isAbsolute
+                                ? "text-forest-50"
+                                : " text-forest-800"
+                                }`}
+                            >
+                              Absolute
+                            </div>
+                            <div
+                              className={`z-20 transition select-none ${!isAbsolute
+                                ? "text-forest-50"
+                                : " text-forest-800"
+                                }`}
+                            >
+                              Relative
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+
+                      <div className="flex items-center gap-x-[10px] h-[54px] w-[204px] rounded-full border-[#5A6462] border-[2px] px-[15px]">
+                        <Icon
+                          className="w-[24px] h-[24px] font-semibold"
+                          icon="gtp:arrowleftright"
+                        />
+                        <div className="flex items-center underline decoration-dotted decoration-2 underline-offset-[5px] ">
+                          <div
+                            className="outline-none"
+                            contentEditable
+                            onBlur={handleWidthChange}
+                            style={{
+                              border: "none", // Remove default border
+                              boxShadow: "none", // Remove default focus box shadow
                             }}
                           >
-                            {copied ? "Copied to clipboard" : currentURL}
+                            {widthValue}
+                            {"   "}
                           </div>
-
-                          <div className="ml-auto ">
-                            <Icon
-                              className={`absolute right-3 top-[14px] w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${
-                                copied ? "opacity-0" : "opacity-100"
-                              }`}
-                              icon="feather:copy"
-                              onClick={() => {
-                                copyText(currentURL ? currentURL : "");
-                                triggerCopy();
-                              }}
-                            />
-                            <Icon
-                              className={`absolute right-3 top-[14px] w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${
-                                copied ? "opacity-100" : "opacity-0"
-                              }`}
-                              icon="feather:check"
-                              onClick={() => {
-                                copyText(currentURL ? currentURL : "");
-                                triggerCopy();
-                              }}
-                            />
-                          </div>
-                          {/* </div> */}
+                          <span className="ml-[0.5px] italic text-[#5A6462]">
+                            {" "}
+                            Width
+                          </span>
                         </div>
                       </div>
-                      <div className="flex flex-col gap-y-[5px]">
-                        <div
-                          className="flex items-center w-[393px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px] "
-                          onClick={() => {
-                            handleSendEmail();
-                          }}
-                        >
-                          <Icon
-                            className="w-[24px] h-[24px] "
-                            icon="gtp:email"
-                          />
-                          <div className="h-[24px] leading-[150%] text-[16px]">
-                            Share via Email
+                      <div className="flex items-center gap-x-[10px] h-[54px] w-[204px] rounded-full border-[#5A6462] border-[2px] px-[15px]">
+                        <Icon
+                          className="w-[24px] h-[24px] font-semibold"
+                          icon="gtp:arrowupdown"
+                        />
+                        <div className="flex items-center underline decoration-dotted decoration-2  underline-offset-[5px] ">
+                          <div
+                            className="outline-none"
+                            contentEditable
+                            onBlur={handleHeightChange}
+                            style={{
+                              border: "none", // Remove default border
+                              boxShadow: "none", // Remove default focus box shadow
+                            }}
+                          >
+                            {heightValue}
+                            {"   "}
                           </div>
+                          <span className="ml-[1px] italic text-[#5A6462]">
+                            {" "}
+                            Height
+                          </span>
                         </div>
-                        <div
-                          className="flex items-center w-[393px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
-                          onClick={() => {
-                            shareOnReddit();
-                          }}
-                        >
+                      </div>
+                      <div className="flex items-center gap-x-[10px] h-[54px] w-[204px] rounded-full border-[#5A6462] border-[3px] px-[15px]">
+                        <Icon
+                          className={`  w-[24px] h-[24px] font-semibold `}
+                          icon="gtp:code-slash"
+                        />
+                        <div>{copied ? "Copied" : "Copy Code"}</div>
+                        <div className="flex ml-auto relative w-[24px] -top-[10px]">
                           <Icon
-                            className="w-[24px] h-[24px] "
-                            icon="gtp:reddit"
+                            className={`absolute  w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${copied ? "opacity-0" : "opacity-100"
+                              }`}
+                            icon="feather:copy"
+                            onClick={() => {
+                              copyText(currentURL ? currentURL : "");
+                              triggerCopy();
+                            }}
                           />
-                          <div className="h-[24px] leading-[150%] text-[16px]">
-                            Share on Reddit
-                          </div>
-                        </div>
-
-                        <div
-                          className="flex items-center w-[393px] h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
-                          onClick={() => {
-                            shareOnTwitter();
-                          }}
-                        >
                           <Icon
-                            className="w-[24px] h-[24px] "
-                            icon="pajamas:twitter"
+                            className={`absolute w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${copied ? "opacity-100" : "opacity-0"
+                              }`}
+                            icon="feather:check"
+                            onClick={() => {
+                              copyText(currentURL ? currentURL : "");
+                              triggerCopy();
+                            }}
                           />
-                          <div className="h-[24px] leading-[150%] text-[16px]">
-                            Share on X
-                          </div>
                         </div>
                       </div>
                     </div>
-                  ) : (
-                    <div className="flex gap-x-[36px] mt-[30px] h-[234px]">
-                      <div className=" p-[10px] rounded-3xl border-forest-600 border-[1px] w-[285px] h-full">
-                        Embed Link Here
-                      </div>
-                      <div className="flex flex-col w-[204px] h-full gap-y-[5px]">
-                        <div className="flex w-full justify-between">
-                          <div className="text-medium">Timeframe</div>
-                          <Tooltip placement="left" allowInteract>
-                            <TooltipTrigger>
-                              <div className="p-1 z-10 mr-0 md:-mr-0.5">
-                                <Icon icon="feather:info" className="w-6 h-6" />
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-                              <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
-                                <div className="flex flex-col space-y-1">
-                                  <div className="font-bold text-sm leading-snug"></div>
-                                  <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug"></div>
-                                </div>
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
-                        </div>
-                        <div className="flex h-[28px] px-[2px] w-full bg-forest-50 justify-between items-center rounded-full">
-                          <label className="inline-flex items-center cursor-pointer w-full">
-                            <input
-                              type="checkbox"
-                              value=""
-                              className="sr-only peer w-full"
-                              checked={isAbsolute}
-                              onChange={() => {
-                                setIsAbsolute(!isAbsolute);
-                              }}
-                            />
-                            <div
-                              className={`flex items-center  text-[16px] justify-between pl-[18px] pr-5 relative w-full h-6 bg-gray-200 peer-focus:outline-none rounded-full peer ${
-                                isAbsolute
-                                  ? "peer-checked:after:right-[98.5px] peer-checked:after:border-white"
-                                  : ""
-                              } after:content-[''] after:absolute after:-top-[0.5px] after:-right-[0.5px] after:bg-forest-900  after:border after:rounded-full after:h-[25px] after:w-[102.5px] after:transition-all dark:border-gray-600 `}
-                            >
-                              <div
-                                className={`z-20 transition select-none ${
-                                  isAbsolute
-                                    ? "text-forest-50"
-                                    : " text-forest-800"
-                                }`}
-                              >
-                                Absolute
-                              </div>
-                              <div
-                                className={`z-20 transition select-none ${
-                                  !isAbsolute
-                                    ? "text-forest-50"
-                                    : " text-forest-800"
-                                }`}
-                              >
-                                Relative
-                              </div>
-                            </div>
-                          </label>
-                        </div>
+                  </div>
+                )}
 
-                        <div className="flex items-center gap-x-[10px] h-[54px] w-[204px] rounded-full border-[#5A6462] border-[2px] px-[15px]">
-                          <Icon
-                            className="w-[24px] h-[24px] font-semibold"
-                            icon="gtp:arrowleftright"
-                          />
-                          <div className="flex items-center underline decoration-dotted decoration-2 underline-offset-[5px] ">
-                            <div
-                              className="outline-none"
-                              contentEditable
-                              onBlur={handleWidthChange}
-                              style={{
-                                border: "none", // Remove default border
-                                boxShadow: "none", // Remove default focus box shadow
-                              }}
-                            >
-                              {widthValue}
-                              {"   "}
-                            </div>
-                            <span className="ml-[0.5px] italic text-[#5A6462]">
-                              {" "}
-                              Width
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-x-[10px] h-[54px] w-[204px] rounded-full border-[#5A6462] border-[2px] px-[15px]">
-                          <Icon
-                            className="w-[24px] h-[24px] font-semibold"
-                            icon="gtp:arrowupdown"
-                          />
-                          <div className="flex items-center underline decoration-dotted decoration-2  underline-offset-[5px] ">
-                            <div
-                              className="outline-none"
-                              contentEditable
-                              onBlur={handleHeightChange}
-                              style={{
-                                border: "none", // Remove default border
-                                boxShadow: "none", // Remove default focus box shadow
-                              }}
-                            >
-                              {heightValue}
-                              {"   "}
-                            </div>
-                            <span className="ml-[1px] italic text-[#5A6462]">
-                              {" "}
-                              Height
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-x-[10px] h-[54px] w-[204px] rounded-full border-[#5A6462] border-[3px] px-[15px]">
-                          <Icon
-                            className={`  w-[24px] h-[24px] font-semibold `}
-                            icon="gtp:code-slash"
-                          />
-                          <div>{copied ? "Copied" : "Copy Code"}</div>
-                          <div className="flex ml-auto relative w-[24px] -top-[10px]">
-                            <Icon
-                              className={`absolute  w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${
-                                copied ? "opacity-0" : "opacity-100"
-                              }`}
-                              icon="feather:copy"
-                              onClick={() => {
-                                copyText(currentURL ? currentURL : "");
-                                triggerCopy();
-                              }}
-                            />
-                            <Icon
-                              className={`absolute w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${
-                                copied ? "opacity-100" : "opacity-0"
-                              }`}
-                              icon="feather:check"
-                              onClick={() => {
-                                copyText(currentURL ? currentURL : "");
-                                triggerCopy();
-                              }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/*Top Row X */}
-                </div>
-              </>
-            )}
-          </div>
+                {/*Top Row X */}
+              </div>
+            </>
+          )}
         </div>
-      )}
+      </div>
     </>
   );
 }
