@@ -11,14 +11,6 @@ import { track } from "@vercel/analytics";
 export default function SidebarContainer() {
   const { isSidebarOpen, toggleSidebar } = useUIContext();
 
-  const isLargeScreen = useMediaQuery("(min-width: 1280px)");
-
-  useEffect(() => {
-    if (!isLargeScreen && isSidebarOpen) {
-      toggleSidebar();
-    }
-  }, [isLargeScreen]);
-
   return (
     <div className="pt-8 pl-0 bg-forest-50 dark:bg-[#1F2726] mix-h-screen max-h-screen sticky top-0.5 left-0 hidden md:flex flex-col overflow-y-hidden overflow-x-visible space-y-6 border-r-0 border-forest-500 dark:border-black/50">
       {isSidebarOpen ? (

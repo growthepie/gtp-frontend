@@ -11,7 +11,7 @@ type UIContextState = {
 };
 
 const UIContext = createContext<UIContextState>({
-  isSidebarOpen: true,
+  isSidebarOpen: false,
   isMobile: false,
   isMobileSidebarOpen: false,
   toggleSidebar: () => { },
@@ -23,7 +23,7 @@ export const useUIContext = () => useContext(UIContext);
 
 export const UIContextProvider = ({ children }) => {
   const [state, setState] = useState<UIContextState>({
-    isSidebarOpen: true,
+    isSidebarOpen: false,
     isMobile: false,
     isMobileSidebarOpen: false,
     toggleSidebar: () => { },
@@ -58,9 +58,9 @@ export const UIContextProvider = ({ children }) => {
     } else {
       document.body.style.overflow = "auto";
     }
-  }, [state.isMobileSidebarOpen, state.isMobile]);
+  }, [state.isMobileSidebarOpen]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
     setState({
@@ -71,6 +71,7 @@ export const UIContextProvider = ({ children }) => {
     const updateSize = () => {
       setState({
         ...state,
+        isSidebarOpen: window.innerWidth >= 1280,
         isMobile: window.innerWidth < 768,
       });
     };
