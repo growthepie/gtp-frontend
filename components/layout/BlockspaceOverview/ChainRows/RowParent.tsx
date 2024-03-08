@@ -5,6 +5,7 @@ import { AllChainsByKeys } from "@/lib/chains";
 import { useRowContext } from "./RowContext";
 import RowChildren from "./RowChildren";
 import { RowParentInterface } from "./ContextInterface";
+import { Tooltip, TooltipTrigger, TooltipContent } from "../../Tooltip";
 
 export default function RowParent({ chainKey, index }) {
   const { theme } = useTheme();
@@ -79,6 +80,24 @@ export default function RowParent({ chainKey, index }) {
               <div className="-mb-0.5">{AllChainsByKeys[chainKey].label}</div>
             </div>
             {/* Additional content */}
+
+            <div className="flex flex-col w-full h-[41px] justify-center items-center px-4 py-5 z-10">
+              <div className="flex flex-row w-full justify-center items-center text-sm">
+                {DisabledStates[selectedMode][chainKey].text}
+                <Tooltip placement="right" allowInteract>
+                  <TooltipTrigger>
+                    <div className="p-1 z-10 mr-0 md:-mr-0.5">
+                      <Icon icon="feather:info" className="w-4 h-4" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
+                    <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
+                      {DisabledStates[selectedMode][chainKey].reason}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
           </div>
         </>
       ) : (

@@ -38,7 +38,10 @@ export default function SidebarMenuGroup({
 
     const chainItemsByKey = navigationItems[3].options
       .filter((option) => option.hide !== true)
-      .filter((option) => option.key && Get_SupportedChainKeys(master).includes(option.key))
+      .filter(
+        (option) =>
+          option.key && Get_SupportedChainKeys(master).includes(option.key),
+      )
       .reduce((acc, option) => {
         if (option.key) acc[option.key] = option;
         return acc;
@@ -251,10 +254,9 @@ export default function SidebarMenuGroup({
                 </div>
               </div>
               <div
-                className={`absolute bottom-[10px] left-[23px] flex-1 flex items-center transition-all duration-300 origin-[-10px_4px]  ${isOpen
-                  ? "rotate-90"
-                  : "rotate-0"
-                  }`}
+                className={`absolute bottom-[10px] left-[23px] flex-1 flex items-center transition-all duration-300 origin-[-10px_4px]  ${
+                  isOpen ? "rotate-90" : "rotate-0"
+                }`}
               >
                 <Icon
                   icon={"gtp:chevron-right"}
@@ -278,8 +280,9 @@ export default function SidebarMenuGroup({
         </Tooltip>
 
         <div
-          className={`flex flex-col overflow-hidden mb-[17px] w-full md:w-80 transition-all duration-300 ease-out  ${isOpen ? "h-auto mt-1" : "h-0 mt-0"
-            }`}
+          className={`flex flex-col overflow-hidden mb-[17px] w-full md:w-80 transition-all duration-300 ease-out  ${
+            isOpen ? "h-auto mt-1" : "h-0 mt-0"
+          }`}
         >
           {Object.keys(ChainGroups).length > 0 &&
             Object.entries(ChainGroups).map(([bucket, chains]: any) => {
@@ -310,43 +313,49 @@ export default function SidebarMenuGroup({
                       <Tooltip key={option.key} placement="top-start">
                         <TooltipTrigger className="px-0 md:px-5">
                           <Link
-                            className={`group flex items-center justify-items-center rounded-full md:rounded-l-full relative ${urlParts[1]
-                              .trim()
-                              .localeCompare(option.urlKey) === 0
-                              ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
-                              : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
-                              }`}
-                            href={`/${item.name.toLowerCase()}/${option.urlKey
-                              }`}
+                            className={`group flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
+                              urlParts[1]
+                                .trim()
+                                .localeCompare(option.urlKey) === 0
+                                ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                                : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                            }`}
+                            href={`/${item.name.toLowerCase()}/${
+                              option.urlKey
+                            }`}
                           >
                             <div
-                              className={`absolute top-0 left-[4px] w-[64px] h-[28px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726] transition-opacity  ease-in-out ${sidebarOpen
-                                ? "opacity-0 duration-0"
-                                : "opacity-100 duration-500"
-                                }`}
+                              className={`absolute top-0 left-[4px] w-[64px] h-[28px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726] transition-opacity  ease-in-out ${
+                                sidebarOpen
+                                  ? "opacity-0 duration-0"
+                                  : "opacity-100 duration-500"
+                              }`}
                             ></div>
 
                             <div
-                              className={`w-6 absolute left-[13px]  ${urlParts[1]
-                                .trim()
-                                .localeCompare(option.urlKey) === 0
-                                ? "text-inherit"
-                                : "text-[#5A6462] group-hover:text-inherit"
-                                }`}
+                              className={`w-6 absolute left-[13px]  ${
+                                urlParts[1]
+                                  .trim()
+                                  .localeCompare(option.urlKey) === 0
+                                  ? "text-inherit"
+                                  : "text-[#5A6462] group-hover:text-inherit"
+                              }`}
                             >
                               {["Blockspace"].includes(item.name) && (
                                 <Icon
                                   icon={option.icon}
-                                  className={`${item.name === "Fundamentals"
-                                    ? "h-4 w-4 mx-auto"
-                                    : "h-[15px] w-[15px] mx-auto"
-                                    } `}
+                                  className={`${
+                                    item.name === "Fundamentals"
+                                      ? "h-4 w-4 mx-auto"
+                                      : "h-[15px] w-[15px] mx-auto"
+                                  } `}
                                 />
                               )}
                             </div>
                             <div
-                              className={`text-sm py-1 w-48 font-normal break-inside-auto transition-all duration-300 ease-in text-left ${sidebarOpen ? "ml-12" : "ml-4"
-                                }`}
+                              className={`text-sm py-1 w-48 font-normal break-inside-auto transition-all duration-300 ease-in text-left ${
+                                sidebarOpen ? "ml-12" : "ml-4"
+                              }`}
                             >
                               {option.label}
                             </div>
@@ -354,12 +363,13 @@ export default function SidebarMenuGroup({
                         </TooltipTrigger>
                         {!sidebarOpen && (
                           <TooltipContent
-                            className={`text-forest-900 dark:text-forest-50 py-1 px-4 text-base break-inside-auto shadow-md z-50 pointer-events-none ml-[8px] mt-[36px] flex items-center justify-items-center rounded-full md:rounded-l-full relative ${urlParts[1]
-                              .trim()
-                              .localeCompare(option.urlKey) === 0
-                              ? "bg-[#CDD8D3] dark:bg-forest-1000"
-                              : "bg-[#F0F5F3] dark:bg-[#5A6462]"
-                              }`}
+                            className={`text-forest-900 dark:text-forest-50 py-1 px-4 text-base break-inside-auto shadow-md z-50 pointer-events-none ml-[8px] mt-[36px] flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
+                              urlParts[1]
+                                .trim()
+                                .localeCompare(option.urlKey) === 0
+                                ? "bg-[#CDD8D3] dark:bg-forest-1000"
+                                : "bg-[#F0F5F3] dark:bg-[#5A6462]"
+                            }`}
                           >
                             {option.label}
                           </TooltipContent>
@@ -397,15 +407,11 @@ export default function SidebarMenuGroup({
             </div>
 
             <div
-              className={`absolute bottom-[10px] left-[23px] flex-1 flex items-center transition-all duration-300 origin-[-10px_4px]  ${isOpen
-                ? "rotate-90"
-                : "rotate-0"
-                }`}
+              className={`absolute bottom-[10px] left-[23px] flex-1 flex items-center transition-all duration-300 origin-[-10px_4px]  ${
+                isOpen ? "rotate-90" : "rotate-0"
+              }`}
             >
-              <Icon
-                icon="gtp:chevron-right"
-                className="w-[8px] h-[8px] mr-2"
-              />
+              <Icon icon="gtp:chevron-right" className="w-[8px] h-[8px] mr-2" />
             </div>
             {sidebarOpen && (
               <div className={`flex-1 flex items-start justify-between`}>
@@ -431,8 +437,9 @@ export default function SidebarMenuGroup({
       </Tooltip>
 
       <div
-        className={`flex flex-col overflow-hidden mb-[17px] w-full md:w-80 transition-all duration-300 ease-out  ${isOpen ? "h-auto mt-1" : "h-0 mt-0"
-          }`}
+        className={`flex flex-col overflow-hidden mb-[17px] w-full md:w-80 transition-all duration-300 ease-out  ${
+          isOpen ? "h-auto mt-1" : "h-0 mt-0"
+        }`}
       >
         {item.options
           .filter((o) => o.hide !== true)
@@ -445,14 +452,17 @@ export default function SidebarMenuGroup({
                     (i > 0 &&
                       item.options.filter((o) => o.hide !== true)[i - 1]
                         .category != option.category)) && (
-                    <div className="px-0 md:px-5 mt-[7px] mb-[2px] overflow-visible text-forest-800">
-                      <div className="flex items-center justify-items-center rounded-full md:rounded-l-full relative">
+                    <div className="px-0 md:px-5 mt-[7px] mb-[2px] overflow-visible text-forest-800 ">
+                      <div
+                        className={`flex items-center justify-items-center rounded-full md:rounded-l-full relative `}
+                      >
                         <div className={`w-6 absolute left-[13px]`}>
                           {navigationCategories[option.category].icon && (
                             <Icon
                               icon={navigationCategories[option.category].icon}
                               className={
-                                item.name === "Fundamentals" || item.name === "Trackers"
+                                item.name === "Fundamentals" ||
+                                item.name === "Trackers"
                                   ? "h-4 w-4 mx-auto"
                                   : "h-[15px] w-[15px] mx-auto"
                               }
@@ -474,39 +484,45 @@ export default function SidebarMenuGroup({
                 <Tooltip placement="top-start">
                   <TooltipTrigger className="px-0 md:px-5">
                     <Link
-                      className={`group flex items-center justify-items-center rounded-full md:rounded-l-full relative ${urlParts[1].trim().localeCompare(option.urlKey) === 0
-                        ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
-                        : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
-                        }`}
+                      className={`group flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
+                        urlParts[1].trim().localeCompare(option.urlKey) === 0
+                          ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                          : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
+                      } ${option.key === "chain-overview" ? "mt-1" : "mt-0"}`}
                       href={`/${item.name.toLowerCase()}/${option.urlKey}`}
                     >
                       <div
-                        className={`absolute top-0 left-[4px] w-[64px] h-[28px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726] transition-opacity  ease-in-out ${sidebarOpen
-                          ? "opacity-0 duration-0"
-                          : "opacity-100 duration-500"
-                          }`}
+                        className={`absolute top-0 left-[4px] w-[64px] h-[28px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726] transition-opacity  ease-in-out ${
+                          sidebarOpen
+                            ? "opacity-0 duration-0"
+                            : "opacity-100 duration-500"
+                        }`}
                       ></div>
 
                       <div
-                        className={`w-6 absolute left-[13px]  ${urlParts[1].trim().localeCompare(option.urlKey) === 0
-                          ? "text-inherit"
-                          : "text-[#5A6462] group-hover:text-inherit"
-                          }`}
+                        className={`w-6 absolute left-[13px]  ${
+                          urlParts[1].trim().localeCompare(option.urlKey) === 0
+                            ? "text-inherit"
+                            : "text-[#5A6462] group-hover:text-inherit"
+                        }`}
                       >
                         {["Blockspace"].includes(item.name) && (
                           <Icon
                             icon={option.icon}
-                            className={`${item.name === "Fundamentals" || item.name === "Trackers"
-                              ? "h-4 w-4 mx-auto"
-                              : "h-[15px] w-[15px] mx-auto"
-                              } `}
+                            className={`${
+                              item.name === "Fundamentals" ||
+                              item.name === "Trackers"
+                                ? "h-4 w-4 mx-auto"
+                                : "h-[15px] w-[15px] mx-auto"
+                            } `}
                           />
                         )}
                       </div>
                       {option.category ? (
                         <div
-                          className={`text-sm py-1 w-48 font-normal break-inside-auto transition-all duration-300 ease-in text-left ${sidebarOpen ? "ml-12" : "ml-4"
-                            }`}
+                          className={`text-sm py-1 w-48 font-normal break-inside-auto transition-all duration-300 ease-in text-left ${
+                            sidebarOpen ? "ml-12" : "ml-4"
+                          }`}
                         >
                           {option.label}
                         </div>
@@ -521,10 +537,11 @@ export default function SidebarMenuGroup({
                   </TooltipTrigger>
                   {!sidebarOpen && (
                     <TooltipContent
-                      className={`text-forest-900 dark:text-forest-50 py-1 px-4 text-base break-inside-auto shadow-md z-50 pointer-events-none ml-[8px] mt-[36px] flex items-center justify-items-center rounded-full md:rounded-l-full relative ${urlParts[1].trim().localeCompare(option.urlKey) === 0
-                        ? "bg-[#CDD8D3] dark:bg-forest-1000"
-                        : "bg-[#F0F5F3] dark:bg-[#5A6462]"
-                        }`}
+                      className={`text-forest-900 dark:text-forest-50 py-1 px-4 text-base break-inside-auto shadow-md z-50 pointer-events-none ml-[8px] mt-[36px] flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
+                        urlParts[1].trim().localeCompare(option.urlKey) === 0
+                          ? "bg-[#CDD8D3] dark:bg-forest-1000"
+                          : "bg-[#F0F5F3] dark:bg-[#5A6462]"
+                      }`}
                     >
                       {option.label}
                     </TooltipContent>
