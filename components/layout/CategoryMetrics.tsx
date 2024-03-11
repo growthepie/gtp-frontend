@@ -571,8 +571,8 @@ export default function CategoryMetrics({
     }, [data, categories]);
 
   const result = useMemo(() => {
+    let updatedChainValues: [string, number][] | null = null;
     setChainValues(null);
-    let updatedChainValues = null;
 
     if (selectedSubcategories[selectedCategory]) {
       Object.keys(selectedSubcategories[selectedCategory])?.forEach(
@@ -581,7 +581,6 @@ export default function CategoryMetrics({
             data[selectedCategory].subcategories[
               selectedSubcategories[selectedCategory][subcategory]
             ];
-
           const subcategoryChains =
             subcategoryData.aggregated[selectedTimespan].data;
           const index = subcategoryChains["types"].indexOf(selectedType);
