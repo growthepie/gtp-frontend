@@ -93,10 +93,7 @@ export default function Share() {
             }}
           >
             <div className="w-5 h-5">
-              <Icon
-                className="w-5 h-5 font-semibold"
-                icon="feather:share-2"
-              />
+              <Icon className="w-5 h-5 font-semibold" icon="feather:share-2" />
             </div>
             <div className="font-semibold">Share</div>
           </button>
@@ -111,7 +108,10 @@ export default function Share() {
               />
               <div
                 className={`absolute -right-[5px] -bottom-[5px] bg-forest-50 dark:bg-[#1F2726] z-[110] rounded-[40px] shadow-lg py-[30px] px-[20px] 
-                  border-[5px] border-forest-500 dark:border-[#5A6462] transition-all duration-300 ${topSelection === "social" ? "w-[calc(100vw-30px)] xs:w-[calc(100vw-46px)] md:w-[453px]" : "sm:w-[579px]"
+                  border-[5px] border-forest-500 dark:border-[#5A6462] transition-all duration-300 ${
+                    topSelection === "social"
+                      ? "w-[calc(100vw-30px)] xs:w-[calc(100vw-46px)] md:w-[453px]"
+                      : "sm:w-[579px]"
                   }`}
               >
                 <div className="flex w-full h-[32px] justify-between items-center justify-self-start ">
@@ -135,9 +135,7 @@ export default function Share() {
                   </div>
                 </div>
                 <div className="flex flex-col mt-[15px] text-[16px] leading-[125%]">
-                  <div>
-                    Share this page on through one of the following ways:
-                  </div>
+                  <div>Share this page through one of the following ways:</div>
                 </div>
                 {/* <div className="flex gap-x-[10px] mt-[15px]">
                     <div
@@ -191,40 +189,42 @@ export default function Share() {
                       </div>
                     </label>
                       </div> */}
-                      <div className="group flex p-[15px] pr-[30px] gap-x-[10px] rounded-full w-full h-[54px]  mt-[6px] relative border-[3px] items-center border-forest-500 dark:border-forest-800 hover:dark:bg-[#5A6462] hover:cursor-pointer" onClick={() => {
-                        copyText(currentURL ? currentURL : "");
-                        triggerCopy();
-                      }}>
+                      <div
+                        className="group flex p-[15px] pr-[30px] gap-x-[10px] rounded-full w-full h-[54px]  mt-[6px] relative border-[3px] items-center border-forest-500 dark:border-forest-800 hover:dark:bg-[#5A6462] hover:cursor-pointer"
+                        onClick={() => {
+                          copyText(currentURL ? currentURL : "");
+                          triggerCopy();
+                        }}
+                      >
                         {/* <div className="flex w-[285px] h-[54px] p-[15px] border-[1px] border-[#CDD8D3] gap-x-[10px] items-center"> */}
                         <Icon
                           className="w-[24px] h-[24px] font-semibold"
                           icon="feather:link"
                         />
-                        <div
-                          className="whitespace-nowrap text-ellipsis overflow-hidden max-w-full select-none text-xs xs:text-base"
-
-                        >
+                        <div className="whitespace-nowrap text-ellipsis overflow-hidden max-w-full select-none text-xs xs:text-base">
                           {copied ? "Copied to clipboard" : currentURL}
                         </div>
 
                         <div className="ml-auto flex items-center">
                           <Icon
-                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-opacity duration-300 text-[#5A6462] group-hover:text-forest-900  ${copied ? "opacity-0" : "opacity-100"
-                              }`}
+                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-opacity duration-300 text-[#5A6462] group-hover:text-forest-900  ${
+                              copied ? "opacity-0" : "opacity-100"
+                            }`}
                             icon="feather:copy"
-                          // onClick={() => {
-                          //   copyText(currentURL ? currentURL : "");
-                          //   triggerCopy();
-                          // }}
+                            // onClick={() => {
+                            //   copyText(currentURL ? currentURL : "");
+                            //   triggerCopy();
+                            // }}
                           />
                           <Icon
-                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-opacity duration-300 text-[#5A6462] group-hover:text-forest-900 ${copied ? "opacity-100" : "opacity-0"
-                              }`}
+                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-opacity duration-300 text-[#5A6462] group-hover:text-forest-900 ${
+                              copied ? "opacity-100" : "opacity-0"
+                            }`}
                             icon="feather:check"
-                          // onClick={() => {
-                          //   copyText(currentURL ? currentURL : "");
-                          //   triggerCopy();
-                          // }}
+                            // onClick={() => {
+                            //   copyText(currentURL ? currentURL : "");
+                            //   triggerCopy();
+                            // }}
                           />
                         </div>
                         {/* </div> */}
@@ -237,10 +237,7 @@ export default function Share() {
                           handleSendEmail();
                         }}
                       >
-                        <Icon
-                          className="w-[24px] h-[24px] "
-                          icon="gtp:email"
-                        />
+                        <Icon className="w-[24px] h-[24px] " icon="gtp:email" />
                         <div className="h-[24px] leading-[150%] text-[16px]">
                           Share via Email
                         </div>
@@ -312,24 +309,27 @@ export default function Share() {
                             }}
                           />
                           <div
-                            className={`flex items-center  text-[16px] justify-between pl-[18px] pr-5 relative w-full h-6 bg-gray-200 peer-focus:outline-none rounded-full peer ${isAbsolute
-                              ? "peer-checked:after:right-[98.5px] peer-checked:after:border-white"
-                              : ""
-                              } after:content-[''] after:absolute after:-top-[0.5px] after:-right-[0.5px] after:bg-forest-900  after:border after:rounded-full after:h-[25px] after:w-[102.5px] after:transition-all dark:border-gray-600 `}
+                            className={`flex items-center  text-[16px] justify-between pl-[18px] pr-5 relative w-full h-6 bg-gray-200 peer-focus:outline-none rounded-full peer ${
+                              isAbsolute
+                                ? "peer-checked:after:right-[98.5px] peer-checked:after:border-white"
+                                : ""
+                            } after:content-[''] after:absolute after:-top-[0.5px] after:-right-[0.5px] after:bg-forest-900  after:border after:rounded-full after:h-[25px] after:w-[102.5px] after:transition-all dark:border-gray-600 `}
                           >
                             <div
-                              className={`z-20 transition select-none ${isAbsolute
-                                ? "text-forest-50"
-                                : " text-forest-800"
-                                }`}
+                              className={`z-20 transition select-none ${
+                                isAbsolute
+                                  ? "text-forest-50"
+                                  : " text-forest-800"
+                              }`}
                             >
                               Absolute
                             </div>
                             <div
-                              className={`z-20 transition select-none ${!isAbsolute
-                                ? "text-forest-50"
-                                : " text-forest-800"
-                                }`}
+                              className={`z-20 transition select-none ${
+                                !isAbsolute
+                                  ? "text-forest-50"
+                                  : " text-forest-800"
+                              }`}
                             >
                               Relative
                             </div>
@@ -393,8 +393,9 @@ export default function Share() {
                         <div>{copied ? "Copied" : "Copy Code"}</div>
                         <div className="flex ml-auto relative w-[24px] -top-[10px]">
                           <Icon
-                            className={`absolute  w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${copied ? "opacity-0" : "opacity-100"
-                              }`}
+                            className={`absolute  w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${
+                              copied ? "opacity-0" : "opacity-100"
+                            }`}
                             icon="feather:copy"
                             onClick={() => {
                               copyText(currentURL ? currentURL : "");
@@ -402,8 +403,9 @@ export default function Share() {
                             }}
                           />
                           <Icon
-                            className={`absolute w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${copied ? "opacity-100" : "opacity-0"
-                              }`}
+                            className={`absolute w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${
+                              copied ? "opacity-100" : "opacity-0"
+                            }`}
                             icon="feather:check"
                             onClick={() => {
                               copyText(currentURL ? currentURL : "");
