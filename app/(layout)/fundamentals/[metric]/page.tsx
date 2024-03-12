@@ -63,15 +63,15 @@ const FundamentalsContent = ({ params }: { params: any }) => {
         (chain) =>
           Get_SupportedChainKeys(master).includes(
             chain.key,
-          ),
+          ) && chain.key !== "ethereum",
       ).map((chain) => chain.key);
 
     return AllChains.filter(
       (chain) =>
-      (Object.keys(metricData.data.chains).includes(chain.key) &&
-        Get_SupportedChainKeys(master).includes(
-          chain.key,
-        )),
+        (Object.keys(metricData.data.chains).includes(chain.key) &&
+          Get_SupportedChainKeys(master).includes(
+            chain.key,
+          )) && chain.key !== "ethereum",
     ).map((chain) => chain.key);
   }, [master, metricData]);
 
@@ -85,7 +85,7 @@ const FundamentalsContent = ({ params }: { params: any }) => {
 
   const [selectedChains, setSelectedChains] = useSessionStorage(
     "fundamentalsChains",
-    Get_DefaultChainSelectionKeys(master)
+    [...Get_DefaultChainSelectionKeys(master), "ethereum"],
   );
 
   const [selectedScale, setSelectedScale] = useSessionStorage(
