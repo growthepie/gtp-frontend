@@ -96,7 +96,7 @@ export default function CategoryMetrics({
   const [contractCategory, setContractCategory] = useState("value");
   const [sortOrder, setSortOrder] = useState(true);
   const [chainValues, setChainValues] = useState<any[][] | null>(null);
-  const [selectedType, setSelectedType] = useState("gas_fees_absolute_usd");
+
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [showMore, setShowMore] = useState(false);
   const [copyContract, setCopyContract] = useState(false);
@@ -148,6 +148,30 @@ export default function CategoryMetrics({
       return "daily";
     }
   }, [selectedTimespan]);
+
+  const selectedType = useMemo(() => {
+    let retVal;
+
+    if (selectedValue === "share" || selectedMode === "txcount_") {
+      retVal = selectedMode + selectedValue;
+    } else if (showUsd) {
+      if (selectedValue === "absolute_log") {
+        retVal = selectedMode + "absolute" + "_usd";
+      } else {
+        retVal = selectedMode + selectedValue + "_usd";
+      }
+    } else {
+      if (selectedValue === "absolute_log") {
+        retVal = selectedMode + "absolute" + "_eth";
+      } else {
+        retVal = selectedMode + selectedValue + "_eth";
+      }
+    }
+
+    return retVal;
+  }, [selectedMode, selectedValue, showUsd]);
+
+  //Calculate type to hand off to chart and find index selectedValue for data
 
   useEffect(() => {
     // Process the data and create the contracts object
@@ -546,21 +570,54 @@ export default function CategoryMetrics({
       return retSize;
     }, [data, categories]);
 
-  const result = HandleAggregate({
-    selectedCategory,
-    selectedType,
-    selectedTimespan,
+  const result = useMemo(() => {
+    let updatedChainValues: [string, number][] | null = null;
+    setChainValues(null);
+
+    if (selectedSubcategories[selectedCategory]) {
+      Object.keys(selectedSubcategories[selectedCategory])?.forEach(
+        (subcategory) => {
+          const subcategoryData =
+            data[selectedCategory].subcategories[
+              selectedSubcategories[selectedCategory][subcategory]
+            ];
+          const subcategoryChains =
+            subcategoryData.aggregated[selectedTimespan].data;
+          const index = subcategoryChains["types"].indexOf(selectedType);
+
+          Object.keys(subcategoryChains).forEach((chain) => {
+            if (chain !== "types" && AllChainsByKeys.hasOwnProperty(chain)) {
+              const chainValue = subcategoryChains[chain][index];
+
+              if (updatedChainValues === null) {
+                updatedChainValues = [[chain, chainValue]];
+              } else {
+                const existingIndex = updatedChainValues.findIndex(
+                  ([prevChain]) => prevChain === chain,
+                );
+                if (existingIndex !== -1) {
+                  updatedChainValues[existingIndex][1] += chainValue;
+                } else {
+                  updatedChainValues.push([chain, chainValue]);
+                }
+              }
+            }
+          });
+        },
+      );
+    }
+
+    if (updatedChainValues !== null) {
+      setChainValues(updatedChainValues);
+    }
+  }, [
     selectedSubcategories,
     data,
     setChainValues,
-  });
-
-  const runType = HandleType({
-    selectedMode,
-    selectedValue,
-    setSelectedType,
-    showUsd,
-  });
+    selectedCategory,
+    selectedTimespan,
+    selectedType,
+  ]);
 
   const formatSubcategories = useCallback(
     (str: string) => {
@@ -752,93 +809,6 @@ export default function CategoryMetrics({
       );
     }
     return false;
-  }
-
-  function HandleType({
-    selectedMode,
-    selectedValue,
-    setSelectedType,
-    showUsd,
-  }) {
-    useEffect(() => {
-      if (selectedValue === "share" || selectedMode === "txcount_") {
-        setSelectedType(selectedMode + selectedValue);
-      } else if (showUsd) {
-        if (selectedValue === "absolute_log") {
-          setSelectedType(selectedMode + "absolute" + "_usd");
-        } else {
-          setSelectedType(selectedMode + selectedValue + "_usd");
-        }
-      } else {
-        if (selectedValue === "absolute_log") {
-          setSelectedType(selectedMode + "absolute" + "_eth");
-        } else {
-          setSelectedType(selectedMode + selectedValue + "_eth");
-        }
-      }
-    }, [selectedMode, selectedValue, setSelectedType, showUsd]);
-
-    //Calculate type to hand off to chart and find index selectedValue for data
-  }
-
-  function HandleAggregate({
-    selectedCategory,
-    selectedType,
-    selectedTimespan,
-    selectedSubcategories,
-    data,
-    setChainValues,
-  }) {
-    const category = selectedCategory;
-    const timespan = selectedTimespan;
-    const type = selectedType;
-
-    useEffect(() => {
-      setChainValues(null);
-      let total = 0;
-      if (selectedSubcategories[category]) {
-        Object.keys(selectedSubcategories[category])?.forEach((subcategory) => {
-          const subcategoryData =
-            data[category].subcategories[
-              selectedSubcategories[category][subcategory]
-            ];
-
-          const subcategoryChains = subcategoryData.aggregated[timespan].data;
-
-          const index =
-            subcategoryData.aggregated[timespan].data["types"].indexOf(type);
-
-          Object.keys(subcategoryChains).forEach((chain) => {
-            if (chain !== "types" && AllChainsByKeys.hasOwnProperty(chain)) {
-              const chainValue =
-                subcategoryData.aggregated[timespan].data[chain][index];
-
-              setChainValues((prevChainValues) => {
-                if (prevChainValues === null) {
-                  return [[chain, chainValue]];
-                } else {
-                  const updatedValues = prevChainValues.map(
-                    ([prevChain, prevValue]) =>
-                      prevChain === chain
-                        ? [prevChain, prevValue + chainValue]
-                        : [prevChain, prevValue],
-                  );
-
-                  const existingChain = prevChainValues.find(
-                    ([prevChain]) => prevChain === chain,
-                  );
-                  if (existingChain) {
-                    return updatedValues;
-                  } else {
-                    return [...prevChainValues, [chain, chainValue]];
-                  }
-                }
-              });
-            }
-          });
-        });
-      }
-    }, [category, type, timespan, selectedSubcategories, data, setChainValues]);
   }
 
   function getWidth(x) {
