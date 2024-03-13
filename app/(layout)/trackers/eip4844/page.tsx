@@ -8,7 +8,7 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { AllChainsByKeys } from "@/lib/chains";
 
-export default function eiptracker() {
+export default function Eiptracker() {
   const {
     data: feeData,
     error: feeError,
@@ -52,7 +52,7 @@ export default function eiptracker() {
             <div className="flex flex-col justify-center"></div>
             <Chart
               chartType={"line"}
-              types={avgTxCosts.optimism.types}
+              types={avgTxCosts["optimism"].types}
               timespan={"max"}
               series={chartSeries}
               chartHeight={"259px"}
