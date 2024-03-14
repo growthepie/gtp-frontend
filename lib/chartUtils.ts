@@ -22,6 +22,7 @@ export const tooltipFormatter = (
   dataKey?: string,
   reversePerformer?: boolean,
   stacked = false,
+  showTime?: boolean,
 ) => {
   const percentageFormatter = function (
     this: Highcharts.TooltipFormatterContextObject,
@@ -154,12 +155,21 @@ export const tooltipFormatter = (
     const { x } = points[0];
 
     const date = x ? new Date(x) : new Date();
-    const dateString = date.toLocaleDateString(undefined, {
-      timeZone: "UTC",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+    const dateString = showTime
+      ? date.toLocaleDateString(undefined, {
+          timeZone: "UTC",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+        })
+      : date.toLocaleDateString(undefined, {
+          timeZone: "UTC",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
 
     let prefix = "";
     let suffix = "";

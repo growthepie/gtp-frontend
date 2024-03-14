@@ -360,6 +360,14 @@ export const Chart = ({
   }, [drawChartSeries, series, types, maxY, yScale, stack]);
 
   useEffect(() => {
+    // Check if forceEIP is true
+    if (forceEIP) {
+      // Redraw the chart
+      drawChartSeries();
+    }
+  }, [forceEIP, series]); // Add forceEIP and series as dependencies
+
+  useEffect(() => {
     if (allCats === true && chartComponent.current && series.length > 1) {
       if (
         !forceHoveredChartSeriesId ||
@@ -555,6 +563,7 @@ export const Chart = ({
                                   : undefined,
                                 false,
                                 stack,
+                                forceEIP,
                               ),
                       },
                       xAxis: {
