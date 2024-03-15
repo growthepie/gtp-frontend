@@ -45,15 +45,54 @@ export default function Eiptracker() {
 
   const avgTxCosts = useMemo(() => {
     if (!feeData) return {}; // Return an empty object if feeData is falsy
-    return Object.keys(feeData.chain_data).reduce((acc, chain) => {
-      acc[chain] =
-        selectedTimescale === "ten_min"
-          ? feeData.chain_data[chain].ten_min.txcosts_avg
-          : feeData.chain_data[chain].hourly.txcosts_avg;
+
+    // Get an array of chains and sort them based on txcosts_avg data
+    const sortedChains = Object.keys(feeData.chain_data).sort((a, b) => {
+      const aTxCost =
+        feeData.chain_data[a][selectedTimescale].txcosts_avg.data[0][
+          showUsd ? 3 : 2
+        ];
+      const bTxCost =
+        feeData.chain_data[b][selectedTimescale].txcosts_avg.data[0][
+          showUsd ? 3 : 2
+        ];
+      return aTxCost - bTxCost;
+    });
+
+    // Build the sorted object
+    const sortedAvgTxCosts = sortedChains.reduce((acc, chain) => {
+      acc[chain] = feeData.chain_data[chain][selectedTimescale].txcosts_avg;
       return acc;
     }, {});
-  }, [feeData, selectedTimescale]);
 
+    return sortedAvgTxCosts;
+  }, [feeData, selectedTimescale, showUsd]);
+
+  const sortedMedianCosts = useMemo(() => {
+    if (!feeData) return [];
+    const sortedChains = Object.keys(feeData.chain_data).sort((a, b) => {
+      const aTxCost =
+        feeData.chain_data[a][selectedTimescale].txcosts_median.data[0][
+          showUsd ? 2 : 1
+        ];
+
+      const bTxCost =
+        feeData.chain_data[b][selectedTimescale].txcosts_median.data[0][
+          showUsd ? 2 : 1
+        ];
+      console.log(bTxCost);
+      return aTxCost - bTxCost;
+    });
+
+    const sortedMedianCosts = sortedChains.reduce((acc, chain) => {
+      acc[chain] = feeData.chain_data[chain][selectedTimescale].txcosts_median;
+      return acc;
+    }, {});
+
+    return sortedMedianCosts;
+  }, [feeData]);
+
+  console.log(avgTxCosts);
   const chartSeries = useMemo(() => {
     return Object.keys(avgTxCosts).map((chain) => ({
       id: chain,
@@ -134,7 +173,7 @@ export default function Eiptracker() {
               </div>
             </div>
           </Container>
-          <Container className="flex flex-col w-[98%] mx-auto mt-[30px]">
+          <Container className="flex flex-col w-[98%] mx-auto mt-[30px] ">
             <Chart
               chartType={"line"}
               types={avgTxCosts["optimism"].types}
@@ -146,96 +185,102 @@ export default function Eiptracker() {
               forceEIP={true}
             />
           </Container>
-          <Container className="mt-[30px]">
-            {/*Bar Titles */}
-            <div className="flex px-[20px] text-sm font-bold w-[97%] mx-auto">
-              <div className="w-[2.5%] flex justify-start"></div>
-              <div className="w-[22.5%] flex justify-start">Chain</div>
-              <div className="w-[16%] flex justify-center">
-                Average Transaction Costs
+          <Container className="mt-[30px] w-[98.5%] ">
+            <div className="pb-3 overflow-x-scroll h-full scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
+              {/*Bar Titles */}
+              <div className="flex px-[20px] text-sm font-bold w-full min-w-[1024px] mx-auto ">
+                <div className="w-[4%] flex justify-start "></div>
+                <div className="w-[17.5%] flex justify-start  items-center">
+                  Chain
+                </div>
+                <div className="w-[19%] flex justify-end items-center">
+                  Median Transaction Costs
+                </div>
+                <div className="w-[25%] flex justify-end  items-center">
+                  Average Transaction Costs
+                </div>
+                <div className="w-[19%] flex justify-end pr-3 items-center">
+                  Native Transfer
+                </div>
+                <div className="w-[15%] 2xl:pl-2 lg:pl-0 flex justify-center items-center">
+                  Last Updated(UTC)
+                </div>
               </div>
-              <div className="w-[25%] flex justify-center">
-                Median Transaction Costs
-              </div>
-              <div className="w-[20%] flex justify-center">Native Transfer</div>
-              <div className="w-[12%] flex justify-center">
-                Last Updated(UTC)
-              </div>
-            </div>
-            <div className="px-[20px] mt-[10px] w-full flex flex-col gap-y-[4px]">
-              {Object.keys(avgTxCosts).map((chain) => (
-                <div
-                  key={chain}
-                  className="border-forest-800 border-[1px] rounded-full h-[42px] flex w-fll"
-                >
-                  <div className="w-[3.5%] flex justify-center items-center px-[8px]">
-                    {" "}
-                    <Icon
-                      icon={`gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome`}
-                      className="h-[24px] w-[24px]"
-                      style={{
-                        color: AllChainsByKeys[chain].colors[theme][0],
-                      }}
-                    />
-                  </div>
+              <div className="px-[20px] mt-[10px] w-full flex flex-col gap-y-[4px] min-w-[1024px]">
+                {Object.keys(sortedMedianCosts).map((chain) => (
+                  <div
+                    key={chain}
+                    className="border-forest-800 border-[1px] rounded-full h-[42px] flex w-full "
+                  >
+                    <div className="w-[4%] flex justify-center items-center px-[8px] ">
+                      {" "}
+                      <Icon
+                        icon={`gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome`}
+                        className="h-[24px] w-[24px]"
+                        style={{
+                          color: AllChainsByKeys[chain].colors[theme][0],
+                        }}
+                      />
+                    </div>
 
-                  <div className="w-[25%] px-[4px] flex justify-start items-center ">
-                    {AllChainsByKeys[chain].label}
-                  </div>
-                  <div className="w-[12.5%] px-[4px] flex justify-end items-center gap-x-[4px]">
-                    {Intl.NumberFormat(undefined, {
-                      notation: "compact",
-                      maximumFractionDigits: showUsd ? 3 : 5,
-                      minimumFractionDigits: 0,
-                    }).format(
-                      feeData.chain_data[chain][selectedTimescale].txcosts_avg
-                        .data[0][showUsd ? 2 : 1],
-                    )}
-                    {`${showUsd ? "$" : "Ξ"}`}
-                  </div>
-                  <div className="w-[20%] px-[4px] flex justify-end items-center gap-x-[4px]">
-                    {Intl.NumberFormat(undefined, {
-                      notation: "compact",
-                      maximumFractionDigits: showUsd ? 3 : 5,
-                      minimumFractionDigits: 0,
-                    }).format(
-                      feeData.chain_data[chain][selectedTimescale]
-                        .txcosts_median.data[0][showUsd ? 2 : 1],
-                    )}
-                    {`${showUsd ? "$" : "Ξ"}`}
-                  </div>
-                  <div className="w-[19%] px-[4px] flex justify-end items-center gap-x-[4px]">
-                    {feeData.chain_data[chain][selectedTimescale][
-                      "txcosts_native_median"
-                    ].data[0]
-                      ? Intl.NumberFormat(undefined, {
-                          notation: "compact",
-                          maximumFractionDigits: showUsd ? 3 : 5,
-                          minimumFractionDigits: 0,
-                        }).format(
-                          feeData.chain_data[chain][selectedTimescale][
-                            "txcosts_native_median"
-                          ].data[0][showUsd ? 2 : 1],
-                        )
-                      : "Not Available"}
-                    {`${
-                      feeData.chain_data[chain][selectedTimescale][
+                    <div className="w-[17.5%] px-[4px] flex justify-start items-center ">
+                      {AllChainsByKeys[chain].label}
+                    </div>
+                    <div className="w-[19%] px-[4px] flex justify-end items-center gap-x-[4px] ">
+                      {Intl.NumberFormat(undefined, {
+                        notation: "compact",
+                        maximumFractionDigits: showUsd ? 3 : 5,
+                        minimumFractionDigits: 0,
+                      }).format(
+                        feeData.chain_data[chain][selectedTimescale]
+                          .txcosts_median.data[0][showUsd ? 2 : 1],
+                      )}
+                      {`${showUsd ? "$" : "Ξ"}`}
+                    </div>
+                    <div className="w-[25%] px-[4px] flex justify-end items-center gap-x-[4px] ">
+                      {Intl.NumberFormat(undefined, {
+                        notation: "compact",
+                        maximumFractionDigits: showUsd ? 3 : 5,
+                        minimumFractionDigits: 0,
+                      }).format(
+                        feeData.chain_data[chain][selectedTimescale].txcosts_avg
+                          .data[0][showUsd ? 2 : 1],
+                      )}
+                      {`${showUsd ? "$" : "Ξ"}`}
+                    </div>
+                    <div className="w-[19%] px-[4px] flex justify-end items-center gap-x-[4px] pr-3 ">
+                      {feeData.chain_data[chain][selectedTimescale][
                         "txcosts_native_median"
                       ].data[0]
-                        ? showUsd
-                          ? "$"
-                          : "Ξ"
-                        : ""
-                    }`}
+                        ? Intl.NumberFormat(undefined, {
+                            notation: "compact",
+                            maximumFractionDigits: showUsd ? 3 : 5,
+                            minimumFractionDigits: 0,
+                          }).format(
+                            feeData.chain_data[chain][selectedTimescale][
+                              "txcosts_native_median"
+                            ].data[0][showUsd ? 2 : 1],
+                          )
+                        : "Not Available"}
+                      {`${
+                        feeData.chain_data[chain][selectedTimescale][
+                          "txcosts_native_median"
+                        ].data[0]
+                          ? showUsd
+                            ? "$"
+                            : "Ξ"
+                          : ""
+                      }`}
+                    </div>
+                    <div className="w-[15%] px-[4px] flex justify-end items-center gap-x-[4px] py-2 xl:leading-snug">
+                      {getDateString(
+                        feeData.chain_data[chain][selectedTimescale].txcosts_avg
+                          .data[0][0],
+                      )}
+                    </div>
                   </div>
-                  <div className="w-[17.5%] px-[4px] flex justify-end items-center gap-x-[4px]">
-                    {getDateString(
-                      feeData.chain_data[chain][selectedTimescale].txcosts_avg
-                        .data[0][0],
-                    )}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </Container>
         </>
