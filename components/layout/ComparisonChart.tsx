@@ -509,12 +509,11 @@ export default function ComparisonChart({
                 ${parseFloat(value).toLocaleString(undefined, {
                   minimumFractionDigits: valuePrefix ? 2 : 0,
                   maximumFractionDigits: valuePrefix
-                    ? Math.abs(parseFloat(value)) <= 0.01
+                    ? metric_id === "txcosts"
                       ? 3
                       : 2
                     : 0,
                 })}
-                
                 <div class="opacity-70 ml-0.5 ${
                   !suffix && "hidden"
                 }">${suffix}</div>

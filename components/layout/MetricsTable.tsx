@@ -320,9 +320,7 @@ const MetricsTable = ({
     } else if (Math.abs(number) >= 10) {
       return number.toFixed(2);
     } else {
-      return metric_id === "txcosts" && number <= 0.01
-        ? number.toFixed(3)
-        : number.toFixed(2);
+      return metric_id === "txcosts" ? number.toFixed(3) : number.toFixed(2);
     }
 
     // Default return if none of the conditions are met
