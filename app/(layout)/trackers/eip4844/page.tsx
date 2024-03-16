@@ -1,6 +1,7 @@
 "use client";
 import Container from "@/components/layout/Container";
 import { Chart } from "@/components/charts/chart";
+import FeesChart from "@/components/layout/Fees/chart";
 import Icon from "@/components/layout/Icon";
 import Image from "next/image";
 import useSWR from "swr";
@@ -12,7 +13,7 @@ import { useTheme } from "next-themes";
 
 export default function Eiptracker() {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const [selectedTimescale, setSelectedTimescale] = useState("ten_min");
+  const [selectedTimescale, setSelectedTimescale] = useState("hourly");
   const chartComponent = useRef<Highcharts.Chart | null>(null);
   const { theme } = useTheme();
 
@@ -80,7 +81,7 @@ export default function Eiptracker() {
         feeData.chain_data[b][selectedTimescale].txcosts_median.data[0][
           showUsd ? 2 : 1
         ];
-      console.log(bTxCost);
+
       return aTxCost - bTxCost;
     });
 
@@ -92,7 +93,6 @@ export default function Eiptracker() {
     return sortedMedianCosts;
   }, [feeData]);
 
-  console.log(avgTxCosts);
   const chartSeries = useMemo(() => {
     return Object.keys(avgTxCosts).map((chain) => ({
       id: chain,
@@ -173,22 +173,20 @@ export default function Eiptracker() {
               </div>
             </div>
           </Container>
-          <Container className="flex flex-col w-[98%] mx-auto mt-[30px] ">
-            <Chart
-              chartType={"line"}
-              types={avgTxCosts["optimism"].types}
-              timespan={"max"}
-              series={chartSeries}
-              chartHeight={"259px"}
+          <Container className="flex flex-col w-[98.5%] mx-auto mt-[30px] ">
+            <FeesChart
               chartWidth={"100%"}
-              chartRef={chartComponent}
-              forceEIP={true}
+              chartHeight={"267px"}
+              series={chartSeries}
+              types={
+                feeData.chain_data.optimism[selectedTimescale].txcosts_avg.types
+              }
             />
           </Container>
-          <Container className="mt-[30px] w-[98.5%] ">
+          <Container className="mt-[30px] w-[98.5%] mx-auto">
             <div className="pb-3 overflow-x-scroll h-full scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
               {/*Bar Titles */}
-              <div className="flex px-[20px] text-sm font-bold w-full min-w-[1024px] mx-auto ">
+              <div className="flex text-sm font-bold w-full min-w-[1024px] mx-auto ">
                 <div className="w-[4%] flex justify-start "></div>
                 <div className="w-[17.5%] flex justify-start  items-center">
                   Chain
@@ -206,7 +204,7 @@ export default function Eiptracker() {
                   Last Updated(UTC)
                 </div>
               </div>
-              <div className="px-[20px] mt-[10px] w-full flex flex-col gap-y-[4px] min-w-[1024px]">
+              <div className="mt-[10px] w-full flex flex-col gap-y-[4px] min-w-[1024px] ">
                 {Object.keys(sortedMedianCosts).map((chain) => (
                   <div
                     key={chain}
