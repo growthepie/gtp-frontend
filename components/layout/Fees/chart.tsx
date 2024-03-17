@@ -45,15 +45,16 @@ export default function FeesChart({
     fillOpacity?: number;
     lineWidth?: number;
   }[];
-  chartType: string;
+  chartType: "area" | "line" | "column";
   types: string[];
   decimals?: number;
   maxY?: number;
   timespan: string;
 }) {
+  type TimespanSelections = "1d" | "7d" | "max";
   const { theme } = useTheme();
-  const chartRef = useRef(null);
-  const chartComponent = useRef(null);
+  const chartRef = useRef<Highcharts.Chart | null | undefined>(undefined);
+  const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
   const { isSidebarOpen } = useUIContext();
   const chartColor =
     series[0]?.name &&
@@ -96,8 +97,7 @@ export default function FeesChart({
         label: "Maximum",
         value: 0,
         xMin: minDate,
-
-        xMax: maxDate,
+        xMax: maxDate.getTime(),
       },
     };
   };
@@ -144,7 +144,7 @@ export default function FeesChart({
       yScale === "percentage" ? "percent" : stack ? "normal" : undefined;
 
     if (chartComponent.current) {
-      const currentSeries = chartComponent.current.series;
+      const currentSeries = chartComponent?.current?.series;
 
       const seriesToRemove = currentSeries.filter(
         (cs) => !series.find((s) => s.id === cs.options.id),
@@ -379,6 +379,10 @@ export default function FeesChart({
     return yAxisTicks;
   }
 
+  const yAxisTicks = useYAxisTicks(maxY, yScale);
+  const numIntervals = Math.ceil(parseFloat(chartHeight) / 171);
+  const intervalSize = maxY ? maxY / numIntervals : 0;
+
   const lastTick = tickPositions[tickPositions.length - 1];
   const displayMinorTicksOnly =
     lastTick < timespans[timespan].xMin || lastTick > timespans[timespan].xMax;
@@ -420,9 +424,6 @@ export default function FeesChart({
       },
     },
 
-    title: {
-      text: "",
-    },
     legend: {
       enabled: false,
     },
@@ -547,6 +548,12 @@ export default function FeesChart({
       );
     }
   }, [timespan, timespans]);
+
+  const decimalPercentageToHex = (percentage: number) => {
+    const hex = Math.round(percentage * 255).toString(16);
+
+    return hex.length === 1 ? "0" + hex : hex;
+  };
 
   return (
     <div

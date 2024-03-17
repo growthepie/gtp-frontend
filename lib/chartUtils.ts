@@ -241,7 +241,7 @@ export const tooltipFormatter = (
           <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">${prefix}</div>
           ${parseFloat(value).toLocaleString(undefined, {
             minimumFractionDigits: 0,
-            maximumFractionDigits: 2,
+            maximumFractionDigits: showTime ? 3 : 2,
           })}
           <div class="opacity-70 ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
         </div>
