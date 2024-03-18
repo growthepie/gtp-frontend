@@ -27,6 +27,9 @@ export default function FeesChart({
   decimals = 3,
   maxY,
   timespan = "1d",
+  setZoomed,
+  disableZoom,
+  setDisableZoom,
 }: {
   chartHeight: string;
   chartWidth: string;
@@ -50,6 +53,9 @@ export default function FeesChart({
   decimals?: number;
   maxY?: number;
   timespan: string;
+  setZoomed: (zoom: boolean) => void;
+  disableZoom: boolean;
+  setDisableZoom: (disZoom: boolean) => void;
 }) {
   type TimespanSelections = "1d" | "7d" | "max";
   const { theme } = useTheme();
@@ -339,6 +345,17 @@ export default function FeesChart({
     drawChartSeries();
   }, [drawChartSeries, series, types, yScale, stack]);
 
+  useEffect(() => {
+    if (disableZoom) {
+      chartComponent?.current?.xAxis[0].setExtremes(
+        timespans[timespan].xMin,
+        timespans[timespan].xMax,
+      );
+
+      setDisableZoom(false);
+    }
+  }, [disableZoom]);
+
   function useYAxisTicks(maxY, yScale) {
     const [yAxisTicks, setYAxisTicks] = useState({
       interval: 0.05, // Default interval for percentages
@@ -406,7 +423,7 @@ export default function FeesChart({
           theme: {
             fill: "transparent",
             style: {
-              opacity: 1,
+              opacity: 0,
               fontSize: "12",
               fontFamily: "Inter",
               fontWeight: "300",
@@ -420,6 +437,11 @@ export default function FeesChart({
             r: 16,
             states: { hover: { fill: "#fff", style: { color: "#000" } } },
           },
+        },
+      },
+      events: {
+        selection: function (event) {
+          setZoomed(true);
         },
       },
     },

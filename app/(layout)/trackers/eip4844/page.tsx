@@ -11,11 +11,14 @@ import { useLocalStorage } from "usehooks-ts";
 import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import { useMediaQuery } from "usehooks-ts";
+import { useTransition, animated } from "@react-spring/web";
 
 export default function Eiptracker() {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [selectedTimescale, setSelectedTimescale] = useState("ten_min");
   const [selectedTimespan, setSelectedTimespan] = useState("1d");
+  const [zoomed, setZoomed] = useState(false);
+  const [disableZoom, setDisableZoom] = useState(false);
   const isMobile = useMediaQuery("(max-width: 767px)");
   const chartComponent = useRef<Highcharts.Chart | null>(null);
   const { theme } = useTheme();
@@ -149,6 +152,41 @@ export default function Eiptracker() {
     });
   }
 
+  let height = 0;
+  const transitions = useTransition(
+    Object.entries(sortedMedianCosts).map(([chain, data], index) => {
+      // Check if `data` is an object
+      if (typeof data !== "object" || data === null) {
+        // Handle the case where `data` is not an object (e.g., if it's null)
+        // You can return a default object or handle the error appropriately
+        return {
+          y: index * 46,
+          height: 42,
+          chain: { key: chain }, // Assuming `chain` is used as a key
+        };
+      }
+
+      // Spread `data` only if it's an object
+      return {
+        ...data,
+        y: index * 46,
+        height: 42,
+        chain: { key: chain }, // Assuming `chain` is used as a key
+      };
+    }),
+    {
+      key: (d) => d.chain.key,
+      from: { opacity: 0, height: 0 },
+      leave: { opacity: 0, height: 0 },
+      enter: ({ y, height }) => ({ opacity: 1, y, height }),
+      update: ({ y, height }) => ({ opacity: 1, y, height }), // Ensure height change is animated
+      config: { mass: 5, tension: 500, friction: 100 },
+      trail: 25,
+    },
+  );
+
+  console.log(sortedMedianCosts ? sortedMedianCosts : "");
+
   return (
     <>
       {feeData && avgTxCosts && (
@@ -194,41 +232,7 @@ export default function Eiptracker() {
                   : "flex-row w-full mx-none h-[60px]  rounded-full py-[2px]"
               }`}
             >
-              <div className="flex flex-col rounded-full py-[2px] px-[2px] justify-center w-full ">
-                <div
-                  className={`flex gap-x-[4px]  ${
-                    isMobile
-                      ? "w-full justify-between text-sm"
-                      : "w-auto justify-normal text-base"
-                  }`}
-                >
-                  {Object.keys(timespans).map((timespan) => (
-                    <div
-                      className={`rounded-full text-center font-medium hover:cursor-pointer ${
-                        selectedTimespan === timespan
-                          ? "bg-forest-500 dark:bg-forest-1000"
-                          : "hover:bg-forest-500/10"
-                      }
-
-                      ${
-                        isMobile
-                          ? "grow-0 px-2 py-2 w-[28%] flex items-center justify-center"
-                          : "grow px-1 py-4 max-w-[113px] w-[113px]"
-                      }
- 
-                      `}
-                      key={timespan}
-                      onClick={() => {
-                        setSelectedTimespan(timespan);
-                      }}
-                    >
-                      {timespans[timespan].label}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <hr className="border-dotted border-top-[1px] h-[2px] border-forest-400" />
-              <div className="flex flex-col rounded-full py-[2px] px-[2px]  dark:bg-[#1F2726]  items-end justify-center w-full">
+              <div className="flex flex-col rounded-full py-[2px] px-[2px]  dark:bg-[#1F2726]  items-start justify-center w-full">
                 <div
                   className={`flex gap-x-[4px]  ${
                     isMobile
@@ -258,6 +262,58 @@ export default function Eiptracker() {
                   ))}
                 </div>
               </div>
+
+              <hr className="border-dotted border-top-[1px] h-[2px] border-forest-400" />
+              <div className="flex flex-col rounded-full py-[2px] px-[2px] justify-center w-full items-end ">
+                <div
+                  className={`flex gap-x-[4px]  ${
+                    isMobile
+                      ? "w-full justify-between text-sm"
+                      : "w-auto justify-normal text-base"
+                  }`}
+                >
+                  {zoomed ? (
+                    <button
+                      className={`rounded-full flex items-center space-x-3 px-[15px] py-[7px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-[11px] xl:px-6 xl:py-[15px] font-medium border-[0.5px] border-forest-400 leading-snug`}
+                      onClick={() => {
+                        setZoomed(false);
+                        setDisableZoom(true);
+                      }}
+                    >
+                      <Icon
+                        icon="feather:zoom-out"
+                        className="w-4 h-4 md:w-6 md:h-6"
+                      />
+                      <span className="hidden md:block">Reset Zoom</span>
+                      <span className="block md:hidden">Reset</span>
+                    </button>
+                  ) : (
+                    Object.keys(timespans).map((timespan) => (
+                      <div
+                        className={`rounded-full text-center font-medium hover:cursor-pointer ${
+                          selectedTimespan === timespan
+                            ? "bg-forest-500 dark:bg-forest-1000"
+                            : "hover:bg-forest-500/10"
+                        }
+
+                      ${
+                        isMobile
+                          ? "grow-0 px-2 py-2 w-[28%] flex items-center justify-center"
+                          : "grow px-1 py-4 max-w-[113px] w-[113px]"
+                      }
+ 
+                      `}
+                        key={timespan}
+                        onClick={() => {
+                          setSelectedTimespan(timespan);
+                        }}
+                      >
+                        {timespans[timespan].label}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             </div>
           </Container>
           <Container className="flex flex-col w-[98.5%] mx-auto mt-[30px] ">
@@ -272,6 +328,9 @@ export default function Eiptracker() {
                 feeData.chain_data.optimism[selectedTimescale].txcosts_avg.types
               }
               timespan={selectedTimespan}
+              setZoomed={setZoomed}
+              disableZoom={disableZoom}
+              setDisableZoom={setDisableZoom}
             />
           </Container>
           <Container className="mt-[30px] w-[98.5%] mx-auto">
@@ -300,112 +359,152 @@ export default function Eiptracker() {
                 </div>
                 <div className="w-[3%]"></div>
               </div>
-              <div className="mt-[10px] w-full flex flex-col gap-y-[4px] min-w-[1024px] ">
-                {Object.keys(sortedMedianCosts).map((chain) => (
-                  <div
-                    key={chain}
-                    className="border-forest-800 border-[1px] rounded-full h-[42px] flex w-full "
-                  >
-                    <div className="w-[4%] flex justify-center items-center px-[8px] ">
-                      {" "}
-                      <Icon
-                        icon={`gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome`}
-                        className="h-[24px] w-[24px]"
-                        style={{
-                          color: AllChainsByKeys[chain].colors[theme][0],
-                        }}
-                      />
-                    </div>
-
-                    <div className="w-[17.5%] px-[4px] flex justify-start items-center">
-                      {AllChainsByKeys[chain].label}
-                    </div>
-                    <div className="w-[17%] px-[4px] flex justify-end items-center gap-x-[4px]">
-                      {Intl.NumberFormat(undefined, {
-                        notation: "compact",
-                        maximumFractionDigits: showUsd ? 3 : 5,
-                        minimumFractionDigits: 0,
-                      }).format(
-                        feeData.chain_data[chain][selectedTimescale]
-                          .txcosts_median.data[0][showUsd ? 2 : 1],
-                      )}
-                      {`${showUsd ? "$" : "Ξ"}`}
-                    </div>
-                    <div className="w-[19%] px-[4px] flex justify-end items-center gap-x-[4px] ">
-                      {Intl.NumberFormat(undefined, {
-                        notation: "compact",
-                        maximumFractionDigits: showUsd ? 3 : 5,
-                        minimumFractionDigits: 0,
-                      }).format(
-                        feeData.chain_data[chain][selectedTimescale].txcosts_avg
-                          .data[0][showUsd ? 2 : 1],
-                      )}
-                      {`${showUsd ? "$" : "Ξ"}`}
-                    </div>
-                    <div className="w-[17%] px-[4px] flex justify-end items-center gap-x-[4px] pr-3 ">
-                      {feeData.chain_data[chain][selectedTimescale][
-                        "txcosts_native_median"
-                      ].data[0]
-                        ? Intl.NumberFormat(undefined, {
-                            notation: "compact",
-                            maximumFractionDigits: showUsd ? 3 : 5,
-                            minimumFractionDigits: 0,
-                          }).format(
-                            feeData.chain_data[chain][selectedTimescale][
-                              "txcosts_native_median"
-                            ].data[0][showUsd ? 2 : 1],
-                          )
-                        : "Not Available"}
-                      {`${
-                        feeData.chain_data[chain][selectedTimescale][
-                          "txcosts_native_median"
-                        ].data[0]
-                          ? showUsd
-                            ? "$"
-                            : "Ξ"
-                          : ""
-                      }`}
-                    </div>
-                    <div className="w-[22%] px-[4px] flex justify-center items-center gap-x-[4px] py-2 xl:leading-snug ">
-                      {getDateString(
-                        feeData.chain_data[chain][selectedTimescale].txcosts_avg
-                          .data[0][0],
-                      )}
-                    </div>
-                    <div className="w-[4%] flex items-center justify-center">
+              <div className="mt-[10px] w-full flex flex-col gap-y-[4px] min-w-[1024px] relative min-h-[400px]">
+                {transitions((style, item, index) => {
+                  return (
+                    <animated.div
+                      key={item.chain.key}
+                      className={`absolute w-full`}
+                      style={{ ...style }}
+                    >
                       <div
-                        className={`flex items-center justify-center w-[24px] h-[24px] hover:cursor-pointer  bg-forest-900  rounded-full transition-all ${
-                          selectedChains[chain] ? "" : "hover:bg-forest-800"
+                        className={`border-forest-800 border-[1px] rounded-full h-[42px] flex w-full hover:cursor-pointer hover:bg-forest-200 hover:bg-opacity-25
+                        ${
+                          selectedChains[item.chain.key]
+                            ? "opacity-100"
+                            : "opacity-25"
                         }`}
                         onClick={() => {
                           if (
                             !(chartSeries.length <= 1) ||
-                            !selectedChains[chain]
+                            !selectedChains[item.chain.key]
                           ) {
                             setSelectedChains((prevState) => {
                               return {
                                 ...prevState,
-                                [chain]: !prevState[chain],
+                                [item.chain.key]: !prevState[item.chain.key],
                               };
                             });
                           }
                         }}
                       >
-                        <Icon
-                          icon="feather:check-circle"
-                          className={`w-full h-full transition-all rounded-full ${
-                            selectedChains[chain] ? "opacity-100" : "opacity-0"
+                        <div className="w-[4%] flex justify-center items-center px-[8px] ">
+                          {" "}
+                          <Icon
+                            icon={`gtp:${
+                              AllChainsByKeys[item.chain.key].urlKey
+                            }-logo-monochrome`}
+                            className="h-[24px] w-[24px]"
+                            style={{
+                              color:
+                                AllChainsByKeys[item.chain.key].colors[
+                                  theme
+                                ][0],
+                            }}
+                          />
+                        </div>
+
+                        <div className="w-[17.5%] px-[4px] flex justify-start items-center">
+                          {AllChainsByKeys[item.chain.key].label}
+                        </div>
+                        <div className="w-[17%] px-[4px] flex justify-end items-center gap-x-[4px]">
+                          {Intl.NumberFormat(undefined, {
+                            notation: "compact",
+                            maximumFractionDigits: showUsd ? 3 : 5,
+                            minimumFractionDigits: 0,
+                          }).format(
+                            feeData.chain_data[item.chain.key][
+                              selectedTimescale
+                            ].txcosts_median.data[0][showUsd ? 2 : 1],
+                          )}
+                          {`${showUsd ? "$" : "Ξ"}`}
+                        </div>
+                        <div className="w-[19%] px-[4px] flex justify-end items-center gap-x-[4px] ">
+                          {Intl.NumberFormat(undefined, {
+                            notation: "compact",
+                            maximumFractionDigits: showUsd ? 3 : 5,
+                            minimumFractionDigits: 0,
+                          }).format(
+                            feeData.chain_data[item.chain.key][
+                              selectedTimescale
+                            ].txcosts_avg.data[0][showUsd ? 2 : 1],
+                          )}
+                          {`${showUsd ? "$" : "Ξ"}`}
+                        </div>
+                        <div className="w-[17%] px-[4px] flex justify-end items-center gap-x-[4px] pr-3 ">
+                          {feeData.chain_data[item.chain.key][
+                            selectedTimescale
+                          ]["txcosts_native_median"].data[0]
+                            ? Intl.NumberFormat(undefined, {
+                                notation: "compact",
+                                maximumFractionDigits: showUsd ? 3 : 5,
+                                minimumFractionDigits: 0,
+                              }).format(
+                                feeData.chain_data[item.chain.key][
+                                  selectedTimescale
+                                ]["txcosts_native_median"].data[0][
+                                  showUsd ? 2 : 1
+                                ],
+                              )
+                            : "Not Available"}
+                          {`${
+                            feeData.chain_data[item.chain.key][
+                              selectedTimescale
+                            ]["txcosts_native_median"].data[0]
+                              ? showUsd
+                                ? "$"
+                                : "Ξ"
+                              : ""
                           }`}
-                          style={{
-                            color: selectedChains[chain]
-                              ? undefined
-                              : "#5A6462",
-                          }}
-                        />
+                        </div>
+                        <div className="w-[22%] px-[4px] flex justify-center items-center gap-x-[4px] py-2 xl:leading-snug ">
+                          {getDateString(
+                            feeData.chain_data[item.chain.key][
+                              selectedTimescale
+                            ].txcosts_avg.data[0][0],
+                          )}
+                        </div>
+                        <div className="w-[4%] flex items-center justify-center">
+                          <div
+                            className={`flex items-center justify-center w-[24px] h-[24px] hover:cursor-pointer  bg-forest-900  rounded-full transition-all ${
+                              selectedChains[item.chain.key]
+                                ? ""
+                                : "hover:bg-forest-800"
+                            }`}
+                            onClick={() => {
+                              if (
+                                !(chartSeries.length <= 1) ||
+                                !selectedChains[item.chain.key]
+                              ) {
+                                setSelectedChains((prevState) => {
+                                  return {
+                                    ...prevState,
+                                    [item.chain.key]:
+                                      !prevState[item.chain.key],
+                                  };
+                                });
+                              }
+                            }}
+                          >
+                            <Icon
+                              icon="feather:check-circle"
+                              className={`w-full h-full transition-all rounded-full ${
+                                selectedChains[item.chain.key]
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              }`}
+                              style={{
+                                color: selectedChains[item.chain.key]
+                                  ? undefined
+                                  : "#5A6462",
+                              }}
+                            />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
+                    </animated.div>
+                  );
+                })}
               </div>
             </div>
           </Container>
