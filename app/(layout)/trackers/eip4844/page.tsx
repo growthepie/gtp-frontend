@@ -23,6 +23,7 @@ export default function Eiptracker() {
   const chartComponent = useRef<Highcharts.Chart | null>(null);
   const { theme } = useTheme();
 
+  console.log(theme);
   const timescales = useMemo(() => {
     return {
       ten_min: {
@@ -106,11 +107,11 @@ export default function Eiptracker() {
       // If both chains are selected or unselected, sort by median cost
       if (isSelectedA === isSelectedB) {
         const aTxCost =
-          feeData.chain_data[a][selectedTimescale].txcosts_median.data[0][
+          feeData.chain_data[a]["ten_min"].txcosts_median.data[0][
             showUsd ? 2 : 1
           ];
         const bTxCost =
-          feeData.chain_data[b][selectedTimescale].txcosts_median.data[0][
+          feeData.chain_data[b]["ten_min"].txcosts_median.data[0][
             showUsd ? 2 : 1
           ];
         return aTxCost - bTxCost;
@@ -121,12 +122,12 @@ export default function Eiptracker() {
     });
 
     const sortedMedianCosts = sortedChains.reduce((acc, chain) => {
-      acc[chain] = feeData.chain_data[chain][selectedTimescale].txcosts_median;
+      acc[chain] = feeData.chain_data[chain]["ten_min"].txcosts_median;
       return acc;
     }, {});
 
     return sortedMedianCosts;
-  }, [feeData, selectedChains, selectedTimescale, showUsd]);
+  }, [feeData, selectedChains, showUsd]);
 
   const chartSeries = useMemo(() => {
     return Object.keys(avgTxCosts)
@@ -228,9 +229,9 @@ export default function Eiptracker() {
               </div>
             </div>
           </Container>
-          <Container className="flex justify-end mt-[30px] w-[98.5%] mx-auto">
+          <Container className="flex justify-end mt-[30px] w-[99%] mx-auto">
             <div
-              className={`flex items-center justify-between dark:bg-[#1F2726]  ${
+              className={`flex items-center justify-between dark:bg-[#1F2726] bg-forest-50  ${
                 isMobile
                   ? "flex-col w-[80%] gap-y-[5px] justify-evenly mx-auto h-[90px] rounded-2xl py-[8px]"
                   : "flex-row w-full mx-none h-[60px]  rounded-full py-[2px]"
@@ -337,44 +338,46 @@ export default function Eiptracker() {
               setDisableZoom={setDisableZoom}
             />
           </Container>
-          <Container className="mt-[30px] w-[98.5%] mx-auto">
-            <div className="pb-6 overflow-x-scroll h-full scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller w-[98.5%]">
+          <Container className="mt-[30px] w-[99%] mx-auto ">
+            <div className="pb-6 mx-auto overflow-x-scroll h-full scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller w-[98.5%]">
               {/*Bar Titles */}
               <div className="w-full mx-auto">
-                <div className="flex text-sm font-bold min-w-[1024px]  w-[99%]">
+                <div className="flex xl:text-sm text-[13px] font-bold min-w-[724px]  w-[99%]">
                   <div className="w-[4.5%] flex justify-start "></div>
-                  <div className="w-[17.5%] flex justify-start  items-center">
+                  <div className="w-[12.5%] flex justify-start  items-center">
                     Chain
                   </div>
-                  <div className="w-[16%] flex justify-end items-center ">
-                    <div className="w-[80%] text-end">
-                      Median Transaction Costs
+                  <div className="w-[18%] flex justify-end items-center ">
+                    <div className="xl:w-[80%] w-full text-end flex flex-col">
+                      <div>Median </div>
+                      <div>Transaction Costs</div>
                     </div>
                   </div>
                   <div className="w-[19%] flex justify-end items-center ">
-                    <div className="w-[70%] text-end">
-                      Average Transaction Costs
+                    <div className="xl:w-[80%] w-full text-end flex flex-col">
+                      <div>Average </div>
+                      <div>Transaction Costs</div>
                     </div>
                   </div>
-                  <div className="w-[17%] flex justify-end pr-3 items-center">
+                  <div className="w-[18%] flex justify-end pr-3 items-center">
                     Native Transfer
                   </div>
-                  <div className="w-[22%] 2xl:pl-2 lg:pl-0 flex justify-center items-center">
+                  <div className="w-[24%] 2xl:pl-2 lg:pl-0 flex justify-center items-center">
                     Last Updated(UTC)
                   </div>
                   <div className="w-[3%]"></div>
                 </div>
               </div>
-              <div className="mt-[10px] w-full flex flex-col gap-y-[4px] min-w-[1024px] relative min-h-[400px]">
+              <div className="mt-[10px] w-full flex flex-col gap-y-[4px] min-w-[724px] relative min-h-[400px]">
                 {transitions((style, item, index) => {
                   return (
                     <animated.div
                       key={item.chain.key}
-                      className={`absolute w-full`}
+                      className={`absolute w-full xl:text-base text-sm`}
                       style={{ ...style }}
                     >
                       <div
-                        className={`border-forest-800 border-[1px] rounded-full h-[42px] flex hover:cursor-pointer hover:bg-forest-200 hover:bg-opacity-25 w-[99%]
+                        className={`border-black/[16%] dark:border-[#5A6462] border-[1px] rounded-full h-[42px] flex hover:cursor-pointer hover:bg-forest-200 hover:bg-opacity-25 w-[99%]
                         ${
                           selectedChains[item.chain.key]
                             ? "opacity-100"
@@ -394,7 +397,7 @@ export default function Eiptracker() {
                           }
                         }}
                       >
-                        <div className="w-[4%] flex justify-center items-center px-[8px] ">
+                        <div className="w-[4.5%] flex justify-center items-center pl-[4px] ">
                           {" "}
                           <Icon
                             icon={`gtp:${
@@ -410,13 +413,19 @@ export default function Eiptracker() {
                           />
                         </div>
 
-                        <div className="w-[17.5%] px-[4px] flex justify-start items-center">
+                        <div className="w-[12.5%] px-[4px] flex justify-start items-center">
                           {AllChainsByKeys[item.chain.key].label}
                         </div>
-                        <div className="w-[17%] px-[4px] flex justify-end items-center gap-x-[4px]">
+                        <div className="w-[18.25%] px-[4px] flex justify-end items-center gap-x-[4px]">
                           {Intl.NumberFormat(undefined, {
                             notation: "compact",
-                            maximumFractionDigits: showUsd ? 3 : 5,
+                            maximumFractionDigits: showUsd
+                              ? feeData.chain_data[item.chain.key][
+                                  selectedTimescale
+                                ].txcosts_median.data[0][showUsd ? 2 : 1] < 0.01
+                                ? 4
+                                : 3
+                              : 5,
                             minimumFractionDigits: 0,
                           }).format(
                             feeData.chain_data[item.chain.key][
@@ -428,7 +437,13 @@ export default function Eiptracker() {
                         <div className="w-[19%] px-[4px] flex justify-end items-center gap-x-[4px] ">
                           {Intl.NumberFormat(undefined, {
                             notation: "compact",
-                            maximumFractionDigits: showUsd ? 3 : 5,
+                            maximumFractionDigits: showUsd
+                              ? feeData.chain_data[item.chain.key][
+                                  selectedTimescale
+                                ].txcosts_avg.data[0][showUsd ? 2 : 1] < 0.01
+                                ? 4
+                                : 3
+                              : 5,
                             minimumFractionDigits: 0,
                           }).format(
                             feeData.chain_data[item.chain.key][
@@ -437,13 +452,21 @@ export default function Eiptracker() {
                           )}
                           {`${showUsd ? "$" : "Ξ"}`}
                         </div>
-                        <div className="w-[17%] px-[4px] flex justify-end items-center gap-x-[4px] pr-3 ">
+                        <div className="w-[18%] px-[4px] flex justify-end items-center gap-x-[4px] pr-3 ">
                           {feeData.chain_data[item.chain.key][
                             selectedTimescale
                           ]["txcosts_native_median"].data[0]
                             ? Intl.NumberFormat(undefined, {
                                 notation: "compact",
-                                maximumFractionDigits: showUsd ? 3 : 5,
+                                maximumFractionDigits: showUsd
+                                  ? feeData.chain_data[item.chain.key][
+                                      selectedTimescale
+                                    ]["txcosts_native_median"].data[0][
+                                      showUsd ? 2 : 1
+                                    ] < 0.01
+                                    ? 4
+                                    : 3
+                                  : 5,
                                 minimumFractionDigits: 0,
                               }).format(
                                 feeData.chain_data[item.chain.key][
@@ -463,7 +486,7 @@ export default function Eiptracker() {
                               : ""
                           }`}
                         </div>
-                        <div className="w-[22%] px-[4px] flex justify-center items-center gap-x-[4px] py-2 xl:leading-snug ">
+                        <div className="w-[24%] px-[4px] flex justify-center items-center gap-x-[4px] py-2 xl:leading-snug ">
                           {getDateString(
                             feeData.chain_data[item.chain.key][
                               selectedTimescale
@@ -473,7 +496,7 @@ export default function Eiptracker() {
                       </div>
                       <div className="w-[4%] flex items-center justify-center">
                         <div
-                          className={`absolute left-[97.5%] bottom-2 right-0 flex items-center z-20 justify-center w-[24px] h-[24px] hover:cursor-pointer  bg-forest-900  rounded-full transition-all ${
+                          className={`absolute left-[97.5%] bottom-2 right-0 flex items-center z-20 justify-center w-[24px] h-[24px] hover:cursor-pointer bg-forest-50  dark:bg-forest-900  rounded-full transition-all ${
                             selectedChains[item.chain.key]
                               ? ""
                               : "hover:bg-forest-800"
@@ -496,8 +519,8 @@ export default function Eiptracker() {
                             icon="feather:check-circle"
                             className={`w-full h-full transition-all rounded-full ${
                               selectedChains[item.chain.key]
-                                ? "opacity-100"
-                                : "opacity-0"
+                                ? "opacity-100 bg-white dark:bg-forest-1000 dark:hover:forest-800"
+                                : "opacity-0 bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
                             }`}
                             style={{
                               color: selectedChains[item.chain.key]
