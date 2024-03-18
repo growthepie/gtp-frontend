@@ -15,7 +15,7 @@ import { useTransition, animated } from "@react-spring/web";
 
 export default function Eiptracker() {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const [selectedTimescale, setSelectedTimescale] = useState("ten_min");
+  const [selectedTimescale, setSelectedTimescale] = useState("hourly");
   const [selectedTimespan, setSelectedTimespan] = useState("1d");
   const [zoomed, setZoomed] = useState(false);
   const [disableZoom, setDisableZoom] = useState(false);
@@ -138,7 +138,13 @@ export default function Eiptracker() {
         dataKey: showUsd ? "value_usd" : "value_eth",
         data: avgTxCosts[chain].data,
       }));
-  }, [avgTxCosts, selectedChains, showUsd]);
+  }, [
+    avgTxCosts,
+    selectedChains,
+    showUsd,
+    selectedTimescale,
+    selectedTimespan,
+  ]);
 
   function getDateString(unixPoint) {
     const date = new Date(unixPoint);
@@ -184,8 +190,6 @@ export default function Eiptracker() {
       trail: 25,
     },
   );
-
-  console.log(sortedMedianCosts ? sortedMedianCosts : "");
 
   return (
     <>
@@ -240,7 +244,7 @@ export default function Eiptracker() {
                       : "w-auto justify-normal text-base"
                   }`}
                 >
-                  {Object.keys(timescales).map((timescale) => (
+                  {/* {Object.keys(timescales).map((timescale) => (
                     <div
                       className={`rounded-full grow px-4 font-medium text-center flex items-center justify-center  hover:cursor-pointer ${
                         selectedTimescale === timescale
@@ -259,7 +263,7 @@ export default function Eiptracker() {
                     >
                       {timescales[timescale].label}
                     </div>
-                  ))}
+                  ))} */}
                 </div>
               </div>
 
@@ -334,30 +338,32 @@ export default function Eiptracker() {
             />
           </Container>
           <Container className="mt-[30px] w-[98.5%] mx-auto">
-            <div className="pb-3 overflow-x-scroll h-full scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
+            <div className="pb-6 overflow-x-scroll h-full scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller w-[98.5%]">
               {/*Bar Titles */}
-              <div className="flex text-sm font-bold w-full min-w-[1024px] mx-auto ">
-                <div className="w-[4.5%] flex justify-start "></div>
-                <div className="w-[17.5%] flex justify-start  items-center">
-                  Chain
-                </div>
-                <div className="w-[16%] flex justify-end items-center ">
-                  <div className="w-[80%] text-end">
-                    Median Transaction Costs
+              <div className="w-full mx-auto">
+                <div className="flex text-sm font-bold min-w-[1024px]  w-[99%]">
+                  <div className="w-[4.5%] flex justify-start "></div>
+                  <div className="w-[17.5%] flex justify-start  items-center">
+                    Chain
                   </div>
-                </div>
-                <div className="w-[19%] flex justify-end items-center ">
-                  <div className="w-[70%] text-end">
-                    Average Transaction Costs
+                  <div className="w-[16%] flex justify-end items-center ">
+                    <div className="w-[80%] text-end">
+                      Median Transaction Costs
+                    </div>
                   </div>
+                  <div className="w-[19%] flex justify-end items-center ">
+                    <div className="w-[70%] text-end">
+                      Average Transaction Costs
+                    </div>
+                  </div>
+                  <div className="w-[17%] flex justify-end pr-3 items-center">
+                    Native Transfer
+                  </div>
+                  <div className="w-[22%] 2xl:pl-2 lg:pl-0 flex justify-center items-center">
+                    Last Updated(UTC)
+                  </div>
+                  <div className="w-[3%]"></div>
                 </div>
-                <div className="w-[17%] flex justify-end pr-3 items-center">
-                  Native Transfer
-                </div>
-                <div className="w-[22%] 2xl:pl-2 lg:pl-0 flex justify-center items-center">
-                  Last Updated(UTC)
-                </div>
-                <div className="w-[3%]"></div>
               </div>
               <div className="mt-[10px] w-full flex flex-col gap-y-[4px] min-w-[1024px] relative min-h-[400px]">
                 {transitions((style, item, index) => {
@@ -368,7 +374,7 @@ export default function Eiptracker() {
                       style={{ ...style }}
                     >
                       <div
-                        className={`border-forest-800 border-[1px] rounded-full h-[42px] flex w-full hover:cursor-pointer hover:bg-forest-200 hover:bg-opacity-25
+                        className={`border-forest-800 border-[1px] rounded-full h-[42px] flex hover:cursor-pointer hover:bg-forest-200 hover:bg-opacity-25 w-[99%]
                         ${
                           selectedChains[item.chain.key]
                             ? "opacity-100"
@@ -464,42 +470,41 @@ export default function Eiptracker() {
                             ].txcosts_avg.data[0][0],
                           )}
                         </div>
-                        <div className="w-[4%] flex items-center justify-center">
-                          <div
-                            className={`flex items-center justify-center w-[24px] h-[24px] hover:cursor-pointer  bg-forest-900  rounded-full transition-all ${
+                      </div>
+                      <div className="w-[4%] flex items-center justify-center">
+                        <div
+                          className={`absolute left-[97.5%] bottom-2 right-0 flex items-center z-20 justify-center w-[24px] h-[24px] hover:cursor-pointer  bg-forest-900  rounded-full transition-all ${
+                            selectedChains[item.chain.key]
+                              ? ""
+                              : "hover:bg-forest-800"
+                          }`}
+                          onClick={() => {
+                            if (
+                              !(chartSeries.length <= 1) ||
+                              !selectedChains[item.chain.key]
+                            ) {
+                              setSelectedChains((prevState) => {
+                                return {
+                                  ...prevState,
+                                  [item.chain.key]: !prevState[item.chain.key],
+                                };
+                              });
+                            }
+                          }}
+                        >
+                          <Icon
+                            icon="feather:check-circle"
+                            className={`w-full h-full transition-all rounded-full ${
                               selectedChains[item.chain.key]
-                                ? ""
-                                : "hover:bg-forest-800"
+                                ? "opacity-100"
+                                : "opacity-0"
                             }`}
-                            onClick={() => {
-                              if (
-                                !(chartSeries.length <= 1) ||
-                                !selectedChains[item.chain.key]
-                              ) {
-                                setSelectedChains((prevState) => {
-                                  return {
-                                    ...prevState,
-                                    [item.chain.key]:
-                                      !prevState[item.chain.key],
-                                  };
-                                });
-                              }
+                            style={{
+                              color: selectedChains[item.chain.key]
+                                ? undefined
+                                : "#5A6462",
                             }}
-                          >
-                            <Icon
-                              icon="feather:check-circle"
-                              className={`w-full h-full transition-all rounded-full ${
-                                selectedChains[item.chain.key]
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              }`}
-                              style={{
-                                color: selectedChains[item.chain.key]
-                                  ? undefined
-                                  : "#5A6462",
-                              }}
-                            />
-                          </div>
+                          />
                         </div>
                       </div>
                     </animated.div>
