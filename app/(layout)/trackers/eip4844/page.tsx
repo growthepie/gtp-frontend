@@ -218,7 +218,7 @@ export default function Eiptracker() {
                   className="text-2xl leading-snug text-[36px] break-inside-avoid"
                   as="h1"
                 >
-                  {"EIP 4844 Launch"}
+                  {"EIP-4844 Launch"}
                 </Heading>
               </div>
               <div className="flex items-center mb-[15px]">

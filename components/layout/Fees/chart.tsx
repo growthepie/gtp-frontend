@@ -17,6 +17,15 @@ import { AllChainsByKeys } from "@/lib/chains";
 import * as d3 from "d3";
 import { useLocalStorage } from "usehooks-ts";
 
+export const ChartColors = {
+  GRID: "rgb(215, 223, 222)",
+  PLOT_LINE: "rgb(215, 223, 222)",
+  LABEL: "rgb(215, 223, 222)",
+  LABEL_HOVER: "#6c7696",
+  TOOLTIP_BG: "#1b2135",
+  ANNOTATION_BG: "rgb(215, 223, 222)",
+};
+
 export default function FeesChart({
   chartWidth,
   chartHeight,
@@ -106,6 +115,37 @@ export default function FeesChart({
         value: 0,
         xMin: minDate,
         xMax: maxDate.getTime(),
+      },
+    };
+  };
+
+  const getXAxisLabels = (dailyTicks = false) => {
+    return {
+      style: { color: ChartColors.LABEL },
+      enabled: true,
+      formatter: (item) => {
+        const date = new Date(item.value);
+        const isDayStart = date.getHours() === 0 && date.getMinutes() === 0;
+        const isMonthStart = date.getDate() === 1;
+        const isYearStart = isMonthStart && date.getMonth() === 0;
+
+        if (isYearStart) {
+          return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
+        } else {
+          if (dailyTicks && isDayStart) {
+            return `<span style="">${date.toLocaleDateString(undefined, {
+              timeZone: "UTC",
+              month: "short",
+              day: "numeric",
+            })}</span>`;
+          }
+
+          return `<span style="">${date.toLocaleDateString(undefined, {
+            timeZone: "UTC",
+            month: "short",
+            day: "numeric",
+          })}</span>`;
+        }
       },
     };
   };
