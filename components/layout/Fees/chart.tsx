@@ -8,13 +8,14 @@ import {
   getXAxisLabels,
   decimalToPercent,
   tooltipFormatter,
-  formatNumber,
   tooltipPositioner,
 } from "@/lib/chartUtils";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useUIContext } from "@/contexts/UIContext";
 import ChartWatermark from "@/components/layout/ChartWatermark";
 import { AllChainsByKeys } from "@/lib/chains";
+import * as d3 from "d3";
+import { useLocalStorage } from "usehooks-ts";
 
 export default function FeesChart({
   chartWidth,
@@ -65,6 +66,7 @@ export default function FeesChart({
   const chartColor =
     series[0]?.name &&
     AllChainsByKeys[series[0].name]?.colors[theme ?? "dark"][0];
+  const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
   const getTimespans = (
     data?,
@@ -107,6 +109,54 @@ export default function FeesChart({
       },
     };
   };
+
+  const formatNumber =
+    // (
+    //   value: number | string,
+    //   isAxis = false,
+    //   isPercentage = false,
+    // ) => {
+    (
+      value: number | string,
+      isAxis = false,
+      isPercentage = false,
+      prefix = "",
+      suffix = "",
+    ) => {
+      let val = parseFloat(value as string);
+
+      // Check if the value should be displayed as dollars with only decimals
+      if (showUsd) {
+        // Format the value with only decimals using Intl.NumberFormat
+        return `${prefix}${Intl.NumberFormat(undefined, {
+          notation: "compact",
+          maximumFractionDigits: 5,
+          minimumFractionDigits: 1,
+        }).format(Number(val.toFixed(5)))}${suffix}`;
+      }
+
+      // Proceed with the existing logic
+      let number = d3.format(`.2~s`)(val).replace(/G/, "B");
+
+      if (isAxis) {
+        if (isPercentage) {
+          number = decimalToPercent(val * 100, 0);
+        } else {
+          number = prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+        }
+      } else {
+        if (isPercentage) {
+          number =
+            d3
+              .format(".2~s")(val * 100)
+              .replace(/G/, "B") + "%";
+        } else {
+          number = val;
+        }
+      }
+
+      return number;
+    };
 
   const timespans = useMemo(() => {
     if (true) {

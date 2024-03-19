@@ -10,7 +10,7 @@ export default function BottomBanner() {
   const isMobile = useMediaQuery("(max-width: 767px)");
 
   return isMobile ? (
-    <div className="relative bottom-0 w-[99.7%] ml-[2px] text-center py-3 h-[190px] bg-[#1F2726]">
+    <div className="relative bottom-0 w-[99.7%] ml-[2px] text-center py-3 h-[190px] bg-forest-50  dark:bg-[#1F2726]">
       <div className="w-[97%] mx-auto mt-[15px] flex flex-col items-center">
         <div className="flex w-full justify-between">
           <div className="flex items-center gap-x-2">
@@ -27,17 +27,17 @@ export default function BottomBanner() {
           </div>
         </div>
         <div className="text-[10px] self-start w-[80%] text-left leading-4 mt-[8px]">
-          If you would like to donate, please visit our Giveth project page.
-          Individual links contain affiliate links, like the “Bridge” button,
-          which provide us with some additional income through a revenue-share
-          program. For more, please check the following links:
+          If you would like to donate, please visit our{" "}
           <a
             href="https://giveth.io/project/growthepiexyz-layer-2-metrics-blockspace-analysis"
             target="_blank"
-            className="ml-1 underline cursor-pointer"
+            className="underline cursor-pointer"
           >
             Giveth
-          </a>
+          </a>{" "}
+          project page. Individual links contain affiliate links, like the
+          “Bridge” button, which provide us with some additional income through
+          a revenue-share program. For more, please check the following links:
         </div>
         <div className="flex w-full justify-between mt-[10px]">
           {" "}
@@ -65,7 +65,7 @@ export default function BottomBanner() {
       </div>
     </div>
   ) : (
-    <div className="relative bottom-0 w-[99.7%] ml-[2px] text-center py-3 h-[160px] bg-[#1F2726]">
+    <div className="relative bottom-0 w-[99.7%] ml-[2px] text-center py-3 h-[160px] bg-forest-50  dark:bg-[#1F2726]">
       <div className="w-[90%] mx-auto mt-[15px] flex flex-col items-center">
         <div className="flex w-full justify-between">
           <div className="flex items-center gap-x-2">
@@ -84,17 +84,17 @@ export default function BottomBanner() {
           <DarkModeSwitch />
         </div>
         <div className="text-[10px] self-start w-[35%] text-left leading-4 mt-[3px]">
-          If you would like to donate, please visit our Giveth project page.
-          Individual links contain affiliate links, like the “Bridge” button,
-          which provide us with some additional income through a revenue-share
-          program. For more, please check the following links:
+          If you would like to donate, please visit our{" "}
           <a
             href="https://giveth.io/project/growthepiexyz-layer-2-metrics-blockspace-analysis"
             target="_blank"
-            className="ml-1 underline cursor-pointer"
+            className="underline cursor-pointer"
           >
             Giveth
-          </a>
+          </a>{" "}
+          project page. Individual links contain affiliate links, like the
+          “Bridge” button, which provide us with some additional income through
+          a revenue-share program. For more, please check the following links:
         </div>
         <div className="flex w-full justify-between mt-[8px]">
           {" "}
