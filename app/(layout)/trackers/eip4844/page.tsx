@@ -23,7 +23,6 @@ export default function Eiptracker() {
   const chartComponent = useRef<Highcharts.Chart | null>(null);
   const { theme } = useTheme();
 
-  console.log(theme);
   const timescales = useMemo(() => {
     return {
       ten_min: {
@@ -233,11 +232,11 @@ export default function Eiptracker() {
             <div
               className={`flex items-center justify-between dark:bg-[#1F2726] bg-forest-50  ${
                 isMobile
-                  ? "flex-col w-[80%] gap-y-[5px] justify-evenly mx-auto h-[90px] rounded-2xl py-[8px]"
+                  ? "flex-col w-[90%] xs:w-[80%] gap-y-[5px] justify-center items-center h-full mx-auto rounded-full "
                   : "flex-row w-full mx-none h-[60px]  rounded-full py-[2px]"
               }`}
             >
-              <div className="flex flex-col rounded-full py-[2px] px-[2px]  dark:bg-[#1F2726]  items-start justify-center w-full">
+              {/* <div className="flex flex-col rounded-full py-[2px] px-[2px]  dark:bg-[#1F2726]  items-start justify-center w-full">
                 <div
                   className={`flex gap-x-[4px]  ${
                     isMobile
@@ -245,7 +244,7 @@ export default function Eiptracker() {
                       : "w-auto justify-normal text-base"
                   }`}
                 >
-                  {/* {Object.keys(timescales).map((timescale) => (
+                  {Object.keys(timescales).map((timescale) => (
                     <div
                       className={`rounded-full grow px-4 font-medium text-center flex items-center justify-center  hover:cursor-pointer ${
                         selectedTimescale === timescale
@@ -264,11 +263,11 @@ export default function Eiptracker() {
                     >
                       {timescales[timescale].label}
                     </div>
-                  ))} */}
+                  ))}
                 </div>
-              </div>
+              </div> */}
 
-              <hr className="border-dotted border-top-[1px] h-[2px] border-forest-400" />
+              {/* <hr className="border-dotted border-top-[1px] h-[2px] border-forest-400" /> */}
               <div className="flex flex-col rounded-full py-[2px] px-[2px] justify-center w-full items-end ">
                 <div
                   className={`flex gap-x-[4px]  ${
@@ -279,7 +278,11 @@ export default function Eiptracker() {
                 >
                   {zoomed ? (
                     <button
-                      className={`rounded-full flex items-center space-x-3 px-[15px] py-[7px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-[11px] xl:px-6 xl:py-[15px] font-medium border-[0.5px] border-forest-400 leading-snug`}
+                      className={`rounded-full flex items-center space-x-3 px-[15px] w-full md:w-auto text-sm md:text-base font-medium border-[0.5px] border-forest-400 leading-snug ${
+                        isMobile
+                          ? ""
+                          : "lg:px-4 lg:py-[11px] xl:px-6 xl:py-[15px] "
+                      }`}
                       onClick={() => {
                         setZoomed(false);
                         setDisableZoom(true);
@@ -303,7 +306,7 @@ export default function Eiptracker() {
 
                       ${
                         isMobile
-                          ? "grow-0 px-2 py-2 w-[28%] flex items-center justify-center"
+                          ? "grow-0 px-2 py-4 w-[30%] flex items-center justify-center"
                           : "grow px-1 py-4 max-w-[113px] w-[113px]"
                       }
  
@@ -339,10 +342,10 @@ export default function Eiptracker() {
             />
           </Container>
           <Container className="mt-[30px] w-[99%] mx-auto ">
-            <div className="pb-6 mx-auto overflow-x-scroll h-full scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller w-[98.5%]">
+            <div className="pb-6 mx-auto overflow-x-scroll h-full scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller w-[99%] ">
               {/*Bar Titles */}
               <div className="w-full mx-auto">
-                <div className="flex xl:text-sm text-[13px] font-bold min-w-[724px]  w-[99%]">
+                <div className="flex xl:text-sm text-[13px] font-bold min-w-[674px]  w-[99%]">
                   <div className="w-[4.5%] flex justify-start "></div>
                   <div className="w-[12.5%] flex justify-start  items-center">
                     Chain
@@ -368,7 +371,7 @@ export default function Eiptracker() {
                   <div className="w-[3%]"></div>
                 </div>
               </div>
-              <div className="mt-[10px] w-full flex flex-col gap-y-[4px] min-w-[724px] relative min-h-[400px]">
+              <div className="mt-[10px] w-full flex flex-col gap-y-[4px] min-w-[674px] relative min-h-[400px]">
                 {transitions((style, item, index) => {
                   return (
                     <animated.div
@@ -377,7 +380,7 @@ export default function Eiptracker() {
                       style={{ ...style }}
                     >
                       <div
-                        className={`border-black/[16%] dark:border-[#5A6462] border-[1px] rounded-full h-[42px] flex hover:cursor-pointer hover:bg-forest-200 hover:bg-opacity-25 w-[99%]
+                        className={`border-black/[16%] dark:border-[#5A6462] border-[1px] rounded-full h-[42px] flex hover:cursor-pointer hover:bg-forest-200 hover:bg-opacity-25 w-[98%]
                         ${
                           selectedChains[item.chain.key]
                             ? "opacity-100"
@@ -496,7 +499,7 @@ export default function Eiptracker() {
                       </div>
                       <div className="w-[4%] flex items-center justify-center">
                         <div
-                          className={`absolute left-[97.5%] bottom-2 right-0 flex items-center z-20 justify-center w-[24px] h-[24px] hover:cursor-pointer bg-forest-50  dark:bg-forest-900  rounded-full transition-all ${
+                          className={`absolute left-[96%] xl:left-[97%] bottom-2 right-0 flex items-center z-20 justify-center w-[24px] h-[24px] hover:cursor-pointer bg-forest-50  dark:bg-forest-900  rounded-full transition-all ${
                             selectedChains[item.chain.key]
                               ? ""
                               : "hover:bg-forest-800"
