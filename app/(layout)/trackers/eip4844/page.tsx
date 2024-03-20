@@ -26,9 +26,9 @@ export default function Eiptracker() {
 
   const timescales = useMemo(() => {
     return {
-      ten_min: {
-        label: "10 Minutes",
-      },
+      // ten_min: {
+      //   label: "10 Minutes",
+      // },
       hourly: {
         label: "Hourly",
       },
@@ -38,7 +38,7 @@ export default function Eiptracker() {
   const timespans = useMemo(() => {
     return {
       "1d": {
-        label: "1 days",
+        label: "1 day",
         value: 1,
         xMin: Date.now() - 1 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
@@ -237,11 +237,11 @@ export default function Eiptracker() {
             <div
               className={`flex items-center justify-between dark:bg-[#1F2726] bg-forest-50  ${
                 isMobile
-                  ? "flex-col w-[90%] xs:w-[80%] gap-y-[5px] justify-center items-center h-full mx-auto rounded-full "
+                  ? "flex-col w-[90%] xs:w-[80%] gap-y-[5px] justify-between items-center h-full mx-auto rounded-2xl "
                   : "flex-row w-full mx-none h-[60px]  rounded-full py-[2px]"
               }`}
             >
-              {/* <div className="flex flex-col rounded-full py-[2px] px-[2px]  dark:bg-[#1F2726]  items-start justify-center w-full">
+              <div className="flex flex-col rounded-full py-[2px] px-[2px]  dark:bg-[#1F2726]  items-start justify-center w-full">
                 <div
                   className={`flex gap-x-[4px]  ${
                     isMobile
@@ -270,7 +270,7 @@ export default function Eiptracker() {
                     </div>
                   ))}
                 </div>
-              </div> */}
+              </div>
 
               {/* <hr className="border-dotted border-top-[1px] h-[2px] border-forest-400" /> */}
               <div className="flex flex-col rounded-full py-[2px] px-[2px] justify-center w-full items-end ">
