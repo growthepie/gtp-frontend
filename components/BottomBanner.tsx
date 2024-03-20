@@ -18,12 +18,12 @@ export default function BottomBanner() {
               width={24}
             /> */}
             <Icon icon="gtp:logo" className="w-[24px] h-[24px]" />
-            <div className="text-sm leading-[1.5] font-medium">
+            <div className="text-sm leading-[1.5]">
               We are a public goods funded analytics platform.
             </div>
           </div>
           {/*desktop text*/}
-          <div className="hidden md:block text-[10px] w-full leading-[1.5] font-medium">
+          <div className="hidden md:block text-[10px] w-full leading-[1.5]">
             <div>
               If you would like to donate, please visit our{" "}
               <a
@@ -45,7 +45,7 @@ export default function BottomBanner() {
             </div>
           </div>
           {/*mobile text*/}
-          <div className="block md:hidden text-[10px] w-full leading-[1.5] font-medium">
+          <div className="block md:hidden text-[10px] w-full leading-[1.5]">
             <div>
               If you would like to donate, please visit our{" "}
               <a
