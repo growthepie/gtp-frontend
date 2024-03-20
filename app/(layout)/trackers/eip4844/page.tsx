@@ -12,6 +12,7 @@ import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import { useMediaQuery } from "usehooks-ts";
 import { useTransition, animated } from "@react-spring/web";
+import ShowLoading from "@/components/layout/ShowLoading";
 
 export default function Eiptracker() {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -193,6 +194,10 @@ export default function Eiptracker() {
 
   return (
     <>
+      <ShowLoading
+        dataLoading={[feeLoading]}
+        dataValidating={[feeValidating]}
+      />
       {feeData && avgTxCosts && (
         <>
           <Container className="flex w-full mt-[65px] md:mt-[45px]">
