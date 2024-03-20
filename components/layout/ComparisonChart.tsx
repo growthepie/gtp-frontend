@@ -461,14 +461,16 @@ export default function ComparisonChart({
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme][0]
-              }"></div>
-                <div class="tooltip-point-name">${AllChainsByKeys[name].label
-              }</div>
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                  AllChainsByKeys[name].colors[theme][0]
+                }"></div>
+                <div class="tooltip-point-name">${
+                  AllChainsByKeys[name].label
+                }</div>
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                percentage,
-                2,
-              )}%</div>
+                  percentage,
+                  2,
+                )}%</div>
               </div>
               
               <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -494,19 +496,27 @@ export default function ComparisonChart({
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+              AllChainsByKeys[name].colors[theme][0]
             }"></div>
-            <div class="tooltip-point-name text-md">${AllChainsByKeys[name].label
+            <div class="tooltip-point-name text-md">${
+              AllChainsByKeys[name].label
             }</div>
             <div class="flex-1 text-right justify-end font-inter flex">
-                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-            }">${prefix}</div>
+                <div class="opacity-70 mr-0.5 ${
+                  !prefix && "hidden"
+                }">${prefix}</div>
                 ${parseFloat(value).toLocaleString(undefined, {
-              minimumFractionDigits: valuePrefix ? 2 : 0,
-              maximumFractionDigits: valuePrefix ? 2 : 0,
-            })}
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
+                  minimumFractionDigits: valuePrefix ? 2 : 0,
+                  maximumFractionDigits: valuePrefix
+                    ? metric_id === "txcosts"
+                      ? 3
+                      : 2
+                    : 0,
+                })}
+                <div class="opacity-70 ml-0.5 ${
+                  !suffix && "hidden"
+                }">${suffix}</div>
             </div>
           </div>
           <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -532,14 +542,16 @@ export default function ComparisonChart({
           <div class="w-4 h-1.5 rounded-r-full" style=""></div>
           <div class="tooltip-point-name text-md">Total</div>
           <div class="flex-1 text-right justify-end font-inter flex">
-              <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-          }">${prefix}</div>
+              <div class="opacity-70 mr-0.5 ${
+                !prefix && "hidden"
+              }">${prefix}</div>
               ${parseFloat(value).toLocaleString(undefined, {
-            minimumFractionDigits: valuePrefix ? 2 : 0,
-            maximumFractionDigits: valuePrefix ? 2 : 0,
-          })}
-              <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-          }">${suffix}</div>
+                minimumFractionDigits: valuePrefix ? 2 : 0,
+                maximumFractionDigits: valuePrefix ? 2 : 0,
+              })}
+              <div class="opacity-70 ml-0.5 ${
+                !suffix && "hidden"
+              }">${suffix}</div>
           </div>
         </div>
         <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -683,9 +695,9 @@ export default function ComparisonChart({
           filteredData[0].name === ""
             ? Date.now() - 365 * 24 * 60 * 60 * 1000
             : filteredData.reduce(
-              (min, d) => Math.min(min, d.data[0][0]),
-              Infinity,
-            ) - buffer,
+                (min, d) => Math.min(min, d.data[0][0]),
+                Infinity,
+              ) - buffer,
 
         xMax: maxPlusBuffer,
       },
@@ -697,9 +709,9 @@ export default function ComparisonChart({
           filteredData[0].name === ""
             ? Date.now() - 365 * 24 * 60 * 60 * 1000
             : filteredData.reduce(
-              (min, d) => Math.min(min, d.data[0][0]),
-              Infinity,
-            ) - buffer,
+                (min, d) => Math.min(min, d.data[0][0]),
+                Infinity,
+              ) - buffer,
 
         xMax: maxPlusBuffer,
       },
@@ -1179,38 +1191,38 @@ export default function ComparisonChart({
             ...// @ts-ignore
             (getSeriesType(series.name) !== "column"
               ? {
-                shadow: {
-                  color:
-                    AllChainsByKeys[series.name]?.colors[theme ?? "dark"][1] +
-                    "33",
-                  width: 10,
-                },
-                // color: {
-                //   linearGradient: {
-                //     x1: 0,
-                //     y1: 0,
-                //     x2: 1,
-                //     y2: 0,
-                //   },
-                //   stops: [
-                //     [
-                //       0,
-                //       AllChainsByKeys[series.name]?.colors[
-                //         theme ?? "dark"
-                //       ][0],
-                //     ],
-                //     // [0.33, AllChainsByKeys[series.name].colors[1]],
-                //     [
-                //       1,
-                //       AllChainsByKeys[series.name]?.colors[
-                //         theme ?? "dark"
-                //       ][1],
-                //     ],
-                //   ],
-                // },
-              }
+                  shadow: {
+                    color:
+                      AllChainsByKeys[series.name]?.colors[theme ?? "dark"][1] +
+                      "33",
+                    width: 10,
+                  },
+                  // color: {
+                  //   linearGradient: {
+                  //     x1: 0,
+                  //     y1: 0,
+                  //     x2: 1,
+                  //     y2: 0,
+                  //   },
+                  //   stops: [
+                  //     [
+                  //       0,
+                  //       AllChainsByKeys[series.name]?.colors[
+                  //         theme ?? "dark"
+                  //       ][0],
+                  //     ],
+                  //     // [0.33, AllChainsByKeys[series.name].colors[1]],
+                  //     [
+                  //       1,
+                  //       AllChainsByKeys[series.name]?.colors[
+                  //         theme ?? "dark"
+                  //       ][1],
+                  //     ],
+                  //   ],
+                  // },
+                }
               : series.name === "all_l2s"
-                ? {
+              ? {
                   borderColor: "transparent",
 
                   shadow: {
@@ -1263,7 +1275,7 @@ export default function ComparisonChart({
                   //         ],
                   // },
                 }
-                : {
+              : {
                   borderColor: "transparent",
                   shadow: {
                     color: "#CDD8D3" + "FF",
@@ -1478,10 +1490,11 @@ export default function ComparisonChart({
                 Selected Chains
               </h2> */}
               <div
-                className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 left-0 pl-[40px] w-[90px] md:pl-[85px] md:w-[151px] lg:pl-[89px] lg:w-[149px] xl:w-[170px] xl:pl-[110px] ${monthly_agg && selectedTimeInterval === "monthly"
+                className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 left-0 pl-[40px] w-[90px] md:pl-[85px] md:w-[151px] lg:pl-[89px] lg:w-[149px] xl:w-[170px] xl:pl-[110px] ${
+                  monthly_agg && selectedTimeInterval === "monthly"
                     ? "translate-y-[calc(-100%+3px)]"
                     : "translate-y-0 "
-                  }`}
+                }`}
               >
                 <div className="text-[0.65rem] md:text-xs font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-2xl border-t border-l border-r border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0">
                   {monthly_agg_labels[monthly_agg]}
@@ -1490,10 +1503,11 @@ export default function ComparisonChart({
               {["daily", "monthly"].map((interval) => (
                 <button
                   key={interval}
-                  className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium capitalize ${selectedTimeInterval === interval
+                  className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium capitalize ${
+                    selectedTimeInterval === interval
                       ? "bg-forest-500 dark:bg-forest-1000"
                       : "hover:bg-forest-500/10"
-                    }`}
+                  }`}
                   onClick={() => {
                     if (selectedTimeInterval === interval) return;
 
@@ -1532,10 +1546,11 @@ export default function ComparisonChart({
                 .map((timespan) => (
                   <button
                     key={timespan}
-                    className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${selectedTimespan === timespan
+                    className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
+                      selectedTimespan === timespan
                         ? "bg-forest-500 dark:bg-forest-1000"
                         : "hover:bg-forest-500/10"
-                      }`}
+                    }`}
                     onClick={() => {
                       setSelectedTimespan(timespan);
                       // setXAxis();
@@ -1587,10 +1602,11 @@ export default function ComparisonChart({
             )}
           </div>
           <div
-            className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[117px] sm:w-[162px] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${avg && ["365d", "max"].includes(selectedTimespan)
+            className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[117px] sm:w-[162px] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${
+              avg && ["365d", "max"].includes(selectedTimespan)
                 ? "translate-y-[calc(-100%+3px)]"
                 : "translate-y-0 "
-              }`}
+            }`}
           >
             <div className="text-[0.65rem] md:text-xs font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-2xl border-t border-l border-r border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
               <span className="hidden md:block">7-day rolling average</span>
@@ -1726,10 +1742,11 @@ export default function ComparisonChart({
               <div className="flex justify-center items-center pl-0 md:pl-0 w-full md:w-auto">
                 <div className="flex justify-between md:justify-center items-center  space-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
                   <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"absolute" === selectedScale
+                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${
+                      "absolute" === selectedScale
                         ? "bg-forest-500 dark:bg-forest-1000"
                         : "hover:enabled:bg-forest-500/10"
-                      }`}
+                    }`}
                     onClick={() => {
                       setSelectedScale("absolute");
                     }}
@@ -1740,10 +1757,11 @@ export default function ComparisonChart({
                     <>
                       <button
                         disabled={metric_id === "txcosts"}
-                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"log" === selectedScale
+                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${
+                          "log" === selectedScale
                             ? "bg-forest-500 dark:bg-forest-1000"
                             : "hover:enabled:bg-forest-500/10"
-                          }`}
+                        }`}
                         onClick={() => {
                           setSelectedScale("log");
                         }}
@@ -1752,10 +1770,11 @@ export default function ComparisonChart({
                       </button>
 
                       <button
-                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"percentage" === selectedScale
+                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${
+                          "percentage" === selectedScale
                             ? "bg-forest-500 dark:bg-forest-1000"
                             : "hover:enabled:bg-forest-500/10"
-                          }`}
+                        }`}
                         onClick={() => {
                           setSelectedScale("percentage");
                         }}
@@ -1803,10 +1822,11 @@ export default function ComparisonChart({
               <div className="flex justify-center items-center pl-0 md:pl-0 w-full md:w-auto">
                 <div className="flex justify-between md:justify-center items-center  space-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
                   <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"absolute" === selectedScale
+                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
+                      "absolute" === selectedScale
                         ? "bg-forest-500 dark:bg-forest-1000"
                         : "hover:bg-forest-500/10"
-                      }`}
+                    }`}
                     onClick={() => {
                       setSelectedScale("absolute");
                     }}
@@ -1814,10 +1834,11 @@ export default function ComparisonChart({
                     Absolute
                   </button>
                   <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"log" === selectedScale
+                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
+                      "log" === selectedScale
                         ? "bg-forest-500 dark:bg-forest-1000"
                         : "hover:bg-forest-500/10"
-                      }`}
+                    }`}
                     onClick={() => {
                       setSelectedScale("log");
                     }}
@@ -1825,10 +1846,11 @@ export default function ComparisonChart({
                     Stacked
                   </button>
                   <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"percentage" === selectedScale
+                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
+                      "percentage" === selectedScale
                         ? "bg-forest-500 dark:bg-forest-1000"
                         : "hover:bg-forest-500/10"
-                      }`}
+                    }`}
                     onClick={() => {
                       setSelectedScale("percentage");
                     }}

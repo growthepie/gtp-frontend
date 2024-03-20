@@ -59,6 +59,10 @@ export const navigationCategories = {
     label: "Public Goods Funding",
     icon: "feather:sun",
   },
+  "protocol-updates": {
+    label: "Protocol Updates",
+    icon: "gtp:ethereum-logo-monochrome",
+  },
 };
 
 export const navigationItems: NavigationItem[] = [
@@ -552,7 +556,15 @@ export const navigationItems: NavigationItem[] = [
         key: "rpgf3",
         rootKey: "rpgf3",
         urlKey: "optimism-retropgf-3",
-      }
+      },
+      {
+        label: "EIP-4844",
+        icon: "gtp:ethereum-logo-monochrome",
+        category: "protocol-updates",
+        key: "eip4844",
+        rootKey: "eip4844",
+        urlKey: "eip4844",
+      },
     ],
   },
 

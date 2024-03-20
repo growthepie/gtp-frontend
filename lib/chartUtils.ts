@@ -22,6 +22,7 @@ export const tooltipFormatter = (
   dataKey?: string,
   reversePerformer?: boolean,
   stacked = false,
+  showTime?: boolean,
 ) => {
   const percentageFormatter = function (
     this: Highcharts.TooltipFormatterContextObject,
@@ -154,12 +155,21 @@ export const tooltipFormatter = (
     const { x } = points[0];
 
     const date = x ? new Date(x) : new Date();
-    const dateString = date.toLocaleDateString(undefined, {
-      timeZone: "UTC",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+    const dateString = showTime
+      ? date.toLocaleDateString(undefined, {
+          timeZone: "UTC",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+        })
+      : date.toLocaleDateString(undefined, {
+          timeZone: "UTC",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
 
     let prefix = "";
     let suffix = "";
@@ -189,7 +199,7 @@ export const tooltipFormatter = (
 
     points
       .sort((a: any, b: any) => {
-        if (reversePerformer) return a.y - b.y;
+        if (reversePerformer || showTime) return a.y - b.y;
 
         return b.y - a.y;
       })
@@ -231,7 +241,7 @@ export const tooltipFormatter = (
           <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">${prefix}</div>
           ${parseFloat(value).toLocaleString(undefined, {
             minimumFractionDigits: 0,
-            maximumFractionDigits: 2,
+            maximumFractionDigits: showTime ? (name === "base" ? 4 : 3) : 2,
           })}
           <div class="opacity-70 ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
         </div>

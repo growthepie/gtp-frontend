@@ -4,7 +4,8 @@ import { Icon } from "@iconify/react";
 import { useMediaQuery } from "usehooks-ts";
 import { Splide, SplideSlide, SplideTrack } from "@splidejs/react-splide";
 import { useUIContext } from "@/contexts/UIContext";
-
+import Image from "next/image";
+import Link from "next/link";
 import "@splidejs/splide/css";
 import SwiperItems from "./SwiperItems";
 import ShowLoading from "./ShowLoading";
@@ -70,6 +71,100 @@ export default function SwiperContainer({ ariaId }: { ariaId?: string }) {
         // }}
       >
         <SplideTrack>
+          <SplideSlide>
+            <div
+              className="group w-full chain relative"
+              // style={{
+              //   pointerEvents: isDragging ? "none" : "all",
+              // }}
+            >
+              {landing ? (
+                <div
+                  className="w-full bg-gradient-to-b from-teal-700 to-[#1DF7EF] rounded-2xl h-[145px] md:h-[176px] hover:cursor-pointer"
+                  onClick={() => (window.location.href = "/trackers/eip4844")}
+                >
+                  <div className="flex flex-col justify-start text-black text-[16px] leading-tight h-full">
+                    <div className="pt-4 pl-4 flex flex-col font-bold">
+                      <div className="z-20 ">Ethereum Upgrade</div>
+                      <div className="z-20 ">EIP-4844</div>
+                    </div>
+                    <div className="flex flex-col relative overflow-hidden h-full rounded-b-2xl ">
+                      <div
+                        className={`p-4 flex flex-col text-black 2xl:text-[14px] text-[12px] ${
+                          isMobile ? "mt-[20px]" : "mt-[48px]"
+                        }`}
+                      >
+                        <div className="z-20 ">
+                          Click to check the latest drop in
+                        </div>
+                        <div
+                          className={`z-20 font-bold  ${
+                            isSidebarOpen
+                              ? "text-[22px]"
+                              : "2xl:text-[28px] text-[22px]"
+                          }`}
+                        >
+                          Transaction Costs
+                        </div>
+                      </div>
+                      <div
+                        className={`absolute  h-[200px] top-[1px] overflow-hidden z-10 rounded-b-2xl ${
+                          isMobile ? "w-[596px]" : "w-[490px]"
+                        }`}
+                      >
+                        <Image
+                          src="/chart-wave.svg"
+                          alt="GTP Pie"
+                          className=""
+                          height={194}
+                          width={596}
+                        />
+                      </div>
+                      <div
+                        className={`absolute w-[64px] h-[68px]  lg:right-[10px] right-[1px] overflow-hidden z-20 rounded-b-2xl ${
+                          isMobile ? "top-[32px]" : "top-[60px]"
+                        }`}
+                      >
+                        <Icon
+                          icon="gtp:transaction-costs"
+                          className={` text-[#1DF7EF] z-20 
+                            ${
+                              isSidebarOpen
+                                ? "w-[48px] h-[48px]"
+                                : "2xl:w-[52px] 2xl:h-[52px] w-[48px] h-[48px]"
+                            }
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full h-[145px] md:h-[183px] rounded-[15px]">
+                  <div
+                    role="status"
+                    className="flex items-center justify-center h-full w-full rounded-lg animate-pulse bg-forest-50 dark:bg-[#1F2726]"
+                  >
+                    <Icon
+                      icon="feather:loading"
+                      className="w-6 h-6 text-white z-10"
+                    />
+                    <span className="sr-only">Loading...</span>
+                  </div>
+                </div>
+              )}
+              <Link
+                className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 delay-[1000ms] group-hover:delay-[0ms] -z-10"
+                href={`/trackers/eip4844`}
+              >
+                Compare{" "}
+                <Icon
+                  icon="feather:chevron-right"
+                  className="w-4 h-4 md:w-6 md:h-6"
+                />{" "}
+              </Link>
+            </div>
+          </SplideSlide>
           {["txcount", "stables_mcap", "fees", "rent_paid", "market_cap"].map(
             (metric_id) => (
               <SplideSlide key={metric_id}>

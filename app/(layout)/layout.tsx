@@ -11,6 +11,7 @@ import Head from "./head";
 import { Graph } from "schema-dts";
 import Share from "@/components/Share";
 import Embed from "@/components/Embed";
+import BottomBanner from "@/components/BottomBanner";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",
@@ -178,11 +179,7 @@ export default function RootLayout({
                     {children}
                     <div className="bg-blue-200 z-50"></div>
                   </main>
-                  <div className="mt-24 w-full text-center py-3 absolute bottom-0">
-                    <div className="text-[0.7rem] text-inherit dark:text-forest-400 leading-[2] ml-8 z-20">
-                      © {new Date().getFullYear()} growthepie 🥧📏
-                    </div>
-                  </div>
+                  <BottomBanner />
                 </div>
               </div>
               <div className="fixed bottom-[20px] right-[20px] md:right-[50px] flex justify-center items-center z-50">
