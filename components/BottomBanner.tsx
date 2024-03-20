@@ -1,49 +1,75 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import DarkModeSwitch from "@/components/layout/DarkModeSwitch";
 import { track } from "@vercel/analytics";
 import Icon from "@/components/layout/Icon";
-import { useMediaQuery } from "usehooks-ts";
 
 export default function BottomBanner() {
-  const isMobile = useMediaQuery("(max-width: 767px)");
-
-  return isMobile ? (
-    <div className="relative bottom-0 w-[99.7%] ml-[2px] text-center py-3 h-[190px] bg-forest-50  dark:bg-[#1F2726]">
-      <div className="w-[97%] mx-auto mt-[15px] flex flex-col items-center">
-        <div className="flex w-full justify-between">
-          <div className="flex items-center gap-x-2">
-            <Image
+  return (
+    <div className="relative bottom-0 bg-forest-50  dark:bg-[#1F2726]">
+      <div className="p-[20px] md:p-[50px] flex gap-x-[10px] items-start justify-between">
+        <div className="flex flex-col gap-y-[10px] w-full md:w-auto">
+          <div className="flex items-center gap-x-[10px]">
+            {/* <Image
               src="/logo_pie_only.png"
               alt="GTP Pie"
               className="object-contain w-[22px] h-[24px]"
               height={24}
               width={24}
-            />
-            <div className="pt-[2px] text-sm ">
+            /> */}
+            <Icon icon="gtp:logo" className="w-[24px] h-[24px]" />
+            <div className="text-sm leading-[1.5] font-medium">
               We are a public goods funded analytics platform.
             </div>
           </div>
-        </div>
-        <div className="text-[10px] self-start w-[80%] text-left leading-4 mt-[8px]">
-          If you would like to donate, please visit our{" "}
-          <a
-            href="https://giveth.io/project/growthepiexyz-layer-2-metrics-blockspace-analysis"
-            target="_blank"
-            className="underline cursor-pointer"
-          >
-            Giveth
-          </a>{" "}
-          project page. Individual links contain affiliate links, like the
-          “Bridge” button, which provide us with some additional income through
-          a revenue-share program. For more, please check the following links:
-        </div>
-        <div className="flex w-full justify-between mt-[10px]">
-          {" "}
-          <div className="self-start text-[0.7rem] flex justify-between w-48 leading-[1]">
-            <Link href="/privacy-policy">Privacy Policy</Link>
-            <Link href="/imprint">Imprint</Link>
+          {/*desktop text*/}
+          <div className="hidden md:block text-[10px] w-full leading-[1.5] font-medium">
+            <div>
+              If you would like to donate, please visit our{" "}
+              <a
+                href="https://giveth.io/project/growthepiexyz-layer-2-metrics-blockspace-analysis"
+                target="_blank"
+                className="underline cursor-pointer"
+              >
+                Giveth
+              </a>{" "}
+              project page.
+            </div>
+            <div>
+              Individual links contain affiliate links, like the “Bridge”
+              button, which provide us with some
+            </div>
+            <div>
+              additional income through a revenue-share program. For more,
+              please check the following links:
+            </div>
+          </div>
+          {/*mobile text*/}
+          <div className="block md:hidden text-[10px] w-full leading-[1.5] font-medium">
+            <div>
+              If you would like to donate, please visit our{" "}
+              <a
+                href="https://giveth.io/project/growthepiexyz-layer-2-metrics-blockspace-analysis"
+                target="_blank"
+                className="underline cursor-pointer"
+              >
+                Giveth
+              </a>{" "}
+              project page.
+            </div>
+            <div>
+              Individual links contain affiliate links, like the “Bridge”
+              button, which provide us with some additional income through a
+              revenue-share program. For more, please check the following links:
+            </div>
+          </div>
+          <div className="w-[230.87px] md:w-[362px] flex justify-between text-xs leading-[1.5]">
+            <Link href="/privacy-policy" className="md:underline">
+              Privacy Policy
+            </Link>
+            <Link href="/imprint" className="md:underline">
+              Imprint
+            </Link>
             <Link
               rel="noopener"
               target="_blank"
@@ -54,70 +80,20 @@ export default function BottomBanner() {
                   page: window.location.pathname,
                 });
               }}
+              className="md:underline"
             >
               Feedback
             </Link>
-          </div>
-        </div>
-        <div className="text-[0.7rem] text-inherit dark:text-forest-400 leading-[2] justify-center z-20 flex w-full items-center mt-[8px]">
-          © {new Date().getFullYear()} growthepie 🥧📏
-        </div>
-      </div>
-    </div>
-  ) : (
-    <div className="relative bottom-0 w-[99.7%] ml-[2px] text-center py-3 h-[160px] bg-forest-50  dark:bg-[#1F2726]">
-      <div className="w-[90%] mx-auto mt-[15px] flex flex-col items-center">
-        <div className="flex w-full justify-between">
-          <div className="flex items-center gap-x-2">
-            <Image
-              src="/logo_pie_only.png"
-              alt="GTP Pie"
-              className="object-contain w-[22px] h-[24px]"
-              height={24}
-              width={24}
-            />
-            <div className="pt-[2px]">
-              We are a public goods funded analytics platform.
+            <div className="hidden md:flex">
+              © {new Date().getFullYear()} growthepie 🥧📏
             </div>
           </div>
-
-          <DarkModeSwitch />
-        </div>
-        <div className="text-[10px] self-start w-[35%] text-left leading-4 mt-[3px]">
-          If you would like to donate, please visit our{" "}
-          <a
-            href="https://giveth.io/project/growthepiexyz-layer-2-metrics-blockspace-analysis"
-            target="_blank"
-            className="underline cursor-pointer"
-          >
-            Giveth
-          </a>{" "}
-          project page. Individual links contain affiliate links, like the
-          “Bridge” button, which provide us with some additional income through
-          a revenue-share program. For more, please check the following links:
-        </div>
-        <div className="flex w-full justify-between mt-[8px]">
-          {" "}
-          <div className="self-start text-[0.7rem] flex justify-between w-48 leading-[1]">
-            <Link href="/privacy-policy">Privacy Policy</Link>
-            <Link href="/imprint">Imprint</Link>
-            <Link
-              rel="noopener"
-              target="_blank"
-              href="https://discord.com/channels/1070991734139531294/1095735245678067753"
-              onClick={() => {
-                track("clicked Feedback link", {
-                  location: "desktop sidebar",
-                  page: window.location.pathname,
-                });
-              }}
-            >
-              Feedback
-            </Link>
-          </div>
-          <div className="text-[0.7rem] text-inherit dark:text-forest-400 leading-[2] ml-8 z-20">
+          <div className="md:hidden pt-[30px] text-xs text-center w-full">
             © {new Date().getFullYear()} growthepie 🥧📏
           </div>
+        </div>
+        <div className="hidden md:flex justify-end">
+          <DarkModeSwitch />
         </div>
       </div>
     </div>
