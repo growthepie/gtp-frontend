@@ -107,13 +107,19 @@ export default function Eiptracker() {
       // If both chains are selected or unselected, sort by median cost
       if (isSelectedA === isSelectedB) {
         const aTxCost =
-          feeData.chain_data[a]["ten_min"].txcosts_median.data[0][
+          feeData.chain_data[a]?.["ten_min"]?.txcosts_median?.data?.[0]?.[
             showUsd ? 2 : 1
           ];
         const bTxCost =
-          feeData.chain_data[b]["ten_min"].txcosts_median.data[0][
+          feeData.chain_data[b]?.["ten_min"]?.txcosts_median?.data?.[0]?.[
             showUsd ? 2 : 1
           ];
+
+        // Handle cases where median costs are not available
+        if (typeof aTxCost !== "number" || typeof bTxCost !== "number") {
+          return 0; // Keep the order unchanged if median costs are not available
+        }
+
         return aTxCost - bTxCost;
       }
 
@@ -121,10 +127,12 @@ export default function Eiptracker() {
       return isSelectedA ? -1 : 1;
     });
 
-    const sortedMedianCosts = sortedChains.reduce((acc, chain) => {
-      acc[chain] = feeData.chain_data[chain]["ten_min"].txcosts_median;
-      return acc;
-    }, {});
+    // Construct sorted median costs object
+    const sortedMedianCosts = {};
+    sortedChains.forEach((chain) => {
+      sortedMedianCosts[chain] =
+        feeData.chain_data[chain]?.["ten_min"]?.txcosts_median;
+    });
 
     return sortedMedianCosts;
   }, [feeData, selectedChains, showUsd]);
