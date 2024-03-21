@@ -3,7 +3,6 @@ import { Analytics } from "@vercel/analytics/react";
 import { Providers } from "../providers";
 import CookieConsent from "@/components/layout/CookieConsent";
 import { Raleway, Inter, Roboto_Mono } from "next/font/google";
-import Header from "@/components/layout/Header";
 import SidebarContainer from "@/components/layout/SidebarContainer";
 import Backgrounds from "@/components/layout/Backgrounds";
 import { Metadata } from "next";
@@ -172,7 +171,7 @@ export default function RootLayout({
               <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
                 <div className="w-full max-w-[848px] mx-auto relative min-h-full">
                   <Backgrounds />
-                  <Header feesPage={true} />
+                  <Header />
                   <main className="flex-1 w-full mx-auto z-10 mb-[165px]">
                     {children}
                     <div className="bg-blue-200 z-50"></div>

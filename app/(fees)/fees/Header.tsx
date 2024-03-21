@@ -5,14 +5,13 @@ import Icon from "@/components/layout/Icon";
 import EthUsdSwitch from "@/components/layout/EthUsdSwitch";
 import DarkModeSwitch from "@/components/layout/DarkModeSwitch";
 import Banner from "@/components/Banner";
-import SupportUsBanner from "@components/layout/SupportUsBanner";
 import Notification from "@/components/Notification";
 import HeaderLinks from "@/components/layout/HeaderLinks";
 import { track } from "@vercel/analytics";
 
 export default function Header() {
   return (
-    <header className="flex justify-between space-x-0 xl:space-x-6 items-start max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[50px] md:pt-[50px]">
+    <header className="flex justify-evenly space-x-0 xl:space-x-6 items-start max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[50px] md:pt-[50px]">
       <div className="flex justify-between items-center w-full">
         <div className="flex space-x-0 xl:space-x-6 w-full h-full">
           {/*Banner/Notification Area */}
@@ -39,7 +38,7 @@ export default function Header() {
                   height={45}
                 />
               </div>
-              <div className="h-[36px] w-[154.05px] relative flex items-end ">
+              <div className="h-[36px] w-[154.05px] top-[1px] relative flex items-end ">
                 <Image
                   src="/fees.svg"
                   alt="Forest"
@@ -52,7 +51,7 @@ export default function Header() {
           </div>
         </div>
       </div>
-      <div className="items-center z-10 hidden md:flex md:space-x-[34px] h-full mt-[7px]">
+      <div className="items-center z-10 hidden md:flex md:space-x-[34px] h-full mt-[7px] pr-[17px]">
         <EthUsdSwitch />
 
         <div className="flex space-x-[22px] items-center ">
