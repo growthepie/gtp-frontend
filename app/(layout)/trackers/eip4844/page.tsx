@@ -17,7 +17,7 @@ import ShowLoading from "@/components/layout/ShowLoading";
 export default function Eiptracker() {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [selectedTimescale, setSelectedTimescale] = useState("hourly");
-  const [selectedTimespan, setSelectedTimespan] = useState("1d");
+  const [selectedTimespan, setSelectedTimespan] = useState("max");
   const [zoomed, setZoomed] = useState(false);
   const [disableZoom, setDisableZoom] = useState(false);
   const isMobile = useMediaQuery("(max-width: 767px)");
