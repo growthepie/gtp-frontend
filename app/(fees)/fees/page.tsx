@@ -260,7 +260,7 @@ export default function FeesPage() {
                 icon={`gtp:optimism-logo-monochrome`}
                 className="w-[24px] h-[24px]"
                 style={{
-                  color: AllChainsByKeys["optimism"].colors[theme][1],
+                  color: "#FF0420",
                 }}
               />
             </div>
