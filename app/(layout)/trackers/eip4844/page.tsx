@@ -313,8 +313,8 @@ export default function Eiptracker() {
                       <div
                         className={`rounded-full text-center font-medium hover:cursor-pointer ${
                           selectedTimespan === timespan
-                            ? "bg-forest-500 dark:bg-forest-1000"
-                            : "hover:bg-forest-500/10"
+                            ? "bg-forest-500 dark:bg-forest-1000 visible"
+                            : "hover:bg-forest-500/10 invisible"
                         }
 
                       ${
