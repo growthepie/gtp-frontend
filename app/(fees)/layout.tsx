@@ -169,7 +169,7 @@ export default function RootLayout({
           <div className="flex h-fit w-full justify-center">
             <div className="flex w-full max-w-[1680px] min-h-screen">
               <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
-                <div className="w-full max-w-[848px] mx-auto relative min-h-full">
+                <div className="w-[948px] mx-auto relative min-h-full">
                   <Backgrounds />
                   <Header />
                   <main className="flex-1 w-full mx-auto z-10 mb-[165px]">

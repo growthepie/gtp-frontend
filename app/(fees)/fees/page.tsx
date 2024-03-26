@@ -82,8 +82,8 @@ export default function FeesPage() {
 
   return (
     <>
-      <Container className="w-full">
-        <div className="flex px-2 items-center w-full h-[61px] rounded-full mt-[16px] bg-[#5A6462]">
+      <Container className="w-[820px]">
+        <div className="flex px-[5px] items-center w-[820px] h-[54px] rounded-full mt-[16px] bg-[#5A6462] shadow-lg shadow-black">
           <a
             className="flex items-center w-[162px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-2 gap"
             href="https://www.growthepie.xyz/"
@@ -99,7 +99,7 @@ export default function FeesPage() {
           <div className="text-[20px] font-bold">
             Cost of using Ethereum Layer-2s
           </div>
-          <div className="w-[171px] h-[34px] flex bg-[#1F2726] text-[12px] items-center justify-evenly pr-[2px] rounded-full ">
+          <div className="w-[171px] h-[34px] flex bg-[#1F2726] px-0.5 items-center justify-evenly pr-[2px] text-[12px] rounded-full ">
             {Object.keys(timescales)
               .reverse()
               .map((timescale) => (
@@ -122,9 +122,9 @@ export default function FeesPage() {
         </div>
       </Container>
       <Container>
-        <div className="w-full mt-[8px] flex h-[26px] justify-start pl-[50px] mb-1">
+        <div className="w-full mt-[8px] flex h-[26px] justify-start pl-[52px] mb-1 text-[12px] font-bold ">
           <div
-            className="text-[13px] font-semibold flex items-center gap-x-0.5 w-[12.5%] "
+            className="flex items-center gap-x-0.5 w-[13.25%] "
             onClick={() => {
               if (selectedSort === "chain") {
                 setSortOrder(!sortOrder);
@@ -148,7 +148,7 @@ export default function FeesPage() {
             />{" "}
           </div>
           <div
-            className="text-[14px] font-semibold flex items-center gap-x-0.5 w-[18%] justify-end"
+            className="flex items-center gap-x-0.5 w-[15%] justify-start"
             onClick={() => {
               if (selectedSort === "availability") {
                 setSortOrder(!sortOrder);
@@ -172,7 +172,7 @@ export default function FeesPage() {
             />{" "}
           </div>
           <div
-            className="text-[13px] font-semibold flex items-center justify-end gap-x-0.5 w-[17%] "
+            className="flex items-center justify-end gap-x-0.5 w-[18.5%] "
             onClick={() => {
               if (selectedSort === "medianfee") {
                 setSortOrder(!sortOrder);
@@ -196,7 +196,7 @@ export default function FeesPage() {
             />{" "}
           </div>
           <div
-            className="text-[13px] font-semibold flex items-center justify-end gap-x-0.5 w-[15%]"
+            className=" flex items-center justify-end gap-x-0.5 w-[16%]"
             onClick={() => {
               if (selectedSort === "transfer") {
                 setSortOrder(!sortOrder);
@@ -220,7 +220,7 @@ export default function FeesPage() {
             />{" "}
           </div>
           <div
-            className="text-[13px] font-semibold flex items-center justify-end gap-x-0.5 w-[14.5%] mr-[4px]"
+            className="flex items-center justify-end gap-x-0.5 w-[14.5%] mr-[2.75px]"
             onClick={() => {
               if (selectedSort === "swaptoken") {
                 setSortOrder(!sortOrder);
@@ -243,14 +243,14 @@ export default function FeesPage() {
               }`}
             />{" "}
           </div>
-          <div className="relative w-[140.7px] top-1 flex gap-x-[0.2%] items-end ">
+          <div className="relative w-[20%] top-1 flex items-end justify-end ">
             {Array.from({ length: 23 }, (_, index) => (
               <div
                 key={index}
-                className="w-[3.65%] bg-forest-400 rounded-t-full h-[8px]"
+                className="w-[5px] bg-forest-400 rounded-t-full h-[8px] mr-[1px]"
               ></div>
             ))}
-            <div className="w-[5%] bg-forest-400 rounded-t-full h-[18px]"></div>
+            <div className="w-[10px] bg-forest-400 rounded-t-full h-[18px]"></div>
           </div>
         </div>
         <div className="w-full h-[410px]">
@@ -272,7 +272,7 @@ export default function FeesPage() {
             </div>
             <div className="h-full w-[15%] flex justify-center items-center">
               <div
-                className="px-[8px] py-[1px] border-[1.5px] rounded-full flex items-center"
+                className="px-[8px] border-[1.5px] rounded-full flex items-center"
                 style={{
                   borderColor: getGradientColor(30),
                 }}
@@ -283,21 +283,21 @@ export default function FeesPage() {
             <div className="h-full w-[12.5%] flex justify-end items-center">
               <div>{"$0.054"}</div>
             </div>
-            <div className="h-full w-[13.5%] flex justify-end items-center mr-[10.5px]">
+            <div className="h-full w-[14%] flex justify-end items-center mr-[9.25px]">
               <div>{"$0.054"}</div>
             </div>
-            <div className="relative w-[140.7px] flex gap-x-[0.2%] items-end h-full">
+            <div className="relative w-[19%] flex items-end justify-end h-full">
               {Array.from({ length: 23 }, (_, index) => (
                 <div
                   key={index}
-                  className="w-[3.65%] h-full"
+                  className="w-[5px] h-full mr-[1px] opacity-50"
                   style={{
                     backgroundColor: getGradientColor(Math.random() * 100),
                   }}
                 ></div>
               ))}
               <div
-                className="w-[5%] bg-forest-400 h-full"
+                className="w-[10px] bg-forest-400 h-full"
                 style={{
                   backgroundColor: getGradientColor(Math.random() * 100),
                 }}

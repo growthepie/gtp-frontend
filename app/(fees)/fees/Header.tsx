@@ -11,16 +11,16 @@ import { track } from "@vercel/analytics";
 
 export default function Header() {
   return (
-    <header className="flex justify-evenly space-x-0 xl:space-x-6 items-start max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[50px] md:pt-[50px]">
-      <div className="flex justify-between items-center w-full">
-        <div className="flex space-x-0 xl:space-x-6 w-full h-full">
+    <header className="flex justify-between space-x-0 xl:space-x-6 items-start max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[60px] md:pt-[50px] ">
+      <div className="flex justify-start items-center w-full  ">
+        <div className="flex space-x-0 xl:space-x-6 w-full h-full ">
           {/*Banner/Notification Area */}
 
-          <div className={`hidden md:flex pr-[15px] `}>
+          <div className={`hidden md:flex  `}>
             <Notification />
           </div>
 
-          <div className="flex justify-between items-start h-full relative w-full">
+          <div className="flex justify-between items-start h-full relative w-full ">
             <Link href="/" className="flex gap-x-1">
               <div className="h-[36px] w-[154.05px] relative bottom-[1px] ">
                 <Image
@@ -51,7 +51,7 @@ export default function Header() {
           </div>
         </div>
       </div>
-      <div className="items-center z-10 hidden md:flex md:space-x-[34px] h-full mt-[7px] pr-[17px]">
+      <div className="items-center z-10 hidden md:flex md:space-x-[34px] h-full mt-[7px] pr-[24px]">
         <EthUsdSwitch />
 
         <div className="flex space-x-[22px] items-center ">
