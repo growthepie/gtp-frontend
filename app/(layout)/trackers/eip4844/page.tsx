@@ -138,14 +138,14 @@ export default function Eiptracker() {
   }, [feeData, selectedChains, showUsd]);
 
   const chartSeries = useMemo(() => {
-    return Object.keys(avgTxCosts)
+    return Object.keys(sortedMedianCosts)
       .filter((chain) => selectedChains[chain]) // Filter out only selected chains
       .map((chain) => ({
         id: chain,
         name: chain,
         unixKey: "unix",
         dataKey: showUsd ? "value_usd" : "value_eth",
-        data: avgTxCosts[chain].data,
+        data: sortedMedianCosts[chain].data,
       }));
   }, [
     avgTxCosts,
@@ -236,7 +236,8 @@ export default function Eiptracker() {
               </div>
               <div className="flex items-center mb-[15px]">
                 <div className="text-[16px]">
-                  See how the launch of EIP 4844 effects transaction costs.
+                  See how the launch of EIP 4844 effects median transaction
+                  costs.
                 </div>
               </div>
             </div>
