@@ -97,6 +97,31 @@ export default function Eiptracker() {
     return sortedAvgTxCosts;
   }, [feeData, selectedTimescale, showUsd]);
 
+  const medianCosts = useMemo(() => {
+    if (!feeData) return {}; // Return an empty object if feeData is falsy
+
+    // Get an array of chains and sort them based on txcosts_avg data
+    const sortedChains = Object.keys(feeData.chain_data).sort((a, b) => {
+      const aTxCost =
+        feeData.chain_data[a][selectedTimescale].txcosts_median.data[0][
+          showUsd ? 3 : 2
+        ];
+      const bTxCost =
+        feeData.chain_data[b][selectedTimescale].txcosts_median.data[0][
+          showUsd ? 3 : 2
+        ];
+      return aTxCost - bTxCost;
+    });
+
+    // Build the sorted object
+    const sortedAvgTxCosts = sortedChains.reduce((acc, chain) => {
+      acc[chain] = feeData.chain_data[chain][selectedTimescale].txcosts_avg;
+      return acc;
+    }, {});
+
+    return sortedAvgTxCosts;
+  }, [feeData, selectedTimescale, showUsd]);
+
   const sortedMedianCosts = useMemo(() => {
     if (!feeData) return [];
 
@@ -138,14 +163,14 @@ export default function Eiptracker() {
   }, [feeData, selectedChains, showUsd]);
 
   const chartSeries = useMemo(() => {
-    return Object.keys(sortedMedianCosts)
+    return Object.keys(medianCosts)
       .filter((chain) => selectedChains[chain]) // Filter out only selected chains
       .map((chain) => ({
         id: chain,
         name: chain,
         unixKey: "unix",
         dataKey: showUsd ? "value_usd" : "value_eth",
-        data: sortedMedianCosts[chain].data,
+        data: medianCosts[chain].data,
       }));
   }, [
     avgTxCosts,
