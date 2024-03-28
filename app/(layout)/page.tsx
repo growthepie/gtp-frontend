@@ -16,7 +16,8 @@ import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "growthepie - Growing Ethereum’s Ecosystem Together - Layer 2 User Base",
+    title:
+      "growthepie - Growing Ethereum’s Ecosystem Together - Layer 2 User Base",
     description:
       "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
   };
@@ -123,14 +124,13 @@ export default async function Page() {
             </div>
             <div className="text-base md:text-sm lg:text-base">
               At growthepie, our mission is to provide comprehensive and
-              accurate analytics of layer 2 solutions for the Ethereum
-              ecosystem, acting as a trusted data aggregator from reliable
-              sources such as L2Beat and DefiLlama, while also developing our
-              own metrics. Through our analytics interface, we aim to educate
-              and increase transparency. Our goal is to be one of the go-to
-              resources for those seeking to learn more about the potential of
-              layer 2 technologies and their impact on the future of the
-              Ethereum ecosystem.
+              accurate analytics Ethereum scaling solutions, acting as a trusted
+              data aggregator from reliable sources such as L2Beat and
+              DefiLlama, while also developing our own metrics. Through our
+              analytics interface, we aim to educate and increase transparency.
+              Our goal is to be one of the go-to resources for those seeking to
+              learn more about the potential of layer 2 technologies and their
+              impact on the future of the Ethereum ecosystem.
             </div>
           </div>
           <div className="hidden md:flex md:flex-1 relative mt-[5px] lg:mt-[15px] -mb-[10px] lg:-mb-[30px]">
@@ -176,7 +176,7 @@ export default async function Page() {
           />
           <QuestionAnswer
             className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
-            question='What exactly does "multiple" stand for?'
+            question='What exactly does "Active on Multiple Chains" stand for?'
             answer={
               <>
                 The &quot;multiple&quot; category denotes addresses that were
@@ -191,7 +191,7 @@ export default async function Page() {
                   href="https://www.growthepie.xyz/fundamentals/daily-active-addresses"
                   className="underline"
                 >
-                  &quot;Daily active addresses&quot;
+                  &quot;Active addresses&quot;
                 </Link>{" "}
                 tab.
               </>
@@ -199,14 +199,14 @@ export default async function Page() {
           />
           <QuestionAnswer
             className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
-            question="Why have the numbers on the landing page not updated for a few days?"
+            question="Why have the numbers on the landing page not been updated for a few days?"
             answer={
               <>
-                The numbers on the landing page use a weekly aggregation. In
+                The numbers in the User Base chart use a weekly aggregation. In
                 order to avoid confusion we only show completed weeks and no
                 partial weeks. The date that you can see in the chart is always
-                the start of the week (Monday). Our landing page numbers will
-                update every Monday.
+                the start of the week (Monday). These numbers will update every
+                Monday. All other numbers on this page update daily.
               </>
             }
           />
@@ -215,10 +215,11 @@ export default async function Page() {
             question="L2Beat has way more Layer 2s listed why do you not cover all of them?"
             answer={
               <>
-                The goal is to cover as many L2s as possible. We will add more
-                L2s over time. For our type of analysis we need access to the
-                raw data of each L2. This makes adding new L2s time and resource
-                consuming.
+                The goal is to cover as many Layer 2s as possible. We will add
+                more Layer 2s over time. For our type of analysis, we need
+                access to the raw data of each L2. This makes adding new L2s
+                time and resource-consuming. Our goal is to cover at least 80%
+                of all Ethereum ecosystem usage.
               </>
             }
           />
@@ -228,8 +229,8 @@ export default async function Page() {
             answer={
               <>
                 All dates on our website use UTC time. This makes it easier for
-                us to aggregate data and we avoid confusion when people in
-                different timezones exchange charts.
+                us to aggregate data and avoid confusion when people in
+                different timezones share charts.
               </>
             }
           />
