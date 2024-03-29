@@ -364,7 +364,7 @@ export default function FeesPage() {
                       <div className="bg-[#344240] flex rounded-full items-center px-[5px] py-[3px] gap-x-[2px]">
                         {dataAvailToArray(master.chains[chain[0]].da_layer).map(
                           (icon, index, array) => [
-                            <div key={index} className="w-[12px] h-[12px]">
+                            <div key={index} className="">
                               <Icon
                                 icon={`gtp:${icon}`}
                                 className="h-[12px] w-[12px]"
