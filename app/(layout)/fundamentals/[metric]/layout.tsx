@@ -148,7 +148,7 @@ export default async function Layout({
           iconContainerClassName="items-center mb-[15px] md:mb-[32px] relative"
         >
           {typeof pageData.description === "string" &&
-            pageData.description.includes("L2Beat.com.") ? (
+          pageData.description.includes("L2Beat.com.") ? (
             <div>
               <p>
                 {pageData.description.replace("L2Beat.com.", "")}
@@ -161,6 +161,22 @@ export default async function Layout({
                   L2Beat.com
                 </a>
               </p>
+            </div>
+          ) : pageData.title === "Transaction Costs" ? (
+            <div className="flex">
+              {pageData.description}
+              <span className="flex space-x-1 ml-1">
+                <div>Check out our</div>
+                <a
+                  href="https://www.growthepie.xyz/trackers/eip4844"
+                  target="_blank"
+                  className="underline"
+                >
+                  {" "}
+                  EIP-4844{" "}
+                </a>
+                <div>page for a more detailed view.</div>
+              </span>
             </div>
           ) : (
             pageData.description
