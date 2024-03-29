@@ -114,12 +114,12 @@ export default function Eiptracker() {
     });
 
     // Build the sorted object
-    const sortedAvgTxCosts = sortedChains.reduce((acc, chain) => {
-      acc[chain] = feeData.chain_data[chain][selectedTimescale].txcosts_avg;
+    const sortedMedianTxCosts = sortedChains.reduce((acc, chain) => {
+      acc[chain] = feeData.chain_data[chain][selectedTimescale].txcosts_median;
       return acc;
     }, {});
 
-    return sortedAvgTxCosts;
+    return sortedMedianTxCosts;
   }, [feeData, selectedTimescale, showUsd]);
 
   const sortedMedianCosts = useMemo(() => {
@@ -173,7 +173,7 @@ export default function Eiptracker() {
         data: medianCosts[chain].data,
       }));
   }, [
-    avgTxCosts,
+    medianCosts,
     selectedChains,
     showUsd,
     selectedTimescale,
