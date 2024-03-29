@@ -89,14 +89,13 @@ export default function FeesPage() {
     return sortedMedianCosts;
   }, [feeData, selectedChains, showUsd]);
 
-  console.log(master);
-
   const getGradientColor = (percentage) => {
     const colors = [
-      { percent: 0, color: "#4CFF7E" },
-      { percent: 40, color: "#FFDF27" },
-      { percent: 70, color: "#FBB90D" },
-      { percent: 100, color: "#FF3838" },
+      { percent: 0, color: "#1DF7EF" },
+      { percent: 20, color: "#76EDA0" },
+      { percent: 50, color: "#FFDF27" },
+      { percent: 70, color: "#FF9B47" },
+      { percent: 100, color: "#FE5468" },
     ];
 
     let lowerBound = colors[0];
@@ -143,12 +142,30 @@ export default function FeesPage() {
       .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
   };
 
+  function dataAvailToArray(x: string): string[] {
+    let retString: string[] = [];
+    if (typeof x === "string") {
+      // Ensure x is a string
+      if (x.includes("calldata")) {
+        retString.push("calldata");
+      }
+
+      if (x.includes("blobs")) {
+        retString.push("blobs");
+      }
+    }
+    return retString;
+  }
+
   return (
     <>
       {feeData && master && (
         <>
           <Container className="w-[820px]">
-            <div className="flex px-[5px] items-center w-[820px] h-[54px] rounded-full mt-[16px] bg-[#5A6462] shadow-lg shadow-black">
+            <div
+              className="flex px-[5px] items-center w-[820px] h-[54px] rounded-full mt-[16px] bg-[#5A6462] shadow-none"
+              style={{ boxShadow: "0px 0px 25px rgba(0, 0, 0, 0.50)" }}
+            >
               <a
                 className="flex items-center w-[162px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-2 gap"
                 href="https://www.growthepie.xyz/"
@@ -189,7 +206,7 @@ export default function FeesPage() {
           <Container>
             <div className="w-full mt-[8px] flex h-[26px] justify-start pl-[52px] mb-1 text-[12px] font-bold ">
               <div
-                className="flex items-center gap-x-0.5 w-[14.25%] "
+                className="flex items-center gap-x-0.5 w-[29.25%]  "
                 onClick={() => {
                   if (selectedSort === "chain") {
                     setSortOrder(!sortOrder);
@@ -211,33 +228,34 @@ export default function FeesPage() {
                     selectedSort === "chain" ? "opacity-100" : "opacity-20"
                   }`}
                 />{" "}
+                <div
+                  className="bg-[#344240] text-[8px] flex rounded-full font-normal items-center px-[5px] py-[3px] gap-x-[2px]"
+                  onClick={() => {
+                    if (selectedSort === "availability") {
+                      setSortOrder(!sortOrder);
+                    } else {
+                      setSelectedSort("availability");
+                    }
+                  }}
+                >
+                  Data Availability{" "}
+                  <Icon
+                    icon={
+                      selectedSort === "availability"
+                        ? sortOrder
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
+                        : "formkit:arrowdown"
+                    }
+                    className={` dark:text-white text-black w-[10px] h-[10px] ${
+                      selectedSort === "availability"
+                        ? "opacity-100"
+                        : "opacity-20"
+                    }`}
+                  />{" "}
+                </div>
               </div>
-              <div
-                className="flex items-center gap-x-0.5 w-[15%] justify-start"
-                onClick={() => {
-                  if (selectedSort === "availability") {
-                    setSortOrder(!sortOrder);
-                  } else {
-                    setSelectedSort("availability");
-                  }
-                }}
-              >
-                Data Availability{" "}
-                <Icon
-                  icon={
-                    selectedSort === "availability"
-                      ? sortOrder
-                        ? "formkit:arrowdown"
-                        : "formkit:arrowup"
-                      : "formkit:arrowdown"
-                  }
-                  className={` dark:text-white text-black w-[10px] h-[10px] ${
-                    selectedSort === "availability"
-                      ? "opacity-100"
-                      : "opacity-20"
-                  }`}
-                />{" "}
-              </div>
+
               <div
                 className="flex items-center justify-end gap-x-0.5 w-[18.5%] "
                 onClick={() => {
@@ -287,7 +305,7 @@ export default function FeesPage() {
                 />{" "}
               </div>
               <div
-                className="flex items-center justify-end gap-x-0.5 w-[13.5%] mr-[2.75px]"
+                className="flex items-center justify-end gap-x-0.5 w-[13.5%] mr-[9.5px]"
                 onClick={() => {
                   if (selectedSort === "swaptoken") {
                     setSortOrder(!sortOrder);
@@ -310,18 +328,19 @@ export default function FeesPage() {
                   }`}
                 />{" "}
               </div>
-              <div className="relative w-[20%] top-1 flex items-end justify-end ">
+              <div className="relative top-1 flex items-end space-x-[1px]">
                 {Array.from({ length: 23 }, (_, index) => (
                   <div
                     key={index}
-                    className="w-[5px] bg-forest-400 rounded-t-full h-[8px] mr-[1px]"
+                    className="w-[5px] bg-[#344240] rounded-t-full h-[8px]"
                   ></div>
                 ))}
-                <div className="w-[10px] bg-forest-400 rounded-t-full h-[18px]"></div>
+                <div className="w-[8px] border-[#344240] border-t-[1px] border-x-[1px] rounded-t-full h-[23px]"></div>
               </div>
             </div>
             <div className="w-full h-[410px] flex flex-col gap-y-1">
               {Object.entries(sortedFees).map((chain, index) => {
+                console.log(dataAvailToArray(master.chains[chain[0]].da_layer));
                 return (
                   <div
                     key={index}
@@ -338,12 +357,39 @@ export default function FeesPage() {
                         }}
                       />
                     </div>
-                    <div className="flex justify-start items-center h-full w-[13.5%] ">
-                      <div>{AllChainsByKeys[chain[0]].label}</div>
+                    <div className="flex justify-start items-center h-full w-[33%] ">
+                      <div className="mr-[5px]">
+                        {AllChainsByKeys[chain[0]].label}
+                      </div>
+                      <div className="bg-[#344240] flex rounded-full items-center px-[5px] py-[3px] gap-x-[2px]">
+                        {dataAvailToArray(master.chains[chain[0]].da_layer).map(
+                          (icon, index, array) => [
+                            <div key={index} className="w-[12px] h-[12px]">
+                              <Icon
+                                icon={`gtp:${icon}`}
+                                className="h-[12px] w-[12px]"
+                                style={{
+                                  color: "#5A6462",
+                                }}
+                              />
+                            </div>,
+                            index !== array.length - 1 && (
+                              /* Content to render when index is not the last element */
+                              <div
+                                key={index}
+                                className="w-[12px] h-[12px] flex items-center justify-center"
+                                style={{
+                                  color: "#5A6462",
+                                }}
+                              >
+                                +
+                              </div>
+                            ),
+                          ],
+                        )}
+                      </div>
                     </div>
-                    <div className="flex justify-start items-center h-full w-[19.5%]">
-                      <div>{master.chains[chain[0]].da_layer}</div>
-                    </div>
+
                     <div className="h-full w-[15%] flex justify-center items-center">
                       <div
                         className="px-[8px] border-[1.5px] rounded-full flex items-center"
@@ -378,16 +424,34 @@ export default function FeesPage() {
                       </div>
                     </div>
                     <div className="h-full w-[12.5%] flex justify-end items-center">
-                      {"$0.054"}
+                      {feeData.chain_data[chain[0]]["hourly"][
+                        "txcosts_native_median"
+                      ].data[0]
+                        ? Intl.NumberFormat(undefined, {
+                            notation: "compact",
+                            maximumFractionDigits: showUsd
+                              ? feeData.chain_data[chain[0]]["hourly"][
+                                  "txcosts_native_median"
+                                ].data[0][showUsd ? 2 : 1] < 0.01
+                                ? 4
+                                : 3
+                              : 5,
+                            minimumFractionDigits: 0,
+                          }).format(
+                            feeData.chain_data[chain[0]]["hourly"][
+                              "txcosts_native_median"
+                            ].data[0][showUsd ? 2 : 1],
+                          )
+                        : "Not Available"}
                     </div>
                     <div className="h-full w-[13%] flex justify-end items-center mr-[10px]">
                       {"$0.054"}
                     </div>
-                    <div className="relative w-[19%] flex items-end justify-end h-full">
+                    <div className="relative w-[19%] flex items-center justify-end h-full space-x-[1px]">
                       {Array.from({ length: 23 }, (_, index) => (
                         <div
                           key={index}
-                          className="w-[5px] h-full mr-[1px] opacity-50"
+                          className="w-[5px] h-[5px] rounded-full opacity-50"
                           style={{
                             backgroundColor: getGradientColor(
                               Math.random() * 100,
@@ -396,13 +460,28 @@ export default function FeesPage() {
                         ></div>
                       ))}
                       <div
-                        className="w-[10px] bg-forest-400 h-full"
+                        className="w-[8px]  h-[8px] rounded-full"
                         style={{
                           backgroundColor: getGradientColor(
                             Math.random() * 100,
                           ),
                         }}
                       ></div>
+                    </div>
+                    <div className="absolute right-[52px]">
+                      <Icon
+                        icon="feather:check-circle"
+                        className={`w-[22px] h-[22px] transition-all rounded-full ${
+                          selectedChains[chain[0]]
+                            ? "opacity-100 bg-white dark:bg-forest-1000 dark:hover:forest-800"
+                            : "opacity-0 bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
+                        }`}
+                        style={{
+                          color: selectedChains[chain[0]]
+                            ? undefined
+                            : "#5A6462",
+                        }}
+                      />
                     </div>
                   </div>
                 );
