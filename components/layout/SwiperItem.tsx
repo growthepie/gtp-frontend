@@ -44,6 +44,7 @@ export default function SwiperItem({
         category={metric_id}
         selectedTimespan={"max"}
         selectedScale="linear"
+        xMin={landing.data.all_l2s.metrics[metric_id].daily.data[0][0]}
       />
       <Link
         className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 delay-[1000ms] group-hover:delay-[0ms] -z-10"
