@@ -163,19 +163,19 @@ export default async function Layout({
               </p>
             </div>
           ) : pageData.title === "Transaction Costs" ? (
-            <div className="flex">
-              {pageData.description}
-              <span className="flex space-x-1 ml-1">
-                <div>Check out our</div>
-                <a
-                  href="https://www.growthepie.xyz/trackers/eip4844"
-                  target="_blank"
-                  className="underline"
-                >
-                  {" "}
-                  EIP-4844{" "}
-                </a>
-                <div>page for a more detailed view.</div>
+            <div className="flex flex-col sm:flex-row space-x-1">
+              <span className="inline-flex gap-x-1">
+                <div>
+                  {pageData.description} Check out our
+                  <a
+                    href="https://www.growthepie.xyz/trackers/eip4844"
+                    target="_blank"
+                    className="underline mx-0.5"
+                  >
+                    EIP-4844
+                  </a>
+                  page for a more detailed view.
+                </div>
               </span>
             </div>
           ) : (
