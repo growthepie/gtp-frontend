@@ -220,7 +220,7 @@ export default function FeesPage() {
                     className="font-thin w-[15px] h-[15px]"
                   />
                 </div>
-                <div className="flex items-center justify-center relative w-full h-full overflow-hidden">
+                <div className="flex items-center justify-center relative w-[70%] h-full overflow-hidden">
                   <div className="w-full ">
                     {Object.keys(timescales).map((timescale, index) => {
                       return (
@@ -434,7 +434,22 @@ export default function FeesPage() {
                         {AllChainsByKeys[chain[0]].label}
                       </div>
                       <div
-                        className="bg-[#344240] flex rounded-full w-auto items-center px-[5px] py-[3px] gap-x-[2px] transition-all duration-300"
+                        className={`bg-[#344240] flex rounded-full  items-center px-[5px] py-[3px] gap-x-[2px] transition-width overflow-hidden duration-300 ${
+                          hoveredItems.hoveredChain !== chain[0]
+                            ? `max-w-[${
+                                25 *
+                                dataAvailToArray(
+                                  master.chains[chain[0]].da_layer,
+                                ).length
+                              }px]`
+                            : `max-w-[${
+                                25 *
+                                  dataAvailToArray(
+                                    master.chains[chain[0]].da_layer,
+                                  ).length +
+                                100
+                              }px]`
+                        }`}
                         onMouseEnter={() => {
                           setHoveredItems({
                             hoveredChain: chain[0],
@@ -452,7 +467,7 @@ export default function FeesPage() {
                           (item, index, array) => [
                             <div
                               key={index}
-                              className="flex w-auto relative items-center gap-x-0.5 transition-width duration-500"
+                              className="flex max-w-full relative items-center gap-x-0.5 "
                               onMouseEnter={() => {
                                 setHoveredItems({
                                   hoveredChain: hoveredItems.hoveredChain,
