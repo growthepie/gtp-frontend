@@ -9,9 +9,23 @@ import { useLocalStorage } from "usehooks-ts";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 
+interface HoveredItems {
+  hoveredChain: string | null;
+  hoveredDA: string | null;
+}
+
+interface DAvailability {
+  icon: string;
+  label: string;
+}
+
 export default function FeesPage() {
   const [selectedTimescale, setSelectedTimescale] = useState("thirty_min");
   const [selectedSort, setSelectedSort] = useState("chain");
+  const [hoveredItems, setHoveredItems] = useState<HoveredItems>({
+    hoveredChain: null,
+    hoveredDA: null,
+  });
   const [sortOrder, setSortOrder] = useState(true);
   //True is default descending false ascending
   const { theme } = useTheme();
@@ -29,16 +43,16 @@ export default function FeesPage() {
   const timescales = useMemo(() => {
     return {
       thirty_min: {
-        label: "30 Min",
+        label: "Last 30 Minutes",
       },
       hourly: {
-        label: "1h",
+        label: "Last Hour",
       },
       six_hours: {
-        label: "6h",
+        label: "Last 6 Hours",
       },
       twelve_hours: {
-        label: "12h",
+        label: "Last 12 Hours",
       },
     };
   }, []);
@@ -142,19 +156,25 @@ export default function FeesPage() {
       .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
   };
 
-  function dataAvailToArray(x: string): string[] {
-    let retString: string[] = [];
+  function dataAvailToArray(x: string): DAvailability[] {
+    let retObject: DAvailability[] = [];
     if (typeof x === "string") {
       // Ensure x is a string
       if (x.includes("calldata")) {
-        retString.push("calldata");
+        retObject.push({
+          icon: "calldata",
+          label: "Calldata",
+        });
       }
 
       if (x.includes("blobs")) {
-        retString.push("blobs");
+        retObject.push({
+          icon: "blobs",
+          label: "Blobs",
+        });
       }
     }
-    return retString;
+    return retObject;
   }
 
   return (
@@ -181,25 +201,78 @@ export default function FeesPage() {
               <div className="text-[20px] font-bold">
                 Cost of using Ethereum Layer-2s
               </div>
-              <div className="w-[171px] h-[34px] flex bg-[#1F2726] px-0.5 items-center justify-evenly pr-[2px] text-[12px] rounded-full ">
-                {Object.keys(timescales)
-                  .reverse()
-                  .map((timescale) => (
-                    <div
-                      className={`w-[25%] hover:cursor-pointer py-1.5 px-0.5 hover:bg-forest-500/10 rounded-full text-center
-                  ${
-                    selectedTimescale === timescale
-                      ? "bg-[#151A19]"
-                      : "bg-inherit"
-                  }`}
-                      key={timescale}
-                      onClick={() => {
-                        setSelectedTimescale(timescale);
-                      }}
-                    >
-                      {timescales[timescale].label}
-                    </div>
-                  ))}
+              <div className="w-[165px] h-[25px] flex bg-[#344240] px-0.5 items-center justify-between pr-[2px] rounded-full ">
+                <div
+                  className="flex items-center justify-center w-[29px] h-[21px] bg-[#1F2726] rounded-full hover:cursor-pointer z-20"
+                  onClick={() => {
+                    const currentIndex =
+                      Object.keys(timescales).indexOf(selectedTimescale);
+                    const nextIndex =
+                      currentIndex - 1 < 0
+                        ? 3
+                        : (currentIndex - 1) % Object.keys(timescales).length;
+
+                    setSelectedTimescale(Object.keys(timescales)[nextIndex]);
+                  }}
+                >
+                  <Icon
+                    icon="feather:arrow-left"
+                    className="font-thin w-[15px] h-[15px]"
+                  />
+                </div>
+                <div className="flex items-center justify-center relative w-full h-full overflow-hidden">
+                  <div className="w-full ">
+                    {Object.keys(timescales).map((timescale, index) => {
+                      return (
+                        <div
+                          key={timescales[timescale].label}
+                          className={`absolute w-full duration-200 ease-linear transition-all z-10 ${
+                            selectedTimescale !== timescale
+                              ? "opacity-0"
+                              : "opacity-100"
+                          }`}
+                          style={{
+                            left: `${
+                              (index -
+                                Object.keys(timescales).indexOf(
+                                  selectedTimescale,
+                                )) *
+                              100
+                            }%`,
+                          }}
+                        >
+                          <div className="absolute flex items-center justify-center gap-x-1 w-full text-center font-semibold text-[10px] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                            <Icon
+                              icon="feather:clock"
+                              className="font-thin w-[12px] h-[12px]"
+                            />
+                            {timescales[timescale].label}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* <div class="hidden duration-200 ease-linear">
+            <img src="/docs/images/carousel/carousel-5.svg" class="absolute block w-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" alt="...">
+        </div> */}
+                <div
+                  className="flex items-center justify-center w-[29px] h-[21px] bg-[#1F2726] rounded-full z-20 hover:cursor-pointer"
+                  onClick={() => {
+                    const currentIndex =
+                      Object.keys(timescales).indexOf(selectedTimescale);
+                    const nextIndex =
+                      (currentIndex + 1) % Object.keys(timescales).length;
+
+                    setSelectedTimescale(Object.keys(timescales)[nextIndex]);
+                  }}
+                >
+                  <Icon
+                    icon="feather:arrow-right"
+                    className="font-thin w-[15px] h-[15px]"
+                  />
+                </div>
               </div>
             </div>
           </Container>
@@ -340,7 +413,6 @@ export default function FeesPage() {
             </div>
             <div className="w-full h-[410px] flex flex-col gap-y-1">
               {Object.entries(sortedFees).map((chain, index) => {
-                console.log(dataAvailToArray(master.chains[chain[0]].da_layer));
                 return (
                   <div
                     key={index}
@@ -361,17 +433,56 @@ export default function FeesPage() {
                       <div className="mr-[5px]">
                         {AllChainsByKeys[chain[0]].label}
                       </div>
-                      <div className="bg-[#344240] flex rounded-full items-center px-[5px] py-[3px] gap-x-[2px]">
+                      <div
+                        className="bg-[#344240] flex rounded-full w-auto items-center px-[5px] py-[3px] gap-x-[2px] transition-all duration-300"
+                        onMouseEnter={() => {
+                          setHoveredItems({
+                            hoveredChain: chain[0],
+                            hoveredDA: hoveredItems.hoveredDA,
+                          });
+                        }}
+                        onMouseLeave={() => {
+                          setHoveredItems({
+                            hoveredChain: null,
+                            hoveredDA: hoveredItems.hoveredDA,
+                          });
+                        }}
+                      >
                         {dataAvailToArray(master.chains[chain[0]].da_layer).map(
-                          (icon, index, array) => [
-                            <div key={index} className="">
+                          (item, index, array) => [
+                            <div
+                              key={index}
+                              className="flex w-auto relative items-center gap-x-0.5 transition-width duration-500"
+                              onMouseEnter={() => {
+                                setHoveredItems({
+                                  hoveredChain: hoveredItems.hoveredChain,
+                                  hoveredDA: item.label,
+                                });
+                              }}
+                              onMouseLeave={() => {
+                                setHoveredItems({
+                                  hoveredChain: hoveredItems.hoveredChain,
+                                  hoveredDA: null,
+                                });
+                              }}
+                            >
                               <Icon
-                                icon={`gtp:${icon}`}
+                                icon={`gtp:${item.icon}`}
                                 className="h-[12px] w-[12px]"
                                 style={{
                                   color: "#5A6462",
                                 }}
                               />
+                              <div
+                                className={`text-[8px] text-center font-semibold text-[#5A6462] ${
+                                  hoveredItems.hoveredChain === chain[0] &&
+                                  hoveredItems.hoveredDA === item.label
+                                    ? "block"
+                                    : "hidden"
+                                }`}
+                              >
+                                {item.label}
+                              </div>
                             </div>,
                             index !== array.length - 1 && (
                               /* Content to render when index is not the last element */
