@@ -381,13 +381,11 @@ export default function ComparisonChart({
     if (magnitude > 0) {
       const digitsBeforeDecimal = numberOfDigits % 3 || 3;
       shortenedNumber =
-        parseFloat(numberStr.slice(0, digitsBeforeDecimal + 1)) / 10;
+        parseFloat(numberStr.slice(0, digitsBeforeDecimal + 2)) / 100;
       // Remove trailing zeros after the decimal point
-      shortenedNumber = shortenedNumber
-        .toString()
-        .replace(/(\.[0-9]*[1-9])0+$/, "$1");
+      shortenedNumber = shortenedNumber.toFixed(2).replace(/\.?0+$/, "");
     } else {
-      shortenedNumber = number;
+      shortenedNumber = number.toFixed(2);
     }
 
     // Concatenate the suffix
@@ -535,7 +533,7 @@ export default function ComparisonChart({
                   !prefix && "hidden"
                 }">${prefix}</div>
                 ${
-                  metric_id === "fdv"
+                  metric_id === "fdv" || "market_cap"
                     ? shortenNumber(value).toString()
                     : parseFloat(value).toLocaleString(undefined, {
                         minimumFractionDigits: valuePrefix ? 2 : 0,
