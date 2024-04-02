@@ -220,7 +220,7 @@ export default function FeesPage() {
                     className="font-thin w-[15px] h-[15px]"
                   />
                 </div>
-                <div className="flex items-center justify-center relative w-[70%] h-full overflow-hidden">
+                <div className="flex items-center justify-center relative w-[70%] h-full">
                   <div className="w-full ">
                     {Object.keys(timescales).map((timescale, index) => {
                       return (
@@ -277,197 +277,188 @@ export default function FeesPage() {
             </div>
           </Container>
           <Container>
-            <div className="w-full mt-[8px] flex h-[26px] justify-start pl-[52px] mb-1 text-[12px] font-bold ">
-              <div
-                className="flex items-center gap-x-0.5 w-[29.25%]  "
-                onClick={() => {
-                  if (selectedSort === "chain") {
-                    setSortOrder(!sortOrder);
-                  } else {
-                    setSelectedSort("chain");
-                  }
-                }}
-              >
-                Chain{" "}
-                <Icon
-                  icon={
-                    selectedSort === "chain"
-                      ? sortOrder
-                        ? "formkit:arrowdown"
-                        : "formkit:arrowup"
-                      : "formkit:arrowdown"
-                  }
-                  className={` dark:text-white text-black w-[10px] h-[10px] ${
-                    selectedSort === "chain" ? "opacity-100" : "opacity-20"
-                  }`}
-                />{" "}
+            <div className="max-h-[360px] overflow-y-clip relative">
+              <div className="w-full mt-[8px] flex h-[26px] justify-start pl-[52px] mb-1 text-[12px] font-bold ">
                 <div
-                  className="bg-[#344240] text-[8px] flex rounded-full font-normal items-center px-[5px] py-[3px] gap-x-[2px]"
+                  className="flex items-center gap-x-0.5 w-[29.25%]  "
                   onClick={() => {
-                    if (selectedSort === "availability") {
+                    if (selectedSort === "chain") {
                       setSortOrder(!sortOrder);
                     } else {
-                      setSelectedSort("availability");
+                      setSelectedSort("chain");
                     }
                   }}
                 >
-                  Data Availability{" "}
+                  Chain{" "}
                   <Icon
                     icon={
-                      selectedSort === "availability"
+                      selectedSort === "chain"
                         ? sortOrder
                           ? "formkit:arrowdown"
                           : "formkit:arrowup"
                         : "formkit:arrowdown"
                     }
                     className={` dark:text-white text-black w-[10px] h-[10px] ${
-                      selectedSort === "availability"
+                      selectedSort === "chain" ? "opacity-100" : "opacity-20"
+                    }`}
+                  />{" "}
+                  <div
+                    className="bg-[#344240] text-[8px] flex rounded-full font-normal items-center px-[5px] py-[3px] gap-x-[2px]"
+                    onClick={() => {
+                      if (selectedSort === "availability") {
+                        setSortOrder(!sortOrder);
+                      } else {
+                        setSelectedSort("availability");
+                      }
+                    }}
+                  >
+                    Data Availability{" "}
+                    <Icon
+                      icon={
+                        selectedSort === "availability"
+                          ? sortOrder
+                            ? "formkit:arrowdown"
+                            : "formkit:arrowup"
+                          : "formkit:arrowdown"
+                      }
+                      className={` dark:text-white text-black w-[10px] h-[10px] ${
+                        selectedSort === "availability"
+                          ? "opacity-100"
+                          : "opacity-20"
+                      }`}
+                    />{" "}
+                  </div>
+                </div>
+
+                <div
+                  className="flex items-center justify-end gap-x-0.5 w-[18.5%] "
+                  onClick={() => {
+                    if (selectedSort === "medianfee") {
+                      setSortOrder(!sortOrder);
+                    } else {
+                      setSelectedSort("medianfee");
+                    }
+                  }}
+                >
+                  Median Fee{" "}
+                  <Icon
+                    icon={
+                      selectedSort === "medianfee"
+                        ? sortOrder
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
+                        : "formkit:arrowdown"
+                    }
+                    className={` dark:text-white text-black w-[10px] h-[10px] ${
+                      selectedSort === "medianfee"
                         ? "opacity-100"
                         : "opacity-20"
                     }`}
                   />{" "}
                 </div>
+                <div
+                  className=" flex items-center justify-end gap-x-0.5 w-[16%]"
+                  onClick={() => {
+                    if (selectedSort === "transfer") {
+                      setSortOrder(!sortOrder);
+                    } else {
+                      setSelectedSort("transfer");
+                    }
+                  }}
+                >
+                  Transfer ETH{" "}
+                  <Icon
+                    icon={
+                      selectedSort === "transfer"
+                        ? sortOrder
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
+                        : "formkit:arrowdown"
+                    }
+                    className={` dark:text-white text-black w-[10px] h-[10px] ${
+                      selectedSort === "transfer" ? "opacity-100" : "opacity-20"
+                    }`}
+                  />{" "}
+                </div>
+                <div
+                  className="flex items-center justify-end gap-x-0.5 w-[13.5%] mr-[9.5px]"
+                  onClick={() => {
+                    if (selectedSort === "swaptoken") {
+                      setSortOrder(!sortOrder);
+                    } else {
+                      setSelectedSort("swaptoken");
+                    }
+                  }}
+                >
+                  <div>Swap Token </div>
+                  <Icon
+                    icon={
+                      selectedSort === "swaptoken"
+                        ? sortOrder
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
+                        : "formkit:arrowdown"
+                    }
+                    className={` dark:text-white text-black w-[10px] h-[10px] ${
+                      selectedSort === "swaptoken"
+                        ? "opacity-100"
+                        : "opacity-20"
+                    }`}
+                  />{" "}
+                </div>
+                <div className="relative top-1 flex items-end space-x-[1px]">
+                  {Array.from({ length: 23 }, (_, index) => (
+                    <div
+                      key={index}
+                      className="w-[5px] bg-[#344240] rounded-t-full h-[8px]"
+                    ></div>
+                  ))}
+                  <div className="w-[8px] border-[#344240] border-t-[1px] border-x-[1px] rounded-t-full h-[23px]"></div>
+                </div>
               </div>
-
-              <div
-                className="flex items-center justify-end gap-x-0.5 w-[18.5%] "
-                onClick={() => {
-                  if (selectedSort === "medianfee") {
-                    setSortOrder(!sortOrder);
-                  } else {
-                    setSelectedSort("medianfee");
-                  }
-                }}
-              >
-                Median Fee{" "}
-                <Icon
-                  icon={
-                    selectedSort === "medianfee"
-                      ? sortOrder
-                        ? "formkit:arrowdown"
-                        : "formkit:arrowup"
-                      : "formkit:arrowdown"
-                  }
-                  className={` dark:text-white text-black w-[10px] h-[10px] ${
-                    selectedSort === "medianfee" ? "opacity-100" : "opacity-20"
-                  }`}
-                />{" "}
-              </div>
-              <div
-                className=" flex items-center justify-end gap-x-0.5 w-[16%]"
-                onClick={() => {
-                  if (selectedSort === "transfer") {
-                    setSortOrder(!sortOrder);
-                  } else {
-                    setSelectedSort("transfer");
-                  }
-                }}
-              >
-                Transfer ETH{" "}
-                <Icon
-                  icon={
-                    selectedSort === "transfer"
-                      ? sortOrder
-                        ? "formkit:arrowdown"
-                        : "formkit:arrowup"
-                      : "formkit:arrowdown"
-                  }
-                  className={` dark:text-white text-black w-[10px] h-[10px] ${
-                    selectedSort === "transfer" ? "opacity-100" : "opacity-20"
-                  }`}
-                />{" "}
-              </div>
-              <div
-                className="flex items-center justify-end gap-x-0.5 w-[13.5%] mr-[9.5px]"
-                onClick={() => {
-                  if (selectedSort === "swaptoken") {
-                    setSortOrder(!sortOrder);
-                  } else {
-                    setSelectedSort("swaptoken");
-                  }
-                }}
-              >
-                <div>Swap Token </div>
-                <Icon
-                  icon={
-                    selectedSort === "swaptoken"
-                      ? sortOrder
-                        ? "formkit:arrowdown"
-                        : "formkit:arrowup"
-                      : "formkit:arrowdown"
-                  }
-                  className={` dark:text-white text-black w-[10px] h-[10px] ${
-                    selectedSort === "swaptoken" ? "opacity-100" : "opacity-20"
-                  }`}
-                />{" "}
-              </div>
-              <div className="relative top-1 flex items-end space-x-[1px]">
-                {Array.from({ length: 23 }, (_, index) => (
-                  <div
-                    key={index}
-                    className="w-[5px] bg-[#344240] rounded-t-full h-[8px]"
-                  ></div>
-                ))}
-                <div className="w-[8px] border-[#344240] border-t-[1px] border-x-[1px] rounded-t-full h-[23px]"></div>
-              </div>
-            </div>
-            <div className="w-full h-[410px] flex flex-col gap-y-1">
-              {Object.entries(sortedFees).map((chain, index) => {
-                return (
-                  <div
-                    key={index}
-                    className="border-forest-700 border-[1px] w-full rounded-full border-black/[16%] dark:border-[#5A6462] h-[34px] pl-[20px] flex items-center text-[15px]"
-                  >
-                    <div className="flex items-center h-full w-[4%] ">
-                      <Icon
-                        icon={`gtp:${
-                          AllChainsByKeys[chain[0]].urlKey
-                        }-logo-monochrome`}
-                        className="h-[24px] w-[24px]"
-                        style={{
-                          color: AllChainsByKeys[chain[0]].colors[theme][0],
-                        }}
-                      />
-                    </div>
-                    <div className="flex justify-start items-center h-full w-[33%] ">
-                      <div className="mr-[5px]">
-                        {AllChainsByKeys[chain[0]].label}
+              <div className="w-full h-[410px] flex flex-col gap-y-1">
+                {Object.entries(sortedFees).map((chain, index) => {
+                  return (
+                    <div
+                      key={index}
+                      className="border-forest-700 border-[1px] w-full rounded-full border-black/[16%] dark:border-[#5A6462] h-[34px] pl-[20px] flex items-center text-[15px]"
+                    >
+                      <div className="flex items-center h-full w-[4%] ">
+                        <Icon
+                          icon={`gtp:${
+                            AllChainsByKeys[chain[0]].urlKey
+                          }-logo-monochrome`}
+                          className="h-[24px] w-[24px]"
+                          style={{
+                            color: AllChainsByKeys[chain[0]].colors[theme][0],
+                          }}
+                        />
                       </div>
-                      <div
-                        className={`bg-[#344240] flex rounded-full  items-center px-[5px] py-[3px] gap-x-[2px] transition-width overflow-hidden duration-300 ${
-                          hoveredItems.hoveredChain !== chain[0]
-                            ? `max-w-[${
-                                25 *
-                                dataAvailToArray(
-                                  master.chains[chain[0]].da_layer,
-                                ).length
-                              }px]`
-                            : `max-w-[${
-                                25 *
-                                  dataAvailToArray(
-                                    master.chains[chain[0]].da_layer,
-                                  ).length +
-                                100
-                              }px]`
-                        }`}
-                        onMouseEnter={() => {
-                          setHoveredItems({
-                            hoveredChain: chain[0],
-                            hoveredDA: hoveredItems.hoveredDA,
-                          });
-                        }}
-                        onMouseLeave={() => {
-                          setHoveredItems({
-                            hoveredChain: null,
-                            hoveredDA: hoveredItems.hoveredDA,
-                          });
-                        }}
-                      >
-                        {dataAvailToArray(master.chains[chain[0]].da_layer).map(
-                          (item, index, array) => [
+                      <div className="flex justify-start items-center h-full w-[33%] ">
+                        <div className="mr-[5px]">
+                          {AllChainsByKeys[chain[0]].label}
+                        </div>
+                        <div
+                          className={`bg-[#344240] flex rounded-full  items-center px-[5px] py-[3px] gap-x-[2px] transition-width overflow-hidden duration-300`}
+                          onMouseEnter={() => {
+                            setHoveredItems({
+                              hoveredChain: chain[0],
+                              hoveredDA: hoveredItems.hoveredDA,
+                            });
+                          }}
+                          onMouseLeave={() => {
+                            setHoveredItems({
+                              hoveredChain: null,
+                              hoveredDA: hoveredItems.hoveredDA,
+                            });
+                          }}
+                        >
+                          {dataAvailToArray(
+                            master.chains[chain[0]].da_layer,
+                          ).map((item, index, array) => [
                             <div
                               key={index}
-                              className="flex max-w-full relative items-center gap-x-0.5 "
+                              className={`flex relative items-center gap-x-0.5`}
                               onMouseEnter={() => {
                                 setHoveredItems({
                                   hoveredChain: hoveredItems.hoveredChain,
@@ -489,12 +480,15 @@ export default function FeesPage() {
                                 }}
                               />
                               <div
-                                className={`text-[8px] text-center font-semibold text-[#5A6462] ${
-                                  hoveredItems.hoveredChain === chain[0] &&
-                                  hoveredItems.hoveredDA === item.label
-                                    ? "block"
-                                    : "hidden"
-                                }`}
+                                className={`text-[8px] text-center font-semibold text-[#5A6462] overflow-hidden `}
+                                style={{
+                                  maxWidth:
+                                    hoveredItems.hoveredDA === item.label &&
+                                    hoveredItems.hoveredChain === chain[0]
+                                      ? "50px"
+                                      : "0px",
+                                  transition: "max-width 0.3s ease", // Adjust duration and timing function as needed
+                                }}
                               >
                                 {item.label}
                               </div>
@@ -511,107 +505,125 @@ export default function FeesPage() {
                                 +
                               </div>
                             ),
-                          ],
-                        )}
+                          ])}
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="h-full w-[15%] flex justify-center items-center">
-                      <div
-                        className="px-[8px] border-[1.5px] rounded-full flex items-center"
-                        style={{
-                          borderColor: getGradientColor(
-                            Math.floor(
-                              (sortedFees[chain[0]].data[0][showUsd ? 2 : 1] /
-                                sortedFees[
-                                  Object.keys(sortedFees)[
-                                    Object.keys(sortedFees).length - 1
-                                  ]
-                                ].data[0][showUsd ? 2 : 1]) *
-                                100,
+                      <div className="h-full w-[15%] flex justify-center items-center">
+                        <div
+                          className="px-[8px] border-[1.5px] rounded-full flex items-center"
+                          style={{
+                            borderColor: getGradientColor(
+                              Math.floor(
+                                (sortedFees[chain[0]].data[0][showUsd ? 2 : 1] /
+                                  sortedFees[
+                                    Object.keys(sortedFees)[
+                                      Object.keys(sortedFees).length - 1
+                                    ]
+                                  ].data[0][showUsd ? 2 : 1]) *
+                                  100,
+                              ),
                             ),
-                          ),
-                        }}
-                      >
-                        {Intl.NumberFormat(undefined, {
-                          notation: "compact",
-                          maximumFractionDigits: showUsd
-                            ? feeData.chain_data[chain[0]]["hourly"]
-                                .txcosts_median.data[0][showUsd ? 2 : 1] < 0.01
-                              ? 4
-                              : 3
-                            : 5,
-                          minimumFractionDigits: 0,
-                        }).format(
-                          feeData.chain_data[chain[0]]["hourly"].txcosts_median
-                            .data[0][showUsd ? 2 : 1],
-                        )}
-                        {`${showUsd ? "$" : "Ξ"}`}
-                      </div>
-                    </div>
-                    <div className="h-full w-[12.5%] flex justify-end items-center">
-                      {feeData.chain_data[chain[0]]["hourly"][
-                        "txcosts_native_median"
-                      ].data[0]
-                        ? Intl.NumberFormat(undefined, {
+                          }}
+                        >
+                          {Intl.NumberFormat(undefined, {
                             notation: "compact",
                             maximumFractionDigits: showUsd
-                              ? feeData.chain_data[chain[0]]["hourly"][
-                                  "txcosts_native_median"
-                                ].data[0][showUsd ? 2 : 1] < 0.01
+                              ? feeData.chain_data[chain[0]]["hourly"]
+                                  .txcosts_median.data[0][showUsd ? 2 : 1] <
+                                0.01
                                 ? 4
                                 : 3
                               : 5,
                             minimumFractionDigits: 0,
                           }).format(
-                            feeData.chain_data[chain[0]]["hourly"][
-                              "txcosts_native_median"
-                            ].data[0][showUsd ? 2 : 1],
-                          )
-                        : "Not Available"}
-                    </div>
-                    <div className="h-full w-[13%] flex justify-end items-center mr-[10px]">
-                      {"$0.054"}
-                    </div>
-                    <div className="relative w-[19%] flex items-center justify-end h-full space-x-[1px]">
-                      {Array.from({ length: 23 }, (_, index) => (
+                            feeData.chain_data[chain[0]]["hourly"]
+                              .txcosts_median.data[0][showUsd ? 2 : 1],
+                          )}
+                          {`${showUsd ? "$" : "Ξ"}`}
+                        </div>
+                      </div>
+                      <div className="h-full w-[12.5%] flex justify-end items-center">
+                        {feeData.chain_data[chain[0]]["hourly"][
+                          "txcosts_native_median"
+                        ].data[0]
+                          ? Intl.NumberFormat(undefined, {
+                              notation: "compact",
+                              maximumFractionDigits: showUsd
+                                ? feeData.chain_data[chain[0]]["hourly"][
+                                    "txcosts_native_median"
+                                  ].data[0][showUsd ? 2 : 1] < 0.01
+                                  ? 4
+                                  : 3
+                                : 5,
+                              minimumFractionDigits: 0,
+                            }).format(
+                              feeData.chain_data[chain[0]]["hourly"][
+                                "txcosts_native_median"
+                              ].data[0][showUsd ? 2 : 1],
+                            )
+                          : "Not Available"}
+                      </div>
+                      <div className="h-full w-[13%] flex justify-end items-center mr-[10px]">
+                        {"$0.054"}
+                      </div>
+                      <div className="relative w-[19%] flex items-center justify-end h-full space-x-[1px]">
+                        {Array.from({ length: 23 }, (_, index) => (
+                          <div
+                            key={index}
+                            className="w-[5px] h-[5px] rounded-full opacity-50"
+                            style={{
+                              backgroundColor: getGradientColor(
+                                Math.random() * 100,
+                              ),
+                            }}
+                          ></div>
+                        ))}
                         <div
-                          key={index}
-                          className="w-[5px] h-[5px] rounded-full opacity-50"
+                          className="w-[8px]  h-[8px] rounded-full"
                           style={{
                             backgroundColor: getGradientColor(
                               Math.random() * 100,
                             ),
                           }}
                         ></div>
-                      ))}
-                      <div
-                        className="w-[8px]  h-[8px] rounded-full"
-                        style={{
-                          backgroundColor: getGradientColor(
-                            Math.random() * 100,
-                          ),
-                        }}
-                      ></div>
+                      </div>
+                      <div className="absolute left-[99%]">
+                        <Icon
+                          icon="feather:check-circle"
+                          className={`w-[22px] h-[22px] transition-all rounded-full ${
+                            selectedChains[chain[0]]
+                              ? "opacity-100 bg-white dark:bg-forest-1000 dark:hover:forest-800"
+                              : "opacity-0 bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
+                          }`}
+                          style={{
+                            color: selectedChains[chain[0]]
+                              ? undefined
+                              : "#5A6462",
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="absolute right-[52px]">
-                      <Icon
-                        icon="feather:check-circle"
-                        className={`w-[22px] h-[22px] transition-all rounded-full ${
-                          selectedChains[chain[0]]
-                            ? "opacity-100 bg-white dark:bg-forest-1000 dark:hover:forest-800"
-                            : "opacity-0 bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
-                        }`}
-                        style={{
-                          color: selectedChains[chain[0]]
-                            ? undefined
-                            : "#5A6462",
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+              <div
+                className="absolute inset-0 pointer-events-none h-[100px] top-[80%] w-[102.25%]"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(to top, rgba(31,39,38,0.6), transparent)",
+                  mixBlendMode: "multiply",
+                }}
+              ></div>
+            </div>
+            <div className="border-forest-700 w-[840px] border-[1px] rounded-full border-black/[16%] dark:border-forest-50 h-[34px] pl-[20px] flex items-center text-[15px] absolute top-[54.5%] bg-forest-900">
+              <div className="flex items-center h-full w-[4%] ">
+                <Icon
+                  icon={`gtp:ethereum-logo-monochrome`}
+                  className="h-[24px] w-[24px]"
+                  style={{ color: "#5A6462" }}
+                />
+              </div>
             </div>
           </Container>
         </>
