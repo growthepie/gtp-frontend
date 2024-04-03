@@ -21,13 +21,6 @@ export const Contributors = [
     linkedin: "https://www.linkedin.com/in/manishiwa",
   },
   {
-    name: "Chris Keshian",
-    image: "/contributors/chris.png",
-    role: "Product",
-    twitter: "https://www.twitter.com/chriskeshian",
-    linkedin: "https://www.linkedin.com/in/chriskeshian",
-  },
-  {
     name: "Michael May",
     image: "/contributors/michael.png",
     role: "Frontend",
@@ -55,6 +48,13 @@ export const Contributors = [
     role: "Data",
     twitter: "https://twitter.com/naderfyi",
     linkedin: "https://www.linkedin.com/in/naderfyi/",
+  },
+  {
+    name: "Chris Keshian",
+    image: "/contributors/chris.png",
+    role: "Early Contributor",
+    twitter: "https://www.twitter.com/chriskeshian",
+    linkedin: "https://www.linkedin.com/in/chriskeshian",
   },
 ];
 
