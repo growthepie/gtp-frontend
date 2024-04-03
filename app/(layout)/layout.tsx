@@ -12,6 +12,7 @@ import { Graph } from "schema-dts";
 import Share from "@/components/Share";
 import Embed from "@/components/Embed";
 import BottomBanner from "@/components/BottomBanner";
+import "../background.css";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",
@@ -173,7 +174,13 @@ export default function RootLayout({
               <SidebarContainer />
               <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
                 <div className="w-full relative min-h-full">
-                  <Backgrounds />
+
+                  <div className="background-container">
+                    <div className="background-gradient-group">
+                      <div className="background-gradient-yellow"></div>
+                      <div className="background-gradient-green"></div>
+                    </div>
+                  </div>
                   <Header />
                   <main className="flex-1 w-full mx-auto z-10 mb-[165px]">
                     {children}
