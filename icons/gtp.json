@@ -99,6 +99,11 @@
       "width": 15,
       "height": 15
     },
+    "blast-logo-monochrome":{
+      "body": "<path d=\"M2.48555 3L0 4.89504H12.7168L12.0617 6.96501H6.96532L6.44509 8.59767H11.545L10.7514 11.105H3.61272L5.08671 6.44023L3.43931 5.2449L0.982659 13H10.1734L12.5723 11.8047L13.4343 9.12333L11.8208 7.92711L14.2014 6.7374L15 4.25364L13.3815 3H2.48555Z\" fill=\"currentColor\"/>",
+      "width": 15,
+      "height": 15
+    },
     "gtp-book-open": {
       "body": "<g fill=\"none\"><path fill=\"url(#svgID0)\" fill-rule=\"evenodd\" d=\"M3 4.708c0-.452.366-.818.818-.818h4.91a4.09 4.09 0 014.09 4.09v11.455a.818.818 0 11-1.636 0A1.636 1.636 0 009.545 17.8H3.818A.818.818 0 013 16.98V4.708ZM11.182 16.6V7.98a2.455 2.455 0 00-2.455-2.455h-4.09v10.636h4.908c.58 0 1.143.154 1.637.439Z\" clip-rule=\"evenodd\"/><path fill=\"url(#svgID1)\" fill-rule=\"evenodd\" d=\"M12.38 5.088a4.091 4.091 0 012.893-1.198h4.909c.452 0 .818.366.818.818V16.98a.818.818 0 01-.818.818h-5.728a1.636 1.636 0 00-1.636 1.636.818.818 0 11-1.636 0V7.981a4.09 4.09 0 011.198-2.893Zm.438 11.513a3.272 3.272 0 011.636-.439h4.91V5.526h-4.091a2.455 2.455 0 00-2.455 2.455v8.62Z\" clip-rule=\"evenodd\"/><defs><linearGradient id=\"svgID0\" x1=\"7.909\" x2=\"7.909\" y1=\"3.89\" y2=\"20.253\" gradientUnits=\"userSpaceOnUse\"><stop stop-color=\"currentColor\"/><stop offset=\"1\" stop-color=\"currentColor\"/></linearGradient><linearGradient id=\"svgID1\" x1=\"16.091\" x2=\"16.091\" y1=\"3.89\" y2=\"20.253\" gradientUnits=\"userSpaceOnUse\"><stop stop-color=\"currentColor\"/><stop offset=\"1\" stop-color=\"currentColor\"/></linearGradient></defs></g>",
       "width": 24,

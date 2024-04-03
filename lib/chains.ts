@@ -410,6 +410,28 @@ export const AllChains: Chain[] = [
     darkTextOnBackground: false,
   },
   {
+    label: "Blast",
+    icon: "/icons/blast.png",
+    key: "blast",
+    urlKey: "blast",
+    chainType: "L2",
+    ecosystem: ["all-chains"], // add ecosystems when unhiding from the UI
+    description: "",
+    border: {
+      light: ["border-[#E9E238]", "border-[#E9E238]"],
+      dark: ["border-[#FEFF00]", "border-[#FEFF00]"],
+    },
+    colors: {
+      light: ["#E9E238", "#E9E238"], // dark greenish
+      dark: ["#FEFF00", "#FEFF00"], // dark greenish
+    },
+    backgrounds: {
+      light: ["bg-[#E9E238]", "bg-[#E9E238]"],
+      dark: ["bg-[#FEFF00]", "bg-[#FEFF00]"],
+    },
+    darkTextOnBackground: true,
+  },
+  {
     label: "Multiple Chains",
     icon: null,
     key: "multiple",
