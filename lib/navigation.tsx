@@ -534,6 +534,17 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "chainsRhino",
         urlKey: "rhino-fi",
       },
+      {
+        label: "Manta Pacific",
+        page: {
+          description:
+            "Manta Pacific is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in September 2023.",
+        },
+        icon: "gtp:manta-logo-monochrome",
+        key: "manta",
+        rootKey: "chainsManta",
+        urlKey: "manta",
+      }
     ],
   },
 

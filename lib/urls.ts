@@ -54,6 +54,7 @@ export const ChainBlockspaceURLs = {
   starknet: "https://api.growthepie.xyz/v1/chains/blockspace/starknet.json",
   loopring: "https://api.growthepie.xyz/v1/chains/blockspace/loopring.json",
   rhino: "https://api.growthepie.xyz/v1/chains/blockspace/rhino.json",
+  manta: "https://api.growthepie.xyz/v1/chains/blockspace/manta.json",
 };
 
 export const LandingURL = "https://api.growthepie.xyz/v1/landing_page.json";
