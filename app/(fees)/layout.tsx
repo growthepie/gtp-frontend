@@ -7,6 +7,7 @@ import SidebarContainer from "@/components/layout/SidebarContainer";
 import { Metadata } from "next";
 import { Graph } from "schema-dts";
 import BottomBanner from "@/components/BottomBanner";
+import Backgrounds from "@/components/layout/Backgrounds";
 import "../background.css";
 
 const jsonLd: Graph = {
