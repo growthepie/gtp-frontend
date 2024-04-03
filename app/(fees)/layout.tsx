@@ -4,11 +4,11 @@ import { Providers } from "../providers";
 import CookieConsent from "@/components/layout/CookieConsent";
 import { Raleway, Inter, Roboto_Mono } from "next/font/google";
 import SidebarContainer from "@/components/layout/SidebarContainer";
-import Backgrounds from "@/components/layout/Backgrounds";
 import { Metadata } from "next";
 import { Graph } from "schema-dts";
 import Header from "./fees/Header";
 import BottomBanner from "@/components/BottomBanner";
+import "../background.css";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",
@@ -160,7 +160,13 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       {/* <Head /> */}
-      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden overflow-y-scroll">
+      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden overflow-y-scroll relative min-h-screen">
+        <div className="background-container">
+          <div className="background-gradient-group">
+            <div className="background-gradient-yellow"></div>
+            <div className="background-gradient-green"></div>
+          </div>
+        </div>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -170,7 +176,6 @@ export default function RootLayout({
             <div className="flex w-full max-w-[1680px] min-h-screen">
               <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
                 <div className="w-[948px] mx-auto relative min-h-full">
-                  <Backgrounds />
                   <Header />
                   <main className="flex-1 w-full mx-auto z-10 mb-[165px]">
                     {children}
