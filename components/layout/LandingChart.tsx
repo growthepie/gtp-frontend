@@ -53,7 +53,6 @@ const baseOptions: Highcharts.Options = {
     showAxes: false,
 
     zooming: {
-      type: "x",
       resetButton: {
         position: {
           x: 0,
@@ -78,9 +77,7 @@ const baseOptions: Highcharts.Options = {
         },
       },
     },
-    panning: {
-      enabled: false,
-    },
+
     panKey: "shift",
   },
   title: undefined,
@@ -197,6 +194,9 @@ export default function LandingChart({
   metric,
   sources,
   is_embed = false,
+  embed_timespan,
+  embed_start_timestamp,
+  embed_end_timestamp,
 }: // timeIntervals,
   // onTimeIntervalChange,
   // showTimeIntervals = true,
@@ -214,6 +214,9 @@ export default function LandingChart({
     metric: string;
     sources: string[];
     is_embed?: boolean;
+    embed_timespan?: string;
+    embed_start_timestamp?: number;
+    embed_end_timestamp?: number;
     // timeIntervals: string[];
     // onTimeIntervalChange: (interval: string) => void;
     // showTimeIntervals: boolean;
@@ -527,14 +530,14 @@ export default function LandingChart({
     });
   };
 
-  useEffect(() => {
-    if (embedData.src !== BASE_URL + "/embed/user-base")
-      setEmbedData(prevEmbedData => ({
-        ...prevEmbedData,
-        title: "Layer 2 User Base - growthepie",
-        src: BASE_URL + "/embed/user-base",
-      }));
-  }, [embedData]);
+  // useEffect(() => {
+  //   if (embedData.src !== BASE_URL + "/embed/user-base")
+  //     setEmbedData(prevEmbedData => ({
+  //       ...prevEmbedData,
+  //       title: "Layer 2 User Base - growthepie",
+  //       src: BASE_URL + "/embed/user-base",
+  //     }));
+  // }, [embedData]);
 
   useEffect(() => {
     Highcharts.setOptions({
@@ -558,19 +561,23 @@ export default function LandingChart({
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
-  const [selectedTimespan, setSelectedTimespan] = useState("max");
+  const [selectedTimespan, setSelectedTimespan] = useState(embed_timespan ?? "max");
 
   const [selectedScale, setSelectedScale] = useState("absolute");
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
   const [zoomed, setZoomed] = useState(false);
+  const [zoomMin, setZoomMin] = useState(0);
+  const [zoomMax, setZoomMax] = useState(0);
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
 
   const [totalUsersIncrease, setTotalUsersIncrease] = useState(0);
 
   const isMobile = useMediaQuery("(max-width: 767px)");
+
+
 
   const getTickPositions = useCallback(
     (xMin: any, xMax: any): number[] => {
@@ -814,14 +821,22 @@ export default function LandingChart({
       : data.filter((d) => !["all_l2s", "ethereum"].includes(d.name));
   }, [data, showEthereumMainnet, showTotalUsers]);
 
+  const maxDate = useMemo(() => {
+    if (embed_end_timestamp) return new Date(embed_end_timestamp);
+
+    let maxDate = new Date();
+    if (filteredData && filteredData[0].name !== "") {
+      maxDate = new Date(
+        filteredData.length > 0
+          && filteredData[0].data[filteredData[0].data.length - 1][0]
+          ? filteredData[0].data[filteredData[0].data.length - 1][0]
+          : 0,
+      );
+    }
+    return maxDate;
+  }, [embed_end_timestamp, filteredData]);
+
   const timespans = useMemo(() => {
-    const maxDate = new Date(
-      filteredData.length > 0 &&
-        filteredData[0].data.length > 0 &&
-        filteredData[0].data[filteredData[0].data.length - 1][0]
-        ? filteredData[0].data[filteredData[0].data.length - 1][0]
-        : 0,
-    );
     const buffer =
       selectedScale === "percentage" ? 0 : 3.5 * 24 * 60 * 60 * 1000;
     const maxPlusBuffer = maxDate.valueOf() + buffer;
@@ -867,13 +882,45 @@ export default function LandingChart({
   }, [filteredData, selectedScale]);
 
   useEffect(() => {
-    if (chartComponent.current) {
-      chartComponent.current.xAxis[0].setExtremes(
-        timespans[selectedTimespan].xMin,
-        timespans[selectedTimespan].xMax,
-      );
+    const startTimestamp = zoomed ? zoomMin : undefined;
+    const endTimestamp = zoomed ? zoomMax : maxDate.valueOf();
+
+    const vars = {
+      theme: theme ? theme : "dark",
+      timespan: selectedTimespan,
+      scale: selectedScale,
+      // interval: selectedTimeInterval,
+      showMainnet: showEthereumMainnet ? "true" : "false",
+
+    };
+
+    const absoluteVars = {
+      zoomed: zoomed ? "true" : "false",
+      startTimestamp: startTimestamp ? startTimestamp.toString() : "",
+      endTimestamp: endTimestamp ? endTimestamp.toString() : "",
     }
-  }, [selectedTimespan, timespans]);
+
+    let src = BASE_URL + "/embed/user-base/" + "?" + new URLSearchParams(vars).toString()
+    if (embedData.timeframe === "absolute") {
+      src += "&" + new URLSearchParams(absoluteVars).toString()
+    }
+
+    setEmbedData(prevEmbedData => ({
+      ...prevEmbedData,
+      title: "Layer 2 User Base - growthepie",
+      src: src,
+    }));
+  }, [embedData.timeframe, maxDate, selectedScale, selectedTimeInterval, selectedTimespan, showEthereumMainnet, showUsd, theme, timespans, zoomMax, zoomMin, zoomed]);
+
+  useEffect(() => {
+    if (chartComponent.current) {
+      if (!zoomed)
+        chartComponent.current.xAxis[0].setExtremes(
+          timespans[selectedTimespan].xMin,
+          timespans[selectedTimespan].xMax,
+        );
+    }
+  }, [selectedTimespan, timespans, zoomed]);
 
   const [intervalShown, setIntervalShown] = useState<{
     min: number;
@@ -909,6 +956,8 @@ export default function LandingChart({
           } else {
             setZoomed(true);
           }
+          setZoomMin(min);
+          setZoomMax(max);
         }
       },
       [selectedTimespan, timespans],
@@ -924,8 +973,11 @@ export default function LandingChart({
         // height: "100%",
         type: selectedScale === "percentage" ? "area" : "column",
         plotBorderColor: "transparent",
-
+        panning: {
+          enabled: is_embed ? false : true,
+        },
         zooming: {
+          type: is_embed ? undefined : "x",
           resetButton: {
             theme: {
               zIndex: -10,
@@ -1031,6 +1083,8 @@ export default function LandingChart({
         events: {
           afterSetExtremes: onXAxisSetExtremes,
         },
+        min: zoomed ? zoomMin : timespans[selectedTimespan].xMin,
+        max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
       },
       tooltip: {
         formatter: tooltipFormatter,
@@ -1435,6 +1489,7 @@ export default function LandingChart({
           tickLength: 0,
           lineWidth: 0,
           gridLineWidth: 0,
+
         },
         handles: {
           backgroundColor:
@@ -1489,22 +1544,31 @@ export default function LandingChart({
     selectedScale,
     showEthereumMainnet,
     theme,
-    timespans.max.xMax,
-    timespans.max.xMin,
+    selectedTimespan,
+    timespans,
     tooltipFormatter,
     tooltipPositioner,
+    zoomMax,
+    zoomMin,
+    zoomed,
+    is_embed,
   ]);
 
   useLayoutEffect(() => {
     if (chartComponent.current) {
+      if (is_embed) {
+        return;
+      }
+
       if (isSidebarOpen) chartComponent.current.reflow();
       chartComponent.current.setSize(width, height, false);
     }
-  }, [width, height, isSidebarOpen]);
+  }, [width, height, isSidebarOpen, is_embed]);
 
   if (is_embed)
     return (
       <EmbedContainer title="User Base" icon="gtp:gtp-pie" url="https://www.growthepie.xyz" time_frame={timespans[selectedTimespan].label} aggregation="" chart_type="">
+        {selectedTimespan}
         <div className="relative h-full w-full rounded-xl" ref={containerRef}>
           {highchartsLoaded ? (
             <HighchartsReact

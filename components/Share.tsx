@@ -3,10 +3,11 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import Icon from "@/components/layout/Icon";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { BASE_URLS } from "@/lib/helpers";
+import { BASE_URL, BASE_URLS } from "@/lib/helpers";
 import { useMediaQuery } from "usehooks-ts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./layout/Tooltip";
 import { EmbedData, useUIContext } from "@/contexts/UIContext";
+import Link from "next/link";
 
 const embedPages = ["", "fundamentals"];
 
@@ -304,7 +305,10 @@ export default function Share() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col md:flex-row gap-x-[30px] mt-[30px] w-full">
+                  <div className="relative flex flex-col md:flex-row gap-x-[30px] mt-[30px] w-full">
+                    <Link href={`${BASE_URL}/embed/test?url=${encodeURIComponent(`${embedData.src}`)}&width=${embedData.width}&height=${embedData.height}&title=${embedData.title}`} target="_blank" rel="noopener" className="absolute -top-6 left-0 p-[5px] text-xs text-forest-400">
+                      Test
+                    </Link>
                     <textarea
                       value={
                         `<iframe

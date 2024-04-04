@@ -28,7 +28,7 @@ const EmbedContainer = ({ title, icon, url, time_frame, chart_type, aggregation,
     if (queryZoomed && queryStartTimestamp && queryEndTimestamp)
       tf = `${new Date(Math.round(parseInt(queryStartTimestamp))).toLocaleDateString()} - ${new Date(Math.round(parseInt(queryEndTimestamp))).toLocaleDateString()}`;
     return tf;
-  }, [queryZoomed, queryStartTimestamp, queryEndTimestamp, time_frame]);
+  }, [queryTimespan, time_frame, queryZoomed, queryStartTimestamp, queryEndTimestamp]);
 
   return (
     <div className="flex flex-col p-[15px] bg-white dark:bg-[#151A19] rounded-[40px]">

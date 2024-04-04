@@ -17,6 +17,7 @@ import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsRespon
 import { LandingURL, MasterURL } from "@/lib/urls";
 import LandingChart from "@/components/layout/LandingChart";
 import EmbedContainer from "../EmbedContainer";
+import { useSearchParams } from "next/navigation";
 
 // export async function generateMetadata(): Promise<Metadata> {
 //   return {
@@ -27,6 +28,11 @@ import EmbedContainer from "../EmbedContainer";
 // }
 
 export default function Page() {
+  const searchParams = useSearchParams();
+  const queryTheme = searchParams ? searchParams.get("theme") : null;
+  const queryTimespan = searchParams ? searchParams.get("timespan") : null;
+  const queryMetric = searchParams ? searchParams.get("metric") : null;
+
   // const isLargeScreen = useMediaQuery("(min-width: 1280px)");
 
   // const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -54,7 +60,7 @@ export default function Page() {
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("weekly");
 
-  const [selectedMetric, setSelectedMetric] = useState("Total Users");
+  const [selectedMetric, setSelectedMetric] = useState(queryMetric ?? "Total Users");
 
   useEffect(() => {
     if (landing) {
@@ -110,6 +116,7 @@ export default function Page() {
           metric={selectedTimeInterval}
           setSelectedMetric={setSelectedMetric}
           is_embed={true}
+          embed_timespan={queryTimespan ?? "365d"}
         />
       ) : null}
     </>

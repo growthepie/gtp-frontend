@@ -228,7 +228,7 @@ export default function ComparisonChart({
   // const [selectedTimespan, setSelectedTimespan] = useState("365d");
 
   // const [selectedScale, setSelectedScale] = useState(
-  //   is_embed && metric_id != "txcosts" ? "log" : "absolute",
+  //   is_embed && metric_id != "txcosts" ? "stacked" : "absolute",
   // );
 
   // const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
@@ -308,7 +308,7 @@ export default function ComparisonChart({
     (name: string) => {
       if (name === "ethereum") return "area";
       if (selectedScale === "percentage") return "area";
-      if (selectedScale === "log")
+      if (selectedScale === "stacked")
         return selectedTimeInterval === "daily" ? "area" : "column";
 
       return "line";
@@ -518,7 +518,7 @@ export default function ComparisonChart({
       let value = pointsSum;
 
       const sumRow =
-        selectedScale === "log"
+        selectedScale === "stacked"
           ? `
         <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
           <div class="w-4 h-1.5 rounded-r-full" style=""></div>
@@ -541,16 +541,7 @@ export default function ComparisonChart({
 
       return tooltip + tooltipPoints + sumRow + tooltipEnd;
     },
-    [
-      filteredData,
-      reversePerformer,
-      selectedScale,
-      showGwei,
-      showUsd,
-      theme,
-      valuePrefix,
-      selectedTimeInterval,
-    ],
+    [selectedTimeInterval, valuePrefix, selectedScale, reversePerformer, theme, showUsd, filteredData, metric_id, showGwei],
   );
 
   const tooltipPositioner =
@@ -702,14 +693,14 @@ export default function ComparisonChart({
   }, [filteredData, maxDate]);
 
 
-  useEffect(() => {
-    if (embedData.title !== navItem?.label + " - growthepie")
-      setEmbedData(prevEmbedData => ({
-        ...prevEmbedData,
-        title: navItem?.label + " - growthepie",
-        src: BASE_URL + "/embed/fundamentals/" + navItem?.urlKey + "?showUsd=" + showUsd + "&theme=" + theme,
-      }));
-  }, []);
+  // useEffect(() => {
+  //   if (embedData.title !== navItem?.label + " - growthepie")
+  //     setEmbedData(prevEmbedData => ({
+  //       ...prevEmbedData,
+  //       title: navItem?.label + " - growthepie",
+  //       src: BASE_URL + "/embed/fundamentals/" + navItem?.urlKey + "?showUsd=" + showUsd + "&theme=" + theme,
+  //     }));
+  // }, []);
 
   useEffect(() => {
     const startTimestamp = zoomed ? zoomMin : undefined;
@@ -718,7 +709,11 @@ export default function ComparisonChart({
     const vars = {
       showUsd: showUsd ? "true" : "false",
       theme: theme ? theme : "dark",
-      selectedTimespan,
+      timespan: selectedTimespan,
+      scale: selectedScale,
+      interval: selectedTimeInterval,
+      showMainnet: showEthereumMainnet ? "true" : "false",
+
     };
 
     const absoluteVars = {
@@ -737,7 +732,7 @@ export default function ComparisonChart({
       title: navItem?.label + " - growthepie",
       src: src,
     }));
-  }, [embedData.timeframe, maxDate, navItem?.label, navItem?.urlKey, selectedTimespan, setEmbedData, showGwei, showUsd, theme, timespans, zoomMax, zoomMin, zoomed]);
+  }, [embedData.timeframe, maxDate, navItem?.label, navItem?.urlKey, selectedScale, selectedTimeInterval, selectedTimespan, showEthereumMainnet, showGwei, showUsd, theme, timespans, zoomMax, zoomMin, zoomed]);
 
   useEffect(() => {
 
@@ -809,7 +804,7 @@ export default function ComparisonChart({
     };
 
     if (
-      (avg === true || selectedScale === "log") &&
+      (avg === true || selectedScale === "stacked") &&
       ["max", "365d"].includes(selectedTimespan)
     ) {
       grouping = {
@@ -847,7 +842,7 @@ export default function ComparisonChart({
             stacking: "percent",
           },
         };
-      case "log":
+      case "stacked":
         return {
           column: {
             stacking: "normal",
@@ -1069,7 +1064,7 @@ export default function ComparisonChart({
 
     const dynamicOptions: Highcharts.Options = {
       chart: {
-        height: getChartHeight(),
+        height: is_embed ? undefined : getChartHeight(),
         type: getSeriesType(filteredData[0].name),
         plotBorderColor: "transparent",
         panning: {
@@ -1197,7 +1192,7 @@ export default function ComparisonChart({
 
           const pointsSettings = {
             pointPlacement:
-              selectedTimeInterval === "monthly" && selectedScale === "log"
+              selectedTimeInterval === "monthly" && selectedScale === "stacked"
                 ? 0
                 : 0.5,
           };
@@ -1484,6 +1479,7 @@ export default function ComparisonChart({
   if (is_embed)
     return (
       <EmbedContainer title="User Base" icon="gtp:gtp-pie" url="https://www.growthepie.xyz" time_frame={timespans[selectedTimespan].label} aggregation="" chart_type="">
+        {selectedScale}
         <div className="relative h-full w-full rounded-xl">
           {highchartsLoaded ? (
             <HighchartsReact
@@ -1824,12 +1820,12 @@ export default function ComparisonChart({
                     <>
                       <button
                         disabled={metric_id === "txcosts"}
-                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"log" === selectedScale
+                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"stacked" === selectedScale
                           ? "bg-forest-500 dark:bg-forest-1000"
                           : "hover:enabled:bg-forest-500/10"
                           }`}
                         onClick={() => {
-                          setSelectedScale("log");
+                          setSelectedScale("stacked");
                         }}
                       >
                         Stacked
@@ -1898,12 +1894,12 @@ export default function ComparisonChart({
                     Absolute
                   </button>
                   <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"log" === selectedScale
+                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"stacked" === selectedScale
                       ? "bg-forest-500 dark:bg-forest-1000"
                       : "hover:bg-forest-500/10"
                       }`}
                     onClick={() => {
-                      setSelectedScale("log");
+                      setSelectedScale("stacked");
                     }}
                   >
                     Stacked

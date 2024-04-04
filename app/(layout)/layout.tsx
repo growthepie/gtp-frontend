@@ -190,7 +190,7 @@ export default function RootLayout({
                 </div>
               </div>
               <div className="z-50 flex fixed bottom-[20px] w-full max-w-[1680px] justify-end pointer-events-none">
-                <div className="px-[20px] md:px-[50px] pointer-events-auto">
+                <div className="pr-[20px] md:pr-[50px] pointer-events-auto">
                   <div className="relative flex gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#5A6462] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
                     {/* <Details /> */}
                     <Share />

@@ -22,7 +22,10 @@ const Chain = ({ params }: { params: any }) => {
   const queryTimespan = searchParams ? searchParams.get("timespan") : null;
   const queryStartTimestamp = searchParams ? searchParams.get("startTimestamp") : null;
   const queryEndTimestamp = searchParams ? searchParams.get("endTimestamp") : null;
+  const queryScale = searchParams ? searchParams.get("scale") : null;
   const queryZoomed = searchParams ? searchParams.get("zoomed") : null;
+  const queryInterval = searchParams ? searchParams.get("interval") : null;
+  const queryShowMainnet = searchParams ? searchParams.get("showMainnet") : null;
 
   const { theme, setTheme } = useTheme();
   useLayoutEffect(() => {
@@ -78,14 +81,14 @@ const Chain = ({ params }: { params: any }) => {
   ).map((chain) => chain.key);
 
   const [selectedScale, setSelectedScale] = useState(
-    params.metric != "transaction-costs" ? "log" : "absolute",
+    queryScale ? queryScale : params.metric != "transaction-costs" ? "stacked" : "absolute",
   );
 
   const [selectedTimespan, setSelectedTimespan] = useState(queryTimespan ?? "365d");
 
-  const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
+  const [selectedTimeInterval, setSelectedTimeInterval] = useState(queryInterval ?? "daily");
 
-  const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
+  const [showEthereumMainnet, setShowEthereumMainnet] = useState(queryShowMainnet === "true");
 
   const timeIntervalKey = useMemo(() => {
     if (
