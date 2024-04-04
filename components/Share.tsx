@@ -1,11 +1,14 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import Icon from "@/components/layout/Icon";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { BASE_URLS } from "@/lib/helpers";
 import { useMediaQuery } from "usehooks-ts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./layout/Tooltip";
+import { EmbedData, useUIContext } from "@/contexts/UIContext";
+
+const embedPages = ["", "fundamentals"];
 
 export default function Share() {
   const pathname = usePathname();
@@ -13,21 +16,40 @@ export default function Share() {
   const [currentURL, setcurrentURL] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [topSelection, setTopSelection] = useState("social");
-  const [widthValue, setWidthValue] = useState("960px");
-  const [heightValue, setHeightValue] = useState("480px");
+  //const [widthValue, setWidthValue] = useState("960px");
+  //const [heightValue, setHeightValue] = useState("480px");
   const [isAbsolute, setIsAbsolute] = useState(true);
   const isMobile = useMediaQuery("(max-width: 767px)");
+
+  const { embedData, setEmbedData } = useUIContext();
 
   function copyText(entryText) {
     navigator.clipboard.writeText(entryText);
   }
 
-  function triggerCopy() {
+  const copyTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeout.current) {
+        clearTimeout(copyTimeout.current);
+        copyTimeout.current = null;
+      }
+    };
+  }, []);
+
+  const triggerCopy = () => {
     setCopied(true);
-    setTimeout(() => {
+    if (copyTimeout.current) {
+      clearTimeout(copyTimeout.current);
+      copyTimeout.current = null;
       setCopied(false);
-    }, 3000); // 3000 milliseconds (3 seconds)
-  }
+    } else {
+      copyTimeout.current = setTimeout(() => {
+        setCopied(false);
+      }, 3000); // 3000 milliseconds (3 seconds)
+    }
+  };
 
   const handleSendEmail = () => {
     if (currentURL !== null) {
@@ -63,31 +85,44 @@ export default function Share() {
   const handleWidthChange = (event) => {
     const newValue = parseInt(event.target.value);
     if (!isNaN(newValue)) {
-      setWidthValue(newValue.toString()); // Convert newValue to string
+      //setWidthValue(newValue.toString()); // Convert newValue to string
+      setEmbedData({ ...embedData, width: newValue });
     }
   };
 
   const handleHeightChange = (event) => {
     const newValue = parseInt(event.target.value);
     if (!isNaN(newValue)) {
-      setHeightValue(newValue.toString()); // Convert newValue to string
+      //setHeightValue(newValue.toString()); // Convert newValue to string
+      setEmbedData({ ...embedData, height: newValue });
     }
   };
+
+
+
+  const firstUrlPart = pathname.split("/")[1];
+
+  const embedEnabled = useMemo(() => {
+    return embedPages.includes(firstUrlPart);
+  }, [firstUrlPart]);
 
   //Initialize URL
   useEffect(() => {
     setcurrentURL(
       BASE_URLS[process.env.NEXT_PUBLIC_VERCEL_ENV ?? "production"] + pathname,
     );
+
+    if (!embedEnabled) {
+      setTopSelection("social");
+    }
   }, [pathname]);
 
   return (
     <>
-      {" "}
-      <div className="relative flex gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#5A6462] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
+      <div>
         <div>
           <button
-            className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
+            className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-[#1F2726] rounded-full px-4 py-2"
             onClick={() => {
               setOpenShare(true);
             }}
@@ -108,10 +143,9 @@ export default function Share() {
               />
               <div
                 className={`absolute -right-[5px] -bottom-[5px] bg-forest-50 dark:bg-[#1F2726] z-[110] rounded-[40px] shadow-lg py-[30px] px-[20px] 
-                  border-[5px] border-forest-500 dark:border-[#5A6462] transition-all duration-300 ${
-                    topSelection === "social"
-                      ? "w-[calc(100vw-30px)] xs:w-[calc(100vw-46px)] md:w-[453px]"
-                      : "sm:w-[579px]"
+                  border-[5px] border-forest-500 dark:border-[#5A6462] transition-all duration-300 select-none ${topSelection === "social"
+                    ? "w-[calc(100vw-30px)] xs:w-[calc(100vw-46px)] md:w-[453px]"
+                    : "w-[calc(100vw-30px)] xs:w-[calc(100vw-46px)] md:w-[579px]"
                   }`}
               >
                 <div className="flex w-full h-[32px] justify-between items-center justify-self-start ">
@@ -137,32 +171,30 @@ export default function Share() {
                 <div className="flex flex-col mt-[15px] text-[16px] leading-[125%]">
                   <div>Share this page through one of the following ways:</div>
                 </div>
-                {/* <div className="flex gap-x-[10px] mt-[15px]">
-                    <div
-                      className={`flex items-center justify-center px-[16px] py-[2px] text-[14px] rounded-full hover:cursor-pointer transition ${
-                        topSelection === "social"
-                          ? "bg-[#151A19] border-[#151A19] border-[2px]"
-                          : "border-forest-500 border-[1px] "
+                <div className="flex gap-x-[5px] mt-[15px]">
+                  <div
+                    className={`flex items-center justify-center border px-[16px] py-[2px] text-[14px] leading-[20px] rounded-full hover:cursor-pointer transition ${topSelection === "social"
+                      ? "bg-[#151A19] border-[#151A19]"
+                      : "border-[#5A6462]"
                       }`}
-                      onClick={() => {
-                        setTopSelection("social");
-                      }}
-                    >
-                      Social Media
-                    </div>
-                    <div
-                      className={`flex items-center justify-center px-[16px] py-[2px] text-[14px] rounded-full hover:cursor-pointer transition ${
-                        topSelection === "embed"
-                          ? "bg-[#151A19] border-[#151A19] border-[2px]"
-                          : "border-forest-500 border-[1px] "
+                    onClick={() => {
+                      setTopSelection("social");
+                    }}
+                  >
+                    Social Media
+                  </div>
+                  {embedEnabled && (<div
+                    className={`flex items-center justify-center border px-[16px] py-[2px] text-[14px] leading-[20px] rounded-full hover:cursor-pointer transition ${topSelection === "embed"
+                      ? "bg-[#151A19] border-[#151A19]"
+                      : "border-[#5A6462]"
                       }`}
-                      onClick={() => {
-                        setTopSelection("embed");
-                      }}
-                    >
-                      Embed Code
-                    </div>
-                  </div> */}
+                    onClick={() => {
+                      setTopSelection("embed");
+                    }}
+                  >
+                    Embed Code
+                  </div>)}
+                </div>
                 {topSelection === "social" ? (
                   <div className="flex flex-col-reverse items-center mt-[30px] w-full text-[16px] leading-[150%] h-[234px]">
                     <div className="flex flex-col w-full">
@@ -207,24 +239,22 @@ export default function Share() {
 
                         <div className="ml-auto flex items-center">
                           <Icon
-                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-opacity duration-300 text-[#5A6462] group-hover:text-forest-900  ${
-                              copied ? "opacity-0" : "opacity-100"
-                            }`}
+                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-opacity duration-300 text-[#5A6462] group-hover:text-forest-900  ${copied ? "opacity-0" : "opacity-100"
+                              }`}
                             icon="feather:copy"
-                            // onClick={() => {
-                            //   copyText(currentURL ? currentURL : "");
-                            //   triggerCopy();
-                            // }}
+                          // onClick={() => {
+                          //   copyText(currentURL ? currentURL : "");
+                          //   triggerCopy();
+                          // }}
                           />
                           <Icon
-                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-opacity duration-300 text-[#5A6462] group-hover:text-forest-900 ${
-                              copied ? "opacity-100" : "opacity-0"
-                            }`}
+                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-opacity duration-300 text-[#5A6462] group-hover:text-forest-900 ${copied ? "opacity-100" : "opacity-0"
+                              }`}
                             icon="feather:check"
-                            // onClick={() => {
-                            //   copyText(currentURL ? currentURL : "");
-                            //   triggerCopy();
-                            // }}
+                          // onClick={() => {
+                          //   copyText(currentURL ? currentURL : "");
+                          //   triggerCopy();
+                          // }}
                           />
                         </div>
                         {/* </div> */}
@@ -274,30 +304,39 @@ export default function Share() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex gap-x-[36px] mt-[30px] h-[234px]">
-                    <div className=" p-[10px] rounded-3xl border-forest-600 border-[1px] w-[285px] h-full">
-                      Embed Link Here
-                    </div>
-                    <div className="flex flex-col w-[204px] h-full gap-y-[5px]">
-                      <div className="flex w-full justify-between">
-                        <div className="text-medium">Timeframe</div>
+                  <div className="flex flex-col md:flex-row gap-x-[30px] mt-[30px] w-full">
+                    <textarea
+                      value={
+                        `<iframe
+width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" title="${embedData.title}">
+</iframe>`
+                      }
+                      className="font-light font-mono p-[15px] rounded-[25px] border-forest-600 border-[1px] h-full min-h-[231px] w-full text-[12px] leading-[150%] bg-transparent select-all outline-none resize-none cursor-text selection:bg-forest-900 dark:selection:bg-forest-900 dark:bg-[#1F2726] dark:text-forest-100"
+                      onClick={(e) => {
+                        e.currentTarget.select();
+                      }}
+                      spellCheck="false"
+                    />
+                    <div className="flex flex-col h-full gap-y-[2px] w-full">
+                      <div className="flex w-full justify-between items-center">
+                        <div className="text-medium leading-[120%]">Timeframe</div>
                         <Tooltip placement="left" allowInteract>
                           <TooltipTrigger>
-                            <div className="p-1 z-10 mr-0 md:-mr-0.5">
+                            <div className="w-6 h-6">
                               <Icon icon="feather:info" className="w-6 h-6" />
                             </div>
                           </TooltipTrigger>
                           <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-                            <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
-                              <div className="flex flex-col space-y-1">
-                                <div className="font-bold text-sm leading-snug"></div>
-                                <div className="flex space-x-1 flex-wrap font-medium text-xs leading-snug"></div>
-                              </div>
+                            <div className="flex flex-col px-3 py-4 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto font-normal">
+                              <div className="font-semibold">Absolute Timeframe</div>
+                              <div className="mb-1">The embedded chart&apos;s time window will be frozen to the current chart state.</div>
+                              <div className="font-semibold">Relative Timeframe</div>
+                              <div>The embedded chart&apos;s time window will change depending on when the chart is viewed.</div>
                             </div>
                           </TooltipContent>
                         </Tooltip>
                       </div>
-                      <div className="flex h-[28px] px-[2px] w-full bg-forest-50 justify-between items-center rounded-full">
+                      {/* <div className="flex h-[28px] px-[2px] w-full bg-[#CDD8D3] justify-between items-center rounded-full">
                         <label className="inline-flex items-center cursor-pointer w-full">
                           <input
                             type="checkbox"
@@ -309,109 +348,158 @@ export default function Share() {
                             }}
                           />
                           <div
-                            className={`flex items-center  text-[16px] justify-between pl-[18px] pr-5 relative w-full h-6 bg-gray-200 peer-focus:outline-none rounded-full peer ${
-                              isAbsolute
-                                ? "peer-checked:after:right-[98.5px] peer-checked:after:border-white"
-                                : ""
-                            } after:content-[''] after:absolute after:-top-[0.5px] after:-right-[0.5px] after:bg-forest-900  after:border after:rounded-full after:h-[25px] after:w-[102.5px] after:transition-all dark:border-gray-600 `}
+                            className={`flex items-center text-[16px] leading-snug justify-between pl-[18px] pr-5 relative w-full h-6 bg-[#CDD8D3] peer-focus:outline-none rounded-full peer ${isAbsolute
+                              ? "peer-checked:after:right-[98.5px] "
+                              : ""
+                              } after:content-[''] after:absolute after:-top-[0.5px] after:-right-[0.5px] after:bg-forest-900  after:border after:rounded-full after:h-[25px] after:w-[102.5px] after:transition-all dark:border-gray-600 peer-checked:after:border-none`}
                           >
                             <div
-                              className={`z-20 transition select-none ${
-                                isAbsolute
-                                  ? "text-forest-50"
-                                  : " text-forest-800"
-                              }`}
+                              className={`border-0 z-20 transition select-none ${isAbsolute
+                                ? "text-forest-50"
+                                : " text-[#2D3748]"
+                                }`}
                             >
                               Absolute
                             </div>
                             <div
-                              className={`z-20 transition select-none ${
-                                !isAbsolute
-                                  ? "text-forest-50"
-                                  : " text-forest-800"
-                              }`}
+                              className={`z-20 transition select-none ${!isAbsolute
+                                ? "text-forest-50"
+                                : " text-[#2D3748]"
+                                }`}
                             >
                               Relative
                             </div>
                           </div>
                         </label>
-                      </div>
+                      </div> */}
+                      <div className="flex flex-col h-full gap-y-[5px] w-full select-none">
+                        <div className="relative w-full rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer" onClick={() => setEmbedData(prev => ({ ...prev, timeframe: embedData.timeframe === "absolute" ? "relative" : "absolute" }))}>
+                          <div className="w-full flex justify-between text-[#2D3748]">
+                            <div className="w-full text-center">Absolute</div>
+                            <div className="w-full text-center">Relative</div>
+                          </div>
+                          <div className="absolute inset-0 w-full p-0.5 rounded-full text-center">
+                            <div className="w-1/2 h-full bg-forest-900 rounded-full text-center transition-transform duration-300" style={{ transform: embedData.timeframe === "absolute" ? "translateX(0%)" : "translateX(100%)" }}>
+                              {
+                                embedData.timeframe === "absolute" ?
+                                  "Absolute"
+                                  : "Relative"
+                              }
+                            </div>
+                          </div>
 
-                      <div className="flex items-center gap-x-[10px] h-[54px] w-[204px] rounded-full border-[#5A6462] border-[2px] px-[15px]">
-                        <Icon
-                          className="w-[24px] h-[24px] font-semibold"
-                          icon="gtp:arrowleftright"
-                        />
-                        <div className="flex items-center underline decoration-dotted decoration-2 underline-offset-[5px] ">
-                          <div
-                            className="outline-none"
-                            contentEditable
-                            onBlur={handleWidthChange}
-                            style={{
-                              border: "none", // Remove default border
-                              boxShadow: "none", // Remove default focus box shadow
-                            }}
-                          >
-                            {widthValue}
-                            {"   "}
-                          </div>
-                          <span className="ml-[0.5px] italic text-[#5A6462]">
-                            {" "}
-                            Width
-                          </span>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-x-[10px] h-[54px] w-[204px] rounded-full border-[#5A6462] border-[2px] px-[15px]">
-                        <Icon
-                          className="w-[24px] h-[24px] font-semibold"
-                          icon="gtp:arrowupdown"
-                        />
-                        <div className="flex items-center underline decoration-dotted decoration-2  underline-offset-[5px] ">
-                          <div
-                            className="outline-none"
-                            contentEditable
-                            onBlur={handleHeightChange}
-                            style={{
-                              border: "none", // Remove default border
-                              boxShadow: "none", // Remove default focus box shadow
-                            }}
-                          >
-                            {heightValue}
-                            {"   "}
+
+                        <div className="flex items-center gap-x-[10px] h-[54px] rounded-full border-transparent border-[2px] px-[15px]">
+                          <div className="w-[24px] h-[24px]">
+                            <Icon
+                              className="w-[24px] h-[24px] font-semibold"
+                              icon="fluent:arrow-autofit-width-24-regular"
+                            />
                           </div>
-                          <span className="ml-[1px] italic text-[#5A6462]">
-                            {" "}
-                            Height
-                          </span>
+                          <div className="flex items-center w-full gap-x-[5px]">
+                            <div className="cursor-pointer bg-forest-900 rounded-full p-0.5 text-forest-400">
+                              <div className="w-[24px] h-[24px]" onClick={() => {
+                                setEmbedData({ ...embedData, width: embedData.width - 1 });
+                              }}>
+                                <Icon className="w-[24px] h-[24px]" icon="feather:minus" />
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-x-[2px] border-b border-dashed border-forest-400 w-20 justify-center">
+                              <input
+                                className="bg-transparent outline-none text-right"
+                                size={3}
+                                value={embedData.width}
+                                onChange={handleWidthChange}
+                                style={{
+                                  boxShadow: "none", // Remove default focus box shadow
+                                }}
+
+                              />
+                              {/* {embedData.width}
+                              </div> */}
+                              <div className="text-xs text-forest-400 pr-4">px</div>
+                            </div>
+                            <div className="cursor-pointer bg-forest-900 rounded-full p-0.5 text-forest-400">
+                              <div className="w-[24px] h-[24px] cursor-pointer" onClick={() => {
+                                setEmbedData({ ...embedData, width: embedData.width + 1 });
+                              }}>
+                                <Icon className="w-[24px] h-[24px]" icon="feather:plus" />
+                              </div>
+                            </div>
+                            <div className="flex-1 flex justify-center items-center left-44 text-forest-400 text-xs">
+                              Width
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-x-[10px] h-[54px] w-[204px] rounded-full border-[#5A6462] border-[3px] px-[15px]">
-                        <Icon
-                          className={`  w-[24px] h-[24px] font-semibold `}
-                          icon="gtp:code-slash"
-                        />
-                        <div>{copied ? "Copied" : "Copy Code"}</div>
-                        <div className="flex ml-auto relative w-[24px] -top-[10px]">
+                        <div className="flex items-center gap-x-[10px] h-[54px] rounded-full border-transparent border-[2px] px-[15px]">
+                          {/* <div className="absolute top-0 bottom-0 flex items-center left-44 text-[#5A6462] text-xs">
+                            height
+                          </div> */}
+                          <div className="w-[24px] h-[24px]">
+                            <Icon
+                              className="w-[24px] h-[24px] font-semibold"
+                              icon="fluent:arrow-autofit-height-24-regular"
+                            />
+                          </div>
+                          <div className="flex items-center w-full gap-x-[5px]">
+                            <div className="cursor-pointer bg-forest-900 rounded-full p-0.5 text-forest-400">
+                              <div className="w-[24px] h-[24px]" onClick={() => {
+                                setEmbedData({ ...embedData, height: embedData.height - 1 });
+                              }}>
+                                <Icon className="w-[24px] h-[24px]" icon="feather:minus" />
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-x-[2px] border-b border-dashed border-forest-400 w-20 justify-center">
+                              <input
+                                className="bg-transparent outline-none text-right"
+                                size={3}
+                                value={embedData.height}
+                                onChange={handleHeightChange}
+                                style={{
+                                  boxShadow: "none", // Remove default focus box shadow
+                                }}
+
+                              />
+                              {/* {embedData.height}
+                              </div> */}
+                              <div className="text-xs text-forest-400 pr-4">px</div>
+                            </div>
+                            <div className="cursor-pointer bg-forest-900 rounded-full p-0.5 text-forest-400">
+                              <div className="w-[24px] h-[24px] cursor-pointer" onClick={() => {
+                                setEmbedData({ ...embedData, height: embedData.height + 1 });
+                              }}>
+                                <Icon className="w-[24px] h-[24px]" icon="feather:plus" />
+                              </div>
+                            </div>
+                            <div className="flex-1 flex justify-center items-center left-44 text-forest-400 text-xs">
+                              Height
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-x-[10px] h-[54px] rounded-full border-[#5A6462] border-[3px] px-[15px] cursor-pointer" onClick={() => {
+                          copyText(currentURL ? currentURL : "");
+                          triggerCopy();
+                        }}>
                           <Icon
-                            className={`absolute  w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${
-                              copied ? "opacity-0" : "opacity-100"
-                            }`}
-                            icon="feather:copy"
-                            onClick={() => {
-                              copyText(currentURL ? currentURL : "");
-                              triggerCopy();
-                            }}
+                            className={`  w-[24px] h-[24px] font-semibold `}
+                            icon="gtp:code-slash"
                           />
-                          <Icon
-                            className={`absolute w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${
-                              copied ? "opacity-100" : "opacity-0"
-                            }`}
-                            icon="feather:check"
-                            onClick={() => {
-                              copyText(currentURL ? currentURL : "");
-                              triggerCopy();
-                            }}
-                          />
+                          <div>{copied ? "Copied" : "Copy Code"}</div>
+                          <div className="flex ml-auto relative w-[24px] -top-[10px]">
+                            <Icon
+                              className={`absolute  w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${copied ? "opacity-0" : "opacity-100"
+                                }`}
+                              icon="feather:copy"
+
+                            />
+                            <Icon
+                              className={`absolute w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${copied ? "opacity-100" : "opacity-0"
+                                }`}
+                              icon="feather:check"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -423,7 +511,7 @@ export default function Share() {
             </>
           )}
         </div>
-      </div>
+      </div >
     </>
   );
 }

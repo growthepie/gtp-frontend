@@ -1,15 +1,15 @@
 .background-container {
+  @apply bg-white dark:bg-[#151a19];
   width: 100%;
   height: 100%;
-  background: #151a19;
   position: absolute;
   z-index: -11;
   overflow: hidden;
 }
 
 .background-gradient-group {
+  @apply hidden dark:relative;
   content: "";
-  position: relative;
   width: 100%;
   height: 100%;
   pointer-events: none;
@@ -17,7 +17,6 @@
 }
 
 .background-gradient-green {
-  @apply absolute;
   background: radial-gradient(
     ellipse at max(93.6vw) max(391.6px, 37vh),
     rgba(13, 246, 185, 0.8) 0%,

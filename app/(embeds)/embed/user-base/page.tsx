@@ -15,6 +15,8 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { AllChains, AllChainsByKeys } from "@/lib/chains";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import { LandingURL, MasterURL } from "@/lib/urls";
+import LandingChart from "@/components/layout/LandingChart";
+import EmbedContainer from "../EmbedContainer";
 
 // export async function generateMetadata(): Promise<Metadata> {
 //   return {
@@ -84,22 +86,32 @@ export default function Page() {
   );
   return (
     <>
-      <Container className="flex flex-col flex-1 w-full">
-        <div className="flex mt-[30px] md:mt-[60px] mb-[25px] md:mb-[32px] space-x-2 items-center">
-          <Icon
-            icon="gtp:gtp-pie"
-            className="w-[30px] h-[30px] md:w-9 md:h-9"
-          />
-          <Heading className="text-[20px] md:text-[30px] leading-snug font-bold">
-            Layer 2 User Base
-          </Heading>
-        </div>
-        <Subheading className="text-base leading-normal md:leading-snug mb-[15px] px-[5px] lg:px-[45px]">
-          Number of distinct addresses interacting with one or multiple Layer 2s
-          in a given week.
-        </Subheading>
-      </Container>
-      <LandingUserBaseChart />
+      {data && landing && master ? (
+        <LandingChart
+          data={Object.keys(data.chains)
+            .filter((chain) => selectedChains.includes(chain))
+            .map((chain) => {
+              return {
+                name: chain,
+                // type: 'spline',
+                types: data.chains[chain].data.types,
+                data: data.chains[chain].data.data,
+              };
+            })}
+          master={master}
+          sources={landing.data.metrics.user_base.source}
+          cross_chain_users={data.cross_chain_users}
+          cross_chain_users_comparison={data.cross_chain_users_comparison}
+          latest_total={data.latest_total}
+          latest_total_comparison={data.latest_total_comparison}
+          l2_dominance={data.l2_dominance}
+          l2_dominance_comparison={data.l2_dominance_comparison}
+          selectedMetric={selectedMetric}
+          metric={selectedTimeInterval}
+          setSelectedMetric={setSelectedMetric}
+          is_embed={true}
+        />
+      ) : null}
     </>
   );
 }

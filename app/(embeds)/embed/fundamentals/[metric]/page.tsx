@@ -19,6 +19,11 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 const Chain = ({ params }: { params: any }) => {
   const searchParams = useSearchParams();
   const queryTheme = searchParams ? searchParams.get("theme") : null;
+  const queryTimespan = searchParams ? searchParams.get("timespan") : null;
+  const queryStartTimestamp = searchParams ? searchParams.get("startTimestamp") : null;
+  const queryEndTimestamp = searchParams ? searchParams.get("endTimestamp") : null;
+  const queryZoomed = searchParams ? searchParams.get("zoomed") : null;
+
   const { theme, setTheme } = useTheme();
   useLayoutEffect(() => {
     setTimeout(() => {
@@ -76,7 +81,7 @@ const Chain = ({ params }: { params: any }) => {
     params.metric != "transaction-costs" ? "log" : "absolute",
   );
 
-  const [selectedTimespan, setSelectedTimespan] = useState("365d");
+  const [selectedTimespan, setSelectedTimespan] = useState(queryTimespan ?? "365d");
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
@@ -137,11 +142,14 @@ const Chain = ({ params }: { params: any }) => {
           setSelectedScale={setSelectedScale}
           monthly_agg={metricData.data.monthly_agg}
           is_embed={true}
+          embed_start_timestamp={queryStartTimestamp ? parseInt(queryStartTimestamp) : undefined}
+          embed_end_timestamp={queryEndTimestamp ? parseInt(queryEndTimestamp) : undefined}
+          embed_zoomed={queryZoomed === "true"}
         >
           <MetricsTable
             data={metricData.data.chains}
             selectedChains={selectedChains}
-            setSelectedChains={() => {}}
+            setSelectedChains={() => { }}
             chainKeys={chainKeys}
             metric_id={metricData.data.metric_id}
             showEthereumMainnet={showEthereumMainnet}

@@ -51,14 +51,16 @@ export default function Embed() {
 
   return (
     <>
-      <div>
+      <div >
         <button
-          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-4 py-2"
+          className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-[#1F2726] rounded-full px-4 py-2"
           onClick={() => {
             setOpenShare(true);
           }}
         >
-          <Icon className="w-5 h-5 font-semibold" icon="feather:code" />
+          <div className="w-5 h-5">
+            <Icon className="w-5 h-5 font-semibold" icon="feather:code" />
+          </div>
           <div className="font-semibold">Embed</div>
         </button>
         {openShare && (

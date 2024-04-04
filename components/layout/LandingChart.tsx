@@ -28,7 +28,8 @@ import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import ChartWatermark from "./ChartWatermark";
-import { IS_PREVIEW } from "@/lib/helpers";
+import { BASE_URL, IS_PREVIEW } from "@/lib/helpers";
+import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -195,6 +196,7 @@ export default function LandingChart({
   setSelectedMetric,
   metric,
   sources,
+  is_embed = false,
 }: // timeIntervals,
   // onTimeIntervalChange,
   // showTimeIntervals = true,
@@ -211,6 +213,7 @@ export default function LandingChart({
     setSelectedMetric: (metric: string) => void;
     metric: string;
     sources: string[];
+    is_embed?: boolean;
     // timeIntervals: string[];
     // onTimeIntervalChange: (interval: string) => void;
     // showTimeIntervals: boolean;
@@ -218,6 +221,7 @@ export default function LandingChart({
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
   const [isDragging, setIsDragging] = useState(false);
+  const { isSidebarOpen, setEmbedData, embedData } = useUIContext();
 
   const loadHighchartsWrappers = () => {
     // on drag start
@@ -524,6 +528,15 @@ export default function LandingChart({
   };
 
   useEffect(() => {
+    if (embedData.src !== BASE_URL + "/embed/user-base")
+      setEmbedData(prevEmbedData => ({
+        ...prevEmbedData,
+        title: "Layer 2 User Base - growthepie",
+        src: BASE_URL + "/embed/user-base",
+      }));
+  }, [embedData]);
+
+  useEffect(() => {
     Highcharts.setOptions({
       lang: {
         numericSymbols: ["K", " M", "B", "T", "P", "E"],
@@ -537,7 +550,9 @@ export default function LandingChart({
     setHighchartsLoaded(true);
   }, []);
 
-  const { isSidebarOpen } = useUIContext();
+
+
+
 
   const { theme } = useTheme();
 
@@ -1486,6 +1501,42 @@ export default function LandingChart({
       chartComponent.current.setSize(width, height, false);
     }
   }, [width, height, isSidebarOpen]);
+
+  if (is_embed)
+    return (
+      <EmbedContainer title="User Base" icon="gtp:gtp-pie" url="https://www.growthepie.xyz" time_frame={timespans[selectedTimespan].label} aggregation="" chart_type="">
+        <div className="relative h-full w-full rounded-xl" ref={containerRef}>
+          {highchartsLoaded ? (
+            <HighchartsReact
+              highcharts={Highcharts}
+              options={options}
+              constructorType={"stockChart"}
+              ref={(chart) => {
+                chartComponent.current = chart?.chart;
+              }}
+            />
+          ) : (
+            <div className="w-full flex-1 my-4 flex justify-center items-center">
+              <div className="w-10 h-10 animate-spin">
+                <Icon
+                  icon="feather:loader"
+                  className="w-10 h-10 text-forest-500"
+                />
+              </div>
+            </div>
+          )}
+          <div className="absolute bottom-[48.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
+            <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
+          </div>
+          {filteredData.length === 0 && (
+            <div className="absolute top-[calc(50%+2rem)] left-[0px] text-xs font-medium flex justify-center w-full text-forest-500/60">
+              No chain(s) selected for comparison. Please select at least one.
+            </div>
+          )}
+          {/* </div> */}
+        </div>
+      </EmbedContainer>
+    );
 
   return (
     <div className="w-full h-full flex flex-col justify-between">
