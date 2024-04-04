@@ -8,7 +8,7 @@
 }
 
 .background-gradient-group {
-  @apply hidden dark:relative;
+  @apply hidden dark:block relative;
   content: "";
   width: 100%;
   height: 100%;
