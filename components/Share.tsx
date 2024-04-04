@@ -366,11 +366,12 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                             </div>
                           </TooltipTrigger>
                           <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-                            <div className="flex flex-col px-3 py-4 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto font-normal">
+                            <div className="flex flex-col px-3 py-4 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-md font-normal">
                               <div className="font-semibold">Absolute Timeframe</div>
                               <div className="mb-1">The embedded chart&apos;s time window will be frozen to the current chart state.</div>
                               <div className="font-semibold">Relative Timeframe</div>
-                              <div>The embedded chart&apos;s time window will change depending on when the chart is viewed.</div>
+                              <div>The embedded chart&apos;s time window will change depending on when the chart is viewed. This option is disabled when the chart is zoomed in to a custom timeframe.</div>
+
                             </div>
                           </TooltipContent>
                         </Tooltip>
@@ -415,6 +416,8 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                         <div
                           className="relative w-full rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer"
                           onClick={() => {
+                            if (embedData.zoomed) return;
+
                             const newTimeframe = embedData.timeframe === "absolute" ? "relative" : "absolute";
                             setEmbedData(prev => ({ ...prev, timeframe: newTimeframe }))
                             track("selected Timeframe in Share Embed window: " + newTimeframe, {
@@ -424,10 +427,10 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                           }}>
                           <div className="w-full flex justify-between text-[#2D3748]">
                             <div className="w-full text-center">Absolute</div>
-                            <div className="w-full text-center">Relative</div>
+                            <div className={`w-full text-center ${embedData.zoomed && 'opacity-50'}`}>Relative</div>
                           </div>
                           <div className="absolute inset-0 w-full p-0.5 rounded-full text-center">
-                            <div className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full text-center transition-transform duration-300" style={{ transform: embedData.timeframe === "absolute" ? "translateX(0%)" : "translateX(100%)" }}>
+                            <div className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full text-center transition-transform duration-300" style={{ transform: embedData.timeframe === "absolute" || embedData.zoomed ? "translateX(0%)" : "translateX(100%)" }}>
                               {
                                 embedData.timeframe === "absolute" ?
                                   "Absolute"

@@ -730,6 +730,8 @@ export default function ComparisonChart({
       ...prevEmbedData,
       title: navItem?.label + " - growthepie",
       src: src,
+      zoomed: zoomed,
+      timeframe: zoomed ? "absolute" : embedData.timeframe,
     }));
   }, [embedData.timeframe, maxDate, navItem?.label, navItem?.urlKey, selectedScale, selectedTimeInterval, selectedTimespan, showEthereumMainnet, showGwei, showUsd, theme, timespans, zoomMax, zoomMin, zoomed]);
 

@@ -7,6 +7,7 @@ export type EmbedData = {
   src: string;
   title: string;
   timeframe: "absolute" | "relative";
+  zoomed?: boolean;
 };
 
 type UIContextState = {

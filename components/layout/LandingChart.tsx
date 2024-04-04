@@ -921,6 +921,8 @@ export default function LandingChart({
       ...prevEmbedData,
       title: "Layer 2 User Base - growthepie",
       src: src,
+      zoomed: zoomed,
+      timeframe: zoomed ? "absolute" : embedData.timeframe,
     }));
   }, [embedData.timeframe, maxDate, selectedScale, selectedTimeInterval, selectedTimespan, showEthereumMainnet, showUsd, theme, timespans, zoomMax, zoomMin, zoomed, selectedMetric]);
 
