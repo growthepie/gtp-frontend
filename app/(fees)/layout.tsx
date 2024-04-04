@@ -9,6 +9,7 @@ import { Graph } from "schema-dts";
 import BottomBanner from "@/components/BottomBanner";
 import Backgrounds from "@/components/layout/Backgrounds";
 import "../background.css";
+import Share from "@/components/Share";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",
@@ -173,18 +174,27 @@ export default function RootLayout({
         />
         <Providers>
           <div className="flex h-fit w-full justify-center">
-            <div className="flex w-full max-w-[1680px] min-h-screen">
+            <div className="flex w-full max-w-[948px] min-h-screen">
               <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
-                <div className="w-[948px] mx-auto relative max-h-[100vh] min-h-[100vh] overflow-hidden">
-                  <Backgrounds />
-
+                <div className="w-full mx-auto relative min-h-full">
+                  {/* <Header /> */}
                   <main className="flex-1 w-full mx-auto z-10 mb-[165px]">
                     {children}
-                    <div className="bg-blue-200 z-50"></div>
                   </main>
                 </div>
               </div>
-              <div className="fixed bottom-[20px] right-[20px] md:right-[50px] flex justify-center items-center z-50"></div>
+              <div className="z-50 flex fixed bottom-[20px] w-full max-w-[948px] justify-end pointer-events-none ">
+
+                <div className="px-[20px] md:px-[50px] pointer-events-auto flex w-full relative justify-end">
+                  <div className="absolute w-[835px] h-[54px] -z-10">
+                    <div className="w-full bg-[#1F2726] h-[54px] rounded-t-[30px]"></div>
+                  </div>
+                  <div className="relative flex gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#344240] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
+
+                    <Share />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </Providers>

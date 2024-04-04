@@ -41,6 +41,10 @@ export default function FeesPage() {
     }, {}),
   );
 
+  // start Bottom Chart state
+  const [isChartOpen, setIsChartOpen] = useState(false);
+
+
   const timescales = useMemo(() => {
     return {
       thirty_min: {
@@ -83,11 +87,11 @@ export default function FeesPage() {
       if (isSelectedA === isSelectedB) {
         const aTxCost =
           feeData.chain_data[a]["ten_min"].txcosts_median.data[0][
-            showUsd ? 2 : 1
+          showUsd ? 2 : 1
           ];
         const bTxCost =
           feeData.chain_data[b]["ten_min"].txcosts_median.data[0][
-            showUsd ? 2 : 1
+          showUsd ? 2 : 1
           ];
         return aTxCost - bTxCost;
       }
@@ -148,23 +152,23 @@ export default function FeesPage() {
 
     const r = Math.floor(
       parseInt(lowerBound.color.substring(1, 3), 16) +
-        percentDiff *
-          (parseInt(upperBound.color.substring(1, 3), 16) -
-            parseInt(lowerBound.color.substring(1, 3), 16)),
+      percentDiff *
+      (parseInt(upperBound.color.substring(1, 3), 16) -
+        parseInt(lowerBound.color.substring(1, 3), 16)),
     );
 
     const g = Math.floor(
       parseInt(lowerBound.color.substring(3, 5), 16) +
-        percentDiff *
-          (parseInt(upperBound.color.substring(3, 5), 16) -
-            parseInt(lowerBound.color.substring(3, 5), 16)),
+      percentDiff *
+      (parseInt(upperBound.color.substring(3, 5), 16) -
+        parseInt(lowerBound.color.substring(3, 5), 16)),
     );
 
     const b = Math.floor(
       parseInt(lowerBound.color.substring(5, 7), 16) +
-        percentDiff *
-          (parseInt(upperBound.color.substring(5, 7), 16) -
-            parseInt(lowerBound.color.substring(5, 7), 16)),
+      percentDiff *
+      (parseInt(upperBound.color.substring(5, 7), 16) -
+        parseInt(lowerBound.color.substring(5, 7), 16)),
     );
 
     return `#${r.toString(16).padStart(2, "0")}${g
@@ -197,16 +201,15 @@ export default function FeesPage() {
     <>
       {feeData && master && (
         <div
-          className={`overflow-y-scroll overflow-x-hidden w-full gap-y-1 `}
-          style={{
-            maxHeight: screenHeight,
-          }}
+        // className={`overflow-y-scroll overflow-x-hidden w-full gap-y-1 `}
+        // style={{
+        //   maxHeight: screenHeight,
+        // }}
         >
           <Header />
           <Container className="w-[820px]">
             <div
-              className="flex px-[5px] items-center w-[820px] h-[54px] rounded-full mt-[16px] bg-[#5A6462] shadow-none"
-              style={{ boxShadow: "0px 0px 25px rgba(0, 0, 0, 0.50)" }}
+              className="flex px-[5px] items-center w-[820px] h-[54px] rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000]"
             >
               <a
                 className="flex items-center w-[162px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-2 gap"
@@ -218,6 +221,7 @@ export default function FeesPage() {
               </a>
             </div>
           </Container>
+          {/* <div className="w-full h-[70px]" /> */}
           <Container className="w-full mt-[30px] ">
             <div className="flex w-full justify-between px-[10px] items-center">
               <div className="text-[20px] font-bold">
@@ -248,19 +252,17 @@ export default function FeesPage() {
                       return (
                         <div
                           key={timescales[timescale].label}
-                          className={`absolute w-full duration-200 ease-linear transition-all z-10 ${
-                            selectedTimescale !== timescale
-                              ? "opacity-0"
-                              : "opacity-100"
-                          }`}
+                          className={`absolute w-full duration-200 ease-linear transition-all z-10 ${selectedTimescale !== timescale
+                            ? "opacity-0"
+                            : "opacity-100"
+                            }`}
                           style={{
-                            left: `${
-                              (index -
-                                Object.keys(timescales).indexOf(
-                                  selectedTimescale,
-                                )) *
+                            left: `${(index -
+                              Object.keys(timescales).indexOf(
+                                selectedTimescale,
+                              )) *
                               100
-                            }%`,
+                              }%`,
                           }}
                         >
                           <div className="absolute flex items-center justify-center gap-x-1 w-full text-center font-semibold text-[10px] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -298,7 +300,7 @@ export default function FeesPage() {
               </div>
             </div>
           </Container>
-          <Container className="">
+          <Container className={`${isChartOpen ? "pb-[235px]" : "pb-[20px]"}`}>
             <div className="relative">
               <div className="w-full mt-[8px] flex h-[26px] justify-start pl-[52px] mb-1 text-[12px] font-bold ">
                 <div
@@ -320,9 +322,8 @@ export default function FeesPage() {
                           : "formkit:arrowup"
                         : "formkit:arrowdown"
                     }
-                    className={` dark:text-white text-black w-[10px] h-[10px] ${
-                      selectedSort === "chain" ? "opacity-100" : "opacity-20"
-                    }`}
+                    className={` dark:text-white text-black w-[10px] h-[10px] ${selectedSort === "chain" ? "opacity-100" : "opacity-20"
+                      }`}
                   />{" "}
                   <div
                     className="bg-[#344240] text-[8px] flex rounded-full font-normal items-center px-[5px] py-[3px] gap-x-[2px]"
@@ -343,11 +344,10 @@ export default function FeesPage() {
                             : "formkit:arrowup"
                           : "formkit:arrowdown"
                       }
-                      className={` dark:text-white text-black w-[10px] h-[10px] ${
-                        selectedSort === "availability"
-                          ? "opacity-100"
-                          : "opacity-20"
-                      }`}
+                      className={` dark:text-white text-black w-[10px] h-[10px] ${selectedSort === "availability"
+                        ? "opacity-100"
+                        : "opacity-20"
+                        }`}
                     />{" "}
                   </div>
                 </div>
@@ -371,11 +371,10 @@ export default function FeesPage() {
                           : "formkit:arrowup"
                         : "formkit:arrowdown"
                     }
-                    className={` dark:text-white text-black w-[10px] h-[10px] ${
-                      selectedSort === "medianfee"
-                        ? "opacity-100"
-                        : "opacity-20"
-                    }`}
+                    className={` dark:text-white text-black w-[10px] h-[10px] ${selectedSort === "medianfee"
+                      ? "opacity-100"
+                      : "opacity-20"
+                      }`}
                   />{" "}
                 </div>
                 <div
@@ -397,9 +396,8 @@ export default function FeesPage() {
                           : "formkit:arrowup"
                         : "formkit:arrowdown"
                     }
-                    className={` dark:text-white text-black w-[10px] h-[10px] ${
-                      selectedSort === "transfer" ? "opacity-100" : "opacity-20"
-                    }`}
+                    className={` dark:text-white text-black w-[10px] h-[10px] ${selectedSort === "transfer" ? "opacity-100" : "opacity-20"
+                      }`}
                   />{" "}
                 </div>
                 <div
@@ -421,11 +419,10 @@ export default function FeesPage() {
                           : "formkit:arrowup"
                         : "formkit:arrowdown"
                     }
-                    className={` dark:text-white text-black w-[10px] h-[10px] ${
-                      selectedSort === "swaptoken"
-                        ? "opacity-100"
-                        : "opacity-20"
-                    }`}
+                    className={` dark:text-white text-black w-[10px] h-[10px] ${selectedSort === "swaptoken"
+                      ? "opacity-100"
+                      : "opacity-20"
+                      }`}
                   />{" "}
                 </div>
                 <div className="relative top-1 flex items-end space-x-[1px]">
@@ -439,7 +436,7 @@ export default function FeesPage() {
                 </div>
               </div>
               <div className={`gap-y-1`}>
-                {Object.entries(sortedFees).map((chain, index) => {
+                {[...Object.entries(sortedFees), ...Object.entries(sortedFees)].map((chain, index) => {
                   return (
                     <div
                       key={index}
@@ -447,9 +444,8 @@ export default function FeesPage() {
                     >
                       <div className="flex items-center h-full w-[4%] ">
                         <Icon
-                          icon={`gtp:${
-                            AllChainsByKeys[chain[0]].urlKey
-                          }-logo-monochrome`}
+                          icon={`gtp:${AllChainsByKeys[chain[0]].urlKey
+                            }-logo-monochrome`}
                           className="h-[24px] w-[24px]"
                           style={{
                             color: AllChainsByKeys[chain[0]].colors[theme][0],
@@ -506,7 +502,7 @@ export default function FeesPage() {
                                 style={{
                                   maxWidth:
                                     hoveredItems.hoveredDA === item.label &&
-                                    hoveredItems.hoveredChain === chain[0]
+                                      hoveredItems.hoveredChain === chain[0]
                                       ? "50px"
                                       : "0px",
                                   transition: "max-width 0.3s ease", // Adjust duration and timing function as needed
@@ -540,10 +536,10 @@ export default function FeesPage() {
                                 (sortedFees[chain[0]].data[0][showUsd ? 2 : 1] /
                                   sortedFees[
                                     Object.keys(sortedFees)[
-                                      Object.keys(sortedFees).length - 1
+                                    Object.keys(sortedFees).length - 1
                                     ]
                                   ].data[0][showUsd ? 2 : 1]) *
-                                  100,
+                                100,
                               ),
                             ),
                           }}
@@ -552,7 +548,7 @@ export default function FeesPage() {
                             notation: "compact",
                             maximumFractionDigits: showUsd
                               ? feeData.chain_data[chain[0]]["hourly"]
-                                  .txcosts_median.data[0][showUsd ? 2 : 1] <
+                                .txcosts_median.data[0][showUsd ? 2 : 1] <
                                 0.01
                                 ? 4
                                 : 3
@@ -570,20 +566,20 @@ export default function FeesPage() {
                           "txcosts_native_median"
                         ].data[0]
                           ? Intl.NumberFormat(undefined, {
-                              notation: "compact",
-                              maximumFractionDigits: showUsd
-                                ? feeData.chain_data[chain[0]]["hourly"][
-                                    "txcosts_native_median"
-                                  ].data[0][showUsd ? 2 : 1] < 0.01
-                                  ? 4
-                                  : 3
-                                : 5,
-                              minimumFractionDigits: 0,
-                            }).format(
-                              feeData.chain_data[chain[0]]["hourly"][
+                            notation: "compact",
+                            maximumFractionDigits: showUsd
+                              ? feeData.chain_data[chain[0]]["hourly"][
                                 "txcosts_native_median"
-                              ].data[0][showUsd ? 2 : 1],
-                            )
+                              ].data[0][showUsd ? 2 : 1] < 0.01
+                                ? 4
+                                : 3
+                              : 5,
+                            minimumFractionDigits: 0,
+                          }).format(
+                            feeData.chain_data[chain[0]]["hourly"][
+                              "txcosts_native_median"
+                            ].data[0][showUsd ? 2 : 1],
+                          )
                           : "Not Available"}
                       </div>
                       <div className="h-full w-[13%] flex justify-end items-center mr-[10px]">
@@ -613,11 +609,10 @@ export default function FeesPage() {
                       <div className="absolute left-[99%]">
                         <Icon
                           icon="feather:check-circle"
-                          className={`w-[22px] h-[22px] transition-all rounded-full ${
-                            selectedChains[chain[0]]
-                              ? "opacity-100 bg-white dark:bg-forest-1000 dark:hover:forest-800"
-                              : "opacity-0 bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
-                          }`}
+                          className={`w-[22px] h-[22px] transition-all rounded-full ${selectedChains[chain[0]]
+                            ? "opacity-100 bg-white dark:bg-forest-1000 dark:hover:forest-800"
+                            : "opacity-0 bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
+                            }`}
                           style={{
                             color: selectedChains[chain[0]]
                               ? undefined
@@ -629,19 +624,224 @@ export default function FeesPage() {
                   );
                 })}
               </div>
-              <div className="border-forest-700 w-[835px] border-[1px] rounded-full border-black/[16%] dark:border-forest-50 h-[34px] pl-[20px] flex items-center text-[15px] sticky bottom-0 bg-forest-900">
-                <div className="flex items-center h-full w-[4%] ">
-                  <Icon
-                    icon={`gtp:ethereum-logo-monochrome`}
-                    className="h-[24px] w-[24px]"
-                    style={{ color: "#5A6462" }}
-                  />
+
+            </div>
+          </Container>
+          {/* <Container className="fixed bottom-[20px] left-[15px] right-0 pl-[52px] z-50">
+            <div className="w-[835px] mx-auto h-[54px] bg-[#1F2726] rounded-t-[30px] z-50" >
+            </div>
+          </Container> */}
+          <Container className={`fixed bottom-0 flex flex-col gap-y-[70px] transition-transform duration-300 ${isChartOpen ? "translate-y-0" : "translate-y-[215px]"}`}>
+            <div className="border-forest-700 w-[835px] border-[1px] rounded-full border-black/[16%] dark:border-forest-50 h-[34px] pl-[20px] flex items-center text-[15px] sticky bottom-0 bg-forest-900 shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_20px_0px_#000000]">
+              <div className="flex items-center h-full w-[4%] ">
+                <Icon
+                  icon={`gtp:ethereum-logo-monochrome`}
+                  className="h-[24px] w-[24px]"
+                  style={{ color: "#5A6462" }}
+                />
+              </div>
+              <div className="flex justify-start items-center h-full w-[33%] ">
+                <div className="mr-[5px]">
+                  {AllChainsByKeys['ethereum'].label}
+                </div>
+                <div
+                  className={`bg-[#344240] flex rounded-full  items-center px-[5px] py-[3px] gap-x-[2px] transition-width overflow-hidden duration-300`}
+                // onMouseEnter={() => {
+                //   setHoveredItems({
+                //     hoveredChain: chain[0],
+                //     hoveredDA: hoveredItems.hoveredDA,
+                //   });
+                // }}
+                // onMouseLeave={() => {
+                //   setHoveredItems({
+                //     hoveredChain: null,
+                //     hoveredDA: hoveredItems.hoveredDA,
+                //   });
+                // }}
+                >
+                  {dataAvailToArray(
+                    master.chains["optimism"].da_layer,
+                  ).map((item, index, array) => [
+                    <div
+                      key={index}
+                      className={`flex relative items-center gap-x-0.5`}
+                      onMouseEnter={() => {
+                        setHoveredItems({
+                          hoveredChain: hoveredItems.hoveredChain,
+                          hoveredDA: item.label,
+                        });
+                      }}
+                      onMouseLeave={() => {
+                        setHoveredItems({
+                          hoveredChain: hoveredItems.hoveredChain,
+                          hoveredDA: null,
+                        });
+                      }}
+                    >
+                      <Icon
+                        icon={`gtp:${item.icon}`}
+                        className="h-[12px] w-[12px]"
+                        style={{
+                          color: "#5A6462",
+                        }}
+                      />
+                      <div
+                        className={`text-[8px] text-center font-semibold text-[#5A6462] overflow-hidden `}
+                        style={{
+                          maxWidth:
+                            hoveredItems.hoveredDA === item.label &&
+                              hoveredItems.hoveredChain === "ethereum"
+                              ? "50px"
+                              : "0px",
+                          transition: "max-width 0.3s ease", // Adjust duration and timing function as needed
+                        }}
+                      >
+                        {item.label}
+                      </div>
+                    </div>,
+                    index !== array.length - 1 && (
+                      /* Content to render when index is not the last element */
+                      <div
+                        key={index}
+                        className="w-[12px] h-[12px] flex items-center justify-center"
+                        style={{
+                          color: "#5A6462",
+                        }}
+                      >
+                        +
+                      </div>
+                    ),
+                  ])}
+                </div>
+              </div>
+
+              <div className="h-full w-[15%] flex justify-center items-center">
+                <div
+                  className="px-[8px] border-[1.5px] rounded-full flex items-center"
+                  style={{
+                    borderColor: getGradientColor(
+                      Math.floor(
+                        (sortedFees["optimism"].data[0][showUsd ? 2 : 1] /
+                          sortedFees[
+                            Object.keys(sortedFees)[
+                            Object.keys(sortedFees).length - 1
+                            ]
+                          ].data[0][showUsd ? 2 : 1]) *
+                        100,
+                      ),
+                    ),
+                  }}
+                >
+                  {Intl.NumberFormat(undefined, {
+                    notation: "compact",
+                    maximumFractionDigits: showUsd
+                      ? feeData.chain_data["optimism"]["hourly"]
+                        .txcosts_median.data[0][showUsd ? 2 : 1] <
+                        0.01
+                        ? 4
+                        : 3
+                      : 5,
+                    minimumFractionDigits: 0,
+                  }).format(
+                    feeData.chain_data["optimism"]["hourly"]
+                      .txcosts_median.data[0][showUsd ? 2 : 1],
+                  )}
+                  {`${showUsd ? "$" : "Ξ"}`}
+                </div>
+              </div>
+              <div className="h-full w-[12.5%] flex justify-end items-center">
+                {feeData.chain_data["optimism"]["hourly"][
+                  "txcosts_native_median"
+                ].data[0]
+                  ? Intl.NumberFormat(undefined, {
+                    notation: "compact",
+                    maximumFractionDigits: showUsd
+                      ? feeData.chain_data["optimism"]["hourly"][
+                        "txcosts_native_median"
+                      ].data[0][showUsd ? 2 : 1] < 0.01
+                        ? 4
+                        : 3
+                      : 5,
+                    minimumFractionDigits: 0,
+                  }).format(
+                    feeData.chain_data["optimism"]["hourly"][
+                      "txcosts_native_median"
+                    ].data[0][showUsd ? 2 : 1],
+                  )
+                  : "Not Available"}
+              </div>
+              <div className="h-full w-[13%] flex justify-end items-center mr-[10px]">
+                {"$0.054"}
+              </div>
+              <div className="relative w-[19%] flex items-center justify-end h-full space-x-[1px]">
+                {Array.from({ length: 23 }, (_, index) => (
+                  <div
+                    key={index}
+                    className="w-[5px] h-[5px] rounded-full opacity-50"
+                    style={{
+                      backgroundColor: getGradientColor(
+                        Math.random() * 100,
+                      ),
+                    }}
+                  ></div>
+                ))}
+                <div
+                  className="w-[8px]  h-[8px] rounded-full"
+                  style={{
+                    backgroundColor: getGradientColor(
+                      Math.random() * 100,
+                    ),
+                  }}
+                ></div>
+              </div>
+              {/* <div className="absolute left-[99%]">
+                <Icon
+                  icon="feather:check-circle"
+                  className={`w-[22px] h-[22px] transition-all rounded-full ${selectedChains["optimism"]
+                    ? "opacity-100 bg-white dark:bg-forest-1000 dark:hover:forest-800"
+                    : "opacity-0 bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
+                    }`}
+                  style={{
+                    color: selectedChains["optimism"]
+                      ? undefined
+                      : "#5A6462",
+                  }}
+                />
+              </div> */}
+            </div>
+            <div className="relative w-full h-[296px] bg-[#1F2726] rounded-t-[30px] pt-[15px] pb-[30px]">
+              <div className="absolute -top-[12px] left-0 right-0 flex justify-center z-50">
+                <div className="flex items-center gap-x-[10px] text-[10px] px-[15px] py-[4px] leading-[150%] rounded-full bg-[#1F2726] shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000] cursor-pointer" onClick={() => setIsChartOpen(!isChartOpen)}>
+                  <div className="w-[16px] h-[16px]"><Icon icon="feather:chevron-up" className={`w-[16px] h-[16px] ${isChartOpen ? 'transform rotate-180' : ''}`} /></div>
+                  <div className="">{isChartOpen ? "Close Chart" : "Open Chart for “Median fees over time”"}</div>
+                </div>
+              </div>
+
+              <div className="w-full h-[182px] flex flex-col gap-y-[5px]">
+                <div className="w-full flex justify-between px-[15px]">
+                  <div className="flex gap-x-1 text-[20px] leading-[120%]">
+                    <div className="font-bold">Swap Token</div><div>fees over time</div>
+                  </div>
+                  <div className="bg-[#344240] rounded-full px-[5px] py-[3px] flex items-center gap-x-[2px] w-[165px] justify-evenly">
+                    <div className="flex gap-x-[5px] items-center text-[#CDD8D3]">
+                      <Icon
+                        icon="feather:clock"
+                        className="w-[10px] h-[10px]"
+                      />
+                      <div className="text-[10px] font-semibold">Last 24 Hours</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="px-[5px]">
+                  <div className="border border-[#5A6462] rounded-[15px] h-[150px] w-full"></div>
                 </div>
               </div>
             </div>
           </Container>
-        </div>
-      )}
+
+        </div >
+      )
+      }
     </>
   );
 }
