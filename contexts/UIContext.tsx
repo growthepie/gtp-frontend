@@ -48,7 +48,6 @@ export const UIContextProvider = ({ children }) => {
   const prevWindowWidthRef = useRef(typeof window !== 'undefined' ? window.innerWidth : 0);
 
   const setEmbedData = (newEmbedData: EmbedData | ((prevEmbedData: EmbedData) => EmbedData)) => {
-    console.log("newEmbedData", newEmbedData);
     setState((prevState) => ({
       ...prevState,
       embedData: typeof newEmbedData === 'function' ? newEmbedData(prevState.embedData) : newEmbedData,

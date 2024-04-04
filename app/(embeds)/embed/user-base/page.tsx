@@ -32,6 +32,10 @@ export default function Page() {
   const queryTheme = searchParams ? searchParams.get("theme") : null;
   const queryTimespan = searchParams ? searchParams.get("timespan") : null;
   const queryMetric = searchParams ? searchParams.get("metric") : null;
+  const queryShowMainnet = searchParams ? searchParams.get("showMainnet") : null;
+  const queryZoomed = searchParams ? searchParams.get("zoomed") : null;
+  const queryStartTimestamp = searchParams ? searchParams.get("startTimestamp") : null;
+  const queryEndTimestamp = searchParams ? searchParams.get("endTimestamp") : null;
 
   // const isLargeScreen = useMediaQuery("(min-width: 1280px)");
 
@@ -117,6 +121,10 @@ export default function Page() {
           setSelectedMetric={setSelectedMetric}
           is_embed={true}
           embed_timespan={queryTimespan ?? "365d"}
+          embed_show_mainnet={queryShowMainnet === "true"}
+          embed_zoomed={queryZoomed === "true"}
+          embed_start_timestamp={queryStartTimestamp ? parseInt(queryStartTimestamp) : undefined}
+          embed_end_timestamp={queryEndTimestamp ? parseInt(queryEndTimestamp) : undefined}
         />
       ) : null}
     </>

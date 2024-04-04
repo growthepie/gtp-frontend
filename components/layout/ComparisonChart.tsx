@@ -713,7 +713,6 @@ export default function ComparisonChart({
       scale: selectedScale,
       interval: selectedTimeInterval,
       showMainnet: showEthereumMainnet ? "true" : "false",
-
     };
 
     const absoluteVars = {
@@ -1479,7 +1478,6 @@ export default function ComparisonChart({
   if (is_embed)
     return (
       <EmbedContainer title="User Base" icon="gtp:gtp-pie" url="https://www.growthepie.xyz" time_frame={timespans[selectedTimespan].label} aggregation="" chart_type="">
-        {selectedScale}
         <div className="relative h-full w-full rounded-xl">
           {highchartsLoaded ? (
             <HighchartsReact

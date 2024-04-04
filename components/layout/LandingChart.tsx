@@ -197,6 +197,8 @@ export default function LandingChart({
   embed_timespan,
   embed_start_timestamp,
   embed_end_timestamp,
+  embed_show_mainnet,
+  embed_zoomed,
 }: // timeIntervals,
   // onTimeIntervalChange,
   // showTimeIntervals = true,
@@ -217,6 +219,8 @@ export default function LandingChart({
     embed_timespan?: string;
     embed_start_timestamp?: number;
     embed_end_timestamp?: number;
+    embed_show_mainnet?: boolean;
+    embed_zoomed?: boolean;
     // timeIntervals: string[];
     // onTimeIntervalChange: (interval: string) => void;
     // showTimeIntervals: boolean;
@@ -571,7 +575,15 @@ export default function LandingChart({
   const [zoomMin, setZoomMin] = useState(0);
   const [zoomMax, setZoomMax] = useState(0);
 
-  const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
+  useEffect(() => {
+    if (embed_zoomed && embed_start_timestamp && embed_end_timestamp) {
+      setZoomed(embed_zoomed);
+      setZoomMin(embed_start_timestamp);
+      setZoomMax(embed_end_timestamp);
+    }
+  }, [embed_end_timestamp, embed_start_timestamp, embed_zoomed]);
+
+  const [showEthereumMainnet, setShowEthereumMainnet] = useState(embed_show_mainnet ?? false);
 
   const [totalUsersIncrease, setTotalUsersIncrease] = useState(0);
 
@@ -1568,7 +1580,6 @@ export default function LandingChart({
   if (is_embed)
     return (
       <EmbedContainer title="User Base" icon="gtp:gtp-pie" url="https://www.growthepie.xyz" time_frame={timespans[selectedTimespan].label} aggregation="" chart_type="">
-        {selectedTimespan}
         <div className="relative h-full w-full rounded-xl" ref={containerRef}>
           {highchartsLoaded ? (
             <HighchartsReact
