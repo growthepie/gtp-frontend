@@ -8,6 +8,7 @@ import { useMediaQuery } from "usehooks-ts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./layout/Tooltip";
 import { EmbedData, useUIContext } from "@/contexts/UIContext";
 import Link from "next/link";
+import { track } from "@vercel/analytics/react";
 
 const embedPages = ["", "fundamentals"];
 
@@ -126,6 +127,10 @@ export default function Share() {
             className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-[#1F2726] rounded-full px-4 py-2"
             onClick={() => {
               setOpenShare(true);
+              track("opened Share window", {
+                location: isMobile ? `mobile` : `desktop`,
+                page: window.location.pathname,
+              });
             }}
           >
             <div className="w-5 h-5">
@@ -140,6 +145,10 @@ export default function Share() {
                 style={{ opacity: 0.3 }}
                 onClick={() => {
                   setOpenShare(!openShare);
+                  track("closed Share window", {
+                    location: isMobile ? `mobile` : `desktop`,
+                    page: window.location.pathname,
+                  });
                 }}
               />
               <div
@@ -161,6 +170,10 @@ export default function Share() {
                     className="w-8 h-8 flex items-center justify-center hover:bg-forest-800 bg-transparent rounded-full hover:cursor-pointer"
                     onClick={() => {
                       setOpenShare(false);
+                      track("closed Share window", {
+                        location: isMobile ? `mobile` : `desktop`,
+                        page: window.location.pathname,
+                      });
                     }}
                   >
                     <Icon
@@ -180,6 +193,10 @@ export default function Share() {
                       }`}
                     onClick={() => {
                       setTopSelection("social");
+                      track("clicked Social in Share window", {
+                        location: isMobile ? `mobile` : `desktop`,
+                        page: window.location.pathname,
+                      });
                     }}
                   >
                     Social Media
@@ -191,6 +208,10 @@ export default function Share() {
                       }`}
                     onClick={() => {
                       setTopSelection("embed");
+                      track("clicked Embed in Share window", {
+                        location: isMobile ? `mobile` : `desktop`,
+                        page: window.location.pathname,
+                      });
                     }}
                   >
                     Embed Code
@@ -227,6 +248,10 @@ export default function Share() {
                         onClick={() => {
                           copyText(currentURL ? currentURL : "");
                           triggerCopy();
+                          track("copied URL in Share Social window", {
+                            location: isMobile ? `mobile` : `desktop`,
+                            page: window.location.pathname,
+                          });
                         }}
                       >
                         {/* <div className="flex w-[285px] h-[54px] p-[15px] border-[1px] border-[#CDD8D3] gap-x-[10px] items-center"> */}
@@ -266,6 +291,10 @@ export default function Share() {
                         className="flex items-center w-full h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px] "
                         onClick={() => {
                           handleSendEmail();
+                          track("clicked Email in Share Social window", {
+                            location: isMobile ? `mobile` : `desktop`,
+                            page: window.location.pathname,
+                          });
                         }}
                       >
                         <Icon className="w-[24px] h-[24px] " icon="gtp:email" />
@@ -277,6 +306,10 @@ export default function Share() {
                         className="flex items-center w-full h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
                         onClick={() => {
                           shareOnReddit();
+                          track("clicked Reddit in Share Social window", {
+                            location: isMobile ? `mobile` : `desktop`,
+                            page: window.location.pathname,
+                          });
                         }}
                       >
                         <Icon
@@ -292,6 +325,10 @@ export default function Share() {
                         className="flex items-center w-full h-[54px] bg-forest-500 dark:border-[#5A6462] dark:border-[3px] dark:bg-[#1F2726] hover:dark:bg-[#5A6462] p-[15px] rounded-full cursor-pointer gap-x-[10px]"
                         onClick={() => {
                           shareOnTwitter();
+                          track("clicked Twitter in Share Social window", {
+                            location: isMobile ? `mobile` : `desktop`,
+                            page: window.location.pathname,
+                          });
                         }}
                       >
                         <Icon
@@ -318,6 +355,10 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                       className="font-light font-mono p-[15px] rounded-[25px] border-forest-600 border-[1px] h-full min-h-[231px] w-full text-[12px] leading-[150%] bg-transparent select-all outline-none resize-none cursor-text selection:bg-forest-900 dark:selection:bg-forest-900 dark:bg-[#1F2726] dark:text-forest-100"
                       onClick={(e) => {
                         e.currentTarget.select();
+                        track("clicked Embed Code textarea in Share window", {
+                          location: isMobile ? `mobile` : `desktop`,
+                          page: window.location.pathname,
+                        });
                       }}
                       spellCheck="false"
                     />
@@ -377,7 +418,16 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                         </label>
                       </div> */}
                       <div className="flex flex-col h-full gap-y-[5px] w-full select-none">
-                        <div className="relative w-full rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer" onClick={() => setEmbedData(prev => ({ ...prev, timeframe: embedData.timeframe === "absolute" ? "relative" : "absolute" }))}>
+                        <div
+                          className="relative w-full rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer"
+                          onClick={() => {
+                            const newTimeframe = embedData.timeframe === "absolute" ? "relative" : "absolute";
+                            setEmbedData(prev => ({ ...prev, timeframe: newTimeframe }))
+                            track("selected Timeframe in Share Embed window: " + newTimeframe, {
+                              location: isMobile ? `mobile` : `desktop`,
+                              page: window.location.pathname,
+                            });
+                          }}>
                           <div className="w-full flex justify-between text-[#2D3748]">
                             <div className="w-full text-center">Absolute</div>
                             <div className="w-full text-center">Relative</div>
@@ -485,6 +535,10 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                         <div className="flex items-center gap-x-[10px] h-[54px] rounded-full border-[#5A6462] border-[3px] px-[15px] cursor-pointer" onClick={() => {
                           copyText(currentURL ? currentURL : "");
                           triggerCopy();
+                          track("copied URL in Share Embed window", {
+                            location: isMobile ? `mobile` : `desktop`,
+                            page: window.location.pathname,
+                          });
                         }}>
                           <Icon
                             className={`  w-[24px] h-[24px] font-semibold `}
