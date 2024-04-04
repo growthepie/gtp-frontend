@@ -8,7 +8,7 @@ import Icon from "@/components/layout/ServerIcon";
 // import ShowLoading from "@/components/layout/ShowLoading";
 import Subheading from "@/components/layout/Subheading";
 import { Metadata } from "next";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef, useLayoutEffect } from "react";
 import { useMediaQuery } from "@react-hook/media-query";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
@@ -18,6 +18,7 @@ import { LandingURL, MasterURL } from "@/lib/urls";
 import LandingChart from "@/components/layout/LandingChart";
 import EmbedContainer from "../EmbedContainer";
 import { useSearchParams } from "next/navigation";
+import { useTheme } from "next-themes";
 
 // export async function generateMetadata(): Promise<Metadata> {
 //   return {
@@ -36,6 +37,17 @@ export default function Page() {
   const queryZoomed = searchParams ? searchParams.get("zoomed") : null;
   const queryStartTimestamp = searchParams ? searchParams.get("startTimestamp") : null;
   const queryEndTimestamp = searchParams ? searchParams.get("endTimestamp") : null;
+
+  const { theme, setTheme } = useTheme();
+  useLayoutEffect(() => {
+    setTimeout(() => {
+      if (queryTheme == "light") {
+        setTheme("light");
+      } else {
+        setTheme("dark");
+      }
+    }, 1000);
+  }, []);
 
   // const isLargeScreen = useMediaQuery("(min-width: 1280px)");
 

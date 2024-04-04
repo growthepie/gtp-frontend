@@ -567,7 +567,7 @@ export default function LandingChart({
 
   const [selectedTimespan, setSelectedTimespan] = useState(embed_timespan ?? "max");
 
-  const [selectedScale, setSelectedScale] = useState("absolute");
+  const [selectedScale, setSelectedScale] = useState(selectedMetric === "Percentage" ? "percentage" : "absolute");
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
@@ -811,7 +811,7 @@ export default function LandingChart({
       [isMobile],
     );
 
-  const [showTotalUsers, setShowTotalUsers] = useState(true);
+  const [showTotalUsers, setShowTotalUsers] = useState(selectedMetric === "Total Users");
 
   const filteredData = useMemo(() => {
     if (!data) return null;
@@ -891,7 +891,7 @@ export default function LandingChart({
         xMax: maxPlusBuffer,
       },
     };
-  }, [filteredData, selectedScale]);
+  }, [filteredData, maxDate, selectedScale]);
 
   useEffect(() => {
     const startTimestamp = zoomed ? zoomMin : undefined;
@@ -903,7 +903,7 @@ export default function LandingChart({
       scale: selectedScale,
       // interval: selectedTimeInterval,
       showMainnet: showEthereumMainnet ? "true" : "false",
-
+      metric: selectedMetric,
     };
 
     const absoluteVars = {
@@ -922,7 +922,7 @@ export default function LandingChart({
       title: "Layer 2 User Base - growthepie",
       src: src,
     }));
-  }, [embedData.timeframe, maxDate, selectedScale, selectedTimeInterval, selectedTimespan, showEthereumMainnet, showUsd, theme, timespans, zoomMax, zoomMin, zoomed]);
+  }, [embedData.timeframe, maxDate, selectedScale, selectedTimeInterval, selectedTimespan, showEthereumMainnet, showUsd, theme, timespans, zoomMax, zoomMin, zoomed, selectedMetric]);
 
   useEffect(() => {
     if (chartComponent.current) {
@@ -1580,6 +1580,7 @@ export default function LandingChart({
   if (is_embed)
     return (
       <EmbedContainer title="User Base" icon="gtp:gtp-pie" url="https://www.growthepie.xyz" time_frame={timespans[selectedTimespan].label} aggregation="" chart_type="">
+        {selectedMetric}
         <div className="relative h-full w-full rounded-xl" ref={containerRef}>
           {highchartsLoaded ? (
             <HighchartsReact
