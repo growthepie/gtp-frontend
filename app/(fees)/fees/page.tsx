@@ -3,11 +3,12 @@ import Container from "@/components/layout/Container";
 import Icon from "@/components/layout/Icon";
 import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useLayoutEffect, useRef } from "react";
 import useSWR from "swr";
 import { useLocalStorage } from "usehooks-ts";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
+import Header from "./Header";
 
 interface HoveredItems {
   hoveredChain: string | null;
@@ -103,6 +104,21 @@ export default function FeesPage() {
     return sortedMedianCosts;
   }, [feeData, selectedChains, showUsd]);
 
+  const [screenHeight, setScreenHeight] = useState(0);
+
+  useLayoutEffect(() => {
+    const handleResize = () => {
+      setScreenHeight(window.innerHeight - 120);
+    };
+
+    setScreenHeight(window.innerHeight - 120);
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   const getGradientColor = (percentage) => {
     const colors = [
       { percent: 0, color: "#1DF7EF" },
@@ -180,7 +196,13 @@ export default function FeesPage() {
   return (
     <>
       {feeData && master && (
-        <>
+        <div
+          className={`overflow-y-scroll overflow-x-hidden w-full gap-y-1 `}
+          style={{
+            maxHeight: screenHeight,
+          }}
+        >
+          <Header />
           <Container className="w-[820px]">
             <div
               className="flex px-[5px] items-center w-[820px] h-[54px] rounded-full mt-[16px] bg-[#5A6462] shadow-none"
@@ -276,8 +298,8 @@ export default function FeesPage() {
               </div>
             </div>
           </Container>
-          <Container>
-            <div className="max-h-[360px] overflow-y-clip relative">
+          <Container className="">
+            <div className="relative">
               <div className="w-full mt-[8px] flex h-[26px] justify-start pl-[52px] mb-1 text-[12px] font-bold ">
                 <div
                   className="flex items-center gap-x-0.5 w-[29.25%]  "
@@ -416,12 +438,12 @@ export default function FeesPage() {
                   <div className="w-[8px] border-[#344240] border-t-[1px] border-x-[1px] rounded-t-full h-[23px]"></div>
                 </div>
               </div>
-              <div className="w-full h-[410px] flex flex-col gap-y-1">
+              <div className={`gap-y-1`}>
                 {Object.entries(sortedFees).map((chain, index) => {
                   return (
                     <div
                       key={index}
-                      className="border-forest-700 border-[1px] w-full rounded-full border-black/[16%] dark:border-[#5A6462] h-[34px] pl-[20px] flex items-center text-[15px]"
+                      className="border-forest-700 border-[1px] mb-1 w-[820px] rounded-full border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[20px] flex items-center relative text-[15px]"
                     >
                       <div className="flex items-center h-full w-[4%] ">
                         <Icon
@@ -607,26 +629,18 @@ export default function FeesPage() {
                   );
                 })}
               </div>
-              <div
-                className="absolute inset-0 pointer-events-none h-[100px] top-[80%] w-[102.25%]"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(to top, rgba(31,39,38,0.6), transparent)",
-                  mixBlendMode: "multiply",
-                }}
-              ></div>
-            </div>
-            <div className="border-forest-700 w-[840px] border-[1px] rounded-full border-black/[16%] dark:border-forest-50 h-[34px] pl-[20px] flex items-center text-[15px] absolute top-[54.5%] bg-forest-900">
-              <div className="flex items-center h-full w-[4%] ">
-                <Icon
-                  icon={`gtp:ethereum-logo-monochrome`}
-                  className="h-[24px] w-[24px]"
-                  style={{ color: "#5A6462" }}
-                />
+              <div className="border-forest-700 w-[835px] border-[1px] rounded-full border-black/[16%] dark:border-forest-50 h-[34px] pl-[20px] flex items-center text-[15px] sticky bottom-0 bg-forest-900">
+                <div className="flex items-center h-full w-[4%] ">
+                  <Icon
+                    icon={`gtp:ethereum-logo-monochrome`}
+                    className="h-[24px] w-[24px]"
+                    style={{ color: "#5A6462" }}
+                  />
+                </div>
               </div>
             </div>
           </Container>
-        </>
+        </div>
       )}
     </>
   );

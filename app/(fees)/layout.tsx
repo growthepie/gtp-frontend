@@ -6,8 +6,8 @@ import { Raleway, Inter, Roboto_Mono } from "next/font/google";
 import SidebarContainer from "@/components/layout/SidebarContainer";
 import { Metadata } from "next";
 import { Graph } from "schema-dts";
-import Header from "./fees/Header";
 import BottomBanner from "@/components/BottomBanner";
+import Backgrounds from "@/components/layout/Backgrounds";
 import "../background.css";
 
 const jsonLd: Graph = {
@@ -175,8 +175,9 @@ export default function RootLayout({
           <div className="flex h-fit w-full justify-center">
             <div className="flex w-full max-w-[1680px] min-h-screen">
               <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
-                <div className="w-[948px] mx-auto relative min-h-full">
-                  <Header />
+                <div className="w-[948px] mx-auto relative max-h-[100vh] min-h-[100vh] overflow-hidden">
+                  <Backgrounds />
+
                   <main className="flex-1 w-full mx-auto z-10 mb-[165px]">
                     {children}
                     <div className="bg-blue-200 z-50"></div>
