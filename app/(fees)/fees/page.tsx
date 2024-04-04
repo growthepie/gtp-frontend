@@ -300,7 +300,7 @@ export default function FeesPage() {
               </div>
             </div>
           </Container>
-          <Container className={`${isChartOpen ? "pb-[235px]" : "pb-[20px]"}`}>
+          <Container className={`transition-all duration-300 ${isChartOpen ? "pb-[235px]" : "pb-[20px]"}`}>
             <div className="relative">
               <div className="w-full mt-[8px] flex h-[26px] justify-start pl-[52px] mb-1 text-[12px] font-bold ">
                 <div
