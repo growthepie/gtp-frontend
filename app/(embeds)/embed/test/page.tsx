@@ -10,15 +10,35 @@ const EmbedTest = () => {
   const height = searchParams ? searchParams.get("height") : null;
   const title = searchParams ? searchParams.get("title") : null;
 
+  // extract arguments from the url
+  const urlArgs = new URLSearchParams(url?.split("?")[1] || "");
+
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white">
-      <div className="text-sm text-black w-3/4 mx-auto font-mono">
-        <div className="font-bold">URL:</div>
-        <div>{url}</div>
-        <div className="font-bold">Width:</div>
-        <div>{width}</div>
-        <div className="font-bold">Height:</div>
-        <div>{height}</div>
+      <div className="text-sm text-black w-3/4 mx-auto font-mono grid grid-cols-2 gap-2">
+        <div>
+          <div className="font-bold">Width:</div>
+          <div>{width}</div>
+        </div>
+        <div>
+          <div className="font-bold">Height:</div>
+          <div>{height}</div>
+        </div>
+        <div>
+          <div className="font-bold">URL:</div>
+          <div className="w-full overflow-hidden break-words">{url}</div>
+        </div>
+        <div></div>
+        <div className="w-3/4 mx-auto grid grid-cols-2 gap-2">
+          {Array.from(urlArgs).map(([key, value]) => (
+            <div key={key}>
+              <div className="font-bold">{key}:</div>
+              <div className="w-full overflow-hidden break-words">{value}</div>
+            </div>
+          ))}
+        </div>
+
       </div>
       <iframe
         src={url || ""} // if no url is provided, the iframe will be empty

@@ -267,12 +267,12 @@ export default function Share() {
 
                         <div className="ml-auto flex items-center">
                           <Icon
-                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-all duration-300 text-forest-600 group-hover:text-forest-700 dark:group-hover:text-forest-500  ${copied ? "opacity-0" : "opacity-100"
+                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500  ${copied ? "opacity-0" : "opacity-100"
                               }`}
                             icon="feather:copy"
                           />
                           <Icon
-                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-all duration-300 text-forest-600 group-hover:text-forest-700 dark:group-hover:text-forest-500  ${copied ? "opacity-100" : "opacity-0"
+                            className={`absolute right-[15px] w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500  ${copied ? "opacity-100" : "opacity-0"
                               }`}
                             icon="feather:check"
                           />
@@ -529,7 +529,7 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-x-[10px] h-[54px] rounded-full bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-500 hover:dark:bg-[#5A6462] border-forest-500 dark:border-[#5A6462] border-[3px] px-[15px] cursor-pointer transition-colors" onClick={() => {
+                        <div className="group flex items-center gap-x-[10px] h-[54px] rounded-full bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-500 hover:dark:bg-[#5A6462] border-forest-500 dark:border-[#5A6462] border-[3px] px-[15px] cursor-pointer transition-colors" onClick={() => {
                           copyText(currentURL ? currentURL : "");
                           triggerCopy();
                           track("copied URL in Share Embed window", {
@@ -542,15 +542,15 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                             icon="gtp:code-slash"
                           />
                           <div>{copied ? "Copied" : "Copy Code"}</div>
-                          <div className="flex ml-auto relative w-[24px] -top-[10px]">
+                          <div className="flex ml-auto relative w-[24px] h-[24px]">
                             <Icon
-                              className={`absolute  w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${copied ? "opacity-0" : "opacity-100"
+                              className={`absolute  w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500 ${copied ? "opacity-0" : "opacity-100"
                                 }`}
                               icon="feather:copy"
 
                             />
                             <Icon
-                              className={`absolute w-[22px] h-[22px] font-semibold transition-opacity duration-300 text-[#5A6462] ${copied ? "opacity-100" : "opacity-0"
+                              className={`absolute w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500 ${copied ? "opacity-100" : "opacity-0"
                                 }`}
                               icon="feather:check"
                             />

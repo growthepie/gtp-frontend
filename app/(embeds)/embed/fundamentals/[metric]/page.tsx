@@ -26,6 +26,8 @@ const Chain = ({ params }: { params: any }) => {
   const queryZoomed = searchParams ? searchParams.get("zoomed") : null;
   const queryInterval = searchParams ? searchParams.get("interval") : null;
   const queryShowMainnet = searchParams ? searchParams.get("showMainnet") : null;
+  // chains query is an array of chains to display
+  const queryChains = searchParams ? searchParams.get("chains") : null;
 
   const { theme, setTheme } = useTheme();
   useLayoutEffect(() => {
@@ -71,14 +73,29 @@ const Chain = ({ params }: { params: any }) => {
     icon: "",
   };
 
-  const selectedChains = AllChains.filter(
-    (chain) =>
-      (chain.ecosystem.includes("all-chains") &&
-        ["arbitrum", "optimism", "base", "linea", "zksync_era"].includes(
-          chain.key,
-        )) ||
-      chain.key === "ethereum",
-  ).map((chain) => chain.key);
+  // const selectedChains = AllChains.filter(
+  //   (chain) =>
+  //     (chain.ecosystem.includes("all-chains") &&
+  //       ["arbitrum", "optimism", "base", "linea", "zksync_era"].includes(
+  //         chain.key,
+  //       )) ||
+  //     chain.key === "ethereum",
+  // ).map((chain) => chain.key);
+
+  const selectedChains = useMemo(() => {
+    if (!queryChains) {
+      return AllChains.filter(
+        (chain) =>
+          (chain.ecosystem.includes("all-chains") &&
+            ["arbitrum", "optimism", "base", "linea", "zksync_era"].includes(
+              chain.key,
+            )) ||
+          chain.key === "ethereum",
+      ).map((chain) => chain.key);
+    }
+
+    return queryChains;
+  }, [queryChains]);
 
   const [selectedScale, setSelectedScale] = useState(
     queryScale ? queryScale : params.metric != "transaction-costs" ? "stacked" : "absolute",
@@ -112,6 +129,7 @@ const Chain = ({ params }: { params: any }) => {
   return (
     // <Link href={`https://www.growthepie.xyz/fundamentals/${params.metric}`} referrerPolicy="origin" target="_blank" rel="noopener noreferrer" aria-label="growthepie.xyz">
     <>
+      {JSON.stringify(selectedChains)}
       {metricData && (
         <ComparisonChart
           data={Object.keys(metricData.data.chains)

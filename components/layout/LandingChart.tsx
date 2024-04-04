@@ -1582,7 +1582,6 @@ export default function LandingChart({
   if (is_embed)
     return (
       <EmbedContainer title="User Base" icon="gtp:gtp-pie" url="https://www.growthepie.xyz" time_frame={timespans[selectedTimespan].label} aggregation="" chart_type="">
-        {selectedMetric}
         <div className="relative h-full w-full rounded-xl" ref={containerRef}>
           {highchartsLoaded ? (
             <HighchartsReact

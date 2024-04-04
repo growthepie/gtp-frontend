@@ -713,6 +713,7 @@ export default function ComparisonChart({
       scale: selectedScale,
       interval: selectedTimeInterval,
       showMainnet: showEthereumMainnet ? "true" : "false",
+      chains: filteredData.map((d) => d.name).join(","),
     };
 
     const absoluteVars = {
