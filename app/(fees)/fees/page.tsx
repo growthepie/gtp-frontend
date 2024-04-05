@@ -5,7 +5,7 @@ import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import { useMemo, useState, useEffect, useLayoutEffect, useRef } from "react";
 import useSWR from "swr";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import Header from "./Header";
@@ -21,11 +21,12 @@ interface DAvailability {
 }
 
 export default function FeesPage() {
+  const isMobile = useMediaQuery("(max-width: 767px)");
   const [selectedTimescale, setSelectedTimescale] = useState("hourly");
   const [selectedQuantitative, setSelectedQuantitative] =
     useState("txcosts_median");
   const [selectedQualitative, setSelectedQualitative] = useState<null | string>(
-    "chain",
+    null,
   );
   const [selectedAvailability, setSelectedAvailability] =
     useState<string>("blobs");
@@ -288,8 +289,6 @@ export default function FeesPage() {
     return sortedCosts;
   }, [feeData, showUsd, selectedQuantitative]);
 
-  console.log(feeIndexSort);
-
   const [screenHeight, setScreenHeight] = useState(0);
 
   useLayoutEffect(() => {
@@ -358,7 +357,6 @@ export default function FeesPage() {
       .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
   };
 
-  console.log(feeData);
   return (
     <>
       {feeData && master && (
@@ -396,9 +394,11 @@ export default function FeesPage() {
             }`}
           >
             <div className="relative">
-              <div className="w-full mt-[8px] flex h-[26px] justify-start pl-[42px] mb-1 text-[12px] font-bold ">
+              <div className="w-[820px] mt-[8px] flex h-[26px] justify-start pl-[42px] mb-1 text-[12px] font-bold ">
                 <div
-                  className="flex items-center gap-x-0.5 w-[29.25%]  "
+                  className={`flex items-center gap-x-0.5 hover:cursor-pointer ${
+                    isMobile ? "w-[21%]" : "w-[29.25%]"
+                  }`}
                   onClick={() => {
                     if (selectedQualitative === "chain") {
                       setSortOrder(!sortOrder);
@@ -423,7 +423,7 @@ export default function FeesPage() {
                     }`}
                   />{" "}
                   <div
-                    className="bg-[#344240] text-[8px] flex rounded-full font-normal items-center px-[5px] py-[3px] gap-x-[2px]"
+                    className="bg-[#344240] text-[8px] flex rounded-full font-normal items-center px-[5px] py-[3px] gap-x-[2px] hover:cursor-pointer"
                     onClick={() => {
                       if (selectedQualitative === "availability") {
                         setSortOrder(!sortOrder);
@@ -451,7 +451,7 @@ export default function FeesPage() {
                 </div>
 
                 <div
-                  className="flex items-center justify-end gap-x-0.5 w-[18.5%] "
+                  className="flex items-center justify-end gap-x-0.5 w-[18.5%] hover:cursor-pointer"
                   onClick={() => {
                     if (selectedQuantitative === "txcosts_median") {
                       if (selectedQualitative) {
@@ -484,7 +484,7 @@ export default function FeesPage() {
                   />{" "}
                 </div>
                 <div
-                  className=" flex items-center justify-end gap-x-0.5 w-[16%]"
+                  className=" flex items-center justify-end gap-x-0.5 w-[16%] hover:cursor-pointer"
                   onClick={() => {
                     if (selectedQuantitative === "txcosts_native_median") {
                       if (selectedQualitative) {
@@ -517,7 +517,7 @@ export default function FeesPage() {
                   />{" "}
                 </div>
                 <div
-                  className="flex items-center justify-end gap-x-0.5 w-[13.5%] mr-[9.5px]"
+                  className="flex items-center justify-end gap-x-0.5 w-[13.5%] mr-[9.5px] hover:cursor-pointer"
                   onClick={() => {
                     if (selectedQuantitative === "txcosts_swap") {
                       if (selectedQualitative) {
@@ -549,28 +549,39 @@ export default function FeesPage() {
                     }`}
                   />{" "}
                 </div>
-                <div className="relative top-1 flex items-end space-x-[1px] ml-[2px] ">
-                  {Array.from({ length: 24 }, (_, index) => (
-                    <div
-                      key={index.toString() + "columns"}
-                      className={`${
-                        selectedBarIndex === index
-                          ? "w-[8px] border-[#344240] border-t-[1px] border-x-[1px] rounded-t-full h-[23px]"
-                          : hoverBarIndex === index
-                          ? "w-[5px] bg-[#344240] rounded-t-full h-[14px] "
-                          : "w-[5px] bg-[#344240] rounded-t-full h-[8px] "
-                      }`}
-                      onMouseEnter={() => {
-                        setHoverBarIndex(index);
-                      }}
-                      onMouseLeave={() => {
-                        setHoverBarIndex(null);
-                      }}
-                      onClick={() => {
-                        setSelectedBarIndex(index);
-                      }}
-                    ></div>
-                  ))}
+                <div className="relative -top-1 flex flex-col items-end space-x-[1px] font-normal">
+                  <div
+                    className={`relative right-1 w-[29px] h-[12px] text-[8px] ${
+                      selectedBarIndex >= 18 && selectedBarIndex <= 22
+                        ? "top-0 transition-all duration-300"
+                        : "top-3 transition-all duration-300"
+                    }`}
+                  >
+                    hourly
+                  </div>
+                  <div className="flex space-x-[1px] ml-[2px] items-end">
+                    {Array.from({ length: 24 }, (_, index) => (
+                      <div
+                        key={index.toString() + "columns"}
+                        className={`hover:cursor-pointer ${
+                          selectedBarIndex === index
+                            ? "w-[8px] border-[#344240] border-t-[1px] border-x-[1px] rounded-t-full h-[23px]"
+                            : hoverBarIndex === index
+                            ? "w-[5px] bg-[#344240] rounded-t-full h-[14px] "
+                            : "w-[5px] bg-[#344240] rounded-t-full h-[8px] "
+                        }`}
+                        onMouseEnter={() => {
+                          setHoverBarIndex(index);
+                        }}
+                        onMouseLeave={() => {
+                          setHoverBarIndex(null);
+                        }}
+                        onClick={() => {
+                          setSelectedBarIndex(index);
+                        }}
+                      ></div>
+                    ))}
+                  </div>
                 </div>
               </div>
               <div className={`gap-y-1`}>
@@ -589,9 +600,15 @@ export default function FeesPage() {
                           }}
                         />
                       </div>
-                      <div className="flex justify-start items-center h-full w-[33%] ">
+                      <div
+                        className={`flex justify-start items-center h-full ${
+                          isMobile ? "w-[25%]" : "w-[33%]"
+                        }`}
+                      >
                         <div className="mr-[5px]">
-                          {AllChainsByKeys[chain].label}
+                          {isMobile
+                            ? master.chains[chain].name_short
+                            : AllChainsByKeys[chain].label}
                         </div>
                         <div
                           className={`bg-[#344240] flex rounded-full  items-center px-[5px] py-[3px] gap-x-[2px] transition-width overflow-hidden duration-300`}
@@ -612,7 +629,7 @@ export default function FeesPage() {
                             (item, index, array) => [
                               <div
                                 key={item.icon}
-                                className={`flex relative items-center gap-x-0.5`}
+                                className={`flex relative items-center gap-x-0.5 hover:cursor-pointer`}
                                 onMouseEnter={() => {
                                   setHoveredItems({
                                     hoveredChain: hoveredItems.hoveredChain,
@@ -708,6 +725,7 @@ export default function FeesPage() {
                                 ),
                           }}
                         >
+                          {`${showUsd ? "$" : "Ξ"}`}
                           {Intl.NumberFormat(undefined, {
                             notation: "compact",
                             maximumFractionDigits: showUsd
@@ -723,7 +741,6 @@ export default function FeesPage() {
                             feeData.chain_data[chain]["hourly"].txcosts_median
                               .data[23 - selectedBarIndex][showUsd ? 2 : 1],
                           )}
-                          {`${showUsd ? "$" : "Ξ"}`}
                         </div>
                       </div>
                       <div className="h-full w-[12.5%] flex justify-end items-center">
@@ -866,7 +883,7 @@ export default function FeesPage() {
                         {Array.from({ length: 24 }, (_, index) => (
                           <div
                             key={index.toString() + "circles"}
-                            className={` ${
+                            className={`hover:cursor-pointer ${
                               selectedBarIndex === index
                                 ? "w-[8px]  h-[8px] rounded-full"
                                 : hoverBarIndex === index
@@ -934,7 +951,7 @@ export default function FeesPage() {
               isChartOpen ? "translate-y-0" : "translate-y-[215px]"
             }`}
           >
-            <div className="border-forest-700 w-[835px] border-[1px] rounded-full border-black/[16%] dark:border-forest-50 h-[34px] pl-[20px] flex items-center text-[15px] sticky bottom-0 bg-forest-900 shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_20px_0px_#000000]">
+            <div className="border-forest-700 w-[835px] border-[1px] rounded-full border-black/[16%] dark:border-forest-50 h-[34px] pl-[10px] flex items-center text-[15px] sticky bottom-0 bg-forest-900 shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_20px_0px_#000000]">
               <div className="flex items-center h-full w-[4%] ">
                 <Icon
                   icon={`gtp:ethereum-logo-monochrome`}
@@ -1017,7 +1034,7 @@ export default function FeesPage() {
                 </div>
               </div>
 
-              <div className="h-full w-[15%] flex justify-center items-center">
+              <div className="h-full w-[14%] flex justify-center items-center">
                 <div
                   className="px-[8px] border-[1.5px] rounded-full flex items-center"
                   style={{
@@ -1037,6 +1054,7 @@ export default function FeesPage() {
                     ),
                   }}
                 >
+                  {`${showUsd ? "$" : "Ξ"}`}
                   {Intl.NumberFormat(undefined, {
                     notation: "compact",
                     maximumFractionDigits: showUsd
@@ -1050,10 +1068,9 @@ export default function FeesPage() {
                     feeData.chain_data["optimism"]["hourly"].txcosts_median
                       .data[0][showUsd ? 2 : 1],
                   )}
-                  {`${showUsd ? "$" : "Ξ"}`}
                 </div>
               </div>
-              <div className="h-full w-[12.5%] flex justify-end items-center">
+              <div className="h-full w-[10.5%] flex justify-end items-center ">
                 {feeData.chain_data["optimism"]["hourly"][
                   "txcosts_native_median"
                 ].data[0]
@@ -1074,25 +1091,31 @@ export default function FeesPage() {
                     )
                   : "Not Available"}
               </div>
-              <div className="h-full w-[13%] flex justify-end items-center mr-[10px]">
+              <div className="h-full w-[13%] flex justify-end items-center mr-[10px] ">
                 {"$0.054"}
               </div>
-              <div className="relative w-[19%] flex items-center justify-end h-full space-x-[1px]">
-                {Array.from({ length: 23 }, (_, index) => (
+              <div className="relative  w-[19%] flex flex-col h-full space-x-[1px]">
+                <div className="flex w-full items-center justify-end h-full space-x-[1px] ml-2.5 ">
+                  {Array.from({ length: 23 }, (_, index) => (
+                    <div
+                      key={index.toString() + "ethcircles"}
+                      className="w-[5px] h-[5px] rounded-full opacity-50"
+                      style={{
+                        backgroundColor: getGradientColor(Math.random() * 100),
+                      }}
+                    ></div>
+                  ))}
                   <div
-                    key={index.toString() + "ethcircles"}
-                    className="w-[5px] h-[5px] rounded-full opacity-50"
+                    className="w-[8px]  h-[8px] rounded-full"
                     style={{
                       backgroundColor: getGradientColor(Math.random() * 100),
                     }}
                   ></div>
-                ))}
-                <div
-                  className="w-[8px]  h-[8px] rounded-full"
-                  style={{
-                    backgroundColor: getGradientColor(Math.random() * 100),
-                  }}
-                ></div>
+                </div>
+                <div className="absolute left-[19px] top-[34px] w-[148px] h-[10px] border-forest-600 border-x-[1px] flex justify-between text-[10px]">
+                  <div className="relative top-2">24 Hours Ago</div>
+                  <div className="relative top-2">Now</div>
+                </div>
               </div>
               {/* <div className="absolute left-[99%]">
                 <Icon
