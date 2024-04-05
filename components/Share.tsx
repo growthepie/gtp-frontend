@@ -119,6 +119,15 @@ export default function Share() {
     }
   }, [pathname]);
 
+
+  const embedDataString = useMemo(() => {
+    return `width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" title="${embedData.title}"`;
+  }, [embedData]);
+
+  const embedIframe = useMemo(() => {
+    return `<iframe ${embedDataString}></iframe>`;
+  }, [embedDataString]);
+
   return (
     <>
       <div>
@@ -449,9 +458,9 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                             />
                           </div>
                           <div className="flex items-center w-full gap-x-[5px]">
-                            <div className="cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-forest-800">
+                            <div className={`cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-forest-800 ${embedData.width <= 450 && "opacity-30"}`}>
                               <div className="w-[24px] h-[24px]" onClick={() => {
-                                setEmbedData({ ...embedData, width: embedData.width - 1 });
+                                setEmbedData({ ...embedData, width: Math.max(450, embedData.width - 1) });
                               }}>
                                 <Icon className="w-[24px] h-[24px]" icon="feather:minus" />
                               </div>
@@ -462,6 +471,11 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                                 size={3}
                                 value={embedData.width}
                                 onChange={handleWidthChange}
+                                onBlur={() => {
+                                  if (embedData.width < 450) {
+                                    setEmbedData({ ...embedData, width: 450 });
+                                  }
+                                }}
                                 style={{
                                   boxShadow: "none", // Remove default focus box shadow
                                 }}
@@ -471,7 +485,7 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                               </div> */}
                               <div className="text-xs text-forest-400 pr-4">px</div>
                             </div>
-                            <div className="cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-forest-800">
+                            <div className={`cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-forest-800`}>
                               <div className="w-[24px] h-[24px] cursor-pointer" onClick={() => {
                                 setEmbedData({ ...embedData, width: embedData.width + 1 });
                               }}>
@@ -494,9 +508,9 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                             />
                           </div>
                           <div className="flex items-center w-full gap-x-[5px]">
-                            <div className="cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-forest-800">
+                            <div className={`cursor-pointer rounded-full p-0.5 text-forest-600 dark:text-forest-400 bg-forest-200 dark:bg-forest-900 transition-colors hover:bg-forest-300 dark:hover:bg-forest-800 ${embedData.height <= 500 && "opacity-30"}`}>
                               <div className="w-[24px] h-[24px]" onClick={() => {
-                                setEmbedData({ ...embedData, height: embedData.height - 1 });
+                                setEmbedData({ ...embedData, height: Math.max(500, embedData.height - 1) });
                               }}>
                                 <Icon className="w-[24px] h-[24px]" icon="feather:minus" />
                               </div>
@@ -507,6 +521,11 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                                 size={3}
                                 value={embedData.height}
                                 onChange={handleHeightChange}
+                                onBlur={() => {
+                                  if (embedData.height < 500) {
+                                    setEmbedData({ ...embedData, height: 500 });
+                                  }
+                                }}
                                 style={{
                                   boxShadow: "none", // Remove default focus box shadow
                                 }}
@@ -530,7 +549,7 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                         </div>
 
                         <div className="group flex items-center gap-x-[10px] h-[54px] rounded-full bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-500 hover:dark:bg-[#5A6462] border-forest-500 dark:border-[#5A6462] border-[3px] px-[15px] cursor-pointer transition-colors" onClick={() => {
-                          copyText(currentURL ? currentURL : "");
+                          copyText(embedIframe);
                           triggerCopy();
                           track("copied URL in Share Embed window", {
                             location: isMobile ? `mobile` : `desktop`,

@@ -1,0 +1,20 @@
+.highcharts-tick {
+  stroke-dasharray: 0 10 15;
+}
+/*
+.highcharts-axis-labels text {
+  text-anchor: middle !important;
+}
+
+.highcharts-xaxis-labels text:first-child {
+  text-anchor: start !important;
+}
+
+.highcharts-xaxis-labels text:last-child {
+  text-anchor: end !important;
+}
+*/
+
+.highcharts-axis-labels text {
+  @apply font-raleway transition-all duration-100;
+}

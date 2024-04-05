@@ -12,6 +12,7 @@ import {
   useRef,
   useCallback,
   ReactNode,
+  useLayoutEffect,
 } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { debounce, merge } from "lodash";
@@ -33,6 +34,8 @@ import { navigationItems, navigationCategories } from "@/lib/navigation";
 import { BASE_URL, IS_PREVIEW } from "@/lib/helpers";
 import { useWindowSize } from "usehooks-ts";
 import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import "../../app/highcharts.axis.css";
 
 const monthly_agg_labels = {
   avg: "Average",
@@ -81,27 +84,25 @@ const baseOptions: Highcharts.Options = {
       color: COLORS.PLOT_LINE,
       snap: false,
     },
-    labels: {
-      style: { color: COLORS.LABEL },
-      enabled: true,
-      formatter: (item) => {
-        const date = new Date(item.value);
-        const isMonthStart = date.getDate() === 1;
-        const isYearStart = isMonthStart && date.getMonth() === 0;
+    // labels: {
+    //   style: { color: COLORS.LABEL },
+    //   enabled: true,
+    //   formatter: (item) => {
+    //     const date = new Date(item.value);
+    //     const isMonthStart = date.getDate() === 1;
+    //     const isYearStart = isMonthStart && date.getMonth() === 0;
 
-        if (isYearStart) {
-          return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
-        } else {
-          return `<span style="">${date.toLocaleDateString(undefined, {
-            timeZone: "UTC",
-            month: "short",
-          })}</span>`;
-        }
-      },
-    },
-    tickmarkPlacement: "on",
-    tickWidth: 4,
-    tickLength: 4,
+    //     if (isYearStart) {
+    //       return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
+    //     } else {
+    //       return `<span style="">${date.toLocaleDateString(undefined, {
+    //         timeZone: "UTC",
+    //         month: "short",
+    //       })}</span>`;
+    //     }
+    //   },
+    // },
+
     gridLineWidth: 0,
   },
   legend: {
@@ -755,6 +756,7 @@ export default function ComparisonChart({
         chartComponent.current.xAxis[0].setExtremes(
           timespans[selectedTimespan].xMin,
           timespans[selectedTimespan].xMax,
+
         );
     }
   }, [selectedTimespan, timespans, zoomed]);
@@ -766,9 +768,38 @@ export default function ComparisonChart({
     label: string;
   } | null>(null);
 
+  const updateLabels = useCallback(() => {
+    if (!is_embed) return;
+    if (chartComponent.current) {
+      const labels = Array.from(document.querySelectorAll(".highcharts-xaxis-labels text"));
+      labels.sort(
+        (a, b) =>
+          parseInt(a.getAttribute("x") || "0") -
+          parseInt(b.getAttribute("x") || "0"),
+      ).forEach((el, i) => {
+        const style = el.getAttribute("style");
+
+        if (i === labels.length - 1) {
+          // update font-size in style attribute
+          el.setAttribute("style", style + "font-size: 14px;");
+
+
+
+        } else {
+          el.setAttribute("style", style + "font-size: 10px;");
+        }
+      });
+    }
+  }, [is_embed]);
+
   const onXAxisSetExtremes =
     useCallback<Highcharts.AxisSetExtremesEventCallbackFunction>(
       function (e) {
+        // increase font size of last x-axis label after animation
+        setTimeout(() => {
+          updateLabels();
+        }, 500);
+
         if (e.trigger === "pan") return;
         const { min, max } = e;
         const numDays = (max - min) / (24 * 60 * 60 * 1000);
@@ -1049,7 +1080,7 @@ export default function ComparisonChart({
   );
 
   const getChartHeight = useCallback(() => {
-    if (is_embed) return window ? window.innerHeight - 160 : 400;
+    if (is_embed) return window ? window.innerHeight - 210 : 400;
     if (isMobile) return 275;
     return 400;
   }, [isMobile, is_embed]);
@@ -1066,7 +1097,7 @@ export default function ComparisonChart({
 
     const dynamicOptions: Highcharts.Options = {
       chart: {
-        height: is_embed ? undefined : getChartHeight(),
+        height: is_embed ? getChartHeight() : getChartHeight(),
         type: getSeriesType(filteredData[0].name),
         plotBorderColor: "transparent",
         panning: {
@@ -1128,24 +1159,62 @@ export default function ComparisonChart({
             ? "rgba(215, 223, 222, 0.11)"
             : "rgba(41, 51, 50, 0.11)",
       },
+      // xAxis: {
+      //   ordinal: false,
+      //   minorTicks: true,
+      //   minorTickLength: 2,
+      //   minorTickWidth: 2,
+      //   minorGridLineWidth: 0,
+      //   minorTickInterval: 1000 * 60 * 60 * 24 * 7,
+      //   // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
+      //   tickPositions: getTickPositions(timespans.max.xMin, timespans.max.xMax),
+      //   labels: {
+      //     style: {
+      //       color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
+      //     },
+      //   },
+      //   events: {
+      //     afterSetExtremes: onXAxisSetExtremes,
+      //   },
+      //   showLastLabel: is_embed ? false : true,
+      //   // ...xAxisMinMax,
+      //   min: zoomed ? zoomMin : timespans[selectedTimespan].xMin,
+      //   max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
+      // },
       xAxis: {
         ordinal: false,
         minorTicks: true,
-        minorTickLength: 2,
+        minorTickColor: "#CDD8D34C",
+        minorTickPosition: "outside",
+        minorTickLength: 3,
         minorTickWidth: 2,
         minorGridLineWidth: 0,
-        minorTickInterval: 1000 * 60 * 60 * 24 * 7,
-        // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
-        tickPositions: getTickPositions(timespans.max.xMin, timespans.max.xMax),
+        tickColor: "#CDD8D34C",
+        tickLength: 25,
+        tickWidth: 1,
+        offset: 0,
+        showLastLabel: true,
+        endOnTick: false,
+        maxPadding: 0,
         labels: {
+          align: undefined,
+          formatter: function (this: AxisLabelsFormatterContextObject) {
+            return new Date(this.value).toLocaleDateString(undefined, {
+              timeZone: "UTC",
+              month: isMobile ? "short" : "long",
+              year: "numeric"
+            });
+          },
+          y: 40,
           style: {
-            color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
+            fontSize: "10px",
+            color: "#CDD8D3",
           },
         },
         events: {
           afterSetExtremes: onXAxisSetExtremes,
         },
-        // ...xAxisMinMax,
+
         min: zoomed ? zoomMin : timespans[selectedTimespan].xMin,
         max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
       },
@@ -1402,7 +1471,7 @@ export default function ComparisonChart({
     scaleToPlotOptions,
     selectedScale,
     theme,
-    getTickPositions,
+    // getTickPositions,
     timespans,
     onXAxisSetExtremes,
     zoomed,
@@ -1429,59 +1498,80 @@ export default function ComparisonChart({
   //   }
   // }, [chartComponent, filteredData]);
 
-  const resituateChart = debounce(() => {
-    chartComponent.current && chartComponent.current.reflow();
-  }, 300);
+  // const resituateChart = debounce(() => {
+  //   chartComponent.current && chartComponent.current.reflow();
+  // }, 300);
 
-  useEffect(() => {
-    resituateChart();
+  // useEffect(() => {
+  //   resituateChart();
 
-    // cancel the debounced function on component unmount
-    return () => {
-      resituateChart.cancel();
-    };
-  }, [chartComponent, selectedTimespan, timespans, resituateChart]);
+  //   // cancel the debounced function on component unmount
+  //   return () => {
+  //     resituateChart.cancel();
+  //   };
+  // }, [chartComponent, selectedTimespan, timespans, resituateChart]);
 
 
 
-  useEffect(() => {
-    setTimeout(() => {
-      resituateChart();
-    }, 300);
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     resituateChart();
+  //   }, 300);
 
-    return () => {
-      resituateChart.cancel();
-    };
-  }, [isSidebarOpen, resituateChart]);
+  //   return () => {
+  //     resituateChart.cancel();
+  //   };
+  // }, [isSidebarOpen, resituateChart]);
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   if (chartComponent.current) {
+  //     if (is_embed) {
+  //       return;
+  //     }
+
+  //     if (isMobile) {
+  //       chartComponent.current.setSize(null, 275, false);
+  //       return;
+  //     }
+
+  //     chartComponent.current.setSize(null, 400, false);
+  //   }
+  // }, [isMobile, is_embed]);
+
+  // const { width, height } = useWindowSize();
+  const [containerRef, { width, height }] = useElementSizeObserver();
+  useLayoutEffect(() => {
+    // if (!is_embed) return;
+
     if (chartComponent.current) {
-      if (is_embed) {
-        return;
-      }
-
-      if (isMobile) {
-        chartComponent.current.setSize(null, 275, false);
-        return;
-      }
-
-      chartComponent.current.setSize(null, 400, false);
+      chartComponent.current.setSize(width, height, true);
+      setTimeout(() => {
+        updateLabels();
+      }, 500);
+      // chartComponent.current.setA
+      // chartComponent.current.reflow();
     }
-  }, [isMobile, is_embed]);
+  }, [width, height, isSidebarOpen]);
 
-  const { width, height } = useWindowSize();
-  useEffect(() => {
-    if (!is_embed) return;
+  const embedAggregation = useMemo(() => {
+    const rolling_avg = avg && ["365d", "max"].includes(selectedTimespan);
+    const aggregation = monthly_agg && selectedTimeInterval === "monthly" ? monthly_agg : rolling_avg ? "average" : "sum";
 
-    if (chartComponent.current) {
-      chartComponent.current.setSize(width, height - 160, false);
+    if (selectedTimeInterval === "monthly") {
+      return `Monthly ${monthly_agg_labels[aggregation]}`
     }
-  }, [is_embed, width, height]);
+
+    if (avg && ["365d", "max"].includes(selectedTimespan)) {
+      return `7-day Rolling ${aggregation}`
+    }
+
+    return "Daily";
+  }, [avg, monthly_agg, selectedTimeInterval, selectedTimespan]);
 
   if (is_embed)
     return (
-      <EmbedContainer title="User Base" icon="gtp:gtp-pie" url="https://www.growthepie.xyz" time_frame={timespans[selectedTimespan].label} aggregation="" chart_type="">
-        <div className="relative h-full w-full rounded-xl">
+      <EmbedContainer title={navItem?.label || ""} icon="gtp:gtp-pie" url="https://www.growthepie.xyz" time_frame={timespans[selectedTimespan].label} chart_type={selectedScale} aggregation={embedAggregation}>
+        <div className="relative h-full w-full rounded-xl" ref={containerRef}>
           {highchartsLoaded ? (
             <HighchartsReact
               highcharts={Highcharts}
@@ -1501,7 +1591,7 @@ export default function ComparisonChart({
               </div>
             </div>
           )}
-          <div className="absolute bottom-[48.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
+          <div className="absolute bottom-[53.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
             <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
           </div>
           {filteredData.length === 0 && (
@@ -1516,14 +1606,6 @@ export default function ComparisonChart({
 
   return (
     <div className="w-full flex-col relative">
-      {/* {is_embed === true && (
-        <div className="absolute top-0 left-20 md:top-4 md:left-20 font-bold text-[14px] md:text-[18px] leading-snug z-50">
-          {
-            navigationItems[1].options.find((item) => item.key === metric_id)
-              ?.label
-          }
-        </div>
-      )} */}
       <Container className={`${is_embed ? "!p-0 !m-0" : ""}`}>
         <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative">
           {is_embed ? (
@@ -1583,15 +1665,15 @@ export default function ComparisonChart({
 
                     setSelectedTimeInterval(interval);
                     // setXAxis();
-                    chartComponent?.current?.xAxis[0].update({
-                      min: timespans[selectedTimespan].xMin,
-                      max: timespans[selectedTimespan].xMax,
-                      // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
-                      tickPositions: getTickPositions(
-                        timespans.max.xMin,
-                        timespans.max.xMax,
-                      ),
-                    });
+                    // chartComponent?.current?.xAxis[0].update({
+                    //   min: timespans[selectedTimespan].xMin,
+                    //   max: timespans[selectedTimespan].xMax,
+                    //   // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
+                    //   tickPositions: getTickPositions(
+                    //     timespans.max.xMin,
+                    //     timespans.max.xMax,
+                    //   ),
+                    // });
                     setZoomed(false);
                   }}
                 >
@@ -1620,15 +1702,15 @@ export default function ComparisonChart({
                     onClick={() => {
                       setSelectedTimespan(timespan);
                       // setXAxis();
-                      chartComponent?.current?.xAxis[0].update({
-                        min: timespans[selectedTimespan].xMin,
-                        max: timespans[selectedTimespan].xMax,
-                        // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
-                        tickPositions: getTickPositions(
-                          timespans.max.xMin,
-                          timespans.max.xMax,
-                        ),
-                      });
+                      // chartComponent?.current?.xAxis[0].update({
+                      //   min: timespans[selectedTimespan].xMin,
+                      //   max: timespans[selectedTimespan].xMax,
+                      //   // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
+                      //   tickPositions: getTickPositions(
+                      //     timespans.max.xMin,
+                      //     timespans.max.xMax,
+                      //   ),
+                      // });
                       setZoomed(false);
                     }}
                   >
@@ -1680,7 +1762,7 @@ export default function ComparisonChart({
           </div>
         </div>
 
-        <div className="w-full flex flex-col-reverse lg:flex-row pt-8 md:pt-0">
+        <div className="w-full flex flex-col-reverse lg:flex-row pt-8 pb-4 md:py-0">
           {!is_embed && (
             <div
               className={`hidden lg:block lg:w-7/12 xl:w-5/12 pl-2 pr-[19px] self-center`}
@@ -1713,6 +1795,7 @@ export default function ComparisonChart({
                           ? "relative block w-full top-0 md:top-8"
                           : "block absolute w-full h-[275px] md:h-[24rem] top-0 md:top-4"
                       }
+                      ref={containerRef}
                     >
                       <HighchartsReact
                         highcharts={Highcharts}
@@ -1723,7 +1806,7 @@ export default function ComparisonChart({
                         constructorType={"stockChart"}
                       />
                     </div>
-                    <div className="absolute bottom-[48.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-40">
+                    <div className="absolute bottom-[53.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-40">
                       <ChartWatermark className="w-[128.67px] h-[30.67px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                     </div>
                   </div>
