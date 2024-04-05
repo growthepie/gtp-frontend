@@ -1196,6 +1196,7 @@ export default function ComparisonChart({
         showLastLabel: true,
         endOnTick: false,
         maxPadding: 0,
+        minTickInterval: 30 * 24 * 3600 * 1000,
         labels: {
           align: undefined,
           formatter: function (this: AxisLabelsFormatterContextObject) {
