@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import Icon from "@/components/layout/Icon";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { BASE_URL, BASE_URLS } from "@/lib/helpers";
+import { BASE_URL, BASE_URLS, IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
 import { useMediaQuery } from "usehooks-ts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./layout/Tooltip";
 import { EmbedData, useUIContext } from "@/contexts/UIContext";
@@ -346,9 +346,11 @@ export default function Share() {
                   </div>
                 ) : (
                   <div className="relative flex flex-col md:flex-row gap-x-[30px] mt-[30px] w-full">
-                    <Link href={`${BASE_URL}/embed/test?url=${encodeURIComponent(`${embedData.src}`)}&width=${embedData.width}&height=${embedData.height}&title=${embedData.title}`} target="_blank" rel="noopener" className="absolute -bottom-7 left-10 p-[5px] text-xs px-3 py-1 rounded-full border border-forest-500 dark:border-forest-800  hover:bg-forest-500 dark:hover:bg-[#5A6462] cursor-pointer">
-                      Click here to test embed
-                    </Link>
+                    {(IS_DEVELOPMENT || IS_PREVIEW) && (
+                      <Link href={`${BASE_URL}/embed/test?url=${encodeURIComponent(`${embedData.src}`)}&width=${embedData.width}&height=${embedData.height}&title=${embedData.title}`} target="_blank" rel="noopener" className="absolute -bottom-7 left-10 p-[5px] text-xs px-3 py-1 rounded-full border border-forest-500 dark:border-forest-800  hover:bg-forest-500 dark:hover:bg-[#5A6462] cursor-pointer">
+                        Click here to test embed
+                      </Link>
+                    )}
                     <textarea
                       value={
                         `<iframe
@@ -376,9 +378,9 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                           </TooltipTrigger>
                           <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
                             <div className="flex flex-col px-3 py-4 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-md font-normal">
-                              <div className="font-semibold">Absolute Timeframe</div>
+                              <div className="font-semibold">Snapshot Timeframe</div>
                               <div className="mb-1">The embedded chart&apos;s time window will be frozen to the current chart state.</div>
-                              <div className="font-semibold">Relative Timeframe</div>
+                              <div className="font-semibold">Updating Timeframe</div>
                               <div>The embedded chart&apos;s time window will change depending on when the chart is viewed. This option is disabled when the chart is zoomed in to a custom timeframe.</div>
 
                             </div>
@@ -435,15 +437,15 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                             });
                           }}>
                           <div className="w-full flex justify-between text-[#2D3748]">
-                            <div className="w-full text-center">Absolute</div>
-                            <div className={`w-full text-center ${embedData.zoomed && 'opacity-50'}`}>Relative</div>
+                            <div className="w-full text-center">Snapshot</div>
+                            <div className={`w-full text-center ${embedData.zoomed && 'opacity-50'}`}>Updating</div>
                           </div>
                           <div className="absolute inset-0 w-full p-0.5 rounded-full text-center">
                             <div className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full text-center transition-transform duration-300" style={{ transform: embedData.timeframe === "absolute" || embedData.zoomed ? "translateX(0%)" : "translateX(100%)" }}>
                               {
                                 embedData.timeframe === "absolute" ?
-                                  "Absolute"
-                                  : "Relative"
+                                  "Snapshot"
+                                  : "Updating"
                               }
                             </div>
                           </div>
