@@ -609,7 +609,7 @@ export default function ComparisonChart({
     //   );
     // }
 
-    const buffer = 0.5 * 24 * 60 * 60 * 1000;
+    const buffer = 0.5 * 24 * 60 * 60 * 1000 * 2;
     const maxPlusBuffer = maxDate.valueOf() + buffer;
 
     //
@@ -631,35 +631,35 @@ export default function ComparisonChart({
         label: "90 days",
         shortLabel: "90D",
         value: 90,
-        xMin: maxDate.valueOf() - 90 * 24 * 60 * 60 * 1000 - buffer,
+        xMin: maxPlusBuffer - (90 + 1) * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "180d": {
         label: "180 days",
         shortLabel: "180D",
         value: 180,
-        xMin: maxDate.valueOf() - 180 * 24 * 60 * 60 * 1000 - buffer,
+        xMin: maxPlusBuffer - (180 + 1) * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "365d": {
         label: "1 year",
         shortLabel: "365D",
         value: 365,
-        xMin: maxDate.valueOf() - 365 * 24 * 60 * 60 * 1000 - buffer,
+        xMin: maxPlusBuffer - (365 + 1) * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "6m": {
         label: "6 months",
         shortLabel: "6M",
         value: 6,
-        xMin: maxPlusBuffer.valueOf() - 6 * 31 * 24 * 60 * 60 * 1000 - buffer,
+        xMin: maxPlusBuffer - (6.5 * 31) * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "12m": {
         label: "1 year",
         shortLabel: "1Y",
         value: 12,
-        xMin: maxPlusBuffer.valueOf() - 12 * 31 * 24 * 60 * 60 * 1000 - buffer,
+        xMin: maxPlusBuffer - (12.5 * 31) * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       maxM: {
@@ -668,7 +668,7 @@ export default function ComparisonChart({
         value: 0,
         xMin:
           filteredData[0].name === ""
-            ? Date.now() - 365 * 24 * 60 * 60 * 1000
+            ? Date.now() - (365 + 1) * 24 * 60 * 60 * 1000
             : filteredData.reduce(
               (min, d) => Math.min(min, d.data[0][0]),
               Infinity,
@@ -682,7 +682,7 @@ export default function ComparisonChart({
         value: 0,
         xMin:
           filteredData[0].name === ""
-            ? Date.now() - 365 * 24 * 60 * 60 * 1000
+            ? Date.now() - (365 + 1) * 24 * 60 * 60 * 1000
             : filteredData.reduce(
               (min, d) => Math.min(min, d.data[0][0]),
               Infinity,
@@ -769,7 +769,7 @@ export default function ComparisonChart({
   } | null>(null);
 
   const updateLabels = useCallback(() => {
-    if (!is_embed) return;
+
     if (chartComponent.current) {
       const labels = Array.from(document.querySelectorAll(".highcharts-xaxis-labels text"));
       labels.sort(
@@ -777,17 +777,32 @@ export default function ComparisonChart({
           parseInt(a.getAttribute("x") || "0") -
           parseInt(b.getAttribute("x") || "0"),
       ).forEach((el, i) => {
+        const textElement = el as SVGTextElement;
         const style = el.getAttribute("style");
 
-        if (i === labels.length - 1) {
-          // update font-size in style attribute
-          el.setAttribute("style", style + "font-size: 14px;");
+        // if (is_embed) {
+        //   if (i === labels.length - 1) {
+        //     // update font-size in style attribute
+        //     el.setAttribute("style", style + "font-size: 14px;");
+        //   } else {
+        //     el.setAttribute("style", style + "font-size: 10px;");
+        //   }
+        // } else {
 
-
-
-        } else {
-          el.setAttribute("style", style + "font-size: 10px;");
+        // if element is only a 4 digit year, increase font size
+        if (el.textContent?.length === 4) {
+          if (!style?.includes("font-weight: 600;"))
+            el.setAttribute("style", style + "font-size: 14px; font-weight: 500;");
+          // el.setAttribute("y", 343 + 5 + "px");
+          // transform: translateY(5px);
         }
+        // else {
+        //   el.setAttribute("style", style + "font-size: 10px; transform: translateY(0px);");
+        //   // el.setAttribute("y", 343 + "px");
+        //   // el.setAttribute("transform", "");
+        // }
+
+        // }
       });
     }
   }, [is_embed]);
@@ -879,7 +894,7 @@ export default function ComparisonChart({
         return {
           column: {
             stacking: "normal",
-            crisp: true,
+            crisp: false,
             // fillColor: {
             //   pattern: {
             //     path: {
@@ -1005,7 +1020,7 @@ export default function ComparisonChart({
         },
         stops: [
           [0, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "FF"],
-          [0.349, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "88"],
+          // [0.349, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "88"],
           [1, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "00"],
         ],
       };
@@ -1019,7 +1034,7 @@ export default function ComparisonChart({
         },
         stops: [
           [0, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "FF"],
-          [0.349, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "88"],
+          // [0.349, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "88"],
           [1, AllChainsByKeys[name]?.colors[theme ?? "dark"][0] + "00"],
         ],
       };
@@ -1107,6 +1122,9 @@ export default function ComparisonChart({
         },
         zooming: {
           type: is_embed ? undefined : "x",
+          mouseWheel: {
+            enabled: false,
+          },
           resetButton: {
             theme: {
               zIndex: -10,
@@ -1184,7 +1202,6 @@ export default function ComparisonChart({
       //   max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
       // },
       xAxis: {
-        ordinal: false,
         minorTicks: true,
         minorTickColor: "#CDD8D34C",
         minorTickPosition: "outside",
@@ -1195,16 +1212,28 @@ export default function ComparisonChart({
         tickLength: 25,
         tickWidth: 1,
         offset: 0,
-        showLastLabel: true,
-        endOnTick: false,
-        maxPadding: 0,
         minTickInterval: 30 * 24 * 3600 * 1000,
+        minPadding: 0,
+        maxPadding: 0,
         labels: {
           align: undefined,
+          rotation: 0,
+          allowOverlap: false,
+          staggerLines: 1,
+          reserveSpace: true,
+          overflow: "justify",
+          useHTML: false,
           formatter: function (this: AxisLabelsFormatterContextObject) {
+            // if Jan 1st, show year
+            if (new Date(this.value).getUTCMonth() === 0) {
+              return new Date(this.value).toLocaleDateString(undefined, {
+                timeZone: "UTC",
+                year: "numeric",
+              });
+            }
             return new Date(this.value).toLocaleDateString(undefined, {
               timeZone: "UTC",
-              month: isMobile ? "short" : "long",
+              month: isMobile ? "short" : "short",
               year: "numeric"
             });
           },
@@ -1297,12 +1326,12 @@ export default function ComparisonChart({
             borderWidth: 1,
             lineWidth: 2,
             ...// @ts-ignore
-            (getSeriesType(series.name) !== "column"
+            (["area", "line"].includes(getSeriesType(series.name))
               ? {
                 shadow: {
                   color:
                     AllChainsByKeys[series.name]?.colors[theme ?? "dark"][1] +
-                    "33",
+                    "FF",
                   width: 10,
                 },
                 // color: {
@@ -1332,16 +1361,16 @@ export default function ComparisonChart({
               : series.name === "all_l2s"
                 ? {
                   borderColor: "transparent",
-
-                  shadow: {
-                    color: "#CDD8D3" + "FF",
-                    // color:
-                    //   AllChainsByKeys[series.name].colors[theme][1] + "33",
-                    // width: 10,
-                    offsetX: 0,
-                    offsetY: 0,
-                    width: 2,
-                  },
+                  shadow: "none",
+                  // shadow: {
+                  //   color: "#CDD8D3" + "FF",
+                  //   // color:
+                  //   //   AllChainsByKeys[series.name].colors[theme][1] + "33",
+                  //   // width: 10,
+                  //   offsetX: 0,
+                  //   offsetY: 0,
+                  //   width: 2,
+                  // },
                   // color: {
                   //   linearGradient: {
                   //     x1: 0,
@@ -1385,12 +1414,13 @@ export default function ComparisonChart({
                 }
                 : {
                   borderColor: "transparent",
-                  shadow: {
-                    color: "#CDD8D3" + "FF",
-                    offsetX: 0,
-                    offsetY: 0,
-                    width: 2,
-                  },
+                  shadow: "none",
+                  // shadow: {
+                  //   color: "#CDD8D3" + "FF",
+                  //   offsetX: 0,
+                  //   offsetY: 0,
+                  //   width: 2,
+                  // },
                   // fillColor: {
                   //   linearGradient: {
                   //     x1: 0,

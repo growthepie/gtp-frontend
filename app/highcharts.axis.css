@@ -18,3 +18,11 @@
 .highcharts-axis-labels text {
   @apply font-raleway transition-all duration-100;
 }
+
+.highcharts-column-series path {
+  /* filter: drop-shadow(0px 0px 1px #cdd8d3);
+  border-radius: 5px 5px 0px 0px; */
+  opacity: 0.9;
+  /* filter: drop-shadow(0px 0px 1px #cdd8d3); */
+  /* filter: box-shadow(0px 0px 2px #cdd8d3); */
+}

@@ -812,6 +812,9 @@ export default function ChainComponent({
       animation: isAnimate,
       zooming: {
         type: undefined,
+        mouseWheel: {
+          enabled: false,
+        },
         resetButton: {
           theme: {
             zIndex: -10,
@@ -1001,8 +1004,8 @@ export default function ChainComponent({
             [1, AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1]],
           ],
         },
-        borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
-        borderWidth: 1,
+        // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
+        // borderWidth: 1,
       },
       series: {
         zIndex: 10,

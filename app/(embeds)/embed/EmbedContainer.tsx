@@ -31,7 +31,7 @@ const EmbedContainer = ({ title, icon, url, time_frame, chart_type, aggregation,
   }, [queryTimespan, time_frame, queryZoomed, queryStartTimestamp, queryEndTimestamp]);
 
   return (
-    <div className="h-screen max-h-screen flex flex-col p-[15px] bg-white dark:bg-[#151A19] rounded-[40px]">
+    <div className="h-screen max-h-screen flex flex-col p-[15px] bg-white dark:bg-[#151A19] rounded-[40px] overflow-hidden">
       {title && (
         <div className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-[#1F2726] rounded-full  md:px-[5px]">
           <div className="flex items-center px-[11px] py-[5px] md:px-[21px] md:py-[10px] gap-x-[8px]">

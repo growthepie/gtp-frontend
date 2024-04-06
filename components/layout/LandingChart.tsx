@@ -584,12 +584,7 @@ export default function LandingChart({
 
   const isMobile = useMediaQuery("(max-width: 767px)");
 
-  // daysShown based on minX and maxX on chart X axis
-  const daysShown = useMemo(() => {
-    if (zoomed) return Math.round((zoomMax - zoomMin) / (24 * 60 * 60 * 1000));
-    if (selectedTimespan === "max") return 365 * 5;
-    return parseInt(selectedTimespan);
-  }, [selectedTimespan, zoomed, zoomMax, zoomMin]);
+
 
 
   // const getTickPositions = useCallback(
@@ -672,6 +667,19 @@ export default function LandingChart({
   );
 
   const chartComponent = useRef<Highcharts.Chart | null | undefined>(null);
+  // daysShown based on minX and maxX on chart X axis
+  // const daysShown = useMemo(a() => {
+  //   if (!chartComponent.current) return parseInt(selectedTimespan);
+  //   if (zoomed) return Math.round((zoomMax - zoomMin) / (24 * 60 * 60 * 1000));
+  //   const minX = chartComponent.current?.xAxis[0].getExtremes().min;
+  //   const maxX = chartComponent.current?.xAxis[0].getExtremes().max;
+  //   if (minX && maxX)
+  //     return Math.round((maxX - minX) / (24 * 60 * 60 * 1000));
+  //   if (selectedTimespan === "max") return 365 * 5;
+  //   return parseInt(selectedTimespan);
+  // }, [selectedTimespan, zoomed, zoomMax, zoomMin, chartComponent.current]);
+
+  const [daysShown, setDaysShown] = useState(900);
 
   const formatNumber = useCallback(
     (value: number | string, isAxis = false) => {
@@ -711,7 +719,7 @@ export default function LandingChart({
       )}
       </div>`;
 
-      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway"><div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-6 mb-2 flex justify-between">${dateString}</div>`;
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-60 md:w-60 text-xs font-raleway"><div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-6 mb-2 flex justify-between">${dateString}</div>`;
       let tooltipEnd = `</div>`;
 
       if (selectedMetric === "Users per Chain")
@@ -884,7 +892,7 @@ export default function LandingChart({
 
   const timespans = useMemo(() => {
     const buffer =
-      selectedScale === "percentage" ? 0 : 3.5 * 24 * 60 * 60 * 1000;
+      selectedScale === "percentage" ? 0 : 7 * 24 * 60 * 60 * 1000;
     const maxPlusBuffer = maxDate.valueOf() + buffer;
 
     return {
@@ -897,19 +905,19 @@ export default function LandingChart({
       "90d": {
         label: "90 days",
         value: 90,
-        xMin: maxDate.valueOf() - 90 * 24 * 60 * 60 * 1000,
+        xMin: maxPlusBuffer - (90) * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "180d": {
         label: "180 days",
         value: 180,
-        xMin: maxDate.valueOf() - 180 * 24 * 60 * 60 * 1000,
+        xMin: maxPlusBuffer - (180) * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "365d": {
         label: "1 year",
         value: 365,
-        xMin: maxDate.valueOf() - 365 * 24 * 60 * 60 * 1000,
+        xMin: maxPlusBuffer - (365) * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       max: {
@@ -920,7 +928,7 @@ export default function LandingChart({
             return Math.min(min, d.data[0][0]);
           }
           return min;
-        }, Infinity),
+        }, Infinity) - buffer,
 
         xMax: maxPlusBuffer,
       },
@@ -978,7 +986,7 @@ export default function LandingChart({
   } | null>(null);
 
   const updateLabels = useCallback(() => {
-    if (!is_embed) return;
+
     if (chartComponent.current) {
       const labels = Array.from(document.querySelectorAll(".highcharts-xaxis-labels text"));
       labels.sort(
@@ -986,17 +994,32 @@ export default function LandingChart({
           parseInt(a.getAttribute("x") || "0") -
           parseInt(b.getAttribute("x") || "0"),
       ).forEach((el, i) => {
+        const textElement = el as SVGTextElement;
         const style = el.getAttribute("style");
 
-        if (i === labels.length - 1) {
-          // update font-size in style attribute
-          el.setAttribute("style", style + "font-size: 14px;");
+        // if (is_embed) {
+        //   if (i === labels.length - 1) {
+        //     // update font-size in style attribute
+        //     el.setAttribute("style", style + "font-size: 14px;");
+        //   } else {
+        //     el.setAttribute("style", style + "font-size: 10px;");
+        //   }
+        // } else {
 
-
-
-        } else {
-          el.setAttribute("style", style + "font-size: 10px;");
+        // if element is only a 4 digit year, increase font size
+        if (el.textContent?.length === 4) {
+          if (!style?.includes("font-weight: 600;"))
+            el.setAttribute("style", style + "font-size: 14px; font-weight: 500;");
+          // el.setAttribute("y", 343 + 5 + "px");
+          // transform: translateY(5px);
         }
+        // else {
+        //   el.setAttribute("style", style + "font-size: 10px; transform: translateY(0px);");
+        //   // el.setAttribute("y", 343 + "px");
+        //   // el.setAttribute("transform", "");
+        // }
+
+        // }
       });
     }
   }, [is_embed]);
@@ -1007,6 +1030,7 @@ export default function LandingChart({
         // increase font size of last x-axis label after animation
         setTimeout(() => {
           updateLabels();
+          // setDaysShown(Math.round((e.max - e.min) / (24 * 60 * 60 * 1000)));
         }, 500);
 
 
@@ -1039,7 +1063,7 @@ export default function LandingChart({
           setZoomMax(max);
         }
       },
-      [selectedTimespan, timespans],
+      [selectedTimespan, timespans, updateLabels],
     );
 
   // const containerRef = useRef<HTMLDivElement>(null);
@@ -1053,6 +1077,18 @@ export default function LandingChart({
   }, [isMobile, is_embed, height]);
 
   const options = useMemo((): Highcharts.Options => {
+
+    // let units: [string, Array<number> | null][] = [["month", [6]], ["year", [1]]];
+    // if (daysShown <= 365) {
+    //   units = [["month", [3]], ["year", [1]]];
+    // }
+    // if (daysShown <= 180) {
+    //   units = [["month", [2]], ["year", [1]]];
+    // }
+    // if (daysShown <= 90) {
+    //   units = [["month", [1]], ["year", [1]]];
+    // }
+
     const dynamicOptions: Highcharts.Options = {
       chart: {
         height: getChartHeight(),
@@ -1064,6 +1100,9 @@ export default function LandingChart({
         },
         zooming: {
           type: is_embed ? undefined : "x",
+          mouseWheel: {
+            enabled: false,
+          },
           resetButton: {
             theme: {
               zIndex: -10,
@@ -1124,7 +1163,7 @@ export default function LandingChart({
         },
         column: {
           animation: false,
-          crisp: true,
+          crisp: false,
           dataGrouping: {
             enabled: false,
           },
@@ -1153,7 +1192,6 @@ export default function LandingChart({
             : "rgba(41, 51, 50, 0.11)",
       },
       xAxis: {
-        ordinal: false,
         minorTicks: true,
         minorTickColor: "#CDD8D34C",
         minorTickPosition: "outside",
@@ -1164,16 +1202,28 @@ export default function LandingChart({
         tickLength: 25,
         tickWidth: 1,
         offset: 0,
-        showLastLabel: true,
-        endOnTick: false,
-        maxPadding: 0,
         minTickInterval: 30 * 24 * 3600 * 1000,
+        minPadding: 0,
+        maxPadding: 0,
         labels: {
           align: undefined,
+          rotation: 0,
+          allowOverlap: false,
+          staggerLines: 1,
+          reserveSpace: true,
+          overflow: "justify",
+          useHTML: false,
           formatter: function (this: AxisLabelsFormatterContextObject) {
+            // if Jan 1st, show year
+            if (new Date(this.value).getUTCMonth() === 0) {
+              return new Date(this.value).toLocaleDateString(undefined, {
+                timeZone: "UTC",
+                year: "numeric",
+              });
+            }
             return new Date(this.value).toLocaleDateString(undefined, {
               timeZone: "UTC",
-              month: isMobile ? "short" : "long",
+              month: isMobile ? "short" : "short",
               year: "numeric"
             });
           },
@@ -1245,9 +1295,9 @@ export default function LandingChart({
               borderRadius = "8%";
             }
             const timeIntervalToMilliseconds = {
-              daily: 1 * 24 * 3600 * 1000,
-              weekly: 7 * 24 * 3600 * 1000,
-              monthly: 30 * 24 * 3600 * 1000,
+              daily: 1 * 24 * 60 * 60 * 1000,
+              weekly: 7 * 24 * 60 * 60 * 1000,
+              monthly: 30 * 24 * 60 * 60 * 1000,
             };
 
             const pointsSettings =
@@ -1259,8 +1309,6 @@ export default function LandingChart({
                 }
                 : {
                   pointPlacement: 0.5,
-                  // pointInterval: 7,
-                  // pointIntervalUnit: "day",
                 };
 
             return {
@@ -1300,11 +1348,11 @@ export default function LandingChart({
                   ],
                 ],
               },
-              borderColor:
-                series.name && theme && EnabledChainsByKeys[series.name]
-                  ? EnabledChainsByKeys[series.name]?.colors[theme][0]
-                  : "transparent",
-              borderWidth: 1,
+              // borderColor:
+              //   series.name && theme && EnabledChainsByKeys[series.name]
+              //     ? EnabledChainsByKeys[series.name]?.colors[theme][0]
+              //     : "transparent",
+              // borderWidth: 1,
               lineWidth: 2,
               ...(getSeriesType(series.name) !== "column"
                 ? {
@@ -1312,7 +1360,7 @@ export default function LandingChart({
                     color:
                       series.name && theme && EnabledChainsByKeys[series.name]
                         ? EnabledChainsByKeys[series.name]?.colors[theme][1] +
-                        "33"
+                        "FF"
                         : "transparent",
                     width: 10,
                   },
@@ -1347,90 +1395,13 @@ export default function LandingChart({
                 : series.name === "all_l2s"
                   ? {
                     borderColor: "transparent",
-
-                    shadow: {
-                      color: "#CDD8D3" + "FF",
-                      // color:
-                      //   AllChainsByKeys[series.name].colors[theme][1] + "33",
-                      // width: 10,
-                      offsetX: 0,
-                      offsetY: 0,
-                      width: 2,
-                    },
-                    color: {
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 0,
-                        y2: 1,
-                      },
-                      stops:
-                        theme === "dark"
-                          ? [
-                            [
-                              0,
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "E6"
-                                : [],
-                            ],
-                            // [
-                            //   0.3,
-                            //   //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
-                            //   AllChainsByKeys[series.name].colors[theme][0] +
-                            //     "FF",
-                            // ],
-                            [
-                              1,
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][1] + "E6"
-                                : [],
-                            ],
-                          ]
-                          : [
-                            [
-                              0,
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "E6"
-                                : [],
-                            ],
-                            // [
-                            //   0.7,
-                            //   AllChainsByKeys[series.name].colors[theme][0] +
-                            //     "88",
-                            // ],
-                            [
-                              1,
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][1] + "E6"
-                                : [],
-                            ],
-                          ],
-                    },
-                  }
-                  : {
-                    borderColor: "transparent",
-                    shadow: {
-                      color: "#CDD8D3" + "FF",
-                      offsetX: 0,
-                      offsetY: 0,
-                      width: 2,
-                    },
+                    borderWidth: 0,
+                    // shadow: {
+                    //   color: "#CDD8D3",
+                    //   offsetX: 0,
+                    //   offsetY: 0,
+                    //   width: 0,
+                    // },
                     color: {
                       linearGradient: {
                         x1: 0,
@@ -1451,18 +1422,96 @@ export default function LandingChart({
                                 ][0] + "FF"
                                 : [],
                             ],
+                            // [
+                            //   0.3,
+                            //   //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
+                            //   AllChainsByKeys[series.name].colors[theme][0] +
+                            //     "FF",
+                            // ],
                             [
-                              0.349,
+                              1,
                               series.name &&
                                 theme &&
                                 EnabledChainsByKeys[series.name]
                                 ? EnabledChainsByKeys[series.name]?.colors[
                                 theme
-                                ][0] + "88"
+                                ][1] + "FF"
                                 : [],
                             ],
+                          ]
+                          : [
+                            [
+                              0,
+                              series.name &&
+                                theme &&
+                                EnabledChainsByKeys[series.name]
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "FF"
+                                : [],
+                            ],
+                            // [
+                            //   0.7,
+                            //   AllChainsByKeys[series.name].colors[theme][0] +
+                            //     "88",
+                            // ],
                             [
                               1,
+                              series.name &&
+                                theme &&
+                                EnabledChainsByKeys[series.name]
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][1] + "FF"
+                                : [],
+                            ],
+                          ],
+                    },
+                  }
+                  : {
+                    borderColor: theme == "dark" ? "#2A3433" : "#EAECEB",
+                    borderWidth: 0,
+                    //  series.name &&
+                    //   theme &&
+                    //   EnabledChainsByKeys[series.name]
+                    //   ? EnabledChainsByKeys[series.name]?.colors[
+                    //   theme
+                    //   ][0] + "33"
+                    //   : [],
+                    shadow: "none",
+                    color: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 0,
+                        y2: 1,
+                      },
+                      stops:
+                        theme === "dark"
+                          ? [
+                            [
+                              0,
+                              series.name &&
+                                theme &&
+                                EnabledChainsByKeys[series.name]
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "FF"
+                                : [],
+                            ],
+                            // [
+                            //   0.349,
+                            //   series.name &&
+                            //     theme &&
+                            //     EnabledChainsByKeys[series.name]
+                            //     ? EnabledChainsByKeys[series.name]?.colors[
+                            //     theme
+                            //     ][0] + "88"
+                            //     : [],
+                            // ],
+                            [
+                              1,
+                              // "#151a19FF"
                               series.name &&
                                 theme &&
                                 EnabledChainsByKeys[series.name]
@@ -1483,18 +1532,19 @@ export default function LandingChart({
                                 ][0] + "FF"
                                 : [],
                             ],
-                            [
-                              0.349,
-                              series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "88"
-                                : [],
-                            ],
+                            // [
+                            //   0.349,
+                            //   series.name &&
+                            //     theme &&
+                            //     EnabledChainsByKeys[series.name]
+                            //     ? EnabledChainsByKeys[series.name]?.colors[
+                            //     theme
+                            //     ][0] + "88"
+                            //     : [],
+                            // ],
                             [
                               1,
+                              // "#FFFFFFFF"
                               series.name &&
                                 theme &&
                                 EnabledChainsByKeys[series.name]
@@ -1582,7 +1632,7 @@ export default function LandingChart({
     zoomMin,
     zoomed,
     is_embed,
-    // daysShown
+    daysShown
   ]);
 
   // const resituateChart = debounce(() => {
