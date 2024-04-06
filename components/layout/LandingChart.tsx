@@ -1047,10 +1047,10 @@ export default function LandingChart({
   const [containerRef, { width, height }] = useElementSizeObserver();
 
   const getChartHeight = useCallback(() => {
-    if (is_embed) return window ? window.innerHeight - 210 : 400;
+    if (is_embed) return height;
     if (isMobile) return 284;
     return 360;
-  }, [isMobile, is_embed]);
+  }, [isMobile, is_embed, height]);
 
   const options = useMemo((): Highcharts.Options => {
     const dynamicOptions: Highcharts.Options = {
@@ -1612,6 +1612,9 @@ export default function LandingChart({
 
   useEffect(() => {
     if (chartComponent.current) {
+      if (is_embed) {
+        return;
+      }
 
       if (isMobile) {
         chartComponent.current.setSize(null, 284, false);
@@ -1620,7 +1623,7 @@ export default function LandingChart({
 
       chartComponent.current.setSize(null, 400, false);
     }
-  }, [isMobile]);
+  }, [isMobile, is_embed]);
 
   useEffect(() => {
     if (chartComponent.current) {

@@ -1079,11 +1079,13 @@ export default function ComparisonChart({
     [getSeriesType, selectedTimeInterval, theme, showUsd, showGwei],
   );
 
+  const [containerRef, { width, height }] = useElementSizeObserver();
+
   const getChartHeight = useCallback(() => {
-    if (is_embed) return window ? window.innerHeight - 210 : 400;
+    if (is_embed) return height;
     if (isMobile) return 275;
     return 400;
-  }, [isMobile, is_embed]);
+  }, [isMobile, is_embed, height]);
 
   const options = useMemo((): Highcharts.Options => {
     if (!filteredData || filteredData.length === 0) return {};
@@ -1540,7 +1542,7 @@ export default function ComparisonChart({
   // }, [isMobile, is_embed]);
 
   // const { width, height } = useWindowSize();
-  const [containerRef, { width, height }] = useElementSizeObserver();
+
   useLayoutEffect(() => {
     // if (!is_embed) return;
 
