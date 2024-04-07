@@ -524,10 +524,10 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "mantle",
       },
       {
-        label: "Rhino",
+        label: "rhino.fi",
         page: {
           description:
-            "Rhino.fi is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in July 2023.",
+            "rhino.fi is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in July 2023.",
         },
         icon: "gtp:rhino-logo-monochrome",
         key: "rhino",

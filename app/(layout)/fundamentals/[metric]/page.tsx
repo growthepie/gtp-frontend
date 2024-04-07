@@ -9,7 +9,11 @@ import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import useSWR from "swr";
 import MetricsTable from "@/components/layout/MetricsTable";
 import { MetricsURLs } from "@/lib/urls";
-import { AllChains, Get_DefaultChainSelectionKeys, Get_SupportedChainKeys } from "@/lib/chains";
+import {
+  AllChains,
+  Get_DefaultChainSelectionKeys,
+  Get_SupportedChainKeys,
+} from "@/lib/chains";
 import { intersection } from "lodash";
 import { Icon } from "@iconify/react";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
@@ -35,43 +39,36 @@ const Fundamentals = ({ params }: { params: any }) => {
     isValidating: metricValidating,
   } = useSWR<MetricsResponse>(MetricsURLs[params.metric]);
 
-
   return (
     <>
       <ShowLoading
         dataLoading={[masterLoading, metricLoading]}
         dataValidating={[masterValidating, metricValidating]}
       />
-      {master && metricData ? <FundamentalsContent params={{ ...params, master, metricData }} /> :
-        <div className="w-full min-h-[1024px] md:min-h-[1081px] lg:min-h-[637px] xl:min-h-[736px]" />}
-
+      {master && metricData ? (
+        <FundamentalsContent params={{ ...params, master, metricData }} />
+      ) : (
+        <div className="w-full min-h-[1024px] md:min-h-[1081px] lg:min-h-[637px] xl:min-h-[736px]" />
+      )}
     </>
   );
 };
-
 
 const FundamentalsContent = ({ params }: { params: any }) => {
   const master = params.master;
   const metricData = params.metricData;
   const [errorCode, setErrorCode] = useState<number | null>(null);
 
-
-
   const chainKeys = useMemo(() => {
     if (!metricData)
-      return AllChains.filter(
-        (chain) =>
-          Get_SupportedChainKeys(master).includes(
-            chain.key,
-          ) && chain.key !== "ethereum",
+      return AllChains.filter((chain) =>
+        Get_SupportedChainKeys(master).includes(chain.key),
       ).map((chain) => chain.key);
 
     return AllChains.filter(
       (chain) =>
-        (Object.keys(metricData.data.chains).includes(chain.key) &&
-          Get_SupportedChainKeys(master).includes(
-            chain.key,
-          )) && chain.key !== "ethereum",
+        Object.keys(metricData.data.chains).includes(chain.key) &&
+        Get_SupportedChainKeys(master).includes(chain.key),
     ).map((chain) => chain.key);
   }, [master, metricData]);
 
@@ -175,6 +172,6 @@ const FundamentalsContent = ({ params }: { params: any }) => {
       </div>
     </>
   );
-}
+};
 
 export default Fundamentals;

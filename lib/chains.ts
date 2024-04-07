@@ -366,7 +366,7 @@ export const AllChains: Chain[] = [
     darkTextOnBackground: false,
   },
   {
-    label: "RhinoFi",
+    label: "rhino.fi",
     icon: "/icons/rhino.png",
     key: "rhino",
     urlKey: "rhino-fi",

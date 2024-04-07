@@ -233,6 +233,7 @@ export default function ComparisonChart({
   // );
 
   // const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
+  console.log(metric_id);
 
   const [zoomed, setZoomed] = useState(false);
   const [zoomMin, setZoomMin] = useState(0);
@@ -354,6 +355,31 @@ export default function ComparisonChart({
       return bData - aData;
     });
   }, [data, reversePerformer, showEthereumMainnet]);
+
+  function shortenNumber(number) {
+    let numberStr = Math.floor(number).toString();
+
+    const suffixes = ["", "k", "M", "B"];
+    const numberOfDigits = numberStr.length;
+    const magnitude = Math.floor((numberOfDigits - 1) / 3);
+    const suffixIndex = Math.min(magnitude, suffixes.length - 1);
+
+    const suffix = suffixes[suffixIndex];
+
+    let shortenedNumber;
+    if (magnitude > 0) {
+      const digitsBeforeDecimal = numberOfDigits % 3 || 3;
+      shortenedNumber =
+        parseFloat(numberStr.slice(0, digitsBeforeDecimal + 2)) / 100;
+      // Remove trailing zeros after the decimal point
+      shortenedNumber = shortenedNumber.toFixed(2).replace(/\.?0+$/, "");
+    } else {
+      shortenedNumber = number.toFixed(2);
+    }
+
+    // Concatenate the suffix
+    return shortenedNumber.toString() + suffix;
+  }
 
   const formatNumber = useCallback(
     (value: number | string, isAxis = false) => {
@@ -490,14 +516,17 @@ export default function ComparisonChart({
             <div class="flex-1 text-right justify-end font-inter flex">
                 <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
             }">${prefix}</div>
-                ${parseFloat(value).toLocaleString(undefined, {
-              minimumFractionDigits: valuePrefix ? 2 : 0,
-              maximumFractionDigits: valuePrefix
-                ? metric_id === "txcosts"
-                  ? 3
-                  : 2
-                : 0,
-            })}
+                ${metric_id === "fdv" || "market_cap"
+              ? shortenNumber(value).toString()
+              : parseFloat(value).toLocaleString(undefined, {
+                minimumFractionDigits: valuePrefix ? 2 : 0,
+                maximumFractionDigits: valuePrefix
+                  ? metric_id === "txcosts"
+                    ? 3
+                    : 2
+                  : 0,
+              })
+            }
                 <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
             }">${suffix}</div>
             </div>
@@ -525,8 +554,8 @@ export default function ComparisonChart({
           <div class="w-4 h-1.5 rounded-r-full" style=""></div>
           <div class="tooltip-point-name text-md">Total</div>
           <div class="flex-1 text-right justify-end font-inter flex">
-              <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-          }">${prefix}</div>
+
+              <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">${prefix}</div>
               ${parseFloat(value).toLocaleString(undefined, {
             minimumFractionDigits: valuePrefix ? 2 : 0,
             maximumFractionDigits: valuePrefix ? 2 : 0,
