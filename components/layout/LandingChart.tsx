@@ -563,19 +563,9 @@ export default function LandingChart({
           if (tickValue) {
             if (tickValue.length === 4) {
               tickLabel.css({
-                // fontSize: "12px",
                 transform: "scale(1.4)",
                 fontWeight: "600",
-                // height: "11px",
-                // position: "absolute",
               });
-            } else {
-              tickLabel.css({
-                // fontSize: "10px",
-                // height: "14px",
-                // position: "absolute",
-              });
-
             }
           }
         });

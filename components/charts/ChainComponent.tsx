@@ -95,21 +95,18 @@ export default function ChainComponent({
   } | null>(null);
 
   const timespans = useMemo(() => {
-    let max = 0;
-    let min = xMin ? xMin : Infinity;
-    const now = Date.now();
+    let max;
+    let min;
+    let now = Date.now();
 
     Object.keys(data.metrics).forEach((key) => {
-      max = Math.max(
-        max,
-        ...data.metrics[key].daily.data.map((d: any) => d[0]),
-      );
+      const metric = data.metrics[key];
+      const metricData = metric.daily.data;
+      const metricMax = metricData[metricData.length - 1][0];
+      const metricMin = metricData[0][0];
 
-      if (!xMin)
-        min = Math.min(
-          min,
-          ...data.metrics[key].daily.data.map((d: any) => d[0]),
-        );
+      if (!max || metricMax > max) max = metricMax;
+      if (!min || metricMin < min) min = metricMin;
     });
 
     return {
@@ -142,7 +139,7 @@ export default function ChainComponent({
         daysDiff: Math.round((now - min) / (1000 * 60 * 60 * 24)),
       },
     };
-  }, [data.metrics, xMin]);
+  }, [data.metrics]);
 
   const showGwei = useCallback((metric_id: string) => {
     const item = navigationItems[1].options.find(
@@ -798,243 +795,246 @@ export default function ChainComponent({
     }
   }, [isAnimate, selectedTimespan, timespans, zoomed]);
 
-  const options: Highcharts.Options = {
-    accessibility: { enabled: false },
-    exporting: { enabled: false },
-    chart: {
-      type: "area",
-      height: isMobile ? 146 : 176,
-      backgroundColor: undefined,
-      margin: [1, 0, 0, 0],
-      spacingBottom: 0,
-      panning: { enabled: false },
-      panKey: "shift",
-      animation: isAnimate,
-      zooming: {
-        type: undefined,
-        mouseWheel: {
-          enabled: false,
-        },
-        resetButton: {
-          theme: {
-            zIndex: -10,
-            fill: "transparent",
-            stroke: "transparent",
-            style: {
-              color: "transparent",
-              height: 0,
-              width: 0,
-            },
-            states: {
-              hover: {
-                fill: "transparent",
-                stroke: "transparent",
-                style: {
-                  color: "transparent",
-                  height: 0,
-                  width: 0,
+  const options: Highcharts.Options = useMemo(() => {
+    return {
+      accessibility: { enabled: false },
+      exporting: { enabled: false },
+      chart: {
+        type: "area",
+        height: isMobile ? 146 : 176,
+        width: "100%",
+        backgroundColor: undefined,
+        margin: [1, 0, 0, 0],
+        spacingBottom: 0,
+        panning: { enabled: false },
+        panKey: "shift",
+        animation: isAnimate,
+        zooming: {
+          type: undefined,
+          mouseWheel: {
+            enabled: false,
+          },
+          resetButton: {
+            theme: {
+              zIndex: -10,
+              fill: "transparent",
+              stroke: "transparent",
+              style: {
+                color: "transparent",
+                height: 0,
+                width: 0,
+              },
+              states: {
+                hover: {
+                  fill: "transparent",
+                  stroke: "transparent",
+                  style: {
+                    color: "transparent",
+                    height: 0,
+                    width: 0,
+                  },
                 },
               },
             },
           },
         },
-      },
 
-      style: {
-        //@ts-ignore
-        borderRadius: "0 0 15px 15px",
-      },
-    },
-
-    title: undefined,
-    yAxis: {
-      title: { text: undefined },
-      opposite: false,
-      showFirstLabel: false,
-
-      showLastLabel: true,
-      gridLineWidth: 1,
-      gridLineColor:
-        theme === "dark"
-          ? "rgba(215, 223, 222, 0.11)"
-          : "rgba(41, 51, 50, 0.11)",
-
-      type: "linear",
-      min: 0,
-      labels: {
-        align: "left",
-        y: 11,
-        x: 2,
-        style: {
-          gridLineColor:
-            theme === "dark"
-              ? "rgba(215, 223, 222, 0.33)"
-              : "rgba(41, 51, 50, 0.33)",
-          fontSize: "10px",
-        },
-      },
-      // gridLineColor:
-      //   theme === "dark"
-      //     ? "rgba(215, 223, 222, 0.33)"
-      //     : "rgba(41, 51, 50, 0.33)",
-    },
-    xAxis: {
-      events: {
-        afterSetExtremes: onXAxisSetExtremes,
-      },
-      type: "datetime",
-      lineWidth: 0,
-      crosshair: {
-        width: 0.5,
-        color: COLORS.PLOT_LINE,
-        snap: false,
-      },
-      min: zoomed
-        ? zoomMin
-        : timespans[selectedTimespan].xMin - 1000 * 60 * 60 * 24 * 7,
-      max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
-      tickPositions: getTickPositions(
-        timespans[selectedTimespan].xMin,
-        timespans[selectedTimespan].xMax,
-      ),
-      tickmarkPlacement: "on",
-      tickWidth: 1,
-      tickLength: 20,
-      ordinal: false,
-      minorTicks: false,
-      minorTickLength: 2,
-      minorTickWidth: 2,
-      minorGridLineWidth: 0,
-      minorTickInterval: 1000 * 60 * 60 * 24 * 7,
-      labels: {
-        style: { color: COLORS.LABEL },
-        enabled: false,
-        formatter: (item) => {
-          const date = new Date(item.value);
-          const isMonthStart = date.getDate() === 1;
-          const isYearStart = isMonthStart && date.getMonth() === 0;
-          if (isYearStart) {
-            return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
-          } else {
-            return `<span style="">${date.toLocaleDateString(undefined, {
-              month: "short",
-            })}</span>`;
-          }
-        },
-      },
-      // minPadding: 0.04,
-      // maxPadding: 0.04,
-      gridLineWidth: 0,
-    },
-    legend: {
-      enabled: false,
-      useHTML: false,
-      symbolWidth: 0,
-    },
-    tooltip: {
-      hideDelay: 300,
-      stickOnContact: false,
-      useHTML: true,
-      shared: true,
-      outside: isMobile ? false : true,
-      formatter: tooltipFormatter,
-      positioner: tooltipPositioner,
-      split: false,
-      followPointer: true,
-      followTouchMove: true,
-      backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
-      borderRadius: 17,
-      borderWidth: 0,
-      padding: 0,
-      shadow: {
-        color: "black",
-        opacity: 0.015,
-        offsetX: 2,
-        offsetY: 2,
-      },
-      style: {
-        color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
-      },
-    },
-
-    plotOptions: {
-      line: {
-        lineWidth: 2,
-      },
-      area: {
-        lineWidth: 2,
-        // marker: {
-        //   radius: 12,
-        //   lineWidth: 4,
+        // style: {
+        //   //@ts-ignore
+        //   borderRadius: "0 0 15px 15px",
         // },
-        fillOpacity: 1,
-        fillColor: {
-          linearGradient: {
-            x1: 0,
-            y1: 0,
-            x2: 0,
-            y2: 1,
+      },
+
+      title: undefined,
+      yAxis: {
+        title: { text: undefined },
+        opposite: false,
+        showFirstLabel: false,
+
+        showLastLabel: true,
+        gridLineWidth: 1,
+        gridLineColor:
+          theme === "dark"
+            ? "rgba(215, 223, 222, 0.11)"
+            : "rgba(41, 51, 50, 0.11)",
+
+        type: "linear",
+        min: 0,
+        labels: {
+          align: "left",
+          y: 11,
+          x: 2,
+          style: {
+            gridLineColor:
+              theme === "dark"
+                ? "rgba(215, 223, 222, 0.33)"
+                : "rgba(41, 51, 50, 0.33)",
+            fontSize: "10px",
           },
-          stops: [
-            [
-              0,
-              AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0] + "33",
-            ],
-            [
-              1,
-              AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1] + "33",
-            ],
-          ],
         },
+        // gridLineColor:
+        //   theme === "dark"
+        //     ? "rgba(215, 223, 222, 0.33)"
+        //     : "rgba(41, 51, 50, 0.33)",
+      },
+      xAxis: {
+        events: {
+          afterSetExtremes: onXAxisSetExtremes,
+        },
+        type: "datetime",
+        lineWidth: 0,
+        crosshair: {
+          width: 0.5,
+          color: COLORS.PLOT_LINE,
+          snap: false,
+        },
+        min: zoomed
+          ? zoomMin
+          : timespans[selectedTimespan].xMin,
+        max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
+        tickPositions: getTickPositions(
+          timespans[selectedTimespan].xMin,
+          timespans[selectedTimespan].xMax,
+        ),
+        tickmarkPlacement: "on",
+        tickWidth: 1,
+        tickLength: 20,
+        ordinal: false,
+        minorTicks: false,
+        minorTickLength: 2,
+        minorTickWidth: 2,
+        minorGridLineWidth: 0,
+        minorTickInterval: 1000 * 60 * 60 * 24 * 7,
+        labels: {
+          style: { color: COLORS.LABEL },
+          enabled: false,
+          formatter: (item) => {
+            const date = new Date(item.value);
+            const isMonthStart = date.getDate() === 1;
+            const isYearStart = isMonthStart && date.getMonth() === 0;
+            if (isYearStart) {
+              return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
+            } else {
+              return `<span style="">${date.toLocaleDateString(undefined, {
+                month: "short",
+              })}</span>`;
+            }
+          },
+        },
+        // minPadding: 0.04,
+        // maxPadding: 0.04,
+        gridLineWidth: 0,
+      },
+      legend: {
+        enabled: false,
+        useHTML: false,
+        symbolWidth: 0,
+      },
+      tooltip: {
+        hideDelay: 300,
+        stickOnContact: false,
+        useHTML: true,
+        shared: true,
+        outside: isMobile ? false : true,
+        formatter: tooltipFormatter,
+        positioner: tooltipPositioner,
+        split: false,
+        followPointer: true,
+        followTouchMove: true,
+        backgroundColor: (theme === "dark" ? "#2A3433" : "#EAECEB") + "EE",
+        borderRadius: 17,
+        borderWidth: 0,
+        padding: 0,
         shadow: {
-          color:
-            AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
-          width: 10,
+          color: "black",
+          opacity: 0.015,
+          offsetX: 2,
+          offsetY: 2,
         },
-        color: {
-          linearGradient: {
-            x1: 0,
-            y1: 0,
-            x2: 1,
-            y2: 0,
+        style: {
+          color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41 51 50)",
+        },
+      },
+
+      plotOptions: {
+        line: {
+          lineWidth: 2,
+        },
+        area: {
+          lineWidth: 2,
+          // marker: {
+          //   radius: 12,
+          //   lineWidth: 4,
+          // },
+          fillOpacity: 1,
+          fillColor: {
+            linearGradient: {
+              x1: 0,
+              y1: 0,
+              x2: 0,
+              y2: 1,
+            },
+            stops: [
+              [
+                0,
+                AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0] + "33",
+              ],
+              [
+                1,
+                AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1] + "33",
+              ],
+            ],
           },
-          stops: [
-            [0, AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][0]],
-            // [0.33, AllChainsByKeys[series.name].colors[1]],
-            [1, AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1]],
-          ],
+          shadow: {
+            color:
+              AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
+            width: 10,
+          },
+          color: {
+            linearGradient: {
+              x1: 0,
+              y1: 0,
+              x2: 1,
+              y2: 0,
+            },
+            stops: [
+              [0, AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][0]],
+              // [0.33, AllChainsByKeys[series.name].colors[1]],
+              [1, AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1]],
+            ],
+          },
+          // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
+          // borderWidth: 1,
         },
-        // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
-        // borderWidth: 1,
-      },
-      series: {
-        zIndex: 10,
-        animation: false,
-        marker: {
-          lineColor: "white",
-          radius: 0,
-          symbol: "circle",
+        series: {
+          zIndex: 10,
+          animation: false,
+          marker: {
+            lineColor: "white",
+            radius: 0,
+            symbol: "circle",
+          },
         },
       },
-    },
-    navigator: {
-      enabled: false,
-    },
-    rangeSelector: {
-      enabled: false,
-    },
-    stockTools: {
-      gui: {
+      navigator: {
         enabled: false,
       },
-    },
-    scrollbar: {
-      enabled: false,
-    },
-    credits: {
-      enabled: false,
-    },
-  };
+      rangeSelector: {
+        enabled: false,
+      },
+      stockTools: {
+        gui: {
+          enabled: false,
+        },
+      },
+      scrollbar: {
+        enabled: false,
+      },
+      credits: {
+        enabled: false,
+      },
+    };
+  }, [data.chain_id, getTickPositions, isAnimate, isMobile, onXAxisSetExtremes, selectedTimespan, theme, timespans, tooltipFormatter, tooltipPositioner, zoomMax, zoomMin, zoomed]);
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -1305,7 +1305,7 @@ export default function ChainComponent({
                       mouseOut: pointHover,
                     },
                   },
-                  step: "center",
+                  // step: "center",
                   // dataGrouping: {
                   //   enabled: true,
                   //   forced: true,

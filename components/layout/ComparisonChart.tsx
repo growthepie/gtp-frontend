@@ -753,7 +753,7 @@ export default function ComparisonChart({
       proceed.apply(this, Array.prototype.slice.call(arguments, 1));
 
       const axis: Highcharts.Axis = this;
-      const ticks: Highcharts.Dictionary<Tick> = axis.ticks;
+      const ticks: Highcharts.Dictionary<Highcharts.Tick> = axis.ticks;
       if (axis.isXAxis && axis.options.labels && axis.options.labels.enabled) {
         Object.keys(ticks).forEach((tick) => {
           const tickLabel = ticks[tick].label;
@@ -762,19 +762,9 @@ export default function ComparisonChart({
           if (tickValue) {
             if (tickValue.length === 4) {
               tickLabel.css({
-                // fontSize: "12px",
                 transform: "scale(1.4)",
                 fontWeight: "600",
-                // height: "11px",
-                // position: "absolute",
               });
-            } else {
-              tickLabel.css({
-                // fontSize: "10px",
-                // height: "14px",
-                // position: "absolute",
-              });
-
             }
           }
         });
@@ -1104,7 +1094,7 @@ export default function ComparisonChart({
 
     const dynamicOptions: Highcharts.Options = {
       chart: {
-        height: is_embed ? getChartHeight() : getChartHeight(),
+        height: height,
         type: getSeriesType(filteredData[0].name),
         plotBorderColor: "transparent",
         panning: {
