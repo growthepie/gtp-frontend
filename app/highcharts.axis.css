@@ -15,8 +15,13 @@
 }
 */
 
+.highcharts-axis-labels span,
 .highcharts-axis-labels text {
-  @apply font-raleway transition-all duration-100;
+  @apply !font-raleway;
+}
+
+.highcharts-axis-labels .year-label {
+  font-size: 20px !important;
 }
 
 .highcharts-column-series path {

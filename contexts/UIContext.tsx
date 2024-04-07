@@ -75,7 +75,6 @@ export const UIContextProvider = ({ children }) => {
 
     // Handle resize events
     const updateSize = () => {
-      console.log(`lastWindowWidth: ${prevWindowWidthRef.current} currentWindowWidth: ${window.innerWidth}`);
       const currentWidth = window.innerWidth;
       const isExpanding = currentWidth > prevWindowWidthRef.current;
       setState(prevState => ({

@@ -747,6 +747,40 @@ export default function ComparisonChart({
     highchartsRoundedCorners(Highcharts);
     highchartsAnnotations(Highcharts);
     highchartsPatternFill(Highcharts);
+
+    // update x-axis label sizes if it is a 4 digit number
+    Highcharts.wrap(Highcharts.Axis.prototype, "renderTick", function (proceed) {
+      proceed.apply(this, Array.prototype.slice.call(arguments, 1));
+
+      const axis: Highcharts.Axis = this;
+      const ticks: Highcharts.Dictionary<Tick> = axis.ticks;
+      if (axis.isXAxis && axis.options.labels && axis.options.labels.enabled) {
+        Object.keys(ticks).forEach((tick) => {
+          const tickLabel = ticks[tick].label;
+          if (!tickLabel) return;
+          const tickValue = tickLabel.element.textContent;
+          if (tickValue) {
+            if (tickValue.length === 4) {
+              tickLabel.css({
+                // fontSize: "12px",
+                transform: "scale(1.4)",
+                fontWeight: "600",
+                // height: "11px",
+                // position: "absolute",
+              });
+            } else {
+              tickLabel.css({
+                // fontSize: "10px",
+                // height: "14px",
+                // position: "absolute",
+              });
+
+            }
+          }
+        });
+      }
+    });
+
     setHighchartsLoaded(true);
   }, []);
 
@@ -768,53 +802,9 @@ export default function ComparisonChart({
     label: string;
   } | null>(null);
 
-  const updateLabels = useCallback(() => {
-
-    if (chartComponent.current) {
-      const labels = Array.from(document.querySelectorAll(".highcharts-xaxis-labels text"));
-      labels.sort(
-        (a, b) =>
-          parseInt(a.getAttribute("x") || "0") -
-          parseInt(b.getAttribute("x") || "0"),
-      ).forEach((el, i) => {
-        const textElement = el as SVGTextElement;
-        const style = el.getAttribute("style");
-
-        // if (is_embed) {
-        //   if (i === labels.length - 1) {
-        //     // update font-size in style attribute
-        //     el.setAttribute("style", style + "font-size: 14px;");
-        //   } else {
-        //     el.setAttribute("style", style + "font-size: 10px;");
-        //   }
-        // } else {
-
-        // if element is only a 4 digit year, increase font size
-        if (el.textContent?.length === 4) {
-          if (!style?.includes("font-weight: 600;"))
-            el.setAttribute("style", style + "font-size: 14px; font-weight: 500;");
-          // el.setAttribute("y", 343 + 5 + "px");
-          // transform: translateY(5px);
-        }
-        // else {
-        //   el.setAttribute("style", style + "font-size: 10px; transform: translateY(0px);");
-        //   // el.setAttribute("y", 343 + "px");
-        //   // el.setAttribute("transform", "");
-        // }
-
-        // }
-      });
-    }
-  }, [is_embed]);
-
   const onXAxisSetExtremes =
     useCallback<Highcharts.AxisSetExtremesEventCallbackFunction>(
       function (e) {
-        // increase font size of last x-axis label after animation
-        setTimeout(() => {
-          updateLabels();
-        }, 500);
-
         if (e.trigger === "pan") return;
         const { min, max } = e;
         const numDays = (max - min) / (24 * 60 * 60 * 1000);
@@ -1098,8 +1088,8 @@ export default function ComparisonChart({
 
   const getChartHeight = useCallback(() => {
     if (is_embed) return height;
-    if (isMobile) return 275;
-    return 400;
+    if (isMobile) return height;
+    return height;
   }, [isMobile, is_embed, height]);
 
   const options = useMemo((): Highcharts.Options => {
@@ -1149,6 +1139,8 @@ export default function ComparisonChart({
             },
           },
         },
+      },
+      events: {
       },
       plotOptions: scaleToPlotOptions,
       legend: {
@@ -1219,10 +1211,10 @@ export default function ComparisonChart({
           align: undefined,
           rotation: 0,
           allowOverlap: false,
-          staggerLines: 1,
+          // staggerLines: 1,
           reserveSpace: true,
           overflow: "justify",
-          useHTML: false,
+          useHTML: true,
           formatter: function (this: AxisLabelsFormatterContextObject) {
             // if Jan 1st, show year
             if (new Date(this.value).getUTCMonth() === 0) {
@@ -1574,15 +1566,9 @@ export default function ComparisonChart({
   // const { width, height } = useWindowSize();
 
   useLayoutEffect(() => {
-    // if (!is_embed) return;
 
     if (chartComponent.current) {
       chartComponent.current.setSize(width, height, true);
-      setTimeout(() => {
-        updateLabels();
-      }, 500);
-      // chartComponent.current.setA
-      // chartComponent.current.reflow();
     }
   }, [width, height, isSidebarOpen]);
 
@@ -1812,21 +1798,22 @@ export default function ComparisonChart({
               >
                 <div
                   className={
-                    is_embed ? "w-full" : "w-full p-0 py-0 xl:pl-4 xl:py-14"
+                    is_embed ? "w-full" : "w-full p-0 py-0 lg:pl-4 xl:py-14"
                   }
                 >
                   <div
                     className={
                       is_embed
                         ? "w-full relative h-[calc(100vh-160px)] md:h-[calc(100vh-100px)]"
-                        : "w-full h-[17rem] md:h-[26rem] relative rounded-xl"
+                        : "w-full h-[17rem] md:h-[28rem] relative rounded-xl pt-0 pb-0 md:pt-8 md:pb-2"
                     }
+
                   >
                     <div
                       className={
                         is_embed
                           ? "relative block w-full top-0 md:top-8"
-                          : "block absolute w-full h-[275px] md:h-[24rem] top-0 md:top-4"
+                          : "block relative h-full w-full"
                       }
                       ref={containerRef}
                     >

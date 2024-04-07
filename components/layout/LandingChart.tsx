@@ -4,7 +4,7 @@ import highchartsAnnotations from "highcharts/modules/annotations";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
 import HighchartsReact from "highcharts-react-official";
 import Highcharts, {
-  AxisLabelsFormatterContextObject, chart,
+  AxisLabelsFormatterContextObject, Tick, chart,
 } from "highcharts/highstock";
 import {
   useState,
@@ -549,6 +549,40 @@ export default function LandingChart({
 
     // loadHighchartsWrappers();
 
+    // update x-axis label sizes if it is a 4 digit number
+    Highcharts.wrap(Highcharts.Axis.prototype, "renderTick", function (proceed) {
+      proceed.apply(this, Array.prototype.slice.call(arguments, 1));
+
+      const axis: Highcharts.Axis = this;
+      const ticks: Highcharts.Dictionary<Tick> = axis.ticks;
+      if (axis.isXAxis && axis.options.labels && axis.options.labels.enabled) {
+        Object.keys(ticks).forEach((tick) => {
+          const tickLabel = ticks[tick].label;
+          if (!tickLabel) return;
+          const tickValue = tickLabel.element.textContent;
+          if (tickValue) {
+            if (tickValue.length === 4) {
+              tickLabel.css({
+                // fontSize: "12px",
+                transform: "scale(1.4)",
+                fontWeight: "600",
+                // height: "11px",
+                // position: "absolute",
+              });
+            } else {
+              tickLabel.css({
+                // fontSize: "10px",
+                // height: "14px",
+                // position: "absolute",
+              });
+
+            }
+          }
+        });
+      }
+    });
+
+
     setHighchartsLoaded(true);
   }, []);
 
@@ -985,56 +1019,9 @@ export default function LandingChart({
     label: string;
   } | null>(null);
 
-  const updateLabels = useCallback(() => {
-
-    if (chartComponent.current) {
-      const labels = Array.from(document.querySelectorAll(".highcharts-xaxis-labels text"));
-      labels.sort(
-        (a, b) =>
-          parseInt(a.getAttribute("x") || "0") -
-          parseInt(b.getAttribute("x") || "0"),
-      ).forEach((el, i) => {
-        const textElement = el as SVGTextElement;
-        const style = el.getAttribute("style");
-
-        // if (is_embed) {
-        //   if (i === labels.length - 1) {
-        //     // update font-size in style attribute
-        //     el.setAttribute("style", style + "font-size: 14px;");
-        //   } else {
-        //     el.setAttribute("style", style + "font-size: 10px;");
-        //   }
-        // } else {
-
-        // if element is only a 4 digit year, increase font size
-        if (el.textContent?.length === 4) {
-          if (!style?.includes("font-weight: 600;"))
-            el.setAttribute("style", style + "font-size: 14px; font-weight: 500;");
-          // el.setAttribute("y", 343 + 5 + "px");
-          // transform: translateY(5px);
-        }
-        // else {
-        //   el.setAttribute("style", style + "font-size: 10px; transform: translateY(0px);");
-        //   // el.setAttribute("y", 343 + "px");
-        //   // el.setAttribute("transform", "");
-        // }
-
-        // }
-      });
-    }
-  }, [is_embed]);
-
   const onXAxisSetExtremes =
     useCallback<Highcharts.AxisSetExtremesEventCallbackFunction>(
       function (e) {
-        // increase font size of last x-axis label after animation
-        setTimeout(() => {
-          updateLabels();
-          // setDaysShown(Math.round((e.max - e.min) / (24 * 60 * 60 * 1000)));
-        }, 500);
-
-
-
         if (e.trigger === "pan") return;
         const { min, max } = e;
         const numDays = (max - min) / (24 * 60 * 60 * 1000);
@@ -1063,7 +1050,7 @@ export default function LandingChart({
           setZoomMax(max);
         }
       },
-      [selectedTimespan, timespans, updateLabels],
+      [selectedTimespan, timespans],
     );
 
   // const containerRef = useRef<HTMLDivElement>(null);
@@ -1128,27 +1115,6 @@ export default function LandingChart({
           },
         },
         events: {
-          // load: function (this: Highcharts.Chart) {
-          //   const chart = this;
-          //   if (chart) {
-          //     const chart = this;
-          //     if (chart && width && height) {
-          //       chart.setSize(width, height, false);
-          //     }
-          //   }
-          // },
-          // render: function (this: Highcharts.Chart) {
-          //   const chart = this;
-          //   if (chart && containerRef.current) {
-          //     chart.setSize(undefined, containerRef.current.offsetHeight);
-          //   }
-          // },
-          // redraw: function (this: Highcharts.Chart) {
-          //   const chart = this;
-          //   if (chart && containerRef.current) {
-          //     chart.setSize(undefined, containerRef.current.offsetHeight,);
-          //   }
-          // },
         },
         // height: isMobile ? 200 : 400,
       },
@@ -1209,10 +1175,10 @@ export default function LandingChart({
           align: undefined,
           rotation: 0,
           allowOverlap: false,
-          staggerLines: 1,
+          // staggerLines: 1,
           reserveSpace: true,
           overflow: "justify",
-          useHTML: false,
+          useHTML: true,
           formatter: function (this: AxisLabelsFormatterContextObject) {
             // if Jan 1st, show year
             if (new Date(this.value).getUTCMonth() === 0) {
@@ -1236,7 +1202,6 @@ export default function LandingChart({
         events: {
           afterSetExtremes: onXAxisSetExtremes,
         },
-
         min: zoomed ? zoomMin : timespans[selectedTimespan].xMin,
         max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
       },
@@ -1677,19 +1642,9 @@ export default function LandingChart({
 
   useEffect(() => {
     if (chartComponent.current) {
-      // if (is_embed) {
-      //   return;
-      // }
-
-      // if (isSidebarOpen) chartComponent.current.reflow();
-      // chartComponent.current.setSize(width, getChartHeight(), true);
-      // chartComponent.current.reflow();
       chartComponent.current.setSize(width, getChartHeight(), true);
-      setTimeout(() => {
-        updateLabels();
-      }, 500);
     }
-  }, [is_embed, width, height, getChartHeight, isSidebarOpen, updateLabels]);
+  }, [is_embed, width, height, getChartHeight, isSidebarOpen]);
 
   if (is_embed)
     return (
