@@ -178,6 +178,11 @@ export default function FeesPage() {
       }
     });
 
+    // Reverse the sorted chains if sortOrder is false
+    if (!sortOrder) {
+      sortedChains.reverse();
+    }
+
     return sortedChains;
   }, [feeData, selectedChains, sortOrder]);
 
@@ -381,9 +386,15 @@ export default function FeesPage() {
           </Container>
           {/* <div className="w-full h-[70px]" /> */}
           <Container className="w-full mt-[30px] ">
-            <div className="flex w-full justify-between px-[10px] items-center">
-              <div className="text-[20px] font-bold">
-                Cost of using Ethereum Layer-2s
+            <div className="flex w-full justify-between px-[10px] items-center ">
+              <div
+                className={`text-[20px] font-bold ${
+                  isMobile ? "w-full " : "w-auto"
+                }`}
+              >
+                {isMobile
+                  ? "Cost of using Layer-2s"
+                  : "Cost of using Ethereum Layer-2s"}
               </div>
               <div className="w-[165px] h-[25px] flex bg-transparent px-0.5 items-center justify-between pr-[2px] rounded-full "></div>
             </div>
@@ -394,34 +405,42 @@ export default function FeesPage() {
             }`}
           >
             <div className="relative">
-              <div className="w-[820px] mt-[8px] flex h-[26px] justify-start pl-[42px] mb-1 text-[12px] font-bold ">
+              <div
+                className={`w-[820px] mt-[8px] flex h-[26px] justify-start mb-1 text-[12px] font-bold ${
+                  isMobile ? "pl-[32px]" : "pl-[42px]"
+                }`}
+              >
                 <div
-                  className={`flex items-center gap-x-0.5 hover:cursor-pointer ${
-                    isMobile ? "w-[21%]" : "w-[29.25%]"
+                  className={`flex items-center gap-x-0.5 hover:cursor-pointer  ${
+                    isMobile ? "w-[18%]" : "w-[29.25%]"
                   }`}
-                  onClick={() => {
-                    if (selectedQualitative === "chain") {
-                      setSortOrder(!sortOrder);
-                    } else {
-                      setSelectedQualitative("chain");
-                    }
-                  }}
                 >
-                  Chain{" "}
-                  <Icon
-                    icon={
-                      selectedQualitative === "chain"
-                        ? sortOrder
-                          ? "formkit:arrowdown"
-                          : "formkit:arrowup"
-                        : "formkit:arrowdown"
-                    }
-                    className={` dark:text-white text-black w-[10px] h-[10px] ${
-                      selectedQualitative === "chain"
-                        ? "opacity-100"
-                        : "opacity-20"
-                    }`}
-                  />{" "}
+                  <div
+                    className="flex items-center gap-x-0.5"
+                    onClick={() => {
+                      if (selectedQualitative === "chain") {
+                        setSortOrder(!sortOrder);
+                      } else {
+                        setSelectedQualitative("chain");
+                      }
+                    }}
+                  >
+                    Chain{" "}
+                    <Icon
+                      icon={
+                        selectedQualitative === "chain"
+                          ? sortOrder
+                            ? "formkit:arrowdown"
+                            : "formkit:arrowup"
+                          : "formkit:arrowdown"
+                      }
+                      className={` dark:text-white text-black w-[10px] h-[10px] ${
+                        selectedQualitative === "chain"
+                          ? "opacity-100"
+                          : "opacity-20"
+                      }`}
+                    />{" "}
+                  </div>
                   <div
                     className="bg-[#344240] text-[8px] flex rounded-full font-normal items-center px-[5px] py-[3px] gap-x-[2px] hover:cursor-pointer"
                     onClick={() => {
@@ -451,7 +470,9 @@ export default function FeesPage() {
                 </div>
 
                 <div
-                  className="flex items-center justify-end gap-x-0.5 w-[18.5%] hover:cursor-pointer"
+                  className={`flex items-center justify-end gap-x-0.5 hover:cursor-pointer ${
+                    isMobile ? "w-[11%]" : "w-[18.5%]"
+                  }`}
                   onClick={() => {
                     if (selectedQuantitative === "txcosts_median") {
                       if (selectedQualitative) {
@@ -484,7 +505,9 @@ export default function FeesPage() {
                   />{" "}
                 </div>
                 <div
-                  className=" flex items-center justify-end gap-x-0.5 w-[16%] hover:cursor-pointer"
+                  className={`flex items-center justify-end gap-x-0.5  hover:cursor-pointer ${
+                    isMobile ? "w-[13%]" : "w-[16%]"
+                  }`}
                   onClick={() => {
                     if (selectedQuantitative === "txcosts_native_median") {
                       if (selectedQualitative) {
@@ -517,7 +540,7 @@ export default function FeesPage() {
                   />{" "}
                 </div>
                 <div
-                  className="flex items-center justify-end gap-x-0.5 w-[13.5%] mr-[9.5px] hover:cursor-pointer"
+                  className="flex items-center justify-end gap-x-0.5 w-[13.5%] mr-[28.5px] sm:mr-[9.5px] hover:cursor-pointer "
                   onClick={() => {
                     if (selectedQuantitative === "txcosts_swap") {
                       if (selectedQualitative) {
@@ -549,7 +572,7 @@ export default function FeesPage() {
                     }`}
                   />{" "}
                 </div>
-                <div className="relative -top-1 flex flex-col items-end space-x-[1px] font-normal">
+                <div className="relative -top-1 flex flex-col items-end space-x-[1px] font-normal ">
                   <div
                     className={`relative right-1 w-[29px] h-[12px] text-[8px] ${
                       selectedBarIndex >= 18 && selectedBarIndex <= 22
@@ -565,10 +588,10 @@ export default function FeesPage() {
                         key={index.toString() + "columns"}
                         className={`hover:cursor-pointer ${
                           selectedBarIndex === index
-                            ? "w-[8px] border-[#344240] border-t-[1px] border-x-[1px] rounded-t-full h-[23px]"
+                            ? "w-[8px] border-[#344240] border-t-[1px] border-x-[1px] rounded-t-full h-[23px] transition-transform duration-300"
                             : hoverBarIndex === index
-                            ? "w-[5px] bg-[#344240] rounded-t-full h-[14px] "
-                            : "w-[5px] bg-[#344240] rounded-t-full h-[8px] "
+                            ? "w-[5px] bg-[#344240] rounded-t-full h-[14px] transition-transform duration-300"
+                            : "w-[5px] bg-[#344240] rounded-t-full h-[8px] transition-transform duration-300"
                         }`}
                         onMouseEnter={() => {
                           setHoverBarIndex(index);
@@ -589,12 +612,19 @@ export default function FeesPage() {
                   return (
                     <div
                       key={index}
-                      className="border-forest-700 border-[1px] mb-1 w-[820px] rounded-full border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] flex items-center relative text-[14px]"
+                      className={`border-forest-700 border-[1px] mb-1 w-[820px] rounded-full border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] flex items-center relative 
+                      ${isMobile ? "text-[12px]" : "text-[14px]"}`}
                     >
-                      <div className="flex items-center h-full w-[4%] ">
+                      <div
+                        className={`flex items-center h-full ${
+                          isMobile ? "w-[3%]" : "w-[4%]"
+                        }`}
+                      >
                         <Icon
                           icon={`gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome`}
-                          className="h-[24px] w-[24px]"
+                          className={`${
+                            isMobile ? "h-[18px] w-[18px]" : "h-[24px] w-[24px]"
+                          }`}
                           style={{
                             color: AllChainsByKeys[chain].colors[theme][0],
                           }}
@@ -602,7 +632,7 @@ export default function FeesPage() {
                       </div>
                       <div
                         className={`flex justify-start items-center h-full ${
-                          isMobile ? "w-[25%]" : "w-[33%]"
+                          isMobile ? "w-[15%]" : "w-[33%]"
                         }`}
                       >
                         <div className="mr-[5px]">
@@ -611,7 +641,11 @@ export default function FeesPage() {
                             : AllChainsByKeys[chain].label}
                         </div>
                         <div
-                          className={`bg-[#344240] flex rounded-full  items-center px-[5px] py-[3px] gap-x-[2px] transition-width overflow-hidden duration-300`}
+                          className={`bg-[#344240] flex rounded-full  items-center  transition-width overflow-hidden duration-300 ${
+                            isMobile
+                              ? "px-[4px] py-[2px] gap-x-[1px]"
+                              : "px-[5px] py-[3px] gap-x-[2px]"
+                          }`}
                           onMouseEnter={() => {
                             setHoveredItems({
                               hoveredChain: chain,
@@ -651,11 +685,16 @@ export default function FeesPage() {
                               >
                                 <Icon
                                   icon={`gtp:${item.icon}`}
-                                  className={`h-[12px] w-[12px] ${
+                                  className={`${
                                     selectedAvailability === item.icon &&
                                     selectedQualitative === "availability"
                                       ? "text-forest-200"
                                       : "text-[#5A6462] "
+                                  }
+                                  ${
+                                    isMobile
+                                      ? "h-[10px] w-[10px] "
+                                      : "h-[12px] w-[12px] "
                                   }`}
                                 />
                                 <div
@@ -696,11 +735,11 @@ export default function FeesPage() {
 
                       <div className="h-full w-[15%] flex justify-center items-center">
                         <div
-                          className={`px-[8px] w-[75px] justify-center  rounded-full flex items-center ${
+                          className={`px-[8px]  justify-center  rounded-full flex items-center ${
                             selectedQuantitative === "txcosts_median"
                               ? "border-[1.5px]"
                               : "border-0"
-                          }`}
+                          } ${isMobile ? "w-[65px]" : "w-[75px]"}`}
                           style={{
                             borderColor: !feeIndexSort[23 - selectedBarIndex][
                               chain
@@ -743,7 +782,11 @@ export default function FeesPage() {
                           )}
                         </div>
                       </div>
-                      <div className="h-full w-[12.5%] flex justify-end items-center">
+                      <div
+                        className={`h-full  flex justify-end items-center ${
+                          isMobile ? "w-[9.5%]" : "w-[12.5%]"
+                        }`}
+                      >
                         <div
                           className={`px-[8px] w-[75px] justify-center rounded-full flex items-center ${
                             selectedQuantitative === "txcosts_native_median"
@@ -885,10 +928,10 @@ export default function FeesPage() {
                             key={index.toString() + "circles"}
                             className={`hover:cursor-pointer ${
                               selectedBarIndex === index
-                                ? "w-[8px]  h-[8px] rounded-full"
+                                ? "w-[8px]  h-[8px] rounded-full transition-all duration-300"
                                 : hoverBarIndex === index
-                                ? "w-[6px] h-[6px] rounded-full opacity-90"
-                                : "w-[5px] h-[5px] rounded-full opacity-50"
+                                ? "w-[6px] h-[6px] rounded-full opacity-90 transition-all duration-300"
+                                : "w-[5px] h-[5px] rounded-full opacity-50 transition-all duration-300"
                             }`}
                             style={{
                               backgroundColor: !feeIndexSort[23 - index][chain]
@@ -959,7 +1002,11 @@ export default function FeesPage() {
                   style={{ color: "#5A6462" }}
                 />
               </div>
-              <div className="flex justify-start items-center h-full w-[33%] ">
+              <div
+                className={`flex justify-start items-center h-full ${
+                  isMobile ? "w-[17%]" : "w-[33%]"
+                }`}
+              >
                 <div className="mr-[5px]">
                   {AllChainsByKeys["ethereum"].label}
                 </div>
@@ -1034,24 +1081,12 @@ export default function FeesPage() {
                 </div>
               </div>
 
-              <div className="h-full w-[14%] flex justify-center items-center">
+              <div className="h-full w-[14%] flex justify-center items-center text-black">
                 <div
-                  className="px-[8px] border-[1.5px] rounded-full flex items-center"
+                  className="px-[8px] w-[75px] text-center justify-center border-[1.5px] rounded-full flex items-center"
                   style={{
-                    borderColor: getGradientColor(
-                      Math.floor(
-                        (feeIndexSort[23 - selectedBarIndex]["optimism"][
-                          showUsd ? 2 : 1
-                        ] /
-                          feeIndexSort[23 - selectedBarIndex][
-                            Object.keys(feeIndexSort[23 - selectedBarIndex])[
-                              Object.keys(feeIndexSort[23 - selectedBarIndex])
-                                .length - 1
-                            ]
-                          ][showUsd ? 2 : 1]) *
-                          100,
-                      ),
-                    ),
+                    borderColor: getGradientColor(100),
+                    backgroundColor: getGradientColor(100),
                   }}
                 >
                   {`${showUsd ? "$" : "Ξ"}`}
