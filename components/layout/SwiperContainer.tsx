@@ -71,7 +71,7 @@ export default function SwiperContainer({ ariaId }: { ariaId?: string }) {
         // }}
       >
         <SplideTrack>
-          <SplideSlide>
+          {/* <SplideSlide>
             <div
               className="group w-full chain relative"
               // style={{
@@ -164,7 +164,7 @@ export default function SwiperContainer({ ariaId }: { ariaId?: string }) {
                 />{" "}
               </Link>
             </div>
-          </SplideSlide>
+          </SplideSlide> */}
           {["txcount", "stables_mcap", "fees", "rent_paid", "market_cap"].map(
             (metric_id) => (
               <SplideSlide key={metric_id}>

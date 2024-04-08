@@ -81,13 +81,13 @@ export default function FeesChart({
     data?,
     isPercentageScale = false,
   ): {
-    [key in TimespanSelections]: {
-      label: string;
-      value: number;
-      xMin: number;
-      xMax: number;
-    };
-  } => {
+      [key in TimespanSelections]: {
+        label: string;
+        value: number;
+        xMin: number;
+        xMax: number;
+      };
+    } => {
     const maxDate = data
       ? new Date(data.length > 0 ? data[0][0] : 0)
       : new Date();
@@ -272,29 +272,29 @@ export default function FeesChart({
           stops:
             theme === "dark"
               ? [
-                  [
-                    0,
-                    AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
-                      "E6",
-                  ],
-                  [
-                    1,
-                    AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
-                      "E6",
-                  ],
-                ]
-              : [
-                  [
-                    0,
-                    AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
-                      "E6",
-                  ],
-                  [
-                    1,
-                    AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
-                      "E6",
-                  ],
+                [
+                  0,
+                  AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
+                  "E6",
                 ],
+                [
+                  1,
+                  AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
+                  "E6",
+                ],
+              ]
+              : [
+                [
+                  0,
+                  AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
+                  "E6",
+                ],
+                [
+                  1,
+                  AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
+                  "E6",
+                ],
+              ],
         };
 
         const color = normalAreaColor;
@@ -389,16 +389,16 @@ export default function FeesChart({
               ...// @ts-ignore
               (chartType !== "column"
                 ? {
-                    shadow: {
-                      color:
-                        AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
-                        (s.fillOpacity ? "11" : "33"),
-                      width: s.fillOpacity ? 6 : 10,
-                    },
-                    color: color,
-                  }
+                  shadow: {
+                    color:
+                      AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
+                      (s.fillOpacity ? "11" : "33"),
+                    width: s.fillOpacity ? 6 : 10,
+                  },
+                  color: color,
+                }
                 : chainKey === "all_l2s"
-                ? {
+                  ? {
                     borderColor: "transparent",
 
                     shadow: {
@@ -412,7 +412,7 @@ export default function FeesChart({
                     },
                     color: color,
                   }
-                : {
+                  : {
                     borderColor: "transparent",
                     shadow: {
                       color: "#CDD8D3" + "FF",
@@ -505,6 +505,9 @@ export default function FeesChart({
       animation: true,
       zooming: {
         type: "x",
+        mouseWheel: {
+          enabled: false,
+        },
         resetButton: {
           position: {
             x: 0,
@@ -612,8 +615,8 @@ export default function FeesChart({
         yScale === "percentageDecimal"
           ? tooltipFormatter(true, true, decimalToPercent)
           : yScale === "percentage"
-          ? tooltipFormatter(true, true, null)
-          : tooltipFormatter(
+            ? tooltipFormatter(true, true, null)
+            : tooltipFormatter(
               true,
               false,
               (x) => {
@@ -696,11 +699,10 @@ export default function FeesChart({
         }}
       >
         <ChartWatermark
-          className={`h-[30.67px] md:h-[46px] ${
-            parseInt(chartHeight, 10) > 200
+          className={`h-[30.67px] md:h-[46px] ${parseInt(chartHeight, 10) > 200
               ? "w-[128px] md:w-[163px]"
               : "w-[128.67px] md:w-[193px] "
-          } text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten`}
+            } text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten`}
         />
       </div>
     </div>

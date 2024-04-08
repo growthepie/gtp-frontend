@@ -3955,21 +3955,21 @@ hast-util-whitespace@^2.0.0:
   resolved "https://registry.yarnpkg.com/hast-util-whitespace/-/hast-util-whitespace-2.0.1.tgz#0ec64e257e6fc216c7d14c8a1b74d27d650b4557"
   integrity sha512-nAxA0v8+vXSBDt3AnRUNjyRIQ0rD+ntpbAp4LnPkumc5M9yUbSMa4XDU9Q6etY4f1Wp4bNgvc1yjiZtsTTrSng==
 
-highcharts-react-official@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/highcharts-react-official/-/highcharts-react-official-3.1.0.tgz#921e5614f9e8580bc99a1e3b531d51a70f396500"
-  integrity sha512-CkWJHrVMOc6CT8KFu1dR+a0w5OxCVKKgZUNWtEi5TmR0xqBDIDe+RyM652MAN/jBYppxMo6TCUVlRObCyWAn0Q==
+highcharts-react-official@^3.2.1:
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/highcharts-react-official/-/highcharts-react-official-3.2.1.tgz#4b62a7af2969bdebde6b338d36f6b9bf1f1029bc"
+  integrity sha512-hyQTX7ezCxl7JqumaWiGsroGWalzh24GedQIgO3vJbkGOZ6ySRAltIYjfxhrq4HszJOySZegotEF7v+haQ75UA==
 
 "highcharts-rounded-corners@https://github.com/highcharts/rounded-corners/":
-  version "1.0.6"
-  resolved "https://github.com/highcharts/rounded-corners/#f1dbf2e63654be1ec0dc6c70c288ad18ef29d96f"
+  version "1.0.7"
+  resolved "https://github.com/highcharts/rounded-corners/#2fe935bf211491447fc3be84c0826f4aad0ade38"
   dependencies:
     highcharts ">=3.0.0"
 
-highcharts@>=3.0.0, highcharts@^10.3.3:
-  version "10.3.3"
-  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-10.3.3.tgz#b8acca24f2d4b1f2f726540734166e59e07b35c4"
-  integrity sha512-r7wgUPQI9tr3jFDn3XT36qsNwEIZYcfgz4mkKEA6E4nn5p86y+u1EZjazIG4TRkl5/gmGRtkBUiZW81g029RIw==
+highcharts@>=3.0.0, highcharts@^11.4.1:
+  version "11.4.1"
+  resolved "https://registry.yarnpkg.com/highcharts/-/highcharts-11.4.1.tgz#e40e97c4ea61a10389da75bff0cdb8f83bdb57e1"
+  integrity sha512-t+BjB4hba5rNheczCrpyDz8BJrqGdgECHaaXQrgbf1mRdPMPemlOfo08/kTMgZ/Kp/Xfj015atdXpUFdwUU12Q==
 
 home-or-tmp@^2.0.0:
   version "2.0.0"

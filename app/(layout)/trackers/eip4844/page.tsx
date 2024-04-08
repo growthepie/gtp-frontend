@@ -12,11 +12,12 @@ import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import { useMediaQuery } from "usehooks-ts";
 import { useTransition, animated } from "@react-spring/web";
+import ShowLoading from "@/components/layout/ShowLoading";
 
 export default function Eiptracker() {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [selectedTimescale, setSelectedTimescale] = useState("hourly");
-  const [selectedTimespan, setSelectedTimespan] = useState("1d");
+  const [selectedTimespan, setSelectedTimespan] = useState("max");
   const [zoomed, setZoomed] = useState(false);
   const [disableZoom, setDisableZoom] = useState(false);
   const isMobile = useMediaQuery("(max-width: 767px)");
@@ -25,9 +26,9 @@ export default function Eiptracker() {
 
   const timescales = useMemo(() => {
     return {
-      ten_min: {
-        label: "10 Minutes",
-      },
+      // ten_min: {
+      //   label: "10 Minutes",
+      // },
       hourly: {
         label: "Hourly",
       },
@@ -37,7 +38,7 @@ export default function Eiptracker() {
   const timespans = useMemo(() => {
     return {
       "1d": {
-        label: "1 days",
+        label: "1 day",
         value: 1,
         xMin: Date.now() - 1 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
@@ -96,6 +97,31 @@ export default function Eiptracker() {
     return sortedAvgTxCosts;
   }, [feeData, selectedTimescale, showUsd]);
 
+  const medianCosts = useMemo(() => {
+    if (!feeData) return {}; // Return an empty object if feeData is falsy
+
+    // Get an array of chains and sort them based on txcosts_avg data
+    const sortedChains = Object.keys(feeData.chain_data).sort((a, b) => {
+      const aTxCost =
+        feeData.chain_data[a][selectedTimescale].txcosts_median.data[0][
+          showUsd ? 3 : 2
+        ];
+      const bTxCost =
+        feeData.chain_data[b][selectedTimescale].txcosts_median.data[0][
+          showUsd ? 3 : 2
+        ];
+      return aTxCost - bTxCost;
+    });
+
+    // Build the sorted object
+    const sortedMedianTxCosts = sortedChains.reduce((acc, chain) => {
+      acc[chain] = feeData.chain_data[chain][selectedTimescale].txcosts_median;
+      return acc;
+    }, {});
+
+    return sortedMedianTxCosts;
+  }, [feeData, selectedTimescale, showUsd]);
+
   const sortedMedianCosts = useMemo(() => {
     if (!feeData) return [];
 
@@ -106,13 +132,19 @@ export default function Eiptracker() {
       // If both chains are selected or unselected, sort by median cost
       if (isSelectedA === isSelectedB) {
         const aTxCost =
-          feeData.chain_data[a]["ten_min"].txcosts_median.data[0][
+          feeData.chain_data[a]?.["ten_min"]?.txcosts_median?.data?.[0]?.[
             showUsd ? 2 : 1
           ];
         const bTxCost =
-          feeData.chain_data[b]["ten_min"].txcosts_median.data[0][
+          feeData.chain_data[b]?.["ten_min"]?.txcosts_median?.data?.[0]?.[
             showUsd ? 2 : 1
           ];
+
+        // Handle cases where median costs are not available
+        if (typeof aTxCost !== "number" || typeof bTxCost !== "number") {
+          return 0; // Keep the order unchanged if median costs are not available
+        }
+
         return aTxCost - bTxCost;
       }
 
@@ -120,26 +152,28 @@ export default function Eiptracker() {
       return isSelectedA ? -1 : 1;
     });
 
-    const sortedMedianCosts = sortedChains.reduce((acc, chain) => {
-      acc[chain] = feeData.chain_data[chain]["ten_min"].txcosts_median;
-      return acc;
-    }, {});
+    // Construct sorted median costs object
+    const sortedMedianCosts = {};
+    sortedChains.forEach((chain) => {
+      sortedMedianCosts[chain] =
+        feeData.chain_data[chain]?.["ten_min"]?.txcosts_median;
+    });
 
     return sortedMedianCosts;
   }, [feeData, selectedChains, showUsd]);
 
   const chartSeries = useMemo(() => {
-    return Object.keys(avgTxCosts)
+    return Object.keys(medianCosts)
       .filter((chain) => selectedChains[chain]) // Filter out only selected chains
       .map((chain) => ({
         id: chain,
         name: chain,
         unixKey: "unix",
         dataKey: showUsd ? "value_usd" : "value_eth",
-        data: avgTxCosts[chain].data,
+        data: medianCosts[chain].data,
       }));
   }, [
-    avgTxCosts,
+    medianCosts,
     selectedChains,
     showUsd,
     selectedTimescale,
@@ -193,6 +227,10 @@ export default function Eiptracker() {
 
   return (
     <>
+      <ShowLoading
+        dataLoading={[feeLoading]}
+        dataValidating={[feeValidating]}
+      />
       {feeData && avgTxCosts && (
         <>
           <Container className="flex w-full mt-[65px] md:mt-[45px]">
@@ -223,7 +261,8 @@ export default function Eiptracker() {
               </div>
               <div className="flex items-center mb-[15px]">
                 <div className="text-[16px]">
-                  See how the launch of EIP 4844 effects transaction costs.
+                  See how the launch of EIP 4844 effects median transaction
+                  costs.
                 </div>
               </div>
             </div>
@@ -232,11 +271,11 @@ export default function Eiptracker() {
             <div
               className={`flex items-center justify-between dark:bg-[#1F2726] bg-forest-50  ${
                 isMobile
-                  ? "flex-col w-[90%] xs:w-[80%] gap-y-[5px] justify-center items-center h-full mx-auto rounded-full "
+                  ? "flex-col w-[90%] xs:w-[80%] gap-y-[5px] justify-between items-center h-full mx-auto rounded-2xl "
                   : "flex-row w-full mx-none h-[60px]  rounded-full py-[2px]"
               }`}
             >
-              {/* <div className="flex flex-col rounded-full py-[2px] px-[2px]  dark:bg-[#1F2726]  items-start justify-center w-full">
+              <div className="flex flex-col rounded-full py-[2px] px-[2px]  dark:bg-[#1F2726]  items-start justify-center w-full">
                 <div
                   className={`flex gap-x-[4px]  ${
                     isMobile
@@ -265,7 +304,7 @@ export default function Eiptracker() {
                     </div>
                   ))}
                 </div>
-              </div> */}
+              </div>
 
               {/* <hr className="border-dotted border-top-[1px] h-[2px] border-forest-400" /> */}
               <div className="flex flex-col rounded-full py-[2px] px-[2px] justify-center w-full items-end ">
@@ -300,8 +339,8 @@ export default function Eiptracker() {
                       <div
                         className={`rounded-full text-center font-medium hover:cursor-pointer ${
                           selectedTimespan === timespan
-                            ? "bg-forest-500 dark:bg-forest-1000"
-                            : "hover:bg-forest-500/10"
+                            ? "bg-forest-500 dark:bg-forest-1000 visible"
+                            : "hover:bg-forest-500/10 invisible"
                         }
 
                       ${

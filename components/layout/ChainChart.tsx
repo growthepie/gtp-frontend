@@ -742,6 +742,9 @@ export default function ChainChart({
       panKey: "shift",
       zooming: {
         type: "x",
+        mouseWheel: {
+          enabled: false,
+        },
         resetButton: {
           theme: {
             zIndex: -10,
@@ -926,9 +929,9 @@ export default function ChainChart({
             [1, AllChainsByKeys[data[0].chain_id]?.colors[theme ?? "dark"][1]],
           ],
         },
-        borderColor:
-          AllChainsByKeys[data[0].chain_id].colors[theme ?? "dark"][0],
-        borderWidth: 1,
+        // borderColor:
+        //   AllChainsByKeys[data[0].chain_id].colors[theme ?? "dark"][0],
+        // borderWidth: 1,
       },
       series: {
         zIndex: 10,
@@ -1173,9 +1176,9 @@ export default function ChainChart({
                     "33",
                   width: 10,
                 },
-                borderColor:
-                  AllChainsByKeys[item.chain_id].colors[theme ?? "dark"][0],
-                borderWidth: 1,
+                // borderColor:
+                //   AllChainsByKeys[item.chain_id].colors[theme ?? "dark"][0],
+                // borderWidth: 1,
               },
               false,
             );

@@ -24,44 +24,47 @@ const EmbedContainer = ({ title, icon, url, time_frame, chart_type, aggregation,
   const queryTimespan = searchParams ? searchParams.get("timespan") : null;
 
   const timeframe_text = useMemo(() => {
-    let tf = queryTimespan ? queryTimespan : time_frame;
+    let tf = time_frame;
     if (queryZoomed && queryStartTimestamp && queryEndTimestamp)
       tf = `${new Date(Math.round(parseInt(queryStartTimestamp))).toLocaleDateString()} - ${new Date(Math.round(parseInt(queryEndTimestamp))).toLocaleDateString()}`;
     return tf;
   }, [queryTimespan, time_frame, queryZoomed, queryStartTimestamp, queryEndTimestamp]);
 
   return (
-    <div className="flex flex-col p-[15px] bg-white dark:bg-[#151A19] rounded-[40px]">
+    <div className="h-screen max-h-screen flex flex-col p-[15px] bg-white dark:bg-[#151A19] rounded-[40px] overflow-hidden">
       {title && (
-        <div className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-[#1F2726] rounded-full px-[5px]">
-          <div className="flex items-center px-[21px] py-[10px] gap-x-[8px]">
-            <div className="w-[40px] h-[40px]">
-              <Icon className="w-[40px] h-[40px] font-semibold" icon={icon} />
+        <div className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-[#1F2726] rounded-full  md:px-[5px]">
+          <div className="flex items-center px-[11px] py-[5px] md:px-[21px] md:py-[10px] gap-x-[8px]">
+            <div className="flex items-center w-[24px] h-[24px] md:w-[40px] md:h-[40px]">
+              <Icon className="w-[24px] h-[24px] md:w-[40px] md:h-[40px] font-semibold" icon={icon} />
             </div>
-            <div className="font-semibold text-[30px] leading-[120%]">{title}</div>
+            <div className="font-semibold text-[16px] md:text-[30px] leading-[120%]">{title}</div>
           </div>
           <div className="flex justify-end items-center p-[3px]">
-            <div className="font-normal bg-white dark:bg-[#151A19] px-[16px] py-[12px] text-[16px] rounded-full flex items-end gap-x-[5px] leading-[1]">
-              <div className="text-xs text-forest-400">Timeframe</div>
-              <div className="text-sm font-semibold">{timeframe_text}</div>
+            <div className="font-normal bg-white dark:bg-[#151A19] px-[8px] py-[6px] md:px-[16px] md:py-[12px] rounded-full flex items-end gap-x-[5px] leading-snug">
+              <div className="md:leading-[1.3] text-[10px] md:text-xs text-forest-400">Timeframe</div>
+              <div className="text-xs md:text-sm font-semibold">{timeframe_text}</div>
             </div>
           </div>
         </div>
       )}
-
-      {children}
-      <div className="flex justify-between items-center pl-[40px]">
-        <div className="flex items-center gap-x-[10px]">
-
+      <div className="w-full flex-1 h-[calc(100vh-110px)] md:h-[calc(100vh-210px)] pt-[50px] pb-[10px]">
+        {children}
+      </div>
+      <div className="flex justify-between items-end pl-[40px]">
+        <div className="flex flex-col justify-center items-start gap-x-[10px] text-[10px]">
+          <div className="flex gap-x-[5px]"><div className="text-forest-400">Chart Type</div><div className="capitalize">{chart_type}</div></div>
+          <div className="flex gap-x-[5px]"><div className="text-forest-400">Aggregation</div><div className="capitalize">{aggregation}</div></div>
         </div>
         <Link
           href={url}
           target="_blank"
           rel="noopener"
-          className="flex px-[20px] py-[12px] gap-x-[5px] items-center font-normal border-2 border-[#1F2726] dark:border-[#EAECEB] bg-white dark:bg-[#1F2726] text-[16px] leading-[150%] rounded-full"
+          className="flex px-[16px] py-[6px] md:px-[20px] md:py-[12px] gap-x-[0px] md:gap-x-[5px] items-center font-normal border md:border-2 border-[#1F2726] dark:border-[#EAECEB] bg-white dark:bg-[#1F2726] text-[12px] md:text-[16px] leading-[150%] rounded-full"
         >
-          <div>Latest data on</div>
-          <div className="relative w-[115.7px] h-[32px] pl-[8px] pr-[5px] pb-[8px]">
+          <div className="hidden md:block">Latest data on</div>
+          <div className="block md:hidden">More on</div>
+          <div className="relative w-[calc(115.7px/4*3)] h-[24px] md:w-[115.7px] md:h-[32px] pl-[8px] pr-[2.5px] pb-[4px] md:pl-[4px] md:pr-[5px] md:pb-[8px]">
             <div className="relative w-full h-full">
               <Image
                 src="/logo_full.png"
@@ -81,8 +84,8 @@ const EmbedContainer = ({ title, icon, url, time_frame, chart_type, aggregation,
               />
             </div>
           </div>
-          <div className="w-[24px] h-[24px]">
-            <Icon className="w-[24px] h-[24px] font-semibold" icon="feather:chevron-right" />
+          <div className="w-[20px] h-[20px] md:w-[24px] md:h-[24px]">
+            <Icon className="w-[20px] h-[20px] md:w-[24px] md:h-[24px] font-semibold" icon="feather:chevron-right" />
           </div>
         </Link>
       </div>
