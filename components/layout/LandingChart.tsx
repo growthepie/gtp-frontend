@@ -1308,7 +1308,7 @@ export default function LandingChart({
               //     ? EnabledChainsByKeys[series.name]?.colors[theme][0]
               //     : "transparent",
               // borderWidth: 1,
-              lineWidth: 2,
+              lineWidth: 1,
               ...(getSeriesType(series.name) !== "column"
                 ? {
                   shadow: {
