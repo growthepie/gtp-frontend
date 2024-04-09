@@ -37,6 +37,7 @@ export default function FeesPage() {
   });
   const [hoverBarIndex, setHoverBarIndex] = useState<Number | null>(null);
   const [selectedBarIndex, setSelectedBarIndex] = useState(23);
+
   const [sortOrder, setSortOrder] = useState(true);
   //True is default descending false ascending
   const { theme } = useTheme();
@@ -310,6 +311,8 @@ export default function FeesPage() {
     return sortedCosts;
   }, [feeData, showUsd, selectedQuantitative]);
 
+  const optIndex = 23 - (hoverBarIndex ? hoverBarIndex : selectedBarIndex);
+
   const [screenHeight, setScreenHeight] = useState(0);
 
   useLayoutEffect(() => {
@@ -378,6 +381,7 @@ export default function FeesPage() {
       .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
   };
 
+  console.log(master);
   return (
     <>
       {feeData && master && (
@@ -388,7 +392,8 @@ export default function FeesPage() {
         // }}
         >
           <Header />
-          <Container className="w-[820px]">
+
+          <Container className={`w-[820px] ${isMobile ? "hidden" : "block"}`}>
             <div className="flex px-[5px] items-center w-[820px] h-[54px] rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000]">
               <a
                 className="flex items-center w-[162px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-2 gap"
@@ -404,25 +409,28 @@ export default function FeesPage() {
           <Container className="w-full mt-[30px] ">
             <div className="flex w-full justify-between px-[10px] items-center ">
               <div
-                className={`text-[20px] font-bold ${
+                className={`flex text-[20px] font-bold items-center ${
                   isMobile ? "w-full " : "w-auto"
                 }`}
               >
-                {isMobile
-                  ? "Cost of using Layer-2s"
-                  : "Cost of using Ethereum Layer-2s"}
+                How much a typical user paid{" "}
+                <div className="w-[92px] h-[26px] flex items-center justify-center border-[#344240] border-[1.5px] bg-[#1F2726] text-[12px] ml-1 rounded-r-full">
+                  {24 - selectedBarIndex === 1
+                    ? "1 Hour Ago"
+                    : `${24 - selectedBarIndex} hours ago`}
+                </div>
               </div>
               <div className="w-[165px] h-[25px] flex bg-transparent px-0.5 items-center justify-between pr-[2px] rounded-full "></div>
             </div>
           </Container>
           <Container
-            className={`transition-all duration-300 ${
+            className={`transition-all duration-300 overflow-x-scroll ${
               isChartOpen ? "pb-[235px]" : "pb-[20px]"
             }`}
           >
             <div className="relative">
               <div
-                className={`w-[820px] mt-[8px] flex h-[26px] justify-start mb-1 text-[12px] font-bold ${
+                className={`w-[800px] mt-[8px] flex h-[26px] justify-start mb-1 text-[12px] font-bold ${
                   isMobile ? "pl-[32px]" : "pl-[42px]"
                 }`}
               >
@@ -522,7 +530,7 @@ export default function FeesPage() {
                 </div>
                 <div
                   className={`flex items-center justify-end gap-x-0.5  hover:cursor-pointer ${
-                    isMobile ? "w-[13%]" : "w-[16%]"
+                    isMobile ? "w-[12%]" : "w-[16%]"
                   }`}
                   onClick={() => {
                     if (selectedQuantitative === "txcosts_native_median") {
@@ -556,7 +564,11 @@ export default function FeesPage() {
                   />{" "}
                 </div>
                 <div
-                  className="flex items-center justify-end gap-x-0.5 w-[13.5%] mr-[28.5px] sm:mr-[9.5px] hover:cursor-pointer "
+                  className={`flex items-center justify-end gap-x-0.5   hover:cursor-pointer ${
+                    isMobile
+                      ? "w-[11%]  mr-[5px]"
+                      : "w-[13.5%] mr-[23.5px] sm:mr-[5px]"
+                  }`}
                   onClick={() => {
                     if (selectedQuantitative === "txcosts_swap") {
                       if (selectedQualitative) {
@@ -598,7 +610,7 @@ export default function FeesPage() {
                   >
                     hourly
                   </div>
-                  <div className="flex space-x-[1px] ml-[2px] items-end">
+                  <div className="flex space-x-[1px] items-end">
                     {Array.from({ length: 24 }, (_, index) => (
                       <div
                         key={index.toString() + "columns"}
@@ -628,14 +640,14 @@ export default function FeesPage() {
                   return (
                     <div
                       key={index}
-                      className={`border-forest-700 border-[1px] mb-1 w-[820px] rounded-full border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] flex items-center relative 
-                      ${isMobile ? "text-[12px]" : "text-[14px]"}`}
+                      className={`border-forest-700 border-[1px] mb-1  rounded-full border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] flex items-center relative 
+                      ${
+                        isMobile
+                          ? "text-[12px] w-[600px]"
+                          : "text-[14px] w-[800px]"
+                      }`}
                     >
-                      <div
-                        className={`flex items-center h-full ${
-                          isMobile ? "w-[3%]" : "w-[4%]"
-                        }`}
-                      >
+                      <div className={`flex items-center h-full w-[4%] `}>
                         <Icon
                           icon={`gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome`}
                           className={`${
@@ -648,7 +660,7 @@ export default function FeesPage() {
                       </div>
                       <div
                         className={`flex justify-start items-center h-full ${
-                          isMobile ? "w-[15%]" : "w-[33%]"
+                          isMobile ? "w-[23%]" : "w-[33%]"
                         }`}
                       >
                         <div className="mr-[5px]">
@@ -759,27 +771,22 @@ export default function FeesPage() {
                           ${
                             feeData.chain_data[chain]["hourly"][
                               "txcosts_median"
-                            ].data[23 - selectedBarIndex]
+                            ].data[optIndex]
                               ? "opacity-100"
                               : "opacity-50"
                           }`}
                           style={{
-                            borderColor: !feeIndexSort[23 - selectedBarIndex][
-                              chain
-                            ]
+                            borderColor: !feeIndexSort[optIndex][chain]
                               ? "gray"
                               : getGradientColor(
                                   Math.floor(
-                                    (feeIndexSort[23 - selectedBarIndex][chain][
+                                    (feeIndexSort[optIndex][chain][
                                       showUsd ? 2 : 1
                                     ] /
-                                      feeIndexSort[23 - selectedBarIndex][
-                                        Object.keys(
-                                          feeIndexSort[23 - selectedBarIndex],
-                                        )[
-                                          Object.keys(
-                                            feeIndexSort[23 - selectedBarIndex],
-                                          ).length - 1
+                                      feeIndexSort[optIndex][
+                                        Object.keys(feeIndexSort[optIndex])[
+                                          Object.keys(feeIndexSort[optIndex])
+                                            .length - 1
                                         ]
                                       ][showUsd ? 2 : 1]) *
                                       100,
@@ -790,28 +797,21 @@ export default function FeesPage() {
                           {`${
                             feeData.chain_data[chain]["hourly"][
                               "txcosts_median"
-                            ].data[23 - selectedBarIndex]
+                            ].data[optIndex]
                               ? showUsd
                                 ? "$"
                                 : "Ξ"
                               : ""
                           }`}
                           {feeData.chain_data[chain]["hourly"]["txcosts_median"]
-                            .data[23 - selectedBarIndex]
+                            .data[optIndex]
                             ? Intl.NumberFormat(undefined, {
                                 notation: "compact",
-                                maximumFractionDigits: showUsd
-                                  ? feeData.chain_data[chain]["hourly"]
-                                      .txcosts_median.data[
-                                      23 - selectedBarIndex
-                                    ][showUsd ? 2 : 1] < 0.01
-                                    ? 3
-                                    : 3
-                                  : 5,
+                                maximumFractionDigits: 3,
                                 minimumFractionDigits: 0,
                               }).format(
                                 feeData.chain_data[chain]["hourly"]
-                                  .txcosts_median.data[23 - selectedBarIndex][
+                                  .txcosts_median.data[optIndex][
                                   showUsd ? 2 : 1
                                 ],
                               )
@@ -819,8 +819,8 @@ export default function FeesPage() {
                         </div>
                       </div>
                       <div
-                        className={`h-full  flex justify-end items-center ${
-                          isMobile ? "w-[9.5%]" : "w-[12.5%]"
+                        className={`h-full  flex justify-end items-center  ${
+                          isMobile ? "w-[13.5%]" : "w-[12.5%]"
                         }`}
                       >
                         <div
@@ -831,27 +831,22 @@ export default function FeesPage() {
                           } ${
                             feeData.chain_data[chain]["hourly"][
                               "txcosts_native_median"
-                            ].data[23 - selectedBarIndex]
+                            ].data[optIndex]
                               ? "opacity-100"
                               : "opacity-50"
                           }`}
                           style={{
-                            borderColor: !feeIndexSort[23 - selectedBarIndex][
-                              chain
-                            ]
+                            borderColor: !feeIndexSort[optIndex][chain]
                               ? "gray"
                               : getGradientColor(
                                   Math.floor(
-                                    (feeIndexSort[23 - selectedBarIndex][chain][
+                                    (feeIndexSort[optIndex][chain][
                                       showUsd ? 2 : 1
                                     ] /
-                                      feeIndexSort[23 - selectedBarIndex][
-                                        Object.keys(
-                                          feeIndexSort[23 - selectedBarIndex],
-                                        )[
-                                          Object.keys(
-                                            feeIndexSort[23 - selectedBarIndex],
-                                          ).length - 1
+                                      feeIndexSort[optIndex][
+                                        Object.keys(feeIndexSort[optIndex])[
+                                          Object.keys(feeIndexSort[optIndex])
+                                            .length - 1
                                         ]
                                       ][showUsd ? 2 : 1]) *
                                       100,
@@ -862,7 +857,7 @@ export default function FeesPage() {
                           {`${
                             feeData.chain_data[chain]["hourly"][
                               "txcosts_native_median"
-                            ].data[23 - selectedBarIndex]
+                            ].data[optIndex]
                               ? showUsd
                                 ? "$"
                                 : "Ξ"
@@ -870,28 +865,23 @@ export default function FeesPage() {
                           }`}
                           {feeData.chain_data[chain]["hourly"][
                             "txcosts_native_median"
-                          ].data[23 - selectedBarIndex]
+                          ].data[optIndex]
                             ? Intl.NumberFormat(undefined, {
                                 notation: "compact",
-                                maximumFractionDigits: showUsd
-                                  ? feeData.chain_data[chain]["hourly"][
-                                      "txcosts_native_median"
-                                    ].data[23 - selectedBarIndex][
-                                      showUsd ? 2 : 1
-                                    ] < 0.01
-                                    ? 3
-                                    : 3
-                                  : 5,
+                                maximumFractionDigits: 3,
                                 minimumFractionDigits: 0,
                               }).format(
                                 feeData.chain_data[chain]["hourly"][
                                   "txcosts_native_median"
-                                ].data[23 - selectedBarIndex][showUsd ? 2 : 1],
+                                ].data[optIndex][showUsd ? 2 : 1],
                               )
                             : "N/A"}
                         </div>
                       </div>
-                      <div className="h-full w-[13%] flex justify-end items-center mr-[10px]">
+                      <div
+                        className={`h-full  flex justify-end items-center mr-[12px]
+                      ${isMobile ? "w-[15%]" : "w-[13%]"}`}
+                      >
                         <div
                           className={`px-[8px] w-[75px] justify-center rounded-full flex items-center ${
                             selectedQuantitative === "txcosts_swap"
@@ -904,22 +894,17 @@ export default function FeesPage() {
                               : "opacity-50"
                           }`}
                           style={{
-                            borderColor: !feeIndexSort[23 - selectedBarIndex][
-                              chain
-                            ]
+                            borderColor: !feeIndexSort[optIndex][chain]
                               ? "gray"
                               : getGradientColor(
                                   Math.floor(
-                                    (feeIndexSort[23 - selectedBarIndex][chain][
+                                    (feeIndexSort[optIndex][chain][
                                       showUsd ? 2 : 1
                                     ] /
-                                      feeIndexSort[23 - selectedBarIndex][
-                                        Object.keys(
-                                          feeIndexSort[23 - selectedBarIndex],
-                                        )[
-                                          Object.keys(
-                                            feeIndexSort[23 - selectedBarIndex],
-                                          ).length - 1
+                                      feeIndexSort[optIndex][
+                                        Object.keys(feeIndexSort[optIndex])[
+                                          Object.keys(feeIndexSort[optIndex])
+                                            .length - 1
                                         ]
                                       ][showUsd ? 2 : 1]) *
                                       100,
@@ -936,28 +921,20 @@ export default function FeesPage() {
                               : ""
                           }`}
                           {feeData.chain_data[chain]["hourly"]["txcosts_swap"]
-                            .data[23 - selectedBarIndex]
+                            .data[optIndex]
                             ? Intl.NumberFormat(undefined, {
                                 notation: "compact",
-                                maximumFractionDigits: showUsd
-                                  ? feeData.chain_data[chain]["hourly"][
-                                      "txcosts_swap"
-                                    ].data[23 - selectedBarIndex][
-                                      showUsd ? 2 : 1
-                                    ] < 0.01
-                                    ? 3
-                                    : 3
-                                  : 5,
+                                maximumFractionDigits: 3,
                                 minimumFractionDigits: 0,
                               }).format(
                                 feeData.chain_data[chain]["hourly"][
                                   "txcosts_swap"
-                                ].data[23 - selectedBarIndex][showUsd ? 2 : 1],
+                                ].data[optIndex][showUsd ? 2 : 1],
                               )
                             : "N/A"}
                         </div>
                       </div>
-                      <div className="relative w-[19%] flex items-center justify-end h-full space-x-[1px]">
+                      <div className="relative flex items-center justify-end h-full space-x-[1px]">
                         {Array.from({ length: 24 }, (_, index) => (
                           <div
                             key={index.toString() + "circles"}
@@ -1030,7 +1007,7 @@ export default function FeesPage() {
             }`}
           >
             <div
-              className={`border-forest-700 w-[835px] border-[1px] rounded-full border-black/[16%] dark:border-forest-50 h-[34px] pl-[10px] flex items-center  sticky bottom-0 bg-forest-900 shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_20px_0px_#000000]
+              className={`border-forest-700 w-[815px] border-[1px] rounded-full border-black/[16%] dark:border-forest-50 h-[34px] pl-[10px] flex items-center  sticky bottom-0 bg-forest-900 shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_20px_0px_#000000]
             ${isMobile ? "text-[12px]" : "text-[14px]"}`}
             >
               <div
@@ -1061,7 +1038,7 @@ export default function FeesPage() {
                   selectedQuantitative === "txcosts_median"
                     ? "text-black"
                     : "text-inherit"
-                } ${isMobile ? "w-[8%]" : "w-[13.5%]"}`}
+                } ${isMobile ? "w-[10%]" : "w-[13.5%]"}`}
               >
                 <div
                   className={`px-[8px] text-center justify-center rounded-full flex items-center
@@ -1080,7 +1057,7 @@ export default function FeesPage() {
                 >
                   {`${
                     feeData.chain_data["ethereum"]["hourly"].txcosts_median
-                      .data[0]
+                      .data[optIndex]
                       ? showUsd
                         ? "$"
                         : "Ξ"
@@ -1088,16 +1065,11 @@ export default function FeesPage() {
                   }`}
                   {Intl.NumberFormat(undefined, {
                     notation: "compact",
-                    maximumFractionDigits: showUsd
-                      ? feeData.chain_data["ethereum"]["hourly"].txcosts_median
-                          .data[0][showUsd ? 2 : 1] < 0.01
-                        ? 3
-                        : 3
-                      : 5,
+                    maximumFractionDigits: 3,
                     minimumFractionDigits: 0,
                   }).format(
                     feeData.chain_data["ethereum"]["hourly"].txcosts_median
-                      .data[0][showUsd ? 2 : 1],
+                      .data[optIndex][showUsd ? 2 : 1],
                   )}
                 </div>
               </div>
@@ -1126,21 +1098,15 @@ export default function FeesPage() {
                   }`}
                   {feeData.chain_data["ethereum"]["hourly"][
                     "txcosts_native_median"
-                  ].data[0]
+                  ].data[optIndex]
                     ? Intl.NumberFormat(undefined, {
                         notation: "compact",
-                        maximumFractionDigits: showUsd
-                          ? feeData.chain_data["ethereum"]["hourly"][
-                              "txcosts_native_median"
-                            ].data[0][showUsd ? 2 : 1] < 0.01
-                            ? 3
-                            : 3
-                          : 5,
+                        maximumFractionDigits: 3,
                         minimumFractionDigits: 0,
                       }).format(
                         feeData.chain_data["ethereum"]["hourly"][
                           "txcosts_native_median"
-                        ].data[0][showUsd ? 2 : 1],
+                        ].data[optIndex][showUsd ? 2 : 1],
                       )
                     : "N/A"}
                 </div>
@@ -1172,26 +1138,20 @@ export default function FeesPage() {
                       : ""
                   }`}
                   {feeData.chain_data["ethereum"]["hourly"]["txcosts_swap"]
-                    .data[0]
+                    .data[optIndex]
                     ? Intl.NumberFormat(undefined, {
                         notation: "compact",
-                        maximumFractionDigits: showUsd
-                          ? feeData.chain_data["ethereum"]["hourly"][
-                              "txcosts_swap"
-                            ].data[0][showUsd ? 2 : 1] < 0.01
-                            ? 3
-                            : 3
-                          : 5,
+                        maximumFractionDigits: 3,
                         minimumFractionDigits: 0,
                       }).format(
                         feeData.chain_data["ethereum"]["hourly"]["txcosts_swap"]
-                          .data[0][showUsd ? 2 : 1],
+                          .data[optIndex][showUsd ? 2 : 1],
                       )
                     : "N/A"}
                 </div>
               </div>
               <div className="relative  w-[19%] flex flex-col h-full space-x-[1px]">
-                <div className="flex w-full items-center justify-end h-full space-x-[1px] ml-2.5 ">
+                <div className="flex w-full items-center justify-end h-full space-x-[1px] ml-2 ">
                   {Array.from({ length: 24 }, (_, index) => (
                     <div
                       key={index.toString() + "ethcircles"}
