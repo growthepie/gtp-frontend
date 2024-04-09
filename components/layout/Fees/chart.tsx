@@ -353,7 +353,7 @@ export default function FeesChart({
                   borderColor:
                     AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0],
                   borderWidth: s.lineWidth === undefined ? 1 : s.lineWidth,
-                  lineWidth: s.lineWidth === undefined ? 2 : s.lineWidth,
+                  lineWidth: s.lineWidth === undefined ? 1 : s.lineWidth,
                 }),
               },
               false,
@@ -505,6 +505,9 @@ export default function FeesChart({
       animation: true,
       zooming: {
         type: "x",
+        mouseWheel: {
+          enabled: false,
+        },
         resetButton: {
           position: {
             x: 0,

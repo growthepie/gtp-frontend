@@ -19,6 +19,16 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 const Chain = ({ params }: { params: any }) => {
   const searchParams = useSearchParams();
   const queryTheme = searchParams ? searchParams.get("theme") : null;
+  const queryTimespan = searchParams ? searchParams.get("timespan") : null;
+  const queryStartTimestamp = searchParams ? searchParams.get("startTimestamp") : null;
+  const queryEndTimestamp = searchParams ? searchParams.get("endTimestamp") : null;
+  const queryScale = searchParams ? searchParams.get("scale") : null;
+  const queryZoomed = searchParams ? searchParams.get("zoomed") : null;
+  const queryInterval = searchParams ? searchParams.get("interval") : null;
+  const queryShowMainnet = searchParams ? searchParams.get("showMainnet") : null;
+  // chains query is an array of chains to display
+  const queryChains = searchParams ? searchParams.get("chains") : null;
+
   const { theme, setTheme } = useTheme();
   useLayoutEffect(() => {
     setTimeout(() => {
@@ -63,24 +73,39 @@ const Chain = ({ params }: { params: any }) => {
     icon: "",
   };
 
-  const selectedChains = AllChains.filter(
-    (chain) =>
-      (chain.ecosystem.includes("all-chains") &&
-        ["arbitrum", "optimism", "base", "linea", "zksync_era"].includes(
-          chain.key,
-        )) ||
-      chain.key === "ethereum",
-  ).map((chain) => chain.key);
+  // const selectedChains = AllChains.filter(
+  //   (chain) =>
+  //     (chain.ecosystem.includes("all-chains") &&
+  //       ["arbitrum", "optimism", "base", "linea", "zksync_era"].includes(
+  //         chain.key,
+  //       )) ||
+  //     chain.key === "ethereum",
+  // ).map((chain) => chain.key);
+
+  const selectedChains = useMemo(() => {
+    if (!queryChains) {
+      return AllChains.filter(
+        (chain) =>
+          (chain.ecosystem.includes("all-chains") &&
+            ["arbitrum", "optimism", "base", "linea", "zksync_era"].includes(
+              chain.key,
+            )) ||
+          chain.key === "ethereum",
+      ).map((chain) => chain.key);
+    }
+
+    return queryChains;
+  }, [queryChains]);
 
   const [selectedScale, setSelectedScale] = useState(
-    params.metric != "transaction-costs" ? "log" : "absolute",
+    queryScale ? queryScale : params.metric != "transaction-costs" ? "stacked" : "absolute",
   );
 
-  const [selectedTimespan, setSelectedTimespan] = useState("365d");
+  const [selectedTimespan, setSelectedTimespan] = useState(queryTimespan ?? "365d");
 
-  const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
+  const [selectedTimeInterval, setSelectedTimeInterval] = useState(queryInterval ?? "daily");
 
-  const [showEthereumMainnet, setShowEthereumMainnet] = useState(false);
+  const [showEthereumMainnet, setShowEthereumMainnet] = useState(queryShowMainnet === "true");
 
   const timeIntervalKey = useMemo(() => {
     if (
@@ -137,11 +162,14 @@ const Chain = ({ params }: { params: any }) => {
           setSelectedScale={setSelectedScale}
           monthly_agg={metricData.data.monthly_agg}
           is_embed={true}
+          embed_start_timestamp={queryStartTimestamp ? parseInt(queryStartTimestamp) : undefined}
+          embed_end_timestamp={queryEndTimestamp ? parseInt(queryEndTimestamp) : undefined}
+          embed_zoomed={queryZoomed === "true"}
         >
           <MetricsTable
             data={metricData.data.chains}
             selectedChains={selectedChains}
-            setSelectedChains={() => {}}
+            setSelectedChains={() => { }}
             chainKeys={chainKeys}
             metric_id={metricData.data.metric_id}
             showEthereumMainnet={showEthereumMainnet}

@@ -1,5 +1,14 @@
 'use client';
-import { createContext, useContext, useState, useMemo, useEffect, useLayoutEffect } from "react";
+import { createContext, useContext, useState, useMemo, useEffect, useLayoutEffect, useRef } from "react";
+
+export type EmbedData = {
+  width: number;
+  height: number;
+  src: string;
+  title: string;
+  timeframe: "absolute" | "relative";
+  zoomed?: boolean;
+};
 
 type UIContextState = {
   isSidebarOpen: boolean;
@@ -7,6 +16,8 @@ type UIContextState = {
   isMobileSidebarOpen: boolean;
   toggleSidebar: () => void;
   toggleMobileSidebar: () => void;
+  embedData: EmbedData;
+  setEmbedData: (embedData: EmbedData | ((prevEmbedData: EmbedData) => EmbedData)) => void;
   isSafariBrowser: boolean;
 };
 
@@ -16,6 +27,8 @@ const UIContext = createContext<UIContextState>({
   isMobileSidebarOpen: false,
   toggleSidebar: () => { },
   toggleMobileSidebar: () => { },
+  embedData: { width: 945, height: 638, src: "", title: "", timeframe: "absolute" },
+  setEmbedData: () => { },
   isSafariBrowser: false,
 });
 
@@ -28,63 +41,82 @@ export const UIContextProvider = ({ children }) => {
     isMobileSidebarOpen: false,
     toggleSidebar: () => { },
     toggleMobileSidebar: () => { },
+    embedData: { width: 945, height: 638, src: "", title: "", timeframe: "absolute" },
+    setEmbedData: () => { },
     isSafariBrowser: false,
   });
 
-  const value = useMemo<UIContextState>(() => {
-    const toggleSidebar = () =>
-      setState({
-        ...state,
-        isSidebarOpen: !state.isSidebarOpen,
-      });
+  const prevWindowWidthRef = useRef(typeof window !== 'undefined' ? window.innerWidth : 0);
 
-    const toggleMobileSidebar = () =>
-      setState({
-        ...state,
-        isMobileSidebarOpen: !state.isMobileSidebarOpen,
-      });
+  const setEmbedData = (newEmbedData: EmbedData | ((prevEmbedData: EmbedData) => EmbedData)) => {
+    setState((prevState) => ({
+      ...prevState,
+      embedData: typeof newEmbedData === 'function' ? newEmbedData(prevState.embedData) : newEmbedData,
+    }));
+  }
 
-    return {
-      ...state,
-      toggleSidebar,
-      toggleMobileSidebar,
-    };
-  }, [state]);
+
+
 
   useEffect(() => {
-    //prevent scrolling on mobile when sidebar is open
+    // This effect will run only in the browser, where window is defined.
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const isMobileSize = window.innerWidth < 768;
+
+
+
+    setState(prevState => ({
+      ...prevState,
+      isSafariBrowser: isSafari,
+      isSidebarOpen: window.innerWidth >= 1280,
+      isMobile: isMobileSize,
+      lastWindowWidth: window.innerWidth,
+    }));
+
+    // Handle resize events
+    const updateSize = () => {
+      const currentWidth = window.innerWidth;
+      const isExpanding = currentWidth > prevWindowWidthRef.current;
+      setState(prevState => ({
+        ...prevState,
+        isSidebarOpen: !state.isSidebarOpen && currentWidth >= 1280 && !isExpanding ? false : currentWidth >= 1280,
+        isMobile: window.innerWidth < 768,
+      }));
+
+      prevWindowWidthRef.current = currentWidth;
+    };
+
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+
+  useEffect(() => {
     if (state.isMobileSidebarOpen && state.isMobile) {
-      document.body.style.overflowY = "hidden !important";
+      document.body.style.overflowY = "hidden";
     } else {
       document.body.style.overflowY = "auto";
     }
-  }, [state.isMobileSidebarOpen]);
+  }, [state.isMobileSidebarOpen, state.isMobile]);
+
+  const toggleSidebar = () => setState(prevState => ({ ...prevState, isSidebarOpen: !prevState.isSidebarOpen }));
+  const toggleMobileSidebar = () => setState(prevState => ({ ...prevState, isMobileSidebarOpen: !prevState.isMobileSidebarOpen }));
+
+  const contextValue = {
+    ...state,
+    toggleSidebar,
+    toggleMobileSidebar,
+    setEmbedData,
+  };
 
   useEffect(() => {
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    // Checking whether we're in the browser
+    const isSafari = typeof navigator !== 'undefined' ? /^((?!chrome|android).)*safari/i.test(navigator.userAgent) : false;
 
-    setState({
-      ...state,
+    setState(prevState => ({
+      ...prevState,
       isSafariBrowser: isSafari,
-    });
-
-    const updateSize = () => {
-      const isMobileSize = window.innerWidth < 768;
-
-      if (!isMobileSize) {
-        document.body.style.overflowY = "auto";
-      }
-
-      setState({
-        ...state,
-        isSidebarOpen: window.innerWidth >= 1280,
-        isMobile: isMobileSize,
-      });
-    };
-    window.addEventListener("resize", updateSize);
-    updateSize();
-    return () => window.removeEventListener("resize", updateSize);
+    }));
   }, []);
 
-  return <UIContext.Provider value={value}>{children}</UIContext.Provider>;
+  return <UIContext.Provider value={contextValue}>{children}</UIContext.Provider>;
 };

@@ -30,6 +30,7 @@ export interface ChainInfo {
   description: string;
   symbol: string;
   bucket: string;
+  da_layer: string;
   technology: string;
   purpose: string;
   launch_date: string;

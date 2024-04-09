@@ -1,0 +1,45 @@
+.background-container {
+  @apply bg-white dark:bg-[#151a19];
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: -11;
+  overflow: hidden;
+}
+
+.background-gradient-group {
+  @apply hidden dark:block relative;
+  content: "";
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+.background-gradient-green {
+  background: radial-gradient(
+    ellipse at max(93.6vw) max(391.6px, 37vh),
+    rgba(13, 246, 185, 0.8) 0%,
+    rgba(13, 246, 185, 0.2) 30%,
+    rgba(255, 255, 255, 0.1) 40%,
+    rgba(255, 255, 255, 0) 65%
+  );
+  /*width: max(1591px, 100.2vw);*/
+  width: max(100.2vw);
+  height: max(1003px, 71.3vh);
+  z-index: -9;
+}
+
+.background-gradient-yellow {
+  @apply absolute;
+  background: radial-gradient(
+    ellipse at max(66.5vw) max(379.5px, 35.8vh),
+    rgba(251, 185, 13, 0.8) 0%,
+    rgba(251, 185, 13, 0.3) 25%,
+    rgba(255, 255, 255, 0.1) 40%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  width: max(100.2vw);
+  height: max(755px, 71.3vh);
+  z-index: -10;
+}

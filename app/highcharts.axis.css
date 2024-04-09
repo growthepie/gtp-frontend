@@ -1,0 +1,33 @@
+.highcharts-tick {
+  stroke-dasharray: 0 10 15;
+}
+/*
+.highcharts-axis-labels text {
+  text-anchor: middle !important;
+}
+
+.highcharts-xaxis-labels text:first-child {
+  text-anchor: start !important;
+}
+
+.highcharts-xaxis-labels text:last-child {
+  text-anchor: end !important;
+}
+*/
+
+.highcharts-axis-labels span,
+.highcharts-axis-labels text {
+  @apply !font-raleway;
+}
+
+.highcharts-axis-labels .year-label {
+  font-size: 20px !important;
+}
+
+.highcharts-column-series path {
+  /* filter: drop-shadow(0px 0px 1px #cdd8d3);
+  border-radius: 5px 5px 0px 0px; */
+  opacity: 0.9;
+  /* filter: drop-shadow(0px 0px 1px #cdd8d3); */
+  /* filter: box-shadow(0px 0px 2px #cdd8d3); */
+}
