@@ -8,7 +8,7 @@ export const MetricsURLs = {
   "transaction-costs": "https://api.growthepie.xyz/v1/metrics/txcosts.json",
   "rent-paid": "https://api.growthepie.xyz/v1/metrics/rent_paid.json",
   profit: "https://api.growthepie.xyz/v1/metrics/profit.json",
-  fdv: "https://api.growthepie.xyz/v1/metrics/fdv.json",
+  "fully-diluted-valuation": "https://api.growthepie.xyz/v1/metrics/fdv.json",
   "market-cap": "https://api.growthepie.xyz/v1/metrics/market_cap.json",
 };
 
@@ -29,6 +29,8 @@ export const ChainURLs = {
   loopring: "https://api.growthepie.xyz/v1/chains/loopring.json",
   rhino: "https://api.growthepie.xyz/v1/chains/rhino.json",
   metis: "https://api.growthepie.xyz/v1/chains/metis.json",
+  manta: "https://api.growthepie.xyz/v1/chains/manta.json",
+  blast: "https://api.growthepie.xyz/v1/chains/blast.json",
 };
 
 export const BlockspaceURLs = {
@@ -56,6 +58,8 @@ export const ChainBlockspaceURLs = {
   loopring: "https://api.growthepie.xyz/v1/chains/blockspace/loopring.json",
   rhino: "https://api.growthepie.xyz/v1/chains/blockspace/rhino.json",
   metis: "https://api.growthepie.xyz/v1/chains/blockspace/metis.json",
+  manta: "https://api.growthepie.xyz/v1/chains/blockspace/manta.json",
+  blast: "https://api.growthepie.xyz/v1/chains/blockspace/blast.json",
 };
 
 export const LandingURL = "https://api.growthepie.xyz/v1/landing_page.json";

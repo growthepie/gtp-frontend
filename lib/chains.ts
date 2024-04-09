@@ -410,6 +410,50 @@ export const AllChains: Chain[] = [
     darkTextOnBackground: false,
   },
   {
+    label: "Manta",
+    icon: "/icons/manta.png",
+    key: "manta",
+    urlKey: "manta",
+    chainType: "L2",
+    ecosystem: ["all-chains"], // add ecosystems when unhiding from the UI
+    description: "",
+    border: {
+      light: ["border-[#FB4FF2]", "border-[#FB4FF2]"],
+      dark: ["border-[#FB4FF2]", "border-[#FB4FF2]"],
+    },
+    colors: {
+      light: ["#FB4FF2", "#FB4FF2"], // dark greenish
+      dark: ["#FB4FF2", "#FB4FF2"], // dark greenish
+    },
+    backgrounds: {
+      light: ["bg-[#FB4FF2]", "bg-[#FB4FF2]"],
+      dark: ["bg-[#FB4FF2]", "bg-[#FB4FF2]"],
+    },
+    darkTextOnBackground: false,
+  },
+  {
+    label: "Blast",
+    icon: "/icons/blast.png",
+    key: "blast",
+    urlKey: "blast",
+    chainType: "L2",
+    ecosystem: ["all-chains"], // add ecosystems when unhiding from the UI
+    description: "",
+    border: {
+      light: ["border-[#E9E238]", "border-[#E9E238]"],
+      dark: ["border-[#FEFF00]", "border-[#FEFF00]"],
+    },
+    colors: {
+      light: ["#E9E238", "#E9E238"], // dark greenish
+      dark: ["#FEFF00", "#FEFF00"], // dark greenish
+    },
+    backgrounds: {
+      light: ["bg-[#E9E238]", "bg-[#E9E238]"],
+      dark: ["bg-[#FEFF00]", "bg-[#FEFF00]"],
+    },
+    darkTextOnBackground: true,
+  },
+  {
     label: "Multiple Chains",
     icon: null,
     key: "multiple",

@@ -224,9 +224,9 @@ export const navigationItems: NavigationItem[] = [
           showGwei: false,
         },
         icon: "gtp:transaction-costs",
-        key: "fdv",
-        rootKey: "fullyDilutedValue",
-        urlKey: "fdv",
+        key: "fully-diluted-valuation",
+        rootKey: "metricsFullyDilutedValuation",
+        urlKey: "fully-diluted-valuation",
       },
       {
         label: "Market Cap",
@@ -544,6 +544,28 @@ export const navigationItems: NavigationItem[] = [
         key: "metis",
         rootKey: "chainsMetis",
         urlKey: "metis",
+      },
+      {
+        label: "Manta Pacific",
+        page: {
+          description:
+            "Manta Pacific is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in September 2023.",
+        },
+        icon: "gtp:manta-logo-monochrome",
+        key: "manta",
+        rootKey: "chainsManta",
+        urlKey: "manta",
+      },
+      {
+        label: "Blast",
+        page: {
+          description:
+            "Blast is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in February 2024.",
+        },
+        icon: "gtp:blast-logo-monochrome",
+        key: "blast",
+        rootKey: "chainsBlast",
+        urlKey: "blast",
       },
     ],
   },

@@ -341,6 +341,9 @@ export const baseOptions: any = {
     plotBorderColor: "transparent",
     showAxes: false,
     zooming: {
+      mouseWheel: {
+        enabled: false,
+      },
       resetButton: {
         theme: {
           zIndex: -10,
