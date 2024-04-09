@@ -102,6 +102,13 @@ export default function FeesPage() {
           label: "Blobs",
         });
       }
+
+      if (x.includes("MantleDA")) {
+        retObject.push({
+          icon: "customoffchain",
+          label: "MantleDA",
+        });
+      }
     }
     return retObject;
   }
@@ -118,65 +125,70 @@ export default function FeesPage() {
     error: feeError,
     isLoading: feeLoading,
     isValidating: feeValidating,
-  } = useSWR("https://api.growthepie.xyz/v1/fees.json");
+  } = useSWR("https://api.growthepie.xyz/v1/fees/table.json");
 
   const sortByChains = useMemo(() => {
     if (!feeData) return [];
 
-    const sortedChains = Object.keys(feeData.chain_data).sort((a, b) => {
-      const isSelectedA = selectedChains[a];
-      const isSelectedB = selectedChains[b];
+    const sortedChains = Object.keys(feeData.chain_data)
+      .filter((chain) => chain !== "ethereum") // Exclude "ethereum"
+      .sort((a, b) => {
+        const isSelectedA = selectedChains[a];
+        const isSelectedB = selectedChains[b];
 
-      // If sortOrder is false, reverse the comparison
-      const comparison = sortOrder ? 1 : -1;
+        // If sortOrder is false, reverse the comparison
+        const comparison = sortOrder ? 1 : -1;
 
-      // Compare chain names alphabetically
-      const chainNameComparison = a.localeCompare(b);
+        // Compare chain names alphabetically
+        const chainNameComparison = a.localeCompare(b);
 
-      // If both chains are selected or unselected, sort by chain name
-      if (isSelectedA === isSelectedB) {
-        return chainNameComparison * comparison;
-      }
+        // If both chains are selected or unselected, sort by chain name
+        if (isSelectedA === isSelectedB) {
+          return chainNameComparison * comparison;
+        }
 
-      // Prioritize selected chains
-      return isSelectedA ? -1 : 1;
-    });
+        // Prioritize selected chains
+        return isSelectedA ? -1 : 1;
+      });
 
     return sortedChains;
   }, [feeData, selectedChains, sortOrder]);
 
   const sortByCallData = useMemo(() => {
     if (!feeData || !master) return [];
-    const sortedChains = Object.keys(feeData.chain_data).sort((a, b) => {
-      const availabilityA = dataAvailToArray(master.chains[a].da_layer);
-      const availabilityB = dataAvailToArray(master.chains[b].da_layer);
 
-      // Check if availabilityA or availabilityB contains selectedAvailability
-      const containsAvailabilityA = availabilityA.some(
-        (item) => item.icon === selectedAvailability,
-      );
-      const containsAvailabilityB = availabilityB.some(
-        (item) => item.icon === selectedAvailability,
-      );
+    const sortedChains = Object.keys(feeData.chain_data)
+      .filter((chain) => chain !== "ethereum") // Exclude "ethereum"
+      .sort((a, b) => {
+        const availabilityA = dataAvailToArray(master.chains[a].da_layer);
+        const availabilityB = dataAvailToArray(master.chains[b].da_layer);
 
-      // Check isSelected for chains a and b
-      const isSelectedA = selectedChains[a];
-      const isSelectedB = selectedChains[b];
+        // Check if availabilityA or availabilityB contains selectedAvailability
+        const containsAvailabilityA = availabilityA.some(
+          (item) => item.icon === selectedAvailability,
+        );
+        const containsAvailabilityB = availabilityB.some(
+          (item) => item.icon === selectedAvailability,
+        );
 
-      // Sort based on availability and isSelected
-      if (isSelectedA && !isSelectedB) {
-        return -1;
-      } else if (!isSelectedA && isSelectedB) {
-        return 1;
-      } else if (containsAvailabilityA && !containsAvailabilityB) {
-        return -1;
-      } else if (!containsAvailabilityA && containsAvailabilityB) {
-        return 1;
-      } else {
-        // If both contain or don't contain the selected availability and isSelected, sort alphabetically
-        return a.localeCompare(b);
-      }
-    });
+        // Check isSelected for chains a and b
+        const isSelectedA = selectedChains[a];
+        const isSelectedB = selectedChains[b];
+
+        // Sort based on availability and isSelected
+        if (isSelectedA && !isSelectedB) {
+          return -1;
+        } else if (!isSelectedA && isSelectedB) {
+          return 1;
+        } else if (containsAvailabilityA && !containsAvailabilityB) {
+          return -1;
+        } else if (!containsAvailabilityA && containsAvailabilityB) {
+          return 1;
+        } else {
+          // If both contain or don't contain the selected availability and isSelected, sort alphabetically
+          return a.localeCompare(b);
+        }
+      });
 
     // Reverse the sorted chains if sortOrder is false
     if (!sortOrder) {
@@ -184,42 +196,46 @@ export default function FeesPage() {
     }
 
     return sortedChains;
-  }, [feeData, selectedChains, sortOrder]);
+  }, [feeData, master, selectedChains, selectedAvailability, sortOrder]);
 
   const sortByMetric = useMemo(() => {
     if (!feeData) return [];
 
-    const sortedChains = Object.keys(feeData.chain_data).sort((a, b) => {
-      const isSelectedA = selectedChains[a];
-      const isSelectedB = selectedChains[b];
+    const sortedChains = Object.keys(feeData.chain_data)
+      .filter((chain) => chain !== "ethereum") // Exclude "ethereum"
+      .sort((a, b) => {
+        const isSelectedA = selectedChains[a];
+        const isSelectedB = selectedChains[b];
 
-      // If sortOrder is false, reverse the comparison
-      const comparison = sortOrder ? 1 : -1;
+        // If sortOrder is false, reverse the comparison
+        const comparison = sortOrder ? 1 : -1;
 
-      const aData = feeData.chain_data[a]["hourly"][selectedQuantitative].data;
-      const bData = feeData.chain_data[b]["hourly"][selectedQuantitative].data;
+        const aData =
+          feeData.chain_data[a]["hourly"][selectedQuantitative].data;
+        const bData =
+          feeData.chain_data[b]["hourly"][selectedQuantitative].data;
 
-      // Handle empty array case
-      if (aData.length === 0 && bData.length === 0) {
-        // Both arrays are empty, prioritize based on selection
-        return isSelectedA ? -1 : isSelectedB ? 1 : 0;
-      } else if (aData.length === 0) {
-        // aData is empty, prioritize based on sortOrder
-        return sortOrder ? 1 : -1;
-      } else if (bData.length === 0) {
-        // bData is empty, prioritize based on sortOrder
-        return sortOrder ? -1 : 1;
-      }
+        // Handle empty array case
+        if (aData.length === 0 && bData.length === 0) {
+          // Both arrays are empty, prioritize based on selection
+          return isSelectedA ? -1 : isSelectedB ? 1 : 0;
+        } else if (aData.length === 0) {
+          // aData is empty, prioritize based on sortOrder
+          return sortOrder ? 1 : -1;
+        } else if (bData.length === 0) {
+          // bData is empty, prioritize based on sortOrder
+          return sortOrder ? -1 : 1;
+        }
 
-      // If both chains are selected or unselected, sort by median cost
-      const aTxCost = aData[23 - selectedBarIndex]
-        ? aData[23 - selectedBarIndex][showUsd ? 2 : 1]
-        : 0;
-      const bTxCost = bData[23 - selectedBarIndex]
-        ? bData[23 - selectedBarIndex][showUsd ? 2 : 1]
-        : 0;
-      return (aTxCost - bTxCost) * comparison;
-    });
+        // If both chains are selected or unselected, sort by median cost
+        const aTxCost = aData[23 - selectedBarIndex]
+          ? aData[23 - selectedBarIndex][showUsd ? 2 : 1]
+          : 0;
+        const bTxCost = bData[23 - selectedBarIndex]
+          ? bData[23 - selectedBarIndex][showUsd ? 2 : 1]
+          : 0;
+        return (aTxCost - bTxCost) * comparison;
+      });
 
     return sortedChains;
   }, [
@@ -739,12 +755,19 @@ export default function FeesPage() {
                             selectedQuantitative === "txcosts_median"
                               ? "border-[1.5px]"
                               : "border-0"
-                          } ${isMobile ? "w-[65px]" : "w-[75px]"}`}
+                          } ${isMobile ? "w-[65px]" : "w-[75px]"}
+                          ${
+                            feeData.chain_data[chain]["hourly"][
+                              "txcosts_median"
+                            ].data[23 - selectedBarIndex]
+                              ? "opacity-100"
+                              : "opacity-50"
+                          }`}
                           style={{
                             borderColor: !feeIndexSort[23 - selectedBarIndex][
                               chain
                             ]
-                              ? "white"
+                              ? "gray"
                               : getGradientColor(
                                   Math.floor(
                                     (feeIndexSort[23 - selectedBarIndex][chain][
@@ -764,22 +787,35 @@ export default function FeesPage() {
                                 ),
                           }}
                         >
-                          {`${showUsd ? "$" : "Ξ"}`}
-                          {Intl.NumberFormat(undefined, {
-                            notation: "compact",
-                            maximumFractionDigits: showUsd
-                              ? feeData.chain_data[chain]["hourly"]
+                          {`${
+                            feeData.chain_data[chain]["hourly"][
+                              "txcosts_median"
+                            ].data[23 - selectedBarIndex]
+                              ? showUsd
+                                ? "$"
+                                : "Ξ"
+                              : ""
+                          }`}
+                          {feeData.chain_data[chain]["hourly"]["txcosts_median"]
+                            .data[23 - selectedBarIndex]
+                            ? Intl.NumberFormat(undefined, {
+                                notation: "compact",
+                                maximumFractionDigits: showUsd
+                                  ? feeData.chain_data[chain]["hourly"]
+                                      .txcosts_median.data[
+                                      23 - selectedBarIndex
+                                    ][showUsd ? 2 : 1] < 0.01
+                                    ? 3
+                                    : 3
+                                  : 5,
+                                minimumFractionDigits: 0,
+                              }).format(
+                                feeData.chain_data[chain]["hourly"]
                                   .txcosts_median.data[23 - selectedBarIndex][
                                   showUsd ? 2 : 1
-                                ] < 0.01
-                                ? 3
-                                : 3
-                              : 5,
-                            minimumFractionDigits: 0,
-                          }).format(
-                            feeData.chain_data[chain]["hourly"].txcosts_median
-                              .data[23 - selectedBarIndex][showUsd ? 2 : 1],
-                          )}
+                                ],
+                              )
+                            : "N/A"}
                         </div>
                       </div>
                       <div
@@ -795,7 +831,7 @@ export default function FeesPage() {
                           } ${
                             feeData.chain_data[chain]["hourly"][
                               "txcosts_native_median"
-                            ].data[0]
+                            ].data[23 - selectedBarIndex]
                               ? "opacity-100"
                               : "opacity-50"
                           }`}
@@ -826,7 +862,7 @@ export default function FeesPage() {
                           {`${
                             feeData.chain_data[chain]["hourly"][
                               "txcosts_native_median"
-                            ].data[0]
+                            ].data[23 - selectedBarIndex]
                               ? showUsd
                                 ? "$"
                                 : "Ξ"
@@ -834,7 +870,7 @@ export default function FeesPage() {
                           }`}
                           {feeData.chain_data[chain]["hourly"][
                             "txcosts_native_median"
-                          ].data[0]
+                          ].data[23 - selectedBarIndex]
                             ? Intl.NumberFormat(undefined, {
                                 notation: "compact",
                                 maximumFractionDigits: showUsd
@@ -892,16 +928,15 @@ export default function FeesPage() {
                           }}
                         >
                           {`${
-                            feeData.chain_data[chain]["hourly"][
-                              "txcosts_native_median"
-                            ].data[0]
+                            feeData.chain_data[chain]["hourly"]["txcosts_swap"]
+                              .data[0]
                               ? showUsd
                                 ? "$"
                                 : "Ξ"
                               : ""
                           }`}
                           {feeData.chain_data[chain]["hourly"]["txcosts_swap"]
-                            .data[0]
+                            .data[23 - selectedBarIndex]
                             ? Intl.NumberFormat(undefined, {
                                 notation: "compact",
                                 maximumFractionDigits: showUsd
@@ -994,160 +1029,210 @@ export default function FeesPage() {
               isChartOpen ? "translate-y-0" : "translate-y-[215px]"
             }`}
           >
-            <div className="border-forest-700 w-[835px] border-[1px] rounded-full border-black/[16%] dark:border-forest-50 h-[34px] pl-[10px] flex items-center text-[15px] sticky bottom-0 bg-forest-900 shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_20px_0px_#000000]">
-              <div className="flex items-center h-full w-[4%] ">
+            <div
+              className={`border-forest-700 w-[835px] border-[1px] rounded-full border-black/[16%] dark:border-forest-50 h-[34px] pl-[10px] flex items-center  sticky bottom-0 bg-forest-900 shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_20px_0px_#000000]
+            ${isMobile ? "text-[12px]" : "text-[14px]"}`}
+            >
+              <div
+                className={`flex items-center h-full ${
+                  isMobile ? "w-[3%]" : "w-[4%]"
+                }`}
+              >
                 <Icon
                   icon={`gtp:ethereum-logo-monochrome`}
-                  className="h-[24px] w-[24px]"
+                  className={`${
+                    isMobile ? "h-[18px] w-[18px]" : "h-[24px] w-[24px]"
+                  }`}
                   style={{ color: "#5A6462" }}
                 />
               </div>
               <div
                 className={`flex justify-start items-center h-full ${
-                  isMobile ? "w-[17%]" : "w-[33%]"
+                  isMobile ? "w-[18%]" : "w-[33%]"
                 }`}
               >
                 <div className="mr-[5px]">
                   {AllChainsByKeys["ethereum"].label}
                 </div>
-                <div
-                  className={`bg-[#344240] flex rounded-full  items-center px-[5px] py-[3px] gap-x-[2px] transition-width overflow-hidden duration-300`}
-                  // onMouseEnter={() => {
-                  //   setHoveredItems({
-                  //     hoveredChain: chain[0],
-                  //     hoveredDA: hoveredItems.hoveredDA,
-                  //   });
-                  // }}
-                  // onMouseLeave={() => {
-                  //   setHoveredItems({
-                  //     hoveredChain: null,
-                  //     hoveredDA: hoveredItems.hoveredDA,
-                  //   });
-                  // }}
-                >
-                  {dataAvailToArray(master.chains["optimism"].da_layer).map(
-                    (item, index, array) => [
-                      <div
-                        key={index.toString() + "Eth"}
-                        className={`flex relative items-center gap-x-0.5`}
-                        onMouseEnter={() => {
-                          setHoveredItems({
-                            hoveredChain: hoveredItems.hoveredChain,
-                            hoveredDA: item.label,
-                          });
-                        }}
-                        onMouseLeave={() => {
-                          setHoveredItems({
-                            hoveredChain: hoveredItems.hoveredChain,
-                            hoveredDA: null,
-                          });
-                        }}
-                      >
-                        <Icon
-                          icon={`gtp:${item.icon}`}
-                          className="h-[12px] w-[12px]"
-                          style={{
-                            color: "#5A6462",
-                          }}
-                        />
-                        <div
-                          className={`text-[8px] text-center font-semibold text-[#5A6462] overflow-hidden `}
-                          style={{
-                            maxWidth:
-                              hoveredItems.hoveredDA === item.label &&
-                              hoveredItems.hoveredChain === "ethereum"
-                                ? "50px"
-                                : "0px",
-                            transition: "max-width 0.3s ease", // Adjust duration and timing function as needed
-                          }}
-                        >
-                          {item.label}
-                        </div>
-                      </div>,
-                      index !== array.length - 1 && (
-                        /* Content to render when index is not the last element */
-                        <div
-                          key={index.toString() + "ethereum"}
-                          className="w-[12px] h-[12px] flex items-center justify-center"
-                          style={{
-                            color: "#5A6462",
-                          }}
-                        >
-                          +
-                        </div>
-                      ),
-                    ],
-                  )}
-                </div>
               </div>
 
-              <div className="h-full w-[14%] flex justify-center items-center text-black">
+              <div
+                className={`h-full  flex justify-center items-center ${
+                  selectedQuantitative === "txcosts_median"
+                    ? "text-black"
+                    : "text-inherit"
+                } ${isMobile ? "w-[8%]" : "w-[13.5%]"}`}
+              >
                 <div
-                  className="px-[8px] w-[75px] text-center justify-center border-[1.5px] rounded-full flex items-center"
+                  className={`px-[8px] text-center justify-center rounded-full flex items-center
+                  ${
+                    selectedQualitative === "txcosts_median"
+                      ? "border-[1.5px]"
+                      : "border-[0px]"
+                  } ${isMobile ? "w-[65px]" : "w-[75px]"}`}
                   style={{
                     borderColor: getGradientColor(100),
-                    backgroundColor: getGradientColor(100),
+                    backgroundColor:
+                      selectedQuantitative === "txcosts_median"
+                        ? getGradientColor(100)
+                        : "transparent",
                   }}
                 >
-                  {`${showUsd ? "$" : "Ξ"}`}
+                  {`${
+                    feeData.chain_data["ethereum"]["hourly"].txcosts_median
+                      .data[0]
+                      ? showUsd
+                        ? "$"
+                        : "Ξ"
+                      : ""
+                  }`}
                   {Intl.NumberFormat(undefined, {
                     notation: "compact",
                     maximumFractionDigits: showUsd
-                      ? feeData.chain_data["optimism"]["hourly"].txcosts_median
+                      ? feeData.chain_data["ethereum"]["hourly"].txcosts_median
                           .data[0][showUsd ? 2 : 1] < 0.01
                         ? 3
-                        : 2
+                        : 3
                       : 5,
                     minimumFractionDigits: 0,
                   }).format(
-                    feeData.chain_data["optimism"]["hourly"].txcosts_median
+                    feeData.chain_data["ethereum"]["hourly"].txcosts_median
                       .data[0][showUsd ? 2 : 1],
                   )}
                 </div>
               </div>
-              <div className="h-full w-[10.5%] flex justify-end items-center ">
-                {feeData.chain_data["optimism"]["hourly"][
-                  "txcosts_native_median"
-                ].data[0]
-                  ? Intl.NumberFormat(undefined, {
-                      notation: "compact",
-                      maximumFractionDigits: showUsd
-                        ? feeData.chain_data["optimism"]["hourly"][
-                            "txcosts_native_median"
-                          ].data[0][showUsd ? 2 : 1] < 0.01
-                          ? 3
-                          : 3
-                        : 5,
-                      minimumFractionDigits: 0,
-                    }).format(
-                      feeData.chain_data["optimism"]["hourly"][
-                        "txcosts_native_median"
-                      ].data[0][showUsd ? 2 : 1],
-                    )
-                  : "Not Available"}
+              <div className="h-full w-[12.75%] flex justify-end items-center ">
+                <div
+                  className={`w-[75px] flex justify-center items-center rounded-full ${
+                    selectedQuantitative === "txcosts_native_median"
+                      ? "border-[1.5px] text-black"
+                      : "border-0 text-inherit"
+                  }`}
+                  style={{
+                    borderColor: getGradientColor(100),
+                    backgroundColor:
+                      selectedQuantitative === "txcosts_native_median"
+                        ? getGradientColor(100)
+                        : "transparent",
+                  }}
+                >
+                  {`${
+                    feeData.chain_data["ethereum"]["hourly"]
+                      .txcosts_native_median.data[0]
+                      ? showUsd
+                        ? "$"
+                        : "Ξ"
+                      : ""
+                  }`}
+                  {feeData.chain_data["ethereum"]["hourly"][
+                    "txcosts_native_median"
+                  ].data[0]
+                    ? Intl.NumberFormat(undefined, {
+                        notation: "compact",
+                        maximumFractionDigits: showUsd
+                          ? feeData.chain_data["ethereum"]["hourly"][
+                              "txcosts_native_median"
+                            ].data[0][showUsd ? 2 : 1] < 0.01
+                            ? 3
+                            : 3
+                          : 5,
+                        minimumFractionDigits: 0,
+                      }).format(
+                        feeData.chain_data["ethereum"]["hourly"][
+                          "txcosts_native_median"
+                        ].data[0][showUsd ? 2 : 1],
+                      )
+                    : "N/A"}
+                </div>
               </div>
-              <div className="h-full w-[13%] flex justify-end items-center mr-[10px] ">
-                {"$0.054"}
+              <div
+                className={`h-full flex justify-end items-center -mr-[4px]
+                ${isMobile ? "w-[12.5%]" : "w-[13%]"}`}
+              >
+                <div
+                  className={`flex items-center justify-center text-center w-[75px] rounded-full ${
+                    selectedQuantitative === "txcosts_swap"
+                      ? "border-[1.5px] text-black"
+                      : "border-0 text-inherit"
+                  }`}
+                  style={{
+                    borderColor: getGradientColor(100),
+                    backgroundColor:
+                      selectedQuantitative === "txcosts_swap"
+                        ? getGradientColor(100)
+                        : "transparent",
+                  }}
+                >
+                  {`${
+                    feeData.chain_data["ethereum"]["hourly"].txcosts_swap
+                      .data[0]
+                      ? showUsd
+                        ? "$"
+                        : "Ξ"
+                      : ""
+                  }`}
+                  {feeData.chain_data["ethereum"]["hourly"]["txcosts_swap"]
+                    .data[0]
+                    ? Intl.NumberFormat(undefined, {
+                        notation: "compact",
+                        maximumFractionDigits: showUsd
+                          ? feeData.chain_data["ethereum"]["hourly"][
+                              "txcosts_swap"
+                            ].data[0][showUsd ? 2 : 1] < 0.01
+                            ? 3
+                            : 3
+                          : 5,
+                        minimumFractionDigits: 0,
+                      }).format(
+                        feeData.chain_data["ethereum"]["hourly"]["txcosts_swap"]
+                          .data[0][showUsd ? 2 : 1],
+                      )
+                    : "N/A"}
+                </div>
               </div>
               <div className="relative  w-[19%] flex flex-col h-full space-x-[1px]">
                 <div className="flex w-full items-center justify-end h-full space-x-[1px] ml-2.5 ">
-                  {Array.from({ length: 23 }, (_, index) => (
+                  {Array.from({ length: 24 }, (_, index) => (
                     <div
                       key={index.toString() + "ethcircles"}
-                      className="w-[5px] h-[5px] rounded-full opacity-50"
+                      className={`hover:cursor-pointer ${
+                        selectedBarIndex === index
+                          ? "w-[8px]  h-[8px] rounded-full transition-all duration-300"
+                          : hoverBarIndex === index
+                          ? "w-[6px] h-[6px] rounded-full opacity-90 transition-all duration-300"
+                          : "w-[5px] h-[5px] rounded-full opacity-50 transition-all duration-300"
+                      }`}
                       style={{
-                        backgroundColor: getGradientColor(Math.random() * 100),
+                        backgroundColor: !feeIndexSort[23 - index]["ethereum"]
+                          ? "gray"
+                          : getGradientColor(
+                              Math.floor(
+                                (feeIndexSort[23 - index]["ethereum"][
+                                  showUsd ? 2 : 1
+                                ] /
+                                  feeIndexSort[23 - index][
+                                    Object.keys(feeIndexSort[23 - index])[
+                                      Object.keys(feeIndexSort[23 - index])
+                                        .length - 1
+                                    ]
+                                  ][showUsd ? 2 : 1]) *
+                                  100,
+                              ),
+                            ),
+                      }}
+                      onMouseEnter={() => {
+                        setHoverBarIndex(index);
+                      }}
+                      onMouseLeave={() => {
+                        setHoverBarIndex(null);
+                      }}
+                      onClick={() => {
+                        setSelectedBarIndex(index);
                       }}
                     ></div>
                   ))}
-                  <div
-                    className="w-[8px]  h-[8px] rounded-full"
-                    style={{
-                      backgroundColor: getGradientColor(Math.random() * 100),
-                    }}
-                  ></div>
                 </div>
-                <div className="absolute left-[19px] top-[34px] w-[148px] h-[10px] border-forest-600 border-x-[1px] flex justify-between text-[10px]">
+                <div className="absolute left-[19px] top-[34px] w-[146px] h-[10px] border-forest-600 border-x-[1px] flex justify-between text-[10px]">
                   <div className="relative top-2">24 Hours Ago</div>
                   <div className="relative top-2">Now</div>
                 </div>
