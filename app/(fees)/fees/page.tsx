@@ -311,7 +311,11 @@ export default function FeesPage() {
     return sortedCosts;
   }, [feeData, showUsd, selectedQuantitative]);
 
-  const optIndex = 23 - (hoverBarIndex ? hoverBarIndex : selectedBarIndex);
+  const optIndex =
+    23 -
+    (hoverBarIndex !== undefined
+      ? Number(hoverBarIndex)
+      : Number(selectedBarIndex) || 0);
 
   const [screenHeight, setScreenHeight] = useState(0);
 
@@ -381,7 +385,6 @@ export default function FeesPage() {
       .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
   };
 
-  console.log(master);
   return (
     <>
       {feeData && master && (
