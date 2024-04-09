@@ -20,31 +20,40 @@ export default function Header() {
             <Notification />
           </div>
 
-          <div className="flex justify-between items-start h-full relative w-full ">
+          <div className="flex justify-between items-start h-full relative w-full left-1 ">
             <Link href="/" className="flex gap-x-1">
-              <div className="h-[36px] w-[154.05px] relative bottom-[1px] ">
+              <div className="h-[36px] w-[35px] relative bottom-[1px] ">
                 <Image
-                  src="/logo_full.png"
+                  src="/logo-pie-only.svg"
                   alt="Forest"
                   className="hidden dark:block"
-                  width={193}
-                  height={45}
+                  width={33}
+                  height={35}
                 />
                 <Image
-                  src="/logo_full_light.png"
+                  src="/logo-pie-only2.svg"
                   alt="Forest"
                   className="block dark:hidden"
-                  width={193}
-                  height={45}
+                  width={33}
+                  height={35}
                 />
               </div>
-              <div className="h-[36px] w-[154.05px] top-[1px] relative flex items-end ">
+              <div className="h-[36px] w-[52px] relative flex items-end bottom-[9px] right-2">
                 <Image
-                  src="/fees.svg"
+                  src="/feesketch.svg"
                   alt="Forest"
                   className="block "
-                  width={65}
-                  height={28}
+                  width={52}
+                  height={24}
+                />
+              </div>
+              <div className="h-full w-[128px] relative flex items-end justify-end right-[38px] top-[11px]">
+                <Image
+                  src="/logo-text-only2.svg"
+                  alt="Forest"
+                  className="block "
+                  width={138}
+                  height={21}
                 />
               </div>
             </Link>

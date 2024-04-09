@@ -9,6 +9,7 @@ import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import Header from "./Header";
+import { useTransition, animated } from "@react-spring/web";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 
 interface HoveredItems {
@@ -212,6 +213,10 @@ export default function FeesPage() {
         // If sortOrder is false, reverse the comparison
         const comparison = sortOrder ? 1 : -1;
 
+        // Handle cases where one or both chains are not selected
+        if (isSelectedA && !isSelectedB) return -1;
+        if (!isSelectedA && isSelectedB) return 1;
+
         const aData =
           feeData.chain_data[a]["hourly"][selectedQuantitative].data;
         const bData =
@@ -391,6 +396,25 @@ export default function FeesPage() {
       .toString(16)
       .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
   };
+
+  const transitions = useTransition(
+    Object.entries(finalSort).map((chain, index) => {
+      return {
+        y: index * 38,
+        height: 34,
+        chain: chain, // Assuming `chain` is used as a key
+      };
+    }),
+    {
+      key: (d) => d.chain[1],
+      from: { height: 0 },
+      leave: { height: 0 },
+      enter: ({ y, height }) => ({ y, height }),
+      update: ({ y, height }) => ({ y, height }), // Ensure height change is animated
+      config: { mass: 5, tension: 500, friction: 100 },
+      trail: 25,
+    },
+  );
 
   return (
     <>
@@ -655,26 +679,37 @@ export default function FeesPage() {
                   </div>
                 </div>
               </div>
-              <div className={`gap-y-1`}>
-                {finalSort.map((chain, index) => {
+              <div
+                className={`gap-y-1 relative`}
+                style={{ minHeight: finalSort.length * 38 }}
+              >
+                {transitions((style, item) => {
                   return (
-                    <div
-                      key={index}
-                      className={`border-forest-700 border-[1px] mb-1  rounded-full border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] flex items-center relative 
+                    <animated.div
+                      key={item.chain[0]}
+                      className={`border-forest-700 border-[1px] mb-1 absolute rounded-full border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] flex items-center
                       ${
                         isMobile
                           ? "text-[12px] w-[600px]"
                           : "text-[14px] w-[800px]"
+                      } ${
+                        selectedChains[item.chain[1]]
+                          ? "opacity-100"
+                          : "opacity-50"
                       }`}
+                      style={{ ...style }}
                     >
                       <div className={`flex items-center h-full w-[4%] `}>
                         <Icon
-                          icon={`gtp:${AllChainsByKeys[chain].urlKey}-logo-monochrome`}
+                          icon={`gtp:${
+                            AllChainsByKeys[item.chain[1]].urlKey
+                          }-logo-monochrome`}
                           className={`${
                             isMobile ? "h-[18px] w-[18px]" : "h-[24px] w-[24px]"
                           }`}
                           style={{
-                            color: AllChainsByKeys[chain].colors[theme][0],
+                            color:
+                              AllChainsByKeys[item.chain[1]].colors[theme][0],
                           }}
                         />
                       </div>
@@ -685,8 +720,8 @@ export default function FeesPage() {
                       >
                         <div className="mr-[5px]">
                           {isMobile
-                            ? master.chains[chain].name_short
-                            : AllChainsByKeys[chain].label}
+                            ? master.chains[item.chain[1]].name_short
+                            : AllChainsByKeys[item.chain[1]].label}
                         </div>
                         <div
                           className={`bg-[#344240] flex rounded-full  items-center  transition-width overflow-hidden duration-300 ${
@@ -696,7 +731,7 @@ export default function FeesPage() {
                           }`}
                           onMouseEnter={() => {
                             setHoveredItems({
-                              hoveredChain: chain,
+                              hoveredChain: item.chain[1],
                               hoveredDA: hoveredItems.hoveredDA,
                             });
                           }}
@@ -707,81 +742,81 @@ export default function FeesPage() {
                             });
                           }}
                         >
-                          {dataAvailToArray(master.chains[chain].da_layer).map(
-                            (item, index, array) => [
-                              <div
-                                key={item.icon}
-                                className={`flex relative items-center gap-x-0.5 hover:cursor-pointer`}
-                                onMouseEnter={() => {
-                                  setHoveredItems({
-                                    hoveredChain: hoveredItems.hoveredChain,
-                                    hoveredDA: item.label,
-                                  });
-                                }}
-                                onMouseLeave={() => {
-                                  setHoveredItems({
-                                    hoveredChain: hoveredItems.hoveredChain,
-                                    hoveredDA: null,
-                                  });
-                                }}
-                                onClick={() => {
-                                  if (selectedQualitative !== "availability") {
-                                    setSelectedQualitative("availability");
-                                  }
-                                  setSelectedAvailability(item.icon);
-                                }}
-                              >
-                                <Icon
-                                  icon={`gtp:${item.icon}`}
-                                  className={`${
-                                    selectedAvailability === item.icon &&
-                                    selectedQualitative === "availability"
-                                      ? "text-forest-200"
-                                      : "text-[#5A6462] "
-                                  }
+                          {dataAvailToArray(
+                            master.chains[item.chain[1]].da_layer,
+                          ).map((avail, index, array) => [
+                            <div
+                              key={avail.icon}
+                              className={`flex relative items-center gap-x-0.5 hover:cursor-pointer`}
+                              onMouseEnter={() => {
+                                setHoveredItems({
+                                  hoveredChain: hoveredItems.hoveredChain,
+                                  hoveredDA: avail.label,
+                                });
+                              }}
+                              onMouseLeave={() => {
+                                setHoveredItems({
+                                  hoveredChain: hoveredItems.hoveredChain,
+                                  hoveredDA: null,
+                                });
+                              }}
+                              onClick={() => {
+                                if (selectedQualitative !== "availability") {
+                                  setSelectedQualitative("availability");
+                                }
+                                setSelectedAvailability(avail.icon);
+                              }}
+                            >
+                              <Icon
+                                icon={`gtp:${avail.icon}`}
+                                className={`${
+                                  selectedAvailability === avail.icon &&
+                                  selectedQualitative === "availability"
+                                    ? "text-forest-200"
+                                    : "text-[#5A6462] "
+                                }
                                   ${
                                     isMobile
                                       ? "h-[10px] w-[10px] "
                                       : "h-[12px] w-[12px] "
                                   }`}
-                                />
-                                <div
-                                  className={`text-[8px] text-center font-semibold overflow-hidden ${
-                                    selectedAvailability === item.icon &&
-                                    selectedQualitative === "availability"
-                                      ? "text-forest-200"
-                                      : "text-[#5A6462] "
-                                  } `}
-                                  style={{
-                                    maxWidth:
-                                      hoveredItems.hoveredDA === item.label &&
-                                      hoveredItems.hoveredChain === chain
-                                        ? "50px"
-                                        : "0px",
-                                    transition: "max-width 0.3s ease", // Adjust duration and timing function as needed
-                                  }}
-                                >
-                                  {item.label}
-                                </div>
-                              </div>,
-                              index !== array.length - 1 && (
-                                /* Content to render when index is not the last element */
-                                <div
-                                  key={item.label}
-                                  className="w-[12px] h-[12px] flex items-center justify-center"
-                                  style={{
-                                    color: "#5A6462",
-                                  }}
-                                >
-                                  +
-                                </div>
-                              ),
-                            ],
-                          )}
+                              />
+                              <div
+                                className={`text-[8px] text-center font-semibold overflow-hidden ${
+                                  selectedAvailability === avail.icon &&
+                                  selectedQualitative === "availability"
+                                    ? "text-forest-200"
+                                    : "text-[#5A6462] "
+                                } `}
+                                style={{
+                                  maxWidth:
+                                    hoveredItems.hoveredDA === avail.label &&
+                                    hoveredItems.hoveredChain === item.chain[1]
+                                      ? "50px"
+                                      : "0px",
+                                  transition: "max-width 0.3s ease", // Adjust duration and timing function as needed
+                                }}
+                              >
+                                {avail.label}
+                              </div>
+                            </div>,
+                            index !== array.length - 1 && (
+                              /* Content to render when index is not the last element */
+                              <div
+                                key={avail.label}
+                                className="w-[12px] h-[12px] flex items-center justify-center"
+                                style={{
+                                  color: "#5A6462",
+                                }}
+                              >
+                                +
+                              </div>
+                            ),
+                          ])}
                         </div>
                       </div>
 
-                      <div className="h-full w-[15%] flex justify-center items-center">
+                      <div className="h-full w-[15%] flex justify-center items-center ">
                         <div
                           className={`px-[8px]  justify-center  rounded-full flex items-center ${
                             selectedQuantitative === "txcosts_median"
@@ -789,18 +824,18 @@ export default function FeesPage() {
                               : "border-0"
                           } ${isMobile ? "w-[65px]" : "w-[75px]"}
                           ${
-                            feeData.chain_data[chain]["hourly"][
+                            feeData.chain_data[item.chain[1]]["hourly"][
                               "txcosts_median"
                             ].data[optIndex]
                               ? "opacity-100"
                               : "opacity-50"
                           }`}
                           style={{
-                            borderColor: !feeIndexSort[optIndex][chain]
+                            borderColor: !feeIndexSort[optIndex][item.chain[1]]
                               ? "gray"
                               : getGradientColor(
                                   Math.floor(
-                                    (feeIndexSort[optIndex][chain][
+                                    (feeIndexSort[optIndex][item.chain[1]][
                                       showUsd ? 2 : 1
                                     ] /
                                       feeIndexSort[optIndex][
@@ -815,7 +850,7 @@ export default function FeesPage() {
                           }}
                         >
                           {`${
-                            feeData.chain_data[chain]["hourly"][
+                            feeData.chain_data[item.chain[1]]["hourly"][
                               "txcosts_median"
                             ].data[optIndex]
                               ? showUsd
@@ -823,14 +858,15 @@ export default function FeesPage() {
                                 : "Ξ"
                               : ""
                           }`}
-                          {feeData.chain_data[chain]["hourly"]["txcosts_median"]
-                            .data[optIndex]
+                          {feeData.chain_data[item.chain[1]]["hourly"][
+                            "txcosts_median"
+                          ].data[optIndex]
                             ? Intl.NumberFormat(undefined, {
                                 notation: "compact",
                                 maximumFractionDigits: 3,
                                 minimumFractionDigits: 0,
                               }).format(
-                                feeData.chain_data[chain]["hourly"]
+                                feeData.chain_data[item.chain[1]]["hourly"]
                                   .txcosts_median.data[optIndex][
                                   showUsd ? 2 : 1
                                 ],
@@ -849,18 +885,18 @@ export default function FeesPage() {
                               ? "border-[1.5px]"
                               : "border-0"
                           } ${
-                            feeData.chain_data[chain]["hourly"][
+                            feeData.chain_data[item.chain[1]]["hourly"][
                               "txcosts_native_median"
                             ].data[optIndex]
                               ? "opacity-100"
                               : "opacity-50"
                           }`}
                           style={{
-                            borderColor: !feeIndexSort[optIndex][chain]
+                            borderColor: !feeIndexSort[optIndex][item.chain[1]]
                               ? "gray"
                               : getGradientColor(
                                   Math.floor(
-                                    (feeIndexSort[optIndex][chain][
+                                    (feeIndexSort[optIndex][item.chain[1]][
                                       showUsd ? 2 : 1
                                     ] /
                                       feeIndexSort[optIndex][
@@ -875,7 +911,7 @@ export default function FeesPage() {
                           }}
                         >
                           {`${
-                            feeData.chain_data[chain]["hourly"][
+                            feeData.chain_data[item.chain[1]]["hourly"][
                               "txcosts_native_median"
                             ].data[optIndex]
                               ? showUsd
@@ -883,7 +919,7 @@ export default function FeesPage() {
                                 : "Ξ"
                               : ""
                           }`}
-                          {feeData.chain_data[chain]["hourly"][
+                          {feeData.chain_data[item.chain[1]]["hourly"][
                             "txcosts_native_median"
                           ].data[optIndex]
                             ? Intl.NumberFormat(undefined, {
@@ -891,7 +927,7 @@ export default function FeesPage() {
                                 maximumFractionDigits: 3,
                                 minimumFractionDigits: 0,
                               }).format(
-                                feeData.chain_data[chain]["hourly"][
+                                feeData.chain_data[item.chain[1]]["hourly"][
                                   "txcosts_native_median"
                                 ].data[optIndex][showUsd ? 2 : 1],
                               )
@@ -908,17 +944,18 @@ export default function FeesPage() {
                               ? "border-[1.5px]"
                               : "border-0"
                           } ${
-                            feeData.chain_data[chain]["hourly"]["txcosts_swap"]
-                              .data[0]
+                            feeData.chain_data[item.chain[1]]["hourly"][
+                              "txcosts_swap"
+                            ].data[0]
                               ? "opacity-100"
                               : "opacity-50"
                           }`}
                           style={{
-                            borderColor: !feeIndexSort[optIndex][chain]
+                            borderColor: !feeIndexSort[optIndex][item.chain[1]]
                               ? "gray"
                               : getGradientColor(
                                   Math.floor(
-                                    (feeIndexSort[optIndex][chain][
+                                    (feeIndexSort[optIndex][item.chain[1]][
                                       showUsd ? 2 : 1
                                     ] /
                                       feeIndexSort[optIndex][
@@ -933,21 +970,23 @@ export default function FeesPage() {
                           }}
                         >
                           {`${
-                            feeData.chain_data[chain]["hourly"]["txcosts_swap"]
-                              .data[0]
+                            feeData.chain_data[item.chain[1]]["hourly"][
+                              "txcosts_swap"
+                            ].data[0]
                               ? showUsd
                                 ? "$"
                                 : "Ξ"
                               : ""
                           }`}
-                          {feeData.chain_data[chain]["hourly"]["txcosts_swap"]
-                            .data[optIndex]
+                          {feeData.chain_data[item.chain[1]]["hourly"][
+                            "txcosts_swap"
+                          ].data[optIndex]
                             ? Intl.NumberFormat(undefined, {
                                 notation: "compact",
                                 maximumFractionDigits: 3,
                                 minimumFractionDigits: 0,
                               }).format(
-                                feeData.chain_data[chain]["hourly"][
+                                feeData.chain_data[item.chain[1]]["hourly"][
                                   "txcosts_swap"
                                 ].data[optIndex][showUsd ? 2 : 1],
                               )
@@ -979,14 +1018,14 @@ export default function FeesPage() {
                               }`}
                               style={{
                                 backgroundColor: !feeIndexSort[23 - index][
-                                  chain
+                                  item.chain[1]
                                 ]
                                   ? "gray"
                                   : getGradientColor(
                                       Math.floor(
-                                        (feeIndexSort[23 - index][chain][
-                                          showUsd ? 2 : 1
-                                        ] /
+                                        (feeIndexSort[23 - index][
+                                          item.chain[1]
+                                        ][showUsd ? 2 : 1] /
                                           feeIndexSort[23 - index][
                                             Object.keys(
                                               feeIndexSort[23 - index],
@@ -1005,21 +1044,37 @@ export default function FeesPage() {
                         ))}
                       </div>
                       <div className="absolute left-[99%]">
-                        <Icon
-                          icon="feather:check-circle"
-                          className={`w-[22px] h-[22px] transition-all rounded-full ${
-                            selectedChains[chain]
-                              ? "opacity-100 bg-white dark:bg-forest-1000 dark:hover:forest-800"
-                              : "opacity-0 bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
+                        <div
+                          className={`w-[22px] h-[22px] rounded-full ${
+                            selectedChains[item.chain[1]]
+                              ? " bg-white dark:bg-forest-1000 dark:hover:forest-800"
+                              : " bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
                           }`}
-                          style={{
-                            color: selectedChains[chain]
-                              ? undefined
-                              : "#5A6462",
-                          }}
-                        />
+                        >
+                          <Icon
+                            icon="feather:check-circle"
+                            className={`w-[22px] h-[22px] transition-all rounded-full hover:cursor-pointer ${
+                              selectedChains[item.chain[1]]
+                                ? "opacity-100 bg-white dark:bg-forest-1000 dark:hover:forest-800"
+                                : "opacity-0 bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
+                            }`}
+                            style={{
+                              color: selectedChains[item.chain[1]]
+                                ? undefined
+                                : "#5A6462",
+                            }}
+                            onClick={() => {
+                              setSelectedChains((prevState) => {
+                                return {
+                                  ...prevState,
+                                  [item.chain[1]]: !prevState[item.chain[1]],
+                                };
+                              });
+                            }}
+                          />
+                        </div>
                       </div>
-                    </div>
+                    </animated.div>
                   );
                 })}
               </div>
