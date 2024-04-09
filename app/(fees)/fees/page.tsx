@@ -418,8 +418,8 @@ export default function FeesPage() {
               >
                 {isMobile ? (
                   <p className="w-[82vh] inline-block relative">
-                    <p className="inline leading-10">{`How much a typical user paid `}</p>
-                    <span className="absolute justify-center items-center bottom-1.5 w-[92px] h-[26px] border-[#344240] border-[1.5px] bg-[#1F2726] text-[12px] ml-1 rounded-r-full inline-flex">
+                    <p className="inline leading-8">{`How much a typical user paid `}</p>
+                    <span className="absolute justify-center items-center bottom-1 w-[92px] h-[26px] border-[#344240] border-[1.5px] bg-[#1F2726] text-[12px] ml-1 rounded-r-full inline-flex">
                       {24 - selectedBarIndex === 1
                         ? "1 Hour Ago"
                         : `${24 - selectedBarIndex} hours ago`}
