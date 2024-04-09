@@ -413,15 +413,29 @@ export default function FeesPage() {
           <Container className="w-full mt-[30px] ">
             <div className="flex w-full justify-between px-[10px] items-center ">
               <div
-                className={`flex text-[20px] font-bold items-center ${isMobile ? "w-full " : "w-auto"
+                className={`flex text-[20px] font-bold items-center  ${isMobile ? "w-full " : "w-auto"
                   }`}
               >
-                How much a typical user paid{" "}
-                <div className="w-[92px] h-[26px] flex items-center justify-center border-[#344240] border-[1.5px] bg-[#1F2726] text-[12px] ml-1 rounded-r-full">
-                  {24 - selectedBarIndex === 1
-                    ? "1 Hour Ago"
-                    : `${24 - selectedBarIndex} hours ago`}
-                </div>
+                {isMobile ? (
+                  <p className="w-[82vh] inline-block relative">
+                    <p className="inline leading-8">{`How much a typical user paid `}</p>
+                    <span className="absolute justify-center items-center bottom-1 w-[92px] h-[26px] border-[#344240] border-[1.5px] bg-[#1F2726] text-[12px] ml-1 rounded-r-full inline-flex">
+                      {24 - selectedBarIndex === 1
+                        ? "1 Hour Ago"
+                        : `${24 - selectedBarIndex} hours ago`}
+                    </span>
+                  </p>
+                ) : (
+                  <div className="flex w-full">
+                    {" "}
+                    {`How much a typical user paid`}
+                    <span className="w-[92px] h-[26px] flex items-center justify-center border-[#344240] border-[1.5px] bg-[#1F2726] text-[12px] ml-1 rounded-r-full">
+                      {24 - selectedBarIndex === 1
+                        ? "1 Hour Ago"
+                        : `${24 - selectedBarIndex} hours ago`}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="w-[165px] h-[25px] flex bg-transparent px-0.5 items-center justify-between pr-[2px] rounded-full "></div>
             </div>
@@ -1153,7 +1167,7 @@ export default function FeesPage() {
                     ></div>
                   ))}
                 </div>
-                <div className="absolute left-[19px] top-[34px] w-[146px] h-[10px] border-forest-600 border-x-[1px] flex justify-between text-[10px]">
+                <div className="absolute left-[14px] top-[34px] w-[146px] h-[10px] border-forest-600 border-x-[1px] flex justify-between text-[10px]">
                   <div className="relative top-2">24 Hours Ago</div>
                   <div className="relative top-2">Now</div>
                 </div>
@@ -1173,7 +1187,9 @@ export default function FeesPage() {
                 />
               </div> */}
             </div>
-            <div className="relative w-full h-[296px] bg-[#1F2726] rounded-t-[30px] pt-[15px] pb-[30px]">
+            <div
+              className={`relative w-full h-[296px] bg-[#1F2726] rounded-t-[30px] pt-[15px] pb-[30px]`}
+            >
               <div className="absolute -top-[12px] left-0 right-0 flex justify-center z-50">
                 <div
                   className="flex items-center gap-x-[10px] text-[10px] px-[15px] py-[4px] leading-[150%] rounded-full bg-[#1F2726] shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000] cursor-pointer"
