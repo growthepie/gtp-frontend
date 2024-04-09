@@ -535,6 +535,17 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "rhino-fi",
       },
       {
+        label: "Metis",
+        page: {
+          description:
+            "Metis is a Layer 2 protocol that was launched November 2021.",
+        },
+        icon: "gtp:metis-logo-monochrome",
+        key: "metis",
+        rootKey: "chainsMetis",
+        urlKey: "metis",
+      },
+      {
         label: "Manta Pacific",
         page: {
           description:

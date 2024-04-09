@@ -28,6 +28,7 @@ export const ChainURLs = {
   starknet: "https://api.growthepie.xyz/v1/chains/starknet.json",
   loopring: "https://api.growthepie.xyz/v1/chains/loopring.json",
   rhino: "https://api.growthepie.xyz/v1/chains/rhino.json",
+  metis: "https://api.growthepie.xyz/v1/chains/metis.json",
   manta: "https://api.growthepie.xyz/v1/chains/manta.json",
   blast: "https://api.growthepie.xyz/v1/chains/blast.json",
 };
@@ -56,6 +57,7 @@ export const ChainBlockspaceURLs = {
   starknet: "https://api.growthepie.xyz/v1/chains/blockspace/starknet.json",
   loopring: "https://api.growthepie.xyz/v1/chains/blockspace/loopring.json",
   rhino: "https://api.growthepie.xyz/v1/chains/blockspace/rhino.json",
+  metis: "https://api.growthepie.xyz/v1/chains/blockspace/metis.json",
   manta: "https://api.growthepie.xyz/v1/chains/blockspace/manta.json",
   blast: "https://api.growthepie.xyz/v1/chains/blockspace/blast.json",
 };

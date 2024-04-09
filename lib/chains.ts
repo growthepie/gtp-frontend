@@ -388,6 +388,28 @@ export const AllChains: Chain[] = [
     darkTextOnBackground: false,
   },
   {
+    label: "Metis",
+    icon: "/icons/metis.png",
+    key: "metis",
+    urlKey: "metis",
+    chainType: "L2",
+    ecosystem: ["all-chains"], // add ecosystems when unhiding from the UI
+    description: "",
+    border: {
+      light: ["border-[#20BACD]", "border-[#20BACD]"],
+      dark: ["border-[#20BACD]", "border-[#20BACD]"],
+    },
+    colors: {
+      light: ["#20BACD", "#20BACD"], // dark greenish
+      dark: ["#20BACD", "#20BACD"], // dark greenish
+    },
+    backgrounds: {
+      light: ["bg-[#20BACD]", "bg-[#20BACD]"],
+      dark: ["bg-[#20BACD]", "bg-[#20BACD]"],
+    },
+    darkTextOnBackground: false,
+  },
+  {
     label: "Manta",
     icon: "/icons/manta.png",
     key: "manta",
