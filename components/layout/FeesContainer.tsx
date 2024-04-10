@@ -5,7 +5,7 @@ type ContainerProps = {
   style?: React.CSSProperties;
 };
 
-export default function Container({
+export default function FeesContainer({
   children,
   ref,
   className = "",
@@ -13,7 +13,7 @@ export default function Container({
 }: ContainerProps) {
   return (
     <div
-      className={`px-[20px] md:px-[64px] ${className}`}
+      className={`px-[20px] md:px-[40px] ${className}`}
       ref={ref ?? null}
       style={style}
     >

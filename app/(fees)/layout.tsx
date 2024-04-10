@@ -10,6 +10,8 @@ import BottomBanner from "@/components/BottomBanner";
 import Backgrounds from "@/components/layout/Backgrounds";
 import "../background.css";
 import Share from "@/components/Share";
+import Icon from "@/components/layout/Icon";
+import FeesContainer from "@/components/layout/FeesContainer";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",
@@ -174,25 +176,36 @@ export default function RootLayout({
         />
         <Providers>
           <div className="flex h-fit w-full justify-center">
-            <div className="flex w-full max-w-[948px] min-h-screen">
+            <div className="flex w-full max-w-[650px] md:max-w-[900px] min-h-screen">
               <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
                 <div className="w-full mx-auto relative min-h-full">
                   {/* <Header /> */}
-                  <main className="flex-1 w-full mx-auto z-10 mb-[165px]">
+                  <main className="relative flex-1 w-full mx-auto z-10">
                     {children}
                   </main>
                 </div>
               </div>
-              <div className="z-50 flex fixed bottom-[20px] w-full max-w-[948px] justify-end pointer-events-none ">
-
-                <div className="px-[20px] md:px-[50px] pointer-events-auto flex w-full relative justify-end">
-                  <div className="absolute w-[835px] h-[54px] -z-10">
-                    <div className="w-full bg-[#1F2726] h-[54px] rounded-t-[30px]"></div>
-                  </div>
-                  <div className="relative flex gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#344240] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
-
-                    <Share />
-                  </div>
+              <div className="z-50 flex fixed inset-0 w-full justify-end pointer-events-none">
+                <div className="flex flex-col justify-between w-full max-w-[650px] md:max-w-[900px] mx-auto min-h-screen">
+                  <FeesContainer className="invisible pt-[102px] pointer-events-auto">
+                    <div className="flex px-[5px] items-center w-full h-[54px] rounded-full bg-[#344240] shadow-[0px_0px_50px_0px_#000000]">
+                      <a
+                        className="flex items-center w-[162px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-2 gap"
+                        href="https://www.growthepie.xyz/"
+                        target="_blank"
+                      >
+                        <Icon icon="gtp:house" className="h-6 w-6" />
+                        <div className="font-bold">Main platform</div>
+                      </a>
+                    </div>
+                  </FeesContainer>
+                  <FeesContainer className="flex w-full justify-end pb-[20px]">
+                    <div className="pointer-events-auto">
+                      <div className="relative flex gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#344240] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
+                        <Share />
+                      </div>
+                    </div>
+                  </FeesContainer>
                 </div>
               </div>
             </div>
