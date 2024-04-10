@@ -536,7 +536,7 @@ export default function FeesPage() {
             </div>
           </FeesContainer>
           <FeesHorizontalScrollContainer>
-            <div className="relative w-[630px] md:pr-[40px] md:w-auto overflow-x-hidden md:overflow-x-visble">
+            <div className="relative w-[630px] md:pr-[40px] lg:pr-[0px] md:w-auto overflow-x-hidden md:overflow-x-visble">
               <div
                 className={`w-[820px] md:w-[800px] mt-[8px] flex h-[26px] justify-start mb-1 text-[12px] font-bold ${isMobile ? "pl-[32px]" : "pl-[42px]"}`}
               >
