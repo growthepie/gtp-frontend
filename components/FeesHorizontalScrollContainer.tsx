@@ -6,9 +6,10 @@ import { useElementSizeObserver } from '@/hooks/useElementSizeObserver';
 type HorizontalScrollContainerProps = {
   className?: string;
   children: React.ReactNode;
+  setHorizontalScrollAmount?: React.Dispatch<React.SetStateAction<number>>;
 };
 
-export default function FeesHorizontalScrollContainer({ children, className }: HorizontalScrollContainerProps) {
+export default function FeesHorizontalScrollContainer({ children, className, setHorizontalScrollAmount }: HorizontalScrollContainerProps) {
   // const contentSrollAreaRef = useRef<HTMLDivElement>(null);
   // const contentRef = useRef<HTMLDivElement>(null);
   const [currentScrollPercentage, setCurrentScrollPercentage] = useState(0);
@@ -23,8 +24,13 @@ export default function FeesHorizontalScrollContainer({ children, className }: H
       const scrollableWidth = contentArea.scrollWidth - contentArea.clientWidth;
       const scrollPercentage = (contentArea.scrollLeft / scrollableWidth) * 100;
       setCurrentScrollPercentage(scrollPercentage);
+
+
+      if (setHorizontalScrollAmount) {
+        setHorizontalScrollAmount(contentArea.scrollLeft);
+      }
     }
-  }, [contentSrollAreaRef]);
+  }, [contentSrollAreaRef, setHorizontalScrollAmount]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!contentSrollAreaRef.current || !grabberRef.current) {
