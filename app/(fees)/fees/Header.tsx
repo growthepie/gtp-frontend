@@ -11,14 +11,14 @@ import { track } from "@vercel/analytics";
 
 export default function Header() {
   return (
-    <header className="flex justify-between space-x-0 xl:space-x-6 items-start max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[60px] md:pt-[50px] ">
+    <header className="flex justify-between space-x-0 xl:space-x-6 items-start max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[40px] md:pt-[50px] ">
       <div className="flex justify-start items-center w-full  ">
         <div className="flex space-x-0 xl:space-x-6 w-full h-full ">
           {/*Banner/Notification Area */}
 
-          <div className={`hidden md:flex  `}>
+          {/* <div className={`hidden md:flex  `}>
             <Notification />
-          </div>
+          </div> */}
 
           <div className="flex justify-between items-start h-full relative w-full left-1 ">
             <Link href="/" className="flex gap-x-1">
@@ -60,17 +60,17 @@ export default function Header() {
           </div>
         </div>
       </div>
-      <div className="items-center z-10 hidden md:flex md:space-x-[34px] h-full mt-[7px] pr-[24px]">
+      <div className="items-center z-10 hidden md:flex md:space-x-[34px] h-full mt-[7px]">
         <EthUsdSwitch />
 
-        <div className="flex space-x-[22px] items-center ">
+        <div className="flex space-x-[22px] items-center">
           <HeaderLinks />
         </div>
       </div>
       {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
-      ["development", "preview"].includes(
-        process.env.NEXT_PUBLIC_VERCEL_ENV,
-      ) ? (
+        ["development", "preview"].includes(
+          process.env.NEXT_PUBLIC_VERCEL_ENV,
+        ) ? (
         <> </>
       ) : (
         <>{/* <SupportUsBanner /> */}</>
