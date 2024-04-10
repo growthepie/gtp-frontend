@@ -1,5 +1,5 @@
 "use client";
-import Container from "@/components/layout/Container";
+import FeesContainer from "@/components/layout/FeesContainer";
 import Icon from "@/components/layout/Icon";
 import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
@@ -14,6 +14,7 @@ import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import OffScreenSlider from "./OffScreenSlider";
 import SliderChart from "./SliderChart";
 import Footer from "./Footer";
+import FeesHorizontalScrollContainer from "@/components/FeesHorizontalScrollContainer";
 
 interface HoveredItems {
   hoveredChain: string | null;
@@ -430,8 +431,8 @@ export default function FeesPage() {
         >
           <Header />
 
-          <Container className={`w-[820px] ${isMobile ? "hidden" : "block"}`}>
-            <div className="flex px-[5px] items-center w-[820px] h-[54px] rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000]">
+          <FeesContainer className={`w-full hidden md:block`}>
+            <div className="flex px-[5px] items-center w-full h-[54px] rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000]">
               <a
                 className="flex items-center w-[162px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-2 gap"
                 href="https://www.growthepie.xyz/"
@@ -441,9 +442,9 @@ export default function FeesPage() {
                 <div className="font-bold">Main platform</div>
               </a>
             </div>
-          </Container>
+          </FeesContainer>
           {/* <div className="w-full h-[70px]" /> */}
-          <Container className="w-full mt-[30px] ">
+          <FeesContainer className="w-full mt-[30px] ">
             <div className="flex w-full justify-between px-[10px] items-center ">
               <div
                 className={`flex text-[20px] font-bold items-center  ${isMobile ? "w-full " : "w-auto"
@@ -472,8 +473,8 @@ export default function FeesPage() {
               </div>
               <div className="w-[165px] h-[25px] flex bg-transparent px-0.5 items-center justify-between pr-[2px] rounded-full "></div>
             </div>
-          </Container>
-          <HorizontalScrollContainer>
+          </FeesContainer>
+          <FeesHorizontalScrollContainer>
             <div className="relative">
               <div
                 className={`w-[800px] mt-[8px] flex h-[26px] justify-start mb-1 text-[12px] font-bold ${isMobile ? "pl-[32px]" : "pl-[42px]"
@@ -1047,7 +1048,7 @@ export default function FeesPage() {
                 })}
               </div>
             </div>
-          </HorizontalScrollContainer>
+          </FeesHorizontalScrollContainer>
           {/* <Container className="fixed bottom-[20px] left-[15px] right-0 pl-[52px] z-50">
             <div className="w-[835px] mx-auto h-[54px] bg-[#1F2726] rounded-t-[30px] z-50" >
             </div>

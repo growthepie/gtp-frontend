@@ -1,4 +1,4 @@
-import Container from "@/components/layout/Container";
+import FeesContainer from "@/components/layout/FeesContainer";
 
 type SlidingFooterContainerProps = {
   children: React.ReactNode;
@@ -8,10 +8,10 @@ export default function OffScreenSlider({
   children,
 }: SlidingFooterContainerProps) {
   return (
-    <Container className={"!px-0 fixed w-[calc(100vw-0px)] md:w-[945px] mx-auto bottom-0"}>
-      <Container className={`w-full`}>
+    <div className={"fixed w-full max-w-[650px] md:max-w-[900px] mx-auto bottom-0"}>
+      <FeesContainer>
         {children}
-      </Container>
-    </Container>
+      </FeesContainer>
+    </div>
   );
 }

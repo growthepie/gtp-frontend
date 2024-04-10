@@ -58,14 +58,16 @@ export default function SliderChart({
           <div className="w-[16px] h-[16px]">
             <Icon
               icon="feather:chevron-up"
-              className={`w-[16px] h-[16px] ${isOpen ? "transform rotate-180" : ""
+              className={`w-[16px] h-[16px] transition-transform duration-300 ${isOpen ? "-rotate-180" : "rotate-0"
                 }`}
             />
           </div>
-          <div className="">
-            {isOpen
-              ? "Close Chart"
-              : "Open Chart for “Median fees over time”"}
+          <div className="transition-all duration-300 overflow-hidden whitespace-nowrap" style=
+            {{
+              width: isOpen ? "58px" : "185px",
+            }}
+          >
+            {isOpen ? `Close Chart` : `Open Chart for “Median fees over time”`}
           </div>
         </div>
       </div>
