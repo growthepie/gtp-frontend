@@ -1351,7 +1351,7 @@ export default function FeesPage() {
               position: isVerticalScrollbarVisible ? "fixed" : "absolute",
               bottom: isVerticalScrollbarVisible ? "190px" : undefined,
               top: !isVerticalScrollbarVisible && isMobile ? lastRowYRelativeToPage - 37 : undefined,
-              left: isMobile ? -horizontalScrollAmount : "auto",
+              left: isMobile && horizontalScrollAmount > 0 ? -horizontalScrollAmount : undefined,
             }}
           >
             <div
