@@ -12,7 +12,7 @@ import Header from "./Header";
 import { useTransition, animated } from "@react-spring/web";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import OffScreenSlider from "./OffScreenSlider";
-import SliderChart from "./SliderChart";
+import ChartContainer from "./ChartContainer";
 import Footer from "./Footer";
 import FeesHorizontalScrollContainer from "@/components/FeesHorizontalScrollContainer";
 import { useElementSize } from "usehooks-ts";
@@ -1637,7 +1637,7 @@ export default function FeesPage() {
             </div>
           </FeesContainer>
           <OffScreenSlider>
-            <SliderChart isOpen={isChartOpen} setIsOpen={setIsChartOpen} />
+            <ChartContainer isOpen={isChartOpen} setIsOpen={setIsChartOpen} seriesKey="" />
           </OffScreenSlider>
           <Footer />
         </div>

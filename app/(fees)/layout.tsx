@@ -180,12 +180,12 @@ export default function RootLayout({
               <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
                 <div className="w-full mx-auto relative min-h-full">
                   {/* <Header /> */}
-                  <main className="relative flex-1 w-full mx-auto z-10">
+                  <main className="relative flex-1 w-full mx-auto z-10 select-none">
                     {children}
                   </main>
                 </div>
               </div>
-              <div className="z-50 flex fixed inset-0 w-full justify-end pointer-events-none">
+              <div className="z-50 flex fixed inset-0 w-full justify-end pointer-events-none select-none">
                 <div className="flex flex-col justify-between w-full max-w-[650px] md:max-w-[900px] mx-auto min-h-screen">
                   <FeesContainer className="invisible pt-[102px] pointer-events-auto">
                     <div className="flex px-[5px] items-center w-full h-[54px] rounded-full bg-[#344240] shadow-[0px_0px_50px_0px_#000000]">

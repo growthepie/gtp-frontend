@@ -38,6 +38,7 @@
     "react-device-detect": "^2.2.3",
     "react-dom": "^18.2.0",
     "react-json-view": "^1.21.3",
+    "react-jsx-highcharts": "^5.0.1",
     "react-markdown": "^8.0.7",
     "react-spring": "^9.7.3",
     "schema-dts": "^1.1.2",

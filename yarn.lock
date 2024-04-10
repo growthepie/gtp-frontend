@@ -6033,6 +6033,13 @@ react-json-view@^1.21.3:
     react-lifecycles-compat "^3.0.4"
     react-textarea-autosize "^8.3.2"
 
+react-jsx-highcharts@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/react-jsx-highcharts/-/react-jsx-highcharts-5.0.1.tgz#1c9204c51a01de652a926a2b5094ce89cc8c95d4"
+  integrity sha512-Jg5FSxtq8WAEVkS1b7IlZlnslfTfiIwuZt2GoWcBPRvEKQRaJn7WXyGRczilXOrzQC50a7PvJ1o3UjOXUbf6Tw==
+  dependencies:
+    uuid "^9.0.0"
+
 react-lifecycles-compat@^3.0.4:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
@@ -7342,6 +7349,11 @@ util@^0.10.3:
   integrity sha512-0Pm9hTQ3se5ll1XihRic3FDIku70C+iHUdT/W926rSgHV5QgXsYbKZN8MSC3tJtSkhuROzvsQjAaFENRXr+19A==
   dependencies:
     inherits "2.0.3"
+
+uuid@^9.0.0:
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-9.0.1.tgz#e188d4c8853cc722220392c424cd637f32293f30"
+  integrity sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==
 
 uvu@^0.5.0:
   version "0.5.6"
