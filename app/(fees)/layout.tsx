@@ -178,19 +178,14 @@ export default function RootLayout({
               <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
                 <div className="w-full mx-auto relative min-h-full">
                   {/* <Header /> */}
-                  <main className="flex-1 w-full mx-auto z-10 mb-[165px]">
+                  <main className="flex-1 w-full mx-auto z-10">
                     {children}
                   </main>
                 </div>
               </div>
-              <div className="z-50 flex fixed bottom-[20px] w-full max-w-[948px] justify-end pointer-events-none ">
-
-                <div className="px-[20px] md:px-[50px] pointer-events-auto flex w-full relative justify-end">
-                  <div className="absolute w-[835px] h-[54px] -z-10">
-                    <div className="w-full bg-[#1F2726] h-[54px] rounded-t-[30px]"></div>
-                  </div>
+              <div className="z-50 flex fixed bottom-[20px] w-full max-w-[948px] justify-end pointer-events-none">
+                <div className="px-[20px] md:px-[67px] pointer-events-auto">
                   <div className="relative flex gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#344240] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
-
                     <Share />
                   </div>
                 </div>
