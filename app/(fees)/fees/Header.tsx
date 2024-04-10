@@ -56,6 +56,15 @@ export default function Header() {
                   height={21}
                 />
               </div>
+              <div className="h-full w-[128px] relative flex items-end right-[40px] top-[16px]">
+                <Image
+                  src="/xyz.svg"
+                  alt="Forest"
+                  className="block text-white "
+                  width={42}
+                  height={21}
+                />
+              </div>
             </Link>
           </div>
         </div>
@@ -68,9 +77,9 @@ export default function Header() {
         </div>
       </div>
       {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
-        ["development", "preview"].includes(
-          process.env.NEXT_PUBLIC_VERCEL_ENV,
-        ) ? (
+      ["development", "preview"].includes(
+        process.env.NEXT_PUBLIC_VERCEL_ENV,
+      ) ? (
         <> </>
       ) : (
         <>{/* <SupportUsBanner /> */}</>
