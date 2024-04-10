@@ -595,6 +595,89 @@ export default function FeesPage() {
   //   }
   // }, [isMobile, pageHeight, windowHeight, horizontalScrollAmount, isVerticalScrollbarVisible, lastRowYRelativeToPage]);
 
+  // returns which chain has the lowest median fee in the selected time period
+  const lowestMedianFee = useMemo(() => {
+    if (!feeData) return null;
+
+    const chains = Object.keys(feeData.chain_data).filter(
+      (chain) => chain !== "ethereum",
+    );
+
+    const chainData = chains.map((chain) => {
+      const chainData = feeData.chain_data[chain].hourly[selectedQuantitative]
+        .data;
+      const medianFee = chainData[optIndex]
+        ? chainData[optIndex][showUsd ? 2 : 1]
+        : null;
+
+      return {
+        chain,
+        medianFee,
+      };
+    });
+
+    const sortedChainData = chainData
+      .filter(({ medianFee }) => medianFee !== null)
+      .sort((a, b) => a.medianFee - b.medianFee);
+
+    return sortedChainData[0];
+  }, [feeData, selectedQuantitative, showUsd, optIndex]);
+
+
+  const lowestSwapFee = useMemo(() => {
+    if (!feeData) return null;
+
+    const chains = Object.keys(feeData.chain_data).filter(
+      (chain) => chain !== "ethereum",
+    );
+
+    const chainData = chains.map((chain) => {
+      const chainData = feeData.chain_data[chain].hourly["txcosts_swap"].data;
+      const medianFee = chainData[optIndex]
+        ? chainData[optIndex][showUsd ? 2 : 1]
+        : null;
+
+      return {
+        chain,
+        medianFee,
+      };
+    });
+
+    const sortedChainData = chainData
+      .filter(({ medianFee }) => medianFee !== null)
+      .sort((a, b) => a.medianFee - b.medianFee);
+
+    return sortedChainData[0];
+  }, [feeData, showUsd, optIndex]);
+
+  const lowestTransferFee = useMemo(() => {
+    if (!feeData) return null;
+
+    const chains = Object.keys(feeData.chain_data).filter(
+      (chain) => chain !== "ethereum",
+    );
+
+    const chainData = chains.map((chain) => {
+      const chainData = feeData.chain_data[chain].hourly["txcosts_native_median"]
+        .data;
+      const medianFee = chainData[optIndex]
+        ? chainData[optIndex][showUsd ? 2 : 1]
+        : null;
+
+      return {
+        chain,
+        medianFee,
+      };
+    });
+
+    const sortedChainData = chainData
+      .filter(({ medianFee }) => medianFee !== null)
+      .sort((a, b) => a.medianFee - b.medianFee);
+
+    return sortedChainData[0];
+  }, [feeData, showUsd, optIndex]);
+
+
 
   return (
     <>
@@ -1022,11 +1105,11 @@ export default function FeesPage() {
 
                       <div className="h-full w-[15%] flex justify-end items-center ">
                         <div
-                          className={`justify-center rounded-full flex items-center gap-x-0.5 ${selectedQuantitative === "txcosts_median"
+                          className={`justify-center rounded-full flex items-center gap-x-0.5 font-inter ${selectedQuantitative === "txcosts_median"
                             ? "border-[1.5px] px-3 py-1 leading-snug -mr-3"
                             : "border-0"
                             } 
-                          ${passMedian ? "opacity-100" : "opacity-50"}`}
+                          ${passMedian ? "opacity-100" : "opacity-50"} ${lowestMedianFee?.chain === item.chain[1] ? "font-bold text-sm" : "font-normal text-xs"}`}
                           style={{
                             borderColor: !feeIndexSort[optIndex][item.chain[1]]
                               ? "gray"
@@ -1046,7 +1129,7 @@ export default function FeesPage() {
                               ),
                           }}
                         >
-                          <div className="text-xs">{`${passMedian ? (showUsd ? "$" : "Ξ") : ""}`}</div>
+                          <div className="text-[0.65rem] font-light">{`${passMedian ? (showUsd ? "$" : "Ξ") : ""}`}</div>
                           {passMedian
                             ? Intl.NumberFormat(undefined, {
                               notation: "compact",
@@ -1062,13 +1145,13 @@ export default function FeesPage() {
                         </div>
                       </div>
                       <div
-                        className={`h-full flex justify-end items-center  ${isMobile ? "w-[16%]" : "w-[16%]"}`}
+                        className={`relative h-full flex justify-end items-center  ${isMobile ? "w-[16%]" : "w-[16%]"}`}
                       >
                         <div
-                          className={`justify-center rounded-full flex items-center gap-x-0.5 ${selectedQuantitative === "txcosts_native_median"
+                          className={`justify-center rounded-full flex items-center gap-x-0.5 font-inter ${selectedQuantitative === "txcosts_native_median"
                             ? "border-[1.5px] px-3 py-1 leading-snug -mr-3"
                             : "border-0"
-                            } ${passTransfer ? "opacity-100" : "opacity-50"}`}
+                            } ${passSwap ? "opacity-100" : "opacity-50"} ${lowestTransferFee?.chain === item.chain[1] ? "font-bold text-sm" : "font-normal text-xs"}`}
                           style={{
                             borderColor: !feeIndexSort[optIndex][item.chain[1]]
                               ? "gray"
@@ -1088,7 +1171,8 @@ export default function FeesPage() {
                               ),
                           }}
                         >
-                          <div className="text-xs">{`${passTransfer ? (showUsd ? "$" : "Ξ") : ""}`}</div>
+
+                          <div className="text-[0.65rem] font-light shadow-md">{`${passTransfer ? (showUsd ? "$" : "Ξ") : ""}`}</div>
                           {passTransfer
                             ? Intl.NumberFormat(undefined, {
                               notation: "compact",
@@ -1104,10 +1188,10 @@ export default function FeesPage() {
                       </div>
                       <div className={`pr-2 h-full flex justify-end items-center ${isMobile ? "w-[13.5%]" : "w-[16.5%]"}`}>
                         <div
-                          className={`justify-center rounded-full flex items-center gap-x-0.5 ${selectedQuantitative === "txcosts_swap"
+                          className={`justify-center rounded-full flex items-center gap-x-0.5 font-inter ${selectedQuantitative === "txcosts_swap"
                             ? "border-[1.5px] px-3 py-1 leading-snug -mr-3"
                             : "border-0"
-                            } ${passSwap ? "opacity-100" : "opacity-50"}`}
+                            } ${passSwap ? "opacity-100" : "opacity-50"} ${lowestSwapFee?.chain === item.chain[1] ? "font-bold text-sm" : "font-normal text-xs"}`}
                           style={{
                             borderColor: !feeIndexSort[optIndex][item.chain[1]]
                               ? "gray"
@@ -1127,7 +1211,7 @@ export default function FeesPage() {
                               ),
                           }}
                         >
-                          <div className="text-xs">{`${passSwap ? (showUsd ? "$" : "Ξ") : ""}`}</div>
+                          <div className="text-[0.65rem] font-light">{`${passSwap ? (showUsd ? "$" : "Ξ") : ""}`}</div>
                           {passSwap
                             ? Intl.NumberFormat(undefined, {
                               notation: "compact",
@@ -1390,7 +1474,7 @@ export default function FeesPage() {
 
                 <div className="h-full w-[15%] flex justify-end items-center ">
                   <div
-                    className={`justify-end rounded-full flex items-end gap-x-0.5 ${selectedQuantitative === "txcosts_median"
+                    className={`justify-end rounded-full flex items-center gap-x-0.5 font-inter font-medium text-xs ${selectedQuantitative === "txcosts_median"
                       ? "border-[1.5px] px-3 py-1 leading-snug -mr-3"
                       : "border-0"
                       }
@@ -1414,7 +1498,7 @@ export default function FeesPage() {
                         ),
                     }}
                   >
-                    <div className="text-xs">{`${true ? (showUsd ? "$" : "Ξ") : ""}`}</div>
+                    <div className="text-[0.65rem] font-light">{`${true ? (showUsd ? "$" : "Ξ") : ""}`}</div>
                     {true
                       ? Intl.NumberFormat(undefined, {
                         notation: "compact",
@@ -1434,7 +1518,7 @@ export default function FeesPage() {
                     }`}
                 >
                   <div
-                    className={`justify-end rounded-full flex items-center gap-x-0.5 ${selectedQuantitative === "txcosts_native_median"
+                    className={`justify-end rounded-full flex items-center gap-x-0.5 font-inter font-medium text-xs ${selectedQuantitative === "txcosts_native_median"
                       ? "border-[1.5px] px-3 py-1 leading-snug -mr-3.5"
                       : "border-0"
                       } ${true ? "opacity-100" : "opacity-50"}`}
@@ -1457,7 +1541,7 @@ export default function FeesPage() {
                         ),
                     }}
                   >
-                    <div className="text-xs">{`${true ? (showUsd ? "$" : "Ξ") : ""}`}</div>
+                    <div className="text-[0.65rem] font-light">{`${true ? (showUsd ? "$" : "Ξ") : ""}`}</div>
                     {true
                       ? Intl.NumberFormat(undefined, {
                         notation: "compact",
@@ -1473,7 +1557,7 @@ export default function FeesPage() {
                 </div>
                 <div className={`h-full flex justify-end items-center pr-2 ${isMobile ? "w-[13.5%]" : "w-[16.5%]"}`}>
                   <div
-                    className={`justify-end rounded-full flex items-center gap-x-0.5 ${selectedQuantitative === "txcosts_swap"
+                    className={`justify-end rounded-full flex items-center gap-x-0.5 font-inter font-medium text-xs ${selectedQuantitative === "txcosts_swap"
                       ? "border-[1.5px] px-3 py-1 leading-snug -mr-3.5"
                       : "border-0 -mr-0.5"
                       } ${true ? "opacity-100" : "opacity-50"}`}
@@ -1496,7 +1580,7 @@ export default function FeesPage() {
                         ),
                     }}
                   >
-                    <div className="text-xs">{`${true ? (showUsd ? "$" : "Ξ") : ""}`}</div>
+                    <div className="text-[0.65rem] font-light">{`${true ? (showUsd ? "$" : "Ξ") : ""}`}</div>
                     {true
                       ? Intl.NumberFormat(undefined, {
                         notation: "compact",
