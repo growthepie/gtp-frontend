@@ -644,7 +644,7 @@ export default function FeesPage() {
                     }`}
                   />{" "}
                 </div>
-                <div className="relative -top-1 flex flex-col items-end space-x-[1px] font-normal ">
+                <div className="relative -top-[5px] flex flex-col items-end space-x-[1px] font-normal ">
                   <div
                     className={`relative right-1 w-[29px] h-[12px] text-[8px] ${
                       selectedBarIndex >= 18 && selectedBarIndex <= 22
@@ -946,7 +946,7 @@ export default function FeesPage() {
                           } ${
                             feeData.chain_data[item.chain[1]]["hourly"][
                               "txcosts_swap"
-                            ].data[0]
+                            ].data[optIndex]
                               ? "opacity-100"
                               : "opacity-50"
                           }`}
@@ -1173,7 +1173,7 @@ export default function FeesPage() {
                 >
                   {`${
                     feeData.chain_data["ethereum"]["hourly"]
-                      .txcosts_native_median.data[0]
+                      .txcosts_native_median.data[optIndex]
                       ? showUsd
                         ? "$"
                         : "Ξ"
