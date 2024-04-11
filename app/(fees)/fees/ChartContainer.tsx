@@ -10,16 +10,28 @@ type SlidingFooterContainerProps = {
   // children: React.ReactNode;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  seriesKey: string;
+  selectedMetric: string;
+  selectedTimeframe: string;
+  selectedChains: string[];
 };
 
-const metrics = ["txcount", "stables_mcap", "fees", "rent_paid", "market_cap"];
+
+const metricLabels = {
+  txcosts_avg: "Average",
+  txcosts_median: "Median",
+  txcosts_native_median: "Transfer ETH",
+  txcosts_swap: "Swap Token",
+};
+
+
 
 export default function ChartContainer({
   // children,
   isOpen,
   setIsOpen,
-
+  selectedMetric,
+  selectedTimeframe,
+  selectedChains,
 }: SlidingFooterContainerProps) {
 
   const {
@@ -43,14 +55,31 @@ export default function ChartContainer({
 
       const m: string[] = Object.keys(data.chain_data[chains[0]]);
       setMetrics(m);
+
       const tf: string[] = Object.keys(data.chain_data[chains[0]][m[0]]);
       setTimeFrames(tf);
-
-      // set timeFrameIndex to "24hrs"
-      setTimeFrameIndex(tf.indexOf("24hrs"));
     }
 
   }, [data]);
+
+
+  useEffect(() => {
+    if (selectedMetric && metrics.length > 0) {
+      const index = metrics.indexOf(selectedMetric);
+      if (index !== -1) {
+        setMetricIndex(index);
+      }
+    }
+  }, [metrics, selectedMetric]);
+
+  useEffect(() => {
+    if (selectedTimeframe && timeFrames.length > 0) {
+      const index = timeFrames.indexOf(selectedTimeframe);
+      if (index !== -1) {
+        setTimeFrameIndex(index);
+      }
+    }
+  }, [timeFrames, selectedTimeframe]);
 
   const timeframeToText = (timeframe: string) => {
     switch (timeframe) {
@@ -79,13 +108,13 @@ export default function ChartContainer({
     >
       <div className="absolute -top-[12px] left-0 right-0 flex justify-center z-50">
         <div
-          className="flex items-center gap-x-[10px] text-[10px] px-[15px] py-[4px] leading-[150%] rounded-full bg-[#1F2726] shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000] cursor-pointer"
+          className="flex items-center gap-x-[10px] text-[10px] pl-[15px] pr-[20px] py-[4px] leading-[150%] rounded-full bg-[#1F2726] shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000] cursor-pointer"
           onClick={() => {
-            const currentState = isOpen;
+            const wasOpen = isOpen;
 
-            setIsOpen(!currentState);
+            setIsOpen(!wasOpen);
 
-            if (!currentState) {
+            if (!wasOpen) {
               track("opened Chart", {
                 location: `fees page - ${metrics[metricIndex]}`,
                 page: window.location.pathname,
@@ -108,21 +137,21 @@ export default function ChartContainer({
           </div>
           <div className="transition-all duration-300 overflow-hidden whitespace-nowrap" style=
             {{
-              width: isOpen ? "58px" : "185px",
+              maxWidth: isOpen ? "58px" : `600px`,
             }}
           >
-            {isOpen ? `Close Chart` : `Open Chart for “Median fees over time”`}
+            {isOpen ? `Close Chart` : `Open Chart for “${metricLabels[selectedMetric]} over time”`}
           </div>
         </div>
       </div>
       {metrics.length > 0 && timeFrames.length > 0 && <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-[300px] pb-[55px]' : 'max-h-[51px]'}`}>
         <div className={`w-full  flex flex-col gap-y-[10px] md:gap-y-[5px] transition-all duration-200 ${isOpen ? 'delay-0 opacity-100' : 'delay-100 opacity-0'}`}>
           <div className="w-full flex flex-col md:flex-row gap-y-[10px] md:gap-y-0 justify-between px-[15px]">
-            {/* <div className="flex gap-x-1 text-[20px] leading-[120%]">
-              <div className="font-bold">Swap Token</div>
+            <div className="flex gap-x-1 text-[20px] leading-[120%]">
+              <div className="font-bold">{metricLabels[selectedMetric]}</div>
               <div>fees over time</div>
-            </div> */}
-            <div className="w-full md:w-[200px] bg-[#344240] rounded-full px-[2px] py-[2px] flex items-center gap-x-[2px] justify-between">
+            </div>
+            {/* <div className="w-full md:w-[200px] bg-[#344240] rounded-full px-[2px] py-[2px] flex items-center gap-x-[2px] justify-between">
               <div
                 className="px-[7px] py-[3px] bg-[#5A6462] dark:bg-[#1F2726] rounded-full cursor-pointer"
                 onClick={() => {
@@ -164,7 +193,7 @@ export default function ChartContainer({
               >
                 <Icon icon="feather:arrow-right" className="w-[15px] h-[15px]" />
               </div>
-            </div>
+            </div> */}
             <div className="w-full md:w-[165px] bg-[#344240] rounded-full px-[2px] py-[2px] flex items-center gap-x-[2px] justify-between">
               <div
                 className="px-[7px] py-[3px] bg-[#5A6462] dark:bg-[#1F2726] rounded-full cursor-pointer"
@@ -210,13 +239,13 @@ export default function ChartContainer({
             </div>
           </div>
           <div className="px-[5px]">
-            <div className="relative border border-[#5A6462] rounded-[15px] h-[146px] md:h-[179px] w-full overflow-visible">
-              <div className="absolute top-0 left-0 w-full h-full">
-                {/* <div className="h-[146px] md:h-[179px] w-full overflow-visible"> */}
+            <div className="border border-[#5A6462] rounded-[15px] h-[146px] md:h-[179px] w-full overflow-hidden">
+              {/* <div className="absolute top-0 left-0 w-full h-full"> */}
+              {/* <div className="h-[146px] md:h-[179px] w-full overflow-visible"> */}
 
-                {/* {landing && <SwiperItem metric_id={metrics[metricIndex]} landing={landing} />} */}
-                <FeesChart seriesKey={metrics[metricIndex]} selectedTimeframe={timeFrames[timeFrameIndex]} />
-              </div>
+              {/* {landing && <SwiperItem metric_id={metrics[metricIndex]} landing={landing} />} */}
+              <FeesChart selectedMetric={metrics[metricIndex]} selectedTimeframe={timeFrames[timeFrameIndex]} selectedChains={selectedChains} />
+              {/* </div> */}
             </div>
           </div>
         </div>

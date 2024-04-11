@@ -4,12 +4,14 @@ import { formatNumber, tooltipFormatter, tooltipPositioner } from '@/lib/chartUt
 import Highcharts from 'highcharts/highstock';
 import ReactJson from 'react-json-view';
 import {
-  HighchartsProvider, HighchartsChart, Chart, XAxis, YAxis, Title, Subtitle, Legend, LineSeries, Tooltip, PlotBand, PlotLine, withHighcharts
+  HighchartsProvider, HighchartsChart, Chart, XAxis, YAxis, Title, Subtitle, Legend, LineSeries, Tooltip, PlotBand, PlotLine, withHighcharts, AreaSeries
 } from 'react-jsx-highcharts';
 import useSWR from "swr";
 import { useTheme } from 'next-themes';
-import { useCallback, useMemo } from 'react';
+import { use, useCallback, useMemo } from 'react';
 import { useLocalStorage, useSessionStorage } from 'usehooks-ts';
+import { useUIContext } from '@/contexts/UIContext';
+import d3 from "d3";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -22,16 +24,43 @@ const COLORS = {
 
 
 const plotOptions: Highcharts.PlotOptions = {
-
+  column: {
+    grouping: false,
+    stacking: "normal",
+    events: {
+      legendItemClick: function () {
+        return false;
+      },
+    },
+    groupPadding: 0,
+    animation: false,
+  },
+  series: {
+    stacking: undefined,
+    events: {
+      legendItemClick: function () {
+        return false;
+      },
+    },
+    marker: {
+      lineColor: "white",
+      radius: 0,
+      symbol: "circle",
+    },
+    shadow: false,
+    animation: false,
+  },
 };
 
 type FeesChartProps = {
-  seriesKey: string;
+  selectedMetric: string;
   selectedTimeframe: string;
+  selectedChains: string[];
 };
 
-export default function FeesChart({ seriesKey, selectedTimeframe }: FeesChartProps) {
+export default function FeesChart({ selectedMetric, selectedTimeframe, selectedChains }: FeesChartProps) {
   const { theme } = useTheme();
+  const { isMobile } = useUIContext();
   // const seriesKey = "txcosts_avg";
   const selectedScale: string = "absolute";
 
@@ -45,121 +74,279 @@ export default function FeesChart({ seriesKey, selectedTimeframe }: FeesChartPro
   } = useSWR("https://api.growthepie.xyz/v1/fees/linechart.json");
 
   const showGwei = false;
+  const reversePerformer = true;
+
+  const valuePrefix = useMemo(() => {
+    if (showUsd) return "$";
+    // eth symbol
+    return "Ξ";
+  }, [showUsd]);
+
+  function shortenNumber(number) {
+    let numberStr = Math.floor(number).toString();
+
+    const suffixes = ["", "k", "M", "B"];
+    const numberOfDigits = numberStr.length;
+    const magnitude = Math.floor((numberOfDigits - 1) / 3);
+    const suffixIndex = Math.min(magnitude, suffixes.length - 1);
+
+    const suffix = suffixes[suffixIndex];
+
+    let shortenedNumber;
+    if (magnitude > 0) {
+      const digitsBeforeDecimal = numberOfDigits % 3 || 3;
+      shortenedNumber =
+        parseFloat(numberStr.slice(0, digitsBeforeDecimal + 2)) / 100;
+      // Remove trailing zeros after the decimal point
+      shortenedNumber = shortenedNumber.toFixed(2).replace(/\.?0+$/, "");
+    } else {
+      shortenedNumber = number.toFixed(2);
+    }
+
+    // Concatenate the suffix
+    return shortenedNumber.toString() + suffix;
+  }
+
+  const formatNumber = useCallback(
+    (value: number | string, isAxis = false) => {
+      let prefix = valuePrefix;
+      let suffix = "";
+      let val = parseFloat(value as string);
+
+      if (!showUsd) {
+        if (showGwei) {
+          prefix = "";
+          suffix = " Gwei";
+        }
+      }
+
+      let number = d3.format(`.2~s`)(val).replace(/G/, "B");
+
+      if (isAxis) {
+        if (selectedScale === "percentage") {
+          number = d3.format(".2~s")(val).replace(/G/, "B") + "%";
+        } else {
+          if (showGwei && showUsd) {
+            // for small USD amounts, show 2 decimals
+            if (val < 1) number = prefix + val.toFixed(2) + suffix;
+            else if (val < 10)
+              number =
+                prefix + d3.format(".3s")(val).replace(/G/, "B") + suffix;
+            else if (val < 100)
+              number =
+                prefix + d3.format(".4s")(val).replace(/G/, "B") + suffix;
+            else
+              number =
+                prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+          } else {
+            number = prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+          }
+        }
+      }
+
+      return number;
+    },
+    [valuePrefix, showUsd, selectedScale, showGwei],
+  );
 
   const tooltipFormatter = useCallback(
-    function (this: Highcharts.TooltipFormatterContextObject) {
-      if (!data) return;
+    function (this: any) {
       const { x, points } = this;
-
-      if (!points || !x) return;
-
-      // const series = points[0].series;
-
       const date = new Date(x);
-
-      // const prefix = prefixes[series.name] ?? "";
-
       const dateString = date.toLocaleDateString(undefined, {
         timeZone: "UTC",
         month: "short",
         day: "numeric",
         year: "numeric",
       });
-      const timeString = date.toLocaleTimeString(undefined, {
-        timeZone: "UTC",
-        hour: "numeric",
-        minute: "numeric",
-      });
 
-      const tooltip = `
-      <div class="mt-3 mr-3 mb-3 w-52 text-xs font-raleway">
-        <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString} ${timeString}</div>`;
+      const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
+        <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
-      let pointsSum = 0;
-      if (selectedScale !== "percentage")
-        pointsSum = points.reduce((acc: number, point: any) => {
-          acc += point.y;
-          return pointsSum;
-        }, 0);
+      // let pointsSum = 0;
+      // if (selectedScale !== "percentage")
+      let pointsSum = points.reduce((acc: number, point: any) => {
+        acc += point.y;
+        return acc;
+      }, 0);
 
-      let num = 0;
-      const tooltipData = points
-        .sort((a: any, b: any) => b.y - a.y)
+      let pointSumNonNegative = points.reduce((acc: number, point: any) => {
+        if (point.y > 0) acc += point.y;
+        return acc;
+      }, 0);
+
+      const maxPoint = points.reduce((max: number, point: any) => {
+        if (point.y > max) max = point.y;
+        return max;
+      }, 0);
+
+      const maxPercentage = points.reduce((max: number, point: any) => {
+        if (point.percentage > max) max = point.percentage;
+        return max;
+      }, 0);
+
+      const tooltipPoints = points
+        .sort((a: any, b: any) => {
+          if (reversePerformer) return a.y - b.y;
+
+          return b.y - a.y;
+        })
         .map((point: any) => {
-          num = num += 1;
-
-          const { series, y } = point;
+          const { series, y, percentage } = point;
           const { name } = series;
+          if (selectedScale === "percentage")
+            return `
+              <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+              }"></div>
+                <div class="tooltip-point-name">${AllChainsByKeys[name].label
+              }</div>
+                <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
+                percentage,
+                2,
+              )}%</div>
+              </div>
+              
+              <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+    
+                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+                style="
+                  width: ${(percentage / maxPercentage) * 100}%;
+                  background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]};
+                "></div>
+              </div>`;
 
-          const dataTypes = data.chain_data[name][seriesKey]["24hrs"].types;
-          const metricKey = seriesKey;
-          const label = AllChainsByKeys[name].label;
-
-          let prefix = "";
+          let prefix = valuePrefix;
           let suffix = "";
-          let digits = 2;
           let value = y;
 
-          if (dataTypes?.includes("value_usd") || dataTypes?.includes("usd")) {
-            if (showUsd) {
-              prefix = "$";
-              suffix = "";
-              digits = 3;
-            } else {
-              if (showGwei) {
-                prefix = "";
-                suffix = " Gwei";
-                digits = 0;
-              } else {
-                prefix = "Ξ";
-                suffix = "";
-                digits = 4;
-              }
+          if (!showUsd) {
+            if (showGwei) {
+              prefix = "";
+              suffix = " Gwei";
             }
           }
 
-
-
-          // if (series.name === item.chain_name) {
           return `
-                <div class="flex w-full space-x-2 items-center font-medium mb-1">
-                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme][0]
+          <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
             }"></div>
-            <div class="tooltip-point-name">${label}</div>
+            <div class="tooltip-point-name text-md">${AllChainsByKeys[name].label
+            }</div>
             <div class="flex-1 text-right justify-end font-inter flex">
-          <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">${prefix}</div>
-          ${parseFloat(value).toLocaleString(undefined, {
-              minimumFractionDigits: digits,
-              maximumFractionDigits: digits,
-            })}
-          <div class="opacity-70 ml-0.5 ${!suffix && "hidden"}">${suffix}</div>
-        </div>
-                  </div>
-                </div>`;
-          // } else {
-          //   return "";
-          // }
+                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+            }">${prefix}</div>
+                ${selectedMetric === "fdv" || "market_cap"
+              ? shortenNumber(value).toString()
+              : parseFloat(value).toLocaleString(undefined, {
+                minimumFractionDigits: valuePrefix ? 2 : 0,
+                maximumFractionDigits: valuePrefix
+                  ? selectedMetric === "txcosts"
+                    ? 3
+                    : 2
+                  : 0,
+              })
+            }
+                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+            }">${suffix}</div>
+            </div>
+          </div>
+          <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
+
+            <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
+            style="
+              width: ${(Math.max(0, value) / maxPoint) * 100}%;
+              background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]};
+            "></div>
+          </div>`;
         })
         .join("");
 
-      return tooltip + tooltipData + tooltipEnd;
+      let prefix = valuePrefix;
+      let suffix = "";
+      let value = pointsSum;
+
+      const sumRow =
+        selectedScale === "stacked"
+          ? `
+        <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
+          <div class="w-4 h-1.5 rounded-r-full" style=""></div>
+          <div class="tooltip-point-name text-md">Total</div>
+          <div class="flex-1 text-right justify-end font-inter flex">
+
+              <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">${prefix}</div>
+              ${parseFloat(value).toLocaleString(undefined, {
+            minimumFractionDigits: valuePrefix ? 2 : 0,
+            maximumFractionDigits: valuePrefix ? 2 : 0,
+          })}
+              <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+          }">${suffix}</div>
+          </div>
+        </div>
+        <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
+          <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
+        </div>`
+          : "";
+
+      return tooltip + tooltipPoints + sumRow + tooltipEnd;
     },
-    [data, seriesKey, showUsd, theme, showGwei],
+    [valuePrefix, reversePerformer, theme, showUsd, selectedMetric, showGwei],
   );
+
+  const tooltipPositioner =
+    useCallback<Highcharts.TooltipPositionerCallbackFunction>(
+      function (this, width, height, point) {
+        const chart = this.chart;
+        const { plotLeft, plotTop, plotWidth, plotHeight } = chart;
+        const tooltipWidth = width;
+        const tooltipHeight = height;
+
+        const distance = 40;
+        const pointX = point.plotX + plotLeft;
+        const pointY = point.plotY + plotTop;
+        let tooltipX =
+          pointX - distance - tooltipWidth < plotLeft
+            ? pointX + distance
+            : pointX - tooltipWidth - distance;
+
+        const tooltipY =
+          pointY - tooltipHeight / 2 < plotTop
+            ? pointY + distance
+            : pointY - tooltipHeight / 2;
+
+        if (isMobile) {
+          if (tooltipX + tooltipWidth > plotLeft + plotWidth) {
+            tooltipX = plotLeft + plotWidth - tooltipWidth;
+          }
+          return {
+            x: tooltipX,
+            y: -100,
+          };
+        }
+
+        return {
+          x: tooltipX,
+          y: tooltipY - 200,
+        };
+      },
+      [isMobile],
+    );
 
   const dataIndex = useMemo(() => {
     if (!data) return;
 
     // array of strings of the types of data available for the selected series
-    const types = data.chain_data["optimism"][seriesKey][selectedTimeframe].types;
+    const types = data.chain_data["optimism"][selectedMetric][selectedTimeframe].types;
 
     if (types.includes("value_usd")) {
       return showUsd ? types.indexOf("value_usd") : types.indexOf("value_eth");
     } else {
       return 1;
     }
-  }, [data, seriesKey, selectedTimeframe, showUsd]);
+  }, [data, selectedMetric, selectedTimeframe, showUsd]);
 
 
   const positioner = useCallback(function (this, width, height, point) {
@@ -184,171 +371,220 @@ export default function FeesChart({ seriesKey, selectedTimeframe }: FeesChartPro
     return { x: x, y: y };
   }, []);
 
+
+  const zIndexByChainKey = useMemo(() => {
+    if (!data) return Object.keys(selectedChains).reduce((acc, chainKey) => {
+      acc[chainKey] = 0;
+      return acc;
+    }, {});
+
+    // get the latest value for each chain
+    const latestValues = Object.keys(data.chain_data).reduce((acc, chainKey) => {
+      const chainData = data.chain_data[chainKey][selectedMetric][selectedTimeframe].data;
+      if (chainData.length > 0) {
+        acc[chainKey] = chainData[chainData.length - 1][dataIndex];
+      }
+      return acc;
+    }, {});
+
+    // sort the chains by their latest value
+    const sortedChains = Object.keys(latestValues).sort((a, b) => latestValues[b] - latestValues[a]);
+
+    return sortedChains.reduce((acc, chainKey, index) => {
+      acc[chainKey] = index + 1;
+      return acc;
+    }, {});
+
+
+
+  }, [data, selectedTimeframe, selectedChains, selectedMetric, dataIndex]);
+
   return (
-    <div>
+    <HighchartsProvider Highcharts={Highcharts}>
+      <HighchartsChart plotOptions={plotOptions} containerProps={{ style: { height: "100%", width: "100%" } }} >
+        <Chart
+          backgroundColor={"transparent"}
+          type='line'
+          panning={{
+            enabled: true,
+          }}
+          panKey='shift'
+          zooming={{
+            type: undefined,
+          }}
+          style={{
+            borderRadius: 15,
+          }}
+          animation={{
+            duration: 50,
+          }}
+          marginBottom={1}
+          marginLeft={0}
+          marginRight={0}
+          marginTop={0}
+        // paddingTop={0}
+        // paddingBottom={0}
+        // spacing={[0, 0, 0, 0]}
 
-      <HighchartsProvider Highcharts={Highcharts}>
-        <HighchartsChart plotOptions={plotOptions}>
-          <Chart
-            backgroundColor={"transparent"}
-            type='line'
-            height={176}
-            panning={{
-              enabled: true,
-            }}
-            panKey='shift'
-            zooming={{
-              type: undefined,
-            }}
-            style={{
-              borderRadius: 15,
-            }}
-            animation={{
-              duration: 50,
-            }}
-          // marginBottom={0}
-          // marginLeft={0}
-          // marginRight={0}
-          // paddingTop={0}
-          // paddingBottom={0}
-          // spacing={[0, 0, 0, 0]}
+        />
+        <Tooltip
+          useHTML={true}
+          shared={true}
+          split={false}
+          followPointer={true}
+          followTouchMove={true}
+          backgroundColor={"#2A3433EE"}
+          padding={0}
+          hideDelay={300}
+          stickOnContact={true}
+          shape="rect"
+          borderRadius={17}
+          borderWidth={0}
+          outside={true}
+          shadow={{
+            color: "black",
+            opacity: 0.015,
+            offsetX: 2,
+            offsetY: 2,
+          }}
+          style={{
+            color: theme === "dark" ? "rgb(215, 223, 222)" : "rgb(41, 51, 50)"
+          }}
 
-          />
-          <Tooltip
-            useHTML={true}
-            shared={true}
-            split={false}
-            followPointer={true}
-            followTouchMove={true}
+          formatter={tooltipFormatter}
+          // ensure tooltip is always above the chart
+          positioner={tooltipPositioner}
+          valuePrefix={showUsd ? "$" : ""}
+          valueSuffix={showUsd ? "" : " Gwei"}
+        />
+        <XAxis
+          title={undefined}
+          type="datetime"
+          maxPadding={0}
+          minPadding={0}
+          labels={{
+            useHTML: true,
+            style: {
+              color: COLORS.LABEL,
+              fontSize: "10px",
+              fontFamily: "var(--font-raleway), sans-serif",
+              zIndex: 1000,
+            },
+            enabled: true,
+            // formatter: (item) => {
+            //   const date = new Date(item.value);
+            //   const isMonthStart = date.getDate() === 1;
+            //   const isYearStart = isMonthStart && date.getMonth() === 0;
+            //   if (isYearStart) {
+            //     return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
+            //   } else {
+            //     return `<span style="">${date.toLocaleDateString(undefined, {
+            //       month: "short",
+            //     })}</span>`;
+            //   }
+            // },
+          }}
+          crosshair={{
+            width: 0.5,
+            color: COLORS.PLOT_LINE,
+            snap: false,
+          }}
+          tickmarkPlacement='on'
+          tickWidth={1}
+          tickLength={20}
+          ordinal={false}
+          minorTicks={false}
+          minorTickLength={2}
+          minorTickWidth={2}
+          minorGridLineWidth={0}
+          minorTickInterval={1000 * 60 * 60 * 24 * 7}
+        >
+          {/* <XAxis.Title>Time</XAxis.Title> */}
 
-            backgroundColor={"#2A3433EE"}
-            padding={0}
-            hideDelay={300}
-            stickOnContact={true}
-            shape="rect"
-            borderRadius={17}
-            borderWidth={0}
-            outside={true}
-            shadow={{
-              color: "#000000",
-              opacity: 0.015,
-              offsetX: 2,
-              offsetY: 2,
-            }}
-            style={{
-              color: "rgb(215, 223, 222))"
-            }}
+        </XAxis>
+        <YAxis
+          opposite={false}
+          showFirstLabel={true}
+          showLastLabel={true}
+          type="linear"
+          gridLineWidth={1}
+          gridLineColor={theme === "dark"
+            ? "#5A6462"
+            : "#5A6462"
+          }
+          labels={{
+            align: "left",
+            y: 15,
+            x: 5,
+            style: {
+              gridLineColor:
+                theme === "dark"
+                  ? "#5A6462"
+                  : "#5A6462",
+              fontSize: "10px",
+              color: "#5A6462",
+            },
+            formatter: function (t: Highcharts.AxisLabelsFormatterContextObject) {
+              return formatNumber(t.value, true);
+            },
+          }}
+          min={0}
 
-            formatter={tooltipFormatter}
-            // ensure tooltip is always above the chart
-            positioner={positioner}
-            valuePrefix={showUsd ? "$" : ""}
-            valueSuffix={showUsd ? "" : " Gwei"}
-          />
-          <XAxis
-            title={undefined}
-            type="datetime"
-            labels={{
-              useHTML: true,
-              style: {
-                color: COLORS.LABEL,
-                fontSize: "10px",
-                fontFamily: "var(--font-raleway), sans-serif",
-                zIndex: 1000,
-              },
-              enabled: true,
-              // formatter: (item) => {
-              //   const date = new Date(item.value);
-              //   const isMonthStart = date.getDate() === 1;
-              //   const isYearStart = isMonthStart && date.getMonth() === 0;
-              //   if (isYearStart) {
-              //     return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
-              //   } else {
-              //     return `<span style="">${date.toLocaleDateString(undefined, {
-              //       month: "short",
-              //     })}</span>`;
-              //   }
-              // },
-            }}
-            crosshair={{
-              width: 0.5,
-              color: COLORS.PLOT_LINE,
-              snap: false,
-            }}
-            tickmarkPlacement='on'
-            tickWidth={1}
-            tickLength={20}
-            ordinal={false}
-            minorTicks={false}
-            minorTickLength={2}
-            minorTickWidth={2}
-            minorGridLineWidth={0}
-            minorTickInterval={1000 * 60 * 60 * 24 * 7}
-          >
-            {/* <XAxis.Title>Time</XAxis.Title> */}
-
-          </XAxis>
-          <YAxis
-            opposite={false}
-            showFirstLabel={true}
-            showLastLabel={true}
-            type="linear"
-            gridLineWidth={1}
-            gridLineColor={theme === "dark"
-              ? "rgba(215, 223, 222, 0.11)"
-              : "rgba(41, 51, 50, 0.11)"
-            }
-            labels={{
-              align: "left",
-              y: 11,
-              x: 2,
-              style: {
-                gridLineColor:
-                  theme === "dark"
-                    ? "rgba(215, 223, 222, 0.33)"
-                    : "rgba(41, 51, 50, 0.33)",
-                fontSize: "10px",
-              },
-            }}
-            min={0}
-
-          >
-            {data && Object.keys(data.chain_data).map((chainKey) => {
-              if (data.chain_data[chainKey][seriesKey][selectedTimeframe])
-                return (
-                  <LineSeries
-                    key={`${chainKey}-${seriesKey}-${selectedTimeframe}`}
-                    name={chainKey}
-                    data={data.chain_data[chainKey][seriesKey][selectedTimeframe].data.map((d: any) => [d[0], d[dataIndex]])}
-                    color={AllChainsByKeys[chainKey].colors[0]}
-                    lineWidth={1}
-                    shadow={{
-                      color: AllChainsByKeys[chainKey].colors[0],
-                      offsetX: 0,
-                      offsetY: 0,
-                      opacity: 1,
-                      width: 2
-                    }}
-                    states={{
-                      hover: {
-
-
+        >
+          {data && Object.keys(data.chain_data).filter((chainKey) => selectedChains.includes(chainKey)).map((chainKey) => {
+            if (data.chain_data[chainKey][selectedMetric][selectedTimeframe])
+              return (
+                <LineSeries
+                  key={`${chainKey}-${selectedMetric}-${selectedTimeframe}`}
+                  zIndex={zIndexByChainKey[chainKey] ?? 0}
+                  name={chainKey}
+                  data={data.chain_data[chainKey][selectedMetric][selectedTimeframe].data.map((d: any) => [d[0], d[dataIndex]])}
+                  color={AllChainsByKeys[chainKey].colors["dark"][0]}
+                  fillColor={"transparent"}
+                  fillOpacity={1}
+                  borderColor={AllChainsByKeys[chainKey].colors["dark"][0]}
+                  borderWidth={1}
+                  lineWidth={2}
+                  clip={true}
+                  shadow={{
+                    color:
+                      AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
+                      "66",
+                    width: 6,
+                  }}
+                  states={{
+                    hover: {
+                      enabled: true,
+                      halo: {
+                        size: 5,
+                        opacity: 1,
+                        attributes: {
+                          fill:
+                            AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
+                            "99",
+                          stroke:
+                            AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
+                            "66",
+                          strokeWidth: 0,
+                        },
                       },
-                    }}
-                    marker={{
-                      lineColor: "white",
-                      radius: 0,
-                      symbol: "circle",
-                    }}
-                  />)
-            })}
-          </YAxis>
-        </HighchartsChart>
-      </HighchartsProvider>
-      {/* <div className='bg-white'>
-        {data && <ReactJson src={data.chain_data["optimism"][seriesKey]["24hrs"].data} collapsed={true} />}
-      </div> */}
-    </div>
+                      brightness: 0.3,
+                    },
+                    inactive: {
+                      enabled: true,
+                      opacity: 0.6,
+                    },
+                  }}
+                // marker={{
+                //   lineColor: "white",
+                //   radius: 0,
+                //   symbol: "circle",
+                // }}
+                />)
+          })}
+        </YAxis>
+      </HighchartsChart>
+    </HighchartsProvider>
   );
 
 }

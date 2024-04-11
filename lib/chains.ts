@@ -524,31 +524,43 @@ export const AllChains: Chain[] = [
   },
 ];
 
-export const AllChainsByKeys = AllChains.reduce((acc, chain) => {
-  acc[chain.key] = chain;
-  return acc;
-}, {});
+export const AllChainsByKeys: { [key: string]: Chain } = AllChains.reduce(
+  (acc, chain) => {
+    acc[chain.key] = chain;
+    return acc;
+  },
+  {},
+);
 
-export const AllChainsByLabels = AllChains.reduce((acc, chain) => {
-  acc[chain.label] = chain;
-  return acc;
-}, {});
+export const AllChainsByLabels: { [label: string]: Chain } = AllChains.reduce(
+  (acc, chain) => {
+    acc[chain.label] = chain;
+    return acc;
+  },
+  {},
+);
 
-export const AllChainsByUrlKey = AllChains.reduce((acc, chain) => {
-  acc[chain.urlKey] = chain;
-  return acc;
-}, {});
+export const AllChainsByUrlKey: { [urlKey: string]: Chain } = AllChains.reduce(
+  (acc, chain) => {
+    acc[chain.urlKey] = chain;
+    return acc;
+  },
+  {},
+);
 
-export const EnabledChainsByKeys = AllChains.reduce((acc, chain) => {
-  if (chain.chainType === "L2") {
-    if (chain.ecosystem.includes("all-chains")) {
+export const EnabledChainsByKeys: { [key: string]: Chain } = AllChains.reduce(
+  (acc, chain) => {
+    if (chain.chainType === "L2") {
+      if (chain.ecosystem.includes("all-chains")) {
+        acc[chain.key] = chain;
+      }
+    } else {
       acc[chain.key] = chain;
     }
-  } else {
-    acc[chain.key] = chain;
-  }
-  return acc;
-}, {});
+    return acc;
+  },
+  {},
+);
 
 export const Get_SupportedChainKeys = (data: MasterResponse) => {
   if (IS_DEVELOPMENT || IS_PREVIEW) {
