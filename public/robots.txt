@@ -7,3 +7,4 @@ Host: https://www.growthepie.xyz
 
 # Sitemaps
 Sitemap: https://www.growthepie.xyz/sitemap.xml
+Sitemap: https://www.growthepie.xyz/server-sitemap.xml
