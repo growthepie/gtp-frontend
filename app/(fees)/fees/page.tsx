@@ -1050,7 +1050,7 @@ export default function FeesPage() {
                               }`}
                             style={{
                               color:
-                                AllChainsByKeys[item.chain[1]].colors[theme][0],
+                                AllChainsByKeys[item.chain[1]].colors[theme ?? "dark"][0],
                             }}
                           />
                         </div>
@@ -1444,7 +1444,7 @@ export default function FeesPage() {
                       className={`${isMobile ? "h-[18px] w-[18px]" : "h-[24px] w-[24px]"
                         }`}
                       style={{
-                        color: AllChainsByKeys["ethereum"].colors[theme][0],
+                        color: AllChainsByKeys["ethereum"].colors[theme ?? "dark"][0],
                       }}
                     />
                   </div>
