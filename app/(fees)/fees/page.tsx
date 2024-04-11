@@ -805,14 +805,14 @@ export default function FeesPage() {
           <Header />
 
           <FeesContainer className={`w-full hidden md:block`}>
-            <div className="flex px-[5px] items-center w-full h-[54px] rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000]">
+            <div className="flex p-[5px] items-center w-full rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000]">
               <a
-                className="flex items-center w-[162px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-2 gap"
+                className="flex items-center w-[162px] bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
                 href="https://www.growthepie.xyz/"
                 target="_blank"
               >
                 <Icon icon="gtp:house" className="h-6 w-6" />
-                <div className="font-bold">Main platform</div>
+                <div className="font-semibold">Main platform</div>
               </a>
             </div>
           </FeesContainer>
