@@ -12,6 +12,7 @@ import "../background.css";
 import Share from "@/components/Share";
 import Icon from "@/components/layout/Icon";
 import FeesContainer from "@/components/layout/FeesContainer";
+import Head from "../(layout)/head";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",
@@ -162,7 +163,7 @@ export default function RootLayout({
       className={`${raleway.variable} ${inter.variable} ${robotoMono.variable}`}
       suppressHydrationWarning
     >
-      {/* <Head /> */}
+      <Head />
       <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden overflow-y-scroll relative min-h-screen">
         <div className="background-container">
           <div className="background-gradient-group">
