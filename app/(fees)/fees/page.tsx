@@ -692,7 +692,7 @@ export default function FeesPage() {
 
   const getNumFractionDigits = useCallback((x) => {
     if (showUsd)
-      return 3;
+      return x < 1 ? 3 : 2;
 
     return x < 1000 ? 0 : 2;
   }, [showUsd]);
