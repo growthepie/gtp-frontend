@@ -567,6 +567,17 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "chainsBlast",
         urlKey: "blast",
       },
+      {
+        label: "Mode",
+        page: {
+          description:
+            "Mode is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in February 2024.",
+        },
+        icon: "gtp:mode-logo-monochrome",
+        key: "mode",
+        rootKey: "chainsMode",
+        urlKey: "mode",
+      },
     ],
   },
 

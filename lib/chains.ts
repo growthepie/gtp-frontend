@@ -454,6 +454,28 @@ export const AllChains: Chain[] = [
     darkTextOnBackground: true,
   },
   {
+    label: "Mode Network",
+    icon: "/icons/mode.png",
+    key: "mode",
+    urlKey: "mode",
+    chainType: "L2",
+    ecosystem: ["all-chains"], // add ecosystems when unhiding from the UI
+    description: "",
+    border: {
+      light: ["border-[#C4DF00]", "border-[#C4DF00]"],
+      dark: ["border-[#C4DF00]", "border-[#C4DF00]"],
+    },
+    colors: {
+      light: ["#C4DF00", "#C4DF00"], // dark greenish
+      dark: ["#C4DF00", "#C4DF00"], // dark greenish
+    },
+    backgrounds: {
+      light: ["bg-[#C4DF00]", "bg-[#C4DF00]"],
+      dark: ["bg-[#C4DF00]", "bg-[#C4DF00]"],
+    },
+    darkTextOnBackground: true,
+  },
+  {
     label: "Multiple Chains",
     icon: null,
     key: "multiple",
