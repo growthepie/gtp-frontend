@@ -23,6 +23,8 @@ import ChartContainer from "./ChartContainer";
 import Footer from "./Footer";
 import FeesHorizontalScrollContainer from "@/components/FeesHorizontalScrollContainer";
 import { useElementSize } from "usehooks-ts";
+import { get } from "lodash";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 interface HoveredItems {
   hoveredChain: string | null;
@@ -493,7 +495,7 @@ export default function FeesPage() {
   const [horizontalScrollAmount, setHorizontalScrollAmount] = useState(0);
 
   const [pageDiv, { width: pageWidth, height: pageHeight }] =
-    useElementSize<HTMLDivElement>();
+    useElementSizeObserver<HTMLDivElement>();
   const [tableDiv, { width: tableWidth, height: tableHeight }] =
     useElementSize<HTMLDivElement>();
 
@@ -518,6 +520,10 @@ export default function FeesPage() {
       const tableRect = tableRef.current.getBoundingClientRect();
 
       setLastRowYRelativeToWindow(tableRect.bottom);
+      // setTimeout(() => {
+      //   setLastRowYRelativeToWindow(tableRect.bottom);
+      // }, 300);
+
     };
 
     getLastRowYRelativeToWindow();
@@ -538,10 +544,19 @@ export default function FeesPage() {
     };
   }, []);
 
-  // is window vertical scrollbar visible
-  const isVerticalScrollbarVisible = useMemo(() => {
-    return pageHeight > windowHeight;
+  const [isVerticalScrollbarVisible, setIsVerticalScrollbarVisible] = useState<boolean>(false);
+
+  useEffect(() => {
+    setIsVerticalScrollbarVisible(pageHeight > windowHeight);
+    // setTimeout(() => {
+    //   setIsVerticalScrollbarVisible(pageHeight > windowHeight);
+    // }, 300);
+
   }, [pageHeight, windowHeight]);
+  // is window vertical scrollbar visible
+  // const isVerticalScrollbarVisible = useMemo(() => {
+  //   return pageHeight > windowHeight;
+  // }, [pageHeight, windowHeight]);
 
   // returns which chain has the lowest median fee in the selected time period
   const lowestMedianFee = useMemo(() => {
@@ -632,14 +647,59 @@ export default function FeesPage() {
     return x < 1000 ? 0 : 2;
   }, [showUsd]);
 
-  const getFormattedLastValue = useCallback((value) => {
+  const getValueColor = useCallback((chain: string) => {
+    return !feeIndexSort[optIndex][chain]
+      ? "gray"
+      : getGradientColor(
+        Math.floor(
+          (feeIndexSort[optIndex][chain][
+            showUsd ? 2 : 1
+          ] /
+            feeIndexSort[optIndex][
+            Object.keys(feeIndexSort[optIndex])[
+            Object.keys(feeIndexSort[optIndex])
+              .length - 1
+            ]
+            ][showUsd ? 2 : 1]) *
+          100,
+        ),
+        true,
+      )
+  }, [feeIndexSort, optIndex, getGradientColor, showUsd]);
 
+  const getFormattedLastValue = useCallback((chain, metric) => {
+    // feeData.chain_data[item.chain[1]]?.hourly?.txcosts_native_median?.data[optIndex]
+    // true, feeData.chain_data["ethereum"]["hourly"]["txcosts_swap"].data[optIndex][showUsd ? 2 : 1]
+    if (!feeData) return null;
+
+    const value = feeData.chain_data[chain]["hourly"][metric].data[optIndex] ? feeData.chain_data[chain]["hourly"][metric].data[optIndex][showUsd ? 2 : 1] : null;
+
+    // return N/A if value is null
+    if (value === null)
+      return (
+        <div
+          className={`flex items-center justify-center ${!showUsd && showGwei ? "w-[75px] md:w-[85px] -mr-1.5" : "w-[65px] -mr-2.5"} h-[24px] transition-colors duration-100 border rounded-full opacity-30`}
+          style={{ borderColor: selectedQuantitative === metric ? "gray" : "transparent" }}
+        >
+          <div>
+            N/A
+          </div>
+        </div>
+      );
+
+    // get color based on value
+
+
+    // multiply value by 1000000000 if showGwei is true
     const multipliedValue = value * (showGwei && !showUsd ? 1000000000 : 1);
     const fractionDigits = getNumFractionDigits(multipliedValue);
 
     return (
-      <div className={`flex items-center ${!showUsd && showGwei ? "justify-end" : "justify-center"} w-full h-full`}>
-        {showUsd && <div className="">$</div>}
+      <div
+        className={`flex items-center ${!showUsd && showGwei ? "justify-end w-[75px] md:w-[85px] -mr-1.5" : "justify-center w-[65px] -mr-2.5"} h-[24px] transition-colors duration-100 border rounded-full`}
+        style={{ borderColor: selectedQuantitative === metric ? getValueColor(chain) : "transparent" }}
+      >
+        {showUsd && <div>$</div>}
         <div>
           {
             Intl.NumberFormat(undefined, {
@@ -650,12 +710,12 @@ export default function FeesPage() {
           }
         </div>
         {(!showUsd && showGwei) && <div className="pl-0.5 text-[0.5rem] pr-[5px] text-forest-400">{showUsd ? "" : showGwei ? " gwei" : ""}</div>}
-      </div >
+      </div>
     )
 
 
 
-  }, [getNumFractionDigits, showGwei, showUsd]);
+  }, [feeData, getNumFractionDigits, getValueColor, optIndex, selectedQuantitative, showGwei, showUsd]);
 
   return (
     <>
@@ -720,13 +780,13 @@ export default function FeesPage() {
               setHorizontalScrollAmount(amount)
             }
           >
-            <div className="relative w-[630px] md:w-auto md:pr-[40px] lg:pr-[0px] overflow-x-hidden md:overflow-x-visble">
+            <div className="relative w-[670px] md:w-auto md:pr-[40px] lg:pr-[0px] overflow-x-hidden md:overflow-x-visble">
               <div
                 className={`relative w-[810px] mt-[8px] flex h-[26px] justify-start mb-1 text-[10px] md:text-[12px] font-bold`}
               >
                 <div className="pl-[10px] flex-1 flex">
                   <div
-                    className={`flex items-center gap-x-[5px] hover:cursor-pointer  ${isMobile ? "w-[26%]" : "w-[30%]"
+                    className={`flex items-center gap-x-[5px] hover:cursor-pointer  ${isMobile ? "w-[23%]" : "w-[27%]"
                       }`}
                   >
                     <div
@@ -763,7 +823,7 @@ export default function FeesPage() {
                       />{" "}
                     </div>
                     <div
-                      className="bg-[#344240] text-[8px] flex rounded-full font-normal items-center px-[5px] py-[3px] gap-x-[2px] hover:cursor-pointer"
+                      className="bg-[#344240] text-[8px] flex rounded-full font-normal items-center px-[5px] py-[3px] gap-x-[2px] hover:cursor-pointer whitespace-nowrap"
                       onClick={() => {
                         if (selectedQualitative === "availability") {
                           setSortOrder(!sortOrder);
@@ -856,7 +916,7 @@ export default function FeesPage() {
                     />{" "}
                   </div>
                   <div
-                    className={`pr-2 relative flex items-center justify-end gap-x-0.5 hover:cursor-pointer ${isMobile ? "w-[13.5%]" : "w-[16.5%]"
+                    className={`pr-[20px] relative flex items-center justify-end gap-x-0.5 hover:cursor-pointer ${isMobile ? "w-[16.5%]" : "w-[19.5%]"
                       }`}
                     onClick={() => {
                       if (selectedQuantitative === "txcosts_swap") {
@@ -881,7 +941,7 @@ export default function FeesPage() {
                             : "formkit:arrowup"
                           : "formkit:arrowdown"
                       }
-                      className={`absolute -right-1 top-2 dark:text-white text-black w-[10px] h-[10px] ${!selectedQualitative &&
+                      className={`absolute right-[8px] top-2 dark:text-white text-black w-[10px] h-[10px] ${!selectedQualitative &&
                         selectedQuantitative === "txcosts_swap"
                         ? "opacity-100"
                         : "opacity-20"
@@ -894,8 +954,8 @@ export default function FeesPage() {
                   >
                     <div className="relative flex space-x-[1px] items-end -bottom-1">
                       <div
-                        className={`absolute right-[24px] w-[29px] h-[12px] text-[8px] transition-all duration-100 ${selectedBarIndex >= 18 && selectedBarIndex <= 22
-                          ? "-top-5"
+                        className={`absolute right-[35px] md:right-[25px] w-[29px] h-[12px] text-[8px] transition-all duration-100 ${selectedBarIndex >= 18 && selectedBarIndex <= 22
+                          ? "-top-[22px]"
                           : "-top-2"
                           }`}
                       >
@@ -942,7 +1002,7 @@ export default function FeesPage() {
                     </div>
                   </div>
                 </div>
-                <div className="w-[196px] block md:hidden"></div>
+                <div className="w-[160px] block md:hidden"></div>
               </div>
               <div
                 ref={tableRef}
@@ -978,7 +1038,7 @@ export default function FeesPage() {
                       key={item.chain[0]}
                       className={`border-forest-700 border-[1px] mb-1 absolute rounded-full border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] flex items-center
                       ${isMobile
-                          ? "text-[12px] w-[615px]"
+                          ? "text-[12px] w-[650px]"
                           : "text-[14px] w-[810px]"
                         } ${selectedChains[item.chain[1]]
                           ? "opacity-100"
@@ -992,7 +1052,7 @@ export default function FeesPage() {
                     // }}
                     >
                       <div
-                        className={`flex justify-start items-center h-full gap-x-[5px] ${isMobile ? "w-[26%]" : "w-[30%]"
+                        className={`flex justify-start items-center h-full gap-x-[5px] ${isMobile ? "w-[23%]" : "w-[27%]"
                           }`}
                       >
                         <div
@@ -1105,11 +1165,11 @@ export default function FeesPage() {
                         </div>
                       </div>
 
-                      <div className="h-full w-[15%] flex justify-end items-center ">
-                        <div
+                      <div className="h-full w-[15%] flex justify-end items-center">
+                        {/* <div
                           className={`justify-center rounded-full flex items-center gap-x-0 font-raleway ${selectedQuantitative === "txcosts_median"
-                            ? "border-[1.5px] leading-snug " + (showUsd ? "-mr-3 w-[65px] h-[24px]" : "-mr-3 w-[85px] h-[24px]")
-                            : "border-0"
+                            ? "border-[1.5px] leading-snug " + ((!showUsd && showGwei) ? "-mr-3 " : "-mr-0")
+                            : "border-0 " + (!passMedian && " -mr-6") + (showUsd && !showGwei ? "-mr-3 " : " -mr-3 ")
                             } 
                           ${passMedian ? "opacity-100" : "opacity-50"} ${lowestMedianFee?.chain === item.chain[1]
                               ? "font-normal  text-sm"
@@ -1134,8 +1194,8 @@ export default function FeesPage() {
                                 true,
                               ),
                           }}
-                        >
-                          {passMedian
+                        > */}
+                        {/* {passMedian
                             ?
                             // Intl.NumberFormat(undefined, {
                             //   notation: "compact",
@@ -1147,22 +1207,20 @@ export default function FeesPage() {
                             //   showUsd ? 2 : 1
                             //   ] * (showGwei && !showUsd ? 1000000000 : 1),
                             // )
-                            getFormattedLastValue(feeData.chain_data[item.chain[1]]["hourly"].txcosts_median.data[optIndex][showUsd ? 2 : 1])
-                            : "N/A"}
-                        </div>
+                            getFormattedLastValue(passMedian, feeData.chain_data[item.chain[1]]["hourly"].txcosts_median.data[optIndex][showUsd ? 2 : 1])
+                            : "N/A"} */}
+                        {getFormattedLastValue(item.chain[1], "txcosts_median")}
+                        {/* </div> */}
                       </div>
                       <div
                         className={`relative h-full flex justify-end items-center  ${isMobile ? "w-[16%]" : "w-[16%]"
                           }`}
                       >
-                        <div
+                        {/* <div
                           className={`justify-center rounded-full flex items-center gap-x-0 font-raleway ${selectedQuantitative === "txcosts_native_median"
-                            ? "border-[1.5px] leading-snug " + (showUsd ? "-mr-3 w-[65px] h-[24px]" : "-mr-3 w-[85px] h-[24px]")
-                            : "border-0"
-                            } ${passSwap ? "opacity-100" : "opacity-50"} ${lowestTransferFee?.chain === item.chain[1]
-                              ? "font-normal  text-sm"
-                              : "font-normal  text-sm"
-                            }`}
+                            ? "border-[1.5px] leading-snug " + ((!showUsd && showGwei) ? "-mr-3 " : "-mr-0 ")
+                            : "border-0 " + (!passTransfer && " -mr-6") + (showUsd && !showGwei ? "-mr-3 " : " -mr-3 ")
+                            } ${passSwap ? "opacity-100" : "opacity-50"}`}
                           style={{
                             borderColor: !feeIndexSort[optIndex][item.chain[1]]
                               ? "gray"
@@ -1182,8 +1240,8 @@ export default function FeesPage() {
                                 true,
                               ),
                           }}
-                        >
-                          {passTransfer
+                        > */}
+                        {/* {passTransfer
                             ?
                             // Intl.NumberFormat(undefined, {
                             //   notation: "compact",
@@ -1194,18 +1252,19 @@ export default function FeesPage() {
                             //     "txcosts_native_median"
                             //   ].data[optIndex][showUsd ? 2 : 1] * (showGwei && !showUsd ? 1000000000 : 1),
                             // )
-                            getFormattedLastValue(feeData.chain_data[item.chain[1]]["hourly"]["txcosts_native_median"].data[optIndex][showUsd ? 2 : 1])
-                            : "N/A"}
-                        </div>
+                            
+                            : "N/A"} */}
+                        {getFormattedLastValue(item.chain[1], "txcosts_native_median")}
+                        {/* </div> */}
                       </div>
                       <div
-                        className={`pr-2 h-full flex justify-end items-center ${isMobile ? "w-[13.5%]" : "w-[16.5%]"
+                        className={`pr-[20px] h-full flex justify-end items-center ${isMobile ? "w-[16.5%]" : "w-[19.5%]"
                           }`}
                       >
-                        <div
+                        {/* <div
                           className={`justify-center rounded-full flex items-center gap-x-0 font-raleway ${selectedQuantitative === "txcosts_swap"
-                            ? "border-[1.5px] leading-snug " + (showUsd ? "-mr-3 w-[65px] h-[24px]" : "-mr-3 w-[85px] h-[24px]")
-                            : "border-0"
+                            ? "border-[1.5px] leading-snug"
+                            : "border-0" + !passSwap && " -mr-6"
                             } ${passSwap ? "opacity-100" : "opacity-50"} ${lowestSwapFee?.chain === item.chain[1]
                               ? "font-normal  text-sm"
                               : "font-normal  text-sm"
@@ -1229,8 +1288,8 @@ export default function FeesPage() {
                                 true,
                               ),
                           }}
-                        >
-                          {passSwap
+                        > */}
+                        {/* {passSwap
                             ?
                             // Intl.NumberFormat(undefined, {
                             //   notation: "compact",
@@ -1241,13 +1300,10 @@ export default function FeesPage() {
                             //     "txcosts_swap"
                             //   ].data[optIndex][showUsd ? 2 : 1] * (showGwei && !showUsd ? 1000000000 : 1),
                             // )
-                            getFormattedLastValue(
-                              feeData.chain_data[item.chain[1]]["hourly"][
-                                "txcosts_swap"
-                              ].data[optIndex][showUsd ? 2 : 1],
-                            )
-                            : "N/A"}
-                        </div>
+                            
+                            : "N/A"} */}
+                        {getFormattedLastValue(item.chain[1], "txcosts_swap")}
+                        {/* </div> */}
                       </div>
                       <div
                         className={`pl-[15px] relative flex items-center h-full space-x-[1px] ${isMobile ? "w-[29.5%]" : "w-[22.5%]"
@@ -1389,12 +1445,12 @@ export default function FeesPage() {
             }}
           >
             <div
-              className={`border-forest-700 border-[1px] mb-1 absolute rounded-full bg-[#1F2726] border-black/[16%] dark:border-[#5A6462] shadow-[0px_0px_20px_0px_#000000] min-h-[34px] pl-[10px] flex items-center
-              ${isMobile ? "text-[12px] w-[620px]" : "text-[14px] w-[820px]"}`}
+              className={`border-forest-700 border-[1px] absolute rounded-full bg-[#1F2726] border-black/[16%] dark:border-[#5A6462] shadow-[0px_0px_20px_0px_#000000] min-h-[34px] pl-[10px] flex items-center
+              ${isMobile ? "text-[12px] w-[663px]" : "text-[14px] w-[820px]"}`}
             >
-              <div className="w-[600px] md:w-[800px] min-h-[34px] flex items-center">
+              <div className="w-[638px] md:w-[798px] flex items-center">
                 <div
-                  className={`flex justify-start items-center h-full gap-x-[5px] ${isMobile ? "w-[26%]" : "w-[30%]"
+                  className={`flex justify-start items-center h-full gap-x-[5px] ${isMobile ? "w-[23%]" : "w-[27%]"
                     }`}
                 >
                   <div
@@ -1503,11 +1559,11 @@ export default function FeesPage() {
                   </div>
                 </div>
 
-                <div className="h-full w-[15%] flex justify-end items-center ">
-                  <div
+                <div className="h-full w-[15%] flex justify-end items-center">
+                  {/* <div
                     className={`justify-center rounded-full flex items-center gap-x-0 font-raleway font-medium text-sm ${selectedQuantitative === "txcosts_median"
-                      ? "border-[1.5px] leading-snug " + (showUsd ? "-mr-3 w-[65px] h-[24px]" : "-mr-3 w-[85px] h-[24px]")
-                      : "border-0"
+                      ? "border-[1.5px] leading-snug"
+                      : "border-0" + !true && " -mr-6"
                       }
                   ${true ? "opacity-100" : "opacity-50"}`}
                     style={{
@@ -1528,9 +1584,9 @@ export default function FeesPage() {
                           ),
                         ),
                     }}
-                  >
+                  > */}
 
-                    {true
+                  {/* {true
                       ?
                       // Intl.NumberFormat(undefined, {
                       //   notation: "compact",
@@ -1541,17 +1597,18 @@ export default function FeesPage() {
                       //     .txcosts_median.data[optIndex][showUsd ? 2 : 1],
                       // )
                       getFormattedLastValue(feeData.chain_data["ethereum"]["hourly"].txcosts_median.data[optIndex][showUsd ? 2 : 1])
-                      : "N/A"}
-                  </div>
+                      : "N/A"} */}
+                  {getFormattedLastValue("ethereum", "txcosts_median")}
+                  {/* </div> */}
                 </div>
                 <div
-                  className={`h-full  flex justify-end items-center  ${isMobile ? "w-[16%]" : "w-[16%]"
+                  className={`h-full  flex justify-end items-center ${isMobile ? "w-[16%]" : "w-[16%]"
                     }`}
                 >
-                  <div
+                  {/* <div
                     className={`justify-center rounded-full flex items-center gap-x-0 font-raleway font-medium text-sm ${selectedQuantitative === "txcosts_native_median"
-                      ? "border-[1.5px] leading-snug " + (showUsd ? "-mr-3 w-[65px] h-[24px]" : "-mr-3 w-[85px] h-[24px]")
-                      : "border-0"
+                      ? "border-[1.5px] leading-snug"
+                      : "border-0" + !true && " -mr-6"
                       } ${true ? "opacity-100" : "opacity-50"}`}
                     style={{
                       borderColor: !feeIndexSort[optIndex]["ethereum"]
@@ -1571,9 +1628,9 @@ export default function FeesPage() {
                           ),
                         ),
                     }}
-                  >
+                  > */}
 
-                    {true
+                  {/* {true
                       ?
                       // Intl.NumberFormat(undefined, {
                       //   notation: "compact",
@@ -1585,17 +1642,17 @@ export default function FeesPage() {
                       //   ].data[optIndex][showUsd ? 2 : 1],
                       // )
                       getFormattedLastValue(feeData.chain_data["ethereum"]["hourly"]["txcosts_native_median"].data[optIndex][showUsd ? 2 : 1])
-                      : "N/A"}
-                  </div>
+                      : "N/A"} */}
+                  {getFormattedLastValue("ethereum", "txcosts_native_median")}
+                  {/* </div> */}
                 </div>
                 <div
-                  className={`h-full flex justify-end items-center pr-2 ${isMobile ? "w-[13.5%]" : "w-[16.5%]"
-                    }`}
+                  className={`pr-[20px] h-full flex justify-end items-center ${isMobile ? "w-[16.5%]" : "w-[19.5%]"}`}
                 >
-                  <div
+                  {/* <div
                     className={`justify-center rounded-full flex items-center gap-x-0 font-raleway font-medium text-sm ${selectedQuantitative === "txcosts_swap"
-                      ? "border-[1.5px] leading-snug " + (showUsd ? "-mr-3 w-[65px] h-[24px]" : "-mr-3 w-[85px] h-[24px]")
-                      : "border-0"
+                      ? "border-[1.5px] leading-snug"
+                      : "border-0" + !true && " -mr-6"
                       } ${true ? "opacity-100" : "opacity-50"}`}
                     style={{
                       borderColor: !feeIndexSort[optIndex]["ethereum"]
@@ -1615,9 +1672,9 @@ export default function FeesPage() {
                           ),
                         ),
                     }}
-                  >
+                  > */}
 
-                    {true
+                  {/* {true
                       ?
                       // Intl.NumberFormat(undefined, {
                       //   notation: "compact",
@@ -1628,20 +1685,18 @@ export default function FeesPage() {
                       //     "txcosts_swap"
                       //   ].data[optIndex][showUsd ? 2 : 1],
                       // )
-                      getFormattedLastValue(feeData.chain_data["ethereum"]["hourly"][
-                        "txcosts_swap"
-                      ].data[optIndex][showUsd ? 2 : 1],)
-                      : "N/A"}
-                  </div>
+                      getFormattedLastValue(feeData.chain_data["ethereum"]["hourly"]["txcosts_swap"].data[optIndex][showUsd ? 2 : 1],)
+                      : "N/A"} */}
+                  {getFormattedLastValue("ethereum", "txcosts_swap")}
+                  {/* </div> */}
                 </div>
                 <div
-                  className={`pl-[16px] md:pl-[12px] relative flex items-center h-full space-x-[1px] ${isMobile ? "w-[29.5%]" : "w-[22.5%]"
-                    }`}
+                  className={`pl-[15px] relative flex items-center h-full space-x-[1px] ${isMobile ? "w-[29.5%]" : "w-[22.5%]"}`}
                 >
                   {Array.from({ length: 24 }, (_, index) => (
                     <div
                       key={index.toString() + "circles"}
-                      className="h-[34px] flex items-center justify-end cursor-pointer"
+                      className="h-[32px] flex items-center justify-end cursor-pointer"
                       onMouseEnter={() => {
                         setHoverBarIndex(index);
                       }}
