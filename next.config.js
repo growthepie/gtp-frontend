@@ -4,7 +4,7 @@
 const nextConfig = {
   async rewrites() {
     return {
-      beforeFiles: [
+      afterFiles: [
         {
           source: "/:path*",
           has: [
