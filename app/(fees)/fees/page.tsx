@@ -1534,7 +1534,7 @@ export default function FeesPage() {
             </div>
           </FeesContainer>
           <OffScreenSlider>
-            <ChartContainer isOpen={isChartOpen} setIsOpen={setIsChartOpen} selectedMetric={selectedQuantitative} selectedTimeframe={"24hrs"} selectedChains={Object.keys(selectedChains).filter(c => selectedChains[c] === true)} />
+            <ChartContainer isOpen={isChartOpen} setIsOpen={setIsChartOpen} selectedMetric={selectedQuantitative} selectedTimeframe={"24hrs"} selectedChains={Object.keys(selectedChains).filter(c => selectedChains[c] === true)} showGwei={showGwei} />
           </OffScreenSlider>
           <Footer />
           <div className={`w-full transition-all duration-300 ${isChartOpen ? "h-[calc(131px+215px)] md:h-[calc(190px+215px)]" : "h-[131px] md:h-[190px]"}`}></div>

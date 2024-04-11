@@ -56,9 +56,10 @@ type FeesChartProps = {
   selectedMetric: string;
   selectedTimeframe: string;
   selectedChains: string[];
+  showGwei: boolean;
 };
 
-export default function FeesChart({ selectedMetric, selectedTimeframe, selectedChains }: FeesChartProps) {
+export default function FeesChart({ selectedMetric, selectedTimeframe, selectedChains, showGwei }: FeesChartProps) {
   const { theme } = useTheme();
   const { isMobile } = useUIContext();
   // const seriesKey = "txcosts_avg";
@@ -73,7 +74,6 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
     isValidating,
   } = useSWR("https://api.growthepie.xyz/v1/fees/linechart.json");
 
-  const showGwei = false;
   const reversePerformer = true;
 
   const valuePrefix = useMemo(() => {
@@ -153,12 +153,23 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
     function (this: any) {
       const { x, points } = this;
       const date = new Date(x);
-      const dateString = date.toLocaleDateString(undefined, {
+      let dateString = date.toLocaleDateString(undefined, {
         timeZone: "UTC",
         month: "short",
         day: "numeric",
         year: "numeric",
       });
+
+      // check if data steps are less than 1 day
+      // if so, add the time to the tooltip
+      const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
+      if (timeDiff < 1000 * 60 * 60 * 24) {
+        dateString += " " + date.toLocaleTimeString(undefined, {
+          timeZone: "UTC",
+          hour: "numeric",
+          minute: "2-digit",
+        });
+      }
 
       const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
         <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
@@ -221,11 +232,13 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
           let prefix = valuePrefix;
           let suffix = "";
           let value = y;
+          let displayValue = y;
 
           if (!showUsd) {
             if (showGwei) {
               prefix = "";
               suffix = " Gwei";
+              displayValue = y * 1e9;
             }
           }
 
@@ -238,9 +251,9 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
             <div class="flex-1 text-right justify-end font-inter flex">
                 <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
             }">${prefix}</div>
-                ${selectedMetric === "fdv" || "market_cap"
-              ? shortenNumber(value).toString()
-              : parseFloat(value).toLocaleString(undefined, {
+                ${selectedMetric === "fdv" || selectedMetric === "market_cap"
+              ? shortenNumber(displayValue).toString()
+              : parseFloat(displayValue).toLocaleString(undefined, {
                 minimumFractionDigits: valuePrefix ? 2 : 0,
                 maximumFractionDigits: valuePrefix
                   ? selectedMetric === "txcosts"

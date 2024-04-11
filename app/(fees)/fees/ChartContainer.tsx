@@ -13,6 +13,7 @@ type SlidingFooterContainerProps = {
   selectedMetric: string;
   selectedTimeframe: string;
   selectedChains: string[];
+  showGwei: boolean;
 };
 
 
@@ -32,6 +33,7 @@ export default function ChartContainer({
   selectedMetric,
   selectedTimeframe,
   selectedChains,
+  showGwei,
 }: SlidingFooterContainerProps) {
 
   const {
@@ -244,7 +246,7 @@ export default function ChartContainer({
               {/* <div className="h-[146px] md:h-[179px] w-full overflow-visible"> */}
 
               {/* {landing && <SwiperItem metric_id={metrics[metricIndex]} landing={landing} />} */}
-              <FeesChart selectedMetric={metrics[metricIndex]} selectedTimeframe={timeFrames[timeFrameIndex]} selectedChains={selectedChains} />
+              <FeesChart selectedMetric={metrics[metricIndex]} selectedTimeframe={timeFrames[timeFrameIndex]} selectedChains={selectedChains} showGwei={showGwei} />
               {/* </div> */}
             </div>
           </div>

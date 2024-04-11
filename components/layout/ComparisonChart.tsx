@@ -516,7 +516,7 @@ export default function ComparisonChart({
             <div class="flex-1 text-right justify-end font-inter flex">
                 <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
             }">${prefix}</div>
-                ${metric_id === "fdv" || "market_cap"
+                ${metric_id === "fdv" || metric_id === "market_cap"
               ? shortenNumber(value).toString()
               : parseFloat(value).toLocaleString(undefined, {
                 minimumFractionDigits: valuePrefix ? 2 : 0,
