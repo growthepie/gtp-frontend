@@ -2,6 +2,30 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async rewrites() {
+    return [
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "fees.growthepie.xyz",
+          },
+        ],
+        destination: "/fees/:path*",
+      },
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "dev.fees.growthepie.xyz",
+          },
+        ],
+        destination: "/fees/:path*",
+      },
+    ];
+  },
   async redirects() {
     return [
       {
