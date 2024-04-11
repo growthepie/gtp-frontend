@@ -4,26 +4,26 @@
 const nextConfig = {
   async rewrites() {
     return {
-      afterFiles: [
+      beforeFiles: [
         {
-          source: "/:path*",
+          source: "/",
           has: [
             {
               type: "host",
               value: "fees.growthepie.xyz",
             },
           ],
-          destination: "/fees/:path*",
+          destination: "/fees",
         },
         {
-          source: "/:path*",
+          source: "/",
           has: [
             {
               type: "host",
               value: "dev.fees.growthepie.xyz",
             },
           ],
-          destination: "/fees/:path*",
+          destination: "/fees",
         },
       ],
     };
