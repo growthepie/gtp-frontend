@@ -106,7 +106,7 @@ export default function ContractCard({
                     style={{
                       color:
                         AllChainsByKeys[data[types.indexOf("chain")]].colors[
-                        theme
+                        theme ?? "dark"
                         ][0],
                     }}
                   />

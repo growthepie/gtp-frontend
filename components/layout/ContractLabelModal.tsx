@@ -55,7 +55,7 @@ export default function ContractLabelModal({
               icon={`gtp:${contract.chain.replace("_", "-")}-logo-monochrome`}
               className="w-[34px] h-[34px]"
               style={{
-                color: AllChainsByKeys[contract.chain].colors[theme][1],
+                color: AllChainsByKeys[contract.chain].colors[theme ?? "dark"][1],
               }}
             />
             <div className="flex space-x-[15px] items-center w-full">

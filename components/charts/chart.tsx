@@ -165,7 +165,7 @@ export const Chart = ({
           allCats === true
             ? undefined
             : AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] +
-              fillHexColorOpacity;
+            fillHexColorOpacity;
 
         const normalAreaColor = {
           linearGradient: {
@@ -177,47 +177,47 @@ export const Chart = ({
           stops:
             theme === "dark"
               ? [
-                  [
-                    0,
-                    AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
-                      "E6",
-                  ],
-                  [
-                    1,
-                    AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
-                      "E6",
-                  ],
-                ]
-              : [
-                  [
-                    0,
-                    AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
-                      "E6",
-                  ],
-                  [
-                    1,
-                    AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
-                      "E6",
-                  ],
+                [
+                  0,
+                  AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
+                  "E6",
                 ],
+                [
+                  1,
+                  AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
+                  "E6",
+                ],
+              ]
+              : [
+                [
+                  0,
+                  AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][0] +
+                  "E6",
+                ],
+                [
+                  1,
+                  AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
+                  "E6",
+                ],
+              ],
         };
 
         let blockspaceAreaColor =
           s.custom?.tooltipLabel === "Unlabeled" && allCats === true
             ? {
-                pattern: {
-                  color: AllChainsByKeys[chainKey].colors["dark"][0] + "99",
-                  path: {
-                    d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
-                    strokeWidth: 3,
-                  },
-                  width: 10,
-                  height: 10,
-                  opacity: 0.99,
+              pattern: {
+                color: AllChainsByKeys[chainKey].colors["dark"][0] + "99",
+                path: {
+                  d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
+                  strokeWidth: 3,
                 },
-              }
+                width: 10,
+                height: 10,
+                opacity: 0.99,
+              },
+            }
             : AllChainsByKeys[chainKey].colors[theme ?? "dark"][0] +
-              fillHexColorOpacity;
+            fillHexColorOpacity;
 
         const color =
           allCats === true && series.length > 1
@@ -313,22 +313,22 @@ export const Chart = ({
               ...// @ts-ignore
               (chartType !== "column"
                 ? {
-                    shadow: {
-                      color:
-                        AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
-                        (s.fillOpacity ? "11" : "33"),
-                      width: s.fillOpacity ? 6 : 10,
-                    },
-                    color: color,
-                  }
+                  shadow: {
+                    color:
+                      AllChainsByKeys[chainKey]?.colors[theme ?? "dark"][1] +
+                      (s.fillOpacity ? "11" : "33"),
+                    width: s.fillOpacity ? 6 : 10,
+                  },
+                  color: color,
+                }
                 : chainKey === "all_l2s"
-                ? {
+                  ? {
                     borderColor: "transparent",
 
                     shadow: {
                       color: "#CDD8D3" + "FF",
                       // color:
-                      //   AllChainsByKeys[series.name].colors[theme][1] + "33",
+                      //   AllChainsByKeys[series.name].colors[theme ?? "dark"][1] + "33",
                       // width: 10,
                       offsetX: 0,
                       offsetY: 0,
@@ -336,7 +336,7 @@ export const Chart = ({
                     },
                     color: color,
                   }
-                : {
+                  : {
                     borderColor: "transparent",
                     shadow: {
                       color: "#CDD8D3" + "FF",
@@ -541,8 +541,8 @@ export const Chart = ({
                             yScale === "percentage"
                               ? "percent"
                               : stack
-                              ? "normal"
-                              : undefined,
+                                ? "normal"
+                                : undefined,
                         },
                       },
                       tooltip: {
@@ -551,8 +551,8 @@ export const Chart = ({
                           yScale === "percentageDecimal"
                             ? tooltipFormatter(true, true, decimalToPercent)
                             : yScale === "percentage"
-                            ? tooltipFormatter(true, true, null)
-                            : tooltipFormatter(
+                              ? tooltipFormatter(true, true, null)
+                              : tooltipFormatter(
                                 true,
                                 false,
                                 (x) => {
@@ -589,9 +589,9 @@ export const Chart = ({
                         max: maxY ? maxY : undefined,
                         tickPositions: maxY
                           ? Array.from(
-                              { length: numIntervals + 1 },
-                              (_, i) => i * intervalSize,
-                            )
+                            { length: numIntervals + 1 },
+                            (_, i) => i * intervalSize,
+                          )
                           : undefined,
                         tickInterval: maxY ? yAxisTicks.interval : undefined,
                         gridLineColor:
@@ -663,11 +663,10 @@ export const Chart = ({
                 }}
               >
                 <ChartWatermark
-                  className={`h-[30.67px] md:h-[46px] ${
-                    parseInt(chartHeight, 10) > 200
+                  className={`h-[30.67px] md:h-[46px] ${parseInt(chartHeight, 10) > 200
                       ? "w-[128px] md:w-[163px]"
                       : "w-[128.67px] md:w-[193px] "
-                  } text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten`}
+                    } text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten`}
                 />
               </div>
             </div>

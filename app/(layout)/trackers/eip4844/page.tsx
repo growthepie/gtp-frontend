@@ -79,11 +79,11 @@ export default function Eiptracker() {
     const sortedChains = Object.keys(feeData.chain_data).sort((a, b) => {
       const aTxCost =
         feeData.chain_data[a][selectedTimescale].txcosts_avg.data[0][
-          showUsd ? 3 : 2
+        showUsd ? 3 : 2
         ];
       const bTxCost =
         feeData.chain_data[b][selectedTimescale].txcosts_avg.data[0][
-          showUsd ? 3 : 2
+        showUsd ? 3 : 2
         ];
       return aTxCost - bTxCost;
     });
@@ -104,11 +104,11 @@ export default function Eiptracker() {
     const sortedChains = Object.keys(feeData.chain_data).sort((a, b) => {
       const aTxCost =
         feeData.chain_data[a][selectedTimescale].txcosts_median.data[0][
-          showUsd ? 3 : 2
+        showUsd ? 3 : 2
         ];
       const bTxCost =
         feeData.chain_data[b][selectedTimescale].txcosts_median.data[0][
-          showUsd ? 3 : 2
+        showUsd ? 3 : 2
         ];
       return aTxCost - bTxCost;
     });
@@ -133,11 +133,11 @@ export default function Eiptracker() {
       if (isSelectedA === isSelectedB) {
         const aTxCost =
           feeData.chain_data[a]?.["ten_min"]?.txcosts_median?.data?.[0]?.[
-            showUsd ? 2 : 1
+          showUsd ? 2 : 1
           ];
         const bTxCost =
           feeData.chain_data[b]?.["ten_min"]?.txcosts_median?.data?.[0]?.[
-            showUsd ? 2 : 1
+          showUsd ? 2 : 1
           ];
 
         // Handle cases where median costs are not available
@@ -248,7 +248,7 @@ export default function Eiptracker() {
                     icon={`gtp:${AllChainsByKeys["ethereum"].urlKey}-logo-monochrome`}
                     className="w-9 h-9"
                     style={{
-                      color: AllChainsByKeys["ethereum"].colors[theme][1],
+                      color: AllChainsByKeys["ethereum"].colors[theme ?? "dark"][1],
                     }}
                   />
                 </div>
@@ -269,32 +269,28 @@ export default function Eiptracker() {
           </Container>
           <Container className="flex justify-end mt-[30px] w-[99%] mx-auto">
             <div
-              className={`flex items-center justify-between dark:bg-[#1F2726] bg-forest-50  ${
-                isMobile
-                  ? "flex-col w-[90%] xs:w-[80%] gap-y-[5px] justify-between items-center h-full mx-auto rounded-2xl "
-                  : "flex-row w-full mx-none h-[60px]  rounded-full py-[2px]"
-              }`}
+              className={`flex items-center justify-between dark:bg-[#1F2726] bg-forest-50  ${isMobile
+                ? "flex-col w-[90%] xs:w-[80%] gap-y-[5px] justify-between items-center h-full mx-auto rounded-2xl "
+                : "flex-row w-full mx-none h-[60px]  rounded-full py-[2px]"
+                }`}
             >
               <div className="flex flex-col rounded-full py-[2px] px-[2px]  dark:bg-[#1F2726]  items-start justify-center w-full">
                 <div
-                  className={`flex gap-x-[4px]  ${
-                    isMobile
-                      ? "w-full justify-between text-sm"
-                      : "w-auto justify-normal text-base"
-                  }`}
+                  className={`flex gap-x-[4px]  ${isMobile
+                    ? "w-full justify-between text-sm"
+                    : "w-auto justify-normal text-base"
+                    }`}
                 >
                   {Object.keys(timescales).map((timescale) => (
                     <div
-                      className={`rounded-full grow px-4 font-medium text-center flex items-center justify-center  hover:cursor-pointer ${
-                        selectedTimescale === timescale
-                          ? "bg-forest-500 dark:bg-forest-1000"
-                          : "hover:bg-forest-500/10"
-                      }
-                      ${
-                        isMobile
+                      className={`rounded-full grow px-4 font-medium text-center flex items-center justify-center  hover:cursor-pointer ${selectedTimescale === timescale
+                        ? "bg-forest-500 dark:bg-forest-1000"
+                        : "hover:bg-forest-500/10"
+                        }
+                      ${isMobile
                           ? "grow-0 px-2 py-2 w-[28%] flex items-center justify-center"
                           : "grow py-4 w-[113px]"
-                      }`}
+                        }`}
                       key={timescale}
                       onClick={() => {
                         setSelectedTimescale(timescale);
@@ -309,19 +305,17 @@ export default function Eiptracker() {
               {/* <hr className="border-dotted border-top-[1px] h-[2px] border-forest-400" /> */}
               <div className="flex flex-col rounded-full py-[2px] px-[2px] justify-center w-full items-end ">
                 <div
-                  className={`flex gap-x-[4px]  ${
-                    isMobile
-                      ? "w-full justify-between text-sm"
-                      : "w-auto justify-normal text-base"
-                  }`}
+                  className={`flex gap-x-[4px]  ${isMobile
+                    ? "w-full justify-between text-sm"
+                    : "w-auto justify-normal text-base"
+                    }`}
                 >
                   {zoomed ? (
                     <button
-                      className={`rounded-full flex items-center space-x-3 px-[15px] w-full md:w-auto text-sm md:text-base font-medium border-[0.5px] border-forest-400 leading-snug ${
-                        isMobile
-                          ? ""
-                          : "lg:px-4 lg:py-[11px] xl:px-6 xl:py-[15px] "
-                      }`}
+                      className={`rounded-full flex items-center space-x-3 px-[15px] w-full md:w-auto text-sm md:text-base font-medium border-[0.5px] border-forest-400 leading-snug ${isMobile
+                        ? ""
+                        : "lg:px-4 lg:py-[11px] xl:px-6 xl:py-[15px] "
+                        }`}
                       onClick={() => {
                         setZoomed(false);
                         setDisableZoom(true);
@@ -337,17 +331,15 @@ export default function Eiptracker() {
                   ) : (
                     Object.keys(timespans).map((timespan) => (
                       <div
-                        className={`rounded-full text-center font-medium hover:cursor-pointer ${
-                          selectedTimespan === timespan
-                            ? "bg-forest-500 dark:bg-forest-1000 visible"
-                            : "hover:bg-forest-500/10 invisible"
-                        }
+                        className={`rounded-full text-center font-medium hover:cursor-pointer ${selectedTimespan === timespan
+                          ? "bg-forest-500 dark:bg-forest-1000 visible"
+                          : "hover:bg-forest-500/10 invisible"
+                          }
 
-                      ${
-                        isMobile
-                          ? "grow-0 px-2 py-4 w-[30%] flex items-center justify-center"
-                          : "grow px-1 py-4 max-w-[113px] w-[113px]"
-                      }
+                      ${isMobile
+                            ? "grow-0 px-2 py-4 w-[30%] flex items-center justify-center"
+                            : "grow px-1 py-4 max-w-[113px] w-[113px]"
+                          }
  
                       `}
                         key={timespan}
@@ -420,11 +412,10 @@ export default function Eiptracker() {
                     >
                       <div
                         className={`border-black/[16%] dark:border-[#5A6462] border-[1px] rounded-full h-[42px] flex hover:cursor-pointer hover:bg-forest-200 hover:bg-opacity-25 w-[98%]
-                        ${
-                          selectedChains[item.chain.key]
+                        ${selectedChains[item.chain.key]
                             ? "opacity-100"
                             : "opacity-25"
-                        }`}
+                          }`}
                         onClick={() => {
                           if (
                             !(chartSeries.length <= 1) ||
@@ -442,14 +433,13 @@ export default function Eiptracker() {
                         <div className="w-[4.5%] flex justify-center items-center pl-[4px] ">
                           {" "}
                           <Icon
-                            icon={`gtp:${
-                              AllChainsByKeys[item.chain.key].urlKey
-                            }-logo-monochrome`}
+                            icon={`gtp:${AllChainsByKeys[item.chain.key].urlKey
+                              }-logo-monochrome`}
                             className="h-[24px] w-[24px]"
                             style={{
                               color:
                                 AllChainsByKeys[item.chain.key].colors[
-                                  theme
+                                theme ?? "dark"
                                 ][0],
                             }}
                           />
@@ -463,8 +453,8 @@ export default function Eiptracker() {
                             notation: "compact",
                             maximumFractionDigits: showUsd
                               ? feeData.chain_data[item.chain.key][
-                                  selectedTimescale
-                                ].txcosts_median.data[0][showUsd ? 2 : 1] < 0.01
+                                selectedTimescale
+                              ].txcosts_median.data[0][showUsd ? 2 : 1] < 0.01
                                 ? 4
                                 : 3
                               : 5,
@@ -481,8 +471,8 @@ export default function Eiptracker() {
                             notation: "compact",
                             maximumFractionDigits: showUsd
                               ? feeData.chain_data[item.chain.key][
-                                  selectedTimescale
-                                ].txcosts_avg.data[0][showUsd ? 2 : 1] < 0.01
+                                selectedTimescale
+                              ].txcosts_avg.data[0][showUsd ? 2 : 1] < 0.01
                                 ? 4
                                 : 3
                               : 5,
@@ -499,34 +489,33 @@ export default function Eiptracker() {
                             selectedTimescale
                           ]["txcosts_native_median"].data[0]
                             ? Intl.NumberFormat(undefined, {
-                                notation: "compact",
-                                maximumFractionDigits: showUsd
-                                  ? feeData.chain_data[item.chain.key][
-                                      selectedTimescale
-                                    ]["txcosts_native_median"].data[0][
-                                      showUsd ? 2 : 1
-                                    ] < 0.01
-                                    ? 4
-                                    : 3
-                                  : 5,
-                                minimumFractionDigits: 0,
-                              }).format(
-                                feeData.chain_data[item.chain.key][
+                              notation: "compact",
+                              maximumFractionDigits: showUsd
+                                ? feeData.chain_data[item.chain.key][
                                   selectedTimescale
                                 ]["txcosts_native_median"].data[0][
                                   showUsd ? 2 : 1
-                                ],
-                              )
+                                ] < 0.01
+                                  ? 4
+                                  : 3
+                                : 5,
+                              minimumFractionDigits: 0,
+                            }).format(
+                              feeData.chain_data[item.chain.key][
+                                selectedTimescale
+                              ]["txcosts_native_median"].data[0][
+                              showUsd ? 2 : 1
+                              ],
+                            )
                             : "Not Available"}
-                          {`${
-                            feeData.chain_data[item.chain.key][
-                              selectedTimescale
-                            ]["txcosts_native_median"].data[0]
-                              ? showUsd
-                                ? "$"
-                                : "Ξ"
-                              : ""
-                          }`}
+                          {`${feeData.chain_data[item.chain.key][
+                            selectedTimescale
+                          ]["txcosts_native_median"].data[0]
+                            ? showUsd
+                              ? "$"
+                              : "Ξ"
+                            : ""
+                            }`}
                         </div>
                         <div className="w-[24%] px-[4px] flex justify-center items-center gap-x-[4px] py-2 xl:leading-snug ">
                           {getDateString(
@@ -538,11 +527,10 @@ export default function Eiptracker() {
                       </div>
                       <div className="w-[4%] flex items-center justify-center">
                         <div
-                          className={`absolute left-[96%] xl:left-[97%] bottom-2 right-0 flex items-center z-20 justify-center w-[24px] h-[24px] hover:cursor-pointer bg-forest-50  dark:bg-forest-900  rounded-full transition-all ${
-                            selectedChains[item.chain.key]
-                              ? ""
-                              : "hover:bg-forest-800"
-                          }`}
+                          className={`absolute left-[96%] xl:left-[97%] bottom-2 right-0 flex items-center z-20 justify-center w-[24px] h-[24px] hover:cursor-pointer bg-forest-50  dark:bg-forest-900  rounded-full transition-all ${selectedChains[item.chain.key]
+                            ? ""
+                            : "hover:bg-forest-800"
+                            }`}
                           onClick={() => {
                             if (
                               !(chartSeries.length <= 1) ||
@@ -559,11 +547,10 @@ export default function Eiptracker() {
                         >
                           <Icon
                             icon="feather:check-circle"
-                            className={`w-full h-full transition-all rounded-full ${
-                              selectedChains[item.chain.key]
-                                ? "opacity-100 bg-white dark:bg-forest-1000 dark:hover:forest-800"
-                                : "opacity-0 bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
-                            }`}
+                            className={`w-full h-full transition-all rounded-full ${selectedChains[item.chain.key]
+                              ? "opacity-100 bg-white dark:bg-forest-1000 dark:hover:forest-800"
+                              : "opacity-0 bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
+                              }`}
                             style={{
                               color: selectedChains[item.chain.key]
                                 ? undefined

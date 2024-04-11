@@ -171,7 +171,7 @@ export default function MainChart({ data }: { data: any }) {
       optimism: [blue[500], blue[700], blue[700]],
       loopring: [amber[400], amber[600], amber[600]],
     };
-  }, [theme]);
+  }, [theme ?? "dark"]);
 
   // const bgColors: { [key: string]: string[] } = {
   //     ethereum: ['bg-[#141E30]', 'bg-[#344B66]'],
@@ -195,7 +195,7 @@ export default function MainChart({ data }: { data: any }) {
       optimism: [blue[500], blue[700]],
       loopring: [amber[400], amber[600]],
     };
-  }, [theme]);
+  }, [theme ?? "dark"]);
 
   const options = useMemo((): Highcharts.Options => {
     const dynamicOptions: Highcharts.Options = {
@@ -259,11 +259,11 @@ export default function MainChart({ data }: { data: any }) {
               chartComponent.current = chart?.chart;
             }}
 
-            // immutable={true}
-            // oneToOne={true}
-            // callBack={(chart) => {
-            // 	setChart(chart);
-            // }}
+          // immutable={true}
+          // oneToOne={true}
+          // callBack={(chart) => {
+          // 	setChart(chart);
+          // }}
           />
         </div>
       </div>

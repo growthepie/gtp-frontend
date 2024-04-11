@@ -141,15 +141,13 @@ export default function ChainAnimations({
     return (
       <div
         key={chain}
-        className={`relative flex flex-row items-center rounded-full text-xs font-medium hover:cursor-pointer z-0 ${
-          AllChainsByKeys[chain].darkTextOnBackground === true
+        className={`relative flex flex-row items-center rounded-full text-xs font-medium hover:cursor-pointer z-0 ${AllChainsByKeys[chain].darkTextOnBackground === true
             ? "text-white dark:text-black"
             : "text-white"
-        } ${
-          selectedChains[chain]
-            ? AllChainsByKeys[chain].backgrounds[theme][1]
-            : `${AllChainsByKeys[chain].backgrounds[theme][1]} `
-        }
+          } ${selectedChains[chain]
+            ? AllChainsByKeys[chain].backgrounds[theme ?? "dark"][1]
+            : `${AllChainsByKeys[chain].backgrounds[theme ?? "dark"][1]} `
+          }
         ${isShaking ? "animate-shake " : ""}`}
         style={{
           width: width,
@@ -213,34 +211,32 @@ export default function ChainAnimations({
                   <div>
                     {showUsd
                       ? (Math.round(value * 100) / 100).toLocaleString(
-                          undefined,
-                          {
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 0,
-                          },
-                        )
+                        undefined,
+                        {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0,
+                        },
+                      )
                       : (Math.round(value * 100) / 100).toLocaleString(
-                          undefined,
-                          {
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 2,
-                          },
-                        )}
+                        undefined,
+                        {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 2,
+                        },
+                      )}
                   </div>
                 </div>
               )}
             </div>
             <div
               key={chain + "select"}
-              className={`relative flex left-[10px] w-[24px] h-[24px] bg-forest-700 rounded-full self-center items-center justify-center z-10 ${
-                !selectedChains[chain] ? "opacity-100" : ""
-              }`}
+              className={`relative flex left-[10px] w-[24px] h-[24px] bg-forest-700 rounded-full self-center items-center justify-center z-10 ${!selectedChains[chain] ? "opacity-100" : ""
+                }`}
             >
               <Icon
                 icon="feather:check-circle"
-                className={`w-[24px] h-[24px] text-white ${
-                  !selectedChains[chain] ? "opacity-0" : "opacity-100"
-                }`}
+                className={`w-[24px] h-[24px] text-white ${!selectedChains[chain] ? "opacity-0" : "opacity-100"
+                  }`}
               />
             </div>
           </div>

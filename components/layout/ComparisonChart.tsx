@@ -476,7 +476,7 @@ export default function ComparisonChart({
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme][0]
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
               }"></div>
                 <div class="tooltip-point-name">${AllChainsByKeys[name].label
               }</div>
@@ -492,7 +492,7 @@ export default function ComparisonChart({
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                 style="
                   width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${AllChainsByKeys[name].colors[theme][0]};
+                  background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]};
                 "></div>
               </div>`;
 
@@ -509,7 +509,7 @@ export default function ComparisonChart({
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
             }"></div>
             <div class="tooltip-point-name text-md">${AllChainsByKeys[name].label
             }</div>
@@ -537,7 +537,7 @@ export default function ComparisonChart({
             <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
             style="
               width: ${(Math.max(0, value) / maxPoint) * 100}%;
-              background-color: ${AllChainsByKeys[name].colors[theme][0]};
+              background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]};
             "></div>
           </div>`;
         })
@@ -1376,7 +1376,7 @@ export default function ComparisonChart({
                   // shadow: {
                   //   color: "#CDD8D3" + "FF",
                   //   // color:
-                  //   //   AllChainsByKeys[series.name].colors[theme][1] + "33",
+                  //   //   AllChainsByKeys[series.name].colors[theme ?? "dark"][1] + "33",
                   //   // width: 10,
                   //   offsetX: 0,
                   //   offsetY: 0,

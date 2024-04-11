@@ -210,7 +210,7 @@ export default function ContractsPage({ params }: { params: any }) {
                   .getValue()
                   .replace("_", "-")}-logo-monochrome`}
                 style={{
-                  color: AllChainsByKeys[info.getValue()].colors[theme][1],
+                  color: AllChainsByKeys[info.getValue()].colors[theme ?? "dark"][1],
                 }}
               />
               <div>{AllChainsByKeys[info.getValue()]?.label}</div>
@@ -428,7 +428,7 @@ export default function ContractsPage({ params }: { params: any }) {
       `}
       </style>
     ),
-    [theme],
+    [theme ?? "dark"],
   );
 
   return (
@@ -512,8 +512,8 @@ export default function ContractsPage({ params }: { params: any }) {
                           {contractsUniqueValues && dataUniqueValues && (
                             <div
                               className={`absolute -bottom-1.5 ${i === 0
-                                  ? "left-[30px] right-3"
-                                  : "left-0 right-3"
+                                ? "left-[30px] right-3"
+                                : "left-0 right-3"
                                 } text-xs font-normal text-right`}
                             >
                               <div
@@ -521,7 +521,7 @@ export default function ContractsPage({ params }: { params: any }) {
                                 style={{
                                   height: "1px",
                                   width: `${(dataUniqueValues[header.id] /
-                                      contractsUniqueValues[header.id]) *
+                                    contractsUniqueValues[header.id]) *
                                     100.0
                                     }%`,
                                 }}

@@ -154,7 +154,7 @@ const Chain = ({ params }: { params: any }) => {
                         }-logo-monochrome`}
                       className="w-9 h-9"
                       style={{
-                        color: AllChainsByKeys[chainKeys[0]].colors[theme][1],
+                        color: AllChainsByKeys[chainKeys[0]].colors[theme ?? "dark"][1],
                       }}
                     />
                   </div>

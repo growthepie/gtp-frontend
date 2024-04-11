@@ -262,7 +262,7 @@ export default function AddressSearch() {
               ) : (
                 <div className="flex space-x-2 items-center">
                   <Image
-                    src={AllChainsByKeys[selectedChain].icon}
+                    src={AllChainsByKeys[selectedChain].icon ?? ""}
                     alt={AllChainsByKeys[selectedChain].label}
                     className="flex"
                     height={16}
@@ -322,7 +322,7 @@ export default function AddressSearch() {
                         }}
                       >
                         <Image
-                          src={AllChainsByKeys[chain].icon}
+                          src={AllChainsByKeys[chain].icon ?? ""}
                           alt={master.chains[chain].name}
                           className="flex"
                           height={16}

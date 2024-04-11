@@ -111,7 +111,7 @@ export default function ContractRow({
                       style={{
                         background:
                           AllChainsByKeys[sortedContracts[rowKey].chain].colors[
-                            theme
+                            theme ?? "dark"
                           ][1],
                         width: getWidth(sortedContracts[rowKey]),
                       }}
@@ -168,7 +168,7 @@ export default function ContractRow({
                       style={{
                         color:
                           AllChainsByKeys[selectedContract.chain].colors[
-                            theme
+                            theme ?? "dark"
                           ][1],
                       }}
                     />
@@ -337,7 +337,7 @@ export default function ContractRow({
                   style={{
                     background:
                       AllChainsByKeys[sortedContracts[rowKey].chain].colors[
-                        theme
+                        theme ?? "dark"
                       ][1],
                     width: getWidth(sortedContracts[rowKey]),
                   }}
@@ -358,7 +358,7 @@ export default function ContractRow({
                   style={{
                     color:
                       AllChainsByKeys[sortedContracts[rowKey].chain].colors[
-                        theme
+                        theme ?? "dark"
                       ][1],
                   }}
                 />

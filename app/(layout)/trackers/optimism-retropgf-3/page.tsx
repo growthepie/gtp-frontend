@@ -1649,7 +1649,7 @@ export default function Page() {
       `}
       </style>
     ),
-    [theme],
+    [theme ?? "dark"],
   );
 
   const maxIncludedInBallots = useMemo(() => {
