@@ -159,7 +159,7 @@ export const Chart = ({
 
         const fillHexColorOpacity = s.fillOpacity
           ? decimalPercentageToHex(s.fillOpacity)
-          : "33";
+          : "40";
 
         let fillColor =
           allCats === true
@@ -206,7 +206,7 @@ export const Chart = ({
           s.custom?.tooltipLabel === "Unlabeled" && allCats === true
             ? {
                 pattern: {
-                  color: AllChainsByKeys[chainKey].colors["dark"][0] + "55",
+                  color: AllChainsByKeys[chainKey].colors["dark"][0] + "99",
                   path: {
                     d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
                     strokeWidth: 3,

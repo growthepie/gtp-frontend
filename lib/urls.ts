@@ -31,6 +31,7 @@ export const ChainURLs = {
   metis: "https://api.growthepie.xyz/v1/chains/metis.json",
   manta: "https://api.growthepie.xyz/v1/chains/manta.json",
   blast: "https://api.growthepie.xyz/v1/chains/blast.json",
+  mode: "https://api.growthepie.xyz/v1/chains/mode.json",
 };
 
 export const BlockspaceURLs = {
@@ -60,6 +61,7 @@ export const ChainBlockspaceURLs = {
   metis: "https://api.growthepie.xyz/v1/chains/blockspace/metis.json",
   manta: "https://api.growthepie.xyz/v1/chains/blockspace/manta.json",
   blast: "https://api.growthepie.xyz/v1/chains/blockspace/blast.json",
+  mode: "https://api.growthepie.xyz/v1/chains/blockspace/mode.json",
 };
 
 export const LandingURL = "https://api.growthepie.xyz/v1/landing_page.json";

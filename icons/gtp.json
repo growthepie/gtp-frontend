@@ -109,6 +109,11 @@
       "width": 15,
       "height": 15
     },
+    "mode-logo-monochrome": {
+      "body": "<path d=\"M14.9868 13.9974H12.0607V7.52067L13.2322 3.82631L12.4011 3.53696L8.60686 13.9974H6.37995L2.58311 3.53696L1.75462 3.82631L2.92612 7.52067V14H0V1H4.3562L7.05805 8.44038V10.626H7.94195V8.44038L10.6438 1H15V13.9974H14.9868Z\" fill=\"currentColor\"/>",
+      "width": 15,
+      "height": 15
+    },
     "gtp-book-open": {
       "body": "<g fill=\"none\"><path fill=\"url(#svgID0)\" fill-rule=\"evenodd\" d=\"M3 4.708c0-.452.366-.818.818-.818h4.91a4.09 4.09 0 014.09 4.09v11.455a.818.818 0 11-1.636 0A1.636 1.636 0 009.545 17.8H3.818A.818.818 0 013 16.98V4.708ZM11.182 16.6V7.98a2.455 2.455 0 00-2.455-2.455h-4.09v10.636h4.908c.58 0 1.143.154 1.637.439Z\" clip-rule=\"evenodd\"/><path fill=\"url(#svgID1)\" fill-rule=\"evenodd\" d=\"M12.38 5.088a4.091 4.091 0 012.893-1.198h4.909c.452 0 .818.366.818.818V16.98a.818.818 0 01-.818.818h-5.728a1.636 1.636 0 00-1.636 1.636.818.818 0 11-1.636 0V7.981a4.09 4.09 0 011.198-2.893Zm.438 11.513a3.272 3.272 0 011.636-.439h4.91V5.526h-4.091a2.455 2.455 0 00-2.455 2.455v8.62Z\" clip-rule=\"evenodd\"/><defs><linearGradient id=\"svgID0\" x1=\"7.909\" x2=\"7.909\" y1=\"3.89\" y2=\"20.253\" gradientUnits=\"userSpaceOnUse\"><stop stop-color=\"currentColor\"/><stop offset=\"1\" stop-color=\"currentColor\"/></linearGradient><linearGradient id=\"svgID1\" x1=\"16.091\" x2=\"16.091\" y1=\"3.89\" y2=\"20.253\" gradientUnits=\"userSpaceOnUse\"><stop stop-color=\"currentColor\"/><stop offset=\"1\" stop-color=\"currentColor\"/></linearGradient></defs></g>",
       "width": 24,
