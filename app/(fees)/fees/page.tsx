@@ -557,9 +557,6 @@ export default function FeesPage() {
 
   const [tableHorizontalScrollAmount, setTableHorizontalScrollAmount] = useState(0);
 
-
-
-
   const [ethereumRowYRelativeToTable, setEthereumRowYRelativeToTable] = useState(0);
   const [lastRowYRelativeToPage, setLastRowYRelativeToWindow] = useState(0);
 
@@ -569,9 +566,6 @@ export default function FeesPage() {
 
 
   const hasVerticalScrollbar = () => {
-    console.log("document.body.offsetHeight", document.body.offsetHeight)
-    console.log("window.innerHeight", window.innerHeight)
-
     if (window.innerHeight) {
       return Math.abs(document.body.offsetHeight - window.innerHeight) > 1;
     }
@@ -660,11 +654,25 @@ export default function FeesPage() {
       if (isChartOpen) {
         return isMobile ? "350px" : pageHeight - lastRowYRelativeToPage - 215;
       } else {
-        return isMobile ? "428px" : pageHeight - lastRowYRelativeToPage;
+        return isMobile ? "460px" : pageHeight - lastRowYRelativeToPage;
 
       }
     }
   }, [isChartOpen, isMobile, isVerticalScrollbarVisible, lastRowYRelativeToPage, pageHeight]);
+
+  const [etherumRowStyle, setEthereumRowStyle] = useState<React.CSSProperties>({
+    position: ethereumRowPosition,
+    bottom: ethereumRowBottom,
+  });
+
+  const debounceEthereumRowStyle = useDebounceCallback(setEthereumRowStyle, 300);
+
+  useEffect(() => {
+    debounceEthereumRowStyle({
+      position: ethereumRowPosition,
+      bottom: ethereumRowBottom,
+    });
+  }, [ethereumRowPosition, ethereumRowBottom, debounceEthereumRowStyle]);
 
   // returns which chain has the lowest median fee in the selected time period
   const lowestMedianFee = useMemo(() => {
@@ -1415,11 +1423,7 @@ export default function FeesPage() {
       <FeesContainer
         ref={ethereumRowRef}
         className={`transition-all duration-300 ${isChartOpen ? "translate-y-[-215px]" : "translate-y-[0px]"}`}
-        style={{
-          position: ethereumRowPosition, //isVerticalScrollbarVisible ? "fixed" : "absolute",
-          bottom: ethereumRowBottom, //isVerticalScrollbarVisible ? isMobile ? "350px" : "290px" : isMobile ? "350px" : (pageHeight ?? 0) - lastRowYRelativeToPage - 215,
-          left: tableHorizontalScrollAmount > 0 ? -tableHorizontalScrollAmount : undefined,
-        }}
+        style={etherumRowStyle}
       >
         {feeData && master && (
           <div
