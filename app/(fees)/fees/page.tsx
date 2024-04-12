@@ -654,7 +654,7 @@ export default function FeesPage() {
       if (isChartOpen) {
         return isMobile ? "350px" : pageHeight - lastRowYRelativeToPage - 215;
       } else {
-        return isMobile ? "460px" : pageHeight - lastRowYRelativeToPage;
+        return isMobile ? "340px" : pageHeight - lastRowYRelativeToPage;
 
       }
     }
@@ -668,11 +668,12 @@ export default function FeesPage() {
   const debounceEthereumRowStyle = useDebounceCallback(setEthereumRowStyle, 300);
 
   useEffect(() => {
-    debounceEthereumRowStyle({
+    setEthereumRowStyle({
       position: ethereumRowPosition,
       bottom: ethereumRowBottom,
+      left: tableHorizontalScrollAmount > 0 ? `${-tableHorizontalScrollAmount}px` : undefined,
     });
-  }, [ethereumRowPosition, ethereumRowBottom, debounceEthereumRowStyle]);
+  }, [ethereumRowPosition, ethereumRowBottom, debounceEthereumRowStyle, tableHorizontalScrollAmount]);
 
   // returns which chain has the lowest median fee in the selected time period
   const lowestMedianFee = useMemo(() => {
@@ -1422,7 +1423,7 @@ export default function FeesPage() {
       )}
       <FeesContainer
         ref={ethereumRowRef}
-        className={`transition-all duration-300 ${isChartOpen ? "translate-y-[-215px]" : "translate-y-[0px]"}`}
+        className={`${isChartOpen ? "translate-y-[-215px]" : "translate-y-[0px]"}`}
         style={etherumRowStyle}
       >
         {feeData && master && (
