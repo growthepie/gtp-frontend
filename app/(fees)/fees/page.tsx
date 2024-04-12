@@ -1409,7 +1409,7 @@ export default function FeesPage() {
           </div>
         )}
       </FeesHorizontalScrollContainer>
-      {feeData && master && (
+      {/* {feeData && master && (
         <div className="hidden md:block fixed right-0 bottom-0 text-[0.6rem] gap-0.5 p-0.5 font-inter z-[999] bg-black text-white">
           <div>scroll: {isVerticalScrollbarVisible ? "visible" : "not visible"}</div>
           <div>table: {tableWidth?.toFixed(2)} x {tableHeight?.toFixed(2)}</div>
@@ -1420,7 +1420,7 @@ export default function FeesPage() {
           <div>ethereumRowYRelativeToTable: {ethereumRowYRelativeToTable.toFixed(2)}</div>
           <div>isBottomOfPageVisible: {isBottomOfPageVisible ? "true" : "false"}</div>
         </div>
-      )}
+      )} */}
       <FeesContainer
         ref={ethereumRowRef}
         className={`${isChartOpen ? "translate-y-[-215px]" : "translate-y-[0px]"}`}
