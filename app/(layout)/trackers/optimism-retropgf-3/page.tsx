@@ -43,7 +43,7 @@ import {
 import Container from "@/components/layout/Container";
 import { useUIContext } from "@/contexts/UIContext";
 // import { TreeMapChart } from "@/components/charts/treemapChart";
-import { useElementSize } from "usehooks-ts";
+import { useResizeObserver } from "usehooks-ts";
 import { BASE_URL } from "@/lib/helpers";
 import { a } from "react-spring";
 import { RecoveredListData } from "./recoveredListData";
@@ -1667,12 +1667,20 @@ export default function Page() {
 
   const tableMinWidthClass = "min-w-[1280px]";
 
-  const [contentRef, { width: contentWidth }] = useElementSize();
-  const [tableRef, { width: tableWidth }] = useElementSize();
+  const contentRef = useRef<HTMLDivElement>(null);
+  const tableRef = useRef<HTMLTableElement>(null);
+  const { width: contentWidth } = useResizeObserver({
+    ref: contentRef,
+  });
+  const { width: tableWidth } = useResizeObserver({
+    ref: tableRef,
+
+  });
 
   const [isTableWidthWider, setIsTableWidthWider] = useState(false);
 
   useLayoutEffect(() => {
+    if (!contentWidth || !tableWidth) return;
     setIsTableWidthWider(tableWidth > contentWidth);
   }, [contentWidth, tableWidth]);
 

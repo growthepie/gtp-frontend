@@ -7,24 +7,20 @@ import {
   useMemo,
   useState,
   useEffect,
-  useLayoutEffect,
   useRef,
   useCallback,
 } from "react";
 import useSWR from "swr";
-import { useLocalStorage, useMediaQuery } from "usehooks-ts";
+import { useEventListener, useIsMounted, useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import Header from "./Header";
 import { useTransition, animated } from "@react-spring/web";
-import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import OffScreenSlider from "./OffScreenSlider";
 import ChartContainer from "./ChartContainer";
 import Footer from "./Footer";
 import FeesHorizontalScrollContainer from "@/components/FeesHorizontalScrollContainer";
-import { useElementSize } from "usehooks-ts";
-import { get } from "lodash";
-import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import { useResizeObserver, useWindowSize, useDebounceCallback } from "usehooks-ts";
 
 interface HoveredItems {
   hoveredChain: string | null;
@@ -92,7 +88,7 @@ const getGradientColor = (percentage) => {
 export default function FeesPage() {
   const isMobile = useMediaQuery("(max-width: 767px)");
   const showGwei = true;
-
+  const { width: windowWidth = 0, height: windowHeight = 0 } = useWindowSize()
   const [selectedTimescale, setSelectedTimescale] = useState("hourly");
   const [selectedQuantitative, setSelectedQuantitative] =
     useState("txcosts_median");
@@ -542,71 +538,133 @@ export default function FeesPage() {
     },
   );
 
-  const [horizontalScrollAmount, setHorizontalScrollAmount] = useState(0);
+  // const [pageRef, { width: pageWidth, height: pageHeight }] = useElementSizeObserver<HTMLDivElement>();
 
-  const [pageDiv, { width: pageWidth, height: pageHeight }] =
-    useElementSizeObserver<HTMLDivElement>();
-  const [tableDiv, { width: tableWidth, height: tableHeight }] =
-    useElementSize<HTMLDivElement>();
+  // const [tableRef, { width: tableWidth, height: tableHeight }] = useElementSizeObserver<HTMLDivElement>();
 
+  const pageRef = useRef<HTMLDivElement>(null);
+  const { width: pageWidth, height: pageHeight } = useResizeObserver<HTMLDivElement>({
+    ref: pageRef,
+    box: "content-box",
+  });
   const tableRef = useRef<HTMLDivElement>(null);
+  const { width: tableWidth, height: tableHeight } = useResizeObserver<HTMLDivElement>({
+    ref: tableRef,
+    box: "content-box",
+  });
 
-  useEffect(
-    function () {
-      tableDiv(tableRef.current);
-    },
-    [tableRef.current],
-  );
+  const ethereumRowRef = useRef<HTMLDivElement>(null);
 
+  const [tableHorizontalScrollAmount, setTableHorizontalScrollAmount] = useState(0);
+
+
+
+
+  const [ethereumRowYRelativeToTable, setEthereumRowYRelativeToTable] = useState(0);
   const [lastRowYRelativeToPage, setLastRowYRelativeToWindow] = useState(0);
 
-  const [windowHeight, setWindowHeight] = useState(0);
-  const [windowWidth, setWindowWidth] = useState(0);
+  const [isBottomOfPageVisible, setIsBottomOfPageVisible] = useState(false);
+  const [isVerticalScrollbarVisible, setIsVerticalScrollbarVisible] = useState<boolean>(false);
+  const setDebouncedIsVerticalScrollbarVisible = useDebounceCallback(setIsVerticalScrollbarVisible, 300);
+
+
+  const hasVerticalScrollbar = () => {
+    console.log("document.body.offsetHeight", document.body.offsetHeight)
+    console.log("window.innerHeight", window.innerHeight)
+
+    if (window.innerHeight) {
+      return Math.abs(document.body.offsetHeight - window.innerHeight) > 1;
+    }
+    else {
+      return document.documentElement.scrollHeight >
+        document.documentElement.offsetHeight ||
+        document.body.scrollHeight > document.body.offsetHeight;
+    }
+  };
+
+
+  const handleResize = useCallback(() => {
+    if (!tableRef.current) return;
+
+    const tableRect = tableRef.current.getBoundingClientRect();
+    setLastRowYRelativeToWindow(tableRect.bottom);
+
+    if (!ethereumRowRef.current) return;
+
+    const ethereumRowRect = ethereumRowRef.current.getBoundingClientRect();
+    setEthereumRowYRelativeToTable(ethereumRowRect.top - tableRect.top);
+
+    const isWindowScrollable = hasVerticalScrollbar();
+
+    setIsVerticalScrollbarVisible(isWindowScrollable);
+
+    // check if no scroll or scroll full
+    const noScrollOrScrollFullCheck = Math.abs(window.scrollY + window.innerHeight - document.body.scrollHeight) < 5 ? true : false;
+    setIsBottomOfPageVisible(noScrollOrScrollFullCheck);
+
+  }, []);
+
+
+  useEventListener("scroll", handleResize);
+  useEventListener("resize", handleResize);
+
 
   useEffect(() => {
-    const getLastRowYRelativeToWindow = () => {
-      if (!tableRef.current) return;
-
-      const tableRect = tableRef.current.getBoundingClientRect();
-
-      setLastRowYRelativeToWindow(tableRect.bottom);
-      // setTimeout(() => {
-      //   setLastRowYRelativeToWindow(tableRect.bottom);
-      // }, 300);
-
-    };
-
-    getLastRowYRelativeToWindow();
-  }, [tableHeight, windowHeight, pageHeight, tableRef]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowHeight(window.innerHeight);
-      setWindowWidth(window.innerWidth);
-    };
-
-    window.addEventListener("resize", handleResize);
 
     handleResize();
 
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
+  }, [feeData, handleResize, master]);
 
-  const [isVerticalScrollbarVisible, setIsVerticalScrollbarVisible] = useState<boolean>(false);
+
+  const [bottomExpandingDivForScrollingHeight, setBottomExpandingDivForScrollingHeight] = useState(isMobile ? "h-[131px]" : "h-[290px]");
 
   useEffect(() => {
-    setIsVerticalScrollbarVisible(pageHeight > windowHeight);
-    // setTimeout(() => {
-    //   setIsVerticalScrollbarVisible(pageHeight > windowHeight);
-    // }, 300);
 
-  }, [pageHeight, windowHeight]);
-  // is window vertical scrollbar visible
-  // const isVerticalScrollbarVisible = useMemo(() => {
-  //   return pageHeight > windowHeight;
-  // }, [pageHeight, windowHeight]);
+    if (isChartOpen) {
+      setBottomExpandingDivForScrollingHeight("h-[505px] md:h-[505px)]");
+    } else {
+      if (!isVerticalScrollbarVisible) {
+        setBottomExpandingDivForScrollingHeight("h-[calc(201px)] md:h-[calc(290px)]");
+      }
+      else {
+        setBottomExpandingDivForScrollingHeight("h-[calc(201px)] md:h-[calc(290px)]");
+      }
+    }
+
+
+    const chartToggleTimeout = setTimeout(() => {
+      handleResize();
+    }, 300);
+
+    return () => {
+      clearTimeout(chartToggleTimeout);
+    };
+  }, [handleResize, isChartOpen, isVerticalScrollbarVisible]);
+
+
+  const ethereumRowPosition = useMemo(() => {
+    return isVerticalScrollbarVisible ? "fixed" : "absolute";
+  }, [isVerticalScrollbarVisible]);
+
+  // position: ethereumRowPosition, //isVerticalScrollbarVisible ? "fixed" : "absolute",
+  // bottom: ethereumRowBottom, //isVerticalScrollbarVisible ? isMobile ? "350px" : "290px" : isMobile ? "350px" : (pageHeight ?? 0) - lastRowYRelativeToPage - 215,
+  const ethereumRowBottom = useMemo(() => {
+    if (!pageHeight || !lastRowYRelativeToPage) return "0px";
+    if (isVerticalScrollbarVisible) {
+      if (isChartOpen) {
+        return isMobile ? "350px" : "290px";
+      } else {
+        return isMobile ? "260px" : "290px";
+      }
+    } else {
+      if (isChartOpen) {
+        return isMobile ? "350px" : pageHeight - lastRowYRelativeToPage - 215;
+      } else {
+        return isMobile ? "428px" : pageHeight - lastRowYRelativeToPage;
+
+      }
+    }
+  }, [isChartOpen, isMobile, isVerticalScrollbarVisible, lastRowYRelativeToPage, pageHeight]);
 
   // returns which chain has the lowest median fee in the selected time period
   const lowestMedianFee = useMemo(() => {
@@ -792,238 +850,448 @@ export default function FeesPage() {
   }, [feeData, getNumFractionDigits, getValueColor, optIndex, selectedQuantitative, showGwei, showUsd]);
 
   return (
-    <>
-      {feeData && master && (
-        <div
-          // className={`overflow-y-scroll overflow-x-hidden w-full gap-y-1 `}
-          // style={{
-          //   maxHeight: screenHeight,
-          // }}
-          className="relative min-h-screen"
-          ref={pageDiv}
-        >
-          <Header />
+    <div
+      className="relative min-h-screen overflow-hidden overscroll-contain w-full"
+      ref={pageRef}
+    >
 
-          <FeesContainer className={`w-full hidden md:block`}>
-            <div className="flex p-[5px] items-center w-full rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000]">
-              <a
-                className="flex items-center w-[162px] bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
-                href="https://www.growthepie.xyz/"
-                target="_blank"
-              >
-                <Icon icon="gtp:house" className="h-6 w-6" />
-                <div className="font-semibold">Main platform</div>
-              </a>
-            </div>
-          </FeesContainer>
-          {/* <div className="w-full h-[70px]" /> */}
-          <FeesContainer className="w-full mt-[30px] flex items-end sm:items-center justify-between md:justify-start  gap-x-[10px]">
-            <h1 className="text-[20px] md:text-[30px] leading-[120%] font-bold ">
-              {`How much a typical user paid on L2s`}
-            </h1>
-            <div className="min-w-[92px] h-[26px] py-[6px] pl-[10px] pr-[5px] items-center justify-center border-[#344240] border bg-[#1F2726] text-[12px] rounded-r-full leading-[1] font-bold">
-              {24 - selectedBarIndex === 1
-                ? "1 Hour Ago"
-                : `${24 - selectedBarIndex} hours ago`}
-            </div>
-          </FeesContainer>
-          <FeesHorizontalScrollContainer
-            setHorizontalScrollAmount={(amount) =>
-              setHorizontalScrollAmount(amount)
-            }
+      <Header />
+
+      <FeesContainer className={`w-full hidden md:block`}>
+        <div className="flex p-[5px] items-center w-full rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000]">
+          <a
+            className="flex items-center w-[162px] bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
+            href="https://www.growthepie.xyz/"
+            target="_blank"
           >
-            <div className="relative w-[670px] md:w-auto md:pr-[40px] lg:pr-[0px] overflow-x-hidden md:overflow-x-visble">
-              <div
-                className={`relative w-[810px] flex justify-start pt-[30px] pb-[8px] text-[10px] md:text-[12px] font-bold leading-[1]`}
-              >
-                <div className="pl-[10px] flex-1 flex">
-                  <div
-                    className={`flex items-center gap-x-[5px] hover:cursor-pointer  ${isMobile ? "w-[23%]" : "w-[27%]"
-                      }`}
-                  >
-                    <div
-                      className={`flex items-center h-[0px] w-[18px] md:h-[0px] md:w-[24px]`}
-                    >
-                      <div
-                        className={`${isMobile ? "h-[0px] w-[18px]" : "h-[0px] w-[24px]"
-                          }`}
-                      />
-                    </div>
-                    <div
-                      className="flex items-center gap-x-0.5"
-                      onClick={() => {
-                        if (selectedQualitative === "chain") {
-                          setSortOrder(!sortOrder);
-                        } else {
-                          setSelectedQualitative("chain");
-                        }
-                      }}
-                    >
-                      <div>Chain</div>
-                      <Icon
-                        icon={
-                          selectedQualitative === "chain"
-                            ? sortOrder
-                              ? "formkit:arrowdown"
-                              : "formkit:arrowup"
-                            : "formkit:arrowdown"
-                        }
-                        className={` dark:text-white text-black w-[10px] h-[10px] ${selectedQualitative === "chain"
-                          ? "opacity-100"
-                          : "opacity-20"
-                          }`}
-                      />{" "}
-                    </div>
-                    <div
-                      className="bg-[#344240] text-[8px] flex rounded-full font-normal items-center px-[5px] py-[3px] gap-x-[2px] hover:cursor-pointer whitespace-nowrap"
-                      onClick={() => {
-                        if (selectedQualitative === "availability") {
-                          setSortOrder(!sortOrder);
-                        } else {
-                          setSelectedQualitative("availability");
-                        }
-                      }}
-                    >
-                      Data Availability{" "}
-                      <Icon
-                        icon={
-                          selectedQualitative === "availability"
-                            ? sortOrder
-                              ? "formkit:arrowdown"
-                              : "formkit:arrowup"
-                            : "formkit:arrowdown"
-                        }
-                        className={` dark:text-white text-black w-[10px] h-[10px] ${selectedQualitative === "availability"
-                          ? "opacity-100"
-                          : "opacity-20"
-                          }`}
-                      />{" "}
-                    </div>
-                  </div>
+            <Icon icon="gtp:house" className="h-6 w-6" />
+            <div className="font-semibold">Main platform</div>
+          </a>
+        </div>
+      </FeesContainer>
+      {/* <div className="w-full h-[70px]" /> */}
+      <FeesContainer className="w-full mt-[30px] flex items-end sm:items-center justify-between md:justify-start  gap-x-[10px]">
+        <h1 className="text-[20px] md:text-[30px] leading-[120%] font-bold ">
+          {`How much a typical user paid on L2s`}
+        </h1>
+        <div className="min-w-[92px] h-[26px] py-[6px] pl-[10px] pr-[5px] items-center justify-center border-[#344240] border bg-[#1F2726] text-[12px] rounded-r-full leading-[1] font-bold">
+          {24 - selectedBarIndex === 1
+            ? "1 Hour Ago"
+            : `${24 - selectedBarIndex} hours ago`}
+        </div>
+      </FeesContainer>
 
+
+      <FeesHorizontalScrollContainer
+        ref={tableRef}
+        className="w-[900px]"
+        setHorizontalScrollAmount={(amount) =>
+          setTableHorizontalScrollAmount(amount)
+        }
+        style={{
+
+          // fade out the bottom of the div into the background with a mask
+          maskImage: ethereumRowYRelativeToTable > 0 && !isBottomOfPageVisible ? `linear-gradient(to bottom, black 0, black ${ethereumRowYRelativeToTable - 50}px, transparent ${ethereumRowYRelativeToTable - 0}px)` : "none",
+          transition: "0.3s ease",
+          overflowX: "visible",
+
+        }}
+      >
+        {feeData && master && (
+          <div className="relative w-[670px] md:w-auto md:pr-[40px] lg:pr-[0px] overflow-x-hidden md:overflow-x-visble">
+            <div
+              className={`relative w-[810px] flex justify-start pt-[30px] pb-[8px] text-[10px] md:text-[12px] font-bold leading-[1]`}
+            >
+              <div className="pl-[10px] flex-1 flex">
+                <div
+                  className={`flex items-center gap-x-[5px] hover:cursor-pointer  ${isMobile ? "w-[23%]" : "w-[27%]"
+                    }`}
+                >
                   <div
-                    className={`relative flex items-center justify-end cursor-pointer ${isMobile ? "w-[15%]" : "w-[15%]"
-                      }`}
+                    className={`flex items-center h-[0px] w-[18px] md:h-[0px] md:w-[24px]`}
+                  >
+                    <div
+                      className={`${isMobile ? "h-[0px] w-[18px]" : "h-[0px] w-[24px]"
+                        }`}
+                    />
+                  </div>
+                  <div
+                    className="flex items-center gap-x-0.5"
                     onClick={() => {
-                      if (selectedQuantitative === "txcosts_median") {
-                        if (selectedQualitative) {
-                          setSelectedQualitative(null);
-                        } else {
-                          setSortOrder(!sortOrder);
-                        }
+                      if (selectedQualitative === "chain") {
+                        setSortOrder(!sortOrder);
                       } else {
-                        setSelectedQualitative(null);
-                        setSelectedQuantitative("txcosts_median");
+                        setSelectedQualitative("chain");
                       }
                     }}
                   >
-                    Median Fee
+                    <div>Chain</div>
                     <Icon
                       icon={
-                        !selectedQualitative &&
-                          selectedQuantitative === "txcosts_median"
+                        selectedQualitative === "chain"
                           ? sortOrder
                             ? "formkit:arrowdown"
                             : "formkit:arrowup"
                           : "formkit:arrowdown"
                       }
-                      className={`absolute -right-3 top-1 dark:text-white text-black w-[10px] h-[10px] ${!selectedQualitative &&
+                      className={` dark:text-white text-black w-[10px] h-[10px] ${selectedQualitative === "chain"
+                        ? "opacity-100"
+                        : "opacity-20"
+                        }`}
+                    />{" "}
+                  </div>
+                  <div
+                    className="bg-[#344240] text-[8px] flex rounded-full font-normal items-center px-[5px] py-[3px] gap-x-[2px] hover:cursor-pointer whitespace-nowrap"
+                    onClick={() => {
+                      if (selectedQualitative === "availability") {
+                        setSortOrder(!sortOrder);
+                      } else {
+                        setSelectedQualitative("availability");
+                      }
+                    }}
+                  >
+                    Data Availability{" "}
+                    <Icon
+                      icon={
+                        selectedQualitative === "availability"
+                          ? sortOrder
+                            ? "formkit:arrowdown"
+                            : "formkit:arrowup"
+                          : "formkit:arrowdown"
+                      }
+                      className={` dark:text-white text-black w-[10px] h-[10px] ${selectedQualitative === "availability"
+                        ? "opacity-100"
+                        : "opacity-20"
+                        }`}
+                    />{" "}
+                  </div>
+                </div>
+                <div
+                  className={`relative flex items-center justify-end cursor-pointer ${isMobile ? "w-[15%]" : "w-[15%]"
+                    }`}
+                  onClick={() => {
+                    if (selectedQuantitative === "txcosts_median") {
+                      if (selectedQualitative) {
+                        setSelectedQualitative(null);
+                      } else {
+                        setSortOrder(!sortOrder);
+                      }
+                    } else {
+                      setSelectedQualitative(null);
+                      setSelectedQuantitative("txcosts_median");
+                    }
+                  }}
+                >
+                  Median Fee
+                  <Icon
+                    icon={
+                      !selectedQualitative &&
                         selectedQuantitative === "txcosts_median"
-                        ? "opacity-100"
-                        : "opacity-20"
-                        }`}
-                    />{" "}
-                  </div>
-                  <div
-                    className={`relative flex items-center justify-end hover:cursor-pointer ${isMobile ? "w-[16%]" : "w-[16%]"
+                        ? sortOrder
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
+                        : "formkit:arrowdown"
+                    }
+                    className={`absolute -right-3 top-1 dark:text-white text-black w-[10px] h-[10px] ${!selectedQualitative &&
+                      selectedQuantitative === "txcosts_median"
+                      ? "opacity-100"
+                      : "opacity-20"
                       }`}
-                    onClick={() => {
-                      if (selectedQuantitative === "txcosts_native_median") {
-                        if (selectedQualitative) {
-                          setSelectedQualitative(null);
-                        } else {
-                          setSortOrder(!sortOrder);
-                        }
-                      } else {
+                  />{" "}
+                </div>
+                <div
+                  className={`relative flex items-center justify-end hover:cursor-pointer ${isMobile ? "w-[16%]" : "w-[16%]"
+                    }`}
+                  onClick={() => {
+                    if (selectedQuantitative === "txcosts_native_median") {
+                      if (selectedQualitative) {
                         setSelectedQualitative(null);
-                        setSelectedQuantitative("txcosts_native_median");
+                      } else {
+                        setSortOrder(!sortOrder);
                       }
-                    }}
-                  >
-                    Transfer ETH
-                    <Icon
-                      icon={
-                        !selectedQualitative &&
-                          selectedQuantitative === "txcosts_native_median"
-                          ? sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
-                          : "formkit:arrowdown"
-                      }
-                      className={`absolute -right-3 top-1 dark:text-white text-black w-[10px] h-[10px] ${!selectedQualitative &&
+                    } else {
+                      setSelectedQualitative(null);
+                      setSelectedQuantitative("txcosts_native_median");
+                    }
+                  }}
+                >
+                  Transfer ETH
+                  <Icon
+                    icon={
+                      !selectedQualitative &&
                         selectedQuantitative === "txcosts_native_median"
-                        ? "opacity-100"
-                        : "opacity-20"
-                        }`}
-                    />{" "}
-                  </div>
-                  <div
-                    className={`pr-[20px] relative flex items-center justify-end gap-x-0.5 hover:cursor-pointer ${isMobile ? "w-[16.5%]" : "w-[19.5%]"
+                        ? sortOrder
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
+                        : "formkit:arrowdown"
+                    }
+                    className={`absolute -right-3 top-1 dark:text-white text-black w-[10px] h-[10px] ${!selectedQualitative &&
+                      selectedQuantitative === "txcosts_native_median"
+                      ? "opacity-100"
+                      : "opacity-20"
                       }`}
-                    onClick={() => {
-                      if (selectedQuantitative === "txcosts_swap") {
-                        if (selectedQualitative) {
-                          setSelectedQualitative(null);
-                        } else {
-                          setSortOrder(!sortOrder);
-                        }
-                      } else {
+                  />{" "}
+                </div>
+                <div
+                  className={`pr-[20px] relative flex items-center justify-end gap-x-0.5 hover:cursor-pointer ${isMobile ? "w-[16.5%]" : "w-[19.5%]"
+                    }`}
+                  onClick={() => {
+                    if (selectedQuantitative === "txcosts_swap") {
+                      if (selectedQualitative) {
                         setSelectedQualitative(null);
-                        setSelectedQuantitative("txcosts_swap");
+                      } else {
+                        setSortOrder(!sortOrder);
                       }
-                    }}
-                  >
-                    <div>Swap Token </div>
-                    <Icon
-                      icon={
-                        !selectedQualitative &&
-                          selectedQuantitative === "txcosts_swap"
-                          ? sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
-                          : "formkit:arrowdown"
-                      }
-                      className={`absolute right-[8px] top-1 dark:text-white text-black w-[10px] h-[10px] ${!selectedQualitative &&
+                    } else {
+                      setSelectedQualitative(null);
+                      setSelectedQuantitative("txcosts_swap");
+                    }
+                  }}
+                >
+                  <div>Swap Token </div>
+                  <Icon
+                    icon={
+                      !selectedQualitative &&
                         selectedQuantitative === "txcosts_swap"
-                        ? "opacity-100"
-                        : "opacity-20"
-                        }`}
-                    />{" "}
-                  </div>
-                  <div
-                    className={`relative pl-[14px] flex flex-col justify-end space-x-[1px] font-normal  ${isMobile ? "w-[29.5%]" : "w-[22.5%]"
+                        ? sortOrder
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
+                        : "formkit:arrowdown"
+                    }
+                    className={`absolute right-[8px] top-1 dark:text-white text-black w-[10px] h-[10px] ${!selectedQualitative &&
+                      selectedQuantitative === "txcosts_swap"
+                      ? "opacity-100"
+                      : "opacity-20"
                       }`}
-                  >
-                    <div className="relative flex space-x-[1px] items-end -bottom-2">
+                  />{" "}
+                </div>
+                <div
+                  className={`relative pl-[14px] flex flex-col justify-end space-x-[1px] font-normal  ${isMobile ? "w-[29.5%]" : "w-[22.5%]"
+                    }`}
+                >
+                  <div className="relative flex space-x-[1px] items-end -bottom-2">
+                    <div
+                      className={`absolute right-[35px] md:right-[25px] w-[29px] h-[12px] text-[8px] transition-all duration-100 ${selectedBarIndex >= 18 && selectedBarIndex <= 22
+                        ? "-top-[22px]"
+                        : "-top-2"
+                        }`}
+                    >
+                      hourly
+                    </div>
+                    {Array.from({ length: 24 }, (_, index) => (
                       <div
-                        className={`absolute right-[35px] md:right-[25px] w-[29px] h-[12px] text-[8px] transition-all duration-100 ${selectedBarIndex >= 18 && selectedBarIndex <= 22
-                          ? "-top-[22px]"
-                          : "-top-2"
-                          }`}
+                        key={index.toString() + "columns"}
+                        className={`flex items-end w-[5px] origin-bottom  border-t border-x border-[#344240] bg-[#344240] hover:cursor-pointer rounded-t-full transition-transform duration-100 
+                          ${selectedBarIndex === index
+                            ? "scale-[1.5] bg-transparent"
+                            : hoverBarIndex === index
+                              ? "scale-x-[100%]"
+                              : "scale-x-[100%]"
+                          }
+                          `}
+                        onMouseEnter={() => {
+                          setHoverBarIndex(index);
+                        }}
+                        onMouseLeave={() => {
+                          setHoverBarIndex(null);
+                        }}
+                        onClick={() => {
+                          setSelectedBarIndex(index);
+                        }}
                       >
-                        hourly
+                        <div
+                          className={`w-[5px] transition-all duration-0  ${selectedBarIndex === index
+                            ? "h-[16px]"
+                            : hoverBarIndex === index
+                              ? "h-[14px]"
+                              : "h-[8px]"
+                            }`}
+                        ></div>
                       </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="w-[160px] block md:hidden"></div>
+            </div>
+            <div
+              className={`gap-y-1 relative`}
+              // extra row if mobile for Ethereum rows
+              style={{
+                minHeight: isMobile
+                  ? (finalSort.length + 1) * (rowHeight + rowGapY)
+                  : finalSort.length * (rowHeight + rowGapY),
+              }}
+            >
+              {transitions((style, item) => {
+                let passMedian =
+                  feeData.chain_data[item.chain[1]]?.hourly?.txcosts_median
+                    ?.data[optIndex] &&
+                  feeData.chain_data[item.chain[1]]?.hourly?.txcosts_median
+                    ?.data[optIndex][showUsd ? 2 : 1];
+
+                let passTransfer =
+                  feeData.chain_data[item.chain[1]]?.hourly
+                    ?.txcosts_native_median?.data[optIndex] &&
+                  feeData.chain_data[item.chain[1]]?.hourly
+                    ?.txcosts_native_median?.data[optIndex][showUsd ? 2 : 1];
+
+                let passSwap =
+                  feeData.chain_data[item.chain[1]]?.hourly?.txcosts_swap
+                    .data[optIndex] &&
+                  feeData.chain_data[item.chain[1]]?.hourly?.txcosts_swap
+                    ?.data[optIndex][showUsd ? 2 : 1];
+
+                return (
+                  <animated.div
+                    key={item.chain[0]}
+                    className={`border-forest-700 border-[1px] mb-1 absolute rounded-full border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] flex items-center
+                      ${isMobile
+                        ? "text-[12px] w-[650px]"
+                        : "text-[14px] w-[810px]"
+                      } ${selectedChains[item.chain[1]]
+                        ? "opacity-100"
+                        : "opacity-50"
+                      }`}
+                    style={{ ...style }}
+                  >
+                    <div
+                      className={`flex justify-start items-center h-full gap-x-[5px] ${isMobile ? "w-[23%]" : "w-[27%]"
+                        }`}
+                    >
+                      <div
+                        className={`flex items-center h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
+                      >
+                        <Icon
+                          icon={`gtp:${AllChainsByKeys[item.chain[1]].urlKey
+                            }-logo-monochrome`}
+                          className={`${isMobile
+                            ? "h-[18px] w-[18px]"
+                            : "h-[24px] w-[24px]"
+                            }`}
+                          style={{
+                            color:
+                              AllChainsByKeys[item.chain[1]].colors[theme ?? "dark"][0],
+                          }}
+                        />
+                      </div>
+                      <div className="pr-[5px]">
+                        {isMobile
+                          ? master.chains[item.chain[1]].name_short
+                          : AllChainsByKeys[item.chain[1]].label}
+                      </div>
+                      <div
+                        className={`bg-[#344240] flex rounded-full  items-center  transition-width overflow-hidden duration-300 ${isMobile
+                          ? "px-[4px] py-[2px] gap-x-[1px]"
+                          : "px-[5px] py-[3px] gap-x-[2px]"
+                          }`}
+                        onMouseEnter={() => {
+                          setHoveredItems({
+                            hoveredChain: item.chain[1],
+                            hoveredDA: hoveredItems.hoveredDA,
+                          });
+                        }}
+                        onMouseLeave={() => {
+                          setHoveredItems({
+                            hoveredChain: null,
+                            hoveredDA: hoveredItems.hoveredDA,
+                          });
+                        }}
+                      >
+                        {dataAvailToArray(
+                          master.chains[item.chain[1]].da_layer,
+                        ).map((avail, index, array) => [
+                          <div
+                            key={avail.icon}
+                            className={`flex relative items-center gap-x-0.5 hover:cursor-pointer`}
+                            onMouseEnter={() => {
+                              setHoveredItems({
+                                hoveredChain: hoveredItems.hoveredChain,
+                                hoveredDA: avail.label,
+                              });
+                            }}
+                            onMouseLeave={() => {
+                              setHoveredItems({
+                                hoveredChain: hoveredItems.hoveredChain,
+                                hoveredDA: null,
+                              });
+                            }}
+                            onClick={() => {
+                              if (selectedQualitative !== "availability") {
+                                setSelectedQualitative("availability");
+                              }
+                              setSelectedAvailability(avail.icon);
+                            }}
+                          >
+                            <Icon
+                              icon={`gtp:${avail.icon}`}
+                              className={`${selectedAvailability === avail.icon &&
+                                selectedQualitative === "availability"
+                                ? "text-forest-200"
+                                : "text-[#5A6462] "
+                                }
+                                  ${isMobile
+                                  ? "h-[10px] w-[10px] "
+                                  : "h-[12px] w-[12px] "
+                                }`}
+                            />
+                            <div
+                              className={`text-[8px] text-center font-semibold overflow-hidden ${selectedAvailability === avail.icon &&
+                                selectedQualitative === "availability"
+                                ? "text-forest-200"
+                                : "text-[#5A6462] "
+                                } `}
+                              style={{
+                                maxWidth:
+                                  hoveredItems.hoveredDA === avail.label &&
+                                    hoveredItems.hoveredChain === item.chain[1]
+                                    ? "50px"
+                                    : "0px",
+                                transition: "max-width 0.3s ease", // Adjust duration and timing function as needed
+                              }}
+                            >
+                              {avail.label}
+                            </div>
+                          </div>,
+                          index !== array.length - 1 && (
+                            /* Content to render when index is not the last element */
+                            <div
+                              key={avail.label}
+                              className="w-[12px] h-[12px] flex items-center justify-center"
+                              style={{
+                                color: "#5A6462",
+                              }}
+                            >
+                              +
+                            </div>
+                          ),
+                        ])}
+                      </div>
+                    </div>
+
+                    <div className="h-full w-[15%] flex justify-end items-center">
+                      {getFormattedLastValue(item.chain[1], "txcosts_median")}
+                    </div>
+                    <div
+                      className={`relative h-full flex justify-end items-center  ${isMobile ? "w-[16%]" : "w-[16%]"
+                        }`}
+                    >
+                      {getFormattedLastValue(item.chain[1], "txcosts_native_median")}
+                    </div>
+                    <div
+                      className={`pr-[20px] h-full flex justify-end items-center ${isMobile ? "w-[16.5%]" : "w-[19.5%]"
+                        }`}
+                    >
+                      {getFormattedLastValue(item.chain[1], "txcosts_swap")}
+                    </div>
+                    <div
+                      className={`pl-[15px] relative flex items-center h-full space-x-[1px] ${isMobile ? "w-[29.5%]" : "w-[22.5%]"
+                        }`}
+                    >
                       {Array.from({ length: 24 }, (_, index) => (
                         <div
-                          key={index.toString() + "columns"}
-                          className={`flex items-end w-[5px] origin-bottom  border-t border-x border-[#344240] bg-[#344240] hover:cursor-pointer rounded-t-full transition-transform duration-100 
-                          ${selectedBarIndex === index
-                              ? "scale-[1.5] bg-transparent"
-                              : hoverBarIndex === index
-                                ? "scale-x-[100%]"
-                                : "scale-x-[100%]"
-                            }
-                          `}
+                          key={index.toString() + "circles"}
+                          className="h-[34px] flex items-center justify-end cursor-pointer"
                           onMouseEnter={() => {
                             setHoverBarIndex(index);
                           }}
@@ -1035,511 +1303,306 @@ export default function FeesPage() {
                           }}
                         >
                           <div
-                            className={`w-[5px] transition-all duration-0  ${selectedBarIndex === index
-                              ? "h-[16px]"
+                            className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${selectedBarIndex === index
+                              ? "scale-[160%]"
                               : hoverBarIndex === index
-                                ? "h-[14px]"
-                                : "h-[8px]"
+                                ? "scale-[120%] opacity-90"
+                                : "scale-100 opacity-50"
                               }`}
+                            style={{
+                              backgroundColor: !feeIndexSort[23 - index][
+                                item.chain[1]
+                              ]
+                                ? "gray"
+                                : getGradientColor(
+                                  Math.floor(
+                                    feeIndexSort[23 - index][
+                                    item.chain[1]
+                                    ][3] * 100,
+                                  ),
+                                ),
+                            }}
                           ></div>
                         </div>
                       ))}
                     </div>
-                  </div>
-                </div>
-                <div className="w-[160px] block md:hidden"></div>
-              </div>
-              <div
-                ref={tableRef}
-                className={`gap-y-1 relative`}
-                // extra row if mobile for Ethereum rows
-                style={{
-                  minHeight: isMobile
-                    ? (finalSort.length + 1) * (rowHeight + rowGapY)
-                    : finalSort.length * (rowHeight + rowGapY),
-                }}
-              >
-                {transitions((style, item) => {
-                  let passMedian =
-                    feeData.chain_data[item.chain[1]]?.hourly?.txcosts_median
-                      ?.data[optIndex] &&
-                    feeData.chain_data[item.chain[1]]?.hourly?.txcosts_median
-                      ?.data[optIndex][showUsd ? 2 : 1];
-
-                  let passTransfer =
-                    feeData.chain_data[item.chain[1]]?.hourly
-                      ?.txcosts_native_median?.data[optIndex] &&
-                    feeData.chain_data[item.chain[1]]?.hourly
-                      ?.txcosts_native_median?.data[optIndex][showUsd ? 2 : 1];
-
-                  let passSwap =
-                    feeData.chain_data[item.chain[1]]?.hourly?.txcosts_swap
-                      .data[optIndex] &&
-                    feeData.chain_data[item.chain[1]]?.hourly?.txcosts_swap
-                      ?.data[optIndex][showUsd ? 2 : 1];
-
-                  return (
-                    <animated.div
-                      key={item.chain[0]}
-                      className={`border-forest-700 border-[1px] mb-1 absolute rounded-full border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] flex items-center
-                      ${isMobile
-                          ? "text-[12px] w-[650px]"
-                          : "text-[14px] w-[810px]"
-                        } ${selectedChains[item.chain[1]]
-                          ? "opacity-100"
-                          : "opacity-50"
-                        }`}
-                      style={{ ...style }}
-                    // onLoad={() => {
-                    //   setTimeout(() => {
-                    //     triggerSetEthereumRowStyle();
-                    //   }, 5000);
-                    // }}
-                    >
+                    <div className="absolute left-[99%]">
                       <div
-                        className={`flex justify-start items-center h-full gap-x-[5px] ${isMobile ? "w-[23%]" : "w-[27%]"
+                        className={`relative flex items-center justify-end w-[22px] h-[22px] rounded-full cursor-pointer ${selectedChains[item.chain[1]]
+                          ? " bg-white dark:bg-forest-1000 dark:hover:forest-800"
+                          : " bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
                           }`}
+                        onClick={() => {
+                          setSelectedChains((prevState) => {
+                            return {
+                              ...prevState,
+                              [item.chain[1]]: !prevState[item.chain[1]],
+                            };
+                          });
+                        }}
                       >
                         <div
-                          className={`flex items-center h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
+                          className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                          style={{
+                            color: !selectedChains[item.chain[1]]
+                              ? undefined
+                              : "#EAECEB",
+                          }}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="22"
+                            height="22"
+                            viewBox="0 0 22 22"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className={`w-[22px] h-[22px]  ${!selectedChains[item.chain[1]]
+                              ? "opacity-100"
+                              : "opacity-0"
+                              }`}
+                          >
+                            <circle
+                              xmlns="http://www.w3.org/2000/svg"
+                              cx="11"
+                              cy="11"
+                              r="7.6"
+                            />
+                          </svg>
+                        </div>
+                        <div
+                          className={`p-0.5 rounded-full ${!selectedChains[item.chain[1]]
+                            ? "bg-forest-50 dark:bg-[#1F2726]"
+                            : "bg-white dark:bg-[#1F2726]"
+                            }`}
                         >
                           <Icon
-                            icon={`gtp:${AllChainsByKeys[item.chain[1]].urlKey
-                              }-logo-monochrome`}
-                            className={`${isMobile
-                              ? "h-[18px] w-[18px]"
-                              : "h-[24px] w-[24px]"
+                            icon="feather:check-circle"
+                            className={`w-[17.6px] h-[17.6px] ${!selectedChains[item.chain[1]]
+                              ? "opacity-0"
+                              : "opacity-100"
                               }`}
                             style={{
-                              color:
-                                AllChainsByKeys[item.chain[1]].colors[theme ?? "dark"][0],
-                            }}
-                          />
-                        </div>
-                        <div className="pr-[5px]">
-                          {isMobile
-                            ? master.chains[item.chain[1]].name_short
-                            : AllChainsByKeys[item.chain[1]].label}
-                        </div>
-                        <div
-                          className={`bg-[#344240] flex rounded-full  items-center  transition-width overflow-hidden duration-300 ${isMobile
-                            ? "px-[4px] py-[2px] gap-x-[1px]"
-                            : "px-[5px] py-[3px] gap-x-[2px]"
-                            }`}
-                          onMouseEnter={() => {
-                            setHoveredItems({
-                              hoveredChain: item.chain[1],
-                              hoveredDA: hoveredItems.hoveredDA,
-                            });
-                          }}
-                          onMouseLeave={() => {
-                            setHoveredItems({
-                              hoveredChain: null,
-                              hoveredDA: hoveredItems.hoveredDA,
-                            });
-                          }}
-                        >
-                          {dataAvailToArray(
-                            master.chains[item.chain[1]].da_layer,
-                          ).map((avail, index, array) => [
-                            <div
-                              key={avail.icon}
-                              className={`flex relative items-center gap-x-0.5 hover:cursor-pointer`}
-                              onMouseEnter={() => {
-                                setHoveredItems({
-                                  hoveredChain: hoveredItems.hoveredChain,
-                                  hoveredDA: avail.label,
-                                });
-                              }}
-                              onMouseLeave={() => {
-                                setHoveredItems({
-                                  hoveredChain: hoveredItems.hoveredChain,
-                                  hoveredDA: null,
-                                });
-                              }}
-                              onClick={() => {
-                                if (selectedQualitative !== "availability") {
-                                  setSelectedQualitative("availability");
-                                }
-                                setSelectedAvailability(avail.icon);
-                              }}
-                            >
-                              <Icon
-                                icon={`gtp:${avail.icon}`}
-                                className={`${selectedAvailability === avail.icon &&
-                                  selectedQualitative === "availability"
-                                  ? "text-forest-200"
-                                  : "text-[#5A6462] "
-                                  }
-                                  ${isMobile
-                                    ? "h-[10px] w-[10px] "
-                                    : "h-[12px] w-[12px] "
-                                  }`}
-                              />
-                              <div
-                                className={`text-[8px] text-center font-semibold overflow-hidden ${selectedAvailability === avail.icon &&
-                                  selectedQualitative === "availability"
-                                  ? "text-forest-200"
-                                  : "text-[#5A6462] "
-                                  } `}
-                                style={{
-                                  maxWidth:
-                                    hoveredItems.hoveredDA === avail.label &&
-                                      hoveredItems.hoveredChain === item.chain[1]
-                                      ? "50px"
-                                      : "0px",
-                                  transition: "max-width 0.3s ease", // Adjust duration and timing function as needed
-                                }}
-                              >
-                                {avail.label}
-                              </div>
-                            </div>,
-                            index !== array.length - 1 && (
-                              /* Content to render when index is not the last element */
-                              <div
-                                key={avail.label}
-                                className="w-[12px] h-[12px] flex items-center justify-center"
-                                style={{
-                                  color: "#5A6462",
-                                }}
-                              >
-                                +
-                              </div>
-                            ),
-                          ])}
-                        </div>
-                      </div>
-
-                      <div className="h-full w-[15%] flex justify-end items-center">
-                        {getFormattedLastValue(item.chain[1], "txcosts_median")}
-                      </div>
-                      <div
-                        className={`relative h-full flex justify-end items-center  ${isMobile ? "w-[16%]" : "w-[16%]"
-                          }`}
-                      >
-                        {getFormattedLastValue(item.chain[1], "txcosts_native_median")}
-                      </div>
-                      <div
-                        className={`pr-[20px] h-full flex justify-end items-center ${isMobile ? "w-[16.5%]" : "w-[19.5%]"
-                          }`}
-                      >
-                        {getFormattedLastValue(item.chain[1], "txcosts_swap")}
-                      </div>
-                      <div
-                        className={`pl-[15px] relative flex items-center h-full space-x-[1px] ${isMobile ? "w-[29.5%]" : "w-[22.5%]"
-                          }`}
-                      >
-                        {Array.from({ length: 24 }, (_, index) => (
-                          <div
-                            key={index.toString() + "circles"}
-                            className="h-[34px] flex items-center justify-end cursor-pointer"
-                            onMouseEnter={() => {
-                              setHoverBarIndex(index);
-                            }}
-                            onMouseLeave={() => {
-                              setHoverBarIndex(null);
-                            }}
-                            onClick={() => {
-                              setSelectedBarIndex(index);
-                            }}
-                          >
-                            <div
-                              className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${selectedBarIndex === index
-                                ? "scale-[160%]"
-                                : hoverBarIndex === index
-                                  ? "scale-[120%] opacity-90"
-                                  : "scale-100 opacity-50"
-                                }`}
-                              style={{
-                                backgroundColor: !feeIndexSort[23 - index][
-                                  item.chain[1]
-                                ]
-                                  ? "gray"
-                                  : getGradientColor(
-                                    Math.floor(
-                                      feeIndexSort[23 - index][
-                                      item.chain[1]
-                                      ][3] * 100,
-                                    ),
-                                  ),
-                              }}
-                            ></div>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="absolute left-[99%]">
-                        <div
-                          className={`relative flex items-center justify-end w-[22px] h-[22px] rounded-full cursor-pointer ${selectedChains[item.chain[1]]
-                            ? " bg-white dark:bg-forest-1000 dark:hover:forest-800"
-                            : " bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
-                            }`}
-                          onClick={() => {
-                            setSelectedChains((prevState) => {
-                              return {
-                                ...prevState,
-                                [item.chain[1]]: !prevState[item.chain[1]],
-                              };
-                            });
-                          }}
-                        >
-                          <div
-                            className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-                            style={{
-                              color: !selectedChains[item.chain[1]]
+                              color: selectedChains[item.chain[1]]
                                 ? undefined
                                 : "#EAECEB",
                             }}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="22"
-                              height="22"
-                              viewBox="0 0 22 22"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className={`w-[22px] h-[22px]  ${!selectedChains[item.chain[1]]
-                                ? "opacity-100"
-                                : "opacity-0"
-                                }`}
-                            >
-                              <circle
-                                xmlns="http://www.w3.org/2000/svg"
-                                cx="11"
-                                cy="11"
-                                r="7.6"
-                              />
-                            </svg>
-                          </div>
-                          <div
-                            className={`p-0.5 rounded-full ${!selectedChains[item.chain[1]]
-                              ? "bg-forest-50 dark:bg-[#1F2726]"
-                              : "bg-white dark:bg-[#1F2726]"
-                              }`}
-                          >
-                            <Icon
-                              icon="feather:check-circle"
-                              className={`w-[17.6px] h-[17.6px] ${!selectedChains[item.chain[1]]
-                                ? "opacity-0"
-                                : "opacity-100"
-                                }`}
-                              style={{
-                                color: selectedChains[item.chain[1]]
-                                  ? undefined
-                                  : "#EAECEB",
-                              }}
-                            />
-                          </div>
+                          />
                         </div>
                       </div>
-                    </animated.div>
-                  );
-                })}
-              </div>
-            </div>
-          </FeesHorizontalScrollContainer>
-          {/* <div className="bg-white fixed right-0 top-0 text-black text-xs">
-            <div>scroll: {isVerticalScrollbarVisible ? "visible" : "not visible"}</div>
-            <div>table: {tableWidth} x {tableHeight}</div>
-            <div>page: {pageWidth} x {pageHeight}</div>
-            <div>window: {windowWidth} x {windowHeight}</div>
-            <div>lastRow: {lastRowYRelativeToPage}</div>
-            <div>horizontalScrollAmount: {horizontalScrollAmount}</div>
-          </div> */}
-          <FeesContainer
-            className={`transition-transform duration-300 ${isChartOpen ? "translate-y-[-215px]" : "translate-y-[0px]"
-              }`}
-            style={{
-              position: isVerticalScrollbarVisible ? "fixed" : "absolute",
-              bottom: isVerticalScrollbarVisible ? "190px" : undefined,
-              top:
-                !isVerticalScrollbarVisible && isMobile
-                  ? lastRowYRelativeToPage - 37
-                  : undefined,
-              left:
-                isMobile && horizontalScrollAmount > 0
-                  ? -horizontalScrollAmount
-                  : undefined,
-            }}
-          >
-            <div
-              className={`border-forest-700 border-[1px] absolute rounded-full bg-[#1F2726] border-black/[16%] dark:border-[#5A6462] shadow-[0px_0px_20px_0px_#000000] min-h-[34px] pl-[10px] flex items-center
-              ${isMobile ? "text-[12px] w-[663px]" : "text-[14px] w-[820px]"}`}
-            >
-              <div className="w-[638px] md:w-[798px] flex items-center">
-                <div
-                  className={`flex justify-start items-center h-full gap-x-[5px] ${isMobile ? "w-[23%]" : "w-[27%]"
-                    }`}
-                >
-                  <div
-                    className={`flex items-center h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
-                  >
-                    <Icon
-                      icon={`gtp:${AllChainsByKeys["ethereum"].urlKey}-logo-monochrome`}
-                      className={`${isMobile ? "h-[18px] w-[18px]" : "h-[24px] w-[24px]"
-                        }`}
-                      style={{
-                        color: AllChainsByKeys["ethereum"].colors["light"][1],
-                      }}
-                    />
-                  </div>
-                  <div className="">
-                    {isMobile
-                      ? master.chains["ethereum"].name_short
-                      : AllChainsByKeys["ethereum"].label}
-                  </div>
-                  <div
-                    className={`bg-[#344240] flex rounded-full  items-center  transition-width overflow-hidden duration-300 ${isMobile
-                      ? "px-[4px] py-[2px] gap-x-[1px]"
-                      : "px-[5px] py-[3px] gap-x-[2px]"
-                      }`}
-                    onMouseEnter={() => {
-                      setHoveredItems({
-                        hoveredChain: "ethereum",
-                        hoveredDA: hoveredItems.hoveredDA,
-                      });
-                    }}
-                    onMouseLeave={() => {
-                      setHoveredItems({
-                        hoveredChain: null,
-                        hoveredDA: hoveredItems.hoveredDA,
-                      });
-                    }}
-                  >
-                    {dataAvailToArray(master.chains["ethereum"].da_layer).map(
-                      (avail, index, array) => [
-                        <div
-                          key={avail.icon}
-                          className={`flex relative items-center gap-x-0.5 hover:cursor-pointer`}
-                          onMouseEnter={() => {
-                            setHoveredItems({
-                              hoveredChain: hoveredItems.hoveredChain,
-                              hoveredDA: avail.label,
-                            });
-                          }}
-                          onMouseLeave={() => {
-                            setHoveredItems({
-                              hoveredChain: hoveredItems.hoveredChain,
-                              hoveredDA: null,
-                            });
-                          }}
-                          onClick={() => {
-                            if (selectedQualitative !== "availability") {
-                              setSelectedQualitative("availability");
-                            }
-                            setSelectedAvailability(avail.icon);
-                          }}
-                        >
-                          <Icon
-                            icon={`gtp:${avail.icon}`}
-                            className={`${selectedAvailability === avail.icon &&
-                              selectedQualitative === "availability"
-                              ? "text-forest-200"
-                              : "text-[#5A6462] "
-                              }
-                          ${isMobile
-                                ? "h-[10px] w-[10px] "
-                                : "h-[12px] w-[12px] "
-                              }`}
-                          />
-                          <div
-                            className={`text-[8px] text-center font-semibold overflow-hidden ${selectedAvailability === avail.icon &&
-                              selectedQualitative === "availability"
-                              ? "text-forest-200"
-                              : "text-[#5A6462] "
-                              } `}
-                            style={{
-                              maxWidth:
-                                hoveredItems.hoveredDA === avail.label &&
-                                  hoveredItems.hoveredChain === "ethereum"
-                                  ? "50px"
-                                  : "0px",
-                              transition: "max-width 0.3s ease", // Adjust duration and timing function as needed
-                            }}
-                          >
-                            {avail.label}
-                          </div>
-                        </div>,
-                        index !== array.length - 1 && (
-                          /* Content to render when index is not the last element */
-                          <div
-                            key={avail.label}
-                            className="w-[12px] h-[12px] flex items-center justify-center"
-                            style={{
-                              color: "#5A6462",
-                            }}
-                          >
-                            +
-                          </div>
-                        ),
-                      ],
-                    )}
-                  </div>
-                </div>
-
-                <div className="h-full w-[15%] flex justify-end items-center">
-                  {getFormattedLastValue("ethereum", "txcosts_median")}
-                </div>
-                <div
-                  className={`h-full  flex justify-end items-center ${isMobile ? "w-[16%]" : "w-[16%]"
-                    }`}
-                >
-                  {getFormattedLastValue("ethereum", "txcosts_native_median")}
-                </div>
-                <div
-                  className={`pr-[20px] h-full flex justify-end items-center ${isMobile ? "w-[16.5%]" : "w-[19.5%]"}`}
-                >
-                  {getFormattedLastValue("ethereum", "txcosts_swap")}
-                </div>
-                <div
-                  className={`pl-[15px] relative flex items-center h-full space-x-[1px] ${isMobile ? "w-[29.5%]" : "w-[22.5%]"}`}
-                >
-                  {Array.from({ length: 24 }, (_, index) => (
-                    <div
-                      key={index.toString() + "circles"}
-                      className="h-[32px] flex items-center justify-end cursor-pointer"
-                      onMouseEnter={() => {
-                        setHoverBarIndex(index);
-                      }}
-                      onMouseLeave={() => {
-                        setHoverBarIndex(null);
-                      }}
-                      onClick={() => {
-                        setSelectedBarIndex(index);
-                      }}
-                    >
-                      <div
-                        className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${selectedBarIndex === index
-                          ? "scale-[160%]"
-                          : hoverBarIndex === index
-                            ? "scale-[120%] opacity-90"
-                            : "scale-100 opacity-50"
-                          }`}
-                        style={{
-                          backgroundColor: !feeIndexSort[23 - index]
-                            ? "gray"
-                            : getGradientColor(
-                              Math.floor(
-                                feeIndexSortWithEthereum[23 - index]["ethereum"][3] * 100,
-                              ),
-                            ),
-                        }}
-                      ></div>
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </animated.div>
+                );
+              })}
             </div>
-          </FeesContainer>
-          <OffScreenSlider>
-            <ChartContainer isOpen={isChartOpen} setIsOpen={setIsChartOpen} selectedMetric={selectedQuantitative} selectedTimeframe={"24hrs"} selectedChains={Object.keys(selectedChains).filter(c => selectedChains[c] === true)} showGwei={showGwei} />
-          </OffScreenSlider>
-          <Footer />
-          <div className={`w-full transition-all duration-300 ${isChartOpen ? "h-[calc(131px+215px)] md:h-[calc(190px+215px)]" : "h-[131px] md:h-[190px]"}`}></div>
+          </div>
+        )}
+      </FeesHorizontalScrollContainer>
+      {feeData && master && (
+        <div className="hidden md:block fixed right-0 bottom-0 text-[0.6rem] gap-0.5 p-0.5 font-inter z-[999] bg-black text-white">
+          <div>scroll: {isVerticalScrollbarVisible ? "visible" : "not visible"}</div>
+          <div>table: {tableWidth?.toFixed(2)} x {tableHeight?.toFixed(2)}</div>
+          <div>page: {pageWidth?.toFixed(2)} x {pageHeight?.toFixed(2)}</div>
+          <div>window: {windowWidth} x {windowHeight.toFixed(2)}</div>
+          <div>lastRow: {lastRowYRelativeToPage.toFixed(2)}</div>
+          <div>horizontalScrollAmount: {tableHorizontalScrollAmount}</div>
+          <div>ethereumRowYRelativeToTable: {ethereumRowYRelativeToTable.toFixed(2)}</div>
+          <div>isBottomOfPageVisible: {isBottomOfPageVisible ? "true" : "false"}</div>
         </div>
       )}
-    </>
+      <FeesContainer
+        ref={ethereumRowRef}
+        className={`transition-all duration-300 ${isChartOpen ? "translate-y-[-215px]" : "translate-y-[0px]"}`}
+        style={{
+          position: ethereumRowPosition, //isVerticalScrollbarVisible ? "fixed" : "absolute",
+          bottom: ethereumRowBottom, //isVerticalScrollbarVisible ? isMobile ? "350px" : "290px" : isMobile ? "350px" : (pageHeight ?? 0) - lastRowYRelativeToPage - 215,
+          left: tableHorizontalScrollAmount > 0 ? -tableHorizontalScrollAmount : undefined,
+        }}
+      >
+        {feeData && master && (
+          <div
+            className={`border-forest-700 border-[1px] absolute rounded-full bg-[#1F2726] border-black/[16%] dark:border-[#5A6462] shadow-[0px_0px_20px_0px_#000000] min-h-[34px] pl-[10px] flex items-center
+              ${isMobile ? "text-[12px] w-[663px]" : "text-[14px] w-[820px]"}`}
+          >
+            <div className="w-[638px] md:w-[798px] flex items-center">
+              <div
+                className={`flex justify-start items-center h-full gap-x-[5px] ${isMobile ? "w-[23%]" : "w-[27%]"
+                  }`}
+              >
+                <div
+                  className={`flex items-center h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
+                >
+                  <Icon
+                    icon={`gtp:${AllChainsByKeys["ethereum"].urlKey}-logo-monochrome`}
+                    className={`${isMobile ? "h-[18px] w-[18px]" : "h-[24px] w-[24px]"
+                      }`}
+                    style={{
+                      color: AllChainsByKeys["ethereum"].colors["light"][1],
+                    }}
+                  />
+                </div>
+                <div className="">
+                  {isMobile
+                    ? master.chains["ethereum"].name_short
+                    : AllChainsByKeys["ethereum"].label}
+                </div>
+                <div
+                  className={`bg-[#344240] flex rounded-full  items-center  transition-width overflow-hidden duration-300 ${isMobile
+                    ? "px-[4px] py-[2px] gap-x-[1px]"
+                    : "px-[5px] py-[3px] gap-x-[2px]"
+                    }`}
+                  onMouseEnter={() => {
+                    setHoveredItems({
+                      hoveredChain: "ethereum",
+                      hoveredDA: hoveredItems.hoveredDA,
+                    });
+                  }}
+                  onMouseLeave={() => {
+                    setHoveredItems({
+                      hoveredChain: null,
+                      hoveredDA: hoveredItems.hoveredDA,
+                    });
+                  }}
+                >
+                  {dataAvailToArray(master.chains["ethereum"].da_layer).map(
+                    (avail, index, array) => [
+                      <div
+                        key={avail.icon}
+                        className={`flex relative items-center gap-x-0.5 hover:cursor-pointer`}
+                        onMouseEnter={() => {
+                          setHoveredItems({
+                            hoveredChain: hoveredItems.hoveredChain,
+                            hoveredDA: avail.label,
+                          });
+                        }}
+                        onMouseLeave={() => {
+                          setHoveredItems({
+                            hoveredChain: hoveredItems.hoveredChain,
+                            hoveredDA: null,
+                          });
+                        }}
+                        onClick={() => {
+                          if (selectedQualitative !== "availability") {
+                            setSelectedQualitative("availability");
+                          }
+                          setSelectedAvailability(avail.icon);
+                        }}
+                      >
+                        <Icon
+                          icon={`gtp:${avail.icon}`}
+                          className={`${selectedAvailability === avail.icon &&
+                            selectedQualitative === "availability"
+                            ? "text-forest-200"
+                            : "text-[#5A6462] "
+                            }
+                          ${isMobile
+                              ? "h-[10px] w-[10px] "
+                              : "h-[12px] w-[12px] "
+                            }`}
+                        />
+                        <div
+                          className={`text-[8px] text-center font-semibold overflow-hidden ${selectedAvailability === avail.icon &&
+                            selectedQualitative === "availability"
+                            ? "text-forest-200"
+                            : "text-[#5A6462] "
+                            } `}
+                          style={{
+                            maxWidth:
+                              hoveredItems.hoveredDA === avail.label &&
+                                hoveredItems.hoveredChain === "ethereum"
+                                ? "50px"
+                                : "0px",
+                            transition: "max-width 0.3s ease", // Adjust duration and timing function as needed
+                          }}
+                        >
+                          {avail.label}
+                        </div>
+                      </div>,
+                      index !== array.length - 1 && (
+                        /* Content to render when index is not the last element */
+                        <div
+                          key={avail.label}
+                          className="w-[12px] h-[12px] flex items-center justify-center"
+                          style={{
+                            color: "#5A6462",
+                          }}
+                        >
+                          +
+                        </div>
+                      ),
+                    ],
+                  )}
+                </div>
+              </div>
+
+              <div className="h-full w-[15%] flex justify-end items-center">
+                {getFormattedLastValue("ethereum", "txcosts_median")}
+              </div>
+              <div
+                className={`h-full  flex justify-end items-center ${isMobile ? "w-[16%]" : "w-[16%]"
+                  }`}
+              >
+                {getFormattedLastValue("ethereum", "txcosts_native_median")}
+              </div>
+              <div
+                className={`pr-[20px] h-full flex justify-end items-center ${isMobile ? "w-[16.5%]" : "w-[19.5%]"}`}
+              >
+                {getFormattedLastValue("ethereum", "txcosts_swap")}
+              </div>
+              <div
+                className={`pl-[15px] relative flex items-center h-full space-x-[1px] ${isMobile ? "w-[29.5%]" : "w-[22.5%]"}`}
+              >
+                {Array.from({ length: 24 }, (_, index) => (
+                  <div
+                    key={index.toString() + "circles"}
+                    className="h-[32px] flex items-center justify-end cursor-pointer"
+                    onMouseEnter={() => {
+                      setHoverBarIndex(index);
+                    }}
+                    onMouseLeave={() => {
+                      setHoverBarIndex(null);
+                    }}
+                    onClick={() => {
+                      setSelectedBarIndex(index);
+                    }}
+                  >
+                    <div
+                      className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${selectedBarIndex === index
+                        ? "scale-[160%]"
+                        : hoverBarIndex === index
+                          ? "scale-[120%] opacity-90"
+                          : "scale-100 opacity-50"
+                        }`}
+                      style={{
+                        backgroundColor: !feeIndexSort[23 - index]
+                          ? "gray"
+                          : getGradientColor(
+                            Math.floor(
+                              feeIndexSortWithEthereum[23 - index]["ethereum"][3] * 100,
+                            ),
+                          ),
+                      }}
+                    ></div>
+                  </div>
+                ))}
+                <div className="absolute left-[12px] top-[34px] w-[148px] h-[10px] border-forest-600 border-x-[1px] flex justify-between text-[10px]">
+                  <div className="relative top-2">24 Hours Ago</div>
+                  <div className="relative top-2">Now</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </FeesContainer>
+      <OffScreenSlider>
+        {feeData && master && (
+          <ChartContainer isOpen={isChartOpen} setIsOpen={setIsChartOpen} selectedMetric={selectedQuantitative} selectedTimeframe={"24hrs"} selectedChains={Object.keys(selectedChains).filter(c => selectedChains[c] === true)} showGwei={showGwei} />
+        )}
+      </OffScreenSlider>
+      <Footer />
+      <div className={`transition-all duration-300 w-full ${bottomExpandingDivForScrollingHeight}`}></div>
+    </div>
   );
 }

@@ -1,4 +1,3 @@
-"use client";
 import { AllChainsByKeys } from '@/lib/chains';
 import { formatNumber, tooltipFormatter, tooltipPositioner } from '@/lib/chartUtils';
 import Highcharts from 'highcharts/highstock';

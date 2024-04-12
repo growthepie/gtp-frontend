@@ -1,3 +1,4 @@
+"use client";
 import Icon from "@/components/layout/Icon";
 import { track } from "@vercel/analytics";
 import { useEffect, useState } from "react";
@@ -146,56 +147,13 @@ export default function ChartContainer({
           </div>
         </div>
       </div>
-      {metrics.length > 0 && timeFrames.length > 0 && <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-[300px] pb-[55px]' : 'max-h-[51px]'}`}>
+      {metrics.length > 0 && timeFrames.length > 0 && <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-[400px] pb-[55px]' : 'max-h-[51px]'}`}>
         <div className={`w-full  flex flex-col gap-y-[10px] md:gap-y-[5px] transition-all duration-200 ${isOpen ? 'delay-0 opacity-100' : 'delay-100 opacity-0'}`}>
           <div className="w-full flex flex-col md:flex-row gap-y-[10px] md:gap-y-0 justify-between px-[15px]">
             <div className="flex gap-x-1 text-[20px] leading-[120%]">
               <div className="font-bold">{metricLabels[selectedMetric]}</div>
               <div>fees over time</div>
             </div>
-            {/* <div className="w-full md:w-[200px] bg-[#344240] rounded-full px-[2px] py-[2px] flex items-center gap-x-[2px] justify-between">
-              <div
-                className="px-[7px] py-[3px] bg-[#5A6462] dark:bg-[#1F2726] rounded-full cursor-pointer"
-                onClick={() => {
-                  if (metricIndex === 0) {
-                    setMetricIndex(metrics.length - 1);
-                  } else {
-                    setMetricIndex((metricIndex - 1) % metrics.length);
-                  }
-                  track("clicked Previous Timeframe", {
-                    location: `fees page - ${metrics[metricIndex]} - ${timeFrames[timeFrameIndex]}`,
-                    page: window.location.pathname,
-                  });
-                }}
-              >
-                <Icon icon="feather:arrow-left" className="w-[15px] h-[15px]" />
-              </div>
-              <div className="flex gap-x-[5px] items-center text-[#CDD8D3]">
-                <Icon
-                  icon="feather:clock"
-                  className="w-[10px] h-[10px]"
-                />
-                <div className="text-[10px] font-semibold">
-                  {metrics[metricIndex]}
-                </div>
-              </div>
-              <div
-                className="px-[7px] py-[3px] bg-[#5A6462] dark:bg-[#1F2726] rounded-full cursor-pointer"
-                onClick={() => {
-                  if (metricIndex === metrics.length - 1) {
-                    setMetricIndex(0);
-                  } else {
-                    setMetricIndex((metricIndex + 1) % metrics.length);
-                  }
-                  track("clicked Next Timeframe", {
-                    location: `fees page - ${metrics[metricIndex]} - ${timeFrames[timeFrameIndex]}`,
-                    page: window.location.pathname,
-                  });
-                }}
-              >
-                <Icon icon="feather:arrow-right" className="w-[15px] h-[15px]" />
-              </div>
-            </div> */}
             <div className="w-full md:w-[165px] bg-[#344240] rounded-full px-[2px] py-[2px] flex items-center gap-x-[2px] justify-between">
               <div
                 className="px-[7px] py-[3px] bg-[#5A6462] dark:bg-[#1F2726] rounded-full cursor-pointer"
@@ -241,7 +199,7 @@ export default function ChartContainer({
             </div>
           </div>
           <div className="px-[5px]">
-            <div className="border border-[#5A6462] rounded-[15px] h-[146px] md:h-[179px] w-full overflow-hidden">
+            <div className="border border-[#5A6462] rounded-[15px] h-[146px] md:h-[279px] w-full overflow-hidden">
               {/* <div className="absolute top-0 left-0 w-full h-full"> */}
               {/* <div className="h-[146px] md:h-[179px] w-full overflow-visible"> */}
 

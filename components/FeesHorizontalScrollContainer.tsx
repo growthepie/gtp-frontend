@@ -2,14 +2,24 @@
 
 import { use, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useElementSizeObserver } from '@/hooks/useElementSizeObserver';
+import React from 'react';
 
 type HorizontalScrollContainerProps = {
   className?: string;
   children: React.ReactNode;
   setHorizontalScrollAmount?: React.Dispatch<React.SetStateAction<number>>;
+  style?: React.CSSProperties;
 };
 
-export default function FeesHorizontalScrollContainer({ children, className, setHorizontalScrollAmount }: HorizontalScrollContainerProps) {
+export default React.forwardRef(function FeesHorizontalScrollContainer(
+  {
+    className = '',
+    children,
+    setHorizontalScrollAmount,
+    style,
+  }: HorizontalScrollContainerProps,
+  ref: React.Ref<HTMLDivElement>
+) {
   // const contentSrollAreaRef = useRef<HTMLDivElement>(null);
   // const contentRef = useRef<HTMLDivElement>(null);
   const [currentScrollPercentage, setCurrentScrollPercentage] = useState(0);
@@ -157,7 +167,7 @@ export default function FeesHorizontalScrollContainer({ children, className, set
   };
 
   return (
-    <div className={`w-full px-0 overflow-x-hidden ${className}`}>
+    <div className={`w-full px-0 overflow-x-hidden ${className}`} style={style} ref={ref}>
       <div className="overflow-x-visible ">
         <div className="pl-[20px] md:pl-[40px] relative overflow-x-scroll scrollbar-none max-w-full" ref={contentSrollAreaRef}>
 
@@ -185,4 +195,4 @@ export default function FeesHorizontalScrollContainer({ children, className, set
       </div>
     </div>
   );
-}
+});

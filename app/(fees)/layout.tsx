@@ -160,7 +160,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${raleway.variable} ${inter.variable} ${robotoMono.variable}`}
+      className={`${raleway.variable} ${inter.variable} ${robotoMono.variable} scroll-smooth`}
       suppressHydrationWarning
     >
       <Head />
