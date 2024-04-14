@@ -1,11 +1,15 @@
 "use client";
 import Icon from "@/components/layout/Icon";
 import { track } from "@vercel/analytics";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import SwiperItem from "@/components/layout/SwiperItem";
 import useSWR from "swr";
 import { LandingURL } from "@/lib/urls";
 import FeesChart from "./FeesChart";
+import ChartWatermark from "@/components/layout/ChartWatermark";
+import { FeesLineChart } from "@/types/api/Fees/LineChart";
+import { useResizeObserver } from "usehooks-ts";
+import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 type SlidingFooterContainerProps = {
   // children: React.ReactNode;
@@ -42,14 +46,14 @@ export default function ChartContainer({
     error,
     isLoading,
     isValidating,
-  } = useSWR<any>("https://api.growthepie.xyz/v1/fees/linechart.json");
+  } = useSWR<FeesLineChart>("https://api.growthepie.xyz/v1/fees/linechart.json");
 
   const [metricIndex, setMetricIndex] = useState(0);
   const [timeFrameIndex, setTimeFrameIndex] = useState(0);
-
   const [timeFrames, setTimeFrames] = useState<string[]>([]);
-
   const [metrics, setMetrics] = useState<string[]>([]);
+
+
 
   useEffect(() => {
 
@@ -104,6 +108,46 @@ export default function ChartContainer({
         return "Last 24 Hours";
     }
   }
+
+  const chartMinMaxXAxisLabels = useMemo(() => {
+    if(!data || !metrics.length || !timeFrames.length || !selectedChains.length) {
+      return ["", ""];
+    }
+
+    const chains = Object.keys(data.chain_data).filter(chain => selectedChains.includes(chain));
+    
+    // check the current metric and timeframe for all selected chains
+    const selectedMetricData = chains.map(chain => {
+      return data.chain_data[chain][metrics[metricIndex]][timeFrames[timeFrameIndex]];
+    });
+
+    // get the minimum and maximum x-axis values
+    const xValues = selectedMetricData.map(metric => metric.data.map(d => d[0])).flat();
+    const min = Math.min(...xValues);
+    const max = Math.max(...xValues);
+
+    // get the middle value
+    // const middle = min + (max - min) / 2;
+
+    if(timeFrames[timeFrameIndex] === "24hrs") {
+      return [
+        new Date(min).toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'}),
+        // new Date(middle).toLocaleTimeString(undefined, {hour: '2-digit'}),
+        new Date(max).toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'}),
+      ];
+    }
+    
+    return [
+      new Date(min).toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'}),
+      // new Date(middle).toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'}),
+      new Date(max).toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'})
+    ];
+  }, [data, metricIndex, metrics, selectedChains, timeFrameIndex, timeFrames]);
+
+  // const chartContainerRef = useRef<HTMLDivElement>(null);
+  const [chartContainerRef, {
+    width: chartContainerWidth,
+  }] = useElementSizeObserver<HTMLDivElement>();
 
   return (
     <div
@@ -199,13 +243,25 @@ export default function ChartContainer({
             </div>
           </div>
           <div className="px-[5px]">
-            <div className="border border-[#5A6462] rounded-[15px] h-[146px] md:h-[279px] w-full overflow-hidden">
-              {/* <div className="absolute top-0 left-0 w-full h-full"> */}
-              {/* <div className="h-[146px] md:h-[179px] w-full overflow-visible"> */}
-
-              {/* {landing && <SwiperItem metric_id={metrics[metricIndex]} landing={landing} />} */}
-              <FeesChart selectedMetric={metrics[metricIndex]} selectedTimeframe={timeFrames[timeFrameIndex]} selectedChains={selectedChains} showGwei={showGwei} />
+            <div className="relative border border-[#5A6462] rounded-[15px] h-[146px] md:h-[279px] w-full overflow-hidden" ref={chartContainerRef}>
+              <FeesChart selectedMetric={metrics[metricIndex]} selectedTimeframe={timeFrames[timeFrameIndex]} selectedChains={selectedChains} showGwei={showGwei} chartWidth={chartContainerWidth} />
               {/* </div> */}
+              <div className="absolute bottom-[calc(50%-15px)] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
+                <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
+              </div>
+            </div>
+            {/* xMin and xMax chart labels */}
+            <div className="relative w-full px-[15px] pb-[10px]">
+              <div className="h-[15px] flex justify-between">
+              {chartMinMaxXAxisLabels.map((label, index) => (
+                <div key={index} className="h-[15px] w-[1px] bg-[#5A6462]"></div>
+              ))}
+              </div>
+              <div className="absolute inset-0 top-[14px] px-[15px] flex justify-between text-[10px]">
+                {chartMinMaxXAxisLabels.map((label, index) => (
+                  <div key={index}>{label}</div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

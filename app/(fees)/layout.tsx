@@ -175,7 +175,7 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <Providers>
+        <Providers forcedTheme="dark">
           <div className="flex h-fit w-full justify-center">
             <div className="flex w-full max-w-[650px] md:max-w-[900px] min-h-screen">
               <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
