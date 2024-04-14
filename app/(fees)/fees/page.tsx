@@ -1032,7 +1032,7 @@ export default function FeesPage() {
 
         <FeesHorizontalScrollContainer
           // ref={tableRef}
-          className="w-[900px]"
+          className="w-[900px] pt-[20px]"
           // setHorizontalScrollAmount={(amount) =>
           //   setTableHorizontalScrollAmount(amount)
           // }
