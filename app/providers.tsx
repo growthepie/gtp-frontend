@@ -8,11 +8,17 @@ import { UIContextProvider } from "@/contexts/UIContext";
 // load icons
 addCollection(GTPIcons);
 
-export function Providers({ children }) {
+type ProvidersProps = {
+  children: React.ReactNode;
+  forcedTheme?: string;
+};
+
+export function Providers({ children, forcedTheme }: ProvidersProps) {
   return (
     <ThemeProvider
       attribute="class"
       defaultTheme="dark"
+      forcedTheme={forcedTheme}
       disableTransitionOnChange
     >
       <SWRConfig
