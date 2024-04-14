@@ -11,6 +11,7 @@ import { use, useCallback, useMemo } from 'react';
 import { useLocalStorage, useSessionStorage } from 'usehooks-ts';
 import { useUIContext } from '@/contexts/UIContext';
 import d3 from "d3";
+import { FeesLineChart } from '@/types/api/Fees/LineChart';
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -56,9 +57,10 @@ type FeesChartProps = {
   selectedTimeframe: string;
   selectedChains: string[];
   showGwei: boolean;
+  chartWidth: number;
 };
 
-export default function FeesChart({ selectedMetric, selectedTimeframe, selectedChains, showGwei }: FeesChartProps) {
+export default function FeesChart({ selectedMetric, selectedTimeframe, selectedChains, showGwei, chartWidth }: FeesChartProps) {
   const { theme } = useTheme();
   const { isMobile } = useUIContext();
   // const seriesKey = "txcosts_avg";
@@ -71,7 +73,7 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
     error,
     isLoading,
     isValidating,
-  } = useSWR("https://api.growthepie.xyz/v1/fees/linechart.json");
+  } = useSWR<FeesLineChart>("https://api.growthepie.xyz/v1/fees/linechart.json");
 
   const reversePerformer = true;
 
@@ -153,7 +155,6 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
       const { x, points } = this;
       const date = new Date(x);
       let dateString = date.toLocaleDateString(undefined, {
-        timeZone: "UTC",
         month: "short",
         day: "numeric",
         year: "numeric",
@@ -164,7 +165,7 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
       const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
       if (timeDiff < 1000 * 60 * 60 * 24) {
         dateString += " " + date.toLocaleTimeString(undefined, {
-          timeZone: "UTC",
+          
           hour: "numeric",
           minute: "2-digit",
         });
@@ -330,18 +331,27 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
             : pointY - tooltipHeight / 2;
 
         if (isMobile) {
-          if (tooltipX + tooltipWidth > plotLeft + plotWidth) {
-            tooltipX = plotLeft + plotWidth - tooltipWidth;
+          if (pointX - tooltipWidth / 2 < plotLeft) {
+            return {
+              x: plotLeft,
+              y: -250,
+            };
+          }
+          if (pointX + tooltipWidth / 2 > plotLeft + plotWidth) {
+            return {
+              x: plotLeft + plotWidth - tooltipWidth,
+              y: -250,
+            };
           }
           return {
-            x: tooltipX,
-            y: -100,
+            x: pointX - tooltipWidth / 2,
+            y: -250,
           };
         }
 
         return {
           x: tooltipX,
-          y: tooltipY - 200,
+          y: tooltipY - 250,
         };
       },
       [isMobile],
@@ -472,8 +482,8 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
         <XAxis
           title={undefined}
           type="datetime"
-          maxPadding={0}
-          minPadding={0}
+          maxPadding={chartWidth ? 15 / chartWidth : 0}
+          minPadding={chartWidth ? 15 / chartWidth : 0}
           labels={{
             useHTML: true,
             style: {
@@ -596,6 +606,7 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
           })}
         </YAxis>
       </HighchartsChart>
+      {chartWidth}
     </HighchartsProvider>
   );
 
