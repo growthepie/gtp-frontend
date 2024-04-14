@@ -122,6 +122,10 @@ export default function FeesPage() {
     }, {}),
   );
 
+  const [manualSelectedChains, setManualSelectedChains] = useState<String[]>(
+    [],
+  );
+
   // start Bottom Chart state
   const [isChartOpen, setIsChartOpen] = useState(false);
 
@@ -218,7 +222,7 @@ export default function FeesPage() {
     isLoading: feeLoading,
     isValidating: feeValidating,
   } = useSWR("https://api.growthepie.xyz/v1/fees/table.json");
-  console.log(master);
+
   const sortByChains = useMemo(() => {
     if (!feeData) return [];
 
@@ -248,6 +252,7 @@ export default function FeesPage() {
 
   const sortByCallData = useMemo(() => {
     if (!feeData || !master) return [];
+    const x = { ...selectedChains };
 
     const sortedChains = Object.keys(feeData.chain_data)
       .filter((chain) => chain !== "ethereum") // Exclude "ethereum"
@@ -289,6 +294,42 @@ export default function FeesPage() {
 
     return sortedChains;
   }, [feeData, master, selectedChains, selectedAvailability, sortOrder]);
+
+  //Disable not selected data availabilities
+  useEffect(() => {
+    if (
+      !feeData ||
+      !master ||
+      sortByCallData.length <= 0 ||
+      selectedQualitative !== "availability"
+    )
+      return;
+
+    // Iterate through each fee data entry
+
+    Object.keys(feeData.chain_data).forEach((chain) => {
+      const chainData = feeData.chain_data[chain];
+      const availability = dataAvailToArray(master.chains[chain].da_layer);
+      const containsAvailability = availability.some(
+        (item) => item.icon === selectedAvailability,
+      );
+
+      // If the chain doesn't have the correct data availability, disable it
+
+      if (!containsAvailability && !manualSelectedChains.includes(chain)) {
+        setSelectedChains((prevSelectedChains) => ({
+          ...prevSelectedChains,
+          [chain]: false,
+        }));
+      }
+      if (containsAvailability) {
+        setSelectedChains((prevSelectedChains) => ({
+          ...prevSelectedChains,
+          [chain]: true,
+        }));
+      }
+    });
+  }, [sortByCallData, selectedQualitative]);
 
   const sortByMetric = useMemo(() => {
     if (!feeData) return [];
@@ -720,19 +761,6 @@ export default function FeesPage() {
         height: "0px",
       });
     }
-
-    console.log({
-      settledTop,
-      sliderTop,
-      settledPositionToSlider,
-      lastRowSliderTopDiff,
-      bottomPadding,
-      finalPositionY,
-      lastRowToBottomOfWindow,
-      lastRowWindowHeightDiff,
-      lastRowSliderSpacing,
-      lastRowEthereumSpacing,
-    });
 
     setBottomPaddingStyle({
       height: `${bottomPadding}px`,
@@ -1493,6 +1521,15 @@ export default function FeesPage() {
                               : " bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
                           }`}
                           onClick={() => {
+                            if (
+                              selectedQualitative === "availability" &&
+                              !selectedChains[item.chain[1]]
+                            ) {
+                              setManualSelectedChains([
+                                ...manualSelectedChains,
+                                item.chain[1],
+                              ]);
+                            }
                             setSelectedChains((prevState) => {
                               return {
                                 ...prevState,
