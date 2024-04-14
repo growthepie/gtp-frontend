@@ -168,16 +168,6 @@ export default React.forwardRef(function FeesHorizontalScrollContainer(
 
   return (
     <div className={`w-full px-0 overflow-x-hidden ${className}`} style={style} ref={ref}>
-      <div className="overflow-x-visible ">
-        <div className="pl-[20px] md:pl-[40px] relative overflow-x-scroll scrollbar-none max-w-full" ref={contentSrollAreaRef}>
-
-          <div className={showScroller ? "mr-[20px] md:mr-[40px]" : ''}>
-            <div className="min-w-fit w-full max-w-full pr-[20px] md:pr-[40px]" ref={contentRef} >
-              <div>{children}</div>
-            </div>
-          </div>
-        </div>
-      </div>
       <div className={`pt-[10px] px-[20px] md:px-[64px] w-full flex justify-center ${showScroller ? 'block' : 'hidden'}`}>
         <div className="w-full pr-[22px] p-0.5 bg-forest-200/50 dark:bg-black/50 rounded-full" onClick={handleBarClick}>
           <div className='w-full' ref={scrollerRef}>
@@ -193,6 +183,17 @@ export default React.forwardRef(function FeesHorizontalScrollContainer(
           </div>
         </div>
       </div>
+      <div className="overflow-x-visible ">
+        <div className="pl-[20px] md:pl-[40px] relative overflow-x-scroll scrollbar-none max-w-full" ref={contentSrollAreaRef}>
+
+          <div className={showScroller ? "mr-[20px] md:mr-[40px]" : ''}>
+            <div className="min-w-fit w-full max-w-full pr-[20px] md:pr-[40px]" ref={contentRef} >
+              <div>{children}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
     </div>
   );
 });
