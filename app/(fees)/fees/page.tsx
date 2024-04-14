@@ -218,7 +218,7 @@ export default function FeesPage() {
     isLoading: feeLoading,
     isValidating: feeValidating,
   } = useSWR("https://api.growthepie.xyz/v1/fees/table.json");
-  console.log(master);
+  // console.log(master);
   const sortByChains = useMemo(() => {
     if (!feeData) return [];
 
@@ -721,18 +721,18 @@ export default function FeesPage() {
       });
     }
 
-    console.log({
-      settledTop,
-      sliderTop,
-      settledPositionToSlider,
-      lastRowSliderTopDiff,
-      bottomPadding,
-      finalPositionY,
-      lastRowToBottomOfWindow,
-      lastRowWindowHeightDiff,
-      lastRowSliderSpacing,
-      lastRowEthereumSpacing,
-    });
+    // console.log({
+    //   settledTop,
+    //   sliderTop,
+    //   settledPositionToSlider,
+    //   lastRowSliderTopDiff,
+    //   bottomPadding,
+    //   finalPositionY,
+    //   lastRowToBottomOfWindow,
+    //   lastRowWindowHeightDiff,
+    //   lastRowSliderSpacing,
+    //   lastRowEthereumSpacing,
+    // });
 
     setBottomPaddingStyle({
       height: `${bottomPadding}px`,
