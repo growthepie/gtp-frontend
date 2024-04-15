@@ -11,7 +11,7 @@ import { track } from "@vercel/analytics";
 
 export default function Header() {
   return (
-    <header className="flex justify-between space-x-0 xl:space-x-6 items-start max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[40px] md:pt-[50px] ">
+    <header className="flex justify-between space-x-0 xl:space-x-6 items-end max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[40px] md:pt-[50px] ">
       <div className="flex justify-start items-center w-full  ">
         <div className="flex space-x-0 xl:space-x-6 w-full h-full ">
           {/*Banner/Notification Area */}
@@ -22,7 +22,26 @@ export default function Header() {
 
           <div className="flex justify-between items-start h-full relative w-full left-1 ">
             <Link href="/" className="flex gap-x-1">
-              <div className="h-[36px] w-[35px] relative bottom-[1px] ">
+              {/* <div className="h-[45px] w-[206px]"> */}
+              <Image
+                src="/logo_fees_full.png"
+                alt="Forest"
+                className="hidden dark:block"
+                width={206}
+                height={45}
+                sizes="100vw"
+              />
+              {/* </div> */}
+              {/*
+                <div className="h-[36px] w-[35px] relative bottom-[1px]">
+                  <Image
+                  src="/logo-pie-only2.svg"
+                  alt="Forest"
+                  className="block dark:hidden"
+                  width={33}
+                  height={35}
+                /> */}
+              {/* <div className="h-[36px] w-[35px] relative bottom-[1px] ">
                 <Image
                   src="/logo-pie-only.svg"
                   alt="Forest"
@@ -64,7 +83,7 @@ export default function Header() {
                   width={42}
                   height={21}
                 />
-              </div>
+              </div> */}
             </Link>
           </div>
         </div>
@@ -77,9 +96,9 @@ export default function Header() {
         </div>
       </div>
       {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
-      ["development", "preview"].includes(
-        process.env.NEXT_PUBLIC_VERCEL_ENV,
-      ) ? (
+        ["development", "preview"].includes(
+          process.env.NEXT_PUBLIC_VERCEL_ENV,
+        ) ? (
         <> </>
       ) : (
         <>{/* <SupportUsBanner /> */}</>
