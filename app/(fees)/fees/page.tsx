@@ -122,9 +122,9 @@ export default function FeesPage() {
     }, {}),
   );
 
-  const [manualSelectedChains, setManualSelectedChains] = useState<String[]>(
-    [],
-  );
+  const [manualSelectedChains, setManualSelectedChains] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   // start Bottom Chart state
   const [isChartOpen, setIsChartOpen] = useState(false);
@@ -222,7 +222,19 @@ export default function FeesPage() {
     isLoading: feeLoading,
     isValidating: feeValidating,
   } = useSWR("https://api.growthepie.xyz/v1/fees/table.json");
-  // console.log(master);
+
+  const dataAvailByChain = useMemo<{ [key: string]: DAvailability[] }>(() => {
+    if (!master) return {};
+    const availByChain: { [key: string]: DAvailability[] } = {};
+
+    Object.keys(master.chains).forEach((chain) => {
+      const daLayer = master.chains[chain].da_layer;
+      availByChain[chain] = dataAvailToArray(daLayer);
+    });
+
+    return availByChain;
+  }, [master]);
+
   const sortByChains = useMemo(() => {
     if (!feeData) return [];
 
@@ -257,8 +269,8 @@ export default function FeesPage() {
     const sortedChains = Object.keys(feeData.chain_data)
       .filter((chain) => chain !== "ethereum") // Exclude "ethereum"
       .sort((a, b) => {
-        const availabilityA = dataAvailToArray(master.chains[a].da_layer);
-        const availabilityB = dataAvailToArray(master.chains[b].da_layer);
+        const availabilityA = dataAvailByChain[a];
+        const availabilityB = dataAvailByChain[b];
 
         // Check if availabilityA or availabilityB contains selectedAvailability
         const containsAvailabilityA = availabilityA.some(
@@ -300,36 +312,49 @@ export default function FeesPage() {
     if (
       !feeData ||
       !master ||
-      sortByCallData.length <= 0 ||
+      sortByCallData.length === 0 ||
       selectedQualitative !== "availability"
-    )
+    ) {
       return;
+    }
+
+    // Create a new object to store the updated selected chains
+    const updatedSelectedChains = { ...selectedChains };
 
     // Iterate through each fee data entry
-
     Object.keys(feeData.chain_data).forEach((chain) => {
       const chainData = feeData.chain_data[chain];
-      const availability = dataAvailToArray(master.chains[chain].da_layer);
+      const availability = dataAvailByChain[chain];
       const containsAvailability = availability.some(
         (item) => item.label === selectedAvailability,
       );
 
-      // If the chain doesn't have the correct data availability, disable it
-
-      if (!containsAvailability && !manualSelectedChains.includes(chain)) {
-        setSelectedChains((prevSelectedChains) => ({
-          ...prevSelectedChains,
-          [chain]: false,
-        }));
-      }
-      if (containsAvailability) {
-        setSelectedChains((prevSelectedChains) => ({
-          ...prevSelectedChains,
-          [chain]: true,
-        }));
+      // Update the selected chains based on availability and manual selection
+      if (
+        Object.keys(manualSelectedChains).includes(chain) &&
+        !manualSelectedChains[chain]
+      ) {
+        updatedSelectedChains[chain] = false;
+      } else if (
+        !Object.keys(manualSelectedChains).includes(chain) &&
+        !containsAvailability
+      ) {
+        updatedSelectedChains[chain] = false;
+      } else {
+        updatedSelectedChains[chain] = true;
       }
     });
-  }, [sortByCallData, selectedQualitative]);
+
+    // Update the state with the new selected chains
+    setSelectedChains(updatedSelectedChains);
+  }, [
+    feeData,
+    master,
+    sortByCallData,
+    selectedQualitative,
+    manualSelectedChains,
+    selectedAvailability,
+  ]);
 
   useEffect(() => {
     // Check if selectedQualitative changes from "availability" to another value
@@ -338,6 +363,8 @@ export default function FeesPage() {
       selectedQualitative !== "availability"
     ) {
       // Set all selectedChains to true
+      setManualSelectedChains({});
+
       setSelectedChains((prevSelectedChains) => {
         const updatedSelectedChains = { ...prevSelectedChains };
 
@@ -1184,16 +1211,15 @@ export default function FeesPage() {
                     </div>
                     <div
                       className="bg-[#344240] text-[8px] flex rounded-full font-normal items-center px-[5px] py-[4px] gap-x-[2px] hover:cursor-pointer whitespace-nowrap"
-                      onClick={() => {
-                        if (selectedQualitative === "availability") {
-                          setSelectedQualitative("chain");
-                        } else {
-                          setSelectedQualitative("availability");
-                        }
-                      }}
+                      onClick={
+                        selectedQualitative !== "availability"
+                          ? () => setSelectedQualitative("availability")
+                          : undefined
+                      }
                     >
                       Data Availability
-                      {selectedQualitative === "availability"
+                      {selectedQualitative === "availability" &&
+                      Object.keys(manualSelectedChains).length === 0
                         ? ": " + selectedAvailability
                         : ""}
                       <Icon
@@ -1458,83 +1484,87 @@ export default function FeesPage() {
                             });
                           }}
                         >
-                          {dataAvailToArray(
-                            master.chains[item.chain[1]].da_layer,
-                          ).map((avail, index, array) => [
-                            <div
-                              key={avail.icon}
-                              className={`flex relative items-center gap-x-0.5 hover:cursor-pointer`}
-                              onMouseEnter={() => {
-                                setHoveredItems({
-                                  hoveredChain: hoveredItems.hoveredChain,
-                                  hoveredDA: avail.label,
-                                });
-                              }}
-                              onMouseLeave={() => {
-                                setHoveredItems({
-                                  hoveredChain: hoveredItems.hoveredChain,
-                                  hoveredDA: null,
-                                });
-                              }}
-                              onClick={() => {
-                                if (selectedQualitative !== "availability") {
-                                  setSelectedQualitative("availability");
-                                }
-                                setSelectedAvailability(avail.label);
-                              }}
-                            >
-                              <Icon
-                                icon={`gtp:${avail.icon}`}
-                                className={`${
-                                  selectedAvailability === avail.label &&
-                                  selectedQualitative === "availability"
-                                    ? "text-forest-200"
-                                    : "text-[#5A6462] "
-                                }
+                          {dataAvailByChain[item.chain[1]].map(
+                            (avail, index, array) => [
+                              <div
+                                key={avail.icon}
+                                className={`flex relative items-center gap-x-0.5 hover:cursor-pointer`}
+                                onMouseEnter={() => {
+                                  setHoveredItems({
+                                    hoveredChain: hoveredItems.hoveredChain,
+                                    hoveredDA: avail.label,
+                                  });
+                                }}
+                                onMouseLeave={() => {
+                                  setHoveredItems({
+                                    hoveredChain: hoveredItems.hoveredChain,
+                                    hoveredDA: null,
+                                  });
+                                }}
+                                onClick={() => {
+                                  if (selectedQualitative !== "availability") {
+                                    setSelectedQualitative("availability");
+                                  }
+                                  setSelectedAvailability(avail.label);
+                                  setManualSelectedChains({});
+                                }}
+                              >
+                                <Icon
+                                  icon={`gtp:${avail.icon}`}
+                                  className={`${
+                                    selectedAvailability === avail.label &&
+                                    selectedQualitative === "availability" &&
+                                    Object.keys(manualSelectedChains).length ===
+                                      0
+                                      ? "text-forest-200"
+                                      : "text-[#5A6462] "
+                                  }
                                   ${
                                     isMobile
                                       ? "h-[10px] w-[10px] "
                                       : "h-[12px] w-[12px] "
                                   }`}
-                              />
-                              <div
-                                className={`text-[8px] text-center font-semibold overflow-hidden ${
-                                  selectedAvailability === avail.label &&
-                                  selectedQualitative === "availability"
-                                    ? "text-forest-200"
-                                    : "text-[#5A6462] "
-                                } ${
-                                  hoveredItems.hoveredDA === avail.label &&
-                                  hoveredItems.hoveredChain === item.chain[1]
-                                    ? ""
-                                    : "-mr-[2px]"
-                                }`}
-                                style={{
-                                  maxWidth:
+                                />
+                                <div
+                                  className={`text-[8px] text-center font-semibold overflow-hidden ${
+                                    selectedAvailability === avail.label &&
+                                    selectedQualitative === "availability"
+                                      ? "text-forest-200"
+                                      : "text-[#5A6462] "
+                                  } ${
                                     hoveredItems.hoveredDA === avail.label &&
                                     hoveredItems.hoveredChain === item.chain[1]
-                                      ? "50px"
-                                      : "0px",
+                                      ? ""
+                                      : "-mr-[2px]"
+                                  }`}
+                                  style={{
+                                    maxWidth:
+                                      hoveredItems.hoveredDA === avail.label &&
+                                      hoveredItems.hoveredChain ===
+                                        item.chain[1]
+                                        ? "50px"
+                                        : "0px",
 
-                                  transition: "max-width 0.3s ease", // Adjust duration and timing function as needed
-                                }}
-                              >
-                                {avail.label}
-                              </div>
-                            </div>,
-                            index !== array.length - 1 && (
-                              /* Content to render when index is not the last element */
-                              <div
-                                key={avail.label}
-                                className="w-[12px] h-[12px] flex items-center justify-center"
-                                style={{
-                                  color: "#5A6462",
-                                }}
-                              >
-                                +
-                              </div>
-                            ),
-                          ])}
+                                    transition: "max-width 0.3s ease", // Adjust duration and timing function as needed
+                                  }}
+                                >
+                                  {avail.label}
+                                </div>
+                              </div>,
+                              index !== array.length - 1 && (
+                                /* Content to render when index is not the last element */
+                                <div
+                                  key={avail.label}
+                                  className="w-[12px] h-[12px] flex items-center justify-center"
+                                  style={{
+                                    color: "#5A6462",
+                                  }}
+                                >
+                                  +
+                                </div>
+                              ),
+                            ],
+                          )}
                         </div>
                       </div>
 
@@ -1610,14 +1640,78 @@ export default function FeesPage() {
                               : " bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
                           }`}
                           onClick={() => {
-                            if (
-                              selectedQualitative === "availability" &&
-                              !selectedChains[item.chain[1]]
-                            ) {
-                              setManualSelectedChains([
-                                ...manualSelectedChains,
-                                item.chain[1],
-                              ]);
+                            if (selectedQualitative === "availability") {
+                              if (
+                                Object.keys(manualSelectedChains).includes(
+                                  item.chain[1],
+                                )
+                              ) {
+                                if (
+                                  dataAvailByChain[item.chain[1]][0].label ===
+                                    selectedAvailability &&
+                                  !manualSelectedChains[item.chain[1]]
+                                ) {
+                                  setManualSelectedChains(
+                                    (prevManualSelectedChains) => {
+                                      // Create a new object by filtering out the key to remove
+                                      const updatedManualSelectedChains =
+                                        Object.fromEntries(
+                                          Object.entries(
+                                            prevManualSelectedChains,
+                                          ).filter(
+                                            ([key, _]) => key !== item.chain[1],
+                                          ),
+                                        );
+
+                                      // Return the updated object
+                                      return updatedManualSelectedChains;
+                                    },
+                                  );
+                                } else if (
+                                  dataAvailByChain[item.chain[1]][0].label !==
+                                    selectedAvailability &&
+                                  manualSelectedChains[item.chain[1]]
+                                ) {
+                                  setManualSelectedChains(
+                                    (prevManualSelectedChains) => {
+                                      // Create a new object by filtering out the key to remove
+                                      const updatedManualSelectedChains =
+                                        Object.fromEntries(
+                                          Object.entries(
+                                            prevManualSelectedChains,
+                                          ).filter(
+                                            ([key, _]) => key !== item.chain[1],
+                                          ),
+                                        );
+
+                                      // Return the updated object
+                                      return updatedManualSelectedChains;
+                                    },
+                                  );
+                                } else {
+                                  setManualSelectedChains(
+                                    (prevManualSelectedChains) => {
+                                      // Create a new object by spreading the previous state and adding the new object
+                                      return {
+                                        ...prevManualSelectedChains,
+                                        [item.chain[1]]:
+                                          !manualSelectedChains[item.chain[1]], // Replace newKey and newValue with the key-value pair you want to add
+                                      };
+                                    },
+                                  );
+                                }
+                              } else {
+                                setManualSelectedChains(
+                                  (prevManualSelectedChains) => {
+                                    // Create a new object by spreading the previous state and adding the new object
+                                    return {
+                                      ...prevManualSelectedChains,
+                                      [item.chain[1]]:
+                                        !selectedChains[item.chain[1]], // Replace newKey and newValue with the key-value pair you want to add
+                                    };
+                                  },
+                                );
+                              }
                             }
                             setSelectedChains((prevState) => {
                               return {
