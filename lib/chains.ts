@@ -550,12 +550,13 @@ export const EnabledChainsByKeys = AllChains.reduce((acc, chain) => {
   return acc;
 }, {});
 
-export const Get_SupportedChainKeys = (data: MasterResponse) => {
+export const Get_SupportedChainKeys = (data?: MasterResponse) => {
+  if (!data) return [];
   if (IS_DEVELOPMENT || IS_PREVIEW) {
     return Object.keys(data.chains)
       .filter(
         (key) =>
-          data.chains[key].deployment === "DEV" ||
+          (data.chains[key].deployment === "DEV" && IS_DEVELOPMENT) ||
           data.chains[key].deployment === "PROD",
       )
       .map((key) => key);

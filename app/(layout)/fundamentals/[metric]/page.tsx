@@ -160,6 +160,7 @@ const FundamentalsContent = ({ params }: { params: any }) => {
         >
           <MetricsTable
             data={metricData.data.chains}
+            master={master}
             selectedChains={selectedChains}
             setSelectedChains={setSelectedChains}
             chainKeys={chainKeys}
