@@ -1058,7 +1058,6 @@ export default function FeesPage() {
               minimumFractionDigits: fractionDigits,
             }).format(multipliedValue)}
           </div>
-          
             {(showUsd && showCents) && <div className="pl-0.5 text-[8px] pr-[5px] text-forest-400">{" cents"}</div>}
             {(!showUsd && showGwei) &&  <div className="pl-0.5 text-[8px] pr-[5px] text-forest-400">{" gwei"}</div>}
             {/* <div className="pl-0.5 text-[0.5rem] pr-[5px] text-forest-400">
@@ -1072,6 +1071,8 @@ export default function FeesPage() {
   );
 
   const dataAvailByFilter: boolean = useMemo(() => {
+    if(Object.keys(dataAvailByChain).length === 0) return false;
+    
     let allPass = true;
     finalSort.forEach((chain) => {
       if (
@@ -1088,7 +1089,7 @@ export default function FeesPage() {
     });
 
     return allPass;
-  }, [finalSort, master, selectedAvailability, selectedChains]);
+  }, [dataAvailByChain, finalSort, selectedAvailability, selectedChains]);
 
   return (
     <>
