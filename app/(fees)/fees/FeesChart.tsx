@@ -12,6 +12,7 @@ import { useLocalStorage, useSessionStorage } from 'usehooks-ts';
 import { useUIContext } from '@/contexts/UIContext';
 import d3 from "d3";
 import { FeesLineChart } from '@/types/api/Fees/LineChart';
+import "../../highcharts.axis.css";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -545,25 +546,23 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
         </XAxis>
         <YAxis
           opposite={false}
-          showFirstLabel={true}
-          showLastLabel={true}
+          // showFirstLabel={true}
+          // showLastLabel={true}
           type="linear"
           gridLineWidth={1}
           gridLineColor={theme === "dark"
-            ? "#5A6462"
-            : "#5A6462"
+            ? "#5A64624D"
+            : "#5A64624D"
           }
+          showFirstLabel={false}
+          showLastLabel={false}
           labels={{
             align: "left",
-            y: 15,
-            x: 5,
+            y: 11,
+            x: 3,
             style: {
-              gridLineColor:
-                theme === "dark"
-                  ? "#5A6462"
-                  : "#5A6462",
               fontSize: "10px",
-              color: "#5A6462",
+              color: "#CDD8D34D",
             },
             formatter: function (t: Highcharts.AxisLabelsFormatterContextObject) {
               return formatNumber(t.value, true);
