@@ -14,9 +14,11 @@ import { Icon } from "@iconify/react";
 import { navigationItems } from "@/lib/navigation";
 import Subheading from "@/components/layout/Subheading";
 import { useUIContext } from "@/contexts/UIContext";
-import { AllChainsByKeys } from "@/lib/chains";
+import { AllChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
 import { Chains } from "@/types/api/ChainOverviewResponse";
 import ShowLoading from "@/components/layout/ShowLoading";
+import { MasterURL } from "@/lib/urls";
+import { MasterResponse } from "@/types/api/MasterResponse";
 
 const ChainOverview = () => {
   const {
@@ -25,6 +27,13 @@ const ChainOverview = () => {
     isLoading: usageLoading,
     isValidating: usageValidating,
   } = useSWR<ChainOverviewResponse>(BlockspaceURLs["chain-overview"]);
+
+  const {
+    data: master,
+    error: masterError,
+    isLoading: masterLoading,
+    isValidating: masterValidating,
+  } = useSWR<MasterResponse>(MasterURL);
 
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
@@ -56,9 +65,16 @@ const ChainOverview = () => {
 
   const chainFilter = useMemo(() => {
     const filteredChains: Chains = Object.keys(AllChainsByKeys)
-      .filter((chain) =>
-        AllChainsByKeys[chain].ecosystem.includes(chainEcosystemFilter),
-      )
+      .filter((chain) => {
+        const supportedChainKeys = Get_SupportedChainKeys(master);
+        const isSupported =
+          chain === "all_l2s" ? true : supportedChainKeys.includes(chain);
+
+        return (
+          AllChainsByKeys[chain].ecosystem.includes(chainEcosystemFilter) &&
+          isSupported
+        );
+      })
       .reduce((result, chain) => {
         const chainKey = AllChainsByKeys[chain].key;
         const chainData = usageData?.data.chains[chainKey];
