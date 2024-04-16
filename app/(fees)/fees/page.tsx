@@ -1044,7 +1044,7 @@ export default function FeesPage() {
           className={`flex items-center ${classes} h-[24px] transition-colors duration-100 border rounded-full`}
           style={{
             borderColor:
-              selectedQuantitative === metric
+              selectedQuantitative === metric && selectedQualitative !== "chain"
                 ? getValueColor(chain)
                 : "transparent",
           }}
@@ -1067,15 +1067,7 @@ export default function FeesPage() {
         </div>
       );
     },
-    [
-      feeData,
-      getNumFractionDigits,
-      getValueColor,
-      optIndex,
-      selectedQuantitative,
-      showGwei,
-      showUsd,
-    ],
+    [feeData, getNumFractionDigits, getValueColor, optIndex, selectedQualitative, selectedQuantitative, showCents, showGwei, showUsd],
   );
 
   const dataAvailByFilter: boolean = useMemo(() => {

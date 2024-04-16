@@ -140,7 +140,7 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
         if (selectedScale === "percentage") {
           number = d3.format(".2~s")(val).replace(/G/, "B") + "%";
         } else {
-          if (showGwei && !showUsd) {
+          if ((showGwei && !showUsd) || (showCents && showUsd)) {
             // for small USD amounts, show 2 decimals
             if (val < 1) number = prefix + val.toFixed(2) + suffix;
             else if (val < 10)
@@ -325,7 +325,7 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
 
       return tooltip + tooltipPoints + sumRow + tooltipEnd;
     },
-    [valuePrefix, reversePerformer, theme, showUsd, selectedMetric, showGwei],
+    [valuePrefix, reversePerformer, theme, showUsd, selectedMetric, showGwei, showCents],
   );
 
   const tooltipPositioner =
