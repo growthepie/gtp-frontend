@@ -71,7 +71,7 @@ export default function SwiperContainer({ ariaId }: { ariaId?: string }) {
         // }}
       >
         <SplideTrack>
-          {/* <SplideSlide>
+          <SplideSlide>
             <div
               className="group w-full chain relative"
               // style={{
@@ -80,60 +80,70 @@ export default function SwiperContainer({ ariaId }: { ariaId?: string }) {
             >
               {landing ? (
                 <div
-                  className="w-full bg-gradient-to-b from-teal-700 to-[#1DF7EF] rounded-2xl h-[145px] md:h-[176px] hover:cursor-pointer"
-                  onClick={() => (window.location.href = "/trackers/eip4844")}
+                  className="w-full bg-[#344240] rounded-2xl h-[145px] md:h-[176px] hover:cursor-pointer"
+                  onClick={() =>
+                    window.open("https://fees.growthepie.xyz/", "_blank")
+                  }
                 >
                   <div className="flex flex-col justify-start text-black text-[16px] leading-tight h-full">
-                    <div className="pt-4 pl-4 flex flex-col font-bold">
-                      <div className="z-20 ">Ethereum Upgrade</div>
-                      <div className="z-20 ">EIP-4844</div>
+                    <div className="pt-4 pl-3 flex flex-col font-bold">
+                      <div className="z-20 ">
+                        <Image
+                          src="/swiper-logo.svg"
+                          alt="GTP Pie"
+                          className=""
+                          height={!isMobile ? 37 : 27}
+                          width={!isMobile ? 172 : 120}
+                        />
+                      </div>
                     </div>
                     <div className="flex flex-col relative overflow-hidden h-full rounded-b-2xl ">
                       <div
-                        className={`p-4 flex flex-col text-black 2xl:text-[14px] text-[12px] ${
-                          isMobile ? "mt-[20px]" : "mt-[48px]"
+                        className={`px-4 py-1 flex flex-col text-black text-[16px] ${
+                          isMobile
+                            ? "mt-[18px]"
+                            : "mt-[40px] md:mt-[44px] sm:mt-[28px]"
                         }`}
                       >
-                        <div className="z-20 ">
-                          Click to check the latest drop in
+                        <div className="flex w-full relative items-center top-[9px] gap-x-1">
+                          <div className="z-20 relative min-w-[200px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] from-[20%] to-[99%] inline-block text-transparent bg-clip-text">
+                            Click to see how much you
+                          </div>
+                          <div className="relative flex gap-x-1">
+                            <div className="w-[16px] h-[16px] bg-[#24F7EA] rounded-full opacity-90"></div>
+                            <div className="w-[16px] h-[16px] bg-[#69F0AD] rounded-full opacity-90"></div>
+                            <div className="w-[16px] h-[16px] bg-[#AFE86F] rounded-full opacity-90"></div>
+                            <div className="w-[16px] h-[16px] bg-[#E1E343] rounded-full opacity-90"></div>
+                            <div className="w-[16px] h-[16px] bg-[#FFC335] rounded-full opacity-90"></div>
+                            <div className="w-[16px] h-[16px] bg-[#FF8C4F] rounded-full opacity-90"></div>
+                            <div className="w-[16px] h-[16px] bg-[#FFAC40] rounded-full opacity-90"></div>
+                            <div className="w-[16px] h-[16px] bg-[#AFE86F] rounded-full opacity-90"></div>
+                            <div className="w-[16px] h-[16px] bg-[#E1E343] rounded-full opacity-90"></div>
+                            <div className="w-[16px] h-[16px] bg-[#FF5D65] rounded-full opacity-90"></div>
+                          </div>
                         </div>
+
                         <div
-                          className={`z-20 font-bold  ${
+                          className={`z-20 min-w-[240px] font-bold bg-gradient-to-r from-[#FE5468] to-[#FFDF27] inline-block text-transparent bg-clip-text ${
                             isSidebarOpen
-                              ? "text-[22px]"
-                              : "2xl:text-[28px] text-[22px]"
+                              ? "text-[36px]"
+                              : "text-[36px] sm:text-[32px]"
                           }`}
                         >
-                          Transaction Costs
+                          pay on Layer 2s.
                         </div>
                       </div>
                       <div
-                        className={`absolute  h-[200px] top-[1px] overflow-hidden z-10 rounded-b-2xl ${
+                        className={`absolute  h-[200px] -top-[12px] z-10 rounded-b-2xl ${
                           isMobile ? "w-[596px]" : "w-[490px]"
                         }`}
                       >
                         <Image
-                          src="/chart-wave.svg"
+                          src="/vector-wave.svg"
                           alt="GTP Pie"
                           className=""
-                          height={194}
-                          width={596}
-                        />
-                      </div>
-                      <div
-                        className={`absolute w-[64px] h-[68px]  lg:right-[10px] right-[1px] overflow-hidden z-20 rounded-b-2xl ${
-                          isMobile ? "top-[32px]" : "top-[60px]"
-                        }`}
-                      >
-                        <Icon
-                          icon="gtp:transaction-costs"
-                          className={` text-[#1DF7EF] z-20 
-                            ${
-                              isSidebarOpen
-                                ? "w-[48px] h-[48px]"
-                                : "2xl:w-[52px] 2xl:h-[52px] w-[48px] h-[48px]"
-                            }
-                          }`}
+                          height={204}
+                          width={isMobile ? 596 : 430}
                         />
                       </div>
                     </div>
@@ -164,7 +174,7 @@ export default function SwiperContainer({ ariaId }: { ariaId?: string }) {
                 />{" "}
               </Link>
             </div>
-          </SplideSlide> */}
+          </SplideSlide>
           {["txcount", "stables_mcap", "fees", "rent_paid", "market_cap"].map(
             (metric_id) => (
               <SplideSlide key={metric_id}>
