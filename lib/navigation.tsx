@@ -224,7 +224,7 @@ export const navigationItems: NavigationItem[] = [
           showGwei: false,
         },
         icon: "gtp:transaction-costs",
-        key: "fully-diluted-valuation",
+        key: "fdv",
         rootKey: "metricsFullyDilutedValuation",
         urlKey: "fully-diluted-valuation",
       },
