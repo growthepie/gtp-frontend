@@ -98,6 +98,7 @@ export default function FeesPage() {
   const [selectedQualitative, setSelectedQualitative] = useState<null | string>(
     null,
   );
+  const [availabilityFilter, setAvailabilityFilter] = useState<boolean>(false);
   const [selectedAvailability, setSelectedAvailability] =
     useState<string>("Blobs");
 
@@ -107,7 +108,8 @@ export default function FeesPage() {
   });
   const [hoverBarIndex, setHoverBarIndex] = useState<Number | null>(null);
   const [selectedBarIndex, setSelectedBarIndex] = useState(23);
-  const prevSelectedQualitativeRef = useRef(selectedQualitative);
+  const prevSelectedAvailabilityRef = useRef(availabilityFilter);
+  const prevSelectedLayerRef = useRef(selectedAvailability);
   const [sortOrder, setSortOrder] = useState(true);
   //True is default descending false ascending
   const { theme } = useTheme();
@@ -308,60 +310,11 @@ export default function FeesPage() {
   }, [feeData, master, selectedChains, selectedAvailability, sortOrder]);
 
   //Disable not selected data availabilities
-  useEffect(() => {
-    if (
-      !feeData ||
-      !master ||
-      sortByCallData.length === 0 ||
-      selectedQualitative !== "availability"
-    ) {
-      return;
-    }
-
-    // Create a new object to store the updated selected chains
-    const updatedSelectedChains = { ...selectedChains };
-
-    // Iterate through each fee data entry
-    Object.keys(feeData.chain_data).forEach((chain) => {
-      const chainData = feeData.chain_data[chain];
-      const availability = dataAvailByChain[chain];
-      const containsAvailability = availability.some(
-        (item) => item.label === selectedAvailability,
-      );
-
-      // Update the selected chains based on availability and manual selection
-      if (
-        Object.keys(manualSelectedChains).includes(chain) &&
-        !manualSelectedChains[chain]
-      ) {
-        updatedSelectedChains[chain] = false;
-      } else if (
-        !Object.keys(manualSelectedChains).includes(chain) &&
-        !containsAvailability
-      ) {
-        updatedSelectedChains[chain] = false;
-      } else {
-        updatedSelectedChains[chain] = true;
-      }
-    });
-
-    // Update the state with the new selected chains
-    setSelectedChains(updatedSelectedChains);
-  }, [
-    feeData,
-    master,
-    sortByCallData,
-    selectedQualitative,
-    manualSelectedChains,
-    selectedAvailability,
-  ]);
 
   useEffect(() => {
-    // Check if selectedQualitative changes from "availability" to another value
-    if (
-      prevSelectedQualitativeRef.current === "availability" &&
-      selectedQualitative !== "availability"
-    ) {
+    if (!master || !feeData) return;
+
+    if (prevSelectedAvailabilityRef.current && !availabilityFilter) {
       // Set all selectedChains to true
       setManualSelectedChains({});
 
@@ -375,10 +328,40 @@ export default function FeesPage() {
 
         return updatedSelectedChains;
       });
+    } else if (
+      (!prevSelectedAvailabilityRef.current && availabilityFilter) ||
+      (availabilityFilter &&
+        selectedAvailability !== prevSelectedLayerRef.current)
+    ) {
+      setSelectedChains((prevSelectedChains) => {
+        const updatedSelectedChains = { ...prevSelectedChains };
+        Object.keys(feeData.chain_data).forEach((chain) => {
+          const chainData = feeData.chain_data[chain];
+          const availability = dataAvailByChain[chain];
+          const containsAvailability = availability.some(
+            (item) => item.label === selectedAvailability,
+          );
+
+          // Update the selected chains based on availability and manual selection
+          if (!containsAvailability) {
+            updatedSelectedChains[chain] = false;
+          } else {
+            updatedSelectedChains[chain] = true;
+          }
+        });
+        return updatedSelectedChains;
+      });
     }
 
-    prevSelectedQualitativeRef.current = selectedQualitative;
-  }, [selectedQualitative, setSelectedChains]);
+    prevSelectedAvailabilityRef.current = availabilityFilter;
+    prevSelectedLayerRef.current = selectedAvailability;
+  }, [
+    feeData,
+    master,
+    selectedAvailability,
+    setSelectedChains,
+    availabilityFilter,
+  ]);
 
   const sortByMetric = useMemo(() => {
     if (!feeData) return [];
@@ -441,12 +424,8 @@ export default function FeesPage() {
   const finalSort = useMemo(() => {
     if (!feeData) return [];
 
-    if (selectedQualitative) {
-      if (selectedQualitative === "chain") {
-        return sortByChains;
-      } else {
-        return sortByCallData;
-      }
+    if (selectedQualitative === "chain") {
+      return sortByChains;
     } else {
       return sortByMetric;
     }
@@ -1085,6 +1064,25 @@ export default function FeesPage() {
     ],
   );
 
+  const dataAvailByFilter: boolean = useMemo(() => {
+    let allPass = true;
+    finalSort.forEach((chain) => {
+      if (
+        dataAvailByChain[chain][0].label !== selectedAvailability &&
+        selectedChains[chain]
+      ) {
+        allPass = false;
+      } else if (
+        dataAvailByChain[chain][0].label === selectedAvailability &&
+        !selectedChains[chain]
+      ) {
+        allPass = false;
+      }
+    });
+
+    return allPass;
+  }, [finalSort, master, selectedAvailability, selectedChains]);
+
   return (
     <>
       <div
@@ -1212,25 +1210,22 @@ export default function FeesPage() {
                     <div
                       className="bg-[#344240] text-[8px] flex rounded-full font-normal items-center px-[5px] py-[4px] gap-x-[2px] hover:cursor-pointer whitespace-nowrap"
                       onClick={
-                        selectedQualitative !== "availability"
-                          ? () => setSelectedQualitative("availability")
+                        !availabilityFilter
+                          ? () => setAvailabilityFilter(!availabilityFilter)
                           : undefined
                       }
                     >
                       Data Availability
-                      {selectedQualitative === "availability" &&
-                      Object.keys(manualSelectedChains).length === 0
+                      {availabilityFilter && dataAvailByFilter
                         ? ": " + selectedAvailability
                         : ""}
                       <Icon
                         icon={"feather:x-circle"}
                         className={` dark:text-white text-black w-[10px] h-[10px] relative bottom-[0.5px] ${
-                          selectedQualitative === "availability"
-                            ? "block"
-                            : "hidden"
+                          availabilityFilter ? "block" : "hidden"
                         }`}
                         onClick={() => {
-                          setSelectedQualitative("chain");
+                          setAvailabilityFilter(false);
                         }}
                       />{" "}
                     </div>
@@ -1502,8 +1497,8 @@ export default function FeesPage() {
                                   });
                                 }}
                                 onClick={() => {
-                                  if (selectedQualitative !== "availability") {
-                                    setSelectedQualitative("availability");
+                                  if (!availabilityFilter) {
+                                    setAvailabilityFilter(true);
                                   }
                                   setSelectedAvailability(avail.label);
                                   setManualSelectedChains({});
@@ -1512,10 +1507,9 @@ export default function FeesPage() {
                                 <Icon
                                   icon={`gtp:${avail.icon}`}
                                   className={`${
+                                    dataAvailByFilter &&
                                     selectedAvailability === avail.label &&
-                                    selectedQualitative === "availability" &&
-                                    Object.keys(manualSelectedChains).length ===
-                                      0
+                                    selectedChains[item.chain[1]]
                                       ? "text-forest-200"
                                       : "text-[#5A6462] "
                                   }
