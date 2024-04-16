@@ -24,6 +24,7 @@ import {
   useWindowSize,
   useDebounceCallback,
 } from "usehooks-ts";
+import Link from "next/link";
 
 interface HoveredItems {
   hoveredChain: string | null;
@@ -1461,11 +1462,11 @@ export default function FeesPage() {
                             }}
                           />
                         </div>
-                        <div className="pr-[5px]">
+                        <Link className="pr-[5px] hover:underline" href={`https://www.growthepie.xyz/chains/${AllChainsByKeys[item.chain[1]].urlKey}`} target="_blank">
                           {isMobile
                             ? master.chains[item.chain[1]].name_short
                             : AllChainsByKeys[item.chain[1]].label}
-                        </div>
+                        </Link>
                         <div
                           className={`bg-[#344240] flex rounded-full  items-center  transition-width overflow-hidden duration-300 ${
                             isMobile
@@ -1807,11 +1808,11 @@ export default function FeesPage() {
                             }}
                           />
                         </div>
-                        <div className="">
+                        <Link className="hover:underline" href={`https://www.growthepie.xyz/chains/${AllChainsByKeys["ethereum"].urlKey}`} target="_blank">
                           {isMobile
                             ? master.chains["ethereum"].name_short
                             : AllChainsByKeys["ethereum"].label}
-                        </div>
+                        </Link>
                       </div>
 
                       <div className="h-full w-[15%] flex justify-end items-center">
