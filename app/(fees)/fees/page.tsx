@@ -1263,20 +1263,23 @@ export default function FeesPage() {
                     className={`relative flex items-center justify-end cursor-pointer ${
                       isMobile ? "w-[15%]" : "w-[15%]"
                     }`}
-                    onClick={() => {
-                      if (selectedQuantitative === "txcosts_median") {
-                        if (selectedQualitative) {
-                          setSelectedQualitative(null);
-                        } else {
-                          setSortOrder(!sortOrder);
-                        }
-                      } else {
-                        setSelectedQualitative(null);
-                        setSelectedQuantitative("txcosts_median");
-                      }
-                    }}
                   >
-                    Median Fee
+                    <div
+                      onClick={() => {
+                        if (selectedQuantitative === "txcosts_median") {
+                          if (selectedQualitative) {
+                            setSelectedQualitative(null);
+                          } else {
+                            setSortOrder(!sortOrder);
+                          }
+                        } else {
+                          setSelectedQualitative(null);
+                          setSelectedQuantitative("txcosts_median");
+                        }
+                      }}
+                    >
+                      Median Fee
+                    </div>
                     <Icon
                       icon={
                         !selectedQualitative &&
@@ -1298,20 +1301,23 @@ export default function FeesPage() {
                     className={`relative flex items-center justify-end hover:cursor-pointer ${
                       isMobile ? "w-[16%]" : "w-[16%]"
                     }`}
-                    onClick={() => {
-                      if (selectedQuantitative === "txcosts_native_median") {
-                        if (selectedQualitative) {
-                          setSelectedQualitative(null);
-                        } else {
-                          setSortOrder(!sortOrder);
-                        }
-                      } else {
-                        setSelectedQualitative(null);
-                        setSelectedQuantitative("txcosts_native_median");
-                      }
-                    }}
                   >
-                    Transfer ETH
+                    <div
+                      onClick={() => {
+                        if (selectedQuantitative === "txcosts_native_median") {
+                          if (selectedQualitative) {
+                            setSelectedQualitative(null);
+                          } else {
+                            setSortOrder(!sortOrder);
+                          }
+                        } else {
+                          setSelectedQualitative(null);
+                          setSelectedQuantitative("txcosts_native_median");
+                        }
+                      }}
+                    >
+                      Transfer ETH
+                    </div>
                     <Icon
                       icon={
                         !selectedQualitative &&
@@ -1333,20 +1339,23 @@ export default function FeesPage() {
                     className={`pr-[20px] relative flex items-center justify-end gap-x-0.5 hover:cursor-pointer ${
                       isMobile ? "w-[16.5%]" : "w-[19.5%]"
                     }`}
-                    onClick={() => {
-                      if (selectedQuantitative === "txcosts_swap") {
-                        if (selectedQualitative) {
-                          setSelectedQualitative(null);
-                        } else {
-                          setSortOrder(!sortOrder);
-                        }
-                      } else {
-                        setSelectedQualitative(null);
-                        setSelectedQuantitative("txcosts_swap");
-                      }
-                    }}
                   >
-                    <div>Swap Token </div>
+                    <div
+                      onClick={() => {
+                        if (selectedQuantitative === "txcosts_swap") {
+                          if (selectedQualitative) {
+                            setSelectedQualitative(null);
+                          } else {
+                            setSortOrder(!sortOrder);
+                          }
+                        } else {
+                          setSelectedQualitative(null);
+                          setSelectedQuantitative("txcosts_swap");
+                        }
+                      }}
+                    >
+                      Swap Token{" "}
+                    </div>
                     <Icon
                       icon={
                         !selectedQualitative &&

@@ -489,7 +489,11 @@ export default function SidebarMenuGroup({
                           ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
                           : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
                       } ${option.key === "chain-overview" ? "mt-1" : "mt-0"}`}
-                      href={`/${item.name.toLowerCase()}/${option.urlKey}`}
+                      href={
+                        option.key !== "feesxyz"
+                          ? `/${item.name.toLowerCase()}/${option.urlKey}`
+                          : "https://fees.growthepie.xyz/"
+                      }
                     >
                       <div
                         className={`absolute top-0 left-[4px] w-[64px] h-[28px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726] transition-opacity  ease-in-out ${

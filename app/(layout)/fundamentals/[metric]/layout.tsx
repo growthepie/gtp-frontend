@@ -166,15 +166,15 @@ export default async function Layout({
             <div className="flex flex-col sm:flex-row space-x-1">
               <span className="inline-flex gap-x-1">
                 <div>
-                  {pageData.description} Check out our
+                  {pageData.description} Check out our new
                   <a
-                    href="https://www.growthepie.xyz/trackers/eip4844"
+                    href="https://fees.growthepie.xyz/"
                     target="_blank"
                     className="underline mx-0.5"
                   >
-                    EIP-4844
+                    fees page
                   </a>
-                  page for a more detailed view.
+                  for a more detailed view.
                 </div>
               </span>
             </div>

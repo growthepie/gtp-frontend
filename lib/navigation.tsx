@@ -59,9 +59,9 @@ export const navigationCategories = {
     label: "Public Goods Funding",
     icon: "feather:sun",
   },
-  "protocol-updates": {
-    label: "Protocol Updates",
-    icon: "gtp:ethereum-logo-monochrome",
+  growthepie: {
+    label: "Grow The Pie",
+    icon: "gtp:gtp-pie-monochrome",
   },
 };
 
@@ -602,12 +602,12 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "optimism-retropgf-3",
       },
       {
-        label: "EIP-4844",
-        icon: "gtp:ethereum-logo-monochrome",
-        category: "protocol-updates",
-        key: "eip4844",
-        rootKey: "eip4844",
-        urlKey: "eip4844",
+        label: "fees.growthepie.xyz",
+        icon: "gtp:gtp-pie",
+        category: "growthepie",
+        key: "feesxyz",
+        rootKey: "feesxyz",
+        urlKey: "feesxyz",
       },
     ],
   },
