@@ -19,6 +19,7 @@ type SlidingFooterContainerProps = {
   selectedTimeframe: string;
   selectedChains: string[];
   showGwei: boolean;
+  showCents: boolean;
 };
 
 
@@ -39,6 +40,7 @@ export default function ChartContainer({
   selectedTimeframe,
   selectedChains,
   showGwei,
+  showCents,
 }: SlidingFooterContainerProps) {
 
   const {
@@ -244,7 +246,7 @@ export default function ChartContainer({
           </div>
           <div className="px-[5px]">
             <div className="relative border border-[#5A6462] rounded-[15px] h-[146px] md:h-[279px] w-full overflow-hidden" ref={chartContainerRef}>
-              <FeesChart selectedMetric={metrics[metricIndex]} selectedTimeframe={timeFrames[timeFrameIndex]} selectedChains={selectedChains} showGwei={showGwei} chartWidth={chartContainerWidth} />
+              <FeesChart selectedMetric={metrics[metricIndex]} selectedTimeframe={timeFrames[timeFrameIndex]} selectedChains={selectedChains} showGwei={showGwei} chartWidth={chartContainerWidth} showCents={showCents} />
               {/* </div> */}
               <div className="absolute bottom-[calc(50%-15px)] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">
                 <ChartWatermark className="w-[128.67px] h-[30.67px] md:w-[193px] md:h-[46px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />

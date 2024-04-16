@@ -90,7 +90,10 @@ const getGradientColor = (percentage) => {
 
 export default function FeesPage() {
   const isMobile = useMediaQuery("(max-width: 767px)");
+  
   const showGwei = true;
+  const showCents = true;
+
   const { width: windowWidth = 0, height: windowHeight = 0 } = useWindowSize();
   const [selectedTimescale, setSelectedTimescale] = useState("hourly");
   const [selectedQuantitative, setSelectedQuantitative] =
@@ -930,11 +933,16 @@ export default function FeesPage() {
 
   const getNumFractionDigits = useCallback(
     (x) => {
-      if (showUsd) return x < 1 ? 3 : 2;
+
+      if (showUsd){
+        if(showCents)
+          return 2;
+        return x < 1 ? 3 : 2;
+      }
 
       return x < 1000 ? 0 : 2;
     },
-    [showUsd],
+    [showCents, showUsd],
   );
 
   const getValueColor = useCallback(
@@ -969,15 +977,20 @@ export default function FeesPage() {
           ]
         : null;
 
+        
+      const usdClasses = "justify-center w-[65px] -mr-2.5";
+      const gweiClasses = "justify-end w-[75px] md:w-[85px] -mr-1.5";
+      const centsClasses = "justify-end w-[75px] md:w-[85px] -mr-1.5";
+
+      let classes = usdClasses;
+      if (showGwei && !showUsd) classes = gweiClasses;
+      if (showCents && showUsd) classes = centsClasses;
+
       // return N/A if value is null
       if (value === null)
         return (
           <div
-            className={`flex items-center justify-center ${
-              !showUsd && showGwei
-                ? "w-[75px] md:w-[85px] -mr-1.5"
-                : "w-[65px] -mr-2.5"
-            } h-[24px] transition-colors duration-100 border rounded-full opacity-30`}
+            className={`flex items-center justify-center ${classes} h-[24px] transition-colors duration-100 border rounded-full opacity-30`}
             style={{
               borderColor:
                 selectedQuantitative === metric ? "gray" : "transparent",
@@ -988,48 +1001,47 @@ export default function FeesPage() {
         );
 
       // multiply value by 1000000000 if showGwei is true
-      const multipliedValue = value * (showGwei && !showUsd ? 1000000000 : 1);
+      let multiplier = 1;
+      if (showGwei && !showUsd) {
+        multiplier = 1000000000;
+      }
+      if(showCents && showUsd) {
+        multiplier = 100;
+      }
+      const multipliedValue = value * multiplier;
       const fractionDigits = getNumFractionDigits(multipliedValue);
+
+
+
 
       // ethereum chain as a special case
       if (chain === "ethereum" && metric === selectedQuantitative) {
         return (
           <div
-            className={`font-semibold flex items-center ${
-              !showUsd && showGwei
-                ? "justify-end w-[75px] md:w-[85px] -mr-1.5"
-                : "justify-center w-[65px] -mr-2.5"
-            } h-[24px] transition-colors duration-100 border rounded-full`}
+            className={`font-semibold flex items-center ${classes} h-[24px] transition-colors duration-100 border rounded-full`}
             style={{
               background: "#FE5468",
               borderColor: "#FF3838",
               color: "#1F2726",
             }}
           >
-            {showUsd && <div>$</div>}
-            <div>
+            {(showUsd && !showCents) && <div>$</div>}
+            <div className="flex items-center">
               {Intl.NumberFormat(undefined, {
                 notation: "compact",
                 maximumFractionDigits: fractionDigits,
                 minimumFractionDigits: fractionDigits,
               }).format(multipliedValue)}
             </div>
-            {!showUsd && showGwei && (
-              <div className="pl-0.5 text-[0.5rem] pr-[5px] text-forest-900">
-                {showUsd ? "" : showGwei ? " gwei" : ""}
-              </div>
-            )}
+            {(showUsd && showCents) && <div className="pl-0.5 text-[8px] pr-[5px] text-forest-900">{" cents"}</div>}
+            {(!showUsd && showGwei) &&  <div className="pl-0.5 text-[8px] pr-[5px] text-forest-900">{" gwei"}</div>}
           </div>
         );
       }
 
       return (
         <div
-          className={`flex items-center ${
-            !showUsd && showGwei
-              ? "justify-end w-[75px] md:w-[85px] -mr-1.5"
-              : "justify-center w-[65px] -mr-2.5"
-          } h-[24px] transition-colors duration-100 border rounded-full`}
+          className={`flex items-center ${classes} h-[24px] transition-colors duration-100 border rounded-full`}
           style={{
             borderColor:
               selectedQuantitative === metric
@@ -1037,7 +1049,7 @@ export default function FeesPage() {
                 : "transparent",
           }}
         >
-          {showUsd && <div>$</div>}
+          {(showUsd && !showCents) && <div>$</div>}
           <div>
             {Intl.NumberFormat(undefined, {
               notation: "compact",
@@ -1045,11 +1057,13 @@ export default function FeesPage() {
               minimumFractionDigits: fractionDigits,
             }).format(multipliedValue)}
           </div>
-          {!showUsd && showGwei && (
-            <div className="pl-0.5 text-[0.5rem] pr-[5px] text-forest-400">
-              {showUsd ? "" : showGwei ? " gwei" : ""}
-            </div>
-          )}
+          
+            {(showUsd && showCents) && <div className="pl-0.5 text-[8px] pr-[5px] text-forest-400">{" cents"}</div>}
+            {(!showUsd && showGwei) &&  <div className="pl-0.5 text-[8px] pr-[5px] text-forest-400">{" gwei"}</div>}
+            {/* <div className="pl-0.5 text-[0.5rem] pr-[5px] text-forest-400">
+              {showUsd ? " ¢" : showGwei ? " gwei" : ""}
+            </div> */}
+          
         </div>
       );
     },
@@ -2025,6 +2039,7 @@ export default function FeesPage() {
                 (c) => selectedChains[c] === true,
               )}
               showGwei={showGwei}
+              showCents={showCents}
             />
           )}
         </OffScreenSlider>

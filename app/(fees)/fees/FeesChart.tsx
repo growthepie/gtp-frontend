@@ -57,10 +57,11 @@ type FeesChartProps = {
   selectedTimeframe: string;
   selectedChains: string[];
   showGwei: boolean;
+  showCents: boolean;
   chartWidth: number;
 };
 
-export default function FeesChart({ selectedMetric, selectedTimeframe, selectedChains, showGwei, chartWidth }: FeesChartProps) {
+export default function FeesChart({ selectedMetric, selectedTimeframe, selectedChains, showGwei, showCents, chartWidth }: FeesChartProps) {
   const { theme } = useTheme();
   const { isMobile } = useUIContext();
   // const seriesKey = "txcosts_avg";
@@ -112,14 +113,26 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
     (value: number | string, isAxis = false) => {
       let prefix = valuePrefix;
       let suffix = "";
-      let val = parseFloat(value as string);
+      let multiplier = 1
+      
+
+
 
       if (!showUsd) {
         if (showGwei) {
           prefix = "";
-          suffix = " Gwei";
+          suffix = " gwei";
+          multiplier = 1e9;
+        }
+      }else{
+        if(showCents){
+          prefix = "";
+          suffix = " cents"
+          multiplier = 100;
         }
       }
+
+      let val = parseFloat(value as string) * multiplier;
 
       let number = d3.format(`.2~s`)(val).replace(/G/, "B");
 
@@ -127,7 +140,7 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
         if (selectedScale === "percentage") {
           number = d3.format(".2~s")(val).replace(/G/, "B") + "%";
         } else {
-          if (showGwei && showUsd) {
+          if (showGwei && !showUsd) {
             // for small USD amounts, show 2 decimals
             if (val < 1) number = prefix + val.toFixed(2) + suffix;
             else if (val < 10)
@@ -147,7 +160,7 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
 
       return number;
     },
-    [valuePrefix, showUsd, selectedScale, showGwei],
+    [valuePrefix, showUsd, showGwei, showCents],
   );
 
   const tooltipFormatter = useCallback(
@@ -237,8 +250,14 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
           if (!showUsd) {
             if (showGwei) {
               prefix = "";
-              suffix = " Gwei";
+              suffix = " gwei";
               displayValue = y * 1e9;
+            }
+          }else{
+            if(showCents){
+              prefix = "";
+              suffix = " cents";
+              displayValue = y * 100;
             }
           }
 
