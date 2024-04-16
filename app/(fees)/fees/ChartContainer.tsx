@@ -155,7 +155,7 @@ export default function ChartContainer({
     >
       <div className="absolute -top-[12px] left-0 right-0 flex justify-center z-50">
         <div
-          className="flex items-center gap-x-[10px] text-[10px] pl-[15px] pr-[20px] py-[4px] leading-[150%] rounded-full bg-[#1F2726] shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000] cursor-pointer"
+          className={`flex items-center gap-x-[10px] text-[10px] pl-[15px] pr-[20px] py-[3px] leading-[150%] rounded-full bg-[#1F2726] shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000] cursor-pointer border-[1.5px] border-forest-500 dark:border-[#344240] ${isOpen ? '' : 'hard-shine-2'}`}
           onClick={() => {
             const wasOpen = isOpen;
 
@@ -187,7 +187,7 @@ export default function ChartContainer({
               maxWidth: isOpen ? "58px" : `600px`,
             }}
           >
-            {isOpen ? `Close Chart` : `Open Chart for “${metricLabels[selectedMetric]} over time”`}
+            {isOpen ? `Close Chart` : `Open Chart for “${metricLabels[selectedMetric]} fees over time”`}
           </div>
         </div>
       </div>
