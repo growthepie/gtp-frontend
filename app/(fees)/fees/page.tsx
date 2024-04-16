@@ -91,7 +91,7 @@ const getGradientColor = (percentage) => {
 
 export default function FeesPage() {
   const isMobile = useMediaQuery("(max-width: 767px)");
-  
+
   const showGwei = true;
   const showCents = true;
 
@@ -934,10 +934,8 @@ export default function FeesPage() {
 
   const getNumFractionDigits = useCallback(
     (x) => {
-
-      if (showUsd){
-        if(showCents)
-          return 2;
+      if (showUsd) {
+        if (showCents) return 2;
         return x < 1 ? 3 : 2;
       }
 
@@ -978,7 +976,6 @@ export default function FeesPage() {
           ]
         : null;
 
-        
       const usdClasses = "justify-center w-[65px] -mr-2.5";
       const gweiClasses = "justify-end w-[75px] md:w-[85px] -mr-1.5";
       const centsClasses = "justify-end w-[75px] md:w-[85px] -mr-1.5";
@@ -1006,14 +1003,11 @@ export default function FeesPage() {
       if (showGwei && !showUsd) {
         multiplier = 1000000000;
       }
-      if(showCents && showUsd) {
+      if (showCents && showUsd) {
         multiplier = 100;
       }
       const multipliedValue = value * multiplier;
       const fractionDigits = getNumFractionDigits(multipliedValue);
-
-
-
 
       // ethereum chain as a special case
       if (chain === "ethereum" && metric === selectedQuantitative) {
@@ -1026,7 +1020,7 @@ export default function FeesPage() {
               color: "#1F2726",
             }}
           >
-            {(showUsd && !showCents) && <div>$</div>}
+            {showUsd && !showCents && <div>$</div>}
             <div className="flex items-center">
               {Intl.NumberFormat(undefined, {
                 notation: "compact",
@@ -1034,8 +1028,16 @@ export default function FeesPage() {
                 minimumFractionDigits: fractionDigits,
               }).format(multipliedValue)}
             </div>
-            {(showUsd && showCents) && <div className="pl-0.5 text-[8px] pr-[5px] text-forest-900">{" cents"}</div>}
-            {(!showUsd && showGwei) &&  <div className="pl-0.5 text-[8px] pr-[5px] text-forest-900">{" gwei"}</div>}
+            {showUsd && showCents && (
+              <div className="pl-0.5 text-[8px] pr-[5px] text-forest-900">
+                {" cents"}
+              </div>
+            )}
+            {!showUsd && showGwei && (
+              <div className="pl-0.5 text-[8px] pr-[5px] text-forest-900">
+                {" gwei"}
+              </div>
+            )}
           </div>
         );
       }
@@ -1050,7 +1052,7 @@ export default function FeesPage() {
                 : "transparent",
           }}
         >
-          {(showUsd && !showCents) && <div>$</div>}
+          {showUsd && !showCents && <div>$</div>}
           <div>
             {Intl.NumberFormat(undefined, {
               notation: "compact",
@@ -1058,21 +1060,38 @@ export default function FeesPage() {
               minimumFractionDigits: fractionDigits,
             }).format(multipliedValue)}
           </div>
-            {(showUsd && showCents) && <div className="pl-0.5 text-[8px] pr-[5px] text-forest-400">{" cents"}</div>}
-            {(!showUsd && showGwei) &&  <div className="pl-0.5 text-[8px] pr-[5px] text-forest-400">{" gwei"}</div>}
-            {/* <div className="pl-0.5 text-[0.5rem] pr-[5px] text-forest-400">
+          {showUsd && showCents && (
+            <div className="pl-0.5 text-[8px] pr-[5px] text-forest-400">
+              {" cents"}
+            </div>
+          )}
+          {!showUsd && showGwei && (
+            <div className="pl-0.5 text-[8px] pr-[5px] text-forest-400">
+              {" gwei"}
+            </div>
+          )}
+          {/* <div className="pl-0.5 text-[0.5rem] pr-[5px] text-forest-400">
               {showUsd ? " ¢" : showGwei ? " gwei" : ""}
             </div> */}
-          
         </div>
       );
     },
-    [feeData, getNumFractionDigits, getValueColor, optIndex, selectedQualitative, selectedQuantitative, showCents, showGwei, showUsd],
+    [
+      feeData,
+      getNumFractionDigits,
+      getValueColor,
+      optIndex,
+      selectedQualitative,
+      selectedQuantitative,
+      showCents,
+      showGwei,
+      showUsd,
+    ],
   );
 
   const dataAvailByFilter: boolean = useMemo(() => {
-    if(Object.keys(dataAvailByChain).length === 0) return false;
-    
+    if (Object.keys(dataAvailByChain).length === 0) return false;
+
     let allPass = true;
     finalSort.forEach((chain) => {
       if (
@@ -1111,7 +1130,9 @@ export default function FeesPage() {
               href="https://www.growthepie.xyz/"
               target="_blank"
             >
-              <Icon icon="gtp:house" className="h-6 w-6" />
+              <div className="w-6 h-6">
+                <Icon icon="gtp:house" className="h-6 w-6" />
+              </div>
               <div className="font-semibold">Main platform</div>
             </a>
           </div>
@@ -1463,7 +1484,13 @@ export default function FeesPage() {
                             }}
                           />
                         </div>
-                        <Link className="pr-[5px] hover:underline" href={`https://www.growthepie.xyz/chains/${AllChainsByKeys[item.chain[1]].urlKey}`} target="_blank">
+                        <Link
+                          className="pr-[5px] hover:underline"
+                          href={`https://www.growthepie.xyz/chains/${
+                            AllChainsByKeys[item.chain[1]].urlKey
+                          }`}
+                          target="_blank"
+                        >
                           {isMobile
                             ? master.chains[item.chain[1]].name_short
                             : AllChainsByKeys[item.chain[1]].label}
@@ -1809,7 +1836,11 @@ export default function FeesPage() {
                             }}
                           />
                         </div>
-                        <Link className="hover:underline" href={`https://www.growthepie.xyz/chains/${AllChainsByKeys["ethereum"].urlKey}`} target="_blank">
+                        <Link
+                          className="hover:underline"
+                          href={`https://www.growthepie.xyz/chains/${AllChainsByKeys["ethereum"].urlKey}`}
+                          target="_blank"
+                        >
                           {isMobile
                             ? master.chains["ethereum"].name_short
                             : AllChainsByKeys["ethereum"].label}
