@@ -59,8 +59,8 @@ export const navigationCategories = {
     label: "Public Goods Funding",
     icon: "feather:sun",
   },
-  growthepie: {
-    label: "Grow The Pie",
+  gtpmetrics: {
+    label: "More In-Depth Metrics",
     icon: "gtp:gtp-pie-monochrome",
   },
 };
@@ -604,7 +604,7 @@ export const navigationItems: NavigationItem[] = [
       {
         label: "fees.growthepie.xyz",
         icon: "gtp:gtp-pie",
-        category: "growthepie",
+        category: "gtpmetrics",
         key: "feesxyz",
         rootKey: "feesxyz",
         urlKey: "feesxyz",
