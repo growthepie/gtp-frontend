@@ -64,19 +64,21 @@ export default function RowParent({ chainKey, index }) {
         DisabledStates[selectedMode][chainKey] ? (
         <>
           <div
-            className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${AllChainsByKeys[chainKey].darkTextOnBackground === true
-                ? "text-white dark:text-black"
-                : "text-white"
+            className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium text-white dark:text-black ${
+              ""
+              // AllChainsByKeys[chainKey].darkTextOnBackground === true
+              //   ? "text-white dark:text-black"
+              //   : "text-white"
               } ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]}`}
           >
             <div className="flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px] z-10">
-              <div className="flex justify-center items-center w-[30px]">
+              <div className="flex justify-center items-center w-[30px] h-[15px]">
                 <Icon
                   icon={`gtp:${chainKey}-logo-monochrome`}
                   className="w-[15px] h-[15px]"
                 />
               </div>
-              <div className="-mb-0.5">{AllChainsByKeys[chainKey].label}</div>
+              <div className="">{AllChainsByKeys[chainKey].label}</div>
             </div>
             {/* Additional content */}
 
@@ -101,9 +103,11 @@ export default function RowParent({ chainKey, index }) {
         </>
       ) : (
         <div
-          className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium ${AllChainsByKeys[chainKey].darkTextOnBackground === true
-              ? "text-white dark:text-black"
-              : "text-white"
+          className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium text-white dark:text-black ${
+            ""
+            // AllChainsByKeys[chainKey].darkTextOnBackground === true
+            //   ? "text-white dark:text-black"
+            //   : "text-white"
             } ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]}`}
         >
           <div
@@ -140,13 +144,13 @@ export default function RowParent({ chainKey, index }) {
               }
             }}
           >
-            <div className="flex justify-center items-center w-[30px]">
+            <div className="flex justify-center items-center w-[30px] h-[15px]">
               <Icon
                 icon={`gtp:${chainKey.replace("_", "-")}-logo-monochrome`}
                 className="w-[15px] h-[15px]"
               />
             </div>
-            <div className="-mb-0.5">{AllChainsByKeys[chainKey].label}</div>
+            <div className="">{AllChainsByKeys[chainKey].label}</div>
           </div>
           <div className="flex w-full pr-[2px] py-[2px] relative">
             {/*Children */}
