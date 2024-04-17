@@ -35,6 +35,11 @@ const nextConfig = {
         destination: "/trackers/optimism-retropgf-3",
         permanent: true,
       },
+      {
+        source: "/fees",
+        destination: "https://fees.growthepie.xyz",
+        permanent: true,
+      },
     ];
   },
   images: {

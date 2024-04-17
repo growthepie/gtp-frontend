@@ -1,10 +1,8 @@
-const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-  ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-  : "https://www.growthepie.xyz";
+const baseUrl = "https://www.growthepie.xyz";
 
 // for www.growthepie.xyz & dev.growthepie.xyz
 const gtpMain = {
-  siteUrl: baseUrl || "https://www.growthepie.xyz",
+  siteUrl: "https://www.growthepie.xyz",
   generateRobotsTxt: true,
   exclude: [
     "/server-sitemap.xml",
@@ -14,16 +12,17 @@ const gtpMain = {
     "/embed",
     "/trackers/*",
     "/blockspace/*",
+    "/fees",
   ],
   robotsTxtOptions: {
     exclude: ["/server-sitemap.xml"],
-    additionalSitemaps: [`${baseUrl}/server-sitemap.xml`],
+    additionalSitemaps: [`https://www.growthepie.xyz/server-sitemap.xml`],
   },
 };
 
 // for fees.growthepie.xyz & dev.fees.growthepie.xyz
 const gtpFees = {
-  siteUrl: baseUrl || "https://fees.growthepie.xyz",
+  siteUrl: "https://fees.growthepie.xyz",
   generateRobotsTxt: true,
   exclude: [
     "/blog",
