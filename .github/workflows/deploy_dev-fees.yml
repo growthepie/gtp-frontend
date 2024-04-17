@@ -1,8 +1,8 @@
-name: Deploy on main push
+name: Deploy on dev-fees push
 on:
   push:
     branches:
-      - main
+      - dev-fees
 jobs:
   deploy:
     runs-on: ubuntu-latest
