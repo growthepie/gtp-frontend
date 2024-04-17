@@ -90,10 +90,7 @@ const gtpFees = {
   description:
     "Fee analytics by the minute for Ethereum L2s — median transaction fees, native / ETH transfer fees, token swap fees, and more...",
 };
-const isFees =
-  process.env.NEXT_PUBLIC_VERCEL_URL &&
-  process.env.NEXT_PUBLIC_VERCEL_URL.includes("fees.");
-
+const isFees = true;
 const host = isFees ? "fees.growthepie.xyz" : "www.growthepie.xyz";
 
 const title = isFees ? gtpFees.title : gtpMain.title;
