@@ -793,10 +793,12 @@ export default function LandingChart({
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-              }"></div>
-                <div class="tooltip-point-name">${AllChainsByKeys[name].label
-              }</div>
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                  AllChainsByKeys[name].colors[theme ?? "dark"][0]
+                }"></div>
+                <div class="tooltip-point-name">${
+                  AllChainsByKeys[name].label
+                }</div>
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
                   percentage,
                   2,
@@ -808,14 +810,17 @@ export default function LandingChart({
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                 style="
                   width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]};
+                  background-color: ${
+                    AllChainsByKeys[name].colors[theme ?? "dark"][0]
+                  };
                 "></div>
               </div>`;
 
           const value = formatNumber(y);
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+              AllChainsByKeys[name].colors[theme ?? "dark"][0]
             }"></div>
             <div class="tooltip-point-name text-md">${
               AllChainsByKeys[name].label
@@ -835,7 +840,9 @@ export default function LandingChart({
             <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
             style="
               width: ${(y / maxPoint) * 100}%;
-              background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]};
+              background-color: ${
+                AllChainsByKeys[name].colors[theme ?? "dark"][0]
+              };
             "></div>
           </div>`;
         })
@@ -1315,16 +1322,18 @@ export default function LandingChart({
                   [
                     0,
                     series.name && theme && EnabledChainsByKeys[series.name]
-                      ? EnabledChainsByKeys[series.name]?.colors[theme ?? "dark"][0] +
-                      "33"
+                      ? EnabledChainsByKeys[series.name]?.colors[
+                          theme ?? "dark"
+                        ][0] + "33"
                       : [],
                   ],
 
                   [
                     1,
                     series.name && theme && EnabledChainsByKeys[series.name]
-                      ? EnabledChainsByKeys[series.name]?.colors[theme ?? "dark"][1] +
-                      "33"
+                      ? EnabledChainsByKeys[series.name]?.colors[
+                          theme ?? "dark"
+                        ][1] + "33"
                       : [],
                   ],
                 ],
@@ -1337,20 +1346,13 @@ export default function LandingChart({
               lineWidth: 1,
               ...(getSeriesType(series.name) !== "column"
                 ? {
-                  shadow: {
-                    color:
-                      series.name && theme && EnabledChainsByKeys[series.name]
-                        ? EnabledChainsByKeys[series.name]?.colors[theme ?? "dark"][1] +
-                        "FF"
-                        : "transparent",
-                    width: 10,
-                  },
-                  color: {
-                    linearGradient: {
-                      x1: 0,
-                      y1: 0,
-                      x2: 1,
-                      y2: 0,
+                    shadow: {
+                      color:
+                        series.name && theme && EnabledChainsByKeys[series.name]
+                          ? EnabledChainsByKeys[series.name]?.colors[theme][1] +
+                            "FF"
+                          : "transparent",
+                      width: 10,
                     },
                     color: {
                       linearGradient: {
@@ -1365,17 +1367,18 @@ export default function LandingChart({
                           series.name &&
                           theme &&
                           EnabledChainsByKeys[series.name]
-                          ? EnabledChainsByKeys[series.name]?.colors[theme ?? "dark"][0]
-                          : [],
-                      ],
-                      // [0.33, AllChainsByKeys[series.name].colors[1]],
-                      [
-                        1,
-                        series.name &&
+                            ? EnabledChainsByKeys[series.name]?.colors[theme][0]
+                            : [],
+                        ],
+                        // [0.33, AllChainsByKeys[series.name].colors[1]],
+                        [
+                          1,
+                          series.name &&
                           theme &&
                           EnabledChainsByKeys[series.name]
-                          ? EnabledChainsByKeys[series.name]?.colors[theme ?? "dark"][1]
-                          : [],
+                            ? EnabledChainsByKeys[series.name]?.colors[theme][1]
+                            : [],
+                        ],
                       ],
                     },
                   }
@@ -1404,20 +1407,20 @@ export default function LandingChart({
                                 series.name &&
                                 theme &&
                                 EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "FF"
-                                : [],
-                            ],
-                            // [
-                            //   0.3,
-                            //   //   AllChainsByKeys[series.name].colors[theme ?? "dark"][0] + "FF",
-                            //   AllChainsByKeys[series.name].colors[theme ?? "dark"][0] +
-                            //     "FF",
-                            // ],
-                            [
-                              1,
-                              series.name &&
+                                  ? EnabledChainsByKeys[series.name]?.colors[
+                                      theme
+                                    ][0] + "FF"
+                                  : [],
+                              ],
+                              // [
+                              //   0.3,
+                              //   //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
+                              //   AllChainsByKeys[series.name].colors[theme][0] +
+                              //     "FF",
+                              // ],
+                              [
+                                1,
+                                series.name &&
                                 theme &&
                                 EnabledChainsByKeys[series.name]
                                   ? EnabledChainsByKeys[series.name]?.colors[
@@ -1432,19 +1435,19 @@ export default function LandingChart({
                                 series.name &&
                                 theme &&
                                 EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "FF"
-                                : [],
-                            ],
-                            // [
-                            //   0.7,
-                            //   AllChainsByKeys[series.name].colors[theme ?? "dark"][0] +
-                            //     "88",
-                            // ],
-                            [
-                              1,
-                              series.name &&
+                                  ? EnabledChainsByKeys[series.name]?.colors[
+                                      theme
+                                    ][0] + "FF"
+                                  : [],
+                              ],
+                              // [
+                              //   0.7,
+                              //   AllChainsByKeys[series.name].colors[theme][0] +
+                              //     "88",
+                              // ],
+                              [
+                                1,
+                                series.name &&
                                 theme &&
                                 EnabledChainsByKeys[series.name]
                                   ? EnabledChainsByKeys[series.name]?.colors[
@@ -1552,13 +1555,15 @@ export default function LandingChart({
                     attributes: {
                       fill:
                         series.name && theme && EnabledChainsByKeys[series.name]
-                          ? EnabledChainsByKeys[series.name]?.colors[theme ?? "dark"][0] +
-                          "99"
+                          ? EnabledChainsByKeys[series.name]?.colors[
+                              theme ?? "dark"
+                            ][0] + "99"
                           : "transparent",
                       stroke:
                         series.name && theme && EnabledChainsByKeys[series.name]
-                          ? EnabledChainsByKeys[series.name]?.colors[theme ?? "dark"][0] +
-                          "66"
+                          ? EnabledChainsByKeys[series.name]?.colors[
+                              theme ?? "dark"
+                            ][0] + "66"
                           : "transparent",
                       "stroke-width": 0,
                     },

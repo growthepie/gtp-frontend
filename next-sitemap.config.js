@@ -1,6 +1,6 @@
-const baseUrl =
-  `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` ||
-  "https://www.growthepie.xyz";
+const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
+  ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+  : "https://www.growthepie.xyz";
 
 // for www.growthepie.xyz & dev.growthepie.xyz
 const gtpMain = {

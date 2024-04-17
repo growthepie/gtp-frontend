@@ -90,37 +90,38 @@ const gtpFees = {
   description:
     "Fee analytics by the minute for Ethereum L2s — median transaction fees, native / ETH transfer fees, token swap fees, and more...",
 };
+const isFees =
+  process.env.NEXT_PUBLIC_VERCEL_URL &&
+  process.env.NEXT_PUBLIC_VERCEL_URL.includes("fees.");
 
-const title = process.env.NEXT_PUBLIC_VERCEL_URL.includes("fees.")
-  ? gtpFees.title
-  : gtpMain.title;
-const description = process.env.NEXT_PUBLIC_VERCEL_URL.includes("fees.")
-  ? gtpFees.description
-  : gtpMain.description;
+const host = isFees ? "fees.growthepie.xyz" : "www.growthepie.xyz";
+
+const title = isFees ? gtpFees.title : gtpMain.title;
+const description = isFees ? gtpFees.description : gtpMain.description;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(`https://${process.env.NEXT_PUBLIC_VERCEL_URL}`),
+  metadataBase: new URL(`https://${host}`),
   title,
   description,
   openGraph: {
     title: "growthepie",
     description: "Growing Ethereum’s Ecosystem Together",
-    url: `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`,
+    url: `https://${host}`,
     images: [
       {
-        url: `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/gtp_og.png`,
+        url: `https://${host}/gtp_og.png`,
         width: 1200,
         height: 627,
         alt: "growthepie.xyz",
       },
       {
-        url: `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/logo_full.png`,
+        url: `https://${host}/logo_full.png`,
         width: 772,
         height: 181,
         alt: "growthepie.xyz",
       },
       {
-        url: `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/logo_pie_only.png`,
+        url: `https://${host}/logo_pie_only.png`,
         width: 168,
         height: 181,
         alt: "growthepie",
@@ -137,7 +138,7 @@ export const metadata: Metadata = {
     siteId: "1636391104689094656",
     creator: "@growthepie_eth",
     creatorId: "1636391104689094656",
-    images: [`https://${process.env.NEXT_PUBLIC_VERCEL_URL}/gtp_og.png`],
+    images: [`https://${host}/gtp_og.png`],
   },
   robots: {
     index: true,
