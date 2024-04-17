@@ -84,13 +84,14 @@ const gtpMain = {
 
 const gtpFees = {
   title: {
-    absolute: "growthepie - Ethereum Layer 2 Fees",
+    absolute: "Ethereum Layer 2 Fees - growthepie",
     template: "%s - growthepie",
   },
   description:
     "Fee analytics by the minute for Ethereum L2s — median transaction fees, native / ETH transfer fees, token swap fees, and more...",
 };
 const isFees = true;
+
 const host = isFees ? "fees.growthepie.xyz" : "www.growthepie.xyz";
 
 const title = isFees ? gtpFees.title : gtpMain.title;
@@ -106,13 +107,13 @@ export const metadata: Metadata = {
     url: `https://${host}`,
     images: [
       {
-        url: `https://${host}/gtp_og.png`,
+        url: `https://${host}/gtp_fees_og.png`,
         width: 1200,
-        height: 627,
+        height: 630,
         alt: "growthepie.xyz",
       },
       {
-        url: `https://${host}/logo_full.png`,
+        url: `https://${host}/logo_fees_full.png`,
         width: 772,
         height: 181,
         alt: "growthepie.xyz",
@@ -135,7 +136,7 @@ export const metadata: Metadata = {
     siteId: "1636391104689094656",
     creator: "@growthepie_eth",
     creatorId: "1636391104689094656",
-    images: [`https://${host}/gtp_og.png`],
+    images: [`https://${host}/gtp_fees_og.png`],
   },
   robots: {
     index: true,
