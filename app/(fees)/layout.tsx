@@ -19,7 +19,7 @@ const jsonLd: Graph = {
   "@graph": [
     {
       "@type": "Organization",
-      "@id": "https://www.growthepie.xyz/#organization",
+      "@id": `https://www.growthepie.xyz/#organization`,
       name: "growthepie",
       url: "https://www.growthepie.xyz",
       logo: "https://www.growthepie.xyz/logo_full.png",
@@ -31,8 +31,8 @@ const jsonLd: Graph = {
     },
     {
       "@type": "WebSite",
-      "@id": "https://www.growthepie.xyz/#website",
-      url: "https://www.growthepie.xyz",
+      "@id": `https://www.growthepie.xyz/#website`,
+      url: `https://www.growthepie.xyz/`,
       name: "growthepie",
       description:
         "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
@@ -41,7 +41,7 @@ const jsonLd: Graph = {
         name: "growthepie",
         logo: {
           "@type": "ImageObject",
-          url: "https://www.growthepie.xyz/logo_full.png",
+          url: `https://www.growthepie.xyz/logo_full.png`,
         },
       },
     },
@@ -72,8 +72,7 @@ export const viewport = {
   themeColor: "dark",
 };
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://www.growthepie.xyz"),
+const gtpMain = {
   title: {
     absolute:
       "growthepie - Growing Ethereum’s Ecosystem Together - Layer 2 User Base",
@@ -81,25 +80,47 @@ export const metadata: Metadata = {
   },
   description:
     "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
+};
+
+const gtpFees = {
+  title: {
+    absolute: "growthepie - Ethereum Layer 2 Fees",
+    template: "%s - growthepie",
+  },
+  description:
+    "Fee analytics by the minute for Ethereum L2s — median transaction fees, native / ETH transfer fees, token swap fees, and more...",
+};
+
+const title = process.env.NEXT_PUBLIC_VERCEL_URL.includes("fees.")
+  ? gtpFees.title
+  : gtpMain.title;
+const description = process.env.NEXT_PUBLIC_VERCEL_URL.includes("fees.")
+  ? gtpFees.description
+  : gtpMain.description;
+
+export const metadata: Metadata = {
+  metadataBase: new URL(`https://${process.env.NEXT_PUBLIC_VERCEL_URL}`),
+  title,
+  description,
   openGraph: {
     title: "growthepie",
     description: "Growing Ethereum’s Ecosystem Together",
-    url: "https://www.growthepie.xyz",
+    url: `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`,
     images: [
       {
-        url: "https://www.growthepie.xyz/gtp_og.png",
+        url: `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/gtp_og.png`,
         width: 1200,
         height: 627,
         alt: "growthepie.xyz",
       },
       {
-        url: "https://www.growthepie.xyz/logo_full.png",
+        url: `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/logo_full.png`,
         width: 772,
         height: 181,
         alt: "growthepie.xyz",
       },
       {
-        url: "https://www.growthepie.xyz/logo_pie_only.png",
+        url: `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/logo_pie_only.png`,
         width: 168,
         height: 181,
         alt: "growthepie",
@@ -116,7 +137,7 @@ export const metadata: Metadata = {
     siteId: "1636391104689094656",
     creator: "@growthepie_eth",
     creatorId: "1636391104689094656",
-    images: ["https://www.growthepie.xyz/gtp_og.png"],
+    images: [`https://${process.env.NEXT_PUBLIC_VERCEL_URL}/gtp_og.png`],
   },
   robots: {
     index: true,
