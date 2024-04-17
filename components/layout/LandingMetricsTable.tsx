@@ -1,4 +1,8 @@
-import { AllChainsByKeys, EnabledChainsByKeys } from "@/lib/chains";
+import {
+  AllChainsByKeys,
+  EnabledChainsByKeys,
+  Get_SupportedChainKeys,
+} from "@/lib/chains";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocalStorage, useMediaQuery } from "usehooks-ts";
@@ -51,9 +55,7 @@ export default function LandingMetricsTable({
               data.chains[chain].users > 0,
           )
           .map((chain) => {
-            return data.chains[chain].users > 0
-              ? data.chains[chain].users
-              : -1;
+            return data.chains[chain].users > 0 ? data.chains[chain].users : -1;
           }),
       ),
     );
@@ -67,9 +69,7 @@ export default function LandingMetricsTable({
       })
       .reduce((acc, chain) => {
         acc[chain] =
-          data.chains[chain].users > 0
-            ? data.chains[chain].users
-            : -1;
+          data.chains[chain].users > 0 ? data.chains[chain].users : -1;
         return acc;
       }, {});
   }, [data]);
@@ -87,7 +87,7 @@ export default function LandingMetricsTable({
         return {
           data: data[chain],
           chain: EnabledChainsByKeys[chain],
-          lastVal: data.chains[chain].users
+          lastVal: data.chains[chain].users,
         };
       })
       .filter(
@@ -118,7 +118,11 @@ export default function LandingMetricsTable({
   let height = 0;
   const transitions = useTransition(
     rows()
-      // .filter((row) => row.chain.key != "multiple")
+      .filter((row) => {
+        const name = row.chain.key;
+        const supportedChainKeys = Get_SupportedChainKeys(master);
+        return supportedChainKeys.includes(name);
+      })
       .map((data) => ({
         ...data,
         y: (height += 39) - 39,
@@ -156,9 +160,7 @@ export default function LandingMetricsTable({
   return (
     <>
       {/* <div className={`flex flex-col space-y-[5px] overflow-y-hidden overflow-x-scroll ${isSidebarOpen ? "2xl:overflow-x-hidden" : "min-[1168px]:overflow-x-hidden"} z-100 w-full p-0 pt-3 pb-2 md:pb-0 lg:px-0 md:pt-2 scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller`}> */}
-      <div
-        className={`flex flex-col min-w-[1024px] w-full gap-y-[5px]`}
-      >
+      <div className={`flex flex-col min-w-[1024px] w-full gap-y-[5px]`}>
         <div
           className={`h-[40px] flex items-center rounded-full font-semibold text-[0.6rem] text-sm leading-[1.2]`}
         >
@@ -167,7 +169,9 @@ export default function LandingMetricsTable({
           <div className="w-[23%]">Purpose</div>
           <div className="w-[12%]">Technology</div>
           <div className="w-[13%] text-right capitalize relative pr-[60px] lg:pr-8">
-            <div className="flex flex-col items-end"><div className="whitespace-nowrap">Weekly Active</div>Addresses</div>
+            <div className="flex flex-col items-end">
+              <div className="whitespace-nowrap">Weekly Active</div>Addresses
+            </div>
             <Tooltip placement="left">
               <TooltipTrigger className="absolute right-[26px] lg:-right-[2px] top-0 bottom-0">
                 <Icon icon="feather:info" className="w-6 h-6" />
@@ -175,14 +179,17 @@ export default function LandingMetricsTable({
               <TooltipContent className="z-[110]">
                 <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex flex-col">
                   <div>
-                    Number of distinct active addresses in last 7 days and share of total L2 addresses.
+                    Number of distinct active addresses in last 7 days and share
+                    of total L2 addresses.
                   </div>
                 </div>
               </TooltipContent>
             </Tooltip>
           </div>
           <div className="w-[15%] pr-14 text-right relative">
-            <div className="flex flex-col items-end"><div className="whitespace-nowrap">Multi-Chain</div>Activity</div>
+            <div className="flex flex-col items-end">
+              <div className="whitespace-nowrap">Multi-Chain</div>Activity
+            </div>
             <Tooltip placement="left">
               <TooltipTrigger className="absolute right-[22px] top-0 bottom-0">
                 <Icon icon="feather:info" className="w-6 h-6" />
@@ -190,11 +197,13 @@ export default function LandingMetricsTable({
               <TooltipContent className="z-[110]">
                 <div className="p-3 text-sm bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex flex-col">
                   <div>
-                    Percentage of active addresses that also interacted with other chains in the last 7 days.
+                    Percentage of active addresses that also interacted with
+                    other chains in the last 7 days.
                   </div>
                 </div>
               </TooltipContent>
-            </Tooltip></div>
+            </Tooltip>
+          </div>
         </div>
         <div className="flex flex-col">
           <div className="w-full relative" style={{ height }}>
@@ -207,13 +216,20 @@ export default function LandingMetricsTable({
                     ...style,
                   }}
                 >
-                  <Link key={item.chain.key} href={`/chains/${AllChainsByKeys[item.chain.key].urlKey}`}>
+                  <Link
+                    key={item.chain.key}
+                    href={`/chains/${AllChainsByKeys[item.chain.key].urlKey}`}
+                  >
                     <div
-
-                      className={`flex items-center  ${!interactable ? "cursor-pointer pointer-events-auto" : "cursor-default pointer-events-none"} h-[34px] rounded-full w-full border-[1px] whitespace-nowrap relative ${selectedChains.includes(item.chain.key)
-                        ? "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/10"
-                        : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 transition-all duration-100"
-                        }`}
+                      className={`flex items-center  ${
+                        !interactable
+                          ? "cursor-pointer pointer-events-auto"
+                          : "cursor-default pointer-events-none"
+                      } h-[34px] rounded-full w-full border-[1px] whitespace-nowrap relative ${
+                        selectedChains.includes(item.chain.key)
+                          ? "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/10"
+                          : "border-black/[16%] dark:border-[#5A6462] hover:bg-forest-500/5 transition-all duration-100"
+                      }`}
                       // onClick={() => {
                       //   if (selectedChains.includes(item.chain.key)) {
                       //     setSelectedChains(
@@ -246,13 +262,13 @@ export default function LandingMetricsTable({
                                   )
                                     ? item.chain.colors[theme ?? "dark"][1]
                                     : "#5A6462",
-                                  width: `${(lastValsByChainKey[item.chain.key] /
-                                    maxVal) *
+                                  width: `${
+                                    (lastValsByChainKey[item.chain.key] /
+                                      maxVal) *
                                     100
-                                    }%`,
+                                  }%`,
                                 }}
-                              >
-                              </div>
+                              ></div>
                             </div>
                           )}
                         </div>
@@ -274,14 +290,20 @@ export default function LandingMetricsTable({
                         </div>
                       </div>
                       <div className="w-[12%] text-right flex text-sm justify-start items-end leading-[1.4] gap-x-1 pr-10">
-                        <div className="ml-auto">{monthsSinceLaunch[item.chain.key][0] || ""}</div>
+                        <div className="ml-auto">
+                          {monthsSinceLaunch[item.chain.key][0] || ""}
+                        </div>
                         <div className="text-xs font-[350] flex items-end">
                           {monthsSinceLaunch[item.chain.key][0] === 0 && ""}
-                          {monthsSinceLaunch[item.chain.key][0] === 1 && <div className="pr-1.5">Year</div>}
+                          {monthsSinceLaunch[item.chain.key][0] === 1 && (
+                            <div className="pr-1.5">Year</div>
+                          )}
                           {monthsSinceLaunch[item.chain.key][0] > 1 && "Years"}
                         </div>
                         <div>{monthsSinceLaunch[item.chain.key][1] || ""}</div>
-                        <div className="text-xs font-[350]">{monthsSinceLaunch[item.chain.key][1] ? "mo." : ""}</div>
+                        <div className="text-xs font-[350]">
+                          {monthsSinceLaunch[item.chain.key][1] ? "mo." : ""}
+                        </div>
                       </div>
                       <div className="w-[23%] capitalize text-sm">
                         {data.chains[item.chain.key].purpose && (
@@ -290,8 +312,7 @@ export default function LandingMetricsTable({
                       </div>
                       <div className="w-[12%] capitalize text-sm">
                         {item.chain.chainType === "L2" &&
-
-                          data.chains[item.chain.key].rollup === "-" ? (
+                        data.chains[item.chain.key].rollup === "-" ? (
                           " - "
                         ) : (
                           <>
@@ -308,24 +329,28 @@ export default function LandingMetricsTable({
                       <div className="w-[13%] flex justify-end items-center text-sm relative">
                         {/* <div className="flex flex-1 align-middle items-center"> */}
                         <div className="flex w-full justify-end items-center pr-[60px] lg:pr-8 ">
-
                           <div className="flex items-center">
                             {Intl.NumberFormat(undefined, {
                               notation: "compact",
                               maximumFractionDigits: 2,
                               minimumFractionDigits: 0,
                             }).format(lastValsByChainKey[item.chain.key])}
-
                           </div>
                           <div className="absolute flex justify-start w-20">
-                            <div className="pl-[90px] leading-[1.8] text-forest-400 text-xs"> {(data.chains[item.chain.key].user_share * 100).toFixed(1)}%</div>
+                            <div className="pl-[90px] leading-[1.8] text-forest-400 text-xs">
+                              {" "}
+                              {(
+                                data.chains[item.chain.key].user_share * 100
+                              ).toFixed(1)}
+                              %
+                            </div>
                           </div>
                         </div>
-
                       </div>
                       <div className="w-[15%] text-right pr-14 text-sm">
                         {d3.format(
-                          data.chains[item.chain.key].cross_chain_activity > 0.01
+                          data.chains[item.chain.key].cross_chain_activity >
+                            0.01
                             ? ".1%"
                             : ".1%",
                         )(data.chains[item.chain.key].cross_chain_activity)}
@@ -350,10 +375,11 @@ export default function LandingMetricsTable({
                               strokeWidth="2"
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
-                                ? "opacity-0"
-                                : "opacity-100"
-                                }`}
+                              className={`w-6 h-6 ${
+                                selectedChains.includes(item.chain.key)
+                                  ? "opacity-0"
+                                  : "opacity-100"
+                              }`}
                             >
                               <circle
                                 xmlns="http://www.w3.org/2000/svg"
@@ -364,17 +390,19 @@ export default function LandingMetricsTable({
                             </svg>
                           </div>
                           <div
-                            className={`p-1 rounded-full ${selectedChains.includes(item.chain.key)
-                              ? "bg-white dark:bg-forest-1000"
-                              : "bg-forest-50 dark:bg-[#1F2726]"
-                              }`}
+                            className={`p-1 rounded-full ${
+                              selectedChains.includes(item.chain.key)
+                                ? "bg-white dark:bg-forest-1000"
+                                : "bg-forest-50 dark:bg-[#1F2726]"
+                            }`}
                           >
                             <Icon
                               icon="feather:check-circle"
-                              className={`w-6 h-6 ${selectedChains.includes(item.chain.key)
-                                ? "opacity-100"
-                                : "opacity-0"
-                                }`}
+                              className={`w-6 h-6 ${
+                                selectedChains.includes(item.chain.key)
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              }`}
                             />
                           </div>
                         </div>

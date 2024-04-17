@@ -4,7 +4,9 @@ import highchartsAnnotations from "highcharts/modules/annotations";
 import highchartsRoundedCorners from "highcharts-rounded-corners";
 import HighchartsReact from "highcharts-react-official";
 import Highcharts, {
-  AxisLabelsFormatterContextObject, Tick, chart,
+  AxisLabelsFormatterContextObject,
+  Tick,
+  chart,
 } from "highcharts/highstock";
 import {
   useState,
@@ -18,7 +20,11 @@ import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { debounce, merge } from "lodash";
 import { Switch } from "../Switch";
-import { AllChainsByKeys, EnabledChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
+import {
+  AllChainsByKeys,
+  EnabledChainsByKeys,
+  Get_SupportedChainKeys,
+} from "@/lib/chains";
 import d3 from "d3";
 import { Icon } from "@iconify/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
@@ -195,31 +201,31 @@ export default function LandingChart({
   embed_show_mainnet,
   embed_zoomed,
 }: // timeIntervals,
-  // onTimeIntervalChange,
-  // showTimeIntervals = true,
-  {
-    data: any;
-    master: any;
-    cross_chain_users: number;
-    cross_chain_users_comparison: number;
-    latest_total: number;
-    latest_total_comparison: number;
-    l2_dominance: number;
-    l2_dominance_comparison: number;
-    selectedMetric: string;
-    setSelectedMetric: (metric: string) => void;
-    metric: string;
-    sources: string[];
-    is_embed?: boolean;
-    embed_timespan?: string;
-    embed_start_timestamp?: number;
-    embed_end_timestamp?: number;
-    embed_show_mainnet?: boolean;
-    embed_zoomed?: boolean;
-    // timeIntervals: string[];
-    // onTimeIntervalChange: (interval: string) => void;
-    // showTimeIntervals: boolean;
-  }) {
+// onTimeIntervalChange,
+// showTimeIntervals = true,
+{
+  data: any;
+  master: any;
+  cross_chain_users: number;
+  cross_chain_users_comparison: number;
+  latest_total: number;
+  latest_total_comparison: number;
+  l2_dominance: number;
+  l2_dominance_comparison: number;
+  selectedMetric: string;
+  setSelectedMetric: (metric: string) => void;
+  metric: string;
+  sources: string[];
+  is_embed?: boolean;
+  embed_timespan?: string;
+  embed_start_timestamp?: number;
+  embed_end_timestamp?: number;
+  embed_show_mainnet?: boolean;
+  embed_zoomed?: boolean;
+  // timeIntervals: string[];
+  // onTimeIntervalChange: (interval: string) => void;
+  // showTimeIntervals: boolean;
+}) {
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
   const [isDragging, setIsDragging] = useState(false);
@@ -550,43 +556,50 @@ export default function LandingChart({
     // loadHighchartsWrappers();
 
     // update x-axis label sizes if it is a 4 digit number
-    Highcharts.wrap(Highcharts.Axis.prototype, "renderTick", function (proceed) {
-      proceed.apply(this, Array.prototype.slice.call(arguments, 1));
+    Highcharts.wrap(
+      Highcharts.Axis.prototype,
+      "renderTick",
+      function (proceed) {
+        proceed.apply(this, Array.prototype.slice.call(arguments, 1));
 
-      const axis: Highcharts.Axis = this;
-      const ticks: Highcharts.Dictionary<Tick> = axis.ticks;
-      if (axis.isXAxis && axis.options.labels && axis.options.labels.enabled) {
-        Object.keys(ticks).forEach((tick) => {
-          const tickLabel = ticks[tick].label;
-          if (!tickLabel) return;
-          const tickValue = tickLabel.element.textContent;
-          if (tickValue) {
-            if (tickValue.length === 4) {
-              tickLabel.css({
-                transform: "scale(1.4)",
-                fontWeight: "600",
-              });
+        const axis: Highcharts.Axis = this;
+        const ticks: Highcharts.Dictionary<Tick> = axis.ticks;
+        if (
+          axis.isXAxis &&
+          axis.options.labels &&
+          axis.options.labels.enabled
+        ) {
+          Object.keys(ticks).forEach((tick) => {
+            const tickLabel = ticks[tick].label;
+            if (!tickLabel) return;
+            const tickValue = tickLabel.element.textContent;
+            if (tickValue) {
+              if (tickValue.length === 4) {
+                tickLabel.css({
+                  transform: "scale(1.4)",
+                  fontWeight: "600",
+                });
+              }
             }
-          }
-        });
-      }
-    });
-
+          });
+        }
+      },
+    );
 
     setHighchartsLoaded(true);
   }, []);
-
-
-
-
 
   const { theme } = useTheme();
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
-  const [selectedTimespan, setSelectedTimespan] = useState(embed_timespan ?? "max");
+  const [selectedTimespan, setSelectedTimespan] = useState(
+    embed_timespan ?? "max",
+  );
 
-  const [selectedScale, setSelectedScale] = useState(selectedMetric === "Percentage" ? "percentage" : "absolute");
+  const [selectedScale, setSelectedScale] = useState(
+    selectedMetric === "Percentage" ? "percentage" : "absolute",
+  );
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
 
@@ -602,14 +615,13 @@ export default function LandingChart({
     }
   }, [embed_end_timestamp, embed_start_timestamp, embed_zoomed]);
 
-  const [showEthereumMainnet, setShowEthereumMainnet] = useState(embed_show_mainnet ?? false);
+  const [showEthereumMainnet, setShowEthereumMainnet] = useState(
+    embed_show_mainnet ?? false,
+  );
 
   const [totalUsersIncrease, setTotalUsersIncrease] = useState(0);
 
   const isMobile = useMediaQuery("(max-width: 767px)");
-
-
-
 
   // const getTickPositions = useCallback(
   //   (xMin: any, xMax: any): number[] => {
@@ -667,9 +679,6 @@ export default function LandingChart({
   //     //   tickPositions.push(Date.UTC(xMinYear, i, 1).valueOf());
   //     // }
 
-
-
-
   //     // // remove the last tick if its an embed
   //     // if (is_embed)
   //     //   tickPositions.pop();
@@ -723,24 +732,24 @@ export default function LandingChart({
       const dateString = `
       <div>
         ${date.toLocaleDateString(undefined, {
-        timeZone: "UTC",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })}
-      </div>
-      <div>-</div>
-      <div>
-        ${new Date(date.valueOf() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString(
-        //add 7 days to the date
-        undefined,
-        {
           timeZone: "UTC",
           month: "short",
           day: "numeric",
           year: "numeric",
-        },
-      )}
+        })}
+      </div>
+      <div>-</div>
+      <div>
+        ${new Date(date.valueOf() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString(
+          //add 7 days to the date
+          undefined,
+          {
+            timeZone: "UTC",
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          },
+        )}
       </div>`;
 
       const tooltip = `<div class="mt-3 mr-3 mb-3 w-60 md:w-60 text-xs font-raleway"><div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-6 mb-2 flex justify-between">${dateString}</div>`;
@@ -753,8 +762,6 @@ export default function LandingChart({
             Addresses exclusively interacting with<br/>respective chain.
           </div>
         </div>`;
-
-
 
       let pointsSum = points.reduce((acc: number, point: any) => {
         acc += point.y;
@@ -776,8 +783,9 @@ export default function LandingChart({
         .filter((point: any) => {
           const { series, y, percentage } = point;
           const { name } = series;
+          const supportedChainKeys = Get_SupportedChainKeys(master);
 
-          return Object.keys(AllChainsByKeys).includes(name);
+          return supportedChainKeys.includes(name);
         })
         .map((point: any) => {
           const { series, y, percentage } = point;
@@ -790,9 +798,9 @@ export default function LandingChart({
                 <div class="tooltip-point-name">${AllChainsByKeys[name].label
               }</div>
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                percentage,
-                2,
-              )}%</div>
+                  percentage,
+                  2,
+                )}%</div>
               </div>
               <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
@@ -809,15 +817,16 @@ export default function LandingChart({
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
             }"></div>
-            <div class="tooltip-point-name text-md">${AllChainsByKeys[name].label
+            <div class="tooltip-point-name text-md">${
+              AllChainsByKeys[name].label
             }</div>
             <div class="flex-1 text-right justify-end font-inter flex">
               <div class="inline-block">${parseFloat(y).toLocaleString(
-              undefined,
-              {
-                minimumFractionDigits: 0,
-              },
-            )}</div>
+                undefined,
+                {
+                  minimumFractionDigits: 0,
+                },
+              )}</div>
             </div>
           </div>
           <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -831,7 +840,6 @@ export default function LandingChart({
           </div>`;
         })
         .join("");
-
 
       return tooltip + tooltipPoints + tooltipEnd;
     },
@@ -877,7 +885,9 @@ export default function LandingChart({
       [isMobile],
     );
 
-  const [showTotalUsers, setShowTotalUsers] = useState(selectedMetric === "Total Users");
+  const [showTotalUsers, setShowTotalUsers] = useState(
+    selectedMetric === "Total Users",
+  );
 
   const filteredData = useMemo(() => {
     if (!data) return null;
@@ -886,7 +896,7 @@ export default function LandingChart({
 
     setTotalUsersIncrease(
       (l2s.data[l2s.data.length - 1][1] - l2s.data[l2s.data.length - 2][1]) /
-      l2s.data[l2s.data.length - 2][1],
+        l2s.data[l2s.data.length - 2][1],
     );
 
     if (showTotalUsers)
@@ -905,8 +915,8 @@ export default function LandingChart({
     let maxDate = new Date();
     if (filteredData && filteredData[0].name !== "") {
       maxDate = new Date(
-        filteredData.length > 0
-          && filteredData[0].data[filteredData[0].data.length - 1][0]
+        filteredData.length > 0 &&
+        filteredData[0].data[filteredData[0].data.length - 1][0]
           ? filteredData[0].data[filteredData[0].data.length - 1][0]
           : 0,
       );
@@ -915,8 +925,7 @@ export default function LandingChart({
   }, [embed_end_timestamp, filteredData]);
 
   const timespans = useMemo(() => {
-    const buffer =
-      selectedScale === "percentage" ? 0 : 7 * 24 * 60 * 60 * 1000;
+    const buffer = selectedScale === "percentage" ? 0 : 7 * 24 * 60 * 60 * 1000;
     const maxPlusBuffer = maxDate.valueOf() + buffer;
 
     return {
@@ -929,30 +938,31 @@ export default function LandingChart({
       "90d": {
         label: "90 days",
         value: 90,
-        xMin: maxPlusBuffer - (90) * 24 * 60 * 60 * 1000,
+        xMin: maxPlusBuffer - 90 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "180d": {
         label: "180 days",
         value: 180,
-        xMin: maxPlusBuffer - (180) * 24 * 60 * 60 * 1000,
+        xMin: maxPlusBuffer - 180 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "365d": {
         label: "1 year",
         value: 365,
-        xMin: maxPlusBuffer - (365) * 24 * 60 * 60 * 1000,
+        xMin: maxPlusBuffer - 365 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       max: {
         label: "Maximum",
         value: 0,
-        xMin: filteredData.reduce((min, d) => {
-          if (d.data && d.data[0] && d.data[0][0] !== undefined) {
-            return Math.min(min, d.data[0][0]);
-          }
-          return min;
-        }, Infinity) - buffer,
+        xMin:
+          filteredData.reduce((min, d) => {
+            if (d.data && d.data[0] && d.data[0][0] !== undefined) {
+              return Math.min(min, d.data[0][0]);
+            }
+            return min;
+          }, Infinity) - buffer,
 
         xMax: maxPlusBuffer,
       },
@@ -976,21 +986,39 @@ export default function LandingChart({
       zoomed: zoomed ? "true" : "false",
       startTimestamp: startTimestamp ? startTimestamp.toString() : "",
       endTimestamp: endTimestamp ? endTimestamp.toString() : "",
-    }
+    };
 
-    let src = BASE_URL + "/embed/user-base/" + "?" + new URLSearchParams(vars).toString()
+    let src =
+      BASE_URL +
+      "/embed/user-base/" +
+      "?" +
+      new URLSearchParams(vars).toString();
     if (embedData.timeframe === "absolute") {
-      src += "&" + new URLSearchParams(absoluteVars).toString()
+      src += "&" + new URLSearchParams(absoluteVars).toString();
     }
 
-    setEmbedData(prevEmbedData => ({
+    setEmbedData((prevEmbedData) => ({
       ...prevEmbedData,
       title: "Layer 2 User Base - growthepie",
       src: src,
       zoomed: zoomed,
       timeframe: zoomed ? "absolute" : embedData.timeframe,
     }));
-  }, [embedData.timeframe, maxDate, selectedScale, selectedTimeInterval, selectedTimespan, showEthereumMainnet, showUsd, theme, timespans, zoomMax, zoomMin, zoomed, selectedMetric]);
+  }, [
+    embedData.timeframe,
+    maxDate,
+    selectedScale,
+    selectedTimeInterval,
+    selectedTimespan,
+    showEthereumMainnet,
+    showUsd,
+    theme,
+    timespans,
+    zoomMax,
+    zoomMin,
+    zoomed,
+    selectedMetric,
+  ]);
 
   useEffect(() => {
     if (chartComponent.current) {
@@ -1054,7 +1082,6 @@ export default function LandingChart({
   }, [isMobile, is_embed, height]);
 
   const options = useMemo((): Highcharts.Options => {
-
     // let units: [string, Array<number> | null][] = [["month", [6]], ["year", [1]]];
     // if (daysShown <= 365) {
     //   units = [["month", [3]], ["year", [1]]];
@@ -1104,8 +1131,7 @@ export default function LandingChart({
             },
           },
         },
-        events: {
-        },
+        events: {},
         // height: isMobile ? 200 : 400,
       },
 
@@ -1180,7 +1206,7 @@ export default function LandingChart({
             return new Date(this.value).toLocaleDateString(undefined, {
               timeZone: "UTC",
               month: isMobile ? "short" : "short",
-              year: "numeric"
+              year: "numeric",
             });
           },
           y: 40,
@@ -1258,13 +1284,13 @@ export default function LandingChart({
             const pointsSettings =
               getSeriesType(series.name) === "column"
                 ? {
-                  pointPlacement: 0.5,
-                  pointPadding: 0.15,
-                  pointRange: timeIntervalToMilliseconds[metric],
-                }
+                    pointPlacement: 0.5,
+                    pointPadding: 0.15,
+                    pointRange: timeIntervalToMilliseconds[metric],
+                  }
                 : {
-                  pointPlacement: 0.5,
-                };
+                    pointPlacement: 0.5,
+                  };
 
             return {
               name: series.name,
@@ -1326,10 +1352,17 @@ export default function LandingChart({
                       x2: 1,
                       y2: 0,
                     },
-                    stops: [
-                      [
-                        0,
-                        series.name &&
+                    color: {
+                      linearGradient: {
+                        x1: 0,
+                        y1: 0,
+                        x2: 1,
+                        y2: 0,
+                      },
+                      stops: [
+                        [
+                          0,
+                          series.name &&
                           theme &&
                           EnabledChainsByKeys[series.name]
                           ? EnabledChainsByKeys[series.name]?.colors[theme ?? "dark"][0]
@@ -1344,11 +1377,10 @@ export default function LandingChart({
                           ? EnabledChainsByKeys[series.name]?.colors[theme ?? "dark"][1]
                           : [],
                       ],
-                    ],
-                  },
-                }
+                    },
+                  }
                 : series.name === "all_l2s"
-                  ? {
+                ? {
                     borderColor: "transparent",
                     borderWidth: 0,
                     // shadow: {
@@ -1367,9 +1399,9 @@ export default function LandingChart({
                       stops:
                         theme === "dark"
                           ? [
-                            [
-                              0,
-                              series.name &&
+                              [
+                                0,
+                                series.name &&
                                 theme &&
                                 EnabledChainsByKeys[series.name]
                                 ? EnabledChainsByKeys[series.name]?.colors[
@@ -1388,16 +1420,16 @@ export default function LandingChart({
                               series.name &&
                                 theme &&
                                 EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][1] + "FF"
-                                : [],
-                            ],
-                          ]
+                                  ? EnabledChainsByKeys[series.name]?.colors[
+                                      theme
+                                    ][1] + "FF"
+                                  : [],
+                              ],
+                            ]
                           : [
-                            [
-                              0,
-                              series.name &&
+                              [
+                                0,
+                                series.name &&
                                 theme &&
                                 EnabledChainsByKeys[series.name]
                                 ? EnabledChainsByKeys[series.name]?.colors[
@@ -1415,15 +1447,15 @@ export default function LandingChart({
                               series.name &&
                                 theme &&
                                 EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][1] + "FF"
-                                : [],
+                                  ? EnabledChainsByKeys[series.name]?.colors[
+                                      theme
+                                    ][1] + "FF"
+                                  : [],
+                              ],
                             ],
-                          ],
                     },
                   }
-                  : {
+                : {
                     borderColor: theme == "dark" ? "#2A3433" : "#EAECEB",
                     borderWidth: 0,
                     //  series.name &&
@@ -1444,71 +1476,71 @@ export default function LandingChart({
                       stops:
                         theme === "dark"
                           ? [
-                            [
-                              0,
-                              series.name &&
+                              [
+                                0,
+                                series.name &&
                                 theme &&
                                 EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "FF"
-                                : [],
-                            ],
-                            // [
-                            //   0.349,
-                            //   series.name &&
-                            //     theme &&
-                            //     EnabledChainsByKeys[series.name]
-                            //     ? EnabledChainsByKeys[series.name]?.colors[
-                            //     theme
-                            //     ][0] + "88"
-                            //     : [],
-                            // ],
-                            [
-                              1,
-                              // "#151a19FF"
-                              series.name &&
+                                  ? EnabledChainsByKeys[series.name]?.colors[
+                                      theme
+                                    ][0] + "FF"
+                                  : [],
+                              ],
+                              // [
+                              //   0.349,
+                              //   series.name &&
+                              //     theme &&
+                              //     EnabledChainsByKeys[series.name]
+                              //     ? EnabledChainsByKeys[series.name]?.colors[
+                              //     theme
+                              //     ][0] + "88"
+                              //     : [],
+                              // ],
+                              [
+                                1,
+                                // "#151a19FF"
+                                series.name &&
                                 theme &&
                                 EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "00"
-                                : [],
-                            ],
-                          ]
+                                  ? EnabledChainsByKeys[series.name]?.colors[
+                                      theme
+                                    ][0] + "00"
+                                  : [],
+                              ],
+                            ]
                           : [
-                            [
-                              0,
-                              series.name &&
+                              [
+                                0,
+                                series.name &&
                                 theme &&
                                 EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "FF"
-                                : [],
-                            ],
-                            // [
-                            //   0.349,
-                            //   series.name &&
-                            //     theme &&
-                            //     EnabledChainsByKeys[series.name]
-                            //     ? EnabledChainsByKeys[series.name]?.colors[
-                            //     theme
-                            //     ][0] + "88"
-                            //     : [],
-                            // ],
-                            [
-                              1,
-                              // "#FFFFFFFF"
-                              series.name &&
+                                  ? EnabledChainsByKeys[series.name]?.colors[
+                                      theme
+                                    ][0] + "FF"
+                                  : [],
+                              ],
+                              // [
+                              //   0.349,
+                              //   series.name &&
+                              //     theme &&
+                              //     EnabledChainsByKeys[series.name]
+                              //     ? EnabledChainsByKeys[series.name]?.colors[
+                              //     theme
+                              //     ][0] + "88"
+                              //     : [],
+                              // ],
+                              [
+                                1,
+                                // "#FFFFFFFF"
+                                series.name &&
                                 theme &&
                                 EnabledChainsByKeys[series.name]
-                                ? EnabledChainsByKeys[series.name]?.colors[
-                                theme
-                                ][0] + "00"
-                                : [],
+                                  ? EnabledChainsByKeys[series.name]?.colors[
+                                      theme
+                                    ][0] + "00"
+                                  : [],
+                              ],
                             ],
-                          ],
                     },
                   }),
               states: {
@@ -1587,7 +1619,7 @@ export default function LandingChart({
     zoomMin,
     zoomed,
     is_embed,
-    daysShown
+    daysShown,
   ]);
 
   // const resituateChart = debounce(() => {
@@ -1602,8 +1634,6 @@ export default function LandingChart({
   //     resituateChart.cancel();
   //   };
   // }, [chartComponent, selectedTimespan, timespans, resituateChart]);
-
-
 
   // useEffect(() => {
   //   setTimeout(() => {
@@ -1638,7 +1668,14 @@ export default function LandingChart({
 
   if (is_embed)
     return (
-      <EmbedContainer title="User Base" icon="gtp:gtp-pie" url="https://www.growthepie.xyz" time_frame={timespans[selectedTimespan].label} chart_type={selectedMetric} aggregation={selectedScale}>
+      <EmbedContainer
+        title="User Base"
+        icon="gtp:gtp-pie"
+        url="https://www.growthepie.xyz"
+        time_frame={timespans[selectedTimespan].label}
+        chart_type={selectedMetric}
+        aggregation={selectedScale}
+      >
         <div className="h-full w-full rounded-xl" ref={containerRef}>
           {highchartsLoaded ? (
             <HighchartsReact
@@ -1669,26 +1706,46 @@ export default function LandingChart({
           )}
           {/* </div> */}
         </div>
-      </EmbedContainer >
+      </EmbedContainer>
     );
 
   return (
     <div className="w-full h-full flex flex-col justify-between">
       <div className="h-[225px] lg:h-[81px] xl:h-[60px]">
         <div className="flex flex-col lg:hidden justify-center pb-[15px] gap-y-[5px]">
-          <MobileMetricCard icon="feather:users" metric_name="Total Users" metric_value={latest_total} metric_comparison={latest_total_comparison} theme={theme || "dark"} />
+          <MobileMetricCard
+            icon="feather:users"
+            metric_name="Total Users"
+            metric_value={latest_total}
+            metric_comparison={latest_total_comparison}
+            theme={theme || "dark"}
+          />
           <div className="flex justify-center gap-x-[5px]">
-            <MobileMetricCard icon="gtp:wallet-chain" metric_name="Multi-Chain Users" metric_value={cross_chain_users} metric_comparison={cross_chain_users_comparison} theme={theme || "dark"} />
-            <MobileMetricCard icon="feather:layers" metric_name="L2 Dominance" metric_value={(Math.round(l2_dominance * 100) / 100).toFixed(2)} metric_comparison={l2_dominance_comparison} theme={theme || "dark"} is_multiple />
+            <MobileMetricCard
+              icon="gtp:wallet-chain"
+              metric_name="Multi-Chain Users"
+              metric_value={cross_chain_users}
+              metric_comparison={cross_chain_users_comparison}
+              theme={theme || "dark"}
+            />
+            <MobileMetricCard
+              icon="feather:layers"
+              metric_name="L2 Dominance"
+              metric_value={(Math.round(l2_dominance * 100) / 100).toFixed(2)}
+              metric_comparison={l2_dominance_comparison}
+              theme={theme || "dark"}
+              is_multiple
+            />
           </div>
         </div>
         <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs xl:text-base xl:flex xl:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 xl:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
           <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center space-x-[4px] xl:space-x-1">
             <button
-              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${showTotalUsers
-                ? "bg-forest-500 dark:bg-forest-1000"
-                : "hover:bg-forest-500/10"
-                }`}
+              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
+                showTotalUsers
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
+              }`}
               onClick={() => {
                 setShowTotalUsers(true);
                 setSelectedScale("absolute");
@@ -1698,10 +1755,11 @@ export default function LandingChart({
               Total Users
             </button>
             <button
-              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${"absolute" === selectedScale && !showTotalUsers
-                ? "bg-forest-500 dark:bg-forest-1000"
-                : "hover:bg-forest-500/10"
-                }`}
+              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
+                "absolute" === selectedScale && !showTotalUsers
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
+              }`}
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("absolute");
@@ -1712,10 +1770,11 @@ export default function LandingChart({
             </button>
 
             <button
-              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${"percentage" === selectedScale
-                ? "bg-forest-500 dark:bg-forest-1000"
-                : "hover:bg-forest-500/10"
-                }`}
+              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
+                "percentage" === selectedScale
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
+              }`}
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("percentage");
@@ -1734,10 +1793,11 @@ export default function LandingChart({
                 <button
                   key={timespan}
                   //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                  className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${selectedTimespan === timespan
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                    }`}
+                  className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
+                    selectedTimespan === timespan
+                      ? "bg-forest-500 dark:bg-forest-1000"
+                      : "hover:bg-forest-500/10"
+                  }`}
                   onClick={() => {
                     setSelectedTimespan(timespan);
                     // setXAxis();
@@ -1786,7 +1846,10 @@ export default function LandingChart({
         </div>
       </div>
       <div className="flex-1 min-h-0 w-full pt-8 pb-4 md:pt-[52px] md:pb-4 lg:pt-[52px] lg:pb-16">
-        <div className="relative h-[284px] md:h-[400px] w-full rounded-xl" ref={containerRef}>
+        <div
+          className="relative h-[284px] md:h-[400px] w-full rounded-xl"
+          ref={containerRef}
+        >
           {highchartsLoaded ? (
             <HighchartsReact
               highcharts={Highcharts}
@@ -1835,9 +1898,30 @@ export default function LandingChart({
           <div className="flex justify-end items-center absolute top-[56px] lg:-top-[15px] right-[-1px] rounded-full z-10">
             <div className="flex justify-center items-center">
               <div className="flex items-center justify-center gap-x-[20px] pr-[10px]">
-                <MetricCard icon="feather:users" metric_name="Total Users" metric_value={latest_total} metric_comparison={latest_total_comparison} theme={theme || "dark"} />
-                <MetricCard icon="gtp:wallet-chain" metric_name="Active on Multiple Chains" metric_value={cross_chain_users} metric_comparison={cross_chain_users_comparison} theme={theme || "dark"} />
-                <MetricCard icon="feather:layers" metric_name="Layer 2 Dominance" metric_value={(Math.round(l2_dominance * 100) / 100).toFixed(2)} metric_comparison={l2_dominance_comparison} theme={theme || "dark"} is_multiple />
+                <MetricCard
+                  icon="feather:users"
+                  metric_name="Total Users"
+                  metric_value={latest_total}
+                  metric_comparison={latest_total_comparison}
+                  theme={theme || "dark"}
+                />
+                <MetricCard
+                  icon="gtp:wallet-chain"
+                  metric_name="Active on Multiple Chains"
+                  metric_value={cross_chain_users}
+                  metric_comparison={cross_chain_users_comparison}
+                  theme={theme || "dark"}
+                />
+                <MetricCard
+                  icon="feather:layers"
+                  metric_name="Layer 2 Dominance"
+                  metric_value={(Math.round(l2_dominance * 100) / 100).toFixed(
+                    2,
+                  )}
+                  metric_comparison={l2_dominance_comparison}
+                  theme={theme || "dark"}
+                  is_multiple
+                />
               </div>
 
               <Tooltip placement="left" allowInteract>
@@ -1897,10 +1981,7 @@ const MobileMetricCard = ({
   return (
     <div className="flex bg-forest-200/10 dark:bg-[#CDD8D3]/20 backdrop-blur-[30px] rounded-[15px] px-[7px] pt-[10px] pb-[7px] items-center w-full">
       <div className="flex flex-col items-center flex-1">
-        <Icon
-          icon={icon}
-          className="w-[30px] h-[30px]"
-        />
+        <Icon icon={icon} className="w-[30px] h-[30px]" />
         <div className="block text-[10px] font-medium leading-[1.5] text-center">
           {metric_name}
         </div>
@@ -1908,7 +1989,7 @@ const MobileMetricCard = ({
       <div className="flex flex-col items-center justify-center w-7/12 gap-y-[3px]">
         <div className="text-[20px] font-[650] leading-[1.2] flex items-end">
           <div className="text-[20px]">{metric_value.toLocaleString()}</div>
-          <div className="text-[20px] leading-tight">{is_multiple && 'x'}</div>
+          <div className="text-[20px] leading-tight">{is_multiple && "x"}</div>
         </div>
         <div className="text-[10px] font-medium leading-[1.5]">
           {metric_comparison > 0 ? (
@@ -1941,7 +2022,7 @@ const MobileMetricCard = ({
       </div>
     </div>
   );
-}
+};
 
 const MetricCard = ({
   icon,
@@ -1960,17 +2041,14 @@ const MetricCard = ({
 }) => {
   return (
     <div className="hidden lg:flex bg-forest-200/10 dark:bg-[#CDD8D3]/20 rounded-[11px] px-[13px] py-[5px] items-center backdrop-blur-[30px]">
-      <Icon
-        icon={icon}
-        className="w-[28px] h-[32px] mr-[6px]"
-      />
+      <Icon icon={icon} className="w-[28px] h-[32px] mr-[6px]" />
       <div className="flex flex-col items-center justify-center -space-y-[5px]">
         <div className="text-[10px] font-medium leading-[1.5]">
           {metric_name}
         </div>
         <div className="text-[24px] font-[650] leading-[1.33] flex items-end">
           <div className="text-[24px]">{metric_value.toLocaleString()}</div>
-          <div className="text-[24px] leading-tight">{is_multiple && 'x'}</div>
+          <div className="text-[24px] leading-tight">{is_multiple && "x"}</div>
         </div>
         <div className="text-[10px] font-medium leading-[1.5]">
           {metric_comparison > 0 ? (

@@ -167,7 +167,7 @@ export const navigationItems: NavigationItem[] = [
         page: {
           title: "Rent Paid to L1",
           description:
-            "The gas fees paid by L2s to post transaction data & verification states onto Ethereum.",
+            "The gas fees paid by Layer 2s to post transaction data & verification states onto Ethereum. For data availability: Ethereum calldata and blobs are tracked here.",
           why: "Rent paid to L1 quantifies the expenses associated with posting L2 transaction data and proofs onto the Ethereum blockchain. The term 'rent' signifies the gas fees L2s incur to leverage the security of the Ethereum blockchain. This metric provides valuable insights into the value accrual for ETH holders.",
           icon: "feather:credit-card",
         },
@@ -224,7 +224,7 @@ export const navigationItems: NavigationItem[] = [
           showGwei: false,
         },
         icon: "gtp:transaction-costs",
-        key: "fully-diluted-valuation",
+        key: "fdv",
         rootKey: "metricsFullyDilutedValuation",
         urlKey: "fully-diluted-valuation",
       },

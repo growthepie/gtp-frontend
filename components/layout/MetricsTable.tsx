@@ -1,4 +1,8 @@
-import { AllChains, AllChainsByKeys } from "@/lib/chains";
+import {
+  AllChains,
+  AllChainsByKeys,
+  Get_SupportedChainKeys,
+} from "@/lib/chains";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocalStorage, useMediaQuery, useSessionStorage } from "usehooks-ts";
@@ -9,9 +13,11 @@ import { useUIContext } from "@/contexts/UIContext";
 import { navigationItems } from "@/lib/navigation";
 import { CorporateContactJsonLd } from "next-seo";
 import { intersection } from "lodash";
+import { MasterResponse } from "@/types/api/MasterResponse";
 
 const MetricsTable = ({
   data,
+  master,
   chainKeys,
   selectedChains,
   setSelectedChains,
@@ -21,6 +27,7 @@ const MetricsTable = ({
   timeIntervalKey,
 }: {
   data: any;
+  master?: MasterResponse;
   chainKeys: string[];
   selectedChains: any;
   setSelectedChains: any;
@@ -285,11 +292,17 @@ const MetricsTable = ({
 
   let height = 0;
   const transitions = useTransition(
-    rows().map((data) => ({
-      ...data,
-      y: (height += isMobile ? 44 : 59) - (isMobile ? 44 : 59),
-      height: isMobile ? 44 : 59,
-    })),
+    rows()
+      .filter((row) => {
+        const name = row.chain.key;
+        const supportedChainKeys = Get_SupportedChainKeys(master);
+        return supportedChainKeys.includes(name);
+      })
+      .map((data) => ({
+        ...data,
+        y: (height += isMobile ? 44 : 59) - (isMobile ? 44 : 59),
+        height: isMobile ? 44 : 59,
+      })),
     {
       key: (d) => d.chain.key,
       from: { opacity: 0, height: 0 },
