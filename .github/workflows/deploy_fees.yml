@@ -8,4 +8,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger rebuild on vercel
-        run: curl -X POST ${{ secrets.DEV_FEES_DEPLOY_HOOK }}
+        run: curl -X POST ${{ secrets.FEES_DEPLOY_HOOK }}
