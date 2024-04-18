@@ -459,7 +459,7 @@ export const AllChains: Chain[] = [
     key: "mode",
     urlKey: "mode",
     chainType: "L2",
-    ecosystem: ["all-chains"], // add ecosystems when unhiding from the UI
+    ecosystem: ["op-stack", "op-super", "all-chains"], // add ecosystems when unhiding from the UI
     description: "",
     border: {
       light: ["border-[#C4DF00]", "border-[#C4DF00]"],
@@ -566,16 +566,12 @@ export const Get_SupportedChainKeys = (data?: MasterResponse) => {
   if (!data) return [];
   if (IS_DEVELOPMENT || IS_PREVIEW) {
     return Object.keys(data.chains)
-      .filter(
-        (key) =>
-          (data.chains[key].deployment === "DEV" && IS_DEVELOPMENT) ||
-          data.chains[key].deployment === "PROD",
-      )
+      .filter((key) => ["DEV", "PROD"].includes(data.chains[key].deployment))
       .map((key) => key);
   }
 
   return Object.keys(data.chains)
-    .filter((key) => data.chains[key].deployment === "PROD")
+    .filter((key) => ["PROD"].includes(data.chains[key].deployment))
     .map((key) => key);
 };
 
