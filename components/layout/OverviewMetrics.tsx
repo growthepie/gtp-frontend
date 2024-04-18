@@ -226,8 +226,8 @@ export default function OverviewMetrics({
     }
   }, [selectedMode, showUsd]);
 
-  console.log(hoveredChartSeriesId);
-  console.log(hoveredCategories);
+  // console.log(hoveredChartSeriesId);
+  // console.log(hoveredCategories);
 
   return (
     <div className="w-full flex-col relative">

@@ -459,7 +459,7 @@ export const AllChains: Chain[] = [
     key: "mode",
     urlKey: "mode",
     chainType: "L2",
-    ecosystem: ["all-chains"], // add ecosystems when unhiding from the UI
+    ecosystem: ["op-stack", "op-super", "all-chains"], // add ecosystems when unhiding from the UI
     description: "",
     border: {
       light: ["border-[#C4DF00]", "border-[#C4DF00]"],
