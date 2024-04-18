@@ -93,7 +93,6 @@ export default function FeesPage() {
   const isMobile = useMediaQuery("(max-width: 767px)");
 
   const showGwei = true;
-  const showCents = true;
 
   const { width: windowWidth = 0, height: windowHeight = 0 } = useWindowSize();
   const [selectedTimescale, setSelectedTimescale] = useState("hourly");
@@ -115,8 +114,10 @@ export default function FeesPage() {
   const prevSelectedAvailabilityRef = useRef(availabilityFilter);
   const prevSelectedLayerRef = useRef(selectedAvailability);
   const [sortOrder, setSortOrder] = useState(true);
-  const [hoverSettings, setHoverSettings] = useState<boolean>(false);
   //True is default descending false ascending
+  const [hoverSettings, setHoverSettings] = useState<boolean>(false);
+  const [showCents, setShowCents] = useState<boolean>(false);
+
   const { theme } = useTheme();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
@@ -1173,10 +1174,10 @@ export default function FeesPage() {
             </div>
 
             <div
-              className={`absolute flex flex-col top-6 bg-[#151A19] right-[5px] rounded-b-2xl z-10 transition-all duration-[290ms] overflow-hidden px-2 ${
+              className={`absolute top-6 bg-[#151A19] right-[5px] rounded-b-2xl z-10 transition-all duration-[290ms] overflow-hidden px-2 ${
                 hoverSettings
-                  ? "w-[308px] h-[83px] shadow-sm shadow-black "
-                  : "w-[0px] h-[10px] shadow-none"
+                  ? "w-[308px] h-[83px] shadow-[0px_4px_46.2px_0px_#000000] "
+                  : "w-[0px] h-[10px] shadow-transparent"
               }`}
               onMouseEnter={() => {
                 setHoverSettings(true);
@@ -1185,7 +1186,49 @@ export default function FeesPage() {
                 setHoverSettings(false);
               }}
             >
-              {hoverSettings && <div className="mt-[48px]">Text goes here</div>}
+              <div className={`mt-[42px] flex flex-col relative `}>
+                <div className="flex items-center mx-2 w-full gap-x-[10px] absolute min-w-[280px]">
+                  <Icon
+                    icon="gtp:gtp-dollar"
+                    className={`h-[15px] w-[15px] mt-1 font-[900] text-[#CDD8D3] relative -top-[3px] ${
+                      hoverSettings ? "text-sm" : ""
+                    }`}
+                  />
+                  <div className="text-[10px] text-white">Denominates in</div>
+                  <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
+                  <div
+                    className="relative w-[143px] h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
+                    onClick={() => {
+                      setShowCents(!showCents);
+                    }}
+                  >
+                    <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px] ">
+                      <div className="w-full flex items-start justify-center">
+                        Full Dollar
+                      </div>
+                      <div
+                        className={`w-full text-center ${
+                          !showCents && "opacity-50"
+                        }`}
+                      >
+                        USD cents
+                      </div>
+                    </div>
+                    <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
+                      <div
+                        className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
+                        style={{
+                          transform: !showCents
+                            ? "translateX(0%)"
+                            : "translateX(100%)",
+                        }}
+                      >
+                        {!showCents ? "Full Dollar" : "USD cents"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </FeesContainer>
