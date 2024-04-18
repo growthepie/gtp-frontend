@@ -115,6 +115,7 @@ export default function FeesPage() {
   const prevSelectedAvailabilityRef = useRef(availabilityFilter);
   const prevSelectedLayerRef = useRef(selectedAvailability);
   const [sortOrder, setSortOrder] = useState(true);
+  const [hoverSettings, setHoverSettings] = useState<boolean>(false);
   //True is default descending false ascending
   const { theme } = useTheme();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -1124,7 +1125,7 @@ export default function FeesPage() {
         <Header />
 
         <FeesContainer className={`w-full hidden md:block`}>
-          <div className="flex p-[5px] items-center w-full rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000]">
+          <div className="relative flex p-[5px] items-center w-full justify-between rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000]">
             <a
               className="flex items-center w-[162px] bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
               href="https://www.growthepie.xyz/"
@@ -1135,6 +1136,57 @@ export default function FeesPage() {
               </div>
               <div className="font-semibold">Main platform</div>
             </a>
+            <div
+              className={`flex items-center relative h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-[15px] py-[10px] gap transition-all z-20 duration-300 ${
+                hoverSettings
+                  ? "w-[308px] justify-start"
+                  : "w-[128px] justify-start"
+              }`}
+              onMouseEnter={() => {
+                setHoverSettings(true);
+              }}
+              onMouseLeave={() => {
+                setHoverSettings(false);
+              }}
+            >
+              <div
+                className={`transition-all ${
+                  hoverSettings ? "hidden" : "block"
+                }`}
+              >
+                <Icon
+                  icon="gtp:gtp-settings"
+                  className={`h-6 w-6 ${hoverSettings ? "text-sm" : ""}`}
+                />
+              </div>
+              <div
+                className={`transition-all ${
+                  hoverSettings ? "block" : "hidden"
+                }`}
+              >
+                <Icon
+                  icon="feather:chevron-down"
+                  className={`h-5 w-5 mt-1 ${hoverSettings ? "text-sm" : ""}`}
+                />
+              </div>
+              <div className="font-semibold transition-all">Settings</div>
+            </div>
+
+            <div
+              className={`absolute flex flex-col top-6 bg-[#151A19] right-[5px] rounded-b-2xl z-10 transition-all duration-[290ms] overflow-hidden px-2 ${
+                hoverSettings
+                  ? "w-[308px] h-[83px] shadow-sm shadow-black "
+                  : "w-[0px] h-[10px] shadow-none"
+              }`}
+              onMouseEnter={() => {
+                setHoverSettings(true);
+              }}
+              onMouseLeave={() => {
+                setHoverSettings(false);
+              }}
+            >
+              {hoverSettings && <div className="mt-[48px]">Text goes here</div>}
+            </div>
           </div>
         </FeesContainer>
         {/* <div className="w-full h-[70px]" /> */}
