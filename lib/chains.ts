@@ -566,16 +566,12 @@ export const Get_SupportedChainKeys = (data?: MasterResponse) => {
   if (!data) return [];
   if (IS_DEVELOPMENT || IS_PREVIEW) {
     return Object.keys(data.chains)
-      .filter(
-        (key) =>
-          (data.chains[key].deployment === "DEV" && IS_DEVELOPMENT) ||
-          data.chains[key].deployment === "PROD",
-      )
+      .filter((key) => ["DEV", "PROD"].includes(data.chains[key].deployment))
       .map((key) => key);
   }
 
   return Object.keys(data.chains)
-    .filter((key) => data.chains[key].deployment === "PROD")
+    .filter((key) => ["PROD"].includes(data.chains[key].deployment))
     .map((key) => key);
 };
 
