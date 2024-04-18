@@ -89,7 +89,7 @@ export default function SwiperContainer({ ariaId }: { ariaId?: string }) {
                     <div className="pt-4 pl-3 flex flex-col font-bold">
                       <div className="z-20 ">
                         <Image
-                          src="/swiper-logo.svg"
+                          src="/fees-swiper-logo.svg"
                           alt="GTP Pie"
                           className=""
                           height={!isMobile ? 37 : 27}
@@ -106,7 +106,21 @@ export default function SwiperContainer({ ariaId }: { ariaId?: string }) {
                         }`}
                       >
                         <div className="flex w-full relative items-center top-[9px] gap-x-1">
-                          <div className="z-20 relative min-w-[200px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] from-[20%] to-[99%] inline-block text-transparent bg-clip-text">
+                          <div
+                            className="z-20 relative min-w-[200px] inline-block text-transparent bg-clip-text"
+                            style={{
+                              // background: linear-gradient(144.58deg, #FE5468 20.78%, #FFDF27 104.18%);
+                              // -webkit-background-clip: text;
+                              // -webkit-text-fill-color: transparent;
+                              // background-clip: text;
+                              // text-fill-color: transparent;
+                              background:
+                                "linear-gradient(144.58deg, #FE5468 20.78%, #FFDF27 104.18%)",
+                              WebkitTextFillColor: "transparent",
+                              WebkitBackgroundClip: "text",
+                              backgroundClip: "text",
+                            }}
+                          >
                             Click to see how much you
                           </div>
                           <div className="relative flex gap-x-1">
@@ -124,11 +138,22 @@ export default function SwiperContainer({ ariaId }: { ariaId?: string }) {
                         </div>
 
                         <div
-                          className={`z-20 min-w-[240px] font-bold bg-gradient-to-r from-[#FE5468] to-[#FFDF27] inline-block text-transparent bg-clip-text ${
+                          className={`z-20 min-w-[240px] font-bold ${
                             isSidebarOpen
                               ? "text-[36px]"
                               : "text-[36px] sm:text-[32px]"
                           }`}
+                          style={{
+                            background:
+                              "linear-gradient(106.9deg, #FE5468 -8.55%, #FFDF27 70.48%)",
+                            // -webkit-background-clip: "text",
+                            // -webkit-text-fill-color: "transparent",
+                            // background-clip: "text",
+                            // text-fill-color: "transparent",
+                            WebkitTextFillColor: "transparent",
+                            WebkitBackgroundClip: "text",
+                            backgroundClip: "text",
+                          }}
                         >
                           pay on Layer 2s.
                         </div>
