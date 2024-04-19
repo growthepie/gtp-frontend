@@ -116,10 +116,9 @@ export default function FeesPage() {
   const [sortOrder, setSortOrder] = useState(true);
   //True is default descending false ascending
   const [hoverSettings, setHoverSettings] = useState<boolean>(false);
-  const [showCents, setShowCents] = useState<boolean>(false);
-
-  const { theme } = useTheme();
+  const [showCents, setShowCents] = useLocalStorage("showCents", false);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const { theme } = useTheme();
 
   const [selectedChains, setSelectedChains] = useState<{
     [key: string]: boolean;

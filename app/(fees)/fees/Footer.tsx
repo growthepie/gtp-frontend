@@ -80,7 +80,7 @@ export default function Footer({
         </div>
       </Container>
       {isMobile && (
-        <div className={`w-[100%] px-1 mb-2`}>
+        <div className={`w-[100%] px-1 mb-2 z-10`}>
           <div className="relative flex p-[5px] items-center w-[100%] justify-between rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000]">
             <a
               className="flex items-center w-[44px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
@@ -110,64 +110,62 @@ export default function Footer({
 
               <Share />
             </div>
+          </div>
+        </div>
+      )}
+      {isMobile && (
+        <div
+          className={`absolute bottom-6 bg-[#151A19] rounded-2xl z-0  left-0 right-0 mx-auto transition-all duration-[290ms] overflow-hidden px-2 ${
+            hoverSettings
+              ? "w-[90vw] h-[123px] shadow-[0px_4px_46.2px_0px_#000000] "
+              : "w-[0px] h-[10px] shadow-transparent"
+          }`}
+          onMouseEnter={() => {
+            setHoverSettings(true);
+          }}
+          onMouseLeave={() => {
+            setHoverSettings(false);
+          }}
+        >
+          <div className={`mt-[20px] flex flex-col relative `}>
+            <div className="flex items-center mx-2 w-full gap-x-[5px] absolute min-w-[280px]">
+              <Icon
+                icon="gtp:gtp-dollar"
+                className={`h-[15px] w-[15px] mt-1 font-[900] text-[#CDD8D3] relative -top-[3px] ${
+                  hoverSettings ? "text-sm" : ""
+                }`}
+              />
+              <div className="text-[10px] text-white">Denominates in</div>
+              <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
 
-            <div
-              className={`absolute bottom-6 bg-[#151A19] right-[125px] rounded-2xl z-10 transition-all duration-[290ms] overflow-hidden px-2 ${
-                hoverSettings
-                  ? "w-[208px] h-[83px] shadow-[0px_4px_46.2px_0px_#000000] "
-                  : "w-[0px] h-[10px] shadow-transparent"
-              }`}
-              onMouseEnter={() => {
-                setHoverSettings(true);
-              }}
-              onMouseLeave={() => {
-                setHoverSettings(false);
-              }}
-            >
-              <div className={`mt-[20px] flex flex-col relative `}>
-                <div className="flex flex-col items-center mx-2 w-full gap-x-[5px] absolute min-w-[280px]">
-                  <div className="flex gap-x-[10px] w-full items-center">
-                    <Icon
-                      icon="gtp:gtp-dollar"
-                      className={`h-[15px] w-[15px] mt-1 font-[900] text-[#CDD8D3] relative -top-[3px] ${
-                        hoverSettings ? "text-sm" : ""
-                      }`}
-                    />
-                    <div className="text-[10px] text-white">Denominates in</div>
-                    <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
+              <div
+                className="relative w-[143px] h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
+                onClick={() => {
+                  setShowCents(!showCents);
+                }}
+              >
+                <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px] ">
+                  <div className="w-full flex items-start justify-center">
+                    Full Dollar
                   </div>
-                  <div className="w-full ">
-                    <div
-                      className="relative w-[143px] h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
-                      onClick={() => {
-                        setShowCents(!showCents);
-                      }}
-                    >
-                      <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px] ">
-                        <div className="w-full flex items-start justify-center">
-                          Full Dollar
-                        </div>
-                        <div
-                          className={`w-full text-center ${
-                            !showCents && "opacity-50"
-                          }`}
-                        >
-                          USD cents
-                        </div>
-                      </div>
-                      <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
-                        <div
-                          className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
-                          style={{
-                            transform: !showCents
-                              ? "translateX(0%)"
-                              : "translateX(100%)",
-                          }}
-                        >
-                          {!showCents ? "Full Dollar" : "USD cents"}
-                        </div>
-                      </div>
-                    </div>
+                  <div
+                    className={`w-full text-center ${
+                      !showCents && "opacity-50"
+                    }`}
+                  >
+                    USD cents
+                  </div>
+                </div>
+                <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
+                  <div
+                    className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
+                    style={{
+                      transform: !showCents
+                        ? "translateX(0%)"
+                        : "translateX(100%)",
+                    }}
+                  >
+                    {!showCents ? "Full Dollar" : "USD cents"}
                   </div>
                 </div>
               </div>
