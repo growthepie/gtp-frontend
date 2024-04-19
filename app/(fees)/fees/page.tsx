@@ -1021,7 +1021,7 @@ export default function FeesPage() {
               color: "#1F2726",
             }}
           >
-            {showUsd && !showCents && <div>$</div>}
+            {showUsd && !showCents && <div className="text-[10px]">$</div>}
             <div className="flex items-center">
               {Intl.NumberFormat(undefined, {
                 notation: "compact",
