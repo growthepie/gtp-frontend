@@ -270,8 +270,6 @@ export default function FeesChart({
           let value = y;
           let displayValue = y;
 
-          console.log(displayValue);
-
           if (!showUsd) {
             if (showGwei) {
               prefix = "";
