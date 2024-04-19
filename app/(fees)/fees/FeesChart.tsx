@@ -310,7 +310,7 @@ export default function FeesChart({
                             ? selectedMetric === "txcosts"
                               ? 3
                               : 2
-                            : 4
+                            : 3
                           : 0,
                       })
                 }
