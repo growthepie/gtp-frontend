@@ -1026,8 +1026,8 @@ export default function FeesPage() {
             <div className="flex items-center">
               {Intl.NumberFormat(undefined, {
                 notation: "compact",
-                maximumFractionDigits: fractionDigits,
-                minimumFractionDigits: fractionDigits,
+                maximumFractionDigits: showCents ? fractionDigits : 4,
+                minimumFractionDigits: showCents ? fractionDigits : 4,
               }).format(multipliedValue)}
             </div>
             {showUsd && showCents && (
@@ -1058,8 +1058,8 @@ export default function FeesPage() {
           <div>
             {Intl.NumberFormat(undefined, {
               notation: "compact",
-              maximumFractionDigits: fractionDigits,
-              minimumFractionDigits: fractionDigits,
+              maximumFractionDigits: showCents ? fractionDigits : 4,
+              minimumFractionDigits: showCents ? fractionDigits : 4,
             }).format(multipliedValue)}
           </div>
           {showUsd && showCents && (
@@ -2172,7 +2172,13 @@ export default function FeesPage() {
             />
           )}
         </OffScreenSlider>
-        <Footer />
+
+        <Footer
+          showCents={showCents}
+          setShowCents={setShowCents}
+          hoverSettings={hoverSettings}
+          setHoverSettings={setHoverSettings}
+        />
       </div>
       {/* <div
         className={`transition-all duration-0 w-full`}

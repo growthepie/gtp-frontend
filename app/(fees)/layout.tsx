@@ -222,7 +222,7 @@ export default function RootLayout({
                   </FeesContainer>
                   <FeesContainer className="flex w-full justify-end pb-[20px]">
                     <div className="pointer-events-auto">
-                      <div className="relative flex gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#344240] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
+                      <div className="relative  gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#344240] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000] sm:flex hidden ">
                         <Share />
                       </div>
                     </div>
