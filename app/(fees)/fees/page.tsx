@@ -116,7 +116,7 @@ export default function FeesPage() {
   const [sortOrder, setSortOrder] = useState(true);
   //True is default descending false ascending
   const [hoverSettings, setHoverSettings] = useState<boolean>(false);
-  const [showCents, setShowCents] = useLocalStorage("showCents", false);
+  const [showCents, setShowCents] = useLocalStorage("showCents", true);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { theme } = useTheme();
 
@@ -1053,7 +1053,11 @@ export default function FeesPage() {
                 : "transparent",
           }}
         >
-          {showUsd && !showCents && <div>$</div>}
+          {showUsd && !showCents && (
+            <div className="text-[9px] text-center mt-[1px] pr-[2px] text-forest-400">
+              $
+            </div>
+          )}
           <div>
             {Intl.NumberFormat(undefined, {
               notation: "compact",
@@ -1137,7 +1141,7 @@ export default function FeesPage() {
               <div className="font-semibold">Main platform</div>
             </a>
             <div
-              className={`flex items-center relative h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-[15px] py-[10px] gap transition-all z-20 duration-300 ${
+              className={`flex items-center relative h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-[15px] py-[10px] gap transition-all z-20 duration-300 hover:cursor-pointer ${
                 hoverSettings
                   ? "w-[308px] justify-start"
                   : "w-[128px] justify-start"
