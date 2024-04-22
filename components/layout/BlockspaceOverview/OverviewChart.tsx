@@ -463,6 +463,7 @@ export default function OverviewChart({
   }
 
   console.log(chartComponent.current ? chartComponent.current : "");
+  console.log(chartSeries ? chartSeries : "");
 
   return (
     <>
