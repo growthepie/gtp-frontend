@@ -462,6 +462,8 @@ export default function OverviewChart({
     }
   }
 
+  console.log(chartComponent.current ? chartComponent.current : "");
+
   return (
     <>
       <div className="flex items-center w-full ">
