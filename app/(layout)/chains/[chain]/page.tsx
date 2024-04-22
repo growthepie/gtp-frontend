@@ -133,7 +133,11 @@ const Chain = ({ params }: { params: any }) => {
     <>
       <ShowLoading
         dataLoading={[masterLoading, chainLoading, !usageError && usageLoading]}
-        dataValidating={[masterValidating, chainValidating, !usageError && usageValidating]}
+        dataValidating={[
+          masterValidating,
+          chainValidating,
+          !usageError && usageValidating,
+        ]}
       />
       <Container className="flex w-full mt-[65px] md:mt-[45px]">
         {master && (
@@ -150,11 +154,15 @@ const Chain = ({ params }: { params: any }) => {
                   /> */}
                   <div className="w-9 h-9">
                     <Icon
-                      icon={`gtp:${AllChainsByKeys[chainKeys[0]].urlKey
-                        }-logo-monochrome`}
+                      icon={`gtp:${
+                        AllChainsByKeys[chainKeys[0]].urlKey
+                      }-logo-monochrome`}
                       className="w-9 h-9"
                       style={{
-                        color: AllChainsByKeys[chainKeys[0]].colors[theme ?? "dark"][1],
+                        color:
+                          AllChainsByKeys[chainKeys[0]].colors[
+                            theme ?? "dark"
+                          ][1],
                       }}
                     />
                   </div>
@@ -167,8 +175,9 @@ const Chain = ({ params }: { params: any }) => {
                 </div>
                 <div className="hidden md:flex items-start space-x-[7px] font-inter uppercase pt-[11px] ">
                   <div
-                    className={`inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm  ${isMobile ? "ml-[0px]" : "ml-[19px]"
-                      } `}
+                    className={`inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm  ${
+                      isMobile ? "ml-[0px]" : "ml-[19px]"
+                    } `}
                   >
                     {master.chains[chainKeys[0]].technology}
                   </div>
@@ -197,12 +206,14 @@ const Chain = ({ params }: { params: any }) => {
                   <div
                     className={`relative !z-[1] flex items-center gap-x-[8px] font-semibold border border-forest-50 dark:border-forest-900 bg-forest-50 dark:bg-forest-900 transition-all duration-300 rounded-full px-[16px] py-[7px] w-[91px] group-hover:w-[213px] delay-0`}
                   >
-                    <Icon icon="feather:chevron-right" className={`w-4 h-4 transition-transform duration-300 transform group-hover:rotate-90`} />
+                    <Icon
+                      icon="feather:chevron-right"
+                      className={`w-4 h-4 transition-transform duration-300 transform group-hover:rotate-90`}
+                    />
                     <div>More</div>
                   </div>
 
-                  <div
-                    className="absolute top-[15px] left-0 !z-[-0] h-0 delay-0 group-hover:h-[119px] overflow-hidden transition-all duration-300 ease-in-out bg-forest-50 dark:bg-forest-1000 rounded-b-[22px] group-hover:pt-[29px] group-hover:pb-[10px] break-inside-avoid w-[91px] group-hover:w-[213px] shadow-transparent group-hover:shadow-[0px_4px_46.2px_0px_#000000]">
+                  <div className="absolute top-[15px] left-0 !z-[-0] h-0 delay-0 group-hover:h-[119px] overflow-hidden transition-all duration-300 ease-in-out bg-forest-50 dark:bg-forest-1000 rounded-b-[22px] group-hover:pt-[29px] group-hover:pb-[10px] break-inside-avoid w-[91px] group-hover:w-[213px] shadow-transparent group-hover:shadow-[0px_4px_46.2px_0px_#000000]">
                     <Link
                       href={master.chains[chainKeys[0]].website}
                       className="flex items-center gap-x-[10px] font-medium text-sm px-4 py-2 group-hover:w-[213px] w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900"
@@ -236,23 +247,36 @@ const Chain = ({ params }: { params: any }) => {
                   target="_blank"
                 >
                   <Icon icon="gtp:gtp-block-explorer" className="w-4 h-4" />
-                  <div className="transition-all duration-300 whitespace-nowrap overflow-hidden">Block Explorer</div>
+                  <div className="transition-all duration-300 whitespace-nowrap overflow-hidden">
+                    Block Explorer
+                  </div>
                 </Link>
-                {(master.chains[chainKeys[0]].rhino_listed &&
+                {master.chains[chainKeys[0]].rhino_listed && (
                   <Link
-                    href={master.chains[chainKeys[0]].rhino_naming ? `https://app.rhino.fi/bridge?refId=PG_GrowThePie&token=ETH&chainOut=${master.chains[chainKeys[0]].rhino_naming}&chain=ETHEREUM` : "https://app.rhino.fi/bridge/?refId=PG_GrowThePie"}
+                    href={
+                      master.chains[chainKeys[0]].rhino_naming
+                        ? `https://app.rhino.fi/bridge?refId=PG_GrowThePie&token=ETH&chainOut=${
+                            master.chains[chainKeys[0]].rhino_naming
+                          }&chain=ETHEREUM`
+                        : "https://app.rhino.fi/bridge/?refId=PG_GrowThePie"
+                    }
                     className="flex p-[1px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full peer-hover:[&>div>div]:w-[0px] [&>div>div]:w-[45px] peer-hover:[&>div]:gap-x-0"
-                    rel="noreferrer" target="_blank"
+                    rel="noreferrer"
+                    target="_blank"
                     onClick={() => {
                       track("clicked RhinoFi Bridge link", {
-                        location: isMobile ? `mobile Chain page` : `desktop Chain page`,
+                        location: isMobile
+                          ? `mobile Chain page`
+                          : `desktop Chain page`,
                         page: window.location.pathname,
                       });
                     }}
                   >
                     <div className="flex items-center gap-x-[8px] justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-[16px] py-[7px] transition-all duration-300">
                       <Icon icon="gtp:gtp-bridge" className="w-4 h-4" />
-                      <div className="transition-all duration-300 whitespace-nowrap overflow-hidden">Bridge</div>
+                      <div className="transition-all duration-300 whitespace-nowrap overflow-hidden">
+                        Bridge
+                      </div>
                     </div>
                   </Link>
                 )}
@@ -303,12 +327,14 @@ const Chain = ({ params }: { params: any }) => {
                 <div
                   className={`relative !z-[1] flex items-center gap-x-[8px] font-semibold border border-forest-50 dark:border-forest-900 bg-forest-50 dark:bg-forest-900 transition-all duration-300 rounded-full px-[16px] py-[7px] w-[91px] group-hover:w-[213px] delay-0`}
                 >
-                  <Icon icon="feather:chevron-right" className={`w-4 h-4 transition-transform duration-300 transform group-hover:rotate-90`} />
+                  <Icon
+                    icon="feather:chevron-right"
+                    className={`w-4 h-4 transition-transform duration-300 transform group-hover:rotate-90`}
+                  />
                   <div>More</div>
                 </div>
 
-                <div
-                  className="absolute top-[15px] left-0 !z-[-0] h-0 delay-0 group-hover:h-[119px] overflow-hidden transition-all duration-300 ease-in-out bg-forest-50 dark:bg-forest-1000 rounded-b-[22px] group-hover:pt-[29px] group-hover:pb-[10px] break-inside-avoid w-[91px] group-hover:w-[213px] shadow-transparent group-hover:shadow-[0px_4px_46.2px_0px_#000000]">
+                <div className="absolute top-[15px] left-0 !z-[-0] h-0 delay-0 group-hover:h-[119px] overflow-hidden transition-all duration-300 ease-in-out bg-forest-50 dark:bg-forest-1000 rounded-b-[22px] group-hover:pt-[29px] group-hover:pb-[10px] break-inside-avoid w-[91px] group-hover:w-[213px] shadow-transparent group-hover:shadow-[0px_4px_46.2px_0px_#000000]">
                   <Link
                     href={master.chains[chainKeys[0]].website}
                     className="flex items-center gap-x-[10px] font-medium text-sm px-4 py-2 group-hover:w-[213px] w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900"
@@ -342,29 +368,43 @@ const Chain = ({ params }: { params: any }) => {
                 target="_blank"
               >
                 <Icon icon="gtp:gtp-block-explorer" className="w-4 h-4" />
-                <div className="transition-all duration-300 whitespace-nowrap overflow-hidden">Explorer</div>
+                <div className="transition-all duration-300 whitespace-nowrap overflow-hidden">
+                  Explorer
+                </div>
               </Link>
-              {(master.chains[chainKeys[0]].rhino_listed &&
+              {master.chains[chainKeys[0]].rhino_listed && (
                 <Link
-                  href={master.chains[chainKeys[0]].rhino_naming ? `https://app.rhino.fi/bridge?refId=PG_GrowThePie&token=ETH&chainOut=${master.chains[chainKeys[0]].rhino_naming}&chain=ETHEREUM` : "https://app.rhino.fi/bridge/?refId=PG_GrowThePie"}
+                  href={
+                    master.chains[chainKeys[0]].rhino_naming
+                      ? `https://app.rhino.fi/bridge?refId=PG_GrowThePie&token=ETH&chainOut=${
+                          master.chains[chainKeys[0]].rhino_naming
+                        }&chain=ETHEREUM`
+                      : "https://app.rhino.fi/bridge/?refId=PG_GrowThePie"
+                  }
                   className="flex p-[1px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full peer-hover:[&>div>div]:w-[0px] [&>div>div]:w-[45px] peer-hover:[&>div]:gap-x-0"
-                  rel="noreferrer" target="_blank"
+                  rel="noreferrer"
+                  target="_blank"
                   onClick={() => {
                     track("clicked RhinoFi Bridge link", {
-                      location: isMobile ? `mobile Chain page` : `desktop Chain page`,
+                      location: isMobile
+                        ? `mobile Chain page`
+                        : `desktop Chain page`,
                       page: window.location.pathname,
                     });
                   }}
                 >
                   <div className="flex items-center gap-x-[8px] justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-[16px] py-[7px] transition-all duration-300">
                     <Icon icon="gtp:gtp-bridge" className="w-4 h-4" />
-                    <div className="transition-all duration-300 whitespace-nowrap overflow-hidden">Bridge</div>
+                    <div className="transition-all duration-300 whitespace-nowrap overflow-hidden">
+                      Bridge
+                    </div>
                   </div>
-                </Link>)}
+                </Link>
+              )}
             </div>
           </div>
         )}
-      </Container >
+      </Container>
 
       {master && overviewData !== null && chainKeys[0] !== "ethereum" && (
         <>
@@ -399,11 +439,11 @@ const Chain = ({ params }: { params: any }) => {
             selectedTimespan={selectedTimespan}
             setSelectedTimespan={setSelectedTimespan}
             data={overviewData}
+            master={master}
             forceSelectedChain={chainKeys[0]}
           />
         </>
-      )
-      }
+      )}
     </>
   );
 };

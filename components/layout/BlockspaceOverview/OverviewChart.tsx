@@ -356,18 +356,23 @@ export default function OverviewChart({
       //   data: data[selectedChain].daily[selectedCategory].data.length,
       // });
       if (allCats) {
-        return categoriesList.map((category) => ({
-          id: [selectedChain, category, selectedMode].join("::"),
-          name: selectedChain,
-          unixKey: "unix",
-          dataKey: dataKey,
-          data: data[selectedChain]?.daily[category]?.data || [],
-          fillOpacity: categoryKeyToFillOpacity[category],
-          lineWidth: 0,
-          custom: {
-            tooltipLabel: categories[category],
-          },
-        }));
+        return categoriesList
+          .filter((categoryCheck) => {
+            let dataRet = data[selectedChain]?.daily[categoryCheck]?.data || [];
+            return dataRet.length > 0;
+          })
+          .map((categoryCheck) => ({
+            id: [selectedChain, categoryCheck, selectedMode].join("::"),
+            name: selectedChain,
+            unixKey: "unix",
+            dataKey: dataKey,
+            data: data[selectedChain]?.daily[categoryCheck]?.data || [],
+            fillOpacity: categoryKeyToFillOpacity[categoryCheck],
+            lineWidth: 0,
+            custom: {
+              tooltipLabel: categories[categoryCheck],
+            },
+          }));
       } else {
         return [
           {
