@@ -361,7 +361,10 @@ export default function OverviewChart({
           name: selectedChain,
           unixKey: "unix",
           dataKey: dataKey,
-          data: data[selectedChain]?.daily[category]?.data || [],
+          data:
+            category === "nft"
+              ? []
+              : data[selectedChain]?.daily[category]?.data || [],
           fillOpacity: categoryKeyToFillOpacity[category],
           lineWidth: 0,
           custom: {
