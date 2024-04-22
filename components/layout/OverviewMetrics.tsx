@@ -18,7 +18,7 @@ import { useHover, useMediaQuery } from "usehooks-ts";
 import { Chart } from "../charts/chart";
 import Container from "./Container";
 import Colors from "tailwindcss/colors";
-import { LandingURL, MasterURL } from "@/lib/urls";
+
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { useLocalStorage } from "usehooks-ts";
@@ -44,21 +44,17 @@ const AllowedModes: {
 
 export default function OverviewMetrics({
   data,
+  master,
   selectedTimespan,
   setSelectedTimespan,
   forceSelectedChain,
 }: {
   data: Chains;
+  master: MasterResponse;
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
   forceSelectedChain?: string;
 }) {
-  const {
-    data: master,
-    error: masterError,
-    isLoading: masterLoading,
-    isValidating: masterValidating,
-  } = useSWR<MasterResponse>(MasterURL);
   const { theme } = useTheme();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [selectedMode, setSelectedMode] = useState(
