@@ -21,7 +21,7 @@ import Colors from "tailwindcss/colors";
 
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 
 import OverviewChart from "./BlockspaceOverview/OverviewChart";
 import RowContainer from "./BlockspaceOverview/ChainRows/RowContainer";
@@ -64,7 +64,7 @@ export default function OverviewMetrics({
   const [allCats, setAllCats] = useState(forceSelectedChain ? true : false);
   const [selectedCategory, setSelectedCategory] = useState("nft");
   const [selectedValue, setSelectedValue] = useState("share");
-  const [chainEcosystemFilter, setChainEcosystemFilter] = useLocalStorage(
+  const [chainEcosystemFilter, setChainEcosystemFilter] = useSessionStorage(
     "chainEcosystemFilter",
     "all-chains",
   );

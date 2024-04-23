@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./layout/Tooltip";
 import { EmbedData, useUIContext } from "@/contexts/UIContext";
 import Link from "next/link";
 import { track } from "@vercel/analytics/react";
+import { useSessionStorage } from "usehooks-ts";
 
 const embedPages = ["", "fundamentals"];
 
@@ -17,7 +18,10 @@ export default function Share() {
   const [openShare, setOpenShare] = useState(false);
   const [currentURL, setcurrentURL] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [topSelection, setTopSelection] = useState("social");
+  const [topSelection, setTopSelection] = useSessionStorage(
+    "Share.topSelection",
+    "social"
+  );
   //const [widthValue, setWidthValue] = useState("960px");
   //const [heightValue, setHeightValue] = useState("480px");
   const [isAbsolute, setIsAbsolute] = useState(true);

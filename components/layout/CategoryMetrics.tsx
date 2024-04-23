@@ -9,7 +9,7 @@ import {
   useCallback,
 } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
-import { useLocalStorage, useMediaQuery } from "usehooks-ts";
+import { useLocalStorage, useSessionStorage, useMediaQuery } from "usehooks-ts";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Icon } from "@iconify/react";
@@ -101,7 +101,7 @@ export default function CategoryMetrics({
   const [showMore, setShowMore] = useState(false);
   const [copyContract, setCopyContract] = useState(false);
   const isMobile = useMediaQuery("(max-width: 1023px)");
-  const [chainEcosystemFilter, setChainEcosystemFilter] = useLocalStorage(
+  const [chainEcosystemFilter, setChainEcosystemFilter] = useSessionStorage(
     "chainEcosystemFilter",
     "all-chains",
   );

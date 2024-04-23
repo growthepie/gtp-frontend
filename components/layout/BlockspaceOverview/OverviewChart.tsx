@@ -6,7 +6,7 @@ import {
   useCallback,
   CSSProperties,
 } from "react";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { Chart } from "../../charts/chart";
 import { color } from "highcharts";
 import { Icon } from "@iconify/react";
@@ -54,7 +54,7 @@ export default function OverviewChart({
   chartComponent: React.MutableRefObject<Highcharts.Chart | null | undefined>;
 }) {
   const standardChainKey = forceSelectedChain ? forceSelectedChain : "all_l2s";
-  const [chainEcosystemFilter, setChainEcosystemFilter] = useLocalStorage(
+  const [chainEcosystemFilter, setChainEcosystemFilter] = useSessionStorage(
     "chainEcosystemFilter",
     "all-chains",
   );

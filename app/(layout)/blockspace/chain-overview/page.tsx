@@ -50,7 +50,7 @@ const ChainOverview = () => {
   // const [optOpen, setOptOpen] = useState(false);
   // const [selectedStack, setSelectedStack] = useState("all-chains");
 
-  const [chainEcosystemFilter, setChainEcosystemFilter] = useLocalStorage(
+  const [chainEcosystemFilter, setChainEcosystemFilter] = useSessionStorage(
     "chainEcosystemFilter",
     "all-chains",
   );
@@ -93,7 +93,7 @@ const ChainOverview = () => {
       }, {});
 
     return filteredChains;
-  }, [chainEcosystemFilter, usageData]);
+  }, [chainEcosystemFilter, master, usageData?.data.chains]);
 
   return (
     <>
