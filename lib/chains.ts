@@ -100,7 +100,7 @@ export const AllChains: Chain[] = [
     key: "gitcoin_pgn",
     urlKey: "public-goods-network",
     chainType: "L2",
-    ecosystem: ["op-stack", "op-super", "all-chains"],
+    ecosystem: ["all-chains"],
     description:
       "Public Goods Network is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in July 2023.",
     border: {
