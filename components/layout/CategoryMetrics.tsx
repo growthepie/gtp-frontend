@@ -19,7 +19,7 @@ import Container from "./Container";
 import { CategoryComparisonResponseData } from "@/types/api/CategoryComparisonResponse";
 import { animated, useSpring, useTransition } from "@react-spring/web";
 import { Chart } from "../charts/chart";
-import { AllChainsByKeys } from "@/lib/chains";
+import { AllChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import { LandingURL, MasterURL } from "@/lib/urls";
 import useSWR from "swr";
@@ -239,18 +239,28 @@ export default function CategoryMetrics({
 
     return chainValues
       .filter(([item]) => {
-        const filterChains =
-          AllChainsByKeys[item].ecosystem.includes(chainEcosystemFilter);
+        const supportedChainKeys = Get_SupportedChainKeys(master);
+        const isSupported =
+          item === "all_l2s" ? true : supportedChainKeys.includes(item);
+        const isMaster = master?.chains[item] ? true : false;
+        const passEcosystem =
+          item === "all_l2s"
+            ? true
+            : isMaster
+            ? chainEcosystemFilter === "all-chains"
+              ? true
+              : master?.chains[item].bucket.includes(chainEcosystemFilter)
+            : false;
 
-        return item !== "types" && filterChains;
+        return item !== "types" && isSupported && passEcosystem;
       })
       .sort((a, b) => b[1] - a[1])
       .sort(([itemA], [itemB]) =>
         selectedChains[itemA] === selectedChains[itemB]
           ? 0
           : selectedChains[itemA]
-            ? -1
-            : 1,
+          ? -1
+          : 1,
       );
   }, [chainValues, selectedChains, chainEcosystemFilter]);
 
@@ -386,8 +396,21 @@ export default function CategoryMetrics({
     const selectedSubcategoriesList = selectedSubcategories[selectedCategory];
 
     for (const currChain in selectedChains) {
+      const supportedChainKeys = Get_SupportedChainKeys(master);
+      const isSupported =
+        currChain === "all_l2s" ? true : supportedChainKeys.includes(currChain);
+      const isMaster = master?.chains[currChain] ? true : false;
+      const passEcosystem =
+        currChain === "all_l2s"
+          ? true
+          : isMaster
+          ? chainEcosystemFilter === "all-chains"
+            ? true
+            : master?.chains[currChain].bucket.includes(chainEcosystemFilter)
+          : false;
       if (
-        AllChainsByKeys[currChain].ecosystem.includes(chainEcosystemFilter) &&
+        isSupported &&
+        passEcosystem &&
         selectedChains[currChain] === true &&
         data[selectedCategory][dailyKey][String(currChain)]
       ) {
@@ -579,7 +602,7 @@ export default function CategoryMetrics({
         (subcategory) => {
           const subcategoryData =
             data[selectedCategory].subcategories[
-            selectedSubcategories[selectedCategory][subcategory]
+              selectedSubcategories[selectedCategory][subcategory]
             ];
           const subcategoryChains =
             subcategoryData.aggregated[selectedTimespan].data;
@@ -681,8 +704,8 @@ export default function CategoryMetrics({
           selectedCategory === "unlabeled" && contract.sub_category_key === null
             ? true
             : selectedSubcategories[contract.main_category_key]?.includes(
-              contract.sub_category_key,
-            );
+                contract.sub_category_key,
+              );
         const isCategoryMatched =
           contract.main_category_key === selectedCategory;
         const filterChains =
@@ -902,8 +925,8 @@ export default function CategoryMetrics({
             ? Object.keys(data[category].subcategories).length > 8
               ? "700px"
               : Object.keys(data[category].subcategories).length > 5
-                ? "550px"
-                : "550px"
+              ? "550px"
+              : "550px"
             : "190px",
       }),
       update: ({ category }) => ({
@@ -912,8 +935,8 @@ export default function CategoryMetrics({
             ? Object.keys(data[category].subcategories).length > 8
               ? "700px"
               : Object.keys(data[category].subcategories).length > 5
-                ? "550px"
-                : "550px"
+              ? "550px"
+              : "550px"
             : "190px"
           : "190px",
       }),
@@ -940,10 +963,11 @@ export default function CategoryMetrics({
             <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 lg:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
               <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
                 <button
-                  className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${"gas_fees_" === selectedMode
+                  className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
+                    "gas_fees_" === selectedMode
                       ? "bg-forest-500 dark:bg-forest-1000"
                       : "hover:bg-forest-500/10"
-                    }`}
+                  }`}
                   onClick={() => {
                     setSelectedMode("gas_fees_");
                   }}
@@ -951,10 +975,11 @@ export default function CategoryMetrics({
                   Gas Fees
                 </button>
                 <button
-                  className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${"txcount_" === selectedMode
+                  className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
+                    "txcount_" === selectedMode
                       ? "bg-forest-500 dark:bg-forest-1000"
                       : "hover:bg-forest-500/10"
-                    }`}
+                  }`}
                   onClick={() => {
                     setSelectedMode("txcount_");
                   }}
@@ -970,10 +995,11 @@ export default function CategoryMetrics({
                   <button
                     key={timespan}
                     //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                    className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${selectedTimespan === timespan
+                    className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
+                      selectedTimespan === timespan
                         ? "bg-forest-500 dark:bg-forest-1000"
                         : "hover:bg-forest-500/10"
-                      }`}
+                    }`}
                     onClick={() => {
                       setSelectedTimespan(timespan);
 
@@ -993,14 +1019,15 @@ export default function CategoryMetrics({
                   </button>
                 ))}
                 <div
-                  className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[50px] right-[20px] md:right-[45px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${!isMobile
+                  className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[50px] right-[20px] md:right-[45px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${
+                    !isMobile
                       ? ["max", "180d"].includes(selectedTimespan)
                         ? "translate-y-[calc(-100%+3px)]"
                         : "translate-y-0 "
                       : ["max", "180d"].includes(selectedTimespan)
-                        ? "translate-y-[calc(100%+3px)]"
-                        : "translate-y-0"
-                    }`}
+                      ? "translate-y-[calc(100%+3px)]"
+                      : "translate-y-0"
+                  }`}
                 >
                   <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
                     7-day rolling average
@@ -1110,8 +1137,9 @@ export default function CategoryMetrics({
       </Container> */}
           <Container className="block w-full !pr-0 lg:!px-[40px] px-[100px] lg:mt-0 mt-6 lg:w-[100%] lg:mx-auto ">
             <div
-              className={`w-[100%] mx-auto  overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-2 ${isSidebarOpen ? "exl:overflow-hidden" : "cxl:overflow-hidden"
-                }`}
+              className={`w-[100%] mx-auto  overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-2 ${
+                isSidebarOpen ? "exl:overflow-hidden" : "cxl:overflow-hidden"
+              }`}
             >
               <animated.div
                 className="relative min-w-[950px] md:min-w-[900px] w-[20%] md:w-[97.5%] h-[67px] m-auto border-x-[1px] border-y-[1px] rounded-[15px] dark:text-forest-50  text-forest-1000 border-forest-400 dark:border-forest-800  dark:bg-forest-1000 mt-8 overflow-hidden"
@@ -1123,10 +1151,11 @@ export default function CategoryMetrics({
                       categories[category] !== "Categories" ? (
                         <div
                           key={category}
-                          className={`relative flex w-full h-full justify-between items-center ${selectedCategory === category
+                          className={`relative flex w-full h-full justify-between items-center ${
+                            selectedCategory === category
                               ? "borden-hidden rounded-[0px] text-white"
                               : "h-full"
-                            }
+                          }
                     ${isCategoryHovered[category] ? "" : ""}`}
                           onMouseEnter={() => {
                             setIsCategoryHovered((prev) => ({
@@ -1147,31 +1176,35 @@ export default function CategoryMetrics({
                               selectedCategory === category
                                 ? "#5A6462"
                                 : theme === "light"
-                                  ? "#FFFFFF"
-                                  : `linear-gradient(
+                                ? "#FFFFFF"
+                                : `linear-gradient(
                                 90deg,
-                                rgba(16, 20, 19, ${0.3 -
+                                rgba(16, 20, 19, ${
+                                  0.3 -
                                   (i / (Object.keys(categories).length - 1)) *
-                                  0.2
-                                  }) 0%,
+                                    0.2
+                                }) 0%,
                                 #101413 15.10%,
-                                rgba(16, 20, 19, ${0.06 +
+                                rgba(16, 20, 19, ${
+                                  0.06 +
                                   (i / Object.keys(categories).length) * 0.94
-                                  }) 48.96%,
+                                }) 48.96%,
                                 #101413 86.98%,
-                                rgba(16, 20, 19, ${0.3 -
+                                rgba(16, 20, 19, ${
+                                  0.3 -
                                   (i / (Object.keys(categories).length - 1)) *
-                                  0.2
-                                  }) 100%
+                                    0.2
+                                }) 100%
                               )`,
                           }}
                         >
                           <div
                             key={category}
-                            className={`w-full h-full flex flex-col text-center items-center first-letter justify-between hover:cursor-pointer  ${selectedCategory === category
+                            className={`w-full h-full flex flex-col text-center items-center first-letter justify-between hover:cursor-pointer  ${
+                              selectedCategory === category
                                 ? ""
                                 : "hover:bg-forest-500 dark:hover:bg-white/5"
-                              }`}
+                            }`}
                             onClick={() => {
                               if (selectedCategory === category) {
                                 handleOpen(category);
@@ -1181,10 +1214,11 @@ export default function CategoryMetrics({
                             }}
                           >
                             <div
-                              className={`flex items-center h-[25px]  mt-1 ${selectedCategory === category
+                              className={`flex items-center h-[25px]  mt-1 ${
+                                selectedCategory === category
                                   ? "text-sm font-bold"
                                   : "text-xs font-medium"
-                                }`}
+                              }`}
                             >
                               <h1>{categories[category]}</h1>
                             </div>
@@ -1227,18 +1261,20 @@ export default function CategoryMetrics({
                       categories[item.category] !== "Categories" ? (
                         <animated.div
                           key={item.category}
-                          className={`relative flex w-full h-full ${selectedCategory === item.category
-                              ? `border-hidden rounded-[0px] dark:text-inherit text-white ${Object.keys(data[item.category].subcategories)
-                                .length > 8
-                                ? "w-[650px]"
-                                : Object.keys(
-                                  data[item.category].subcategories,
-                                ).length > 5
-                                  ? "w-[500px]"
-                                  : "w-[400px]"
-                              }`
+                          className={`relative flex w-full h-full ${
+                            selectedCategory === item.category
+                              ? `border-hidden rounded-[0px] dark:text-inherit text-white ${
+                                  Object.keys(data[item.category].subcategories)
+                                    .length > 8
+                                    ? "w-[650px]"
+                                    : Object.keys(
+                                        data[item.category].subcategories,
+                                      ).length > 5
+                                    ? "w-[500px]"
+                                    : "w-[400px]"
+                                }`
                               : "h-full w-full min-w-[40px] hover:max-w-[180px]"
-                            }
+                          }
 
 
 
@@ -1263,44 +1299,49 @@ export default function CategoryMetrics({
                               selectedCategory === item.category
                                 ? "#5A6462"
                                 : theme === "light"
-                                  ? "#FFFFFF"
-                                  : `linear-gradient(
+                                ? "#FFFFFF"
+                                : `linear-gradient(
                                 90deg,
-                                rgba(16, 20, 19, ${0.3 -
+                                rgba(16, 20, 19, ${
+                                  0.3 -
                                   (item.i /
                                     (Object.keys(categories).length - 1)) *
-                                  0.2
-                                  }) 0%,
+                                    0.2
+                                }) 0%,
                                 #101413 15.10%,
-                                rgba(16, 20, 19, ${0.06 +
+                                rgba(16, 20, 19, ${
+                                  0.06 +
                                   (item.i / Object.keys(categories).length) *
-                                  0.94
-                                  }) 48.96%,
+                                    0.94
+                                }) 48.96%,
                                 #101413 86.98%,
-                                rgba(16, 20, 19, ${0.3 -
+                                rgba(16, 20, 19, ${
+                                  0.3 -
                                   (item.i /
                                     (Object.keys(categories).length - 1)) *
-                                  0.2
-                                  }) 100%
+                                    0.2
+                                }) 100%
                               )`,
                             ...style,
                           }}
                         >
                           <div
                             key={item.category}
-                            className={`h-full flex flex-col first-letter justify-between  hover:cursor-pointer overflow-hidden ${selectedCategory === item.category
-                                ? `border-hidden rounded-[0px] ${Object.keys(
-                                  data[item.category].subcategories,
-                                ).length > 8
-                                  ? "w-[650px]"
-                                  : Object.keys(
-                                    data[item.category].subcategories,
-                                  ).length > 4
-                                    ? "w-[500px]"
-                                    : "w-[400px]"
-                                }`
+                            className={`h-full flex flex-col first-letter justify-between  hover:cursor-pointer overflow-hidden ${
+                              selectedCategory === item.category
+                                ? `border-hidden rounded-[0px] ${
+                                    Object.keys(
+                                      data[item.category].subcategories,
+                                    ).length > 8
+                                      ? "w-[650px]"
+                                      : Object.keys(
+                                          data[item.category].subcategories,
+                                        ).length > 4
+                                      ? "w-[500px]"
+                                      : "w-[400px]"
+                                  }`
                                 : "hover:bg-white/5 w-full min-w-[40px] hover:max-w-[180px] "
-                              }`}
+                            }`}
                             onClick={() => {
                               if (selectedCategory === item.category) {
                                 handleOpen(item.category);
@@ -1312,21 +1353,23 @@ export default function CategoryMetrics({
                           >
                             <div
                               key={"label" + item.category}
-                              className={`flex self-center justify-center mx-auto pb-8 pt-2 h-[30px]  ${selectedCategory === item.category
+                              className={`flex self-center justify-center mx-auto pb-8 pt-2 h-[30px]  ${
+                                selectedCategory === item.category
                                   ? "text-base font-bold "
-                                  : `text-base font-medium truncate hover:text-ellipsis ${isCategoryHovered[item.category]
-                                    ? item.category ===
-                                      "native_transfers" ||
-                                      item.category === "token_transfers"
-                                      ? "pl-[0px] w-full"
-                                      : "w-full pl-0"
-                                    : item.category ===
-                                      "native_transfers" ||
-                                      item.category === "token_transfers"
-                                      ? "w-full "
-                                      : "w-full pl-0"
-                                  }`
-                                }`}
+                                  : `text-base font-medium truncate hover:text-ellipsis ${
+                                      isCategoryHovered[item.category]
+                                        ? item.category ===
+                                            "native_transfers" ||
+                                          item.category === "token_transfers"
+                                          ? "pl-[0px] w-full"
+                                          : "w-full pl-0"
+                                        : item.category ===
+                                            "native_transfers" ||
+                                          item.category === "token_transfers"
+                                        ? "w-full "
+                                        : "w-full pl-0"
+                                    }`
+                              }`}
                               style={{
                                 background:
                                   selectedCategory === item.category
@@ -1344,23 +1387,25 @@ export default function CategoryMetrics({
                                   selectedCategory === item.category
                                     ? "inherit"
                                     : theme === "light"
-                                      ? "initial"
-                                      : "transparent",
+                                    ? "initial"
+                                    : "transparent",
                                 backgroundImage:
                                   selectedCategory === item.category
                                     ? "none"
                                     : theme === "light"
-                                      ? "none"
-                                      : `radial-gradient(ellipse at center, rgba(255, 255, 255, 1) 0%, rgba(0, 0, 0, 1) 100%), linear-gradient(90deg, rgba(16, 20, 19, ${0.4 +
-                                      (item.i /
-                                        (Object.keys(categories).length -
-                                          1)) *
-                                      0.4
-                                      }) 0%, #101413 15.10%, rgba(16, 20, 19, 0.00) 48.96%, #101413 86.98%, rgba(16, 20, 19, ${0.4 +
-                                      (item.i /
-                                        (Object.keys(categories).length -
-                                          1)) *
-                                      0.4
+                                    ? "none"
+                                    : `radial-gradient(ellipse at center, rgba(255, 255, 255, 1) 0%, rgba(0, 0, 0, 1) 100%), linear-gradient(90deg, rgba(16, 20, 19, ${
+                                        0.4 +
+                                        (item.i /
+                                          (Object.keys(categories).length -
+                                            1)) *
+                                          0.4
+                                      }) 0%, #101413 15.10%, rgba(16, 20, 19, 0.00) 48.96%, #101413 86.98%, rgba(16, 20, 19, ${
+                                        0.4 +
+                                        (item.i /
+                                          (Object.keys(categories).length -
+                                            1)) *
+                                          0.4
                                       }) 100%)`,
                               }}
                             >
@@ -1373,29 +1418,31 @@ export default function CategoryMetrics({
                             >
                               {selectedCategory === item.category ? (
                                 <div
-                                  className={`flex h-full ${Object.keys(
-                                    data[item.category].subcategories,
-                                  ).length > 8
+                                  className={`flex h-full ${
+                                    Object.keys(
+                                      data[item.category].subcategories,
+                                    ).length > 8
                                       ? "w-[600px]"
                                       : Object.keys(
-                                        data[item.category].subcategories,
-                                      ).length > 4
-                                        ? "w-[450px]"
-                                        : "w-[350px]"
-                                    }`}
+                                          data[item.category].subcategories,
+                                        ).length > 4
+                                      ? "w-[450px]"
+                                      : "w-[350px]"
+                                  }`}
                                 >
                                   <div
                                     key={data[item.category].subcategories}
                                     className="flex flex-wrap w-full gap-x-2 gap-y-2 justify-center self-center items-center  "
                                   >
                                     {item.category !== "unlabeled" &&
-                                      item.category !== "native_transfers" ? (
+                                    item.category !== "native_transfers" ? (
                                       <div
                                         key={categories[item.category]}
-                                        className={`flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[35px] min-w-[90px] hover:bg-white/5 z-10    ${checkAllSelected(item.category)
+                                        className={`flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[35px] min-w-[90px] hover:bg-white/5 z-10    ${
+                                          checkAllSelected(item.category)
                                             ? "opacity-100"
                                             : "opacity-30"
-                                          }`}
+                                        }`}
                                         onClick={(e) => {
                                           handleSelectAllSubcategories(
                                             item.category,
@@ -1409,29 +1456,31 @@ export default function CategoryMetrics({
                                         <div className="rounded-full bg-forest-900 mr-[1px]">
                                           <Icon
                                             icon="feather:check-circle"
-                                            className={`w-[14px] h-[14px] ${checkAllSelected(item.category)
+                                            className={`w-[14px] h-[14px] ${
+                                              checkAllSelected(item.category)
                                                 ? "opacity-100"
                                                 : "opacity-0"
-                                              }`}
+                                            }`}
                                           />
                                         </div>
                                       </div>
                                     ) : null}
                                     {item.category !== "unlabeled" &&
-                                      item.category !== "native_transfers" ? (
+                                    item.category !== "native_transfers" ? (
                                       data[
                                         item.category
                                       ].subcategories.list.map(
                                         (subcategory) => (
                                           <button
                                             key={subcategory}
-                                            className={`flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[35px] min-w-[90px] hover:bg-white/5 z-10 ${checkSubcategory(
-                                              item.category,
-                                              subcategory,
-                                            )
+                                            className={`flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[35px] min-w-[90px] hover:bg-white/5 z-10 ${
+                                              checkSubcategory(
+                                                item.category,
+                                                subcategory,
+                                              )
                                                 ? "opacity-100"
                                                 : "opacity-30"
-                                              }`}
+                                            }`}
                                             onClick={(e) => {
                                               handleToggleSubcategory(
                                                 item.category,
@@ -1446,13 +1495,14 @@ export default function CategoryMetrics({
                                             <div className="rounded-full bg-forest-900">
                                               <Icon
                                                 icon="feather:check-circle"
-                                                className={`w-[14px] h-[14px]  ${checkSubcategory(
-                                                  item.category,
-                                                  subcategory,
-                                                )
+                                                className={`w-[14px] h-[14px]  ${
+                                                  checkSubcategory(
+                                                    item.category,
+                                                    subcategory,
+                                                  )
                                                     ? "opacity-100"
                                                     : "opacity-0"
-                                                  }  `}
+                                                }  `}
                                               />
                                             </div>
                                           </button>
@@ -1616,10 +1666,11 @@ export default function CategoryMetrics({
               {/* <div className="flex justify-center items-center rounded-full bg-forest-50 p-0.5"> */}
               {/* toggle ETH */}
               <button
-                className={`px-[16px] py-[4px]  rounded-full ${selectedChartType === "absolute"
+                className={`px-[16px] py-[4px]  rounded-full ${
+                  selectedChartType === "absolute"
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
-                  }`}
+                }`}
                 onClick={() => {
                   setSelectedChartType("absolute");
                 }}
@@ -1627,10 +1678,11 @@ export default function CategoryMetrics({
                 Absolute
               </button>
               <button
-                className={`px-[16px] py-[4px]  rounded-full ${selectedChartType === "stacked"
+                className={`px-[16px] py-[4px]  rounded-full ${
+                  selectedChartType === "stacked"
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
-                  }`}
+                }`}
                 onClick={() => {
                   setSelectedChartType("stacked");
                 }}
@@ -1638,10 +1690,11 @@ export default function CategoryMetrics({
                 Stacked
               </button>
               <button
-                className={`px-[16px] py-[4px]  rounded-full ${selectedChartType === "percentage"
+                className={`px-[16px] py-[4px]  rounded-full ${
+                  selectedChartType === "percentage"
                     ? "bg-forest-500 dark:bg-forest-1000"
                     : "hover:bg-forest-500/10"
-                  }`}
+                }`}
                 onClick={() => {
                   setSelectedChartType("percentage");
                 }}
@@ -1662,10 +1715,11 @@ export default function CategoryMetrics({
           </Container>
           <Container className="xl:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-4">
             <div
-              className={`fixed inset-0 z-[90] flex items-center justify-center transition-opacity duration-200  ${selectedContract
+              className={`fixed inset-0 z-[90] flex items-center justify-center transition-opacity duration-200  ${
+                selectedContract
                   ? "opacity-80"
                   : "opacity-0 pointer-events-none"
-                }`}
+              }`}
             >
               <div
                 className={`absolute inset-0 bg-white dark:bg-black`}
@@ -1695,10 +1749,11 @@ export default function CategoryMetrics({
                             : "formkit:arrowup"
                           : "formkit:arrowdown"
                       }
-                      className={` dark:text-white text-black ${contractCategory === "chain"
+                      className={` dark:text-white text-black ${
+                        contractCategory === "chain"
                           ? "opacity-100"
                           : "opacity-20"
-                        }`}
+                      }`}
                     />
                   </button>
 
@@ -1722,10 +1777,11 @@ export default function CategoryMetrics({
                             : "formkit:arrowup"
                           : "formkit:arrowdown"
                       }
-                      className={` dark:text-white text-black ${contractCategory === "contract"
+                      className={` dark:text-white text-black ${
+                        contractCategory === "contract"
                           ? "opacity-100"
                           : "opacity-20"
-                        }`}
+                      }`}
                     />
                   </button>
                 </div>
@@ -1751,10 +1807,11 @@ export default function CategoryMetrics({
                             : "formkit:arrowup"
                           : "formkit:arrowdown"
                       }
-                      className={` dark:text-white text-black ${contractCategory === "subcategory"
+                      className={` dark:text-white text-black ${
+                        contractCategory === "subcategory"
                           ? "opacity-100"
                           : "opacity-20"
-                        }`}
+                      }`}
                     />
                   </button>
                 </div>
@@ -1784,10 +1841,11 @@ export default function CategoryMetrics({
                             : "formkit:arrowup"
                           : "formkit:arrowdown"
                       }
-                      className={` dark:text-white text-black ${contractCategory === "value"
+                      className={` dark:text-white text-black ${
+                        contractCategory === "value"
                           ? "opacity-100"
                           : "opacity-20"
-                        }`}
+                      }`}
                     />
                   </button>
 
@@ -2096,41 +2154,44 @@ export default function CategoryMetrics({
                               </div>
                               <div className="flex flex-grow">
                                 <div
-                                  className={`flex flex-none items-center space-x-2 w-0 ${copyContract ? " delay-1000" : ""
-                                    } overflow-clip transition-all duration-200 ease-in-out ${sortedContracts[key].name &&
-                                      sortedContracts[key].project_name
+                                  className={`flex flex-none items-center space-x-2 w-0 ${
+                                    copyContract ? " delay-1000" : ""
+                                  } overflow-clip transition-all duration-200 ease-in-out ${
+                                    sortedContracts[key].name &&
+                                    sortedContracts[key].project_name
                                       ? "group-hover:w-[48px]"
                                       : "group-hover:w-[96px]"
-                                    }`}
+                                  }`}
                                 >
                                   {!(
                                     sortedContracts[key].name &&
                                     sortedContracts[key].project_name
                                   ) && (
-                                      <div
-                                        className="rounded-full p-2 bg-forest-50 dark:bg-forest-1000 text-black dark:text-white cursor-pointer"
-                                        onClick={() => {
-                                          setSelectedContract(
-                                            sortedContracts[key],
-                                          );
-                                          setIsContractLabelModalOpen(true);
-                                        }}
-                                      >
-                                        <Icon
-                                          icon="gtp:add-tag"
-                                          className="w-6 h-6"
-                                        />
-                                        {/* <Icon
+                                    <div
+                                      className="rounded-full p-2 bg-forest-50 dark:bg-forest-1000 text-black dark:text-white cursor-pointer"
+                                      onClick={() => {
+                                        setSelectedContract(
+                                          sortedContracts[key],
+                                        );
+                                        setIsContractLabelModalOpen(true);
+                                      }}
+                                    >
+                                      <Icon
+                                        icon="gtp:add-tag"
+                                        className="w-6 h-6"
+                                      />
+                                      {/* <Icon
                                       icon="feather:plus"
                                       className="absolute right-0 top-2 stroke-2 stroke-forest-900"
                                     /> */}
-                                      </div>
-                                    )}
+                                    </div>
+                                  )}
                                   <div
-                                    className={`rounded-full p-2 ${copyContract
+                                    className={`rounded-full p-2 ${
+                                      copyContract
                                         ? "bg-forest-50/60 dark:bg-forest-1000/60"
                                         : "bg-forest-50 dark:bg-forest-1000"
-                                      } text-white cursor-pointer`}
+                                    } text-white cursor-pointer`}
                                     onClick={() => {
                                       navigator.clipboard.writeText(
                                         sortedContracts[key].address,
@@ -2159,13 +2220,14 @@ export default function CategoryMetrics({
                                   className={`flex flex-col flex-grow h-full justify-start text-ellipsis overflow-hidden whitespace-nowrap `}
                                 >
                                   {sortedContracts[key].name ||
-                                    sortedContracts[key].project_name ? (
+                                  sortedContracts[key].project_name ? (
                                     <>
                                       <div
-                                        className={`min-w-full max-w-full text-base ${sortedContracts[key].project_name
+                                        className={`min-w-full max-w-full text-base ${
+                                          sortedContracts[key].project_name
                                             ? "font-bold"
                                             : "opacity-30 italic"
-                                          }`}
+                                        }`}
                                       >
                                         {sortedContracts[key].project_name
                                           ? sortedContracts[key].project_name
@@ -2173,10 +2235,11 @@ export default function CategoryMetrics({
                                       </div>
 
                                       <div
-                                        className={`min-w-full max-w-full text-sm ${sortedContracts[key].name
+                                        className={`min-w-full max-w-full text-sm ${
+                                          sortedContracts[key].name
                                             ? ""
                                             : "opacity-30 italic"
-                                          }`}
+                                        }`}
                                       >
                                         {sortedContracts[key].name
                                           ? sortedContracts[key].name
@@ -2203,18 +2266,18 @@ export default function CategoryMetrics({
                               <div className="flex w-[40%]">
                                 {master &&
                                   master.blockspace_categories.main_categories[
-                                  sortedContracts[key].main_category_key
+                                    sortedContracts[key].main_category_key
                                   ]}
                               </div>
                               <div className="flex ">
                                 {" "}
                                 {master &&
-                                  master.blockspace_categories.sub_categories[
+                                master.blockspace_categories.sub_categories[
                                   sortedContracts[key].sub_category_key
-                                  ]
+                                ]
                                   ? master.blockspace_categories.sub_categories[
-                                  sortedContracts[key].sub_category_key
-                                  ]
+                                      sortedContracts[key].sub_category_key
+                                    ]
                                   : "Unlabeled"}
                               </div>
                             </div>
@@ -2232,20 +2295,20 @@ export default function CategoryMetrics({
                                   {selectedMode.includes("gas_fees_")
                                     ? showUsd
                                       ? Number(
-                                        sortedContracts[
-                                          key
-                                        ].gas_fees_absolute_usd.toFixed(0),
-                                      ).toLocaleString("en-US")
+                                          sortedContracts[
+                                            key
+                                          ].gas_fees_absolute_usd.toFixed(0),
+                                        ).toLocaleString("en-US")
                                       : Number(
+                                          sortedContracts[
+                                            key
+                                          ].gas_fees_absolute_eth.toFixed(2),
+                                        ).toLocaleString("en-US")
+                                    : Number(
                                         sortedContracts[
                                           key
-                                        ].gas_fees_absolute_eth.toFixed(2),
-                                      ).toLocaleString("en-US")
-                                    : Number(
-                                      sortedContracts[
-                                        key
-                                      ].txcount_absolute.toFixed(0),
-                                    ).toLocaleString("en-US")}
+                                        ].txcount_absolute.toFixed(0),
+                                      ).toLocaleString("en-US")}
                                 </div>
 
                                 {/* <div className="h-[3px] w-[110px] bg-forest-100 dark:bg-forest-900 flex justify-end">
@@ -2284,14 +2347,16 @@ export default function CategoryMetrics({
                   })}
                 <div className="w-full flex justify-center mb-2">
                   <button
-                    className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${Object.keys(sortedContracts).length <= 10
+                    className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${
+                      Object.keys(sortedContracts).length <= 10
                         ? "hidden"
                         : "visible"
-                      } ${Object.keys(sortedContracts).length <=
+                    } ${
+                      Object.keys(sortedContracts).length <=
                         maxDisplayedContracts || maxDisplayedContracts >= 50
                         ? "hidden"
                         : "visible"
-                      }`}
+                    }`}
                     onClick={() => {
                       setShowMore(!showMore);
                       if (
