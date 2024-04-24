@@ -1575,6 +1575,7 @@ export default function CategoryMetrics({
                   }}
                 >
                   {sortedChainValues &&
+                    master &&
                     transitions((style, item) => (
                       <animated.div
                         className="absolute w-full"
@@ -1593,6 +1594,7 @@ export default function CategoryMetrics({
                           selectedChains={selectedChains}
                           setSelectedChains={setSelectedChains}
                           selectedCategory={selectedCategory}
+                          master={master}
                         />
                       </animated.div>
                     ))}
