@@ -29,7 +29,7 @@ const FeesExplainer = () => {
         title="Fee HTML"
         src="https://api.growthepie.xyz/v1/misc/fee.html"
         width="100%"
-        height="700px"
+        height="820px"
         frameBorder="0"
       ></iframe>
     </Container>
