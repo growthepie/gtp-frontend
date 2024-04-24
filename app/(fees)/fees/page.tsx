@@ -937,10 +937,9 @@ export default function FeesPage() {
     (x) => {
       if (showUsd) {
         // if showCents is true, show 2 decimal places
-        if (showCents) return 2;
-        // if showCents is false, show 4 decimal places
-        // return x < 1 ? 3 : 2;
-        return 4;
+        if (showCents) return 1;
+        // if showCents is false, show 3 decimal places if x < 1, otherwise show 2 decimal places
+        return x < 1 ? 3 : 2;
       }
 
       return x < 1000 ? 0 : 2;
@@ -980,9 +979,9 @@ export default function FeesPage() {
           ]
         : null;
 
-      const usdClasses = "justify-end w-[60px] md:w-[65px] -mr-1.5 pr-1.5";
+      const usdClasses = "justify-center w-[60px] md:w-[65px] -mr-1.5";
       const gweiClasses = "justify-end w-[75px] md:w-[85px] -mr-1.5";
-      const centsClasses = "justify-end w-[75px] md:w-[85px] -mr-1.5";
+      const centsClasses = "justify-end w-[65px] md:w-[75px] -mr-1.5";
 
       let classes = usdClasses;
       // if (showGwei && !showUsd) classes = gweiClasses;
