@@ -3,14 +3,16 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import Icon from "@/components/layout/Icon";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { BASE_URL, BASE_URLS, IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
+import { BASE_URL, IS_DEVELOPMENT, IS_PREVIEW } from "@/lib/helpers";
 import { useMediaQuery } from "usehooks-ts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./layout/Tooltip";
 import { EmbedData, useUIContext } from "@/contexts/UIContext";
 import Link from "next/link";
 import { track } from "@vercel/analytics/react";
 
-const embedPages = ["", "fundamentals"];
+const mainEmbedPages = ["", "fundamentals"];
+const feesEmbedPages = [];
+const embedPages = BASE_URL.includes("fees.") ? feesEmbedPages : mainEmbedPages;
 
 export default function Share() {
   const pathname = usePathname();
@@ -111,11 +113,7 @@ export default function Share() {
   //Initialize URL
   useEffect(() => {
     setcurrentURL(
-      BASE_URLS[
-        process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL?.includes("dev-fees")
-          ? "preview"
-          : "production"
-      ] + pathname,
+      BASE_URL + pathname,
     );
 
     if (!embedEnabled) {
