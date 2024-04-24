@@ -30,14 +30,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
       title: res.chains[key].name,
       description: res.chains[key].symbol,
-      images: [
-        {
-          url: `api.growthepie.xyz/v1/og_images/chains/${replaceKey}.png`,
-          width: 1200,
-          height: 627,
-          alt: "growthepie.xyz",
-        },
-      ],
+      openGraph: {
+        images: [
+          {
+            url: `api.growthepie.xyz/v1/og_images/chains/${replaceKey}.png`,
+            width: 1200,
+            height: 627,
+            alt: "growthepie.xyz",
+          },
+        ],
+      },
     };
   }
 
