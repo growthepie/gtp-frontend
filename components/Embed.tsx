@@ -6,7 +6,11 @@ import Image from "next/image";
 import { BASE_URLS } from "@/lib/helpers";
 import { useMediaQuery } from "usehooks-ts";
 
-const BASE_URL = BASE_URLS[process.env.NEXT_PUBLIC_VERCEL_ENV ?? "production"];
+const BASE_URL = BASE_URLS[
+  process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL?.includes("dev-fees")
+    ? "preview"
+    : "production"
+];
 
 const pathToEmbed = (pathname: string) => {
   if (pathname === "/") return `${BASE_URL}/embed/user-base`;
@@ -15,8 +19,14 @@ const pathToEmbed = (pathname: string) => {
 
 const showEmbed = (pathname: string | null) => {
   if (!pathname) return false;
-  if (pathname === "/") return true;
-  if (pathname.includes("fundamentals/")) return true;
+  
+  if(BASE_URL.includes("fees.")){
+    if (pathname === "/") return false;
+  }else{
+    if (pathname === "/") return true;
+    if (pathname.includes("fundamentals/")) return true;
+  }
+
   return false;
 };
 
@@ -36,7 +46,7 @@ export default function Embed() {
   //Initialize URL
   useEffect(() => {
     setcurrentURL(
-      BASE_URLS[process.env.NEXT_PUBLIC_VERCEL_ENV ?? "production"] + pathname,
+      BASE_URL + pathname,
     );
   }, [pathname]);
 
