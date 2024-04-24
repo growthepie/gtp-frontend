@@ -14,6 +14,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
       title: option.page?.title,
       description: option.page?.description,
+      images: [
+        {
+          url: `http://api.growthepie.xyz/v1/og_images/blockspace/chain-overview.png`,
+          width: 1200,
+          height: 627,
+          alt: "growthepie.xyz",
+        },
+      ],
     };
   }
 
