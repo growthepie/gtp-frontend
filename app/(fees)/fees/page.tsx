@@ -936,8 +936,11 @@ export default function FeesPage() {
   const getNumFractionDigits = useCallback(
     (x) => {
       if (showUsd) {
+        // if showCents is true, show 2 decimal places
         if (showCents) return 2;
-        return x < 1 ? 3 : 2;
+        // if showCents is false, show 4 decimal places
+        // return x < 1 ? 3 : 2;
+        return 4;
       }
 
       return x < 1000 ? 0 : 2;
@@ -977,13 +980,27 @@ export default function FeesPage() {
           ]
         : null;
 
-      const usdClasses = "justify-center w-[65px] -mr-2.5";
+      const usdClasses = "justify-end w-[60px] md:w-[65px] -mr-1.5 pr-1.5";
       const gweiClasses = "justify-end w-[75px] md:w-[85px] -mr-1.5";
       const centsClasses = "justify-end w-[75px] md:w-[85px] -mr-1.5";
 
       let classes = usdClasses;
-      if (showGwei && !showUsd) classes = gweiClasses;
-      if (showCents && showUsd) classes = centsClasses;
+      // if (showGwei && !showUsd) classes = gweiClasses;
+      // if (showCents && showUsd) classes = centsClasses;
+
+      if (showUsd) {
+        if (showCents) {
+          classes = centsClasses;
+        } else {
+          classes = usdClasses;
+        }
+      } else {
+        if (showGwei) {
+          classes = gweiClasses;
+        } else {
+          classes = centsClasses;
+        }
+      }
 
       // return N/A if value is null
       if (value === null)
@@ -1025,8 +1042,8 @@ export default function FeesPage() {
             <div className="flex items-center">
               {Intl.NumberFormat(undefined, {
                 notation: "compact",
-                maximumFractionDigits: showCents ? fractionDigits : 4,
-                minimumFractionDigits: showCents ? fractionDigits : 4,
+                maximumFractionDigits: fractionDigits,
+                minimumFractionDigits: fractionDigits,
               }).format(multipliedValue)}
             </div>
             {showUsd && showCents && (
@@ -1061,8 +1078,8 @@ export default function FeesPage() {
           <div>
             {Intl.NumberFormat(undefined, {
               notation: "compact",
-              maximumFractionDigits: showCents ? fractionDigits : 4,
-              minimumFractionDigits: showCents ? fractionDigits : 4,
+              maximumFractionDigits: fractionDigits,
+              minimumFractionDigits: fractionDigits,
             }).format(multipliedValue)}
           </div>
           {showUsd && showCents && (
