@@ -27,13 +27,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }).then((r) => r.json());
 
   if (res && key && res.chains[key]) {
+    const currentDate = new Date();
+    // Set the time to 2 am
+    currentDate.setHours(2, 0, 0, 0);
+    // Convert the date to a string in the format YYYYMMDD (e.g., 20240424)
+    const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, "");
     return {
       title: res.chains[key].name,
       description: res.chains[key].symbol,
       openGraph: {
         images: [
           {
-            url: `api.growthepie.xyz/v1/og_images/chains/${replaceKey}.png`,
+            url: `api.growthepie.xyz/v1/og_images/chains/${replaceKey}.png?date=${dateString}`,
             width: 1200,
             height: 627,
             alt: "growthepie.xyz",

@@ -11,13 +11,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ?.options.find((item) => item.urlKey === "category-comparison");
 
   if (option) {
+    const currentDate = new Date();
+    // Set the time to 2 am
+    currentDate.setHours(2, 0, 0, 0);
+    // Convert the date to a string in the format YYYYMMDD (e.g., 20240424)
+    const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, "");
     return {
       title: option.page?.title,
       description: option.page?.description,
       openGraph: {
         images: [
           {
-            url: `http://api.growthepie.xyz/v1/og_images/blockspace/category-comparison.png`,
+            url: `http://api.growthepie.xyz/v1/og_images/blockspace/category-comparison.png?date=${dateString}`,
             width: 1200,
             height: 627,
             alt: "growthepie.xyz",
