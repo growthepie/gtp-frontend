@@ -111,13 +111,17 @@ export default function Share() {
   //Initialize URL
   useEffect(() => {
     setcurrentURL(
-      BASE_URLS[process.env.NEXT_PUBLIC_VERCEL_ENV ?? "production"] + pathname,
+      BASE_URLS[
+        process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL?.includes("dev-fees")
+          ? "preview"
+          : "production"
+      ] + pathname,
     );
 
     if (!embedEnabled) {
       setTopSelection("social");
     }
-  }, [pathname]);
+  }, [embedEnabled, pathname]);
 
 
   const embedDataString = useMemo(() => {
