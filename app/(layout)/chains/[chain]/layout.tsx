@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         images: [
           {
             url: `http://api.growthepie.xyz/v1/og_images/chains/${replaceKey}.png?date=${dateString}`,
-            width: "100%",
+            width: 1200,
             height: 627,
             alt: "growthepie.xyz",
           },
