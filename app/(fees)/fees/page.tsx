@@ -1311,7 +1311,7 @@ export default function FeesPage() {
               >
                 <div className="pl-[10px] flex-1 flex">
                   <div
-                    className={`flex items-center gap-x-[5px] hover:cursor-pointer  ${
+                    className={`flex items-center gap-x-[5px] ${
                       isMobile ? "w-[23%]" : "w-[27%]"
                     }`}
                   >
@@ -1325,7 +1325,7 @@ export default function FeesPage() {
                       />
                     </div>
                     <div
-                      className="flex items-center gap-x-0.5"
+                      className="flex items-center gap-x-0.5 cursor-pointer"
                       onClick={() => {
                         if (selectedQualitative === "chain") {
                           setSortOrder(!sortOrder);
@@ -1351,7 +1351,7 @@ export default function FeesPage() {
                       />{" "}
                     </div>
                     <div
-                      className="bg-[#344240] text-[8px] flex rounded-full font-normal items-center px-[5px] py-[4px] gap-x-[2px] hover:cursor-pointer whitespace-nowrap"
+                      className="bg-[#344240] text-[8px] flex rounded-full font-normal items-center px-[5px] py-[4px] gap-x-[2px] cursor-pointer whitespace-nowrap"
                       onClick={
                         !availabilityFilter
                           ? () => setAvailabilityFilter(!availabilityFilter)
@@ -1374,11 +1374,12 @@ export default function FeesPage() {
                     </div>
                   </div>
                   <div
-                    className={`relative flex items-center justify-end cursor-pointer ${
+                    className={`flex items-center justify-end ${
                       isMobile ? "w-[15%]" : "w-[15%]"
                     }`}
                   >
                     <div
+                      className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px] z-10"
                       onClick={() => {
                         if (selectedQuantitative === "txcosts_median") {
                           if (selectedQualitative) {
@@ -1392,31 +1393,32 @@ export default function FeesPage() {
                         }
                       }}
                     >
-                      Median Fee
+                      <div>Median Fee</div>
+                      <Icon
+                        icon={
+                          !selectedQualitative &&
+                          selectedQuantitative === "txcosts_median"
+                            ? sortOrder
+                              ? "formkit:arrowdown"
+                              : "formkit:arrowup"
+                            : "formkit:arrowdown"
+                        }
+                        className={`dark:text-white text-black w-[10px] h-[10px] ${
+                          !selectedQualitative &&
+                          selectedQuantitative === "txcosts_median"
+                            ? "opacity-100"
+                            : "opacity-20"
+                        }`}
+                      />
                     </div>
-                    <Icon
-                      icon={
-                        !selectedQualitative &&
-                        selectedQuantitative === "txcosts_median"
-                          ? sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
-                          : "formkit:arrowdown"
-                      }
-                      className={`absolute -right-3 top-1 dark:text-white text-black w-[10px] h-[10px] ${
-                        !selectedQualitative &&
-                        selectedQuantitative === "txcosts_median"
-                          ? "opacity-100"
-                          : "opacity-20"
-                      }`}
-                    />{" "}
                   </div>
                   <div
-                    className={`relative flex items-center justify-end hover:cursor-pointer ${
+                    className={`flex items-center justify-end ${
                       isMobile ? "w-[16%]" : "w-[16%]"
                     }`}
                   >
                     <div
+                      className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px] z-10"
                       onClick={() => {
                         if (selectedQuantitative === "txcosts_native_median") {
                           if (selectedQualitative) {
@@ -1430,31 +1432,32 @@ export default function FeesPage() {
                         }
                       }}
                     >
-                      Transfer ETH
+                      <div>Transfer ETH</div>
+                      <Icon
+                        icon={
+                          !selectedQualitative &&
+                          selectedQuantitative === "txcosts_native_median"
+                            ? sortOrder
+                              ? "formkit:arrowdown"
+                              : "formkit:arrowup"
+                            : "formkit:arrowdown"
+                        }
+                        className={`dark:text-white text-black w-[10px] h-[10px] ${
+                          !selectedQualitative &&
+                          selectedQuantitative === "txcosts_native_median"
+                            ? "opacity-100"
+                            : "opacity-20"
+                        }`}
+                      />
                     </div>
-                    <Icon
-                      icon={
-                        !selectedQualitative &&
-                        selectedQuantitative === "txcosts_native_median"
-                          ? sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
-                          : "formkit:arrowdown"
-                      }
-                      className={`absolute -right-3 top-1 dark:text-white text-black w-[10px] h-[10px] ${
-                        !selectedQualitative &&
-                        selectedQuantitative === "txcosts_native_median"
-                          ? "opacity-100"
-                          : "opacity-20"
-                      }`}
-                    />{" "}
                   </div>
                   <div
-                    className={`pr-[20px] relative flex items-center justify-end gap-x-0.5 hover:cursor-pointer ${
+                    className={`pr-[20px] flex items-center justify-end ${
                       isMobile ? "w-[16.5%]" : "w-[19.5%]"
                     }`}
                   >
                     <div
+                      className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px] z-10"
                       onClick={() => {
                         if (selectedQuantitative === "txcosts_swap") {
                           if (selectedQualitative) {
@@ -1468,8 +1471,7 @@ export default function FeesPage() {
                         }
                       }}
                     >
-                      Swap Token{" "}
-                    </div>
+                      <div>Swap Token</div>
                     <Icon
                       icon={
                         !selectedQualitative &&
@@ -1479,13 +1481,14 @@ export default function FeesPage() {
                             : "formkit:arrowup"
                           : "formkit:arrowdown"
                       }
-                      className={`absolute right-[8px] top-1 dark:text-white text-black w-[10px] h-[10px] ${
+                      className={`dark:text-white text-black w-[10px] h-[10px] ${
                         !selectedQualitative &&
                         selectedQuantitative === "txcosts_swap"
                           ? "opacity-100"
                           : "opacity-20"
                       }`}
-                    />{" "}
+                    />
+                    </div>
                   </div>
                   <div
                     className={`relative pl-[14px] flex flex-col justify-end space-x-[1px] font-normal  ${
