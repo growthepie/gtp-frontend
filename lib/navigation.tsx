@@ -602,6 +602,14 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "optimism-retropgf-3",
       },
       {
+        label: "Octant",
+        icon: "",
+        category: "public-goods-funding",
+        key: "octant",
+        rootKey: "octant",
+        urlKey: "octant",
+      },
+      {
         label: "fees.growthepie.xyz",
         icon: "gtp:gtp-pie",
         category: "gtpmetrics",

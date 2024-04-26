@@ -43,6 +43,7 @@ const nextConfig = {
     ];
   },
   images: {
+    dangerouslyAllowSVG: true,
     // domains: ["ipfs.io", "content.optimism.io"],
     remotePatterns: [
       {

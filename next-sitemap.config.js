@@ -13,6 +13,7 @@ const gtpMain = {
     "/trackers/*",
     "/blockspace/*",
     "/fees",
+    "/helpers",
   ],
   robotsTxtOptions: {
     exclude: ["/server-sitemap.xml"],
@@ -37,6 +38,7 @@ const gtpFees = {
     "/imprint",
     "/privacy-policy",
     "/server-sitemap.xml",
+    "/helpers",
   ],
   robotsTxtOptions: {
     exclude: ["/server-sitemap.xml"],
