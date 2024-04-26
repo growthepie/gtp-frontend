@@ -31,6 +31,7 @@ export type NavigationItem = {
     urlKey: string;
     excludeFromSitemap?: boolean;
     hide?: boolean;
+    showNew?: boolean;
   }[];
   href?: string;
 };
@@ -609,6 +610,7 @@ export const navigationItems: NavigationItem[] = [
         key: "octant",
         rootKey: "octant",
         urlKey: "octant",
+        showNew: true,
       },
       {
         label: "fees.growthepie.xyz",
@@ -618,6 +620,7 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "feesxyz",
         urlKey: "feesxyz",
         excludeFromSitemap: true,
+        showNew: true,
       },
     ],
   },
