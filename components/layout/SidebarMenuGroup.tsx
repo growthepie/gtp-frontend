@@ -88,13 +88,13 @@ export default function SidebarMenuGroup({
   }, [pathname]);
 
   useEffect(() => {
-    // if (urlParts[0].length === 0 && item.name === "Fundamentals") {
-    //   setIsOpen(true);
-    // } else {
-    setIsOpen(
-      urlParts[0].toLowerCase() == item.name.toLowerCase() ? true : false,
-    );
-    // }
+    if (urlParts[0].length === 0 && item.name === "Trackers") {
+      setIsOpen(true);
+    } else {
+      setIsOpen(
+        urlParts[0].toLowerCase() == item.name.toLowerCase() ? true : false,
+      );
+    }
   }, [item.name, urlParts]);
 
   const handleToggle = () => {
@@ -482,7 +482,7 @@ export default function SidebarMenuGroup({
                     </div>
                   )}
                 <Tooltip placement="top-start">
-                  <TooltipTrigger className="px-0 md:px-5">
+                  <TooltipTrigger className="px-0 md:px-5 w-full">
                     <Link
                       className={`group flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
                         urlParts[1].trim().localeCompare(option.urlKey) === 0
@@ -535,6 +535,13 @@ export default function SidebarMenuGroup({
                           className={`text-sm py-1 w-48 font-normal break-inside-auto text-left ml-12`}
                         >
                           {sidebarOpen ? option.label : <span>&nbsp;</span>}
+                        </div>
+                      )}
+                      {option.showNew && (
+                        <div className="relative top-0 right-7 rounded-full text-xs flex items-center justify-center font-bold bg-gradient-to-b from-[#FE5468] to-[#FFDF27] p-[1px]">
+                          <div className="rounded-full text-xs flex items-center justify-center font-bold  px-2 py-[1px] hard-shine-2 text-white dark:text-forest-900 ">
+                            NEW!
+                          </div>
                         </div>
                       )}
                     </Link>

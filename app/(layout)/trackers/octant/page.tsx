@@ -84,7 +84,7 @@ export default function Page() {
         setSortDirection(sortDirection === "asc" ? "desc" : "asc");
       } else {
         setSortKey(key);
-        setSortDirection(sortDirection ?? "desc");
+        setSortDirection(sortDirection === "asc" ? "desc" : "asc");
       }
     };
 
@@ -202,7 +202,7 @@ export default function Page() {
         key: "rewardsThreshold",
         cell: () => (
           <div className="relative">
-            <div className="relative -left-[8px] -bottom-[6px] text-forest-900/50 dark:text-forest-500/50 font-normal text-[0.7rem]">
+            <div className="relative -left-[8px] -bottom-[6px] text-forest-900/50 dark:text-forest-500/50 font-normal text-[0.7rem] whitespace-nowrap overflow-visible">
               {Math.abs(data.rewardsThreshold / 10 ** 18).toFixed(4)}{" "}
               <span className="text-[0.6rem] text-forest-900/20 dark:text-forest-500/30">
                 ETH
@@ -266,9 +266,12 @@ export default function Page() {
   }, [data, sortDirection, sortKey]);
 
   return (
-    <HorizontalScrollContainer className="-mb-[105px]">
-      <div className="min-w-[900px] md:min-h-[calc(100vh-473px)] xl:min-h-[calc(100vh-427px)] flex flex-col gap-y-[5px]">
-        <div className="select-none grid grid-cols-[32px,16px,minmax(220px,500px),140px,140px,150px,60px,150px,150px] gap-x-[15px] px-[6px] pt-[30px] text-[11px] items-center font-bold">
+    <HorizontalScrollContainer>
+      <div
+        className="min-w-[900px] flex flex-col gap-y-[5px] transition-all duration-300"
+        style={{ maxHeight: !data ? "calc(100vh - 550px)" : "2000px" }}
+      >
+        <div className="select-none grid grid-cols-[32px,16px,minmax(230px,800px),130px,80px,120px,40px,110px,105px] gap-x-[15px] px-[6px] pt-[30px] text-[11px] items-center font-bold">
           {headers.map((header) => (
             <div key={header.key} className={`${header.containerClassName}`}>
               {header.cell()}
@@ -280,7 +283,7 @@ export default function Page() {
             <OctantTableRow data={data} projectIndex={index} key={index} />
           ))
         ) : (
-          <div className="w-full h-[calc(100vh-550px)] flex items-center justify-center">
+          <div className="rounded-[30px] border border-forest-900/20 dark:border-forest-500/20  w-full max-w-[calc(100vw-100px)] h-[calc(100vh-450px)] flex items-center justify-center">
             <ShowLoading
               dataLoading={[true]}
               dataValidating={[false]}
@@ -300,7 +303,7 @@ type TableRowProps = {
 const OctantTableRow = ({ data, projectIndex }: TableRowProps) => {
   const project = data.projects[projectIndex];
   return (
-    <div className="grid grid-cols-[32px,16px,minmax(220px,500px),140px,140px,150px,60px,150px,150px] gap-x-[15px] rounded-full border border-forest-900/20 dark:border-forest-500/20 px-[6px] py-[5px] text-xs items-center">
+    <div className="grid grid-cols-[32px,16px,minmax(230px,800px),130px,80px,120px,40px,110px,105px] gap-x-[15px] rounded-full border border-forest-900/20 dark:border-forest-500/20 px-[6px] py-[5px] text-xs items-center">
       <div className="w-8 h-8 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
         <Image
           src={`https://ipfs.io/ipfs/${project.profileImageMedium}`}
@@ -311,7 +314,7 @@ const OctantTableRow = ({ data, projectIndex }: TableRowProps) => {
         />
       </div>
       <div className="text-[0.6rem] text-forest-900/80 dark:text-forest-500/80 font-light text-center">
-        {projectIndex + 1}
+        {project.rank + 1}
       </div>
       <div className="flex items-center justify-between">
         <div className="text-forest-900 dark:text-forest-500 font-bold flex items-center gap-x-2">
@@ -360,19 +363,25 @@ const OctantTableRow = ({ data, projectIndex }: TableRowProps) => {
         <div className="flex items-center text-[0.9rem] font-medium leading-[1.2] font-inter">
           {project.donors}
         </div>
-        <div className="w-6 h-6 flex items-center justify-center">
-          {project.donors &&
-            (project.donors > 50 ? (
-              <Icon
-                icon={"clarity:users-solid"}
-                className="w-6 h-6 text-forest-900/80 dark:text-forest-500/80 fill-current"
-              />
-            ) : (
-              <Icon
-                icon={"clarity:user-solid"}
-                className="w-6 h-4 text-forest-900/80 dark:text-forest-500/80 fill-current"
-              />
-            ))}
+        <div className="w-[26px] h-[26px] flex items-center justify-center">
+          {project.donors < 50 && (
+            <Icon
+              icon={"fluent:person-20-filled"}
+              className="w-[18px] h-[18px] text-forest-900/30 dark:text-forest-500/30 fill-current"
+            />
+          )}
+          {project.donors >= 50 && project.donors < 100 && (
+            <Icon
+              icon={"fluent:people-20-filled"}
+              className="w-[23px] h-[23px] text-forest-900/30 dark:text-forest-500/30 fill-current"
+            />
+          )}
+          {project.donors >= 100 && (
+            <Icon
+              icon={"fluent:people-community-20-filled"}
+              className="w-[26px] h-[26px] text-forest-900/30 dark:text-forest-500/30 fill-current"
+            />
+          )}
         </div>
       </div>
       <div className="flex justify-end">
