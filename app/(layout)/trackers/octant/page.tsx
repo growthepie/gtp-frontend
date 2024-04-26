@@ -150,7 +150,7 @@ export default function Page() {
 
       {
         key: "donors",
-        containerClassName: "flex justify-end text-right pr-5",
+        containerClassName: "flex justify-end text-right pr-6",
         cell: () => (
           <div
             className="relative flex justify-end text-right cursor-pointer"
@@ -175,7 +175,7 @@ export default function Page() {
       },
       {
         key: "totalAllocated",
-        containerClassName: "flex justify-end text-right pr-3",
+        containerClassName: "flex justify-end text-right pr-4",
         cell: () => (
           <div
             className="relative flex justify-end text-right cursor-pointer"
@@ -214,7 +214,7 @@ export default function Page() {
       },
       {
         key: "rewardsMatched",
-        containerClassName: "flex justify-end text-right pr-2",
+        containerClassName: "flex justify-end text-right",
         cell: () => (
           <div
             className="relative pr-[15px] flex justify-end text-right cursor-pointer"
@@ -239,7 +239,7 @@ export default function Page() {
       },
       {
         key: "rewardsTotal",
-        containerClassName: "flex justify-end text-right pr-2",
+        containerClassName: "flex justify-end text-right",
         cell: () => (
           <div
             className="relative pr-[15px] flex justify-end text-right cursor-pointer"
@@ -485,7 +485,7 @@ const OctantTableRow = ({ data, projectIndex }: TableRowProps) => {
         <div className="absolute h-[10px] w-1 border-l border-forest-900/20 dark:border-forest-500/20 -left-[15px] -bottom-[13px]"></div>
       </div>
 
-      <div className="flex justify-end pr-[15px]">
+      <div className="flex justify-end pr-[25px]">
         <div
           className={`text-[0.9rem] font-medium leading-[1.2] font-inter ${
             project.rewards.matched <= 0 && "opacity-30"
@@ -495,7 +495,7 @@ const OctantTableRow = ({ data, projectIndex }: TableRowProps) => {
           <span className="opacity-60 text-[0.55rem]">ETH</span>
         </div>
       </div>
-      <div className="flex justify-end pr-[15px]">
+      <div className="flex justify-end pr-[25px]">
         <div
           className={`text-[0.9rem] font-medium leading-[1.2] font-inter ${
             project.rewards.total <= 0 && "opacity-30"
