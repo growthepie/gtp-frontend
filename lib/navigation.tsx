@@ -29,6 +29,7 @@ export type NavigationItem = {
     key?: string;
     rootKey?: string;
     urlKey: string;
+    excludeFromSitemap?: boolean;
     hide?: boolean;
   }[];
   href?: string;
@@ -616,6 +617,7 @@ export const navigationItems: NavigationItem[] = [
         key: "feesxyz",
         rootKey: "feesxyz",
         urlKey: "feesxyz",
+        excludeFromSitemap: true,
       },
     ],
   },

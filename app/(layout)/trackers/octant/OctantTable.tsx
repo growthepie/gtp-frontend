@@ -200,10 +200,12 @@ export const OctantTable = () => {
     </div>
   );
 };
+
 type TableRowProps = {
   data: EpochData;
   projectIndex: number;
 };
+
 const OctantTableRow = ({ data, projectIndex }: TableRowProps) => {
   const project = data.projects[projectIndex];
   return (
