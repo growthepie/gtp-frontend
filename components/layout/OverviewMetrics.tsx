@@ -28,7 +28,7 @@ import RowContainer from "./BlockspaceOverview/ChainRows/RowContainer";
 import { RowProvider } from "./BlockspaceOverview/ChainRows/RowContext";
 import ContractContainer from "./BlockspaceOverview/Contracts/ContractContainer";
 import { ContractProvider } from "./BlockspaceOverview/Contracts/ContractContext";
-
+import { useRouter } from "next/navigation";
 // object which contains the allowed modes for chains with mode exceptions
 const AllowedModes: {
   [chain: string]: {
@@ -48,12 +48,14 @@ export default function OverviewMetrics({
   selectedTimespan,
   setSelectedTimespan,
   forceSelectedChain,
+  forceCategory,
 }: {
   data: Chains;
   master: MasterResponse;
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
   forceSelectedChain?: string;
+  forceCategory?: string;
 }) {
   const { theme } = useTheme();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -62,7 +64,9 @@ export default function OverviewMetrics({
   );
   const [isCategoryMenuExpanded, setIsCategoryMenuExpanded] = useState(true);
   const [allCats, setAllCats] = useState(forceSelectedChain ? true : false);
-  const [selectedCategory, setSelectedCategory] = useState("nft");
+  const [selectedCategory, setSelectedCategory] = useState(
+    forceCategory ? forceCategory : "nft",
+  );
   const [selectedValue, setSelectedValue] = useState("share");
   const [chainEcosystemFilter, setChainEcosystemFilter] = useSessionStorage(
     "chainEcosystemFilter",
@@ -78,7 +82,7 @@ export default function OverviewMetrics({
   const [selectedChain, setSelectedChain] = useState<string | null>(
     forceSelectedChain ?? null,
   );
-
+  const router = useRouter();
   const chartComponent = useRef<Highcharts.Chart | null>(null);
   const hoverCategory = (category: string) => {
     if (!hoveredCategories.includes(category)) {
@@ -106,6 +110,16 @@ export default function OverviewMetrics({
       setHoveredCategories([hoveredChartSeriesCategory]);
     }
   }, [allCats, hoveredSeriesId]);
+
+  useEffect(() => {
+    if (!forceCategory) return;
+
+    if (forceCategory !== selectedCategory) {
+      router.push(`/blockspace/chain-overview/${selectedCategory}`, {
+        shallow: true,
+      } as any);
+    }
+  }, [selectedCategory, router]);
 
   const forceHoveredChartSeriesId = useMemo(() => {
     if (allCats && hoveredCategories.length > 0) {
