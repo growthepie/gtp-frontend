@@ -125,6 +125,12 @@ const Chain = ({ params }: { params: any }) => {
     "max",
   );
 
+  useEffect(() => {
+    if (selectedTimespan === "180d") {
+      setSelectedTimespan("1d");
+    }
+  }, []);
+
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
   if (chainKeys.length === 0) return notFound();

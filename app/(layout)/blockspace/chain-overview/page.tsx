@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Heading from "@/components/layout/Heading";
 import Container from "@/components/layout/Container";
 import OverviewMetrics from "@/components/layout/OverviewMetrics";
@@ -62,6 +62,12 @@ const ChainOverview = () => {
     description: "",
     icon: "",
   };
+
+  useEffect(() => {
+    if (selectedTimespan === "1d") {
+      setSelectedTimespan("7d");
+    }
+  }, []);
 
   const chainFilter = useMemo(() => {
     const filteredChains: Chains = Object.keys(AllChainsByKeys)
