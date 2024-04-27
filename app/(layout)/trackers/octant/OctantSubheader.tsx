@@ -35,15 +35,11 @@ export const OctantSubheader = () => {
           value ? "max-h-[300px]" : "max-h-0"
         } overflow-hidden`}
       >
-        <p>
-          Participants lock GLM tokens to engage in a reward system over 90-day
-          cycles, known as epochs. During these periods, users can either claim
-          their earnings or support pre-approved projects.
-        </p>
-        <p>
-          Contributions to these projects are amplified by matched funds from
-          the foundation&apos;s staking yield.
-        </p>
+        Participants lock GLM tokens to engage in a reward system over 90-day
+        cycles, known as epochs. During these periods, users can either claim
+        their earnings or support pre-approved projects. Contributions to these
+        projects are amplified by matched funds from the foundation&apos;s
+        staking yield.
       </div>
     </Subheading>
   );
