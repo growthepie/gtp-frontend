@@ -2095,7 +2095,7 @@ export default function Page() {
         </div>
         <QuestionAnswer
           startOpen={false}
-          className="z-50 rounded-3xl bg-forest-50 dark:bg-forest-900 px-[30px] py-[23px] flex flex-col absolute bottom-8 left-[20px] right-[20px] md:left-[50px] md:right-[50px]"
+          className="z-50 rounded-3xl bg-forest-50 dark:bg-forest-900 px-[30px] py-[23px] flex flex-col absolute bottom-[240px] left-[20px] right-[20px] md:left-[50px] md:right-[50px]"
           question={"What can you see in this list?"}
           answer={
             <div className="text-xs lg:text-sm">

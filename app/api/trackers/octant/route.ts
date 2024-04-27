@@ -123,6 +123,7 @@ export type EpochData = {
     totalAllocated: number;
     thresholdReached: boolean;
     percentageThresholdOfTotalAllocated: number;
+    rank: number;
     rewardsTotal: number;
     rewardsMatched: number;
     rewards: {
@@ -292,6 +293,10 @@ const getAllEpochs = async () => {
       }
     }
 
+    const totalRewardsRankByProject = Object.entries(
+      finalizedRewards ? finalizedRewardsByProject : estimatedRewardsByProject,
+    ).sort((a, b) => b[1].total - a[1].total);
+
     epochs.push({
       stats: epochStats.data,
       epoch: epochNum,
@@ -341,6 +346,7 @@ const getAllEpochs = async () => {
             totalAllocated: totalAllocatedByProject[address] || 0,
             percentageThresholdOfTotalAllocated:
               rewardsThreshold / totalAllocatedByProject[address],
+            rank: totalRewardsRankByProject.findIndex((r) => r[0] === address),
             rewardsTotal: finalizedRewardsByProject[address]
               ? finalizedRewardsByProject[address].total
               : estimatedRewardsByProject[address]
