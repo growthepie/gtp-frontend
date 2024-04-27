@@ -68,8 +68,37 @@ const getProjectMetadata = async (address: string, projectCid: string) => {
   return content;
 };
 
+export type EpochState =
+  | "PENDING"
+  | "ACTIVE"
+  | "REWARD_ALLOCATION"
+  | "FINALIZED";
+
+export type EpochProject = {
+  name: string;
+  address: string;
+  profileImageMedium: string;
+  website: {
+    label: string;
+    url: string;
+  };
+  donors: number;
+  totalAllocated: number;
+  thresholdReached: boolean;
+  percentageThresholdOfTotalAllocated: number;
+  rank: number;
+  rewardsTotal: number;
+  rewardsMatched: number;
+  rewards: {
+    allocated: number;
+    matched: number;
+    total: number;
+  };
+};
+
 export type EpochData = {
   stats: EpochStats;
+  state: EpochState;
   epoch: number;
   fromTimestamp?: Date;
   toTimestamp?: Date;
@@ -97,41 +126,7 @@ export type EpochData = {
     | null
     | undefined;
   rewardsThreshold: number;
-  projects: {
-    name: string;
-    address: string;
-    profileImageMedium: string;
-    website: {
-      label: string;
-      url: string;
-    };
-    // metadata: {
-    //   // name: string;
-    //   // introDescription: string;
-    //   // description: string;
-    //   // profileImageSmall: string;
-    //   profileImageMedium: string;
-    //   // profileImageLarge: string;
-    //   website: {
-    //     label: string;
-    //     url: string;
-    //   };
-    // };
-    // budgets: EpochBudgetItem[];
-    // allocations: EpochAllocation[];
-    donors: number;
-    totalAllocated: number;
-    thresholdReached: boolean;
-    percentageThresholdOfTotalAllocated: number;
-    rank: number;
-    rewardsTotal: number;
-    rewardsMatched: number;
-    rewards: {
-      allocated: number;
-      matched: number;
-      total: number;
-    };
-  }[];
+  projects: EpochProject[];
 };
 const getAllEpochs = async () => {
   // get current epoch from: https://backend.mainnet.octant.app/epochs/current
@@ -297,8 +292,27 @@ const getAllEpochs = async () => {
       finalizedRewards ? finalizedRewardsByProject : estimatedRewardsByProject,
     ).sort((a, b) => b[1].total - a[1].total);
 
+    let epochState: EpochState = "PENDING";
+
+    if (epochStartEndTimeInfo) {
+      const now = Date.now();
+      const fromTs = parseInt(epochStartEndTimeInfo.fromTs) * 1000;
+      const toTs = parseInt(epochStartEndTimeInfo.toTs) * 1000;
+      const decisionWindow =
+        parseInt(epochStartEndTimeInfo.decisionWindow) * 1000;
+
+      if (now >= fromTs && now < toTs) {
+        epochState = "ACTIVE";
+      } else if (now >= toTs && now < toTs + decisionWindow) {
+        epochState = "REWARD_ALLOCATION";
+      } else if (now >= toTs + decisionWindow) {
+        epochState = "FINALIZED";
+      }
+    }
+
     epochs.push({
       stats: epochStats.data,
+      state: epochState,
       epoch: epochNum,
       fromTimestamp: epochStartEndTimeInfo
         ? new Date(parseInt(epochStartEndTimeInfo.fromTs) * 1000)

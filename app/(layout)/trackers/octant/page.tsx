@@ -5,8 +5,16 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Icon from "@/components/layout/Icon";
-import { EpochData } from "@/app/api/trackers/octant/route";
+import {
+  EpochData,
+  EpochProject,
+  EpochState,
+} from "@/app/api/trackers/octant/route";
 import ShowLoading from "@/components/layout/ShowLoading";
+
+type EpochsByProject = {
+  [project: string]: EpochData[];
+};
 
 export default function Page() {
   // const {
@@ -23,53 +31,252 @@ export default function Page() {
       const response = await fetch("/api/trackers/octant");
       const data = await response.json();
       setEpochs(data);
+
+      // const byProject: EpochsByProject = {};
+
+      // data.forEach((epoch) => {
+      //   epoch.projects.forEach((project) => {
+      //     if (!byProject[project.address]) {
+      //       byProject[project.address] = [];
+      //     }
+      //     byProject[project.address].push(epoch);
+      //   });
+      // });
+
+      // setEpochsByProject(byProject);
     }
 
     fetchData();
   }, []);
 
-  const data = useMemo(() => {
+  const [latestAllocationEpoch, setLatestAllocationEpoch] =
+    useState<EpochData | null>(null);
+  const [currentEpoch, setCurrentEpoch] = useState<EpochData | null>(null);
+
+  const data = useMemo<EpochData | null>(() => {
     if (!epochs) return null;
 
     const now = Date.now();
+    //const oneWeekFromNow = now + 7 * 24 * 60 * 60 * 1000;
 
     // console.log(epochs.map((epoch) => epoch.epoch));
 
     const currentEpochs = epochs.filter((epoch) => {
       // console.log(epoch.epoch, epoch.decisionWindow);
-      if (!epoch.decisionWindow) return false;
+      if (!epoch.decisionWindow || !epoch.toTimestamp) return false;
+      const toTime = new Date(epoch.toTimestamp).getTime();
       const decisionWindowNumber = new Date(epoch.decisionWindow).getTime();
 
-      return now < decisionWindowNumber;
+      return now < decisionWindowNumber && now > toTime;
     });
+
+    if (currentEpochs.length === 0) {
+      // get the epoch with the decision window that passed most recently
+      let latestEpoch;
+      epochs
+        .sort((a, b) =>
+          a.decisionWindow && b.decisionWindow
+            ? new Date(a.decisionWindow).getTime() -
+              new Date(b.decisionWindow).getTime()
+            : 0,
+        )
+        .forEach((epoch) => {
+          if (!epoch.decisionWindow) return false;
+          const decisionWindowNumber = new Date(epoch.decisionWindow).getTime();
+
+          if (now > decisionWindowNumber) {
+            latestEpoch = epoch;
+          }
+        });
+
+      setCurrentEpoch(latestEpoch);
+      setLatestAllocationEpoch(latestEpoch);
+
+      return latestEpoch;
+    }
+
+    setCurrentEpoch(currentEpochs[0]);
+    setLatestAllocationEpoch(currentEpochs[0]);
 
     return currentEpochs[0];
   }, [epochs]);
+
+  // const currentEpoch = useMemo<EpochData | null>(() => {
+  //   if (!epochs) return null;
+
+  //   const now = Date.now();
+
+  //   // console.log(epochs.map((epoch) => epoch.epoch));
+
+  //   const currentEpochs = epochs.filter((epoch) => {
+  //     // console.log(epoch.epoch, epoch.decisionWindow);
+  //     if (!epoch.decisionWindow) return false;
+  //     const decisionWindowNumber = new Date(epoch.decisionWindow).getTime();
+
+  //     return now < decisionWindowNumber;
+  //   });
+
+  //   return currentEpochs[0];
+  // }, [epochs]);
+
+  const epochsByProject = useMemo<EpochsByProject | null>(() => {
+    if (!epochs) return null;
+
+    const byProject: EpochsByProject = {};
+
+    epochs.forEach((epoch) => {
+      epoch.projects.forEach((project) => {
+        if (!byProject[project.address]) {
+          byProject[project.address] = [];
+        }
+        byProject[project.address].push(epoch);
+      });
+    });
+
+    return byProject;
+  }, [epochs]);
+
+  const allTimeTotalsByProject = useMemo(() => {
+    if (!epochsByProject || !latestAllocationEpoch) return null;
+
+    const totals: { [project: string]: number } = {};
+
+    Object.keys(epochsByProject).forEach((projectAddress) => {
+      const projectEpochs = epochsByProject[projectAddress];
+
+      totals[projectAddress] = projectEpochs.reduce((acc, epoch) => {
+        if (!epoch.projects || epoch.epoch > latestAllocationEpoch.epoch)
+          return acc;
+
+        const project = epoch.projects.find(
+          (p) => p.address === projectAddress,
+        );
+
+        if (!project) return acc;
+
+        return acc + project.rewardsTotal;
+      }, 0);
+    });
+
+    return totals;
+  }, [epochsByProject, latestAllocationEpoch]);
 
   const [sortKey, setSortKey] = useState<string | null>("totalAllocated");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   const onRowSort = useCallback(
-    (a: any, b: any) => {
-      if (sortKey) {
-        const aValue = a[sortKey];
-        const bValue = b[sortKey];
-        if (aValue < bValue) {
+    (a: string, b: string) => {
+      if (
+        !sortKey ||
+        !currentEpoch ||
+        !epochsByProject ||
+        !allTimeTotalsByProject
+      )
+        return 0;
+
+      if (sortKey === "epochs") {
+        const aEpochs = epochsByProject[a].map((e) => e.epoch).join();
+        const bEpochs = epochsByProject[b].map((e) => e.epoch).join();
+
+        if (aEpochs < bEpochs) {
           return sortDirection === "asc" ? -1 : 1;
         }
-        if (aValue > bValue) {
+        if (aEpochs > bEpochs) {
           return sortDirection === "asc" ? 1 : -1;
         }
+
+        return 0;
       }
+
+      if (sortKey === "allTimeTotal") {
+        if (allTimeTotalsByProject[a] < allTimeTotalsByProject[b]) {
+          return sortDirection === "asc" ? -1 : 1;
+        }
+        if (allTimeTotalsByProject[a] > allTimeTotalsByProject[b]) {
+          return sortDirection === "asc" ? 1 : -1;
+        }
+
+        return 0;
+      }
+
+      if (!data) return 0;
+
+      const aCurrentEpochProject = currentEpoch.projects.find(
+        (p) => p.address === a,
+      );
+      const aLastPresentEpochProject = epochsByProject[a][
+        epochsByProject[a].length - 1
+      ].projects.find((p) => p.address === a);
+
+      const bCurrentEpochProject = currentEpoch.projects.find(
+        (p) => p.address === b,
+      );
+      const bLastPresentEpochProject = epochsByProject[b][
+        epochsByProject[b].length - 1
+      ].projects.find((p) => p.address === b);
+
+      if (["name", "address"].includes(sortKey)) {
+        const aProject = aCurrentEpochProject
+          ? aCurrentEpochProject
+          : aLastPresentEpochProject;
+
+        const bProject = bCurrentEpochProject
+          ? bCurrentEpochProject
+          : bLastPresentEpochProject;
+
+        if (!aProject && !bProject) return 0;
+        if (!aProject) return 1;
+        if (!bProject) return -1;
+
+        const aValue = aProject[sortKey];
+        const bValue = bProject[sortKey];
+
+        if (!aProject && !bProject) return 0;
+        if (!aProject) return 1;
+        if (!bProject) return -1;
+
+        if (aValue.toLowerCase().localeCompare(bValue.toLowerCase()) < 0) {
+          return sortDirection === "asc" ? -1 : 1;
+        }
+        if (aValue.toLowerCase().localeCompare(bValue.toLowerCase()) > 0) {
+          return sortDirection === "asc" ? 1 : -1;
+        }
+        return 0;
+      }
+
+      const aProject = aCurrentEpochProject;
+      const bProject = bCurrentEpochProject;
+
+      if (!aProject && !bProject) return 0;
+      if (!aProject) return 1;
+      if (!bProject) return -1;
+
+      const aValue = aProject[sortKey];
+      const bValue = bProject[sortKey];
+
+      if (aValue < bValue) {
+        return sortDirection === "asc" ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortDirection === "asc" ? 1 : -1;
+      }
+
       return 0;
     },
-    [sortKey, sortDirection],
+    [
+      sortKey,
+      currentEpoch,
+      epochsByProject,
+      data,
+      sortDirection,
+      allTimeTotalsByProject,
+    ],
   );
 
   const sortedProjects = useMemo(() => {
-    if (!data) return [];
-    return data.projects.sort(onRowSort);
-  }, [data, onRowSort]);
+    if (!epochsByProject) return [];
+    return Object.keys(epochsByProject).sort(onRowSort);
+  }, [epochsByProject, onRowSort]);
 
   const headers: {
     key: string;
@@ -127,7 +334,7 @@ export default function Page() {
         key: "address",
         cell: () => (
           <div
-            className="flex relative cursor-pointer"
+            className="hidden lg:flex relative cursor-pointer"
             onClick={() => handleSort("address")}
           >
             Address
@@ -147,7 +354,30 @@ export default function Page() {
         ),
         sortKey: "address",
       },
-
+      {
+        key: "epochs",
+        cell: () => (
+          <div
+            className="flex relative cursor-pointer"
+            onClick={() => handleSort("epochs")}
+          >
+            Epoch History
+            <div className="w-[10px] pt-0.5">
+              <Icon
+                icon="formkit:arrowdown"
+                className={`w-[10px] h-[10px] transition duration-100 transform ${
+                  sortKey !== "epochs" && "opacity-20"
+                } ${
+                  sortKey === "epochs" && sortDirection === "desc"
+                    ? "rotate-180"
+                    : ""
+                }`}
+              />
+            </div>
+          </div>
+        ),
+        sortKey: "epochs",
+      },
       {
         key: "donors",
         containerClassName: "flex justify-end text-right pr-6",
@@ -203,7 +433,10 @@ export default function Page() {
         cell: () => (
           <div className="relative">
             <div className="relative -left-[8px] -bottom-[6px] text-forest-900/50 dark:text-forest-500/50 font-normal text-[0.7rem] whitespace-nowrap overflow-visible">
-              {Math.abs(data.rewardsThreshold / 10 ** 18).toFixed(4)}{" "}
+              {currentEpoch &&
+                Math.abs(currentEpoch.rewardsThreshold / 10 ** 18).toFixed(
+                  4,
+                )}{" "}
               <span className="text-[0.6rem] text-forest-900/20 dark:text-forest-500/30">
                 ETH
               </span>
@@ -245,7 +478,7 @@ export default function Page() {
             className="relative pr-[15px] flex justify-end text-right cursor-pointer"
             onClick={() => handleSort("rewardsTotal")}
           >
-            <div>Total Rewards</div>
+            <div>Epoch {currentEpoch?.epoch} Total</div>
             <div className="w-[10px] pt-0.5">
               <Icon
                 icon="formkit:arrowup"
@@ -262,25 +495,101 @@ export default function Page() {
         ),
         sortKey: "rewardsTotal",
       },
+      {
+        key: "allTimeTotal",
+        containerClassName: "flex justify-end text-right",
+        cell: () => (
+          <div
+            className="relative pr-[15px] flex justify-end text-right cursor-pointer"
+            onClick={() => handleSort("allTimeTotal")}
+          >
+            <div>All Time Total</div>
+            <div className="w-[10px] pt-0.5">
+              <Icon
+                icon="formkit:arrowup"
+                className={`w-[10px] h-[10px] transition duration-100 transform ${
+                  sortKey !== "allTimeTotal" && "opacity-20"
+                } ${
+                  sortKey === "allTimeTotal" && sortDirection === "asc"
+                    ? "rotate-180"
+                    : ""
+                }`}
+              />
+            </div>
+          </div>
+        ),
+        sortKey: "allTimeTotal",
+      },
     ];
-  }, [data, sortDirection, sortKey]);
+  }, [data, sortDirection, sortKey, currentEpoch]);
 
   return (
     <HorizontalScrollContainer>
+      {/* <div>sortedProjects: {sortedProjects.length}</div>
+      <div>
+        epochsByProject:{" "}
+        {epochsByProject && Object.keys(epochsByProject).length}
+      </div>
+      {epochs && currentEpoch && (
+        <div className="flex">
+          <button
+            className="rounded-md bg-forest-900/10 dark:bg-forest-500/10 text-forest-900/80 dark:text-forest-500/80"
+            onClick={() => {
+              const index = epochs.findIndex(
+                (e) => e.epoch === currentEpoch.epoch,
+              );
+              setCurrentEpoch(epochs[index - 1]);
+            }}
+            disabled={currentEpoch && currentEpoch.epoch === 1}
+          >
+            Prev
+          </button>
+          <div className="flex gap-x-2">
+            <div className="text-forest-900/80 dark:text-forest-500/80">
+              {currentEpoch && currentEpoch.epoch}
+            </div>
+            <div className="text-forest-900/80 dark:text-forest-500/80">
+              {epochs && epochs.length}
+            </div>
+          </div>
+          <button
+            className="rounded-md bg-forest-900/10 dark:bg-forest-500/10 text-forest-900/80 dark:text-forest-500/80"
+            onClick={() => {
+              const index = epochs.findIndex(
+                (e) => e.epoch === currentEpoch.epoch,
+              );
+              setCurrentEpoch(epochs[index + 1]);
+            }}
+            disabled={currentEpoch && currentEpoch.epoch === epochs.length}
+          >
+            Next
+          </button>
+        </div>
+      )} */}
+
       <div
         className="min-w-[900px] flex flex-col gap-y-[5px] transition-all duration-300"
-        style={{ maxHeight: !data ? "calc(100vh - 550px)" : "2000px" }}
+        style={{ maxHeight: !data ? "calc(100vh - 550px)" : "5000px" }}
       >
-        <div className="select-none grid grid-cols-[32px,16px,minmax(230px,800px),130px,80px,120px,40px,110px,105px] gap-x-[15px] px-[6px] pt-[30px] text-[11px] items-center font-bold">
+        <div className="select-none grid grid-cols-[32px,16px,minmax(240px,800px),0px,130px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,130px,80px,120px,40px,110px,105px,120px] gap-x-[15px] px-[6px] pt-[30px] text-[11px] items-center font-bold">
           {headers.map((header) => (
             <div key={header.key} className={`${header.containerClassName}`}>
               {header.cell()}
             </div>
           ))}
         </div>
-        {data ? (
-          sortedProjects.map((project, index) => (
-            <OctantTableRow data={data} projectIndex={index} key={index} />
+        {currentEpoch && epochsByProject && epochs && allTimeTotalsByProject ? (
+          sortedProjects.map((address, index) => (
+            <OctantTableRow
+              key={index}
+              currentEpoch={currentEpoch}
+              projectAddress={address}
+              projectIndex={index}
+              epochsByProject={epochsByProject}
+              allTimeTotalsByProject={allTimeTotalsByProject}
+              epochs={epochs}
+              setCurrentEpoch={setCurrentEpoch}
+            />
           ))
         ) : (
           <div className="rounded-[30px] border border-forest-900/20 dark:border-forest-500/20  w-full max-w-[calc(100vw-100px)] h-[calc(100vh-450px)] flex items-center justify-center">
@@ -296,14 +605,111 @@ export default function Page() {
     </HorizontalScrollContainer>
   );
 }
-type TableRowProps = {
-  data: EpochData;
-  projectIndex: number;
-};
-const OctantTableRow = ({ data, projectIndex }: TableRowProps) => {
-  const project = data.projects[projectIndex];
+
+const EpochTile = ({
+  address,
+  epochNumber,
+  epochState,
+  epoch,
+  currentEpoch,
+  setCurrentEpoch,
+}: {
+  address: string;
+  epochNumber: number;
+  epochState: EpochState;
+  epoch: EpochData;
+  currentEpoch: EpochData;
+  setCurrentEpoch?: (epoch: EpochData) => void;
+}) => {
+  const project = epoch.projects.find((p) => p.address === address);
+
+  if (!project) return <div className="w-2 h-2 bg-orange-500"></div>;
+
   return (
-    <div className="grid grid-cols-[32px,16px,minmax(230px,800px),130px,80px,120px,40px,110px,105px] gap-x-[15px] rounded-full border border-forest-900/20 dark:border-forest-500/20 px-[6px] py-[5px] text-xs items-center">
+    <>
+      {epochState === "PENDING" && (
+        <div className="flex items-center justify-center w-6 h-6 border border-dashed border-gray-500 rounded-sm text-gray-500">
+          <div>{epochNumber}</div>
+          {/* <Icon icon="fluent:hourglass-top" className="w-4 h-4" /> */}
+        </div>
+      )}
+      {epochState === "ACTIVE" && (
+        <div className="flex items-center justify-center w-6 h-6 bg-gray-500/40 rounded-sm text-gray-100">
+          <div>{epochNumber}</div>
+          {/* <Icon icon="fluent:checkmark" className="w-4 h-4" /> */}
+        </div>
+      )}
+
+      {["FINALIZED", "REWARD_ALLOCATION"].includes(epochState) && (
+        <div
+          className={`flex items-center justify-center w-6 h-6 opacity-80 ${
+            currentEpoch.epoch === epoch.epoch
+              ? project && project.thresholdReached
+                ? "bg-green-500 text-green-50"
+                : "bg-red-500 text-red-50"
+              : project && project.thresholdReached
+              ? "bg-green-500/10 text-green-500/50"
+              : "bg-red-500/10 text-red-500/50"
+          } rounded-sm cursor-pointer`}
+          onClick={() => setCurrentEpoch && setCurrentEpoch(epoch)}
+        >
+          <div>{epochNumber}</div>
+          {/* <Icon icon="fluent:checkmark" className="w-4 h-4" /> */}
+        </div>
+      )}
+      {/* {epochState === "FINALIZED" && (
+        <div
+          className={`flex items-center justify-center w-6 h-6 ${
+            project && project.thresholdReached
+              ? "bg-green-500/10 text-green-500/50"
+              : "bg-red-500/10 text-red-500/50"
+          } rounded-sm cursor-pointer`}
+          onClick={() => setCurrentEpoch && setCurrentEpoch(epoch)}
+        >
+          <div>{epochNumber}</div>
+        </div>
+      )} */}
+    </>
+  );
+};
+
+type TableRowProps = {
+  currentEpoch: EpochData;
+  projectAddress: string;
+  projectIndex: number;
+  epochsByProject: EpochsByProject;
+  allTimeTotalsByProject: { [project: string]: number };
+  epochs: EpochData[];
+  setCurrentEpoch?: (epoch: EpochData) => void;
+};
+
+const OctantTableRow = ({
+  currentEpoch,
+  projectAddress,
+  projectIndex,
+  epochsByProject,
+  allTimeTotalsByProject,
+  epochs,
+  setCurrentEpoch,
+}: TableRowProps) => {
+  // const project = data.projects[projectIndex];
+  const currentEpochProject = currentEpoch.projects.find(
+    (p) => p.address === projectAddress,
+  );
+  const lastPresentEpochProject = epochsByProject[projectAddress][
+    epochsByProject[projectAddress].length - 1
+  ].projects.find((p) => p.address === projectAddress);
+
+  const project = currentEpochProject
+    ? currentEpochProject
+    : lastPresentEpochProject;
+
+  //console.log("project", project);
+
+  if (!project) return null;
+
+  return (
+    <div className="grid grid-cols-[32px,16px,minmax(240px,800px),0px,130px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,130px,80px,120px,40px,110px,105px,120px] gap-x-[15px] rounded-full border border-forest-900/20 dark:border-forest-500/20 px-[6px] py-[5px] text-xs items-center">
       <div className="w-8 h-8 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
         <Image
           src={`https://ipfs.io/ipfs/${project.profileImageMedium}`}
@@ -314,25 +720,27 @@ const OctantTableRow = ({ data, projectIndex }: TableRowProps) => {
         />
       </div>
       <div className="text-[0.6rem] text-forest-900/80 dark:text-forest-500/80 font-light text-center">
-        {project.rank + 1}
+        {projectIndex + 1}
       </div>
       <div className="flex items-center justify-between">
-        <div className="text-forest-900 dark:text-forest-500 font-bold flex items-center gap-x-2">
-          <Link
-            className="w-4 h-4"
-            href={project.website.url}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Icon
-              icon="feather:external-link"
-              className="w-4 h-4 text-forest-900/80 dark:text-forest-500/80"
-            />
-          </Link>
-          <div>{project.name}</div>
+        <div className="text-forest-900 dark:text-forest-500 flex justify-between w-full pr-[20px]">
+          <div className=" font-bold flex items-center gap-x-2">
+            <Link
+              className="w-4 h-4"
+              href={project && project.website.url && project.website.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Icon
+                icon="feather:external-link"
+                className="w-4 h-4 text-forest-900/80 dark:text-forest-500/80"
+              />
+            </Link>
+            <div>{project.name}</div>
+          </div>
         </div>
 
-        <div className="border-2 rounded-md border-forest-900/20 dark:border-forest-500/20 p-0.5 hover:bg-forest-900/10 dark:hover:bg-forest-500/10  text-forest-900/80 dark:text-forest-500/80">
+        <div className="border-[1.5px] rounded-[3px] border-forest-900/60 dark:border-forest-500/60 p-0.5 hover:bg-forest-900/10 dark:hover:bg-forest-500/10  text-forest-900/60 dark:text-forest-500/60">
           <Link
             href={`https://octant.app/project/3/${project.address}`}
             rel="noopener noreferrer"
@@ -348,49 +756,78 @@ const OctantTableRow = ({ data, projectIndex }: TableRowProps) => {
           </Link>
         </div>
       </div>
-      <div>
+
+      <div className="justify-start items-center overflow-hidden">
         <Link
           rel="noopener noreferrer"
           target="_blank"
           href={`https://etherscan.io/address/${project.address}`}
-          className={`rounded-full px-1 py-0 border border-forest-900/20 dark:border-forest-500/20 font-mono text-[10px text-forest-900/50 dark:text-forest-500/50 hover:bg-forest-900/10 dark:hover:bg-forest-500/10`}
+          className={`rounded-full px-1 py-0 border border-forest-900/20 dark:border-forest-500/20 font-mono text-[10px] text-forest-900/50 dark:text-forest-500/50 hover:bg-forest-900/10 dark:hover:bg-forest-500/10`}
         >
           <>{project.address.slice(0, 5) + "..." + project.address.slice(-8)}</>
         </Link>
       </div>
+      <div>
+        <div className="flex gap-x-1.5 font-inter font-bold text-white/60 text-xs select-none">
+          {epochsByProject[project.address] &&
+            epochs.map((epoch, index) => {
+              const isInEpoch = epochsByProject[project.address].find(
+                (e) => e.epoch === epoch.epoch,
+              );
 
-      <div className="flex justify-end item-center gap-x-2">
-        <div className="flex items-center text-[0.9rem] font-medium leading-[1.2] font-inter">
-          {project.donors}
-        </div>
-        <div className="w-[26px] h-[26px] flex items-center justify-center">
-          {project.donors < 50 && (
-            <Icon
-              icon={"fluent:person-20-filled"}
-              className="w-[18px] h-[18px] text-forest-900/30 dark:text-forest-500/30 fill-current"
-            />
-          )}
-          {project.donors >= 50 && project.donors < 100 && (
-            <Icon
-              icon={"fluent:people-20-filled"}
-              className="w-[23px] h-[23px] text-forest-900/30 dark:text-forest-500/30 fill-current"
-            />
-          )}
-          {project.donors >= 100 && (
-            <Icon
-              icon={"fluent:people-community-20-filled"}
-              className="w-[26px] h-[26px] text-forest-900/30 dark:text-forest-500/30 fill-current"
-            />
-          )}
+              if (!isInEpoch)
+                return <div key={index} className="w-6 h-6"></div>;
+              return (
+                <EpochTile
+                  key={index}
+                  address={project.address}
+                  epochNumber={epoch.epoch}
+                  epochState={epoch.state}
+                  epoch={epoch}
+                  currentEpoch={currentEpoch}
+                  setCurrentEpoch={setCurrentEpoch}
+                />
+              );
+            })}
         </div>
       </div>
+      <div className="flex justify-end item-center gap-x-2">
+        {currentEpochProject && (
+          <>
+            <div className="flex items-center text-[0.9rem] font-medium leading-[1.2] font-inter">
+              {project.donors}
+            </div>
+            <div className="w-[26px] h-[26px] flex items-center justify-center">
+              {project.donors < 50 && (
+                <Icon
+                  icon={"fluent:person-20-filled"}
+                  className="w-[18px] h-[18px] text-forest-900/30 dark:text-forest-500/30 fill-current"
+                />
+              )}
+              {project.donors >= 50 && project.donors < 100 && (
+                <Icon
+                  icon={"fluent:people-20-filled"}
+                  className="w-[23px] h-[23px] text-forest-900/30 dark:text-forest-500/30 fill-current"
+                />
+              )}
+              {project.donors >= 100 && (
+                <Icon
+                  icon={"fluent:people-community-20-filled"}
+                  className="w-[26px] h-[26px] text-forest-900/30 dark:text-forest-500/30 fill-current"
+                />
+              )}
+            </div>
+          </>
+        )}
+      </div>
       <div className="flex justify-end">
-        <div className="relative flex items-center gap-x-2 pr-0.5">
-          <div className="text-[0.9rem] font-medium leading-[1.2] font-inter">
-            {(project.totalAllocated / 10 ** 18).toFixed(4)}{" "}
-            <span className="opacity-60 text-[0.55rem]">ETH</span>
-          </div>
-          {/* <div className="text-center absolute -bottom-[16px] left-0 right-0 text-forest-900/80 dark:text-forest-500/80 font-light text-[0.6rem] opacity-60">
+        {currentEpochProject && (
+          <div className="relative flex items-center gap-x-2 pr-0.5">
+            <div className="text-[0.8rem] font-medium leading-[1.2] font-inter">
+              {(project.totalAllocated / 10 ** 18).toFixed(4)}{" "}
+              <span className="opacity-60 text-[0.55rem]">ETH</span>
+            </div>
+            {/* <div className="text-center absolute -bottom-[16px] left-0 right-0 text-forest-900/80 dark:text-forest-500/80 font-light text-[0.6rem] opacity-60">
               from{" "}
               <span className="font-semibold">
                 {project.allocations &&
@@ -398,120 +835,145 @@ const OctantTableRow = ({ data, projectIndex }: TableRowProps) => {
               </span>{" "}
               donors
             </div> */}
-          <div className="w-4 h-4">
-            <Icon
-              icon="feather:check-square"
-              className={`w-4 h-4  fill-current ${
-                project.thresholdReached
-                  ? "text-green-500 dark:text-green-500"
-                  : "text-forest-900/80 dark:text-forest-600/80"
-              }`}
-            />
-          </div>
-          <div className="z-10 absolute -bottom-[6px] left-0 right-0 text-xs font-normal text-right h-[2px]">
-            <div
-              className="z-10 absolute"
-              style={{
-                height: "2px",
-                width: `${
-                  project.totalAllocated / data.rewardsThreshold < 1
-                    ? 100
-                    : (project.totalAllocated / data.rewardsThreshold) * 100
-                }%`,
-              }}
-            >
-              {project.totalAllocated / data.rewardsThreshold > 1 ? (
-                <div className="flex w-full">
-                  <div
-                    className="bg-forest-900/80 dark:bg-[#b0bbb6]"
-                    style={{
-                      height: "2px",
-                      width: `${
-                        project.percentageThresholdOfTotalAllocated * 100.0
-                      }%`,
-                      // right with bases on bottom and right
-                    }}
-                  ></div>
-                  <div className="h-[2px] flex-1">
+            <div className="w-4 h-4">
+              <Icon
+                icon="feather:check-square"
+                className={`w-4 h-4  fill-current ${
+                  project.thresholdReached
+                    ? "text-green-500 dark:text-green-500"
+                    : "text-forest-900/80 dark:text-forest-600/80"
+                }`}
+              />
+            </div>
+            <div className="z-10 absolute -bottom-[6px] left-0 right-0 text-xs font-normal text-right h-[2px]">
+              <div
+                className="z-10 absolute"
+                style={{
+                  height: "2px",
+                  width: `${
+                    project.totalAllocated / currentEpoch.rewardsThreshold < 1
+                      ? 100
+                      : (project.totalAllocated /
+                          currentEpoch.rewardsThreshold) *
+                        100
+                  }%`,
+                }}
+              >
+                {project.totalAllocated / currentEpoch.rewardsThreshold > 1 ? (
+                  <div className="flex w-full">
                     <div
-                      className="w-full"
+                      className="bg-forest-900/80 dark:bg-[#b0bbb6]"
                       style={{
                         height: "2px",
-                        background:
-                          "linear-gradient(to right, #b0bbb6ff, #b0bbb611, transparent)",
+                        width: `${
+                          project.percentageThresholdOfTotalAllocated * 100.0
+                        }%`,
                         // right with bases on bottom and right
                       }}
                     ></div>
+                    <div className="h-[2px] flex-1">
+                      <div
+                        className="w-full"
+                        style={{
+                          height: "2px",
+                          background:
+                            "linear-gradient(to right, #b0bbb6ff, #b0bbb611, transparent)",
+                          // right with bases on bottom and right
+                        }}
+                      ></div>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div
-                  className=" bg-red-500 dark:bg-red-500"
-                  style={{
-                    height: "2px",
-                    width: `${
-                      (1 / project.percentageThresholdOfTotalAllocated) * 100
-                    }%`,
-                  }}
-                ></div>
-              )}
+                ) : (
+                  <div
+                    className=" bg-red-500 dark:bg-red-500"
+                    style={{
+                      height: "2px",
+                      width: `${
+                        (1 / project.percentageThresholdOfTotalAllocated) * 100
+                      }%`,
+                    }}
+                  ></div>
+                )}
+              </div>
+              <div
+                className="z-0 absolute bg-forest-900/30 dark:bg-forest-100/30"
+                style={{
+                  height: "2px",
+                  width: `100%`,
+                }}
+              />
             </div>
-            <div
-              className="z-0 absolute bg-forest-900/30 dark:bg-forest-100/30"
-              style={{
-                height: "2px",
-                width: `100%`,
-              }}
-            />
           </div>
-        </div>
+        )}
       </div>
 
       <div className="relative flex justify-start item-center gap-x-2">
-        <div className="relative -left-[12px] -bottom-[2px] flex items-center text-forest-900/80 dark:text-forest-500/80 font-medium text-[0.6rem]">
-          {(project.rewards.allocated / data.rewardsThreshold) * 100 > 100 ? (
-            <div className="text-forest-500/60 dark:text-forest-500/60">
-              +
-              {(
-                ((project.rewards.allocated - data.rewardsThreshold) /
-                  data.rewardsThreshold) *
-                100
-              ).toFixed(0)}
-              %
+        {currentEpochProject && (
+          <>
+            <div className="relative -left-[12px] -bottom-[2px] flex items-center text-forest-900/80 dark:text-forest-500/80 font-medium text-[0.6rem]">
+              {(project.rewards.allocated / currentEpoch.rewardsThreshold) *
+                100 >
+              100 ? (
+                <div className="text-forest-500/60 dark:text-forest-500/60">
+                  +
+                  {(
+                    ((project.rewards.allocated -
+                      currentEpoch.rewardsThreshold) /
+                      currentEpoch.rewardsThreshold) *
+                    100
+                  ).toFixed(0)}
+                  %
+                </div>
+              ) : (
+                <div className="text-red-500/80">
+                  -
+                  {Math.abs(
+                    ((project.rewards.allocated -
+                      currentEpoch.rewardsThreshold) /
+                      currentEpoch.rewardsThreshold) *
+                      100,
+                  ).toFixed(0)}
+                  %
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="text-red-500/80">
-              -
-              {Math.abs(
-                ((project.rewards.allocated - data.rewardsThreshold) /
-                  data.rewardsThreshold) *
-                  100,
-              ).toFixed(0)}
-              %
-            </div>
-          )}
-        </div>
-        <div className="absolute h-[10px] w-1 border-l border-forest-900/20 dark:border-forest-500/20 -left-[15px] -bottom-[13px]"></div>
+            <div className="absolute h-[10px] w-1 border-l border-forest-900/20 dark:border-forest-500/20 -left-[15px] -bottom-[13px]"></div>
+          </>
+        )}
       </div>
 
       <div className="flex justify-end pr-[25px]">
-        <div
-          className={`text-[0.9rem] font-medium leading-[1.2] font-inter ${
-            project.rewards.matched <= 0 && "opacity-30"
-          }`}
-        >
-          {(project.rewards.matched / 10 ** 18).toFixed(4)}{" "}
-          <span className="opacity-60 text-[0.55rem]">ETH</span>
-        </div>
+        {currentEpochProject && (
+          <div
+            className={`text-[0.8rem] font-medium leading-[1.2] font-inter ${
+              currentEpochProject.rewards.matched <= 0 && "opacity-30"
+            }`}
+          >
+            {(currentEpochProject.rewards.matched / 10 ** 18).toFixed(4)}{" "}
+            <span className="opacity-60 text-[0.55rem]">ETH</span>
+          </div>
+        )}
+      </div>
+      <div className="flex justify-end pr-[25px]">
+        {currentEpochProject && (
+          <div
+            className={`text-[0.8rem] font-medium leading-[1.2] font-inter ${
+              currentEpochProject.rewards.total <= 0 && "opacity-30"
+            }`}
+          >
+            {(currentEpochProject.rewards.total / 10 ** 18).toFixed(4)}{" "}
+            <span className="opacity-60 text-[0.55rem]">ETH</span>
+          </div>
+        )}
       </div>
       <div className="flex justify-end pr-[25px]">
         <div
-          className={`text-[0.9rem] font-medium leading-[1.2] font-inter ${
-            project.rewards.total <= 0 && "opacity-30"
+          className={`text-[0.9rem] font-bold leading-[1.2] font-inter ${
+            allTimeTotalsByProject[projectAddress] <= 0 && "opacity-30"
           }`}
         >
-          {(project.rewards.total / 10 ** 18).toFixed(4)}{" "}
-          <span className="opacity-60 text-[0.55rem]">ETH</span>
+          {(allTimeTotalsByProject[projectAddress] / 10 ** 18).toFixed(4)}{" "}
+          <span className="opacity-60 text-[0.55rem] font-semibold">ETH</span>
         </div>
       </div>
     </div>
