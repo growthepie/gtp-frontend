@@ -61,7 +61,7 @@ export default function RowParent({ chainKey, index }) {
   return (
     <div key={index} className="w-full h-full relative">
       {DisabledStates[selectedMode] &&
-        DisabledStates[selectedMode][chainKey] ? (
+      DisabledStates[selectedMode][chainKey] ? (
         <>
           <div
             className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium text-white dark:text-black ${
@@ -69,7 +69,7 @@ export default function RowParent({ chainKey, index }) {
               // AllChainsByKeys[chainKey].darkTextOnBackground === true
               //   ? "text-white dark:text-black"
               //   : "text-white"
-              } ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]}`}
+            } ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]}`}
           >
             <div className="flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px] z-10">
               <div className="flex justify-center items-center w-[30px] h-[15px]">
@@ -108,22 +108,34 @@ export default function RowParent({ chainKey, index }) {
             // AllChainsByKeys[chainKey].darkTextOnBackground === true
             //   ? "text-white dark:text-black"
             //   : "text-white"
-            } ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]}`}
+          } ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]}`}
         >
           <div
-            className={`flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px] ${forceSelectedChain
+            className={`flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px] ${
+              forceSelectedChain
                 ? isCategoryHovered("all_chain")
                   ? isCategoryHovered("all_chain") && allCats
-                    ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]}`
-                    : `rounded-l-full py-[24px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]}`
+                    ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${
+                        AllChainsByKeys[chainKey].backgrounds[
+                          theme ?? "dark"
+                        ][1]
+                      }`
+                    : `rounded-l-full py-[24px] -my-[5px] z-[2] shadow-lg ${
+                        AllChainsByKeys[chainKey].backgrounds[
+                          theme ?? "dark"
+                        ][1]
+                      }`
                   : allCats
-                    ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]}`
-                    : "z-1"
+                  ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${
+                      AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]
+                    }`
+                  : "z-1"
                 : ""
-              }  ${forceSelectedChain
+            }  ${
+              forceSelectedChain
                 ? "hover:cursor-pointer"
                 : "hover:cursor-default"
-              } `}
+            } `}
             onMouseEnter={() => {
               // setIsCategoryHovered((prev) => ({
               //   ...prev,

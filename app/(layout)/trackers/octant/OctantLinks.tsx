@@ -212,7 +212,7 @@ export const OctantLinksMobile = () => {
       <div className="flex items-center gap-x-[10px] peer-hover:[&>a:first-child>div>div]:w-[0px] peer-hover:[&>a:first-child>div]:gap-x-[0px] peer-hover:[&>a:last-child>div]:w-[0px] peer-hover:[&>a:last-child]:gap-x-[0px]">
         <Link
           href={"https://octant.app"}
-          className="flex p-[1px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full peer-hover:[&>div>div]:w-[0px] [&>div>div]:w-[76px] peer-hover:[&>div]:gap-x-0"
+          className="flex p-[1px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full peer-hover:[&>div>div]:w-[0px] [&>div>div]:w-[30px] [&>div>div]:sm:w-[80px] peer-hover:[&>div]:gap-x-0"
           target="_blank"
           onClick={() => {
             track("clicked Octant App link", {
@@ -236,14 +236,15 @@ export const OctantLinksMobile = () => {
               </defs>
             </svg>
             <div className="transition-all duration-300 whitespace-nowrap overflow-hidden">
-              Octant App
+              <div className="hidden sm:block">Octant App</div>
+              <div className="sm:hidden">App</div>
             </div>
           </div>
         </Link>
         <Link
           href={"https://docs.octant.app/"}
           // className="flex items-center gap-x-[8px] justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-[16px] py-2"
-          className="flex items-center gap-x-[8px] justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-[16px] py-[8px] transition-all duration-300 peer-hover:[&>div]:w-[0px] [&>div]:w-[99px] peer-hover:gap-x-0"
+          className="flex items-center gap-x-[8px] justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-[16px] py-[8px] transition-all duration-300 peer-hover:[&>div]:w-[0px] [&>div]:w-[50px] [&>div]:sm:w-[84px] peer-hover:gap-x-0"
           target="_blank"
           onClick={() => {
             track("clicked Octant Docs link", {
@@ -254,7 +255,8 @@ export const OctantLinksMobile = () => {
         >
           <Icon icon="fluent:book-open-16-filled" className="w-4 h-4" />
           <div className="transition-all duration-300 whitespace-nowrap overflow-hidden">
-            Octant Docs
+            <div className="hidden sm:block">Octant Docs</div>
+            <div className="sm:hidden">Docs</div>
           </div>
         </Link>
       </div>
