@@ -41,10 +41,8 @@ export const OctantSubheader = () => {
           their earnings or support pre-approved projects.
         </p>
         <p>
-          Contributions to these projects are not only amplified by matched
-          funds from the foundation&apos;s staking yield but also drive the
-          community-led governance that decides how these rewards are
-          distributed.
+          Contributions to these projects are amplified by matched funds from
+          the foundation&apos;s staking yield.
         </p>
       </div>
     </Subheading>

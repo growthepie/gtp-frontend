@@ -43,18 +43,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
           <OctantLinks />
         </div>
-        {/* 🟢💚 We staked 100,000 ETH & are on a mission to financially empower both public good projects and our community in a sustainable way. http://discord.gg/octant */}
-        {/* <Subheading className="items-center relative">
-          <span className="font-semibold inline">Octant</span> is a Golem
-          Foundation project that empowers users to direct Ethereum staking
-          rewards toward impactful public goods projects. Participants lock GLM
-          tokens to engage in a reward system over 90-day cycles, known as
-          epochs. During these periods, users can either claim their earnings or
-          support pre-approved projects. Contributions to these projects are not
-          only amplified by matched funds from the foundation&apos;s staking
-          yield but also drive the community-led governance that decides how
-          these rewards are distributed.
-        </Subheading> */}
         <OctantSubheader />
         {/* <div className="flex flex-col gap-2 pt-2 text-xs font-medium">
           <div className="flex flex-row rounded-lg border border-forest-900/20 dark:border-forest-500/20 px-2 py-1  items-center justify-between gap-x-[15px]">
