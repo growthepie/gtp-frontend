@@ -559,7 +559,7 @@ export const formatNumber =
     return number;
   };
 
-type TimespanSelections = "7d" | "30d" | "90d" | "180d" | "365d" | "max";
+type TimespanSelections = "1d" | "7d" | "30d" | "90d" | "180d" | "365d" | "max";
 
 export const getTimespans = (
   data?,
@@ -581,6 +581,12 @@ export const getTimespans = (
     ? data.reduce((min, d) => Math.min(min, d[0]), Infinity)
     : maxDate.valueOf() - 365 * 24 * 60 * 60 * 1000;
   return {
+    "1d": {
+      label: "1 day",
+      value: 1,
+      xMin: maxDate.valueOf() - 1 * 24 * 60 * 60 * 1000,
+      xMax: maxPlusBuffer,
+    },
     "7d": {
       label: "7 days",
       value: 7,
