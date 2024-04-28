@@ -1266,22 +1266,52 @@ export default function FeesPage() {
                     </div>
                   </div>
                   <div className="flex items-center mx-2 w-full gap-x-[10px] relative min-w-[280px]">
-                    <div className="relative top-2 font-semibold left-1 z-20 flex flex-col gap-y-2 text-[12px]">
-                      <div>Metrics:</div>
+                    <div className="relative top-2  left-1 z-20 flex flex-col gap-y-2 text-[12px]">
+                      <div className="font-semibold">Metrics:</div>
                       {Object.keys(metrics).map((metric) => {
                         return (
-                          <div className="flex w-full justify-between min-w-[260px]">
-                            <div>{metrics[metric].title}</div>
+                          <div
+                            className="flex w-full justify-between min-w-[260px]"
+                            key={metric + "_settings"}
+                          >
+                            <div className="font-semibold">
+                              {metrics[metric].title}
+                            </div>
                             <div
                               className="relative w-[143px] h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
                               onClick={() => {
-                                setMetrics((prevMetrics) => ({
-                                  ...prevMetrics,
-                                  [metric]: {
-                                    ...prevMetrics[metric],
-                                    enabled: !prevMetrics[metric].enabled,
-                                  },
-                                }));
+                                if (
+                                  enabledMetricsCount > 1 ||
+                                  !metrics[metric].enabled
+                                ) {
+                                  if (
+                                    metrics[metric].enabled &&
+                                    selectedQuantitative === metric
+                                  ) {
+                                    for (const metricKey of Object.keys(
+                                      metrics,
+                                    )) {
+                                      if (
+                                        metrics[metricKey].enabled &&
+                                        metricKey !== metric
+                                      ) {
+                                        setSelectedQuantitative(metricKey);
+                                        break; // Exit loop once the first enabled metric is found
+                                      }
+                                    }
+                                  }
+                                  if (!metrics[metric].enabled) {
+                                    setSelectedQuantitative(metric);
+                                  }
+
+                                  setMetrics((prevMetrics) => ({
+                                    ...prevMetrics,
+                                    [metric]: {
+                                      ...prevMetrics[metric],
+                                      enabled: !prevMetrics[metric].enabled,
+                                    },
+                                  }));
+                                }
                               }}
                             >
                               <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px] ">
@@ -1452,7 +1482,10 @@ export default function FeesPage() {
                       .filter((metricKey) => metrics[metricKey].enabled)
                       .map((metric) => {
                         return (
-                          <div className="flex items-center">
+                          <div
+                            className="flex items-center"
+                            key={metric + "_topbar"}
+                          >
                             <div
                               className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px] z-10"
                               onClick={() => {
@@ -1733,7 +1766,10 @@ export default function FeesPage() {
                           .filter((metricKey) => metrics[metricKey].enabled)
                           .map((metric) => {
                             return (
-                              <div className="flex items-center justify-end">
+                              <div
+                                className="flex items-center justify-end"
+                                key={metric + "_barcontent"}
+                              >
                                 {getFormattedLastValue(item.chain[1], metric)}
                               </div>
                             );
@@ -1999,7 +2035,10 @@ export default function FeesPage() {
                           .filter((metricKey) => metrics[metricKey].enabled)
                           .map((metric) => {
                             return (
-                              <div className="flex items-center justify-end">
+                              <div
+                                className="flex items-center justify-end"
+                                key={metric + "_ethbar"}
+                              >
                                 {getFormattedLastValue("ethereum", metric)}
                               </div>
                             );
