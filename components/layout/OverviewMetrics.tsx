@@ -201,7 +201,7 @@ export default function OverviewMetrics({
     if (forceSelectedChain) {
       return {
         "1d": {
-          label: "1 day",
+          label: "Yesterday",
           value: 1,
           xMin: Date.now() - 1 * 24 * 60 * 60 * 1000,
           xMax: Date.now(),
@@ -403,27 +403,31 @@ export default function OverviewMetrics({
             </div>
           </Container>
           {/*Chart*/}
-          <Container>
-            <OverviewChart
-              data={data}
-              master={master}
-              selectedTimespan={selectedTimespan}
-              timespans={timespans}
-              setSelectedTimespan={setSelectedTimespan}
-              selectedMode={selectedMode}
-              selectedValue={selectedValue}
-              selectedCategory={selectedCategory}
-              selectedChain={selectedChain}
-              forceSelectedChain={forceSelectedChain}
-              categories={categories}
-              hoveredCategories={hoveredCategories}
-              allCats={allCats}
-              setHoveredChartSeriesId={setHoveredChartSeriesId}
-              hoveredChartSeriesId={hoveredChartSeriesId}
-              forceHoveredChartSeriesId={forceHoveredChartSeriesId}
-              chartComponent={chartComponent}
-            />
-          </Container>
+          {selectedTimespan === "1d" ? (
+            <></>
+          ) : (
+            <Container>
+              <OverviewChart
+                data={data}
+                master={master}
+                selectedTimespan={selectedTimespan}
+                timespans={timespans}
+                setSelectedTimespan={setSelectedTimespan}
+                selectedMode={selectedMode}
+                selectedValue={selectedValue}
+                selectedCategory={selectedCategory}
+                selectedChain={selectedChain}
+                forceSelectedChain={forceSelectedChain}
+                categories={categories}
+                hoveredCategories={hoveredCategories}
+                allCats={allCats}
+                setHoveredChartSeriesId={setHoveredChartSeriesId}
+                hoveredChartSeriesId={hoveredChartSeriesId}
+                forceHoveredChartSeriesId={forceHoveredChartSeriesId}
+                chartComponent={chartComponent}
+              />
+            </Container>
+          )}
           {/*Chart Footer*/}
           <Container className="w-[98%] ml-4">
             <div className={`flex flex-wrap items-center w-[100%] gap-y-2 `}>
