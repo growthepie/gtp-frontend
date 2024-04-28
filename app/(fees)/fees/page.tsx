@@ -136,6 +136,37 @@ export default function FeesPage() {
   // start Bottom Chart state
   const [isChartOpen, setIsChartOpen] = useState(false);
 
+  const [metrics, setMetrics] = useState({
+    txcosts_median: {
+      title: "Median Fee",
+      enabled: true,
+    },
+    txcosts_native_median: {
+      title: "Transfer ETH",
+      enabled: true,
+    },
+    txcosts_swap: {
+      title: "Swap Token",
+      enabled: true,
+    },
+  });
+
+  const toggleMetric = (metricKey) => {
+    setMetrics((prevMetrics) => ({
+      ...prevMetrics,
+      [metricKey]: {
+        ...prevMetrics[metricKey],
+        enabled: !prevMetrics[metricKey].enabled,
+      },
+    }));
+  };
+
+  const enabledMetricsCount = useMemo(() => {
+    return Object.values(metrics).reduce((acc, curr) => {
+      return acc + (curr.enabled ? 1 : 0);
+    }, 0);
+  }, [metrics]);
+
   const timescales = useMemo(() => {
     return {
       thirty_min: {
@@ -149,20 +180,6 @@ export default function FeesPage() {
       },
       twelve_hours: {
         label: "Last 12 Hours",
-      },
-    };
-  }, []);
-
-  const metrics = useMemo(() => {
-    return {
-      txcosts_median: {
-        title: "Median Fee",
-      },
-      txcosts_native_median: {
-        title: "Transfer ETH",
-      },
-      txcosts_swap: {
-        title: "Swap Token",
       },
     };
   }, []);
@@ -1157,7 +1174,7 @@ export default function FeesPage() {
               <div className="font-semibold">Main platform</div>
             </a>
             <div
-              className={`flex items-center relative h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-[15px] py-[10px] gap transition-all z-20 duration-300 hover:cursor-pointer ${
+              className={`flex items-center relative h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-[15px] py-[10px] gap transition-all z-40 duration-300 hover:cursor-pointer ${
                 hoverSettings
                   ? "w-[308px] justify-start"
                   : "w-[128px] justify-start"
@@ -1193,9 +1210,9 @@ export default function FeesPage() {
             </div>
 
             <div
-              className={`absolute top-6 bg-[#151A19] right-[5px] rounded-b-2xl z-10 transition-all duration-[290ms] overflow-hidden px-2 ${
+              className={`absolute top-6 bg-[#151A19] right-[5px] rounded-b-2xl z-20 transition-all duration-[290ms] overflow-hidden px-2 ${
                 hoverSettings
-                  ? "w-[308px] h-[83px] shadow-[0px_4px_46.2px_0px_#000000] "
+                  ? "w-[308px] h-[188px] shadow-[0px_4px_46.2px_0px_#000000] "
                   : "w-[0px] h-[10px] shadow-transparent"
               }`}
               onMouseEnter={() => {
@@ -1206,44 +1223,97 @@ export default function FeesPage() {
               }}
             >
               <div className={`mt-[42px] flex flex-col relative `}>
-                <div className="flex items-center mx-2 w-full gap-x-[10px] absolute min-w-[280px]">
-                  <Icon
-                    icon="gtp:gtp-dollar"
-                    className={`h-[15px] w-[15px] mt-1 font-[900] text-[#CDD8D3] relative -top-[3px] ${
-                      hoverSettings ? "text-sm" : ""
-                    }`}
-                  />
-                  <div className="text-[10px] text-white">Denominates in</div>
-                  <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
-                  <div
-                    className="relative w-[143px] h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
-                    onClick={() => {
-                      setShowCents(!showCents);
-                    }}
-                  >
-                    <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px] ">
-                      <div className="w-full flex items-start justify-center">
-                        Full Dollar
+                <div className="flex flex-col w-full absolute min-w-[280px]">
+                  <div className="flex items-center mx-2 w-full gap-x-[10px]">
+                    <Icon
+                      icon="gtp:gtp-dollar"
+                      className={`h-[15px] w-[15px] mt-1 font-[900] text-[#CDD8D3] relative -top-[3px] ${
+                        hoverSettings ? "text-sm" : ""
+                      }`}
+                    />
+                    <div className="text-[10px] text-white">Denominates in</div>
+                    <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
+                    <div
+                      className="relative w-[143px] h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
+                      onClick={() => {
+                        setShowCents(!showCents);
+                      }}
+                    >
+                      <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px] ">
+                        <div className="w-full flex items-start justify-center">
+                          Full Dollar
+                        </div>
+                        <div
+                          className={`w-full text-center ${
+                            !showCents && "opacity-50"
+                          }`}
+                        >
+                          USD cents
+                        </div>
                       </div>
-                      <div
-                        className={`w-full text-center ${
-                          !showCents && "opacity-50"
-                        }`}
-                      >
-                        USD cents
+                      <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
+                        <div
+                          className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
+                          style={{
+                            transform: !showCents
+                              ? "translateX(0%)"
+                              : "translateX(100%)",
+                          }}
+                        >
+                          {!showCents ? "Full Dollar" : "USD cents"}
+                        </div>
                       </div>
                     </div>
-                    <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
-                      <div
-                        className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
-                        style={{
-                          transform: !showCents
-                            ? "translateX(0%)"
-                            : "translateX(100%)",
-                        }}
-                      >
-                        {!showCents ? "Full Dollar" : "USD cents"}
-                      </div>
+                  </div>
+                  <div className="flex items-center mx-2 w-full gap-x-[10px] relative min-w-[280px]">
+                    <div className="relative top-2 font-semibold left-1 z-20 flex flex-col gap-y-2 text-[12px]">
+                      <div>Metrics:</div>
+                      {Object.keys(metrics).map((metric) => {
+                        return (
+                          <div className="flex w-full justify-between min-w-[260px]">
+                            <div>{metrics[metric].title}</div>
+                            <div
+                              className="relative w-[143px] h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
+                              onClick={() => {
+                                setMetrics((prevMetrics) => ({
+                                  ...prevMetrics,
+                                  [metric]: {
+                                    ...prevMetrics[metric],
+                                    enabled: !prevMetrics[metric].enabled,
+                                  },
+                                }));
+                              }}
+                            >
+                              <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px] ">
+                                <div className="w-full flex items-start justify-center">
+                                  Enabled
+                                </div>
+                                <div
+                                  className={`w-full text-center ${
+                                    metrics[metric].enabled && "opacity-50"
+                                  }`}
+                                >
+                                  Disabled
+                                </div>
+                              </div>
+                              <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
+                                <div
+                                  className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
+                                  style={{
+                                    transform: metrics[metric].enabled
+                                      ? "translateX(0%)"
+                                      : "translateX(100%)",
+                                  }}
+                                >
+                                  {metrics[metric].enabled
+                                    ? "Enabled"
+                                    : "Disabled"}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -1374,122 +1444,54 @@ export default function FeesPage() {
                     </div>
                   </div>
                   <div
-                    className={`flex items-center justify-end ${
-                      isMobile ? "w-[15%]" : "w-[15%]"
+                    className={`flex justify-between ${
+                      isMobile ? "w-[47.5%]" : "w-[50.5%]  pl-[35px] pr-[25px]"
                     }`}
                   >
-                    <div
-                      className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px] z-10"
-                      onClick={() => {
-                        if (selectedQuantitative === "txcosts_median") {
-                          if (selectedQualitative) {
-                            setSelectedQualitative(null);
-                          } else {
-                            setSortOrder(!sortOrder);
-                          }
-                        } else {
-                          setSelectedQualitative(null);
-                          setSelectedQuantitative("txcosts_median");
-                        }
-                      }}
-                    >
-                      <div>Median Fee</div>
-                      <Icon
-                        icon={
-                          !selectedQualitative &&
-                          selectedQuantitative === "txcosts_median"
-                            ? sortOrder
-                              ? "formkit:arrowdown"
-                              : "formkit:arrowup"
-                            : "formkit:arrowdown"
-                        }
-                        className={`dark:text-white text-black w-[10px] h-[10px] ${
-                          !selectedQualitative &&
-                          selectedQuantitative === "txcosts_median"
-                            ? "opacity-100"
-                            : "opacity-20"
-                        }`}
-                      />
-                    </div>
+                    {Object.keys(metrics)
+                      .filter((metricKey) => metrics[metricKey].enabled)
+                      .map((metric) => {
+                        return (
+                          <div className="flex items-center">
+                            <div
+                              className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px] z-10"
+                              onClick={() => {
+                                if (selectedQuantitative === metric) {
+                                  if (selectedQualitative) {
+                                    setSelectedQualitative(null);
+                                  } else {
+                                    setSortOrder(!sortOrder);
+                                  }
+                                } else {
+                                  setSelectedQualitative(null);
+                                  setSelectedQuantitative(metric);
+                                }
+                              }}
+                            >
+                              {" "}
+                              <div>{metrics[metric].title}</div>
+                              <Icon
+                                icon={
+                                  !selectedQualitative &&
+                                  selectedQuantitative === metric
+                                    ? sortOrder
+                                      ? "formkit:arrowdown"
+                                      : "formkit:arrowup"
+                                    : "formkit:arrowdown"
+                                }
+                                className={`dark:text-white text-black w-[10px] h-[10px] ${
+                                  !selectedQualitative &&
+                                  selectedQuantitative === metric
+                                    ? "opacity-100"
+                                    : "opacity-20"
+                                }`}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
                   </div>
-                  <div
-                    className={`flex items-center justify-end ${
-                      isMobile ? "w-[16%]" : "w-[16%]"
-                    }`}
-                  >
-                    <div
-                      className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px] z-10"
-                      onClick={() => {
-                        if (selectedQuantitative === "txcosts_native_median") {
-                          if (selectedQualitative) {
-                            setSelectedQualitative(null);
-                          } else {
-                            setSortOrder(!sortOrder);
-                          }
-                        } else {
-                          setSelectedQualitative(null);
-                          setSelectedQuantitative("txcosts_native_median");
-                        }
-                      }}
-                    >
-                      <div>Transfer ETH</div>
-                      <Icon
-                        icon={
-                          !selectedQualitative &&
-                          selectedQuantitative === "txcosts_native_median"
-                            ? sortOrder
-                              ? "formkit:arrowdown"
-                              : "formkit:arrowup"
-                            : "formkit:arrowdown"
-                        }
-                        className={`dark:text-white text-black w-[10px] h-[10px] ${
-                          !selectedQualitative &&
-                          selectedQuantitative === "txcosts_native_median"
-                            ? "opacity-100"
-                            : "opacity-20"
-                        }`}
-                      />
-                    </div>
-                  </div>
-                  <div
-                    className={`pr-[20px] flex items-center justify-end ${
-                      isMobile ? "w-[16.5%]" : "w-[19.5%]"
-                    }`}
-                  >
-                    <div
-                      className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px] z-10"
-                      onClick={() => {
-                        if (selectedQuantitative === "txcosts_swap") {
-                          if (selectedQualitative) {
-                            setSelectedQualitative(null);
-                          } else {
-                            setSortOrder(!sortOrder);
-                          }
-                        } else {
-                          setSelectedQualitative(null);
-                          setSelectedQuantitative("txcosts_swap");
-                        }
-                      }}
-                    >
-                      <div>Swap Token</div>
-                    <Icon
-                      icon={
-                        !selectedQualitative &&
-                        selectedQuantitative === "txcosts_swap"
-                          ? sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
-                          : "formkit:arrowdown"
-                      }
-                      className={`dark:text-white text-black w-[10px] h-[10px] ${
-                        !selectedQualitative &&
-                        selectedQuantitative === "txcosts_swap"
-                          ? "opacity-100"
-                          : "opacity-20"
-                      }`}
-                    />
-                    </div>
-                  </div>
+
                   <div
                     className={`relative pl-[14px] flex flex-col justify-end space-x-[1px] font-normal  ${
                       isMobile ? "w-[29.5%]" : "w-[22.5%]"
@@ -1722,7 +1724,22 @@ export default function FeesPage() {
                           )}
                         </div>
                       </div>
-
+                      <div
+                        className={`flex justify-between pl-[40px] pr-[22.5px] ${
+                          isMobile ? "w-[47.5%]" : "w-[50.5%]"
+                        }`}
+                      >
+                        {Object.keys(metrics)
+                          .filter((metricKey) => metrics[metricKey].enabled)
+                          .map((metric) => {
+                            return (
+                              <div className="flex items-center justify-end">
+                                {getFormattedLastValue(item.chain[1], metric)}
+                              </div>
+                            );
+                          })}
+                      </div>
+                      {/* 
                       <div className="h-full w-[15%] flex justify-end items-center">
                         {getFormattedLastValue(item.chain[1], "txcosts_median")}
                       </div>
@@ -1742,7 +1759,7 @@ export default function FeesPage() {
                         }`}
                       >
                         {getFormattedLastValue(item.chain[1], "txcosts_swap")}
-                      </div>
+                      </div> */}
                       <div
                         className={`pl-[15px] relative flex items-center h-full space-x-[1px] ${
                           isMobile ? "w-[29.5%]" : "w-[22.5%]"
@@ -1973,25 +1990,20 @@ export default function FeesPage() {
                         </Link>
                       </div>
 
-                      <div className="h-full w-[15%] flex justify-end items-center">
-                        {getFormattedLastValue("ethereum", "txcosts_median")}
-                      </div>
                       <div
-                        className={`h-full  flex justify-end items-center ${
-                          isMobile ? "w-[16%]" : "w-[16%]"
+                        className={`flex justify-between pl-[40px] pr-[22.5px] ${
+                          isMobile ? "w-[47.5%]" : "w-[50.5%]"
                         }`}
                       >
-                        {getFormattedLastValue(
-                          "ethereum",
-                          "txcosts_native_median",
-                        )}
-                      </div>
-                      <div
-                        className={`pr-[20px] h-full flex justify-end items-center ${
-                          isMobile ? "w-[16.5%]" : "w-[19.5%]"
-                        }`}
-                      >
-                        {getFormattedLastValue("ethereum", "txcosts_swap")}
+                        {Object.keys(metrics)
+                          .filter((metricKey) => metrics[metricKey].enabled)
+                          .map((metric) => {
+                            return (
+                              <div className="flex items-center justify-end">
+                                {getFormattedLastValue("ethereum", metric)}
+                              </div>
+                            );
+                          })}
                       </div>
                       <div
                         className={`pl-[15px] relative flex items-center h-full space-x-[1px] ${
