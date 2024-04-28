@@ -28,7 +28,7 @@ import RowContainer from "./BlockspaceOverview/ChainRows/RowContainer";
 import { RowProvider } from "./BlockspaceOverview/ChainRows/RowContext";
 import ContractContainer from "./BlockspaceOverview/Contracts/ContractContainer";
 import { ContractProvider } from "./BlockspaceOverview/Contracts/ContractContext";
-import { useRouter } from "next/navigation";
+
 // object which contains the allowed modes for chains with mode exceptions
 const AllowedModes: {
   [chain: string]: {
@@ -67,6 +67,7 @@ export default function OverviewMetrics({
   const [selectedCategory, setSelectedCategory] = useState(
     forceCategory ? forceCategory : "nft",
   );
+
   const [selectedValue, setSelectedValue] = useState("share");
   const [chainEcosystemFilter, setChainEcosystemFilter] = useSessionStorage(
     "chainEcosystemFilter",
@@ -84,7 +85,7 @@ export default function OverviewMetrics({
   const [selectedChain, setSelectedChain] = useState<string | null>(
     forceSelectedChain ?? null,
   );
-  const router = useRouter();
+
   const chartComponent = useRef<Highcharts.Chart | null>(null);
   const hoverCategory = (category: string) => {
     if (!hoveredCategories.includes(category)) {
@@ -116,12 +117,13 @@ export default function OverviewMetrics({
   useEffect(() => {
     if (!forceCategory) return;
 
-    if (forceCategory !== selectedCategory) {
-      router.push(`/blockspace/chain-overview/${selectedCategory}`, {
-        shallow: true,
-      } as any);
-    }
-  }, [selectedCategory, router]);
+    const newState = { foo: "bar" };
+    window.history.replaceState(
+      newState,
+      "",
+      `/blockspace/chain-overview/${selectedCategory}`,
+    );
+  }, [forceCategory, selectedCategory]);
 
   const forceHoveredChartSeriesId = useMemo(() => {
     if (allCats && hoveredCategories.length > 0) {
