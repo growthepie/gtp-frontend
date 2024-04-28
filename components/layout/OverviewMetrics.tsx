@@ -117,7 +117,7 @@ export default function OverviewMetrics({
   useEffect(() => {
     if (!forceCategory) return;
 
-    const newState = { foo: "bar" };
+    const newState = { category: `${selectedCategory}` };
     window.history.replaceState(
       newState,
       "",
