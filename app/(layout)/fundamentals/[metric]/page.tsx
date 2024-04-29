@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Error from "next/error";
 import { MetricsResponse } from "@/types/api/MetricsResponse";
 import Heading from "@/components/layout/Heading";
@@ -104,6 +104,13 @@ const FundamentalsContent = ({ params }: { params: any }) => {
     "fundamentalsShowEthereumMainnet",
     false,
   );
+
+  useEffect(() => {
+    let currentURL = window.location.href;
+    if (currentURL.includes("?force=true")) {
+      setSelectedScale("stacked");
+    }
+  }, []);
 
   const timeIntervalKey = useMemo(() => {
     if (
