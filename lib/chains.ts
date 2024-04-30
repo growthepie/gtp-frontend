@@ -579,9 +579,15 @@ export const Get_SupportedChainKeys = (
     return keys;
   }
 
-  return Object.keys(data.chains)
+  let keys = Object.keys(data.chains)
     .filter((key) => ["PROD"].includes(data.chains[key].deployment))
     .map((key) => key);
+
+  if (additionalKeys) {
+    keys = keys.concat(additionalKeys);
+  }
+
+  return keys;
 };
 
 export const Get_DefaultChainSelectionKeys = (master: MasterResponse) => {
