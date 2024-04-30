@@ -41,6 +41,11 @@ import useSWR from "swr";
 import ChartWatermark from "./ChartWatermark";
 import { ChainsData } from "@/types/api/ChainResponse";
 import { IS_PREVIEW } from "@/lib/helpers";
+import {
+  TopRowContainer,
+  TopRowChild,
+  TopRowParent,
+} from "@/components/layout/TopRow";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -1290,7 +1295,7 @@ export default function ChainChart({
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full flex-col relative">
       <style>
         {`
         .highcharts-tooltip-container {
@@ -1300,8 +1305,8 @@ export default function ChainChart({
           stroke-width: 0px !important;
         `}
       </style>
-      <div
-        className={`flex w-full justify-between items-stretch text-xs bg-forest-50 dark:bg-[#1F2726] lg:z-30 flex-col-reverse rounded-t-[15px] md:rounded-t-[20px] rounded-b-[30px] px-[3px] pb-[3px] lg:pb-0 lg:pl-0 lg:flex-row lg:rounded-full lg:px-auto mb-[15px] lg:mb-[30px] transition-shadow duration-300 ${
+      <TopRowContainer
+        className={`mb-[15px] lg:mb-[30px] transition-shadow duration-300 ${
           compareTo &&
           "shadow-[0px_4px_4px_#00000033] dark:shadow-[0px_4px_4px_#0000003F] lg:shadow-none lg:dark:shadow-none"
         }`}
@@ -1327,7 +1332,7 @@ export default function ChainChart({
               }}
             >
               <div
-                className={` font-[500] leading-[150%] ${
+                className={` font-[500] leading-[150%] text-[12px] ${
                   compChain
                     ? !AllChainsByKeys[compChain].darkTextOnBackground ||
                       (theme === "light" &&
@@ -1369,9 +1374,9 @@ export default function ChainChart({
             </div>
           </div>
           <div
-            className={`flex flex-col relative lg:absolute lg:top-[27px] bottom-auto mx-[-2px] lg:mx-0 lg:left-0 lg:right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${
+            className={`flex flex-col relative lg:absolute lg:top-[27px] bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${
               compareTo
-                ? `max-h-[550px] lg:z-[25] border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-2xl lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
+                ? `max-h-[640px] lg:z-[25] border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-2xl lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
                 : "max-h-0 z-20 overflow-hidden border-transparent rounded-b-[22px]"
             } `}
           >
@@ -1442,8 +1447,6 @@ export default function ChainChart({
                 </div>
               ))}
             </div>
-
-            {/* Your content here */}
           </div>
           {compareTo && (
             <div
@@ -1455,22 +1458,18 @@ export default function ChainChart({
           )}
         </div>
 
-        <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center space-x-[4px] pt-[3px] pb-[10px] lg:space-x-1 lg:py-[3px]">
+        <TopRowParent>
           {!zoomed ? (
             Object.keys(timespans).map((timespan) => (
-              <button
+              <TopRowChild
                 key={timespan}
-                className={`rounded-full grow text-xs md:text-base px-[16px] py-[4px] md:px-[15px] md:py-[7px] leading-[20px] md:leading-normal lg:px-[16px] lg:py-[12px] font-medium ${
-                  selectedTimespan === timespan
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                } ${isMobile ? " px-[8px]" : " px-[16px]"} `}
+                isSelected={selectedTimespan === timespan}
                 onClick={() => {
                   setSelectedTimespan(timespan);
                 }}
               >
                 {timespans[timespan].label}
-              </button>
+              </TopRowChild>
             ))
           ) : (
             <div className="flex w-full gap-x-1">
@@ -1499,8 +1498,8 @@ export default function ChainChart({
               </button>
             </div>
           )}
-        </div>
-      </div>
+        </TopRowParent>
+      </TopRowContainer>
 
       {data && (
         <div

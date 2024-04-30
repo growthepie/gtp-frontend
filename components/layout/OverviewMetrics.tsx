@@ -273,65 +273,66 @@ export default function OverviewMetrics({
     <>
       {invalidTimespan !== selectedTimespan && (
         <div className="w-full flex-col relative">
-          <TopRowContainer>
-            <TopRowParent>
-              <TopRowChild
-                isSelected={selectedMode.includes("gas_fees")}
-                onClick={() => {
-                  setSelectedMode(
-                    selectedValue === "absolute"
-                      ? showUsd
-                        ? "gas_fees_usd_absolute"
-                        : "gas_fees_eth_absolute"
-                      : showUsd
-                      ? "gas_fees_share_usd"
-                      : "gas_fees_share_eth",
-                  );
-                }}
-              >
-                Gas Fees
-              </TopRowChild>
-              <TopRowChild
-                isSelected={selectedMode.includes("txcount")}
-                onClick={() => {
-                  setSelectedMode(
-                    selectedValue === "absolute"
-                      ? "txcount_absolute"
-                      : "txcount_share",
-                  );
-                }}
-              >
-                Transaction Count
-              </TopRowChild>
-            </TopRowParent>
-            <div className="block lg:hidden w-[70%] mx-auto mt-[5px]">
-              <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
-            </div>
-            <TopRowParent>
-              {Object.keys(timespans).map((timespan) => (
+          <Container>
+            <TopRowContainer>
+              <TopRowParent>
                 <TopRowChild
-                  key={timespan}
-                  //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                  isSelected={selectedTimespan === timespan}
+                  isSelected={selectedMode.includes("gas_fees")}
                   onClick={() => {
-                    setSelectedTimespan(timespan);
-                    // setXAxis();
-                    // chartComponent?.current?.xAxis[0].update({
-                    //   min: timespans[selectedTimespan].xMin,
-                    //   max: timespans[selectedTimespan].xMax,
-                    //   // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
-                    //   tickPositions: getTickPositions(
-                    //     timespans.max.xMin,
-                    //     timespans.max.xMax,
-                    //   ),
-                    // });
+                    setSelectedMode(
+                      selectedValue === "absolute"
+                        ? showUsd
+                          ? "gas_fees_usd_absolute"
+                          : "gas_fees_eth_absolute"
+                        : showUsd
+                        ? "gas_fees_share_usd"
+                        : "gas_fees_share_eth",
+                    );
                   }}
                 >
-                  {timespans[timespan].label}
+                  Gas Fees
                 </TopRowChild>
-              ))}
-            </TopRowParent>
-            {/* <div
+                <TopRowChild
+                  isSelected={selectedMode.includes("txcount")}
+                  onClick={() => {
+                    setSelectedMode(
+                      selectedValue === "absolute"
+                        ? "txcount_absolute"
+                        : "txcount_share",
+                    );
+                  }}
+                >
+                  Transaction Count
+                </TopRowChild>
+              </TopRowParent>
+              <div className="block lg:hidden w-[70%] mx-auto mt-[5px]">
+                <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
+              </div>
+              <TopRowParent>
+                {Object.keys(timespans).map((timespan) => (
+                  <TopRowChild
+                    key={timespan}
+                    //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
+                    isSelected={selectedTimespan === timespan}
+                    onClick={() => {
+                      setSelectedTimespan(timespan);
+                      // setXAxis();
+                      // chartComponent?.current?.xAxis[0].update({
+                      //   min: timespans[selectedTimespan].xMin,
+                      //   max: timespans[selectedTimespan].xMax,
+                      //   // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
+                      //   tickPositions: getTickPositions(
+                      //     timespans.max.xMin,
+                      //     timespans.max.xMax,
+                      //   ),
+                      // });
+                    }}
+                  >
+                    {timespans[timespan].label}
+                  </TopRowChild>
+                ))}
+              </TopRowParent>
+              {/* <div
             className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[30px] right-[20px] md:right-[45px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${
               !isMobile
                 ? ["max", "180d"].includes(selectedTimespan)
@@ -346,8 +347,8 @@ export default function OverviewMetrics({
               7-day rolling average
             </div>
           </div> */}
-          </TopRowContainer>
-
+            </TopRowContainer>
+          </Container>
           {/*Chain Rows/List */}
           <Container className="block w-full !pr-0 lg:!px-[50px]">
             <RowProvider
@@ -373,7 +374,6 @@ export default function OverviewMetrics({
               <RowContainer />
             </RowProvider>
           </Container>
-
           {/*Chart Head*/}
           <Container>
             <div className="mt-[20px] lg:mt-[50px] mb-[38px] ">
@@ -504,7 +504,6 @@ export default function OverviewMetrics({
               </button>
             </div>
           </Container>
-
           {/*Contracts Header */}
           <Container>
             <div className="w-[97%] mx-auto mt-[30px] flex flex-col">

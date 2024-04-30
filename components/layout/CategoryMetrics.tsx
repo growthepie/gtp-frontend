@@ -965,68 +965,70 @@ export default function CategoryMetrics({
     <>
       {selectedSubcategories && (
         <div className="w-full flex-col relative">
-          <TopRowContainer>
-            <TopRowParent>
-              <TopRowChild
-                isSelected={"gas_fees_" === selectedMode}
-                onClick={() => {
-                  setSelectedMode("gas_fees_");
-                }}
-              >
-                Gas Fees
-              </TopRowChild>
-              <TopRowChild
-                isSelected={"txcount_" === selectedMode}
-                onClick={() => {
-                  setSelectedMode("txcount_");
-                }}
-              >
-                Transaction Count
-              </TopRowChild>
-            </TopRowParent>
-            <div className="block lg:hidden w-[70%] mx-auto my-[10px]">
-              <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
-            </div>
-            <TopRowParent>
-              {Object.keys(timespans).map((timespan) => (
+          <Container>
+            <TopRowContainer>
+              <TopRowParent>
                 <TopRowChild
-                  key={timespan}
-                  isSelected={selectedTimespan === timespan}
+                  isSelected={"gas_fees_" === selectedMode}
                   onClick={() => {
-                    setSelectedTimespan(timespan);
-
-                    // setXAxis();
-                    // chartComponent?.current?.xAxis[0].update({
-                    //   min: timespans[selectedTimespan].xMin,
-                    //   max: timespans[selectedTimespan].xMax,
-                    //   // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
-                    //   tickPositions: getTickPositions(
-                    //     timespans.max.xMin,
-                    //     timespans.max.xMax,
-                    //   ),
-                    // });
+                    setSelectedMode("gas_fees_");
                   }}
                 >
-                  {timespans[timespan].label}
+                  Gas Fees
                 </TopRowChild>
-              ))}
-              <div
-                className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[63px] right-[22px] md:right-[65px] md:top-[68px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${
-                  !isMobile
-                    ? ["max", "180d"].includes(selectedTimespan)
-                      ? "translate-y-[calc(-100%+3px)]"
-                      : "translate-y-0 "
-                    : ["max", "180d"].includes(selectedTimespan)
-                    ? "translate-y-[calc(100%+3px)]"
-                    : "translate-y-0"
-                }`}
-              >
-                <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
-                  7-day rolling average
-                </div>
+                <TopRowChild
+                  isSelected={"txcount_" === selectedMode}
+                  onClick={() => {
+                    setSelectedMode("txcount_");
+                  }}
+                >
+                  Transaction Count
+                </TopRowChild>
+              </TopRowParent>
+              <div className="block lg:hidden w-[70%] mx-auto my-[10px]">
+                <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
               </div>
-            </TopRowParent>
-          </TopRowContainer>
+              <TopRowParent>
+                {Object.keys(timespans).map((timespan) => (
+                  <TopRowChild
+                    key={timespan}
+                    isSelected={selectedTimespan === timespan}
+                    onClick={() => {
+                      setSelectedTimespan(timespan);
+
+                      // setXAxis();
+                      // chartComponent?.current?.xAxis[0].update({
+                      //   min: timespans[selectedTimespan].xMin,
+                      //   max: timespans[selectedTimespan].xMax,
+                      //   // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
+                      //   tickPositions: getTickPositions(
+                      //     timespans.max.xMin,
+                      //     timespans.max.xMax,
+                      //   ),
+                      // });
+                    }}
+                  >
+                    {timespans[timespan].label}
+                  </TopRowChild>
+                ))}
+                <div
+                  className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[63px] right-[22px] md:right-[65px] md:top-[68px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${
+                    !isMobile
+                      ? ["max", "180d"].includes(selectedTimespan)
+                        ? "translate-y-[calc(-100%+3px)]"
+                        : "translate-y-0 "
+                      : ["max", "180d"].includes(selectedTimespan)
+                      ? "translate-y-[calc(100%+3px)]"
+                      : "translate-y-0"
+                  }`}
+                >
+                  <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
+                    7-day rolling average
+                  </div>
+                </div>
+              </TopRowParent>
+            </TopRowContainer>
+          </Container>
 
           {/* <Container className="block w-full !pr-0 lg:!px-[50px] lg:mt-0 mt-6">
         <div className="flex min-w-[1150px] md:min-w-[1200px] w-[95%] m-auto min-h-[67px] items-center rounded-[15px] bg-white border dark:text-forest-50  text-forest-1000 border-forest-400 dark:border-forest-800  dark:bg-forest-1000 mt-6">

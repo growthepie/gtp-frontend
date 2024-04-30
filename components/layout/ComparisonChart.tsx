@@ -36,6 +36,11 @@ import { useWindowSize } from "usehooks-ts";
 import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import "../../app/highcharts.axis.css";
+import {
+  TopRowContainer,
+  TopRowChild,
+  TopRowParent,
+} from "@/components/layout/TopRow";
 
 const monthly_agg_labels = {
   avg: "Average",
@@ -1697,7 +1702,7 @@ export default function ComparisonChart({
   return (
     <div className="w-full flex-col relative">
       <Container className={`${is_embed ? "!p-0 !m-0" : ""}`}>
-        <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative">
+        <TopRowContainer className="relative">
           {is_embed ? (
             <div className="hidden md:flex justify-center items-center">
               <div className="w-5 h-5 md:w-7 md:h-7 relative ml-[21px] mr-3">
@@ -1715,7 +1720,7 @@ export default function ComparisonChart({
               </h2>
             </div>
           ) : (
-            <div className="flex justify-center items-center">
+            <TopRowParent>
               {/* <div className="w-7 h-7 md:w-9 md:h-9 relative ml-[21px] mr-1.5">
                 <Image
                   src="/GTP-Chain.png"
@@ -1728,7 +1733,7 @@ export default function ComparisonChart({
                 Selected Chains
               </h2> */}
               <div
-                className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 left-0 pl-[40px] w-[90px] md:pl-[85px] md:w-[151px] lg:pl-[89px] lg:w-[149px] xl:w-[170px] xl:pl-[110px] ${
+                className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 left-0.5 pl-[40px] w-[90px] md:pl-[85px] md:w-[151px] lg:pl-[89px] lg:w-[149px] xl:w-[180px] xl:pl-[110px] ${
                   monthly_agg && selectedTimeInterval === "monthly"
                     ? "translate-y-[calc(-100%+3px)]"
                     : "translate-y-0 "
@@ -1739,13 +1744,10 @@ export default function ComparisonChart({
                 </div>
               </div>
               {["daily", "monthly"].map((interval) => (
-                <button
+                <TopRowChild
                   key={interval}
-                  className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium capitalize ${
-                    selectedTimeInterval === interval
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
-                  }`}
+                  className={"capitalize"}
+                  isSelected={selectedTimeInterval === interval}
                   onClick={() => {
                     if (selectedTimeInterval === interval) return;
 
@@ -1768,12 +1770,12 @@ export default function ComparisonChart({
                 >
                   <span className="hidden md:block">{interval}</span>
                   <span className="block md:hidden">{interval[0]}</span>
-                </button>
+                </TopRowChild>
               ))}
-            </div>
+            </TopRowParent>
           )}
 
-          <div className="flex md:w-auto justify-between md:justify-center items-stretch md:items-center space-x-[4px] md:space-x-1">
+          <TopRowParent>
             {!zoomed ? (
               Object.keys(timespans)
                 .filter((timespan) =>
@@ -1782,13 +1784,9 @@ export default function ComparisonChart({
                     : ["6m", "12m", "maxM"].includes(timespan),
                 )
                 .map((timespan) => (
-                  <button
+                  <TopRowChild
                     key={timespan}
-                    className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${
-                      selectedTimespan === timespan
-                        ? "bg-forest-500 dark:bg-forest-1000"
-                        : "hover:bg-forest-500/10"
-                    }`}
+                    isSelected={selectedTimespan === timespan}
                     onClick={() => {
                       setSelectedTimespan(timespan);
                       // setXAxis();
@@ -1810,7 +1808,7 @@ export default function ComparisonChart({
                     <span className="block sm:hidden">
                       {timespans[timespan].shortLabel}
                     </span>
-                  </button>
+                  </TopRowChild>
                 ))
             ) : (
               <>
@@ -1838,7 +1836,7 @@ export default function ComparisonChart({
                 </button>
               </>
             )}
-          </div>
+          </TopRowParent>
           <div
             className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[117px] sm:w-[162px] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${
               avg && ["365d", "max"].includes(selectedTimespan)
@@ -1851,7 +1849,7 @@ export default function ComparisonChart({
               <span className="block md:hidden">7-day average</span>
             </div>
           </div>
-        </div>
+        </TopRowContainer>
 
         <div className="w-full flex flex-col-reverse lg:flex-row pt-8 pb-4 md:py-0">
           {!is_embed && (
