@@ -898,7 +898,7 @@ const OctantTableRow = ({
               <div className="flex flex-col gap-y-1 px-3 py-5 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 items-between max-h-[200px] overflow-y-auto">
                 {
                   <>
-                    {currentEpoch.projects[projectIndex].allocations
+                    {project.allocations
                       .sort((a, b) => parseInt(b.amount) - parseInt(a.amount))
                       .map((a, index) => (
                         <div key={index} className="flex justify-between">
