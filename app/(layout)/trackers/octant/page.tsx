@@ -136,11 +136,6 @@ export default function Page() {
     return byProject;
   }, [epochs]);
 
-  const currentEpochDescisionWindow = useMemo(() => {
-    if (!currentEpoch) return null;
-    return new Date(currentEpoch.decisionWindow).getTime();
-  }, [currentEpoch]);
-
   const allTimeTotalsByProject = useMemo(() => {
     if (!epochsByProject || !latestAllocationEpoch) return null;
 
@@ -530,7 +525,7 @@ export default function Page() {
 
   // Countdown Timer for Decision Window
   const createTmer = useMemo(() => {
-    if (!currentEpoch || !currentEpoch.decisionWindow) return 0;
+    if (!currentEpoch || !currentEpoch.decisionWindow) return Infinity;
 
     const decisionWindowNumber = new Date(
       currentEpoch.decisionWindow,
@@ -552,49 +547,54 @@ export default function Page() {
       return () => clearInterval(interval);
     }, []);
 
+    if (!currentEpoch || !currentEpoch.decisionWindow) return null;
+
+    if (timer === Infinity) return null;
+
     return (
-      <div className="flex items-center gap-x-2">
-        {timer > 0 ? (
-          <div className="flex items-center gap-x-2">
-            <div className="w-4 h-4">
-              <Icon
-                icon="fluent:hourglass-one-quarter-24-regular"
-                className="w-4 h-4"
-              />
+      <div className="flex flex-row gap-x-2 items-center justify-start text-xs">
+        <div className="font-medium">Epoch {currentEpoch?.epoch}</div>
+        <div>—</div>
+        <div className="flex items-center gap-x-2">
+          {timer > 0 ? (
+            <div className="flex items-center gap-x-2">
+              <div className="w-4 h-4">
+                <Icon
+                  icon="fluent:hourglass-one-quarter-24-regular"
+                  className="w-4 h-4"
+                />
+              </div>
+              <div>
+                {Math.floor(timer / (1000 * 60 * 60))
+                  .toString()
+                  .padStart(2, "0")}
+                :
+                {Math.floor((timer / (1000 * 60)) % 60)
+                  .toString()
+                  .padStart(2, "0")}
+                :
+                {Math.floor((timer / 1000) % 60)
+                  .toString()
+                  .padStart(2, "0")}
+              </div>
             </div>
-            <div>
-              {Math.floor(timer / (1000 * 60 * 60))
-                .toString()
-                .padStart(2, "0")}
-              :
-              {Math.floor((timer / (1000 * 60)) % 60)
-                .toString()
-                .padStart(2, "0")}
-              :
-              {Math.floor((timer / 1000) % 60)
-                .toString()
-                .padStart(2, "0")}
+          ) : (
+            <div className="flex gap-x-2">
+              <div className="w-4 h-4">
+                <Icon icon="feather:check" className="w-4 h-4" />
+              </div>
+              <div>Decision Window Closed</div>
             </div>
-          </div>
-        ) : (
-          <div className="flex gap-x-2">
-            <div className="w-4 h-4">
-              <Icon icon="feather:check" className="w-4 h-4" />
-            </div>
-            <div>Decision Window Closed</div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     );
   };
 
   return (
     <HorizontalScrollContainer>
-      <div className="flex flex-row gap-x-2 items-center justify-start text-xs">
-        <div className="font-medium">Epoch {currentEpoch?.epoch}</div>
-        <div>—</div>
-        <CountdownTimer />
-      </div>
+      <CountdownTimer />
+
       {/* <div>sortedProjects: {sortedProjects.length}</div>
       <div>
         epochsByProject:{" "}
