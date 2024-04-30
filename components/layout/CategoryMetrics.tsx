@@ -28,6 +28,12 @@ import ChainAnimations from "./ChainAnimations";
 import { useUIContext } from "@/contexts/UIContext";
 import ContractLabelModal from "./ContractLabelModal";
 
+import {
+  TopRowContainer,
+  TopRowChild,
+  TopRowParent,
+} from "@/components/layout/TopRow";
+
 export default function CategoryMetrics({
   data,
   showEthereumMainnet,
@@ -959,83 +965,69 @@ export default function CategoryMetrics({
     <>
       {selectedSubcategories && (
         <div className="w-full flex-col relative">
-          <Container>
-            <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 lg:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
-              <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
-                <button
-                  className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
-                    "gas_fees_" === selectedMode
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
-                  }`}
+          <TopRowContainer>
+            <TopRowParent>
+              <TopRowChild
+                isSelected={"gas_fees_" === selectedMode}
+                onClick={() => {
+                  setSelectedMode("gas_fees_");
+                }}
+              >
+                Gas Fees
+              </TopRowChild>
+              <TopRowChild
+                isSelected={"txcount_" === selectedMode}
+                onClick={() => {
+                  setSelectedMode("txcount_");
+                }}
+              >
+                Transaction Count
+              </TopRowChild>
+            </TopRowParent>
+            <div className="block lg:hidden w-[70%] mx-auto my-[10px]">
+              <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
+            </div>
+            <TopRowParent>
+              {Object.keys(timespans).map((timespan) => (
+                <TopRowChild
+                  key={timespan}
+                  isSelected={selectedTimespan === timespan}
                   onClick={() => {
-                    setSelectedMode("gas_fees_");
-                  }}
-                >
-                  Gas Fees
-                </button>
-                <button
-                  className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
-                    "txcount_" === selectedMode
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
-                  }`}
-                  onClick={() => {
-                    setSelectedMode("txcount_");
-                  }}
-                >
-                  Transaction Count
-                </button>
-              </div>
-              <div className="block lg:hidden w-[70%] mx-auto my-[10px]">
-                <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
-              </div>
-              <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
-                {Object.keys(timespans).map((timespan) => (
-                  <button
-                    key={timespan}
-                    //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                    className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
-                      selectedTimespan === timespan
-                        ? "bg-forest-500 dark:bg-forest-1000"
-                        : "hover:bg-forest-500/10"
-                    }`}
-                    onClick={() => {
-                      setSelectedTimespan(timespan);
+                    setSelectedTimespan(timespan);
 
-                      // setXAxis();
-                      // chartComponent?.current?.xAxis[0].update({
-                      //   min: timespans[selectedTimespan].xMin,
-                      //   max: timespans[selectedTimespan].xMax,
-                      //   // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
-                      //   tickPositions: getTickPositions(
-                      //     timespans.max.xMin,
-                      //     timespans.max.xMax,
-                      //   ),
-                      // });
-                    }}
-                  >
-                    {timespans[timespan].label}
-                  </button>
-                ))}
-                <div
-                  className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[50px] right-[20px] md:right-[45px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${
-                    !isMobile
-                      ? ["max", "180d"].includes(selectedTimespan)
-                        ? "translate-y-[calc(-100%+3px)]"
-                        : "translate-y-0 "
-                      : ["max", "180d"].includes(selectedTimespan)
-                      ? "translate-y-[calc(100%+3px)]"
-                      : "translate-y-0"
-                  }`}
+                    // setXAxis();
+                    // chartComponent?.current?.xAxis[0].update({
+                    //   min: timespans[selectedTimespan].xMin,
+                    //   max: timespans[selectedTimespan].xMax,
+                    //   // calculate tick positions based on the selected time interval so that the ticks are aligned to the first day of the month
+                    //   tickPositions: getTickPositions(
+                    //     timespans.max.xMin,
+                    //     timespans.max.xMax,
+                    //   ),
+                    // });
+                  }}
                 >
-                  <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
-                    7-day rolling average
-                  </div>
+                  {timespans[timespan].label}
+                </TopRowChild>
+              ))}
+              <div
+                className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[63px] right-[22px] md:right-[65px] md:top-[68px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${
+                  !isMobile
+                    ? ["max", "180d"].includes(selectedTimespan)
+                      ? "translate-y-[calc(-100%+3px)]"
+                      : "translate-y-0 "
+                    : ["max", "180d"].includes(selectedTimespan)
+                    ? "translate-y-[calc(100%+3px)]"
+                    : "translate-y-0"
+                }`}
+              >
+                <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
+                  7-day rolling average
                 </div>
               </div>
-            </div>
-          </Container>
+            </TopRowParent>
+          </TopRowContainer>
+
           {/* <Container className="block w-full !pr-0 lg:!px-[50px] lg:mt-0 mt-6">
         <div className="flex min-w-[1150px] md:min-w-[1200px] w-[95%] m-auto min-h-[67px] items-center rounded-[15px] bg-white border dark:text-forest-50  text-forest-1000 border-forest-400 dark:border-forest-800  dark:bg-forest-1000 mt-6">
           <div

@@ -28,9 +28,11 @@ import RowContainer from "./BlockspaceOverview/ChainRows/RowContainer";
 import { RowProvider } from "./BlockspaceOverview/ChainRows/RowContext";
 import ContractContainer from "./BlockspaceOverview/Contracts/ContractContainer";
 import { ContractProvider } from "./BlockspaceOverview/Contracts/ContractContext";
-import TopRowContainer from "@/components/layout/TopRow/TopRowContainer";
-import TopRowChild from "@/components/layout/TopRow/TopRowChild";
-import TopRowParent from "@/components/layout/TopRow/TopRowParent";
+import {
+  TopRowContainer,
+  TopRowChild,
+  TopRowParent,
+} from "@/components/layout/TopRow";
 
 // object which contains the allowed modes for chains with mode exceptions
 const AllowedModes: {
