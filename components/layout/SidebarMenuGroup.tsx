@@ -62,6 +62,11 @@ export default function SidebarMenuGroup({
       {},
     );
 
+    // sort each bucket in alphabetical order
+    Object.keys(chainsByBucket).forEach((bucket) => {
+      chainsByBucket[bucket].sort((a, b) => a.label.localeCompare(b.label));
+    });
+
     return chainsByBucket;
   }, [master]);
 
