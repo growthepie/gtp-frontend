@@ -790,6 +790,7 @@ export default function LandingChart({
           const { name } = series;
           const supportedChainKeys = Get_SupportedChainKeys(master, [
             "all_l2s",
+            "multiple",
           ]);
 
           return supportedChainKeys.includes(name);
