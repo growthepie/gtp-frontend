@@ -1733,7 +1733,7 @@ export default function ComparisonChart({
                 Selected Chains
               </h2> */}
               <div
-                className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 left-0.5 pl-[40px] w-[90px] md:pl-[85px] md:w-[151px] lg:pl-[89px] lg:w-[149px] xl:w-[180px] xl:pl-[110px] ${
+                className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 left-[190px] sm:left-[300px] lg:left-0.5 pl-[40px] w-[200px] md:pl-[85px] md:w-[220px] lg:pl-[89px] lg:w-[149px] xl:w-[180px] xl:pl-[110px] ${
                   monthly_agg && selectedTimeInterval === "monthly"
                     ? "translate-y-[calc(-100%+3px)]"
                     : "translate-y-0 "
