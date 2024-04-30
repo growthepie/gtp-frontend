@@ -37,6 +37,11 @@ import ChartWatermark from "./ChartWatermark";
 import { BASE_URL, IS_PREVIEW } from "@/lib/helpers";
 import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
 import "../../app/highcharts.axis.css";
+import {
+  TopRowContainer,
+  TopRowChild,
+  TopRowParent,
+} from "@/components/layout/TopRow";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -1743,14 +1748,11 @@ export default function LandingChart({
             />
           </div>
         </div>
-        <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs xl:text-base xl:flex xl:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 xl:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
-          <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center space-x-[4px] xl:space-x-1">
-            <button
-              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                showTotalUsers
-                  ? "bg-forest-500 dark:bg-forest-1000"
-                  : "hover:bg-forest-500/10"
-              }`}
+        <TopRowContainer>
+          <TopRowParent>
+            <TopRowChild
+              isSelected={showTotalUsers}
+              className={"-px-2"}
               onClick={() => {
                 setShowTotalUsers(true);
                 setSelectedScale("absolute");
@@ -1758,13 +1760,9 @@ export default function LandingChart({
               }}
             >
               Total Users
-            </button>
-            <button
-              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                "absolute" === selectedScale && !showTotalUsers
-                  ? "bg-forest-500 dark:bg-forest-1000"
-                  : "hover:bg-forest-500/10"
-              }`}
+            </TopRowChild>
+            <TopRowChild
+              isSelected={"absolute" === selectedScale && !showTotalUsers}
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("absolute");
@@ -1772,14 +1770,10 @@ export default function LandingChart({
               }}
             >
               Users per Chain
-            </button>
+            </TopRowChild>
 
-            <button
-              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                "percentage" === selectedScale
-                  ? "bg-forest-500 dark:bg-forest-1000"
-                  : "hover:bg-forest-500/10"
-              }`}
+            <TopRowChild
+              isSelected={"percentage" === selectedScale}
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("percentage");
@@ -1787,22 +1781,18 @@ export default function LandingChart({
               }}
             >
               Percentage
-            </button>
-          </div>
-          <div className="block xl:hidden w-[70%] mx-auto my-[10px]">
+            </TopRowChild>
+          </TopRowParent>
+          <div className="block lg:hidden w-[70%] mx-auto my-[10px]">
             <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
           </div>
-          <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
+          <TopRowParent>
             {!zoomed ? (
               Object.keys(timespans).map((timespan) => (
-                <button
+                <TopRowChild
                   key={timespan}
                   //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                  className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                    selectedTimespan === timespan
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
-                  }`}
+                  isSelected={selectedTimespan === timespan}
                   onClick={() => {
                     setSelectedTimespan(timespan);
                     // setXAxis();
@@ -1820,7 +1810,7 @@ export default function LandingChart({
                   }}
                 >
                   {timespans[timespan].label}
-                </button>
+                </TopRowChild>
               ))
             ) : (
               <>
@@ -1847,8 +1837,8 @@ export default function LandingChart({
                 </button>
               </>
             )}
-          </div>
-        </div>
+          </TopRowParent>
+        </TopRowContainer>
       </div>
       <div className="flex-1 min-h-0 w-full pt-8 pb-4 md:pt-[52px] md:pb-4 lg:pt-[52px] lg:pb-16">
         <div
