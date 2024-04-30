@@ -11,6 +11,11 @@ import {
   EpochState,
 } from "@/app/api/trackers/octant/route";
 import ShowLoading from "@/components/layout/ShowLoading";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/layout/Tooltip";
 
 type EpochsByProject = {
   [project: string]: EpochData[];
@@ -523,8 +528,78 @@ export default function Page() {
     ];
   }, [data, sortDirection, sortKey, currentEpoch]);
 
+  // Countdown Timer for Decision Window
+  const createTmer = useMemo(() => {
+    if (!currentEpoch || !currentEpoch.decisionWindow) return Infinity;
+
+    const decisionWindowNumber = new Date(
+      currentEpoch.decisionWindow,
+    ).getTime();
+    const now = Date.now();
+
+    return decisionWindowNumber - now;
+  }, [currentEpoch]);
+
+  // CountdownTimer that updates every 100ms
+  const CountdownTimer = () => {
+    const [timer, setTimer] = useState(createTmer);
+
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setTimer((prev) => prev - 100);
+      }, 100);
+
+      return () => clearInterval(interval);
+    }, []);
+
+    if (!currentEpoch || !currentEpoch.decisionWindow) return null;
+
+    if (timer === Infinity) return null;
+
+    return (
+      <div className="flex flex-row gap-x-2 items-center justify-start text-xs">
+        <div className="font-medium">Epoch {currentEpoch?.epoch}</div>
+        <div>—</div>
+        <div className="flex items-center gap-x-2">
+          {timer > 0 ? (
+            <div className="flex items-center gap-x-2">
+              <div className="w-4 h-4">
+                <Icon
+                  icon="fluent:hourglass-one-quarter-24-regular"
+                  className="w-4 h-4"
+                />
+              </div>
+              <div>
+                {Math.floor(timer / (1000 * 60 * 60))
+                  .toString()
+                  .padStart(2, "0")}
+                :
+                {Math.floor((timer / (1000 * 60)) % 60)
+                  .toString()
+                  .padStart(2, "0")}
+                :
+                {Math.floor((timer / 1000) % 60)
+                  .toString()
+                  .padStart(2, "0")}
+              </div>
+            </div>
+          ) : (
+            <div className="flex gap-x-2">
+              <div className="w-4 h-4">
+                <Icon icon="feather:check" className="w-4 h-4" />
+              </div>
+              <div>Decision Window Closed</div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <HorizontalScrollContainer>
+      <CountdownTimer />
+
       {/* <div>sortedProjects: {sortedProjects.length}</div>
       <div>
         epochsByProject:{" "}
@@ -793,31 +868,60 @@ const OctantTableRow = ({
       </div>
       <div className="flex justify-end item-center gap-x-2">
         {currentEpochProject && (
-          <>
-            <div className="flex items-center text-[0.9rem] font-medium leading-[1.2] font-inter">
-              {project.donors}
-            </div>
-            <div className="w-[26px] h-[26px] flex items-center justify-center">
-              {project.donors < 50 && (
-                <Icon
-                  icon={"fluent:person-20-filled"}
-                  className="w-[18px] h-[18px] text-forest-900/30 dark:text-forest-500/30 fill-current"
-                />
-              )}
-              {project.donors >= 50 && project.donors < 100 && (
-                <Icon
-                  icon={"fluent:people-20-filled"}
-                  className="w-[23px] h-[23px] text-forest-900/30 dark:text-forest-500/30 fill-current"
-                />
-              )}
-              {project.donors >= 100 && (
-                <Icon
-                  icon={"fluent:people-community-20-filled"}
-                  className="w-[26px] h-[26px] text-forest-900/30 dark:text-forest-500/30 fill-current"
-                />
-              )}
-            </div>
-          </>
+          <Tooltip placement="left" allowInteract>
+            <TooltipTrigger className="flex justify-end item-center gap-x-2">
+              <div className="flex items-center text-[0.9rem] font-medium leading-[1.2] font-inter">
+                {project.donors}
+              </div>
+              <div className="w-[26px] h-[26px] flex items-center justify-center">
+                {project.donors < 50 && (
+                  <Icon
+                    icon={"fluent:person-20-filled"}
+                    className="w-[18px] h-[18px] text-forest-900/30 dark:text-forest-500/30 fill-current"
+                  />
+                )}
+                {project.donors >= 50 && project.donors < 100 && (
+                  <Icon
+                    icon={"fluent:people-20-filled"}
+                    className="w-[23px] h-[23px] text-forest-900/30 dark:text-forest-500/30 fill-current"
+                  />
+                )}
+                {project.donors >= 100 && (
+                  <Icon
+                    icon={"fluent:people-community-20-filled"}
+                    className="w-[26px] h-[26px] text-forest-900/30 dark:text-forest-500/30 fill-current"
+                  />
+                )}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="pr-0 z-50 flex items-center justify-center">
+              <div className="flex flex-col gap-y-1 px-3 py-5 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 items-between max-h-[200px] overflow-y-auto">
+                {
+                  <>
+                    {project.allocations
+                      .sort((a, b) => parseInt(b.amount) - parseInt(a.amount))
+                      .map((a, index) => (
+                        <div key={index} className="flex justify-between">
+                          <Link
+                            href={`https://etherscan.io/address/${a.donor}`}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                            className="hover:underline"
+                          >
+                            <>
+                              {a.donor.slice(0, 5) + "..." + a.donor.slice(-8)}
+                            </>
+                          </Link>
+                          <div>
+                            {(parseInt(a.amount) / 10 ** 18).toFixed(6)} ETH
+                          </div>
+                        </div>
+                      ))}
+                  </>
+                }
+              </div>
+            </TooltipContent>
+          </Tooltip>
         )}
       </div>
       <div className="flex justify-end">
