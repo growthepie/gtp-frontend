@@ -783,7 +783,9 @@ export default function LandingChart({
         .filter((point: any) => {
           const { series, y, percentage } = point;
           const { name } = series;
-          const supportedChainKeys = Get_SupportedChainKeys(master);
+          const supportedChainKeys = Get_SupportedChainKeys(master, [
+            "all_l2s",
+          ]);
 
           return supportedChainKeys.includes(name);
         })

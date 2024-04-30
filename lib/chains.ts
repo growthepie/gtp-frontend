@@ -562,17 +562,32 @@ export const EnabledChainsByKeys: { [key: string]: Chain } = AllChains.reduce(
   {},
 );
 
-export const Get_SupportedChainKeys = (data?: MasterResponse) => {
+export const Get_SupportedChainKeys = (
+  data?: MasterResponse,
+  additionalKeys?: string[],
+) => {
   if (!data) return [];
   if (IS_DEVELOPMENT || IS_PREVIEW) {
-    return Object.keys(data.chains)
+    let keys = Object.keys(data.chains)
       .filter((key) => ["DEV", "PROD"].includes(data.chains[key].deployment))
       .map((key) => key);
+
+    if (additionalKeys) {
+      keys = keys.concat(additionalKeys);
+    }
+
+    return keys;
   }
 
-  return Object.keys(data.chains)
+  let keys = Object.keys(data.chains)
     .filter((key) => ["PROD"].includes(data.chains[key].deployment))
     .map((key) => key);
+
+  if (additionalKeys) {
+    keys = keys.concat(additionalKeys);
+  }
+
+  return keys;
 };
 
 export const Get_DefaultChainSelectionKeys = (master: MasterResponse) => {
