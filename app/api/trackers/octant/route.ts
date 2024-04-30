@@ -7,7 +7,7 @@ import {
 import { request, gql } from "graphql-request";
 import { formatNumber } from "@/lib/chartUtils";
 
-export const revalidate = 60 * 5; // 5 minutes
+export const revalidate = 60 * 1; // 1 minutes
 
 const Client = new OctantClient({
   baseUrl: "https://backend.mainnet.octant.app",
