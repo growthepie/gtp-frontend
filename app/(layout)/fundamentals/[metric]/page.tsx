@@ -107,7 +107,7 @@ const FundamentalsContent = ({ params }: { params: any }) => {
 
   useEffect(() => {
     let currentURL = window.location.href;
-    if (currentURL.includes("?force=true")) {
+    if (currentURL.includes("?is_og=true")) {
       setSelectedScale("stacked");
     }
   }, []);
