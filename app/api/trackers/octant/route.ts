@@ -94,6 +94,7 @@ export type EpochProject = {
     matched: number;
     total: number;
   };
+  allocations: EpochAllocation[];
 };
 
 export type EpochData = {

@@ -11,6 +11,11 @@ import {
   EpochState,
 } from "@/app/api/trackers/octant/route";
 import ShowLoading from "@/components/layout/ShowLoading";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/layout/Tooltip";
 
 type EpochsByProject = {
   [project: string]: EpochData[];
@@ -863,31 +868,60 @@ const OctantTableRow = ({
       </div>
       <div className="flex justify-end item-center gap-x-2">
         {currentEpochProject && (
-          <>
-            <div className="flex items-center text-[0.9rem] font-medium leading-[1.2] font-inter">
-              {project.donors}
-            </div>
-            <div className="w-[26px] h-[26px] flex items-center justify-center">
-              {project.donors < 50 && (
-                <Icon
-                  icon={"fluent:person-20-filled"}
-                  className="w-[18px] h-[18px] text-forest-900/30 dark:text-forest-500/30 fill-current"
-                />
-              )}
-              {project.donors >= 50 && project.donors < 100 && (
-                <Icon
-                  icon={"fluent:people-20-filled"}
-                  className="w-[23px] h-[23px] text-forest-900/30 dark:text-forest-500/30 fill-current"
-                />
-              )}
-              {project.donors >= 100 && (
-                <Icon
-                  icon={"fluent:people-community-20-filled"}
-                  className="w-[26px] h-[26px] text-forest-900/30 dark:text-forest-500/30 fill-current"
-                />
-              )}
-            </div>
-          </>
+          <Tooltip placement="left" allowInteract>
+            <TooltipTrigger className="flex justify-end item-center gap-x-2">
+              <div className="flex items-center text-[0.9rem] font-medium leading-[1.2] font-inter">
+                {project.donors}
+              </div>
+              <div className="w-[26px] h-[26px] flex items-center justify-center">
+                {project.donors < 50 && (
+                  <Icon
+                    icon={"fluent:person-20-filled"}
+                    className="w-[18px] h-[18px] text-forest-900/30 dark:text-forest-500/30 fill-current"
+                  />
+                )}
+                {project.donors >= 50 && project.donors < 100 && (
+                  <Icon
+                    icon={"fluent:people-20-filled"}
+                    className="w-[23px] h-[23px] text-forest-900/30 dark:text-forest-500/30 fill-current"
+                  />
+                )}
+                {project.donors >= 100 && (
+                  <Icon
+                    icon={"fluent:people-community-20-filled"}
+                    className="w-[26px] h-[26px] text-forest-900/30 dark:text-forest-500/30 fill-current"
+                  />
+                )}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="pr-0 z-50 flex items-center justify-center">
+              <div className="flex flex-col gap-y-1 px-3 py-5 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 items-between max-h-[200px] overflow-y-auto">
+                {
+                  <>
+                    {currentEpoch.projects[projectIndex].allocations
+                      .sort((a, b) => parseInt(b.amount) - parseInt(a.amount))
+                      .map((a, index) => (
+                        <div key={index} className="flex justify-between">
+                          <Link
+                            href={`https://etherscan.io/address/${a.donor}`}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                            className="hover:underline"
+                          >
+                            <>
+                              {a.donor.slice(0, 5) + "..." + a.donor.slice(-8)}
+                            </>
+                          </Link>
+                          <div>
+                            {(parseInt(a.amount) / 10 ** 18).toFixed(6)} ETH
+                          </div>
+                        </div>
+                      ))}
+                  </>
+                }
+              </div>
+            </TooltipContent>
+          </Tooltip>
         )}
       </div>
       <div className="flex justify-end">
