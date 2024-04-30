@@ -1475,7 +1475,7 @@ export default function LandingChart({
                     //   theme
                     //   ][0] + "33"
                     //   : [],
-                    shadow: "none",
+                    shadow: null,
                     color: {
                       linearGradient: {
                         x1: 0,
@@ -1631,7 +1631,6 @@ export default function LandingChart({
     zoomMin,
     zoomed,
     is_embed,
-    daysShown,
   ]);
 
   // const resituateChart = debounce(() => {
