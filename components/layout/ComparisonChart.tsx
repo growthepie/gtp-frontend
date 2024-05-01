@@ -233,7 +233,6 @@ export default function ComparisonChart({
   // );
 
   // const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
-  console.log(metric_id);
 
   const [zoomed, setZoomed] = useState(false);
   const [zoomMin, setZoomMin] = useState(0);
@@ -511,6 +510,10 @@ export default function ComparisonChart({
             }
           }
 
+          if (metric_id === "throughput") {
+            suffix = " mgas/s";
+          }
+
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
@@ -532,6 +535,8 @@ export default function ComparisonChart({
                           ? metric_id === "txcosts"
                             ? 3
                             : 2
+                          : metric_id === "throughput"
+                          ? 2
                           : 0,
                       })
                 }

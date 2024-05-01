@@ -10,6 +10,7 @@ export const MetricsURLs = {
   profit: "https://api.growthepie.xyz/v1/metrics/profit.json",
   "fully-diluted-valuation": "https://api.growthepie.xyz/v1/metrics/fdv.json",
   "market-cap": "https://api.growthepie.xyz/v1/metrics/market_cap.json",
+  throughput: "http://api.growthepie.xyz/v1/metrics/throughput.json",
 };
 
 export const ChainURLs = {

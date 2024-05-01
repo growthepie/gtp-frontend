@@ -113,6 +113,21 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "transaction-count",
       },
       {
+        label: "Throughput",
+        category: "activity",
+        page: {
+          title: "Throughput",
+          description:
+            "A chains throughput measured in gas per second. We only include EVM equivalent Layer 2 gas usage.",
+          why: "A chains throughput reflects the rate of compute that can be executed by a chain. Simple transactions, like sending eth, need less gas than more complex transactions, like routing a swap through multiple pools. This metric is only available for EVM chains because other chains don't use the same concept for measuring gas.",
+          icon: "feather:sunrise",
+        },
+        icon: "feather:sunrise",
+        key: "throughput",
+        rootKey: "throughput",
+        urlKey: "throughput",
+      },
+      {
         label: "Stablecoin Market Cap",
         category: "value-locked",
         page: {

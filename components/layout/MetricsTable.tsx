@@ -385,6 +385,10 @@ const MetricsTable = ({
           prefix = "$";
           value = formatNumber(values[types.indexOf("usd")]);
         }
+      } else {
+        if (metric_id === "throughput") {
+          suffix = "mgas/s";
+        }
       }
       return { value, prefix, suffix };
     },
