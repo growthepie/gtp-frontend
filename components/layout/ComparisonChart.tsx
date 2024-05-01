@@ -562,6 +562,9 @@ export default function ComparisonChart({
       let prefix = valuePrefix;
       let suffix = "";
       let value = pointsSum;
+      if (metric_id === "throughput") {
+        suffix = " mgas/s";
+      }
 
       const sumRow =
         selectedScale === "stacked"
@@ -576,7 +579,11 @@ export default function ComparisonChart({
               }">${prefix}</div>
               ${parseFloat(value).toLocaleString(undefined, {
                 minimumFractionDigits: valuePrefix ? 2 : 0,
-                maximumFractionDigits: valuePrefix ? 2 : 0,
+                maximumFractionDigits: valuePrefix
+                  ? 2
+                  : metric_id === "throughput"
+                  ? 2
+                  : 0,
               })}
               <div class="opacity-70 ml-0.5 ${
                 !suffix && "hidden"
