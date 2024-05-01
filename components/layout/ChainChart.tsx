@@ -452,6 +452,9 @@ export default function ChainChart({
             valueIndex = item.metrics[key].daily.types.indexOf("usd");
           }
         } else {
+          if (key === "throughput") {
+            suffix = "mgas/s";
+          }
         }
 
         let dateIndex = item.metrics[key].daily.data.length - 1;
@@ -1416,12 +1419,23 @@ export default function ChainChart({
                 </div>
                 <div className="">None</div>
               </div>
-              {CompChains.map((chain, index) => (
+              {CompChains.sort((chain1, chain2) => {
+                const nameA = master.chains[chain1.key].name.toLowerCase();
+                const nameB = master.chains[chain2.key].name.toLowerCase();
+
+                if (nameA < nameB) {
+                  return -1;
+                }
+                if (nameA > nameB) {
+                  return 1;
+                }
+                return 0;
+              }).map((chain, index) => (
                 <div
                   className="flex pl-[21px] pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
                   onClick={() => {
                     setCompareTo(false);
-                    delay(300).then(() =>
+                    delay(400).then(() =>
                       updateChainKey([chainKey[0], chain.key]),
                     );
                   }}
