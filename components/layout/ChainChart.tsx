@@ -534,6 +534,9 @@ export default function ChainChart({
             }
           }
 
+          if (metricKey === "throughput") {
+            suffix = "mgas/s";
+          }
           // if (series.name === item.chain_name) {
           return `
                 <div class="flex w-full space-x-2 items-center font-medium mb-1">
@@ -546,7 +549,11 @@ export default function ChainChart({
                       }">${prefix}</div>
                       ${parseFloat(value).toLocaleString(undefined, {
                         minimumFractionDigits: prefix ? 2 : 0,
-                        maximumFractionDigits: prefix ? 2 : 0,
+                        maximumFractionDigits: prefix
+                          ? 2
+                          : metricKey === "throughput"
+                          ? 2
+                          : 0,
                       })}
                       <div class="opacity-70 ml-0.5 ${
                         !suffix && "hidden"
