@@ -93,7 +93,7 @@ export default function SidebarMenuGroup({
   }, [pathname]);
 
   useEffect(() => {
-    if (urlParts[0].length === 0 && item.name === "Trackers") {
+    if (urlParts[0].length === 0 && item.name === "Fundamentals") {
       setIsOpen(true);
     } else {
       setIsOpen(
