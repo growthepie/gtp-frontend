@@ -3,6 +3,7 @@
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts/highstock";
 import highchartsAnnotations from "highcharts/modules/annotations";
+// import highchartsDebug from "highcharts/modules/debugger";
 import {
   useState,
   useEffect,
@@ -227,7 +228,7 @@ export default function ChainComponent({
     Object.keys(data.metrics).forEach((key) => {
       maxUnixtimes.push(
         data.metrics[key].daily.data[
-        data.metrics[key].daily.data.length - 1
+          data.metrics[key].daily.data.length - 1
         ][0],
       );
     });
@@ -445,11 +446,11 @@ export default function ChainComponent({
       const dateString = `
       <div>
         ${date.toLocaleDateString(undefined, {
-        timeZone: "UTC",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })}
+          timeZone: "UTC",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })}
       </div>
       `;
 
@@ -471,25 +472,28 @@ export default function ChainComponent({
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-1">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
-              }"></div>
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                  AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
+                }"></div>
                 <!--
-                <div class="tooltip-point-name">${AllChainsByKeys[data.chain_id].label
-              }</div>
+                <div class="tooltip-point-name">${
+                  AllChainsByKeys[data.chain_id].label
+                }</div>
                 -->
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                percentage,
-                2,
-              )}%</div>
+                  percentage,
+                  2,
+                )}%</div>
               </div>
               <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
                 <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
 
                 <div class="h-[2px] rounded-full absolute left-0 top-0" style="width: ${Highcharts.numberFormat(
-                percentage,
-                2,
-              )}%; background-color: ${AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
-              };"> </div>
+                  percentage,
+                  2,
+                )}%; background-color: ${
+              AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
+            };"> </div>
               </div> -->`;
 
           let prefix = displayValues[series.name].prefix;
@@ -508,21 +512,25 @@ export default function ChainComponent({
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-1">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+              AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
             }"></div>
             <!--
-            <div class="tooltip-point-name text-md">${AllChainsByKeys[data.chain_id].label
+            <div class="tooltip-point-name text-md">${
+              AllChainsByKeys[data.chain_id].label
             }</div>
             -->
             <div class="flex-1 text-left justify-start font-inter flex">
-                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-            }">${prefix}</div>
+                <div class="opacity-70 mr-0.5 ${
+                  !prefix && "hidden"
+                }">${prefix}</div>
                 ${parseFloat(value).toLocaleString(undefined, {
-              minimumFractionDigits: prefix ? 2 : 0,
-              maximumFractionDigits: prefix ? 2 : 0,
-            })}
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
+                  minimumFractionDigits: prefix ? 2 : 0,
+                  maximumFractionDigits: prefix ? 2 : 0,
+                })}
+                <div class="opacity-70 ml-0.5 ${
+                  !suffix && "hidden"
+                }">${suffix}</div>
             </div>
           </div>
           <!-- <div class="flex ml-4 w-[calc(100% - 1rem)] relative mb-1">
@@ -531,8 +539,9 @@ export default function ChainComponent({
             <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
               name,
               (y / pointsSum) * 100,
-            )}%; background-color: ${AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
-            }33;"></div>
+            )}%; background-color: ${
+            AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
+          }33;"></div>
           </div> -->`;
         })
         .join("");
@@ -752,6 +761,7 @@ export default function ChainComponent({
   };
 
   useEffect(() => {
+    // highchartsDebug(Highcharts);
     window.addEventListener("resize", handleResize);
 
     animationTimeout.current = setTimeout(() => {
@@ -800,9 +810,10 @@ export default function ChainComponent({
       accessibility: { enabled: false },
       exporting: { enabled: false },
       chart: {
+        // displayErrors: false,
         type: "area",
-        height: isMobile ? 146 : 176,
-        width: "100%",
+        height: isMobile ? "146px" : "176px",
+        // width: "100%",
         backgroundColor: undefined,
         margin: [1, 0, 0, 0],
         spacingBottom: 0,
@@ -888,9 +899,7 @@ export default function ChainComponent({
           color: COLORS.PLOT_LINE,
           snap: false,
         },
-        min: zoomed
-          ? zoomMin
-          : timespans[selectedTimespan].xMin,
+        min: zoomed ? zoomMin : timespans[selectedTimespan].xMin,
         max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
         tickPositions: getTickPositions(
           timespans[selectedTimespan].xMin,
@@ -977,19 +986,21 @@ export default function ChainComponent({
             stops: [
               [
                 0,
-                AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0] + "33",
+                AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0] +
+                  "33",
               ],
               [
                 1,
-                AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1] + "33",
+                AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1] +
+                  "33",
               ],
             ],
           },
-          shadow: {
-            color:
-              AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
-            width: 10,
-          },
+          // shadow: {
+          //   color:
+          //     AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
+          //   width: 10,
+          // },
           color: {
             linearGradient: {
               x1: 0,
@@ -1034,13 +1045,76 @@ export default function ChainComponent({
         enabled: false,
       },
     };
-  }, [data.chain_id, getTickPositions, isAnimate, isMobile, onXAxisSetExtremes, selectedTimespan, theme, timespans, tooltipFormatter, tooltipPositioner, zoomMax, zoomMin, zoomed]);
+  }, [
+    data.chain_id,
+    getTickPositions,
+    isAnimate,
+    isMobile,
+    onXAxisSetExtremes,
+    selectedTimespan,
+    theme,
+    timespans,
+    tooltipFormatter,
+    tooltipPositioner,
+    zoomMax,
+    zoomMin,
+    zoomed,
+  ]);
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
   const delayPromises = [];
 
   const onChartRender = (chart: Highcharts.Chart) => {
+    if (!chart || !chart.series) return;
+
+    // check if gradient exists
+    if (!document.getElementById("gradient0")) {
+      // add def containing linear gradient with stop colors for the circle
+      chart.renderer.definition({
+        attributes: {
+          id: "gradient0",
+          x1: "0%",
+          y1: "0%",
+          x2: "0%",
+          y2: "100%",
+        },
+        children: [
+          {
+            tagName: "stop",
+            // offset: "0%",
+
+            attributes: {
+              id: "stop1",
+              offset: "0%",
+            },
+          },
+          {
+            tagName: "stop",
+            // offset: "100%",
+            attributes: {
+              id: "stop2",
+              offset: "100%",
+            },
+          },
+        ],
+        tagName: "linearGradient",
+        textContent: "",
+      });
+      const stop1 = document.getElementById("stop1");
+      const stop2 = document.getElementById("stop2");
+      stop1?.setAttribute(
+        "stop-color",
+        AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1],
+      );
+      stop1?.setAttribute("stop-opacity", "1");
+      stop2?.setAttribute(
+        "stop-color",
+        AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
+      );
+      stop2?.setAttribute("stop-opacity", "0.33");
+    }
+
     // only 1 chart so setting const for i to = 0
     const i = 0;
     // const chart: Highcharts.Chart = this;
@@ -1070,7 +1144,9 @@ export default function ChainComponent({
         y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
         x2: chart.chartWidth * (1 - fraction) - 0.00005,
         y2: chart.plotTop / 2,
-        stroke: isSafariBrowser ? AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1] : "url('#gradient0')",
+        stroke: isSafariBrowser
+          ? AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1]
+          : "url('#gradient0')",
         "stroke-dasharray": "2",
         "stroke-width": 1,
         rendering: "crispEdges",
@@ -1193,52 +1269,9 @@ export default function ChainComponent({
 
                 margin: zoomed ? zoomMargin : defaultMargin,
                 events: {
-                  load: function () {
-                    const chart = this;
-                    // chart.reflow();
-                    // add def containing linear gradient with stop colors for the circle
-                    chart.renderer.definition({
-                      attributes: {
-                        id: "gradient0",
-                        x1: "0%",
-                        y1: "0%",
-                        x2: "0%",
-                        y2: "100%",
-                      },
-                      children: [
-                        {
-                          tagName: "stop",
-                          offset: "0%",
-                          attributes: {
-                            id: "stop1",
-                          },
-                        },
-                        {
-                          tagName: "stop",
-                          offset: "100%",
-                          attributes: {
-                            id: "stop2",
-                          },
-                        },
-                      ],
-                      tagName: "linearGradient",
-                      textContent: "",
-                    });
-                    const stop1 = document.getElementById("stop1");
-                    const stop2 = document.getElementById("stop2");
-
-                    stop1?.setAttribute(
-                      "stop-color",
-                      AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1],
-                    );
-                    stop1?.setAttribute("stop-opacity", "1");
-
-                    stop2?.setAttribute(
-                      "stop-color",
-                      AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
-                    );
-                    stop2?.setAttribute("stop-opacity", "0.33");
-                  },
+                  // render: function () {
+                  //   const chart = this;
+                  // },
                   render: function () {
                     const chart = this;
                     onChartRender(chart);
@@ -1247,7 +1280,9 @@ export default function ChainComponent({
               },
               yAxis: {
                 ...options.yAxis,
+
                 labels: {
+                  enabled: false,
                   ...(options.yAxis as Highcharts.YAxisOptions).labels,
                   formatter: function (
                     t: Highcharts.AxisLabelsFormatterContextObject,
@@ -1264,27 +1299,27 @@ export default function ChainComponent({
                   data: data.metrics[category].daily.types.includes("eth")
                     ? showUsd
                       ? data.metrics[category].daily.data.map((d) => [
-                        d[0],
-                        d[data.metrics[category].daily.types.indexOf("usd")],
-                      ])
+                          d[0],
+                          d[data.metrics[category].daily.types.indexOf("usd")],
+                        ])
                       : data.metrics[category].daily.data.map((d) => [
-                        d[0],
-                        showGwei(category)
-                          ? d[
-                          data.metrics[category].daily.types.indexOf(
-                            "eth",
-                          )
-                          ] * 1000000000
-                          : d[
-                          data.metrics[category].daily.types.indexOf(
-                            "eth",
-                          )
-                          ],
-                      ])
+                          d[0],
+                          showGwei(category)
+                            ? d[
+                                data.metrics[category].daily.types.indexOf(
+                                  "eth",
+                                )
+                              ] * 1000000000
+                            : d[
+                                data.metrics[category].daily.types.indexOf(
+                                  "eth",
+                                )
+                              ],
+                        ])
                     : data.metrics[category].daily.data.map((d) => [
-                      d[0],
-                      d[1],
-                    ]),
+                        d[0],
+                        d[1],
+                      ]),
                   showInLegend: false,
                   marker: {
                     enabled: false,
@@ -1322,13 +1357,12 @@ export default function ChainComponent({
                         attributes: {
                           fill:
                             AllChainsByKeys[data.chain_id]?.colors[
-                            theme ?? "dark"
+                              theme ?? "dark"
                             ][0] + "99",
                           stroke:
                             AllChainsByKeys[data.chain_id]?.colors[
-                            theme ?? "dark"
+                              theme ?? "dark"
                             ][0] + "66",
-                          strokeWidth: 0,
                         },
                       },
                       brightness: 0.3,

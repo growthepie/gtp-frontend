@@ -858,7 +858,7 @@ export default function LandingChart({
 
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [formatNumber, selectedMetric, selectedScale, theme],
+    [formatNumber, master, selectedMetric, selectedScale, theme],
   );
 
   const tooltipPositioner =
@@ -877,10 +877,7 @@ export default function LandingChart({
             ? pointX + distance
             : pointX - tooltipWidth - distance;
 
-        const tooltipY =
-          pointY - tooltipHeight / 2 < plotTop
-            ? pointY + distance
-            : pointY - tooltipHeight / 2;
+        const tooltipY = pointY - tooltipHeight / 2;
 
         if (isMobile) {
           if (tooltipX + tooltipWidth > plotLeft + plotWidth) {

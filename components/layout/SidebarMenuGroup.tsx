@@ -297,11 +297,8 @@ export default function SidebarMenuGroup({
               if (chains.length === 0) return null;
 
               return (
-                <>
-                  <div
-                    key={bucket}
-                    className="px-0 md:px-5 mt-[7px] mb-[2px] overflow-visible text-forest-800"
-                  >
+                <div key={bucket}>
+                  <div className="px-0 md:px-5 mt-[7px] mb-[2px] overflow-visible text-forest-800">
                     <div className="flex items-center justify-items-center rounded-full md:rounded-l-full relative">
                       <div className={`w-6 absolute left-[13px]`}>
                         <Icon
@@ -385,7 +382,7 @@ export default function SidebarMenuGroup({
                       </Tooltip>
                     );
                   })}
-                </>
+                </div>
               );
             })}
         </div>
