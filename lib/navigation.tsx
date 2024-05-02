@@ -611,6 +611,16 @@ export const navigationItems: NavigationItem[] = [
     icon: "gtp:tracker",
     options: [
       {
+        label: "fees.growthepie.xyz",
+        icon: "gtp:gtp-pie",
+        category: "gtpmetrics",
+        key: "feesxyz",
+        rootKey: "feesxyz",
+        urlKey: "feesxyz",
+        excludeFromSitemap: true,
+        showNew: true,
+      },
+      {
         label: "OP RetroPGF 3",
         icon: "gtp:optimism-logo-monochrome",
         category: "public-goods-funding",
@@ -625,16 +635,6 @@ export const navigationItems: NavigationItem[] = [
         key: "octant",
         rootKey: "octant",
         urlKey: "octant",
-      },
-      {
-        label: "fees.growthepie.xyz",
-        icon: "gtp:gtp-pie",
-        category: "gtpmetrics",
-        key: "feesxyz",
-        rootKey: "feesxyz",
-        urlKey: "feesxyz",
-        excludeFromSitemap: true,
-        showNew: true,
       },
     ],
   },
