@@ -1316,12 +1316,12 @@ export default function ChainChart({
         `}
       </style>
       <TopRowContainer
-        className={`mb-[15px] lg:mb-[30px] transition-shadow duration-300 ${
+        className={`mb-[15px] flex w-full justify-between gap-y-3 lg:gap-y-0 items-center text-xs bg-forest-50 dark:bg-[#1F2726] lg:z-30 flex-col-reverse rounded-t-[15px] md:rounded-t-[20px] rounded-b-[30px] p-[3px] lg:p-0 lg:flex-row lg:rounded-full lg:mb-[30px] transition-shadow duration-300  ${
           compareTo &&
           "shadow-[0px_4px_4px_#00000033] dark:shadow-[0px_4px_4px_#0000003F] lg:shadow-none lg:dark:shadow-none"
-        }`}
+        } `}
       >
-        <div className="flex flex-col relative h-full lg:h-[54px] lg:w-[271px]">
+        <div className="flex flex-col relative h-full lg:h-[54px] w-full lg:w-[271px] -my-[1px]">
           <div
             className={`relative flex rounded-full h-full w-full lg:z-30 p-[5px] cursor-pointer ${
               compChain
@@ -1488,6 +1488,12 @@ export default function ChainChart({
                 onClick={() => {
                   setSelectedTimespan(timespan);
                 }}
+                style={{
+                  fontSize: isMobile ? "16px" : "",
+                  paddingTop: isMobile ? "10px" : "",
+                  paddingBottom: isMobile ? "10px" : "",
+                }}
+                className={`py-[4px] xl:py-[13px]`}
               >
                 {timespans[timespan].label}
               </TopRowChild>

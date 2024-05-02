@@ -47,7 +47,7 @@ export function TopRowContainer({
 }) {
   return (
     <div
-      className={`flex flex-col rounded-[15px] py-[3px] px-[3px] text-xs lg:text-base lg:flex lg:flex-row w-full justify-between items-center lg:rounded-full dark:bg-[#1F2726] bg-forest-50
+      className={`flex flex-col rounded-[15px] py-[3px] px-[3px] text-xs lg:gap-y-0 lg:text-base lg:flex lg:flex-row w-full justify-between items-center lg:rounded-full dark:bg-[#1F2726] bg-forest-50
         ${className} `}
       ref={ref ?? null}
       style={style}
