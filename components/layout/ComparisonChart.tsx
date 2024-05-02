@@ -1786,7 +1786,21 @@ export default function ComparisonChart({
               ))}
             </TopRowParent>
           )}
-
+          {/* dashed line */}
+          <div className="flex lg:hidden justify-center py-[10px] w-[75%]">
+            <div
+              className="border-forest-400 h-[1px] w-full stroke-forest-400 dark:stroke-forest-700"
+              style={{
+                backgroundImage:
+                  theme == "dark"
+                    ? `linear-gradient(to right, #CDD8D3 25%, rgba(255,255,255,0) 0%)`
+                    : `linear-gradient(to right, #88A09D 25%, rgba(255,255,255,0) 0%)`,
+                backgroundPosition: "top",
+                backgroundSize: "4px 1px",
+                backgroundRepeat: "repeat-x",
+              }}
+            />
+          </div>
           <TopRowParent>
             {!zoomed ? (
               Object.keys(timespans)
