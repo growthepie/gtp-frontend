@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       openGraph: {
         images: [
           {
-            url: `http://api.growthepie.xyz/v1/og_images/fundamentals/${params.metric}.png?date=${dateString}`,
+            url: `https://api.growthepie.xyz/v1/og_images/fundamentals/${params.metric}.png?date=${dateString}`,
             width: 1200,
             height: 627,
             alt: "growthepie.xyz",
