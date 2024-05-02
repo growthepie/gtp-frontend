@@ -1,3 +1,4 @@
+import { IS_PRODUCTION } from "@/lib/helpers";
 import { getCookie } from "cookies-next";
 import Script from "next/script";
 
@@ -23,18 +24,20 @@ export default function Head() {
         sizes="16x16"
         href="/favicon-16x16.png"
       />
-      <link rel="preload" as="image" href="/logo_pie_only.png" />
+      {/* <link rel="preload" as="image" href="/logo_pie_only.png" />
       <link rel="preload" as="image" href="/logo_full.png" />
-      <link rel="preload" as="image" href="/logo_full_light.png" />
+      <link rel="preload" as="image" href="/logo_full_light.png" /> */}
       <link rel="manifest" href="/site.webmanifest" />
       <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
       <meta name="msapplication-TileColor" content="#da532c" />
-      <link rel="preconnect" href="https://rsms.me/" />
-      <Script
-        id="gtag"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `
+
+      {/* {IS_PRODUCTION && ( */}
+      <>
+        <Script
+          id="gtag"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
 
@@ -48,22 +51,24 @@ export default function Head() {
               j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
               })(window,document,'script','dataLayer','GTM-WK73L5M');`,
-        }}
-      />
-      {consent === true && (
-        <Script
-          id="consupd"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
+          }}
+        />
+        {consent === true && (
+          <Script
+            id="consupd"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
             gtag('consent', 'update', {
               'ad_storage': 'granted',
               'analytics_storage': 'granted'
             });
           `,
-          }}
-        />
-      )}
+            }}
+          />
+        )}
+      </>
+      {/* )} */}
     </>
   );
 }
