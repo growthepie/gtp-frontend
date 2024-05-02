@@ -16,6 +16,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/layout/Tooltip";
+import Address from "@/components/layout/Address";
 
 type EpochsByProject = {
   [project: string]: EpochData[];
@@ -832,15 +833,16 @@ const OctantTableRow = ({
         </div>
       </div>
 
-      <div className="justify-start items-center overflow-hidden">
-        <Link
+      <div className="flex justify-start items-center overflow-hidden">
+        {/* <Link
           rel="noopener noreferrer"
           target="_blank"
           href={`https://etherscan.io/address/${project.address}`}
           className={`rounded-full px-1 py-0 border border-forest-900/20 dark:border-forest-500/20 font-mono text-[10px] text-forest-900/50 dark:text-forest-500/50 hover:bg-forest-900/10 dark:hover:bg-forest-500/10`}
         >
           <>{project.address.slice(0, 5) + "..." + project.address.slice(-8)}</>
-        </Link>
+        </Link> */}
+        <Address address={project.address} shortenAddress={true} />
       </div>
       <div>
         <div className="flex gap-x-1.5 font-inter font-bold text-white/60 text-xs select-none">
@@ -894,31 +896,29 @@ const OctantTableRow = ({
                 )}
               </div>
             </TooltipTrigger>
-            <TooltipContent className="pr-0 z-50 flex items-center justify-center">
-              <div className="flex flex-col gap-y-1 px-3 py-5 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 items-between max-h-[200px] overflow-y-auto">
-                {
-                  <>
-                    {project.allocations
-                      .sort((a, b) => parseInt(b.amount) - parseInt(a.amount))
-                      .map((a, index) => (
-                        <div key={index} className="flex justify-between">
-                          <Link
-                            href={`https://etherscan.io/address/${a.donor}`}
-                            rel="noopener noreferrer"
-                            target="_blank"
-                            className="hover:underline"
-                          >
-                            <>
-                              {a.donor.slice(0, 5) + "..." + a.donor.slice(-8)}
-                            </>
-                          </Link>
-                          <div>
-                            {(parseInt(a.amount) / 10 ** 18).toFixed(6)} ETH
-                          </div>
+            <TooltipContent className="pr-2 z-50 flex items-center justify-center">
+              <div className="flex flex-col gap-y-[5px] pl-3 pr-1 py-3 bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 items-between">
+                <div className="font-semibold">Donors</div>
+                <div className="flex flex-col gap-y-[2px] pr-[5px] max-h-[200px] overflow-y-auto scrollbar-thin scrollbar-thumb-forest-900/30 dark:scrollbar-thumb-forest-500/30 scrollbar-track-forest-900/10 dark:scrollbar-track-forest-500/10 scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
+                  {project.allocations
+                    .sort((a, b) => parseInt(b.amount) - parseInt(a.amount))
+                    .map((a, index) => (
+                      <div
+                        key={index}
+                        className="rounded-full border border-forest-900/20 dark:border-forest-500/20 flex items-center gap-x-4 pr-[5px]"
+                      >
+                        <Address
+                          address={`0x${a.donor.slice(2)}`}
+                          shortenAddress={true}
+                        />
+
+                        <div className="font-normal font-inter text-[0.6rem]">
+                          {(parseInt(a.amount) / 10 ** 18).toFixed(6)}{" "}
+                          <span className="text-[0.5rem] opacity-60">ETH</span>
                         </div>
-                      ))}
-                  </>
-                }
+                      </div>
+                    ))}
+                </div>
               </div>
             </TooltipContent>
           </Tooltip>
