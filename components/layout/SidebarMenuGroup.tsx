@@ -390,6 +390,7 @@ export default function SidebarMenuGroup({
     );
   }
 
+  console.log(item);
   return (
     <div key={item.key} className="flex flex-col " suppressHydrationWarning>
       <Tooltip placement="right">
@@ -432,17 +433,20 @@ export default function SidebarMenuGroup({
                 </div>
               </div>
             )}
-            {sidebarOpen && item.options.some((option) => option.showNew) && (
-              <div
-                className={`transition-opacity duration-300 relative top-0 right-4 rounded-full text-xs flex items-center justify-center font-bold bg-gradient-to-b from-[#FE5468] to-[#FFDF27] p-[1px] ${
-                  isOpen ? "opacity-0" : "opacity-100"
-                }`}
-              >
-                <div className="rounded-full text-xs flex items-center justify-center font-bold  px-2 py-[1px] hard-shine-2 text-white dark:text-forest-900 ">
-                  NEW!
+            {sidebarOpen &&
+              item.options.some(
+                (option) => option.showNew || option.urlKey === "throughput",
+              ) && (
+                <div
+                  className={`transition-opacity duration-300 relative top-0 right-4 rounded-full text-xs flex items-center justify-center font-bold bg-gradient-to-b from-[#FE5468] to-[#FFDF27] p-[1px] ${
+                    isOpen ? "opacity-0" : "opacity-100"
+                  }`}
+                >
+                  <div className="rounded-full text-xs flex items-center justify-center font-bold  px-2 py-[1px] hard-shine-2 text-white dark:text-forest-900 ">
+                    NEW!
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
         </TooltipTrigger>
         {!sidebarOpen && (
@@ -553,19 +557,16 @@ export default function SidebarMenuGroup({
                           {sidebarOpen ? option.label : <span>&nbsp;</span>}
                         </div>
                       )}
-                      {option.showNew && (
-                        <div
-                          className={`transition-opacity duration-300 relative top-0 right-7 rounded-full text-xs flex items-center justify-center font-bold bg-gradient-to-b from-[#FE5468] to-[#FFDF27] p-[1px] ${
-                            isOpen
-                              ? "opacity-100 delay-50"
-                              : "opacity-0 delay-0"
-                          }`}
-                        >
-                          <div className="rounded-full text-xs flex items-center justify-center font-bold  px-2 py-[1px] hard-shine-2 text-white dark:text-forest-900 ">
-                            NEW!
+                      {(option.showNew || option.urlKey === "throughput") &&
+                        isOpen && (
+                          <div
+                            className={`transition-opacity duration-300 relative top-0 right-7 rounded-full text-xs flex items-center justify-center font-bold bg-gradient-to-b from-[#FE5468] to-[#FFDF27] p-[1px] opacity-100 delay-50`}
+                          >
+                            <div className="rounded-full text-xs flex items-center justify-center font-bold px-2 py-[1px] hard-shine-2 text-white dark:text-forest-900">
+                              NEW!
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
                     </Link>
                   </TooltipTrigger>
                   {!sidebarOpen && (
