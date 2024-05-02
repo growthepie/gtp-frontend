@@ -71,7 +71,7 @@ export default function SwiperContainer({ ariaId }: { ariaId?: string }) {
         // }}
       >
         <SplideTrack>
-          <SplideSlide>
+          {/* <SplideSlide>
             <div
               className="group w-full chain relative"
               // style={{
@@ -190,7 +190,7 @@ export default function SwiperContainer({ ariaId }: { ariaId?: string }) {
               )}
               <Link
                 className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 delay-[1000ms] group-hover:delay-[0ms] -z-10"
-                href={`/trackers/eip4844`}
+                href={`https://fees.growthepie.xyz/`}
               >
                 Compare{" "}
                 <Icon
@@ -199,7 +199,7 @@ export default function SwiperContainer({ ariaId }: { ariaId?: string }) {
                 />{" "}
               </Link>
             </div>
-          </SplideSlide>
+          </SplideSlide> */}
           {["txcount", "stables_mcap", "fees", "rent_paid", "market_cap"].map(
             (metric_id) => (
               <SplideSlide key={metric_id}>
