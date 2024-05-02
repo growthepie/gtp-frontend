@@ -625,7 +625,6 @@ export const navigationItems: NavigationItem[] = [
         key: "octant",
         rootKey: "octant",
         urlKey: "octant",
-        showNew: true,
       },
       {
         label: "fees.growthepie.xyz",

@@ -432,7 +432,7 @@ export default function SidebarMenuGroup({
                 </div>
               </div>
             )}
-            {item.options.some((option) => option.showNew) && (
+            {sidebarOpen && item.options.some((option) => option.showNew) && (
               <div
                 className={`transition-opacity duration-300 relative top-0 right-4 rounded-full text-xs flex items-center justify-center font-bold bg-gradient-to-b from-[#FE5468] to-[#FFDF27] p-[1px] ${
                   isOpen ? "opacity-0" : "opacity-100"
