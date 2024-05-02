@@ -270,7 +270,7 @@ export default function SidebarMenuGroup({
               </div>
               {sidebarOpen && (
                 <div className={`flex-1 flex items-start justify-between`}>
-                  <div className="text-base font-bold mx-3 py-0.5 break-inside-avoid">
+                  <div className="text-base font-bold mx-3 py-0.5 whitespace-nowrap">
                     {item.label}
                   </div>
                 </div>
@@ -285,9 +285,12 @@ export default function SidebarMenuGroup({
         </Tooltip>
 
         <div
-          className={`flex flex-col overflow-hidden mb-[17px] w-full md:w-80 transition-all duration-300 ease-out  ${
-            isOpen ? "h-auto mt-1" : "h-0 mt-0"
-          }`}
+          className={`flex flex-col overflow-hidden mb-[17px] w-full`}
+          style={{
+            transition: `all ${item.options.length * 0.01 + 0.1}s ease-in-out`,
+            maxHeight: isOpen ? item.options.length * 40 + 40 : 0,
+            paddingTop: isOpen ? "10px" : "0",
+          }}
         >
           {Object.keys(ChainGroups).length > 0 &&
             Object.entries(ChainGroups).map(([bucket, chains]: any) => {
@@ -316,9 +319,9 @@ export default function SidebarMenuGroup({
                   {chains.map((option, i) => {
                     return (
                       <Tooltip key={option.key} placement="top-start">
-                        <TooltipTrigger className="px-0 md:px-5">
+                        <TooltipTrigger className="px-0 md:pl-5">
                           <Link
-                            className={`group flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
+                            className={`group flex items-center justify-items-center rounded-l-full md:rounded-r-none relative w-full ${
                               urlParts[1]
                                 .trim()
                                 .localeCompare(option.urlKey) === 0
@@ -330,7 +333,7 @@ export default function SidebarMenuGroup({
                             }`}
                           >
                             <div
-                              className={`absolute top-0 left-[4px] w-[64px] h-[28px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726] transition-opacity  ease-in-out ${
+                              className={`absolute top-0 left-[4px] w-[64px] h-[28px] bg-gradient-to-r from-transparent to-forest-50 dark:to-[#1F2726] transition-opacity ease-in-out ${
                                 sidebarOpen
                                   ? "opacity-0 duration-0"
                                   : "opacity-100 duration-500"
@@ -390,13 +393,12 @@ export default function SidebarMenuGroup({
     );
   }
 
-  console.log(item);
   return (
     <div key={item.key} className="flex flex-col " suppressHydrationWarning>
       <Tooltip placement="right">
-        <TooltipTrigger className="h-6 pl-0 md:pl-8 overflow-visible">
+        <TooltipTrigger className="h-6 pl-0 md:pl-8 overflow-visible w-full relative">
           <div
-            className="group flex items-center justify-items-start mb-2 cursor-pointer relative"
+            className="relative group  flex items-center justify-items-start mb-2 cursor-pointer"
             onClick={handleToggle}
           >
             <div className="w-6 mx-0">
@@ -421,7 +423,7 @@ export default function SidebarMenuGroup({
             </div>
             {sidebarOpen && (
               <div className={`flex-1 flex items-start justify-between`}>
-                <div className="text-base font-bold mx-3 py-0.5 break-inside-avoid">
+                <div className="text-base font-bold mx-3 py-0.5 whitespace-nowrap">
                   {item.name === "RPGF3 Tracker" ? (
                     <>
                       <span className="text-[#FF0420]">RetroPGF 3</span>{" "}
@@ -433,21 +435,26 @@ export default function SidebarMenuGroup({
                 </div>
               </div>
             )}
-            {sidebarOpen &&
-              item.options.some(
-                (option) => option.showNew || option.urlKey === "throughput",
-              ) && (
-                <div
-                  className={`transition-opacity duration-300 relative top-0 right-4 rounded-full text-xs flex items-center justify-center font-bold bg-gradient-to-b from-[#FE5468] to-[#FFDF27] p-[1px] ${
-                    isOpen ? "opacity-0" : "opacity-100"
-                  }`}
-                >
-                  <div className="rounded-full text-xs flex items-center justify-center font-bold  px-2 py-[1px] hard-shine-2 text-white dark:text-forest-900 ">
-                    NEW!
-                  </div>
-                </div>
-              )}
           </div>
+          {item.options.some((option) => option.showNew) && (
+            <div
+              className={`transition-all duration-300 absolute top-0.5 bottom-0.5 right-[4px] md:right-0 text-xs flex items-center justify-center font-bold overflow-hidden pointer-events-none`}
+            >
+              <div
+                className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${
+                  !sidebarOpen || isOpen
+                    ? "translate-x-[60px] ease-in-out opacity-0"
+                    : "delay-300 translate-x-0 ease-in-out opacity-100"
+                }`}
+              >
+                <div
+                  className={`transition-all duration-300 absolute inset-0 pr-[8px] rounded-full md:rounded-br-none md:rounded-tr-none text-xs flex items-center justify-end font-bold hard-shine-2 text-white dark:text-forest-900`}
+                >
+                  NEW!
+                </div>
+              </div>
+            </div>
+          )}
         </TooltipTrigger>
         {!sidebarOpen && (
           <TooltipContent className="bg-forest-900 text-forest-50 dark:bg-forest-50 dark:text-forest-900 rounded-md p-2 text-xs ml-2 font-medium break-inside-auto shadow-md z-50">
@@ -457,9 +464,12 @@ export default function SidebarMenuGroup({
       </Tooltip>
 
       <div
-        className={`flex flex-col overflow-hidden mb-[17px] w-full md:w-80 transition-all duration-300 ease-out  ${
-          isOpen ? "h-auto mt-1" : "h-0 mt-0"
-        }`}
+        className={`flex flex-col overflow-hidden mb-[17px] w-full whitespace-nowrap`}
+        style={{
+          transition: `all ${item.options.length * 0.01 + 0.1}s ease-in-out`,
+          maxHeight: isOpen ? item.options.length * 40 + 40 : 0,
+          paddingTop: isOpen ? "10px" : "0",
+        }}
       >
         {item.options
           .filter((o) => o.hide !== true)
@@ -472,9 +482,9 @@ export default function SidebarMenuGroup({
                     (i > 0 &&
                       item.options.filter((o) => o.hide !== true)[i - 1]
                         .category != option.category)) && (
-                    <div className="px-0 md:px-5 mt-[7px] mb-[2px] overflow-visible text-forest-800 ">
+                    <div className="px-0 md:pl-5 mt-[7px] mb-[2px] overflow-visible text-forest-800 ">
                       <div
-                        className={`flex items-center justify-items-center rounded-full md:rounded-l-full relative `}
+                        className={`flex items-center justify-items-center rounded-full md:rounded-r-none relative `}
                       >
                         <div className={`w-6 absolute left-[13px]`}>
                           {navigationCategories[option.category].icon && (
@@ -502,9 +512,9 @@ export default function SidebarMenuGroup({
                     </div>
                   )}
                 <Tooltip placement="top-start">
-                  <TooltipTrigger className="px-0 md:px-5 w-full">
+                  <TooltipTrigger className="px-0 md:pl-5 w-full">
                     <Link
-                      className={`group flex items-center justify-items-center rounded-full md:rounded-l-full relative ${
+                      className={`group flex items-center justify-items-center rounded-full md:rounded-r-none relative w-full ${
                         urlParts[1].trim().localeCompare(option.urlKey) === 0
                           ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
                           : "hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
@@ -557,16 +567,25 @@ export default function SidebarMenuGroup({
                           {sidebarOpen ? option.label : <span>&nbsp;</span>}
                         </div>
                       )}
-                      {(option.showNew || option.urlKey === "throughput") &&
-                        isOpen && (
+                      {option.showNew && (
+                        <div
+                          className={`transition-all duration-300 absolute top-1 bottom-1 right-[4px] md:right-0 text-xs flex items-center justify-center font-bold overflow-hidden`}
+                        >
                           <div
-                            className={`transition-opacity duration-300 relative top-0 right-7 rounded-full text-xs flex items-center justify-center font-bold bg-gradient-to-b from-[#FE5468] to-[#FFDF27] p-[1px] opacity-100 delay-50`}
+                            className={`transition-all duration-300 w-[50px] h-full rounded-full md:rounded-br-none md:rounded-tr-none bg-gradient-to-t from-[#FFDF27] to-[#FE5468] ${
+                              sidebarOpen && isOpen
+                                ? "delay-300 translate-x-[0px] ease-in-out opacity-100"
+                                : "translate-x-[60px] ease-in-out opacity-0"
+                            }`}
                           >
-                            <div className="rounded-full text-xs flex items-center justify-center font-bold px-2 py-[1px] hard-shine-2 text-white dark:text-forest-900">
+                            <div
+                              className={`transition-all duration-300 absolute inset-0 pr-[8px] rounded-full md:rounded-br-none md:rounded-tr-none text-xs flex items-center justify-end font-bold hard-shine-2 text-white dark:text-forest-900`}
+                            >
                               NEW!
                             </div>
                           </div>
-                        )}
+                        </div>
+                      )}
                     </Link>
                   </TooltipTrigger>
                   {!sidebarOpen && (

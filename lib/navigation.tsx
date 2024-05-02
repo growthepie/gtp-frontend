@@ -126,6 +126,7 @@ export const navigationItems: NavigationItem[] = [
         key: "throughput",
         rootKey: "throughput",
         urlKey: "throughput",
+        showNew: true,
       },
       {
         label: "Stablecoin Market Cap",
