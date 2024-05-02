@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@download/blockies": "^1.0.3",
     "@floating-ui/react": "^0.22.3",
     "@react-hook/media-query": "^1.1.1",
     "@react-spring/web": "^9.7.2",
