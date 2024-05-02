@@ -119,7 +119,7 @@ export const navigationItems: NavigationItem[] = [
           title: "Throughput",
           description:
             "A chains throughput measured in gas per second. We only include EVM equivalent Layer 2 gas usage.",
-          why: "A chains throughput reflects the rate of compute that can be executed by a chain. Simple transactions, like sending eth, need less gas than more complex transactions, like routing a swap through multiple pools. This metric is only available for EVM chains because other chains don't use the same concept for measuring gas.",
+          why: "Throughput is a crucial metric for assessing scalability, reflecting a blockchain's actual compute capacity more accurately than transaction counts, which can vary in complexity (i.e. 21,000 gas for an eth transfer vs 280,000 gas for a simple Uniswap swap). Similarly to how modern storage devices are marketed with specs on read/write speeds rather than the number of files they can process, throughput provides a direct measure of a blockchain's ability to handle compute effectively. Throughput also reveals how close a chain is to its operational limits. This metric is essential for app developers and Layer 2 teams to gauge growth potential, potential cost implications, and performance constraints.",
           icon: "feather:sunrise",
         },
         icon: "feather:sunrise",
