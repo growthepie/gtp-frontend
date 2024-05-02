@@ -38,7 +38,7 @@ export default function EthUsdSwitch({ isMobile }: EthUsdSwitchProps) {
   return (
     <div className="flex justify-between">
       <div className="flex items-center">
-        <input id="toggle" type="checkbox" className="hidden" />
+        <input type="checkbox" className="hidden" />
         <label htmlFor="toggle" className="flex items-center cursor-pointer">
           {/* <div
             className="mr-2 font-medium"
@@ -55,20 +55,23 @@ export default function EthUsdSwitch({ isMobile }: EthUsdSwitchProps) {
             }}
           >
             <div
-              className={`${isMobile ? "w-[80px] h-[22px] text-[13px]" : "w-[104px] h-7"
-                } flex justify-between items-center px-2 md:px-3 rounded-full transition duration-200 ease-in-out text-forest-900 bg-forest-500`}
+              className={`${
+                isMobile ? "w-[80px] h-[22px] text-[13px]" : "w-[104px] h-7"
+              } flex justify-between items-center px-2 md:px-3 rounded-full transition duration-200 ease-in-out text-forest-900 bg-forest-500`}
             >
               <div className="-mb-0.5">ETH</div>
               <div className="-mb-0.5">USD</div>
             </div>
             <div
               className={`absolute left-[2px] top-[2px] md:left-0.5 md:top-0.5
-              ${isMobile
+              ${
+                isMobile
                   ? "w-[38px] h-[18px] leading-[14px] text-[12px]"
                   : "w-[50px] h-6 text-sm leading-[20px]"
-                } 
-              rounded-full transition-transform duration-200 ease-in-out text-forest-500 bg-[#1F2726] py-0.5 px-1.5 text-center ${showUsd ? "transform translate-x-full" : "translate-x-0"
-                }`}
+              } 
+              rounded-full transition-transform duration-200 ease-in-out text-forest-500 bg-[#1F2726] py-0.5 px-1.5 text-center ${
+                showUsd ? "transform translate-x-full" : "translate-x-0"
+              }`}
             >
               {showUsd === true ? <>USD</> : <>ETH</>}
             </div>
