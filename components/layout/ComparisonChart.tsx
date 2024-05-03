@@ -1642,6 +1642,8 @@ export default function ComparisonChart({
 
   // const { width, height } = useWindowSize();
 
+  console.log(data);
+
   useLayoutEffect(() => {
     if (chartComponent.current) {
       chartComponent.current.setSize(width, height, true);
