@@ -350,7 +350,10 @@ export default function OverviewMetrics({
             </TopRowContainer>
           </Container>
           {/*Chain Rows/List */}
-          <Container className="block w-full !pr-0 lg:!px-[50px]">
+          <Container
+            id="content-container"
+            className="block w-full !pr-0 lg:!px-[50px]"
+          >
             <RowProvider
               value={{
                 master,

@@ -1905,6 +1905,7 @@ export default function ComparisonChart({
                     }
                   >
                     <div
+                      id="content-container"
                       className={
                         is_embed
                           ? "relative block w-full top-0 md:top-8"
