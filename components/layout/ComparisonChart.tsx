@@ -1642,6 +1642,8 @@ export default function ComparisonChart({
 
   // const { width, height } = useWindowSize();
 
+  // console.log(data.filter((d) => d.name === "ethereum").length > 0);
+
   useLayoutEffect(() => {
     if (chartComponent.current) {
       chartComponent.current.setSize(width, height, true);
