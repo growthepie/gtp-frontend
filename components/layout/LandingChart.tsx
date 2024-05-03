@@ -1719,7 +1719,10 @@ export default function LandingChart({
     );
 
   return (
-    <div className="w-full h-full flex flex-col justify-between">
+    <div
+      id="content-container"
+      className="w-full h-full flex flex-col justify-between"
+    >
       <div className="h-[225px] lg:h-[81px] xl:h-[60px]">
         <div className="flex flex-col lg:hidden justify-center pb-[15px] gap-y-[5px]">
           <MobileMetricCard

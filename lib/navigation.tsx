@@ -363,6 +363,7 @@ export const navigationItems: NavigationItem[] = [
         key: "chain-overview",
         rootKey: "chainOverview",
         urlKey: "chain-overview",
+        excludeFromSitemap: true,
       },
       {
         label: "Category Comparison",

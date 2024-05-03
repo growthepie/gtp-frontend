@@ -27,6 +27,10 @@ export async function GET(request: Request) {
       .map(
         (option) => `https://www.growthepie.xyz/blockspace/${option.urlKey}`,
       ),
+    ...Object.keys(masterData.blockspace_categories.main_categories).map(
+      (category) =>
+        `https://www.growthepie.xyz/blockspace/chain-overview/${category}`,
+    ),
     ...chains.options
       .filter(
         (c) =>
