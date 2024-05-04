@@ -84,24 +84,13 @@ export const metadata: Metadata = {
     title: "growthepie",
     description: "Growing Ethereum’s Ecosystem Together",
     url: "https://www.growthepie.xyz",
+
     images: [
       {
         url: "https://www.growthepie.xyz/gtp_og.png",
         width: 1200,
         height: 627,
         alt: "growthepie.xyz",
-      },
-      {
-        url: "https://www.growthepie.xyz/logo_full.png",
-        width: 772,
-        height: 181,
-        alt: "growthepie.xyz",
-      },
-      {
-        url: "https://www.growthepie.xyz/logo_pie_only.png",
-        width: 168,
-        height: 181,
-        alt: "growthepie",
       },
     ],
     locale: "en_US",
@@ -174,7 +163,6 @@ export default function RootLayout({
               <SidebarContainer />
               <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
                 <div className="w-full relative min-h-full">
-
                   <div className="background-container">
                     <div className="background-gradient-group">
                       <div className="background-gradient-yellow"></div>
