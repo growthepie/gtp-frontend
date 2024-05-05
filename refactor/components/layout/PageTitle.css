@@ -1,0 +1,13 @@
+.page-title-container {
+  @apply flex flex-col flex-1 w-full;
+  @apply mt-[65px] md:mt-[70px] gap-y-[10px];
+}
+
+.page-title-container h1 {
+  @apply max-w-[900px];
+  @apply font-bold leading-[1.2] text-[24px] sm:text-[32px] md:text-[36px];
+}
+
+.page-title-container h2 {
+  @apply text-xs sm:text-sm md:text-[20px] font-semibold leading-[1.2];
+}
