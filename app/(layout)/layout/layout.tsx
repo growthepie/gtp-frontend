@@ -1,6 +1,6 @@
-import "../globals.css";
+import "@/app/globals.css";
 import { Analytics } from "@vercel/analytics/react";
-import { Providers } from "../providers";
+import { Providers } from "@/app/providers";
 import CookieConsent from "@/components/layout/CookieConsent";
 import { Raleway, Inter, Roboto_Mono } from "next/font/google";
 import Header from "@/components/layout/Header";
@@ -12,7 +12,7 @@ import { Graph } from "schema-dts";
 import Share from "@/components/Share";
 import Details from "@/components/Details";
 import BottomBanner from "@/components/BottomBanner";
-import "../background.css";
+import "@/app/background.css";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",

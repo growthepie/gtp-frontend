@@ -7,7 +7,7 @@ import {
   useRef,
   useEffect,
 } from "react";
-import { ContractsURL, MasterURL } from "../../../lib/urls";
+import { ContractsURL, MasterURL } from "@/lib/urls";
 import { Contract } from "@/types/api/ContractsResponse";
 import { ContractsResponse } from "@/types/api/ContractsResponse";
 import { MasterResponse } from "@/types/api/MasterResponse";
@@ -210,7 +210,8 @@ export default function ContractsPage({ params }: { params: any }) {
                   .getValue()
                   .replace("_", "-")}-logo-monochrome`}
                 style={{
-                  color: AllChainsByKeys[info.getValue()].colors[theme ?? "dark"][1],
+                  color:
+                    AllChainsByKeys[info.getValue()].colors[theme ?? "dark"][1],
                 }}
               />
               <div>{AllChainsByKeys[info.getValue()]?.label}</div>
@@ -232,8 +233,9 @@ export default function ContractsPage({ params }: { params: any }) {
               </div>
               {master?.chains[info.row.original.origin_key].block_explorer && (
                 <Link
-                  href={`${master?.chains[info.row.original.origin_key].block_explorer
-                    }address/${info.getValue()}`}
+                  href={`${
+                    master?.chains[info.row.original.origin_key].block_explorer
+                  }address/${info.getValue()}`}
                   target="_blank"
                 >
                   <Icon
@@ -407,8 +409,9 @@ export default function ContractsPage({ params }: { params: any }) {
         }
         
         td {
-            border-color: ${theme === "light" ? "rgba(0,0,0,0.16)" : "rgba(255,255,255,0.16)"
-          };
+            border-color: ${
+              theme === "light" ? "rgba(0,0,0,0.16)" : "rgba(255,255,255,0.16)"
+            };
             border-width:1px;
             border-style:solid none;
             padding:5px 10px;
@@ -462,8 +465,9 @@ export default function ContractsPage({ params }: { params: any }) {
                           <div
                             {...{
                               className: header.column.getCanSort()
-                                ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold ${i === 0 ? "pl-[10px]" : ""
-                                }`
+                                ? `-mb-1 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold ${
+                                    i === 0 ? "pl-[10px]" : ""
+                                  }`
                                 : "",
                               onClick: header.column.getToggleSortingHandler(),
                             }}
@@ -489,7 +493,7 @@ export default function ContractsPage({ params }: { params: any }) {
                             {contractsUniqueValues && dataUniqueValues && (
                               <div className="text-[11px] font-normal w-full text-right pr-3 font-inter">
                                 {dataUniqueValues[header.id] ===
-                                  contractsUniqueValues[header.id] ? (
+                                contractsUniqueValues[header.id] ? (
                                   contractsUniqueValues[
                                     header.id
                                   ].toLocaleString()
@@ -511,19 +515,21 @@ export default function ContractsPage({ params }: { params: any }) {
                           </div>
                           {contractsUniqueValues && dataUniqueValues && (
                             <div
-                              className={`absolute -bottom-1.5 ${i === 0
-                                ? "left-[30px] right-3"
-                                : "left-0 right-3"
-                                } text-xs font-normal text-right`}
+                              className={`absolute -bottom-1.5 ${
+                                i === 0
+                                  ? "left-[30px] right-3"
+                                  : "left-0 right-3"
+                              } text-xs font-normal text-right`}
                             >
                               <div
                                 className="bg-forest-900 dark:bg-forest-500"
                                 style={{
                                   height: "1px",
-                                  width: `${(dataUniqueValues[header.id] /
-                                    contractsUniqueValues[header.id]) *
+                                  width: `${
+                                    (dataUniqueValues[header.id] /
+                                      contractsUniqueValues[header.id]) *
                                     100.0
-                                    }%`,
+                                  }%`,
                                 }}
                               />
                               <div
@@ -549,16 +555,16 @@ export default function ContractsPage({ params }: { params: any }) {
         className={` 
         transition-[mask-size] duration-300 ease-in-out
          ${
-          // if scroll is at top or bottom, don't show the fade
-          parentRef.current &&
-            (parentRef.current.scrollTop < 30 ||
-              parentRef.current.scrollTop >
-              parentRef.current.scrollHeight -
-              parentRef.current.clientHeight -
-              30)
-            ? "fade-edge-div-vertical-hidden"
-            : "fade-edge-div-vertical"
-          }
+           // if scroll is at top or bottom, don't show the fade
+           parentRef.current &&
+           (parentRef.current.scrollTop < 30 ||
+             parentRef.current.scrollTop >
+               parentRef.current.scrollHeight -
+                 parentRef.current.clientHeight -
+                 30)
+             ? "fade-edge-div-vertical-hidden"
+             : "fade-edge-div-vertical"
+         }
       }`}
       >
         <div
@@ -594,14 +600,15 @@ export default function ContractsPage({ params }: { params: any }) {
                             //   ? "sticky top-0 z-20"
                             //   : "sticky top-0 left-0 z-30"
                             ""
-                            } bg-white dark:bg-forest-1000 whitespace-nowrap`}
+                          } bg-white dark:bg-forest-1000 whitespace-nowrap`}
                         >
                           {header.isPlaceholder ? null : (
                             <div
                               {...{
                                 className: header.column.getCanSort()
-                                  ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold h-0 ${i === 0 ? "pl-[10px]" : ""
-                                  }`
+                                  ? `-mb-2 cursor-pointer select-none flex items-start text-forest-900 dark:text-forest-500 text-xs font-bold h-0 ${
+                                      i === 0 ? "pl-[10px]" : ""
+                                    }`
                                   : "",
                                 onClick:
                                   header.column.getToggleSortingHandler(),
@@ -642,8 +649,9 @@ export default function ContractsPage({ params }: { params: any }) {
                         key={row.id}
                         style={{
                           height: `${virtualRow.size}px`,
-                          transform: `translateY(${virtualRow.start - index * virtualRow.size
-                            }px)`,
+                          transform: `translateY(${
+                            virtualRow.start - index * virtualRow.size
+                          }px)`,
                         }}
                       >
                         {row.getVisibleCells().map((cell, i) => {

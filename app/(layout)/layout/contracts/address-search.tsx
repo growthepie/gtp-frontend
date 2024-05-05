@@ -3,11 +3,11 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import useSWR from "swr";
-import { MasterURL } from "../../../lib/urls";
-import { MasterResponse } from "../../../types/api/MasterResponse";
-import { AllChainsByKeys } from "../../../lib/chains";
-import { ContractsURL } from "../../../lib/urls";
-import { ContractsResponse } from "../../../types/api/ContractsResponse";
+import { MasterURL } from "@/lib/urls";
+import { MasterResponse } from "@/types/api/MasterResponse";
+import { AllChainsByKeys } from "@/lib/chains";
+import { ContractsURL } from "@/lib/urls";
+import { ContractsResponse } from "@/types/api/ContractsResponse";
 import debounce from "lodash/debounce";
 import Image from "next/image";
 
@@ -124,8 +124,8 @@ export default function AddressSearch() {
       } else {
         router.push(
           pathname +
-          "?" +
-          createQueryString(["project_name"], [projectNameString]),
+            "?" +
+            createQueryString(["project_name"], [projectNameString]),
           { scroll: false },
         );
       }
@@ -145,8 +145,8 @@ export default function AddressSearch() {
       } else {
         router.push(
           pathname +
-          "?" +
-          createQueryString(["contract_name"], [contractNameString]),
+            "?" +
+            createQueryString(["contract_name"], [contractNameString]),
           { scroll: false },
         );
       }
@@ -167,8 +167,8 @@ export default function AddressSearch() {
       } else {
         router.push(
           pathname +
-          "?" +
-          createQueryString(["category"], [categoryArray.join(",")]),
+            "?" +
+            createQueryString(["category"], [categoryArray.join(",")]),
           { scroll: false },
         );
       }
@@ -352,8 +352,8 @@ export default function AddressSearch() {
                   if (e.key === "Enter") {
                     router.push(
                       pathname +
-                      "?" +
-                      createQueryString(["address"], [addressString]),
+                        "?" +
+                        createQueryString(["address"], [addressString]),
                     );
                   }
                 }}
@@ -379,11 +379,11 @@ export default function AddressSearch() {
                   if (e.key === "Enter") {
                     router.push(
                       pathname +
-                      "?" +
-                      createQueryString(
-                        ["project_name"],
-                        [projectNameString],
-                      ),
+                        "?" +
+                        createQueryString(
+                          ["project_name"],
+                          [projectNameString],
+                        ),
                     );
                   }
                 }}
@@ -409,11 +409,11 @@ export default function AddressSearch() {
                   if (e.key === "Enter") {
                     router.push(
                       pathname +
-                      "?" +
-                      createQueryString(
-                        ["contract_name"],
-                        [contractNameString],
-                      ),
+                        "?" +
+                        createQueryString(
+                          ["contract_name"],
+                          [contractNameString],
+                        ),
                     );
                   }
                 }}
@@ -430,8 +430,8 @@ export default function AddressSearch() {
               onClick={() => setCategoriesOpen(!categoriesOpen)}
             >
               {categoryArray.length ===
-                Object.keys(master.blockspace_categories.sub_categories)
-                  .length ? (
+              Object.keys(master.blockspace_categories.sub_categories)
+                .length ? (
                 <div className="flex space-x-2 items-center">
                   <div className="flex items-center justify-center rounded-full bg-forest-500 text-forest-900 text-xs px-1 p-0 leading-snug">
                     {categoryArray.length}
@@ -546,10 +546,11 @@ export default function AddressSearch() {
                                   />
                                 )}
                                 <div
-                                  className={`whitespace-nowrap overflow-hidden text-ellipsis ${isAllScksSelected
-                                    ? "font-bold"
-                                    : "font-normal"
-                                    }`}
+                                  className={`whitespace-nowrap overflow-hidden text-ellipsis ${
+                                    isAllScksSelected
+                                      ? "font-bold"
+                                      : "font-normal"
+                                  }`}
                                 >
                                   {getMainCategoryLabel(subcategoryKey)}
                                 </div>
@@ -587,10 +588,11 @@ export default function AddressSearch() {
                                 />
                               )}
                               <div
-                                className={`whitespace-nowrap overflow-hidden text-ellipsis ${categoryArray.includes(subcategoryKey)
-                                  ? "font-bold"
-                                  : "font-normal"
-                                  }`}
+                                className={`whitespace-nowrap overflow-hidden text-ellipsis ${
+                                  categoryArray.includes(subcategoryKey)
+                                    ? "font-bold"
+                                    : "font-normal"
+                                }`}
                               >
                                 {getSubcategoryLabel(subcategoryKey)}
                               </div>

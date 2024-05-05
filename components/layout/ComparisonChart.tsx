@@ -35,7 +35,7 @@ import { BASE_URL, IS_PREVIEW } from "@/lib/helpers";
 import { useWindowSize } from "usehooks-ts";
 import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
-import "../../app/highcharts.axis.css";
+import "@/app/highcharts.axis.css";
 import {
   TopRowContainer,
   TopRowChild,

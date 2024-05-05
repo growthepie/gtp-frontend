@@ -12,7 +12,7 @@ import "../background.css";
 import Share from "@/components/Share";
 import Icon from "@/components/layout/Icon";
 import FeesContainer from "@/components/layout/FeesContainer";
-import Head from "../(layout)/head";
+import Head from "../(layout)/layout/head";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",

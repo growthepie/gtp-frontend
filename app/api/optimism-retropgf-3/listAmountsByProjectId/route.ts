@@ -5,7 +5,7 @@ import {
 } from "@/types/api/RetroPGF3";
 import { Pool } from "pg";
 import { Project } from "@/types/api/RetroPGF3";
-import { RecoveredListData } from "@/app/(layout)/trackers/optimism-retropgf-3/recoveredListData";
+import { RecoveredListData } from "@/app/(layout)/layout/trackers/optimism-retropgf-3/recoveredListData";
 
 export const revalidate = 60 * 1; // 2 minutes
 
