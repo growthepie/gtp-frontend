@@ -387,7 +387,7 @@ const MetricsTable = ({
         }
       } else {
         if (metric_id === "throughput") {
-          suffix = "mgas/s";
+          suffix = "Mgas/s";
         }
       }
       return { value, prefix, suffix };

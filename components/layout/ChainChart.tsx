@@ -453,7 +453,7 @@ export default function ChainChart({
           }
         } else {
           if (key === "throughput") {
-            suffix = "mgas/s";
+            suffix = "Mgas/s";
           }
         }
 
@@ -538,7 +538,7 @@ export default function ChainChart({
           }
 
           if (metricKey === "throughput") {
-            suffix = "mgas/s";
+            suffix = "Mgas/s";
           }
           // if (series.name === item.chain_name) {
           return `

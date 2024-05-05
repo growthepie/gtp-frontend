@@ -511,7 +511,7 @@ export default function ComparisonChart({
           }
 
           if (metric_id === "throughput") {
-            suffix = " mgas/s";
+            suffix = " Mgas/s";
           }
 
           return `
@@ -563,7 +563,7 @@ export default function ComparisonChart({
       let suffix = "";
       let value = pointsSum;
       if (metric_id === "throughput") {
-        suffix = " mgas/s";
+        suffix = " Mgas/s";
       }
 
       const sumRow =
