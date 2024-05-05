@@ -88,18 +88,6 @@ export const metadata: Metadata = {
         height: 627,
         alt: "growthepie.xyz",
       },
-      {
-        url: "https://www.growthepie.xyz/logo_full.png",
-        width: 772,
-        height: 181,
-        alt: "growthepie.xyz",
-      },
-      {
-        url: "https://www.growthepie.xyz/logo_pie_only.png",
-        width: 168,
-        height: 181,
-        alt: "growthepie",
-      },
     ],
     locale: "en_US",
     type: "website",

@@ -40,6 +40,11 @@ const nextConfig = {
         destination: "https://fees.growthepie.xyz",
         permanent: true,
       },
+      {
+        source: "/blockspace/chain-overview",
+        destination: "/blockspace/chain-overview/nft",
+        permanent: true,
+      },
     ];
   },
   images: {

@@ -1642,7 +1642,7 @@ export default function ComparisonChart({
 
   // const { width, height } = useWindowSize();
 
-  console.log(data.filter((d) => d.name === "ethereum").length > 0);
+  // console.log(data.filter((d) => d.name === "ethereum").length > 0);
 
   useLayoutEffect(() => {
     if (chartComponent.current) {
@@ -1907,6 +1907,7 @@ export default function ComparisonChart({
                     }
                   >
                     <div
+                      id="content-container"
                       className={
                         is_embed
                           ? "relative block w-full top-0 md:top-8"

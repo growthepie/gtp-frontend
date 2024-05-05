@@ -1530,6 +1530,7 @@ export default function ChainChart({
 
       {data && (
         <div
+          id="content-container"
           className={`grid grid-rows-8 lg:grid-rows-4 lg:grid-cols-2 lg:grid-flow-row gap-y-0 gap-x-[15px] `}
           // style={{
           //   gridRow: `span ${Math.ceil(enabledFundamentalsKeys.length / 2)}`,
