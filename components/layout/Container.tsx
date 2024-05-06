@@ -16,7 +16,7 @@ export default function Container({
   return (
     <div
       id={id}
-      className={`px-[20px] md:px-[64px] ${className}`}
+      className={`px-[20px] md:px-[64px] text-[#CDD8D3] ${className}`}
       ref={ref ?? null}
       style={style}
     >
