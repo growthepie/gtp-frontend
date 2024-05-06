@@ -210,7 +210,7 @@ const Chain = ({ params }: { params: any }) => {
               <div className="hidden lg:flex flex-row-reverse gap-x-[10px] text-sm items-start">
                 <div className="peer group relative">
                   <div
-                    className={`relative !z-[1] flex items-center gap-x-[8px] font-semibold border border-forest-50 dark:border-forest-900 bg-forest-50 dark:bg-forest-900 transition-all duration-300 rounded-full px-[16px] py-[7px] w-[91px] group-hover:w-[213px] delay-0`}
+                    className={`relative z-40 flex items-center gap-x-[8px] font-semibold border border-forest-50 dark:border-forest-900 bg-forest-50 dark:bg-forest-900 transition-all duration-300 rounded-full px-[16px] py-[7px] w-[91px] group-hover:w-[213px] delay-0`}
                   >
                     <Icon
                       icon="feather:chevron-right"
@@ -219,7 +219,7 @@ const Chain = ({ params }: { params: any }) => {
                     <div>More</div>
                   </div>
 
-                  <div className="absolute top-[15px] left-0 !z-[-0] h-0 delay-0 group-hover:h-[119px] overflow-hidden transition-all duration-300 ease-in-out bg-forest-50 dark:bg-forest-1000 rounded-b-[22px] group-hover:pt-[29px] group-hover:pb-[10px] break-inside-avoid w-[91px] group-hover:w-[213px] shadow-transparent group-hover:shadow-[0px_4px_46.2px_0px_#000000]">
+                  <div className="absolute top-[15px] left-0 z-20 h-0 delay-0 group-hover:h-[119px] overflow-hidden transition-all duration-300 ease-in-out bg-forest-50 dark:bg-forest-1000 rounded-b-[22px] group-hover:pt-[29px] group-hover:pb-[10px] break-inside-avoid w-[91px] group-hover:w-[213px] shadow-transparent group-hover:shadow-[0px_4px_46.2px_0px_#000000]">
                     <Link
                       href={master.chains[chainKeys[0]].website}
                       className="flex items-center gap-x-[10px] font-medium text-sm px-4 py-2 group-hover:w-[213px] w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900"
