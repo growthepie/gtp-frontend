@@ -850,10 +850,10 @@ export default function ChainComponent({
           },
         },
 
-        // style: {
-        //   //@ts-ignore
-        //   borderRadius: "0 0 15px 15px",
-        // },
+        style: {
+          //@ts-ignore
+          borderRadius: "0 0 15px 15px",
+        },
       },
 
       title: undefined,
