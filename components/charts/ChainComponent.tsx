@@ -805,7 +805,7 @@ export default function ChainComponent({
     }
   }, [isAnimate, selectedTimespan, timespans, zoomed]);
 
-  const options: Highcharts.Options = useMemo(() => {
+  const options: Highcharts.Options | any = useMemo(() => {
     return {
       accessibility: { enabled: false },
       exporting: { enabled: false },
