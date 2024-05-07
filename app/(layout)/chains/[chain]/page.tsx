@@ -338,8 +338,8 @@ const Chain = ({ params }: { params: any }) => {
               )}
             </div>
             {(IS_DEVELOPMENT || IS_PREVIEW) && (
-              <div className="flex flex-col gap-y-[5px] md:flex-row md:gap-x-[5px] pb-[60px]">
-                <div className="flex flex-col gap-y-[5px] min-w-[270px]">
+              <div className="grid md:grid-rows-2 md:grid-flow-col lg:grid-rows-none lg:grid-cols-[270px,275px,auto,auto,131px] gap-y-[5px] pb-[60px]">
+                <div className="flex flex-col gap-y-[5px]">
                   <div className="flex items-center gap-x-[15px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-forest-900">
                     <div className="bg-white dark:bg-forest-1000 rounded-full w-[25px] h-[25px] p-[5px]">
                       <Icon
@@ -418,7 +418,7 @@ const Chain = ({ params }: { params: any }) => {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col gap-y-[5px] min-w-[275px]">
+                <div className="flex flex-col gap-y-[5px]">
                   <div className="flex items-center gap-x-[15px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-forest-900">
                     <div className="bg-white dark:bg-forest-1000 rounded-full w-[25px] h-[25px] p-[5px]">
                       <Icon
@@ -475,7 +475,7 @@ const Chain = ({ params }: { params: any }) => {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col gap-y-[5px] min-w-[140px]">
+                <div className="flex flex-col gap-y-[5px]">
                   <div className="flex items-center gap-x-[15px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-forest-900">
                     <div className="bg-white dark:bg-forest-1000 rounded-full w-[25px] h-[25px] p-[5px]">
                       <Icon
@@ -489,7 +489,7 @@ const Chain = ({ params }: { params: any }) => {
                   <div className="h-[58px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]"></div>
                   <div className="h-[48px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]"></div>
                 </div>
-                <div className="flex flex-col gap-y-[5px] min-w-[330px]">
+                <div className="flex flex-col gap-y-[5px]">
                   <div className="flex items-center gap-x-[15px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-forest-900">
                     <div className="bg-white dark:bg-forest-1000 rounded-full w-[25px] h-[25px] p-[5px]">
                       <Icon
@@ -538,7 +538,7 @@ const Chain = ({ params }: { params: any }) => {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col gap-y-[5px] min-w-[131px]">
+                <div className="flex flex-col gap-y-[5px]">
                   <div className="flex items-center gap-x-[15px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-forest-900">
                     <div className="bg-white dark:bg-forest-1000 rounded-full w-[25px] h-[25px] p-[5px]">
                       <Icon
