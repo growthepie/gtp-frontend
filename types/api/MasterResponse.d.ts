@@ -39,6 +39,7 @@ export interface ChainInfo {
   block_explorer: string;
   rhino_listed: boolean;
   rhino_naming: string;
+  l2beat_stage: string;
 }
 
 export interface Metrics {
