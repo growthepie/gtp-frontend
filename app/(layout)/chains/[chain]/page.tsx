@@ -24,6 +24,7 @@ import {
   ChainOverviewResponse,
   Chains,
 } from "@/types/api/ChainOverviewResponse";
+import ChainSectionHead from "@/components/layout/ChainSectionHead";
 import { useMemo, useState, useEffect, useCallback } from "react";
 import { useSessionStorage } from "usehooks-ts";
 import { notFound } from "next/navigation";
@@ -338,17 +339,8 @@ const Chain = ({ params }: { params: any }) => {
               )}
             </div>
             {(IS_DEVELOPMENT || IS_PREVIEW) && (
-              <div className="grid md:grid-rows-2 md:grid-flow-col lg:grid-rows-none lg:grid-cols-[270px,275px,auto,auto,131px] gap-y-[5px] pb-[60px]">
-                <div className="flex flex-col gap-y-[5px]">
-                  <div className="flex items-center gap-x-[15px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-forest-900">
-                    <div className="bg-white dark:bg-forest-1000 rounded-full w-[25px] h-[25px] p-[5px]">
-                      <Icon
-                        icon="gtp:gtp-clock"
-                        className="w-[15px] h-[15px]"
-                      />
-                    </div>
-                    <div className="text-[20px] font-semibold">Menu</div>
-                  </div>
+              <div className="grid md:grid-rows-2 md:grid-flow-col lg:grid-rows-none lg:grid-cols-[270px, auto, auto, auto, 131px] gap-x-[5px] gap-y-[5px] pb-[60px]">
+                <ChainSectionHead title={"Menu"}>
                   <div className="h-[111px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]">
                     <div className="flex flex-col justify-between gap-y-[10px]">
                       <Link href="/chains">
@@ -417,17 +409,12 @@ const Chain = ({ params }: { params: any }) => {
                       </Link>
                     </div>
                   </div>
-                </div>
-                <div className="flex flex-col gap-y-[5px]">
-                  <div className="flex items-center gap-x-[15px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-forest-900">
-                    <div className="bg-white dark:bg-forest-1000 rounded-full w-[25px] h-[25px] p-[5px]">
-                      <Icon
-                        icon="gtp:gtp-clock"
-                        className="w-[15px] h-[15px]"
-                      />
-                    </div>
-                    <div className="text-[20px] font-semibold">Background</div>
-                  </div>
+                </ChainSectionHead>
+
+                <ChainSectionHead
+                  title={"Background"}
+                  className="min-w-[300px]"
+                >
                   <div className="h-[111px] flex flex-col justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]">
                     <div>
                       <div className="text-[10px] font-semibold text-[#5A6462]">
@@ -474,31 +461,17 @@ const Chain = ({ params }: { params: any }) => {
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex flex-col gap-y-[5px]">
-                  <div className="flex items-center gap-x-[15px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-forest-900">
-                    <div className="bg-white dark:bg-forest-1000 rounded-full w-[25px] h-[25px] p-[5px]">
-                      <Icon
-                        icon="gtp:gtp-clock"
-                        className="w-[15px] h-[15px]"
-                      />
-                    </div>
-                    <div className="text-[20px] font-semibold">Usage</div>
+                </ChainSectionHead>
+                <ChainSectionHead title={"Usage"} className="min-w-[150px]">
+                  <div className="flex flex-col gap-y-[5px]">
+                    <div className="h-[58px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]"></div>
+                    <div className="h-[48px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]"></div>
                   </div>
-
-                  <div className="h-[58px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]"></div>
-                  <div className="h-[48px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]"></div>
-                </div>
-                <div className="flex flex-col gap-y-[5px]">
-                  <div className="flex items-center gap-x-[15px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-forest-900">
-                    <div className="bg-white dark:bg-forest-1000 rounded-full w-[25px] h-[25px] p-[5px]">
-                      <Icon
-                        icon="gtp:gtp-clock"
-                        className="w-[15px] h-[15px]"
-                      />
-                    </div>
-                    <div className="text-[20px] font-semibold">Technology</div>
-                  </div>
+                </ChainSectionHead>
+                <ChainSectionHead
+                  title={"Technology"}
+                  className="min-w-[150px]"
+                >
                   <div className="h-[111px] flex px-[10px] py-[10px]  rounded-[15px] bg-forest-50 dark:bg-[#1F2726]">
                     <div className="flex flex-col w-full h-full justify-between">
                       <div>
@@ -537,17 +510,8 @@ const Chain = ({ params }: { params: any }) => {
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex flex-col gap-y-[5px]">
-                  <div className="flex items-center gap-x-[15px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-forest-900">
-                    <div className="bg-white dark:bg-forest-1000 rounded-full w-[25px] h-[25px] p-[5px]">
-                      <Icon
-                        icon="gtp:gtp-clock"
-                        className="w-[15px] h-[15px]"
-                      />
-                    </div>
-                    <div className="text-[20px] font-semibold">Risk</div>
-                  </div>
+                </ChainSectionHead>
+                <ChainSectionHead title={"Risk"} className="min-w-[150px]">
                   <div className="h-[111px] flex gap-x-[10px] px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]">
                     <div className="flex flex-col justify-between gap-y-[10px] h-[86px] min-w-[76px]">
                       <div className="text-[10px] font-semibold text-[#5A6462]">
@@ -624,7 +588,7 @@ const Chain = ({ params }: { params: any }) => {
                       </svg>
                     </div>
                   </div>
-                </div>
+                </ChainSectionHead>
               </div>
             )}
 
