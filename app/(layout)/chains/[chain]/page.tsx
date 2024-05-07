@@ -31,7 +31,7 @@ import { ChainsData } from "@/types/api/ChainResponse";
 import { useTheme } from "next-themes";
 import { useMediaQuery } from "usehooks-ts";
 import { track } from "@vercel/analytics/react";
-import { IS_PRODUCTION } from "@/lib/helpers";
+import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
 
 const Chain = ({ params }: { params: any }) => {
   const { chain } = params;
@@ -337,7 +337,7 @@ const Chain = ({ params }: { params: any }) => {
                 </>
               )}
             </div>
-            {!IS_PRODUCTION && (
+            {(IS_DEVELOPMENT || IS_PREVIEW) && (
               <div className="flex flex-col gap-y-[5px] md:flex-row md:gap-x-[5px] pb-[60px]">
                 <div className="flex flex-col gap-y-[5px] min-w-[270px]">
                   <div className="flex items-center gap-x-[15px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-forest-900">
