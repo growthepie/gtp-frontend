@@ -72,14 +72,36 @@ export const viewport = {
   themeColor: "dark",
 };
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://www.growthepie.xyz"),
+const gtpMain = {
   title: {
+    absolute:
+      "Growing Ethereum’s Ecosystem Together - Layer 2 User Base - growthepie",
     template: "%s - growthepie",
-    default: "growthepie - Growing Ethereum’s Ecosystem Together",
   },
   description:
     "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
+};
+
+const gtpFees = {
+  title: {
+    absolute: "Ethereum Layer 2 Fees - Real-Time Data - growthepie",
+    template: "%s - growthepie",
+  },
+  description:
+    "Fee analytics by the minute for Ethereum L2s — median transaction fees, native / ETH transfer fees, token swap fees, and more...",
+};
+const isFees = true;
+
+const host = isFees ? "fees.growthepie.xyz" : "www.growthepie.xyz";
+
+const title = isFees ? gtpFees.title : gtpMain.title;
+const description = isFees ? gtpFees.description : gtpMain.description;
+
+export const metadata: Metadata = {
+  metadataBase: new URL(`https://${host}`),
+  title: title,
+  description: description,
+
   openGraph: {
     title: "growthepie",
     description: "Growing Ethereum’s Ecosystem Together",
@@ -174,7 +196,6 @@ export default function RootLayout({
               <SidebarContainer />
               <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
                 <div className="w-full relative min-h-full">
-
                   <div className="background-container">
                     <div className="background-gradient-group">
                       <div className="background-gradient-yellow"></div>
