@@ -1472,22 +1472,22 @@ export default function FeesPage() {
                       }}
                     >
                       <div>Swap Token</div>
-                    <Icon
-                      icon={
-                        !selectedQualitative &&
-                        selectedQuantitative === "txcosts_swap"
-                          ? sortOrder
-                            ? "formkit:arrowdown"
-                            : "formkit:arrowup"
-                          : "formkit:arrowdown"
-                      }
-                      className={`dark:text-white text-black w-[10px] h-[10px] ${
-                        !selectedQualitative &&
-                        selectedQuantitative === "txcosts_swap"
-                          ? "opacity-100"
-                          : "opacity-20"
-                      }`}
-                    />
+                      <Icon
+                        icon={
+                          !selectedQualitative &&
+                          selectedQuantitative === "txcosts_swap"
+                            ? sortOrder
+                              ? "formkit:arrowdown"
+                              : "formkit:arrowup"
+                            : "formkit:arrowdown"
+                        }
+                        className={`dark:text-white text-black w-[10px] h-[10px] ${
+                          !selectedQualitative &&
+                          selectedQuantitative === "txcosts_swap"
+                            ? "opacity-100"
+                            : "opacity-20"
+                        }`}
+                      />
                     </div>
                   </div>
                   <div
@@ -2021,7 +2021,9 @@ export default function FeesPage() {
                                   : "scale-100 opacity-50"
                               }`}
                               style={{
-                                backgroundColor: !feeIndexSort[23 - index]
+                                backgroundColor: !feeIndexSortWithEthereum[
+                                  23 - index
+                                ]["ethereum"][3]
                                   ? "gray"
                                   : getGradientColor(
                                       Math.floor(
