@@ -75,7 +75,7 @@ export const viewport = {
 const gtpMain = {
   title: {
     absolute:
-      "growthepie - Growing Ethereum’s Ecosystem Together - Layer 2 User Base",
+      "Growing Ethereum’s Ecosystem Together - Layer 2 User Base - growthepie",
     template: "%s - growthepie",
   },
   description:
