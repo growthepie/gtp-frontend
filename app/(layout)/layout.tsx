@@ -101,7 +101,6 @@ export const metadata: Metadata = {
   metadataBase: new URL(`https://${host}`),
   title: title,
   description: description,
-
   openGraph: {
     title: "growthepie",
     description: "Growing Ethereum’s Ecosystem Together",
