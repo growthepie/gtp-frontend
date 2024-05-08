@@ -25,7 +25,7 @@ import {
   Chains,
 } from "@/types/api/ChainOverviewResponse";
 import ChainSectionHead from "@/components/layout/ChainSectionHead";
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useSessionStorage } from "usehooks-ts";
 import { notFound } from "next/navigation";
 import { ChainsData } from "@/types/api/ChainResponse";
@@ -51,6 +51,13 @@ const Chain = ({ params }: { params: any }) => {
   const [chainLoading, setChainLoading] = useState(false);
   const [openChainList, setOpenChainList] = useState<boolean>(false);
   const isMobile = useMediaQuery("(max-width: 767px)");
+
+  //Testing refs for overflow new chain section
+  const menuRef = useRef(null);
+  const backgroundRef = useRef(null);
+  const usageRef = useRef(null);
+  const technologyRef = useRef(null);
+  const riskRef = useRef(null);
 
   const {
     data: master,
@@ -348,9 +355,9 @@ const Chain = ({ params }: { params: any }) => {
                 ></div>
                 <ChainSectionHead
                   title={"Menu"}
-                  className=" hover:min-w-[200px] min-w-[200px] transition-all duration-500"
+                  className=" overflow-hidden hover:min-w-[250px] min-w-[100px] transition-all duration-500"
                 >
-                  <div className="relative h-[111px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden">
+                  <div className="relative h-[111px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] ">
                     <div
                       className="absolute  inset-0 pointer-events-none shadow-inner xl:hidden lg:block rounded-2xl group-hover:hidden transition-all duration-500 "
                       style={{
@@ -366,7 +373,7 @@ const Chain = ({ params }: { params: any }) => {
                               className="w-[15px] h-[15px]"
                             />
                           </div>
-                          <div className="text-[14px] font-semibold">
+                          <div className="text-[14px] font-semibold lg:leading-normal leading-tight">
                             Jump to Section
                           </div>
                         </div>
@@ -379,7 +386,7 @@ const Chain = ({ params }: { params: any }) => {
                               className="w-[15px] h-[15px]"
                             />
                           </div>
-                          <div className="text-[14px] font-semibold">
+                          <div className="text-[14px] font-semibold lg:leading-normal leading-tight">
                             Block Explorers
                           </div>
                         </div>
@@ -428,9 +435,9 @@ const Chain = ({ params }: { params: any }) => {
 
                 <ChainSectionHead
                   title={"Background"}
-                  className=" hover:min-w-[320px] hover:xl:min-w-[340px] min-w-[150px] transition-all duration-500 "
+                  className=" hover:min-w-[320px] xl:min-w-fit min-w-[100px] transition-all duration-500 overflow-hidden"
                 >
-                  <div className="relative h-[111px] flex flex-col justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden">
+                  <div className="relative h-[111px] flex flex-col justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] ">
                     <div
                       className="absolute  inset-0 pointer-events-none shadow-inner xl:hidden lg:block rounded-2xl group-hover:hidden transition-all duration-500 "
                       style={{
@@ -485,7 +492,7 @@ const Chain = ({ params }: { params: any }) => {
                 </ChainSectionHead>
                 <ChainSectionHead
                   title={"Usage"}
-                  className="hover:min-w-[150px] min-w-[50px] transition-all duration-500"
+                  className="hover:min-w-[150px] xl:min-w-[130px] min-w-[20px] transition-all duration-500"
                 >
                   <div className="flex flex-col gap-y-[5px] overflow-hidden relative">
                     <div
@@ -500,7 +507,7 @@ const Chain = ({ params }: { params: any }) => {
                 </ChainSectionHead>
                 <ChainSectionHead
                   title={"Technology"}
-                  className="hover:min-w-[150px] min-w-[50px] transition-all duration-500"
+                  className="hover:min-w-[150px] min-w-[20px] xl:min-w-[150px] transition-all duration-500"
                 >
                   <div className="relative h-[111px] flex px-[10px] py-[10px]  rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden ">
                     <div
@@ -549,7 +556,7 @@ const Chain = ({ params }: { params: any }) => {
                 </ChainSectionHead>
                 <ChainSectionHead
                   title={"Risk"}
-                  className="hover:min-w-[130px] min-w-[20px] transition-all duration-500"
+                  className="hover:min-w-[130px] xl:min-w-[80px] min-w-[20px] transition-all duration-500"
                 >
                   <div className="relative h-[111px] flex gap-x-[10px] px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden">
                     <div

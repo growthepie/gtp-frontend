@@ -19,7 +19,7 @@ const ChainSectionHead = ({
   return (
     <div
       className={`flex flex-col gap-y-[5px] group ${className} `}
-      ref={ref ?? null}
+      ref={ref ? ref : null}
       style={style}
     >
       <div className="relative flex items-center gap-x-[15px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-forest-900">
