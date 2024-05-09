@@ -154,6 +154,8 @@ const Chain = ({ params }: { params: any }) => {
 
   if (chainKeys.length === 0) return notFound();
 
+  console.log(master ? master : "");
+
   return (
     <>
       <ShowLoading
@@ -342,13 +344,15 @@ const Chain = ({ params }: { params: any }) => {
               <div className="relative grid sm:grid-rows-2 sm:grid-flow-col md:grid-rows-none md:grid-cols-[270px, auto, auto, auto, 131px] gap-x-[5px] gap-y-[5px] pb-[60px] overflow-hidden">
                 <ChainSectionHead
                   title={"Menu"}
+                  enableDropdown={isMobile}
                   className=" hover:min-w-[250px] xl:min-w-[250px] min-w-[100px]  transition-all duration-300"
                 >
                   <div className="relative  h-[111px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden ">
                     <div
-                      className="absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 "
+                      className="absolute z-20  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 "
                       style={{
-                        boxShadow: "-55px 0px 10px rgba(21, 26, 25, 0.6) inset",
+                        boxShadow:
+                          "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
                       }}
                     ></div>
                     <div className="flex flex-col justify-between gap-y-[10px] min-w-[160px]">
@@ -405,12 +409,15 @@ const Chain = ({ params }: { params: any }) => {
                       ) : (
                         <div></div>
                       )}
-                      <Link href="/chains" className="group/more ">
-                        <div className="flex items-center h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50">
+                      <Link
+                        href="/chains"
+                        className="group/more relative top-0"
+                      >
+                        <div className="absolute bottom-0 w-full flex items-center h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50 z-10">
                           <div className="w-[24px] h-[24px]">
                             <Icon
                               icon="feather:chevron-right"
-                              className="w-[24px] h-[24px] group-hover/more:-rotate-90 transform transition-transform"
+                              className="w-[24px] h-[24px] group-hover/more:rotate-90 transform transition-transform"
                             />
                           </div>
                           <div className="text-[14px] font-semibold ">More</div>
@@ -422,13 +429,15 @@ const Chain = ({ params }: { params: any }) => {
 
                 <ChainSectionHead
                   title={"Background"}
+                  enableDropdown={isMobile}
                   className=" hover:min-w-[370px] 2xl:min-w-[370px] min-w-[100px] transition-all duration-300"
                 >
                   <div className="relative h-[111px] flex flex-col justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden ">
                     <div
                       className="absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 "
                       style={{
-                        boxShadow: "-55px 0px 10px rgba(21, 26, 25, 0.6) inset",
+                        boxShadow:
+                          "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
                       }}
                     ></div>
                     <div className="min-w-[370px] ">
@@ -479,13 +488,15 @@ const Chain = ({ params }: { params: any }) => {
                 </ChainSectionHead>
                 <ChainSectionHead
                   title={"Usage"}
+                  enableDropdown={isMobile}
                   className="hover:min-w-[130px] 2xl:min-w-[130px] min-w-[20px] transition-all duration-300"
                 >
                   <div className="flex flex-col gap-y-[5px] overflow-hidden relative">
                     <div
                       className="absolute inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 "
                       style={{
-                        boxShadow: "-55px 0px 10px rgba(21, 26, 25, 0.6) inset",
+                        boxShadow:
+                          "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
                       }}
                     ></div>
                     <div className="h-[58px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]"></div>
@@ -494,13 +505,15 @@ const Chain = ({ params }: { params: any }) => {
                 </ChainSectionHead>
                 <ChainSectionHead
                   title={"Technology"}
+                  enableDropdown={isMobile}
                   className="hover:min-w-[160px] min-w-[20px] 2xl:min-w-[160px] transition-all duration-300"
                 >
                   <div className="relative h-[111px] flex px-[10px] py-[10px]  rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden ">
                     <div
                       className="absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 "
                       style={{
-                        boxShadow: "-55px 0px 10px rgba(21, 26, 25, 0.6) inset",
+                        boxShadow:
+                          "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
                       }}
                     ></div>
                     <div className="flex flex-col w-full h-full justify-between min-w-[85px] ">
@@ -543,13 +556,15 @@ const Chain = ({ params }: { params: any }) => {
                 </ChainSectionHead>
                 <ChainSectionHead
                   title={"Risk"}
+                  enableDropdown={isMobile}
                   className="hover:min-w-[130px] 2xl:min-w-[130px] min-w-[20px] transition-all duration-300"
                 >
                   <div className="relative h-[111px] flex gap-x-[10px] px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden">
                     <div
                       className="absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 "
                       style={{
-                        boxShadow: "-55px 0px 10px rgba(21, 26, 25, 0.6) inset",
+                        boxShadow:
+                          "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
                       }}
                     ></div>
                     <div className="flex flex-col justify-between gap-y-[10px] h-[86px] min-w-[76px]">

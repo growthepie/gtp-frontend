@@ -40,7 +40,8 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import useSWR from "swr";
 import ChartWatermark from "./ChartWatermark";
 import { ChainsData } from "@/types/api/ChainResponse";
-import { IS_PREVIEW } from "@/lib/helpers";
+import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
+import ChainSectionHead from "@/components/layout/ChainSectionHead";
 import {
   TopRowContainer,
   TopRowChild,
@@ -1527,45 +1528,53 @@ export default function ChainChart({
           )}
         </TopRowParent>
       </TopRowContainer>
+      {IS_DEVELOPMENT || IS_PREVIEW ? (
+        <div className="flex flex-col">
+          <ChainSectionHead
+            title={"Activity"}
+            enableDropdown={true}
+          ></ChainSectionHead>
+        </div>
+      ) : (
+        <>
+          {data && (
+            <div
+              id="content-container"
+              className={`grid grid-rows-8 lg:grid-rows-4 lg:grid-cols-2 lg:grid-flow-row gap-y-0 gap-x-[15px] `}
+              // style={{
+              //   gridRow: `span ${Math.ceil(enabledFundamentalsKeys.length / 2)}`,
+              // }}
+            >
+              {enabledFundamentalsKeys
+                // .filter((key) => enabledFundamentalsKeys.includes(key))
 
-      {data && (
-        <div
-          id="content-container"
-          className={`grid grid-rows-8 lg:grid-rows-4 lg:grid-cols-2 lg:grid-flow-row gap-y-0 gap-x-[15px] `}
-          // style={{
-          //   gridRow: `span ${Math.ceil(enabledFundamentalsKeys.length / 2)}`,
-          // }}
-        >
-          {enabledFundamentalsKeys
-            // .filter((key) => enabledFundamentalsKeys.includes(key))
-
-            .map((key, i) => {
-              if (!Object.keys(data[0].metrics).includes(key)) {
-                return (
-                  <div key={key} className="w-full relative">
-                    <div className="w-full h-[60px] lg:h-[176px] relative  pointer-events-none">
-                      <div className="w-full absolute top-0 -bottom-[15px] text-[10px] opacity-10 z-0">
-                        <div className="absolute left-[15px] h-full border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
-                        <div className="absolute right-[15px] h-full border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
-                      </div>
-                      <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] text-forest-50 rounded-[15px] opacity-30 z-30"></div>
-                      <div className="absolute w-full h-[191px] top-[0px]"></div>
-                      <div className="absolute top-[14px] w-full flex justify-between items-center space-x-4 px-[26px] opacity-30">
-                        <div className="text-[20px] leading-snug font-bold break-inside-avoid">
-                          {
-                            navigationItems[1].options.find(
-                              (o) => o.key === key,
-                            )?.page?.title
-                          }
-                        </div>
-                        <div className="lg:hidden text-xs flex-1 text-right leading-snug">
-                          {!Object.keys(data[0].metrics).includes(key) &&
-                            getNoDataMessage(data[0].chain_id, key)}
-                        </div>
-                        {/* <div className="text-[18px] leading-snug flex space-x-[2px]">
+                .map((key, i) => {
+                  if (!Object.keys(data[0].metrics).includes(key)) {
+                    return (
+                      <div key={key} className="w-full relative">
+                        <div className="w-full h-[60px] lg:h-[176px] relative  pointer-events-none">
+                          <div className="w-full absolute top-0 -bottom-[15px] text-[10px] opacity-10 z-0">
+                            <div className="absolute left-[15px] h-full border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
+                            <div className="absolute right-[15px] h-full border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
+                          </div>
+                          <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] text-forest-50 rounded-[15px] opacity-30 z-30"></div>
+                          <div className="absolute w-full h-[191px] top-[0px]"></div>
+                          <div className="absolute top-[14px] w-full flex justify-between items-center space-x-4 px-[26px] opacity-30">
+                            <div className="text-[20px] leading-snug font-bold break-inside-avoid">
+                              {
+                                navigationItems[1].options.find(
+                                  (o) => o.key === key,
+                                )?.page?.title
+                              }
+                            </div>
+                            <div className="lg:hidden text-xs flex-1 text-right leading-snug">
+                              {!Object.keys(data[0].metrics).includes(key) &&
+                                getNoDataMessage(data[0].chain_id, key)}
+                            </div>
+                            {/* <div className="text-[18px] leading-snug flex space-x-[2px]">
                           Unavailable
                         </div> */}
-                        {/* <div
+                            {/* <div
                           className={`absolute -bottom-[12px] top-1/2 right-[15px] w-[5px] rounded-sm border-r border-t`}
                           style={{
                             borderColor: "#4B5563",
@@ -1574,625 +1583,553 @@ export default function ChainChart({
                         <div
                           className={`absolute top-[calc(50% - 0.5px)] right-[20px] w-[4px] h-[4px] rounded-full bg-forest-900 dark:bg-forest-50`}
                         ></div> */}
-                      </div>
-                      <div>
-                        <div className="absolute inset-0 hidden lg:flex font-medium opacity-30 select-none justify-center items-center text-xs lg:text-sm">
-                          {!Object.keys(data[0].metrics).includes(key) &&
-                            getNoDataMessage(data[0].chain_id, key)}
+                          </div>
+                          <div>
+                            <div className="absolute inset-0 hidden lg:flex font-medium opacity-30 select-none justify-center items-center text-xs lg:text-sm">
+                              {!Object.keys(data[0].metrics).includes(key) &&
+                                getNoDataMessage(data[0].chain_id, key)}
+                            </div>
+                            {Object.keys(data[0].metrics).includes(key) && (
+                              <Icon
+                                icon={getNavIcon(key)}
+                                className="absolute h-[40px] w-[40px] top-[116px] left-[24px] dark:text-[#CDD8D3] opacity-20 pointer-events-none"
+                              />
+                            )}
+                          </div>
                         </div>
-                        {Object.keys(data[0].metrics).includes(key) && (
-                          <Icon
-                            icon={getNavIcon(key)}
-                            className="absolute h-[40px] w-[40px] top-[116px] left-[24px] dark:text-[#CDD8D3] opacity-20 pointer-events-none"
-                          />
-                        )}
+                        <div className="w-full h-[15px] z-[5] relative text-[10px]">
+                          <div className="absolute z-[5] left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
+                          <div className="absolute z-[5] right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
+                        </div>
+                        {!zoomed
+                          ? (key === "market_cap" || key === "txcosts") && (
+                              <div
+                                className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                                  key === "txcosts" ? "hidden lg:block" : ""
+                                }`}
+                              >
+                                <div className="absolute left-[15px] align-bottom flex items-end z-30">
+                                  {new Date(
+                                    timespans[selectedTimespan].xMin,
+                                  ).toLocaleDateString(undefined, {
+                                    timeZone: "UTC",
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </div>
+                                <div className="absolute right-[15px] align-bottom flex items-end z-30">
+                                  {new Date(
+                                    timespans[selectedTimespan].xMax,
+                                  ).toLocaleDateString(undefined, {
+                                    timeZone: "UTC",
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </div>
+                              </div>
+                            )
+                          : (key === "profit" || key === "txcosts") &&
+                            intervalShown && (
+                              <div
+                                className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                                  key === "txcosts" ? "hidden lg:block" : ""
+                                }`}
+                              >
+                                <div className="absolute left-[15px] align-bottom flex items-end z-10">
+                                  {new Date(
+                                    intervalShown.min,
+                                  ).toLocaleDateString(undefined, {
+                                    timeZone: "UTC",
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </div>
+                                <div className="absolute right-[15px] align-bottom flex items-end z-10">
+                                  {new Date(
+                                    intervalShown.max,
+                                  ).toLocaleDateString(undefined, {
+                                    timeZone: "UTC",
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </div>
+                              </div>
+                            )}
                       </div>
-                    </div>
-                    <div className="w-full h-[15px] z-[5] relative text-[10px]">
-                      <div className="absolute z-[5] left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
-                      <div className="absolute z-[5] right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
-                    </div>
-                    {!zoomed
-                      ? (key === "market_cap" || key === "txcosts") && (
-                          <div
-                            className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
-                              key === "txcosts" ? "hidden lg:block" : ""
-                            }`}
-                          >
-                            <div className="absolute left-[15px] align-bottom flex items-end z-30">
-                              {new Date(
-                                timespans[selectedTimespan].xMin,
-                              ).toLocaleDateString(undefined, {
-                                timeZone: "UTC",
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })}
-                            </div>
-                            <div className="absolute right-[15px] align-bottom flex items-end z-30">
-                              {new Date(
-                                timespans[selectedTimespan].xMax,
-                              ).toLocaleDateString(undefined, {
-                                timeZone: "UTC",
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })}
-                            </div>
-                          </div>
-                        )
-                      : (key === "profit" || key === "txcosts") &&
-                        intervalShown && (
-                          <div
-                            className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
-                              key === "txcosts" ? "hidden lg:block" : ""
-                            }`}
-                          >
-                            <div className="absolute left-[15px] align-bottom flex items-end z-10">
-                              {new Date(intervalShown.min).toLocaleDateString(
-                                undefined,
-                                {
-                                  timeZone: "UTC",
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                },
-                              )}
-                            </div>
-                            <div className="absolute right-[15px] align-bottom flex items-end z-10">
-                              {new Date(intervalShown.max).toLocaleDateString(
-                                undefined,
-                                {
-                                  timeZone: "UTC",
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                },
-                              )}
-                            </div>
-                          </div>
-                        )}
-                  </div>
-                );
-              }
+                    );
+                  }
 
-              const isAllZeroValues = data[0].metrics[key].daily.data.every(
-                (d) => d[1] === 0,
-              );
+                  const isAllZeroValues = data[0].metrics[key].daily.data.every(
+                    (d) => d[1] === 0,
+                  );
 
-              return (
-                <div key={key} className="w-full h-fit relative">
-                  <div className="w-full h-[176px] relative">
-                    <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] rounded-[15px]"></div>
-                    <div className="absolute w-full h-[191px] top-[0px] z-[5]">
-                      <HighchartsReact
-                        // containerProps={{
-                        //   className: isVisible
-                        //     ? "w-full h-[127px]"
-                        //     : "w-full h-[127px] hidden",
-                        // }}
-                        highcharts={Highcharts}
-                        options={{
-                          ...options,
-                          chart: {
-                            ...options.chart,
-                            animation: isAnimate
-                              ? {
-                                  duration: 500,
-                                  delay: 0,
-                                  easing: "easeOutQuint",
-                                }
-                              : false,
-                            index: i,
-                            margin: zoomed ? zoomedMargin : defaultMargin,
-                            events: {
-                              load: function () {
-                                const chart = this;
-                                // chart.reflow();
-                              },
-                              render: function () {
-                                const chart: Highcharts.Chart = this;
-
-                                // destroy the last point lines and circles
-                                lastPointLines[i]?.length > 0 &&
-                                  lastPointLines[i].forEach((line) => {
-                                    line.destroy();
-                                  });
-
-                                // destroy the last point lines and circles
-                                lastPointCircles[i]?.length > 0 &&
-                                  lastPointCircles[i].forEach((circle) => {
-                                    circle.destroy();
-                                  });
-
-                                // if (chart.series.length === 0) {
-                                //   return;
-                                // }
-
-                                lastPointLines[i] = [];
-                                lastPointCircles[i] = [];
-
-                                // const lastPoints: Highcharts.Point[] =
-                                //   chart.series.reduce<Highcharts.Point[]>(
-                                //     (acc, s) => {
-                                //       if (s.points.length === 0) return acc;
-
-                                //       acc.push(s.points[s.points.length - 1]);
-
-                                //       return acc;
-                                //     },
-                                //     [],
-                                //   );
-
-                                // console.log("lastPoints", lastPoints);
-
-                                // calculate the fraction that 15px is in relation to the pixel width of the chart
-                                const linesXPos =
-                                  chart.chartWidth *
-                                  (1 - 15 / chart.chartWidth);
-
-                                let primaryLineStartPos = chart.plotTop - 24;
-                                let primaryLineEndPos: number | null = null;
-
-                                let secondaryLineStartPos = chart.plotTop;
-                                let secondaryLineEndPos: number | null = null;
-
-                                let lastPointYDiff = 0;
-
-                                if (chart.series.length > 0) {
-                                  const lastPoint =
-                                    chart.series[0].points[
-                                      chart.series[0].points.length - 1
-                                    ];
-                                  if (lastPoint && lastPoint.plotY) {
-                                    primaryLineEndPos =
-                                      chart.plotTop + lastPoint.plotY;
-                                  }
-
-                                  if (chart.series.length > 1) {
-                                    const lastPoint =
-                                      chart.series[1].points[
-                                        chart.series[1].points.length - 1
-                                      ];
-                                    if (
-                                      lastPoint &&
-                                      lastPoint.plotY &&
-                                      primaryLineEndPos
-                                    ) {
-                                      secondaryLineEndPos =
-                                        chart.plotTop + lastPoint.plotY;
-
-                                      lastPointYDiff =
-                                        primaryLineEndPos - secondaryLineEndPos;
+                  return (
+                    <div key={key} className="w-full h-fit relative">
+                      <div className="w-full h-[176px] relative">
+                        <div className="absolute w-full h-full bg-forest-50 dark:bg-[#1F2726] rounded-[15px]"></div>
+                        <div className="absolute w-full h-[191px] top-[0px] z-[5]">
+                          <HighchartsReact
+                            // containerProps={{
+                            //   className: isVisible
+                            //     ? "w-full h-[127px]"
+                            //     : "w-full h-[127px] hidden",
+                            // }}
+                            highcharts={Highcharts}
+                            options={{
+                              ...options,
+                              chart: {
+                                ...options.chart,
+                                animation: isAnimate
+                                  ? {
+                                      duration: 500,
+                                      delay: 0,
+                                      easing: "easeOutQuint",
                                     }
-                                  }
-                                }
+                                  : false,
+                                index: i,
+                                margin: zoomed ? zoomedMargin : defaultMargin,
+                                events: {
+                                  load: function () {
+                                    const chart = this;
+                                    // chart.reflow();
+                                  },
+                                  render: function () {
+                                    const chart: Highcharts.Chart = this;
 
-                                // loop through the series and create the last point lines and circles
-                                chart.series.forEach((series, seriesIndex) => {
-                                  const lastPoint =
-                                    series.points[series.points.length - 1];
+                                    // destroy the last point lines and circles
+                                    lastPointLines[i]?.length > 0 &&
+                                      lastPointLines[i].forEach((line) => {
+                                        line.destroy();
+                                      });
 
-                                  if (!lastPoint || !lastPoint.plotY) return;
+                                    // destroy the last point lines and circles
+                                    lastPointCircles[i]?.length > 0 &&
+                                      lastPointCircles[i].forEach((circle) => {
+                                        circle.destroy();
+                                      });
 
-                                  // create a bordered line from the last point to the top of the chart's container
-                                  if (
-                                    seriesIndex === 0 &&
-                                    secondaryLineEndPos !== null
+                                    // if (chart.series.length === 0) {
+                                    //   return;
+                                    // }
+
+                                    lastPointLines[i] = [];
+                                    lastPointCircles[i] = [];
+
+                                    // const lastPoints: Highcharts.Point[] =
+                                    //   chart.series.reduce<Highcharts.Point[]>(
+                                    //     (acc, s) => {
+                                    //       if (s.points.length === 0) return acc;
+
+                                    //       acc.push(s.points[s.points.length - 1]);
+
+                                    //       return acc;
+                                    //     },
+                                    //     [],
+                                    //   );
+
+                                    // console.log("lastPoints", lastPoints);
+
+                                    // calculate the fraction that 15px is in relation to the pixel width of the chart
+                                    const linesXPos =
+                                      chart.chartWidth *
+                                      (1 - 15 / chart.chartWidth);
+
+                                    let primaryLineStartPos =
+                                      chart.plotTop - 24;
+                                    let primaryLineEndPos: number | null = null;
+
+                                    let secondaryLineStartPos = chart.plotTop;
+                                    let secondaryLineEndPos: number | null =
+                                      null;
+
+                                    let lastPointYDiff = 0;
+
+                                    if (chart.series.length > 0) {
+                                      const lastPoint =
+                                        chart.series[0].points[
+                                          chart.series[0].points.length - 1
+                                        ];
+                                      if (lastPoint && lastPoint.plotY) {
+                                        primaryLineEndPos =
+                                          chart.plotTop + lastPoint.plotY;
+                                      }
+
+                                      if (chart.series.length > 1) {
+                                        const lastPoint =
+                                          chart.series[1].points[
+                                            chart.series[1].points.length - 1
+                                          ];
+                                        if (
+                                          lastPoint &&
+                                          lastPoint.plotY &&
+                                          primaryLineEndPos
+                                        ) {
+                                          secondaryLineEndPos =
+                                            chart.plotTop + lastPoint.plotY;
+
+                                          lastPointYDiff =
+                                            primaryLineEndPos -
+                                            secondaryLineEndPos;
+                                        }
+                                      }
+                                    }
+
+                                    // loop through the series and create the last point lines and circles
+                                    chart.series.forEach(
+                                      (series, seriesIndex) => {
+                                        const lastPoint =
+                                          series.points[
+                                            series.points.length - 1
+                                          ];
+
+                                        if (!lastPoint || !lastPoint.plotY)
+                                          return;
+
+                                        // create a bordered line from the last point to the top of the chart's container
+                                        if (
+                                          seriesIndex === 0 &&
+                                          secondaryLineEndPos !== null
+                                        ) {
+                                          lastPointLines[i][
+                                            lastPointLines[i].length
+                                          ] = chart.renderer
+                                            .path(
+                                              chart.renderer.crispLine(
+                                                [
+                                                  //@ts-ignore
+                                                  "M",
+                                                  //@ts-ignore
+                                                  linesXPos,
+                                                  //@ts-ignore
+                                                  primaryLineStartPos,
+                                                  //@ts-ignore
+                                                  "L",
+                                                  //@ts-ignore
+                                                  linesXPos,
+                                                  //@ts-ignore
+                                                  chart.plotTop,
+                                                ],
+                                                1,
+                                              ),
+                                            )
+                                            .attr({
+                                              stroke:
+                                                AllChainsByKeys[series.name]
+                                                  .colors[theme ?? "dark"][0],
+                                              "stroke-width": 1,
+                                              "stroke-dasharray": 2,
+                                              zIndex:
+                                                seriesIndex === 0 ? 9997 : 9998,
+                                              rendering: "crispEdges",
+                                            })
+                                            .add();
+
+                                          lastPointLines[i][
+                                            lastPointLines[i].length
+                                          ] = chart.renderer
+                                            .path(
+                                              chart.renderer.crispLine(
+                                                [
+                                                  //@ts-ignore
+                                                  "M",
+                                                  //@ts-ignore
+                                                  linesXPos,
+                                                  //@ts-ignore
+                                                  secondaryLineStartPos,
+                                                  //@ts-ignore
+                                                  "L",
+                                                  //@ts-ignore
+                                                  linesXPos,
+                                                  //@ts-ignore
+                                                  lastPointYDiff > 0
+                                                    ? secondaryLineEndPos
+                                                    : primaryLineEndPos,
+                                                ],
+                                                1,
+                                              ),
+                                            )
+                                            .attr({
+                                              stroke:
+                                                AllChainsByKeys[series.name]
+                                                  .colors[theme ?? "dark"][0],
+                                              "stroke-width": 1,
+                                              zIndex:
+                                                seriesIndex === 0 ? 9997 : 9998,
+                                              rendering: "crispEdges",
+                                            })
+                                            .add();
+
+                                          if (lastPointYDiff > 0) {
+                                            lastPointLines[i][
+                                              lastPointLines[i].length
+                                            ] = chart.renderer
+                                              .path(
+                                                chart.renderer.crispLine(
+                                                  [
+                                                    //@ts-ignore
+                                                    "M",
+                                                    //@ts-ignore
+                                                    linesXPos,
+                                                    //@ts-ignore
+                                                    secondaryLineEndPos,
+                                                    //@ts-ignore
+                                                    "L",
+                                                    //@ts-ignore
+                                                    linesXPos,
+                                                    //@ts-ignore
+                                                    primaryLineEndPos,
+                                                  ],
+                                                  1,
+                                                ),
+                                              )
+                                              .attr({
+                                                stroke:
+                                                  AllChainsByKeys[series.name]
+                                                    .colors[theme ?? "dark"][0],
+                                                "stroke-width": 1,
+                                                "stroke-dasharray": 2,
+                                                zIndex:
+                                                  seriesIndex === 0
+                                                    ? 9997
+                                                    : 9998,
+                                                rendering: "crispEdges",
+                                              })
+                                              .add();
+                                          }
+                                        } else {
+                                          lastPointLines[i][
+                                            lastPointLines[i].length
+                                          ] = chart.renderer
+                                            .path(
+                                              chart.renderer.crispLine(
+                                                [
+                                                  //@ts-ignore
+                                                  "M",
+                                                  //@ts-ignore
+                                                  linesXPos,
+                                                  //@ts-ignore
+                                                  seriesIndex === 0
+                                                    ? primaryLineStartPos
+                                                    : secondaryLineStartPos,
+                                                  //@ts-ignore
+                                                  "L",
+                                                  //@ts-ignore
+                                                  linesXPos,
+                                                  //@ts-ignore
+                                                  seriesIndex === 0
+                                                    ? primaryLineEndPos
+                                                    : secondaryLineEndPos,
+                                                ],
+                                                1,
+                                              ),
+                                            )
+                                            .attr({
+                                              stroke:
+                                                AllChainsByKeys[series.name]
+                                                  .colors[theme ?? "dark"][0],
+                                              "stroke-width": 1,
+                                              "stroke-dasharray": 2,
+                                              zIndex:
+                                                seriesIndex === 0 ? 9997 : 9998,
+                                              rendering: "crispEdges",
+                                            })
+                                            .add();
+                                        }
+
+                                        lastPointCircles[i][seriesIndex] =
+                                          chart.renderer
+                                            .circle(
+                                              linesXPos,
+                                              chart.plotTop -
+                                                (seriesIndex === 0 ? 24 : 0),
+                                              3,
+                                            )
+                                            .attr({
+                                              fill: AllChainsByKeys[series.name]
+                                                .colors[theme ?? "dark"][0],
+
+                                              r: seriesIndex === 0 ? 4.5 : 4.5,
+                                              zIndex: 9999,
+                                              rendering: "crispEdges",
+                                            })
+                                            .add();
+                                      },
+                                    );
+
+                                    // lastPointCircles[i] =
+                                  },
+                                },
+                              },
+                              yAxis: {
+                                ...options.yAxis,
+                                // if all values are 0, set the min to 0
+                                min:
+                                  isAllZeroValues && data.length === 1
+                                    ? 0
+                                    : undefined,
+                                max:
+                                  isAllZeroValues && data.length === 1
+                                    ? 1
+                                    : undefined,
+
+                                labels: {
+                                  ...(options.yAxis as Highcharts.YAxisOptions)
+                                    .labels,
+                                  formatter: function (
+                                    t: Highcharts.AxisLabelsFormatterContextObject,
                                   ) {
-                                    lastPointLines[i][
-                                      lastPointLines[i].length
-                                    ] = chart.renderer
-                                      .path(
-                                        chart.renderer.crispLine(
-                                          [
-                                            //@ts-ignore
-                                            "M",
-                                            //@ts-ignore
-                                            linesXPos,
-                                            //@ts-ignore
-                                            primaryLineStartPos,
-                                            //@ts-ignore
-                                            "L",
-                                            //@ts-ignore
-                                            linesXPos,
-                                            //@ts-ignore
-                                            chart.plotTop,
-                                          ],
-                                          1,
-                                        ),
-                                      )
-                                      .attr({
-                                        stroke:
-                                          AllChainsByKeys[series.name].colors[
-                                            theme ?? "dark"
-                                          ][0],
-                                        "stroke-width": 1,
-                                        "stroke-dasharray": 2,
-                                        zIndex: seriesIndex === 0 ? 9997 : 9998,
-                                        rendering: "crispEdges",
-                                      })
-                                      .add();
-
-                                    lastPointLines[i][
-                                      lastPointLines[i].length
-                                    ] = chart.renderer
-                                      .path(
-                                        chart.renderer.crispLine(
-                                          [
-                                            //@ts-ignore
-                                            "M",
-                                            //@ts-ignore
-                                            linesXPos,
-                                            //@ts-ignore
-                                            secondaryLineStartPos,
-                                            //@ts-ignore
-                                            "L",
-                                            //@ts-ignore
-                                            linesXPos,
-                                            //@ts-ignore
-                                            lastPointYDiff > 0
-                                              ? secondaryLineEndPos
-                                              : primaryLineEndPos,
-                                          ],
-                                          1,
-                                        ),
-                                      )
-                                      .attr({
-                                        stroke:
-                                          AllChainsByKeys[series.name].colors[
-                                            theme ?? "dark"
-                                          ][0],
-                                        "stroke-width": 1,
-                                        zIndex: seriesIndex === 0 ? 9997 : 9998,
-                                        rendering: "crispEdges",
-                                      })
-                                      .add();
-
-                                    if (lastPointYDiff > 0) {
-                                      lastPointLines[i][
-                                        lastPointLines[i].length
-                                      ] = chart.renderer
-                                        .path(
-                                          chart.renderer.crispLine(
-                                            [
-                                              //@ts-ignore
-                                              "M",
-                                              //@ts-ignore
-                                              linesXPos,
-                                              //@ts-ignore
-                                              secondaryLineEndPos,
-                                              //@ts-ignore
-                                              "L",
-                                              //@ts-ignore
-                                              linesXPos,
-                                              //@ts-ignore
-                                              primaryLineEndPos,
-                                            ],
-                                            1,
-                                          ),
-                                        )
-                                        .attr({
-                                          stroke:
-                                            AllChainsByKeys[series.name].colors[
-                                              theme ?? "dark"
-                                            ][0],
-                                          "stroke-width": 1,
-                                          "stroke-dasharray": 2,
-                                          zIndex:
-                                            seriesIndex === 0 ? 9997 : 9998,
-                                          rendering: "crispEdges",
-                                        })
-                                        .add();
-                                    }
-                                  } else {
-                                    lastPointLines[i][
-                                      lastPointLines[i].length
-                                    ] = chart.renderer
-                                      .path(
-                                        chart.renderer.crispLine(
-                                          [
-                                            //@ts-ignore
-                                            "M",
-                                            //@ts-ignore
-                                            linesXPos,
-                                            //@ts-ignore
-                                            seriesIndex === 0
-                                              ? primaryLineStartPos
-                                              : secondaryLineStartPos,
-                                            //@ts-ignore
-                                            "L",
-                                            //@ts-ignore
-                                            linesXPos,
-                                            //@ts-ignore
-                                            seriesIndex === 0
-                                              ? primaryLineEndPos
-                                              : secondaryLineEndPos,
-                                          ],
-                                          1,
-                                        ),
-                                      )
-                                      .attr({
-                                        stroke:
-                                          AllChainsByKeys[series.name].colors[
-                                            theme ?? "dark"
-                                          ][0],
-                                        "stroke-width": 1,
-                                        "stroke-dasharray": 2,
-                                        zIndex: seriesIndex === 0 ? 9997 : 9998,
-                                        rendering: "crispEdges",
-                                      })
-                                      .add();
-                                  }
-
-                                  lastPointCircles[i][seriesIndex] =
-                                    chart.renderer
-                                      .circle(
-                                        linesXPos,
-                                        chart.plotTop -
-                                          (seriesIndex === 0 ? 24 : 0),
-                                        3,
-                                      )
-                                      .attr({
-                                        fill: AllChainsByKeys[series.name]
-                                          .colors[theme ?? "dark"][0],
-
-                                        r: seriesIndex === 0 ? 4.5 : 4.5,
-                                        zIndex: 9999,
-                                        rendering: "crispEdges",
-                                      })
-                                      .add();
-                                });
-
-                                // lastPointCircles[i] =
+                                    return formatNumber(key, t.value, true);
+                                  },
+                                },
                               },
-                            },
-                          },
-                          yAxis: {
-                            ...options.yAxis,
-                            // if all values are 0, set the min to 0
-                            min:
-                              isAllZeroValues && data.length === 1
-                                ? 0
-                                : undefined,
-                            max:
-                              isAllZeroValues && data.length === 1
-                                ? 1
-                                : undefined,
-
-                            labels: {
-                              ...(options.yAxis as Highcharts.YAxisOptions)
-                                .labels,
-                              formatter: function (
-                                t: Highcharts.AxisLabelsFormatterContextObject,
-                              ) {
-                                return formatNumber(key, t.value, true);
+                              xAxis: {
+                                ...options.xAxis,
+                                min: zoomed
+                                  ? zoomMin
+                                  : timespans[selectedTimespan].xMin,
+                                max: zoomed
+                                  ? zoomMax
+                                  : timespans[selectedTimespan].xMax,
                               },
-                            },
-                          },
-                          xAxis: {
-                            ...options.xAxis,
-                            min: zoomed
-                              ? zoomMin
-                              : timespans[selectedTimespan].xMin,
-                            max: zoomed
-                              ? zoomMax
-                              : timespans[selectedTimespan].xMax,
-                          },
-
-                          // series: data.map((item) => ({
-                          //   name: [key, item.chain_name].join("_"),
-                          //   crisp: false,
-                          //   data: item.metrics[key]?.daily.types.includes("eth")
-                          //     ? showUsd
-                          //       ? item.metrics[key].daily.data.map((d) => [
-                          //           d[0],
-                          //           d[
-                          //             item.metrics[key].daily.types.indexOf(
-                          //               "usd",
-                          //             )
-                          //           ],
-                          //         ])
-                          //       : item.metrics[key].daily.data.map((d) => [
-                          //           d[0],
-                          //           showGwei(key)
-                          //             ? d[
-                          //                 item.metrics[key].daily.types.indexOf(
-                          //                   "eth",
-                          //                 )
-                          //               ] * 1000000000
-                          //             : d[
-                          //                 item.metrics[key].daily.types.indexOf(
-                          //                   "eth",
-                          //                 )
-                          //               ],
-                          //         ])
-                          //     : item.metrics[key]?.daily.data.map((d) => [
-                          //         d[0],
-                          //         d[1],
-                          //       ]),
-                          //   showInLegend: false,
-                          //   marker: {
-                          //     enabled: false,
-                          //   },
-                          //   point: {
-                          //     events: {
-                          //       mouseOver: pointHover,
-                          //       mouseOut: pointHover,
-                          //     },
-                          //   },
-                          //   type: "area",
-                          //   lineColor:
-                          //     AllChainsByKeys[item.chain_id].colors[
-                          //       theme ?? "dark"
-                          //     ][0], // Set line color
-                          //   fillColor: {
-                          //     linearGradient: {
-                          //       x1: 0,
-                          //       y1: 0,
-                          //       x2: 0,
-                          //       y2: 1,
-                          //     },
-                          //     stops: [
-                          //       [
-                          //         0,
-                          //         AllChainsByKeys[item.chain_id].colors[
-                          //           theme
-                          //         ][0] + "33",
-                          //       ],
-                          //       [
-                          //         1,
-                          //         AllChainsByKeys[item.chain_id].colors[
-                          //           theme
-                          //         ][1] + "33",
-                          //       ],
-                          //     ],
-                          //   },
-                          //   shadow: {
-                          //     color:
-                          //       AllChainsByKeys[item.chain_id]?.colors[
-                          //         theme ?? "dark"
-                          //       ][1] + "33",
-                          //     width: 10,
-                          //   },
-                          //   borderColor:
-                          //     AllChainsByKeys[item.chain_id].colors[
-                          //       theme ?? "dark"
-                          //     ][0],
-                          //   borderWidth: 1,
-                          // })),
-                        }}
-                        ref={(chart) => {
-                          if (chart) {
-                            chartComponents.current[i] = chart.chart;
-                          }
-                        }}
-                      />
-                      <div className="absolute bottom-[48.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-40">
-                        <ChartWatermark className="w-[102.936px] h-[24.536px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
-                      </div>
-                    </div>
-                    <div className="absolute top-[14px] w-full flex justify-between items-center pl-[23px] pr-[23px]">
-                      <div className="text-[20px] leading-snug font-bold">
-                        {
-                          navigationItems[1].options.find((o) => o.key === key)
-                            ?.page?.title
-                        }
-                      </div>
-                      <div className="text-[18px] leading-snug font-medium flex space-x-[2px]">
-                        <div>{displayValues[0][key].prefix}</div>
-                        <div>{displayValues[0][key].value}</div>
-                        <div className="text-base pl-0.5">
-                          {displayValues[0][key].suffix}
+                            }}
+                            ref={(chart) => {
+                              if (chart) {
+                                chartComponents.current[i] = chart.chart;
+                              }
+                            }}
+                          />
+                          <div className="absolute bottom-[48.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-40">
+                            <ChartWatermark className="w-[102.936px] h-[24.536px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
+                          </div>
                         </div>
-                      </div>
-                      {/* <div
+                        <div className="absolute top-[14px] w-full flex justify-between items-center pl-[23px] pr-[23px]">
+                          <div className="text-[20px] leading-snug font-bold">
+                            {
+                              navigationItems[1].options.find(
+                                (o) => o.key === key,
+                              )?.page?.title
+                            }
+                          </div>
+                          <div className="text-[18px] leading-snug font-medium flex space-x-[2px]">
+                            <div>{displayValues[0][key].prefix}</div>
+                            <div>{displayValues[0][key].value}</div>
+                            <div className="text-base pl-0.5">
+                              {displayValues[0][key].suffix}
+                            </div>
+                          </div>
+                          {/* <div
                         className={`absolute -bottom-[12px] top-1/2 right-[15px] w-[5px] rounded-sm border-r border-t`}
                         style={{
                           borderColor: "#4B5563",
                         }}
                       ></div> */}
-                      {/* <div
+                          {/* <div
                         className={`absolute top-[calc(50% - 0.5px)] right-[20px] w-[4px] h-[4px] rounded-full bg-forest-900 dark:bg-forest-50`}
                       ></div> */}
-                    </div>
-                    <div className="absolute top-[41px] w-full flex justify-end items-center pl-[23px] pr-[23px] text-[#5A6462]">
-                      {displayValues[1] && displayValues[1][key] && (
-                        <div className="text-[14px] leading-snug font-medium flex space-x-[2px]">
-                          <div>{displayValues[1][key].prefix}</div>
-                          <div>{displayValues[1][key].value}</div>
-                          <div className="text-base pl-0.5">
-                            {displayValues[1][key].suffix}
-                          </div>
                         </div>
-                      )}
-                      {/* <div
+                        <div className="absolute top-[41px] w-full flex justify-end items-center pl-[23px] pr-[23px] text-[#5A6462]">
+                          {displayValues[1] && displayValues[1][key] && (
+                            <div className="text-[14px] leading-snug font-medium flex space-x-[2px]">
+                              <div>{displayValues[1][key].prefix}</div>
+                              <div>{displayValues[1][key].value}</div>
+                              <div className="text-base pl-0.5">
+                                {displayValues[1][key].suffix}
+                              </div>
+                            </div>
+                          )}
+                          {/* <div
                         className={`absolute -bottom-[12px] top-1/2 right-[15px] w-[5px] rounded-sm border-r border-t`}
                         style={{
                           borderColor: "#4B5563",
                         }}
                       ></div> */}
-                      {/* <div
+                          {/* <div
                         className={`absolute top-[calc(50% - 0.5px)] right-[20px] w-[4px] h-[4px] rounded-full bg-forest-900 dark:bg-forest-50`}
                       ></div> */}
+                        </div>
+                        {/* <div> */}
+                        <Icon
+                          icon={getNavIcon(key)}
+                          className="absolute h-[40px] w-[40px] top-[116px] left-[24px] dark:text-[#CDD8D3] opacity-20 z-0 pointer-events-none"
+                        />
+                        {/* </div> */}
+                      </div>
+                      <div className="w-full h-[15px] relative text-[10px] z-10">
+                        <div className="absolute left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
+                        <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
+                      </div>
+                      {!zoomed
+                        ? (key === "market_cap" || key === "txcosts") && (
+                            <div
+                              className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                                enabledFundamentalsKeys.length - 2 === i
+                                  ? "hidden lg:block"
+                                  : ""
+                              }`}
+                            >
+                              <div className="absolute left-[15px] align-bottom flex items-end z-10">
+                                {new Date(
+                                  timespans[selectedTimespan].xMin,
+                                ).toLocaleDateString(undefined, {
+                                  timeZone: "UTC",
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
+                              </div>
+                              <div className="absolute right-[15px] align-bottom flex items-end z-10">
+                                {new Date(
+                                  timespans[selectedTimespan].xMax,
+                                ).toLocaleDateString(undefined, {
+                                  timeZone: "UTC",
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
+                              </div>
+                            </div>
+                          )
+                        : (key === "market_cap" || key === "txcosts") &&
+                          intervalShown && (
+                            <div
+                              className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                                key === "txcosts" ? "hidden lg:block" : ""
+                              }`}
+                            >
+                              <div className="absolute left-[15px] align-bottom flex items-end z-30 ">
+                                {new Date(intervalShown.min).toLocaleDateString(
+                                  undefined,
+                                  {
+                                    timeZone: "UTC",
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  },
+                                )}
+                              </div>
+                              <div className="absolute right-[15px] align-bottom flex items-end z-30">
+                                {new Date(intervalShown.max).toLocaleDateString(
+                                  undefined,
+                                  {
+                                    timeZone: "UTC",
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  },
+                                )}
+                              </div>
+                            </div>
+                          )}
                     </div>
-                    {/* <div> */}
-                    <Icon
-                      icon={getNavIcon(key)}
-                      className="absolute h-[40px] w-[40px] top-[116px] left-[24px] dark:text-[#CDD8D3] opacity-20 z-0 pointer-events-none"
-                    />
-                    {/* </div> */}
-                  </div>
-                  <div className="w-full h-[15px] relative text-[10px] z-10">
-                    <div className="absolute left-[15px] h-[15px] border-l border-forest-500 dark:border-forest-600 pl-0.5 align-bottom flex items-end"></div>
-                    <div className="absolute right-[15px] h-[15px] border-r border-forest-500 dark:border-forest-600 pr-0.5 align-bottom flex items-end"></div>
-                  </div>
-                  {!zoomed
-                    ? (key === "market_cap" || key === "txcosts") && (
-                        <div
-                          className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
-                            enabledFundamentalsKeys.length - 2 === i
-                              ? "hidden lg:block"
-                              : ""
-                          }`}
-                        >
-                          <div className="absolute left-[15px] align-bottom flex items-end z-10">
-                            {new Date(
-                              timespans[selectedTimespan].xMin,
-                            ).toLocaleDateString(undefined, {
-                              timeZone: "UTC",
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
-                          </div>
-                          <div className="absolute right-[15px] align-bottom flex items-end z-10">
-                            {new Date(
-                              timespans[selectedTimespan].xMax,
-                            ).toLocaleDateString(undefined, {
-                              timeZone: "UTC",
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
-                          </div>
-                        </div>
-                      )
-                    : (key === "market_cap" || key === "txcosts") &&
-                      intervalShown && (
-                        <div
-                          className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
-                            key === "txcosts" ? "hidden lg:block" : ""
-                          }`}
-                        >
-                          <div className="absolute left-[15px] align-bottom flex items-end z-30 ">
-                            {new Date(intervalShown.min).toLocaleDateString(
-                              undefined,
-                              {
-                                timeZone: "UTC",
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              },
-                            )}
-                          </div>
-                          <div className="absolute right-[15px] align-bottom flex items-end z-30">
-                            {new Date(intervalShown.max).toLocaleDateString(
-                              undefined,
-                              {
-                                timeZone: "UTC",
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              },
-                            )}
-                          </div>
-                        </div>
-                      )}
-                </div>
-              );
-            })}
-        </div>
+                  );
+                })}
+            </div>
+          )}{" "}
+        </>
       )}
       {/* <div className="flex w-full justify-end mt-6 items-center">
         <Share />
