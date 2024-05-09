@@ -52,13 +52,6 @@ const Chain = ({ params }: { params: any }) => {
   const [openChainList, setOpenChainList] = useState<boolean>(false);
   const isMobile = useMediaQuery("(max-width: 767px)");
 
-  //Testing refs for overflow new chain section
-  const menuRef = useRef(null);
-  const backgroundRef = useRef(null);
-  const usageRef = useRef(null);
-  const technologyRef = useRef(null);
-  const riskRef = useRef(null);
-
   const {
     data: master,
     error: masterError,
@@ -184,7 +177,7 @@ const Chain = ({ params }: { params: any }) => {
                     height={36}
                     width={36}
                   /> */}
-                  <div className="w-9 h-9">
+                  <div className="w-9 h-9  ">
                     <Icon
                       icon={`gtp:${
                         AllChainsByKeys[chainKeys[0]].urlKey
@@ -199,7 +192,7 @@ const Chain = ({ params }: { params: any }) => {
                     />
                   </div>
                   <Heading
-                    className="text-2xl leading-snug text-[36px] break-inside-avoid"
+                    className="text-2xl leading-snug text-[36px] break-inside-avoid "
                     as="h1"
                   >
                     {master.chains[chainKeys[0]].name}
@@ -347,24 +340,18 @@ const Chain = ({ params }: { params: any }) => {
             </div>
             {(IS_DEVELOPMENT || IS_PREVIEW) && (
               <div className="relative grid sm:grid-rows-2 sm:grid-flow-col md:grid-rows-none md:grid-cols-[270px, auto, auto, auto, 131px] gap-x-[5px] gap-y-[5px] pb-[60px] overflow-hidden">
-                <div
-                  className="absolute  inset-0 pointer-events-none shadow-inner lg:hidden md:block rounded-2xl transition-all duration-500 h-[54px] "
-                  style={{
-                    boxShadow: "-20px 0px 10px rgba(21, 26, 25, 0.9) inset",
-                  }}
-                ></div>
                 <ChainSectionHead
                   title={"Menu"}
                   className=" hover:min-w-[250px] xl:min-w-[250px] min-w-[100px]  transition-all duration-500"
                 >
-                  <div className="relative h-[111px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden ">
+                  <div className="relative  h-[111px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden ">
                     <div
-                      className="absolute  inset-0 pointer-events-none shadow-inner xl:hidden lg:block rounded-2xl group-hover:hidden transition-all duration-500 "
+                      className="absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-500 "
                       style={{
-                        boxShadow: "-20px 0px 10px rgba(21, 26, 25, 0.9) inset",
+                        boxShadow: "-35px 0px 10px rgba(21, 26, 25, 0.7) inset",
                       }}
                     ></div>
-                    <div className="flex flex-col justify-between gap-y-[10px]">
+                    <div className="flex flex-col justify-between gap-y-[10px] min-w-[160px]">
                       <Link href="/chains">
                         <div className="flex items-center h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50">
                           <div className="bg-white dark:bg-forest-1000 rounded-full w-[25px] h-[25px] p-[5px]">
@@ -392,7 +379,7 @@ const Chain = ({ params }: { params: any }) => {
                         </div>
                       </Link>
                     </div>
-                    <div className="flex flex-col justify-between gap-y-[10px] flex-1">
+                    <div className="flex flex-col justify-between gap-y-[10px] flex-1 min-w-[90px]">
                       {master.chains[chainKeys[0]].rhino_listed ? (
                         <Link
                           href={
@@ -418,15 +405,15 @@ const Chain = ({ params }: { params: any }) => {
                       ) : (
                         <div></div>
                       )}
-                      <Link href="/chains">
+                      <Link href="/chains" className="group/more ">
                         <div className="flex items-center h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50">
                           <div className="w-[24px] h-[24px]">
                             <Icon
                               icon="feather:chevron-right"
-                              className="w-[24px] h-[24px]"
+                              className="w-[24px] h-[24px] group-hover/more:-rotate-90 transform transition-transform"
                             />
                           </div>
-                          <div className="text-[14px] font-semibold">More</div>
+                          <div className="text-[14px] font-semibold ">More</div>
                         </div>
                       </Link>
                     </div>
@@ -435,16 +422,16 @@ const Chain = ({ params }: { params: any }) => {
 
                 <ChainSectionHead
                   title={"Background"}
-                  className=" hover:min-w-[340px] 2xl:min-w-[340px] min-w-[100px] transition-all duration-500 overflow-hidden"
+                  className=" hover:min-w-[370px] 2xl:min-w-[370px] min-w-[100px] transition-all duration-500"
                 >
-                  <div className="relative h-[111px] flex flex-col justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] ">
+                  <div className="relative h-[111px] flex flex-col justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden ">
                     <div
-                      className="absolute  inset-0 pointer-events-none shadow-inner xl:hidden lg:block rounded-2xl group-hover:hidden transition-all duration-500 "
+                      className="absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-500 "
                       style={{
-                        boxShadow: "-20px 0px 10px rgba(21, 26, 25, 0.9) inset",
+                        boxShadow: "-35px 0px 10px rgba(21, 26, 25, 0.7) inset",
                       }}
                     ></div>
-                    <div>
+                    <div className="min-w-[370px] ">
                       <div className="text-[10px] font-semibold text-[#5A6462]">
                         Background Information
                       </div>
@@ -496,9 +483,9 @@ const Chain = ({ params }: { params: any }) => {
                 >
                   <div className="flex flex-col gap-y-[5px] overflow-hidden relative">
                     <div
-                      className="absolute  inset-0 pointer-events-none shadow-inner xl:hidden lg:block rounded-2xl group-hover:hidden transition-all duration-500 "
+                      className="absolute inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-500 "
                       style={{
-                        boxShadow: "-20px 0px 10px rgba(21, 26, 25, 0.9) inset",
+                        boxShadow: "-35px 0px 10px rgba(21, 26, 25, 0.7) inset",
                       }}
                     ></div>
                     <div className="h-[58px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]"></div>
@@ -511,12 +498,12 @@ const Chain = ({ params }: { params: any }) => {
                 >
                   <div className="relative h-[111px] flex px-[10px] py-[10px]  rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden ">
                     <div
-                      className="absolute  inset-0 pointer-events-none shadow-inner xl:hidden lg:block rounded-2xl group-hover:hidden transition-all duration-500 "
+                      className="absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-500 "
                       style={{
-                        boxShadow: "-20px 0px 10px rgba(21, 26, 25, 0.9) inset",
+                        boxShadow: "-35px 0px 10px rgba(21, 26, 25, 0.7) inset",
                       }}
                     ></div>
-                    <div className="flex flex-col w-full h-full justify-between">
+                    <div className="flex flex-col w-full h-full justify-between min-w-[90px] ">
                       <div>
                         <div className="text-[10px] font-semibold text-[#5A6462]">
                           Stack
@@ -560,9 +547,9 @@ const Chain = ({ params }: { params: any }) => {
                 >
                   <div className="relative h-[111px] flex gap-x-[10px] px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden">
                     <div
-                      className="absolute  inset-0 pointer-events-none shadow-inner xl:hidden lg:block rounded-2xl group-hover:hidden transition-all duration-500 "
+                      className="absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-500 "
                       style={{
-                        boxShadow: "-20px 0px 10px rgba(21, 26, 25, 0.9) inset",
+                        boxShadow: "-35px 0px 10px rgba(21, 26, 25, 0.7) inset",
                       }}
                     ></div>
                     <div className="flex flex-col justify-between gap-y-[10px] h-[86px] min-w-[76px]">

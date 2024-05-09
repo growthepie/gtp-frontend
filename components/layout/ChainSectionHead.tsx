@@ -24,9 +24,9 @@ const ChainSectionHead = ({
     >
       <div className="relative flex items-center gap-x-[15px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-forest-900">
         <div
-          className="absolute  inset-0 pointer-events-none shadow-inner xl:hidden lg:block rounded-2xl group-hover:hidden transition-all duration-500 "
+          className="absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-500 "
           style={{
-            boxShadow: "-20px 0px 10px rgba(21, 26, 25, 0.9) inset",
+            boxShadow: "-30px 0px 10px rgba(21, 26, 25, 0.7) inset",
           }}
         ></div>
         <div className="bg-white dark:bg-forest-1000 rounded-full w-[25px] h-[25px] p-[5px]">
