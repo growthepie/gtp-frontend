@@ -342,13 +342,13 @@ const Chain = ({ params }: { params: any }) => {
               <div className="relative grid sm:grid-rows-2 sm:grid-flow-col md:grid-rows-none md:grid-cols-[270px, auto, auto, auto, 131px] gap-x-[5px] gap-y-[5px] pb-[60px] overflow-hidden">
                 <ChainSectionHead
                   title={"Menu"}
-                  className=" hover:min-w-[250px] xl:min-w-[250px] min-w-[100px]  transition-all duration-500"
+                  className=" hover:min-w-[250px] xl:min-w-[250px] min-w-[100px]  transition-all duration-300"
                 >
                   <div className="relative  h-[111px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden ">
                     <div
-                      className="absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-500 "
+                      className="absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 "
                       style={{
-                        boxShadow: "-35px 0px 10px rgba(21, 26, 25, 0.7) inset",
+                        boxShadow: "-55px 0px 10px rgba(21, 26, 25, 0.6) inset",
                       }}
                     ></div>
                     <div className="flex flex-col justify-between gap-y-[10px] min-w-[160px]">
@@ -422,13 +422,13 @@ const Chain = ({ params }: { params: any }) => {
 
                 <ChainSectionHead
                   title={"Background"}
-                  className=" hover:min-w-[370px] 2xl:min-w-[370px] min-w-[100px] transition-all duration-500"
+                  className=" hover:min-w-[370px] 2xl:min-w-[370px] min-w-[100px] transition-all duration-300"
                 >
                   <div className="relative h-[111px] flex flex-col justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden ">
                     <div
-                      className="absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-500 "
+                      className="absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 "
                       style={{
-                        boxShadow: "-35px 0px 10px rgba(21, 26, 25, 0.7) inset",
+                        boxShadow: "-55px 0px 10px rgba(21, 26, 25, 0.6) inset",
                       }}
                     ></div>
                     <div className="min-w-[370px] ">
@@ -479,13 +479,13 @@ const Chain = ({ params }: { params: any }) => {
                 </ChainSectionHead>
                 <ChainSectionHead
                   title={"Usage"}
-                  className="hover:min-w-[130px] 2xl:min-w-[130px] min-w-[20px] transition-all duration-500"
+                  className="hover:min-w-[130px] 2xl:min-w-[130px] min-w-[20px] transition-all duration-300"
                 >
                   <div className="flex flex-col gap-y-[5px] overflow-hidden relative">
                     <div
-                      className="absolute inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-500 "
+                      className="absolute inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 "
                       style={{
-                        boxShadow: "-35px 0px 10px rgba(21, 26, 25, 0.7) inset",
+                        boxShadow: "-55px 0px 10px rgba(21, 26, 25, 0.6) inset",
                       }}
                     ></div>
                     <div className="h-[58px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]"></div>
@@ -494,16 +494,16 @@ const Chain = ({ params }: { params: any }) => {
                 </ChainSectionHead>
                 <ChainSectionHead
                   title={"Technology"}
-                  className="hover:min-w-[150px] min-w-[20px] 2xl:min-w-[150px] transition-all duration-500"
+                  className="hover:min-w-[160px] min-w-[20px] 2xl:min-w-[160px] transition-all duration-300"
                 >
                   <div className="relative h-[111px] flex px-[10px] py-[10px]  rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden ">
                     <div
-                      className="absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-500 "
+                      className="absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 "
                       style={{
-                        boxShadow: "-35px 0px 10px rgba(21, 26, 25, 0.7) inset",
+                        boxShadow: "-55px 0px 10px rgba(21, 26, 25, 0.6) inset",
                       }}
                     ></div>
-                    <div className="flex flex-col w-full h-full justify-between min-w-[90px] ">
+                    <div className="flex flex-col w-full h-full justify-between min-w-[85px] ">
                       <div>
                         <div className="text-[10px] font-semibold text-[#5A6462]">
                           Stack
@@ -543,13 +543,13 @@ const Chain = ({ params }: { params: any }) => {
                 </ChainSectionHead>
                 <ChainSectionHead
                   title={"Risk"}
-                  className="hover:min-w-[130px] 2xl:min-w-[130px] min-w-[20px] transition-all duration-500"
+                  className="hover:min-w-[130px] 2xl:min-w-[130px] min-w-[20px] transition-all duration-300"
                 >
                   <div className="relative h-[111px] flex gap-x-[10px] px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden">
                     <div
-                      className="absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-500 "
+                      className="absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 "
                       style={{
-                        boxShadow: "-35px 0px 10px rgba(21, 26, 25, 0.7) inset",
+                        boxShadow: "-55px 0px 10px rgba(21, 26, 25, 0.6) inset",
                       }}
                     ></div>
                     <div className="flex flex-col justify-between gap-y-[10px] h-[86px] min-w-[76px]">

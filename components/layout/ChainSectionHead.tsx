@@ -26,7 +26,7 @@ const ChainSectionHead = ({
         <div
           className="absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-500 "
           style={{
-            boxShadow: "-30px 0px 10px rgba(21, 26, 25, 0.7) inset",
+            boxShadow: "-50px 0px 10px rgba(21, 26, 25, 0.6) inset",
           }}
         ></div>
         <div className="bg-white dark:bg-forest-1000 rounded-full w-[25px] h-[25px] p-[5px]">
