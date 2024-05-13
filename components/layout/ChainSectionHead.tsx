@@ -10,6 +10,7 @@ const ChainSectionHead = ({
   ref,
   style,
   enableDropdown,
+  defaultDropdown,
 }: {
   title: string;
   icon?: string;
@@ -18,8 +19,11 @@ const ChainSectionHead = ({
   ref?: React.Ref<HTMLDivElement>;
   style?: React.CSSProperties;
   enableDropdown: boolean;
+  defaultDropdown?: boolean;
 }) => {
-  const [clicked, setClicked] = useState(false);
+  const [clicked, setClicked] = useState(
+    defaultDropdown !== undefined ? defaultDropdown : false,
+  );
 
   const handleClick = () => {
     setClicked(!clicked);
