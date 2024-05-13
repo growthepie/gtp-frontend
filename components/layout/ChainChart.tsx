@@ -32,8 +32,12 @@ import {
   Get_SupportedChainKeys,
 } from "@/lib/chains";
 import { debounce, forEach } from "lodash";
-
-import { navigationItems, navigationCategories } from "@/lib/navigation";
+import { Splide, SplideSlide, SplideTrack } from "@splidejs/react-splide";
+import {
+  navigationItems,
+  navigationCategories,
+  getFundamentalsByKey,
+} from "@/lib/navigation";
 import { useUIContext } from "@/contexts/UIContext";
 import { MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
@@ -1087,6 +1091,10 @@ export default function ChainChart({
     return navigationItems[1].options.map((option) => option.key ?? "");
   }, []);
 
+  // const enabledCategoryKeys = useMemo<string[]>(() => {
+  //   return
+  // })
+
   const enabledChainKeys = navigationItems[3].options
     .filter((chain) => !chain.hide)
     .map((chain) => chain.key);
@@ -1529,11 +1537,71 @@ export default function ChainChart({
         </TopRowParent>
       </TopRowContainer>
       {IS_DEVELOPMENT || IS_PREVIEW ? (
-        <div className="flex flex-col">
-          <ChainSectionHead
-            title={"Activity"}
-            enableDropdown={true}
-          ></ChainSectionHead>
+        <div className="flex flex-col gap-y-2">
+          {Object.keys(navigationCategories)
+            .filter((group) => {
+              return (
+                group !== "gtpmetrics" &&
+                group !== "public-goods-funding" &&
+                group !== "developer"
+              );
+            })
+            .map((categoryKey) => (
+              <ChainSectionHead
+                title={navigationCategories[categoryKey].label}
+                enableDropdown={true}
+                key={categoryKey}
+              >
+                <div className="wrapper h-[145px] md:h-[183px] w-full">
+                  <Splide
+                    options={{
+                      gap: "15px",
+                      autoHeight: true,
+                      width: "100%",
+                      padding: {
+                        left: isMobile ? "30px" : "50px",
+                        right: isMobile ? "30px" : "50px",
+                      },
+                      breakpoints: {
+                        640: {
+                          perPage: 1,
+                        },
+                        900: {
+                          perPage: isSidebarOpen ? 1 : 2,
+                        },
+                        1100: {
+                          perPage: 2,
+                        },
+                        1250: {
+                          perPage: isSidebarOpen ? 2 : 3,
+                        },
+                        1450: {
+                          perPage: 3,
+                        },
+                        1600: {
+                          perPage: 3,
+                        },
+                        6000: {
+                          perPage: isSidebarOpen ? 3 : 4,
+                        },
+                      },
+                    }}
+                  >
+                    <SplideTrack>
+                      {enabledFundamentalsKeys
+                        .filter((key) => {
+                          return (
+                            getFundamentalsByKey[key].category === categoryKey
+                          );
+                        })
+                        .map((key, i) => (
+                          <SplideSlide key={i}>{key}</SplideSlide>
+                        ))}
+                    </SplideTrack>
+                  </Splide>
+                </div>
+              </ChainSectionHead>
+            ))}
         </div>
       ) : (
         <>

@@ -64,7 +64,13 @@ const ChainSectionHead = ({
         </div>
         <div className="text-[20px] font-semibold overflow-hidden">{title}</div>
       </div>
-      <div className="">{children ? children : ""}</div>
+      <div
+        className={`${
+          enableDropdown ? (clicked ? "block" : "hidden") : "block"
+        }`}
+      >
+        {children ? children : ""}
+      </div>
     </div>
   );
 };

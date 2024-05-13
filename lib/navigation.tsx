@@ -40,30 +40,37 @@ export const navigationCategories = {
   activity: {
     label: "Activity",
     icon: "feather:clock",
+    group: "fundamentals",
   },
   "value-locked": {
     label: "Value Locked",
     icon: "feather:star",
+    group: "fundamentals",
   },
   economics: {
     label: "Economics",
     icon: "feather:credit-card",
+    group: "fundamentals",
   },
   developer: {
     label: "Developer",
     icon: "feather:code",
+    group: "developer",
   },
   convenience: {
     label: "Convenience",
     icon: "gtp:transaction-costs",
+    group: "fundamentals",
   },
   "public-goods-funding": {
     label: "Public Goods Funding",
     icon: "feather:sun",
+    group: "trackers",
   },
   gtpmetrics: {
     label: "More In-Depth Metrics",
     icon: "gtp:gtp-pie-monochrome",
+    group: "trackers",
   },
 };
 
@@ -664,13 +671,26 @@ export const contributorsItem: NavigationItem = {
   href: "/contributors",
 };
 
-// export const rpgfItem: NavigationItem = {
-//   name: "RPGF3 Tracker",
-//   label: "RPGF3 Tracker",
-//   icon: "gtp:optimism-logo-monochrome",
-//   options: [],
-//   href: "/optimism-retropgf-3",
-// };
+export const getFundamentalsByKey = (() => {
+  const fundamentalsByKey = {};
+
+  // Loop through each item in navigationItems
+  for (const item of navigationItems) {
+    // Check if the item is related to fundamentals
+    if (item.key === "metrics" && item.options && item.options.length > 0) {
+      // Loop through each option
+      for (const option of item.options) {
+        // Ensure option has a defined key before adding it to the fundamentalsByKey object
+        if (option.key) {
+          // Add the option to the fundamentalsByKey object with its key as the title
+          fundamentalsByKey[option.key] = option;
+        }
+      }
+    }
+  }
+
+  return fundamentalsByKey;
+})();
 
 export const apiDocsItem: NavigationItem = {
   name: "API Documentation",
