@@ -1558,6 +1558,7 @@ export default function ChainChart({
                       gap: "15px",
                       autoHeight: true,
                       width: "100%",
+                      arrows: false,
                       padding: {
                         left: isMobile ? "30px" : "50px",
                         right: isMobile ? "30px" : "50px",
@@ -1588,15 +1589,400 @@ export default function ChainChart({
                     }}
                   >
                     <SplideTrack>
-                      {enabledFundamentalsKeys
-                        .filter((key) => {
-                          return (
-                            getFundamentalsByKey[key].category === categoryKey
-                          );
-                        })
-                        .map((key, i) => (
-                          <SplideSlide key={i}>{key}</SplideSlide>
-                        ))}
+                      <div className="flex items-start relative ">
+                        {enabledFundamentalsKeys
+                          .filter((key) => {
+                            return (
+                              getFundamentalsByKey[key].category === categoryKey
+                            );
+                          })
+                          .map((key, i) => {
+                            const isAllZeroValues = data[0].metrics[
+                              key
+                            ].daily.data.every((d) => d[1] === 0);
+
+                            return (
+                              <SplideSlide key={key}>
+                                <HighchartsReact
+                                  // containerProps={{
+                                  //   className: isVisible
+                                  //     ? "w-full h-[127px]"
+                                  //     : "w-full h-[127px] hidden",
+                                  // }}
+                                  highcharts={Highcharts}
+                                  options={{
+                                    ...options,
+                                    chart: {
+                                      ...options.chart,
+                                      animation: isAnimate
+                                        ? {
+                                            duration: 500,
+                                            delay: 0,
+                                            easing: "easeOutQuint",
+                                          }
+                                        : false,
+                                      index: i,
+                                      margin: zoomed
+                                        ? zoomedMargin
+                                        : defaultMargin,
+                                      events: {
+                                        load: function () {
+                                          const chart = this;
+                                          // chart.reflow();
+                                        },
+                                        render: function () {
+                                          const chart: Highcharts.Chart = this;
+
+                                          // destroy the last point lines and circles
+                                          lastPointLines[i]?.length > 0 &&
+                                            lastPointLines[i].forEach(
+                                              (line) => {
+                                                line.destroy();
+                                              },
+                                            );
+
+                                          // destroy the last point lines and circles
+                                          lastPointCircles[i]?.length > 0 &&
+                                            lastPointCircles[i].forEach(
+                                              (circle) => {
+                                                circle.destroy();
+                                              },
+                                            );
+
+                                          // if (chart.series.length === 0) {
+                                          //   return;
+                                          // }
+
+                                          lastPointLines[i] = [];
+                                          lastPointCircles[i] = [];
+
+                                          // const lastPoints: Highcharts.Point[] =
+                                          //   chart.series.reduce<Highcharts.Point[]>(
+                                          //     (acc, s) => {
+                                          //       if (s.points.length === 0) return acc;
+
+                                          //       acc.push(s.points[s.points.length - 1]);
+
+                                          //       return acc;
+                                          //     },
+                                          //     [],
+                                          //   );
+
+                                          // console.log("lastPoints", lastPoints);
+
+                                          // calculate the fraction that 15px is in relation to the pixel width of the chart
+                                          const linesXPos =
+                                            chart.chartWidth *
+                                            (1 - 15 / chart.chartWidth);
+
+                                          let primaryLineStartPos =
+                                            chart.plotTop - 24;
+                                          let primaryLineEndPos: number | null =
+                                            null;
+
+                                          let secondaryLineStartPos =
+                                            chart.plotTop;
+                                          let secondaryLineEndPos:
+                                            | number
+                                            | null = null;
+
+                                          let lastPointYDiff = 0;
+
+                                          if (chart.series.length > 0) {
+                                            const lastPoint =
+                                              chart.series[0].points[
+                                                chart.series[0].points.length -
+                                                  1
+                                              ];
+                                            if (lastPoint && lastPoint.plotY) {
+                                              primaryLineEndPos =
+                                                chart.plotTop + lastPoint.plotY;
+                                            }
+
+                                            if (chart.series.length > 1) {
+                                              const lastPoint =
+                                                chart.series[1].points[
+                                                  chart.series[1].points
+                                                    .length - 1
+                                                ];
+                                              if (
+                                                lastPoint &&
+                                                lastPoint.plotY &&
+                                                primaryLineEndPos
+                                              ) {
+                                                secondaryLineEndPos =
+                                                  chart.plotTop +
+                                                  lastPoint.plotY;
+
+                                                lastPointYDiff =
+                                                  primaryLineEndPos -
+                                                  secondaryLineEndPos;
+                                              }
+                                            }
+                                          }
+
+                                          // loop through the series and create the last point lines and circles
+                                          chart.series.forEach(
+                                            (series, seriesIndex) => {
+                                              const lastPoint =
+                                                series.points[
+                                                  series.points.length - 1
+                                                ];
+
+                                              if (
+                                                !lastPoint ||
+                                                !lastPoint.plotY
+                                              )
+                                                return;
+
+                                              // create a bordered line from the last point to the top of the chart's container
+                                              if (
+                                                seriesIndex === 0 &&
+                                                secondaryLineEndPos !== null
+                                              ) {
+                                                lastPointLines[i][
+                                                  lastPointLines[i].length
+                                                ] = chart.renderer
+                                                  .path(
+                                                    chart.renderer.crispLine(
+                                                      [
+                                                        //@ts-ignore
+                                                        "M",
+                                                        //@ts-ignore
+                                                        linesXPos,
+                                                        //@ts-ignore
+                                                        primaryLineStartPos,
+                                                        //@ts-ignore
+                                                        "L",
+                                                        //@ts-ignore
+                                                        linesXPos,
+                                                        //@ts-ignore
+                                                        chart.plotTop,
+                                                      ],
+                                                      1,
+                                                    ),
+                                                  )
+                                                  .attr({
+                                                    stroke:
+                                                      AllChainsByKeys[
+                                                        series.name
+                                                      ].colors[
+                                                        theme ?? "dark"
+                                                      ][0],
+                                                    "stroke-width": 1,
+                                                    "stroke-dasharray": 2,
+                                                    zIndex:
+                                                      seriesIndex === 0
+                                                        ? 9997
+                                                        : 9998,
+                                                    rendering: "crispEdges",
+                                                  })
+                                                  .add();
+
+                                                lastPointLines[i][
+                                                  lastPointLines[i].length
+                                                ] = chart.renderer
+                                                  .path(
+                                                    chart.renderer.crispLine(
+                                                      [
+                                                        //@ts-ignore
+                                                        "M",
+                                                        //@ts-ignore
+                                                        linesXPos,
+                                                        //@ts-ignore
+                                                        secondaryLineStartPos,
+                                                        //@ts-ignore
+                                                        "L",
+                                                        //@ts-ignore
+                                                        linesXPos,
+                                                        //@ts-ignore
+                                                        lastPointYDiff > 0
+                                                          ? secondaryLineEndPos
+                                                          : primaryLineEndPos,
+                                                      ],
+                                                      1,
+                                                    ),
+                                                  )
+                                                  .attr({
+                                                    stroke:
+                                                      AllChainsByKeys[
+                                                        series.name
+                                                      ].colors[
+                                                        theme ?? "dark"
+                                                      ][0],
+                                                    "stroke-width": 1,
+                                                    zIndex:
+                                                      seriesIndex === 0
+                                                        ? 9997
+                                                        : 9998,
+                                                    rendering: "crispEdges",
+                                                  })
+                                                  .add();
+
+                                                if (lastPointYDiff > 0) {
+                                                  lastPointLines[i][
+                                                    lastPointLines[i].length
+                                                  ] = chart.renderer
+                                                    .path(
+                                                      chart.renderer.crispLine(
+                                                        [
+                                                          //@ts-ignore
+                                                          "M",
+                                                          //@ts-ignore
+                                                          linesXPos,
+                                                          //@ts-ignore
+                                                          secondaryLineEndPos,
+                                                          //@ts-ignore
+                                                          "L",
+                                                          //@ts-ignore
+                                                          linesXPos,
+                                                          //@ts-ignore
+                                                          primaryLineEndPos,
+                                                        ],
+                                                        1,
+                                                      ),
+                                                    )
+                                                    .attr({
+                                                      stroke:
+                                                        AllChainsByKeys[
+                                                          series.name
+                                                        ].colors[
+                                                          theme ?? "dark"
+                                                        ][0],
+                                                      "stroke-width": 1,
+                                                      "stroke-dasharray": 2,
+                                                      zIndex:
+                                                        seriesIndex === 0
+                                                          ? 9997
+                                                          : 9998,
+                                                      rendering: "crispEdges",
+                                                    })
+                                                    .add();
+                                                }
+                                              } else {
+                                                lastPointLines[i][
+                                                  lastPointLines[i].length
+                                                ] = chart.renderer
+                                                  .path(
+                                                    chart.renderer.crispLine(
+                                                      [
+                                                        //@ts-ignore
+                                                        "M",
+                                                        //@ts-ignore
+                                                        linesXPos,
+                                                        //@ts-ignore
+                                                        seriesIndex === 0
+                                                          ? primaryLineStartPos
+                                                          : secondaryLineStartPos,
+                                                        //@ts-ignore
+                                                        "L",
+                                                        //@ts-ignore
+                                                        linesXPos,
+                                                        //@ts-ignore
+                                                        seriesIndex === 0
+                                                          ? primaryLineEndPos
+                                                          : secondaryLineEndPos,
+                                                      ],
+                                                      1,
+                                                    ),
+                                                  )
+                                                  .attr({
+                                                    stroke:
+                                                      AllChainsByKeys[
+                                                        series.name
+                                                      ].colors[
+                                                        theme ?? "dark"
+                                                      ][0],
+                                                    "stroke-width": 1,
+                                                    "stroke-dasharray": 2,
+                                                    zIndex:
+                                                      seriesIndex === 0
+                                                        ? 9997
+                                                        : 9998,
+                                                    rendering: "crispEdges",
+                                                  })
+                                                  .add();
+                                              }
+
+                                              lastPointCircles[i][seriesIndex] =
+                                                chart.renderer
+                                                  .circle(
+                                                    linesXPos,
+                                                    chart.plotTop -
+                                                      (seriesIndex === 0
+                                                        ? 24
+                                                        : 0),
+                                                    3,
+                                                  )
+                                                  .attr({
+                                                    fill: AllChainsByKeys[
+                                                      series.name
+                                                    ].colors[
+                                                      theme ?? "dark"
+                                                    ][0],
+
+                                                    r:
+                                                      seriesIndex === 0
+                                                        ? 4.5
+                                                        : 4.5,
+                                                    zIndex: 9999,
+                                                    rendering: "crispEdges",
+                                                  })
+                                                  .add();
+                                            },
+                                          );
+
+                                          // lastPointCircles[i] =
+                                        },
+                                      },
+                                    },
+                                    yAxis: {
+                                      ...options.yAxis,
+                                      // if all values are 0, set the min to 0
+                                      min:
+                                        isAllZeroValues && data.length === 1
+                                          ? 0
+                                          : undefined,
+                                      max:
+                                        isAllZeroValues && data.length === 1
+                                          ? 1
+                                          : undefined,
+
+                                      labels: {
+                                        ...(
+                                          options.yAxis as Highcharts.YAxisOptions
+                                        ).labels,
+                                        formatter: function (
+                                          t: Highcharts.AxisLabelsFormatterContextObject,
+                                        ) {
+                                          return formatNumber(
+                                            key,
+                                            t.value,
+                                            true,
+                                          );
+                                        },
+                                      },
+                                    },
+                                    xAxis: {
+                                      ...options.xAxis,
+                                      min: zoomed
+                                        ? zoomMin
+                                        : timespans[selectedTimespan].xMin,
+                                      max: zoomed
+                                        ? zoomMax
+                                        : timespans[selectedTimespan].xMax,
+                                    },
+                                  }}
+                                  ref={(chart) => {
+                                    if (chart) {
+                                      chartComponents.current[i] = chart.chart;
+                                    }
+                                  }}
+                                />
+                              </SplideSlide>
+                            );
+                          })}
+                      </div>
                     </SplideTrack>
                   </Splide>
                 </div>
@@ -1734,7 +2120,7 @@ export default function ChainChart({
                   const isAllZeroValues = data[0].metrics[key].daily.data.every(
                     (d) => d[1] === 0,
                   );
-
+                  console.log("Key: " + key + ", i: " + i);
                   return (
                     <div key={key} className="w-full h-fit relative">
                       <div className="w-full h-[176px] relative">
