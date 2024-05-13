@@ -1,12 +1,14 @@
 import { IS_PRODUCTION } from "@/lib/helpers";
 import { getCookie } from "cookies-next";
 import Script from "next/script";
+import { MasterURL } from "@/lib/urls";
 
 export default function Head() {
   const consent = getCookie("growthepieCookieConsent");
 
   return (
     <>
+      <link rel="preload" href={MasterURL} as="fetch" crossorigin="anonymous" />
       <link
         rel="apple-touch-icon"
         sizes="180x180"
