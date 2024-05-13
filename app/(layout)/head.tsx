@@ -8,7 +8,7 @@ export default function Head() {
 
   return (
     <>
-      <link rel="preload" href={MasterURL} as="fetch" crossorigin="anonymous" />
+      <link rel="preload" href={MasterURL} as="fetch" crossOrigin="anonymous" />
       <link
         rel="apple-touch-icon"
         sizes="180x180"
