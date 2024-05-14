@@ -154,7 +154,7 @@ const Chain = ({ params }: { params: any }) => {
 
   if (chainKeys.length === 0) return notFound();
 
-  console.log(master ? master : "");
+  // console.log(master ? master : "");
 
   return (
     <>

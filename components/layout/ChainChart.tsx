@@ -1366,7 +1366,7 @@ export default function ChainChart({
     );
   }
 
-  console.log(getFundamentalsByKey);
+  // console.log(getFundamentalsByKey);
 
   return (
     <div className="w-full flex-col relative">
@@ -1484,21 +1484,19 @@ export default function ChainChart({
                 <div className="">None</div>
               </div>
               {
-                //   CompChains.sort((chain1, chain2) => {
-                //     const nameA = master.chains[chain1.key].name.toLowerCase();
-                //     const nameB = master.chains[chain2.key].name.toLowerCase();
+                CompChains.sort((chain1, chain2) => {
+                  const nameA = master.chains[chain1.key].name.toLowerCase();
+                  const nameB = master.chains[chain2.key].name.toLowerCase();
 
-                //     if (nameA < nameB) {
-                //       return -1;
-                //     }
-                //     if (nameA > nameB) {
-                //       return 1;
-                //     }
-                //     return 0;
-                //   }
-                // )
-                // return array of chains in in all groups
-                CompChains
+                  if (nameA < nameB) {
+                    return -1;
+                  }
+                  if (nameA > nameB) {
+                    return 1;
+                  }
+                  return 0;
+                }
+                )
                   .map((chain, index) => (
                     <div
                       className="flex pl-[21px] pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
@@ -1508,7 +1506,7 @@ export default function ChainChart({
                           updateChainKey([chainKey[0], chain.key]),
                         );
                       }}
-                      key={chain.key}
+                      key={index}
                       onMouseOver={() => {
                         preload(ChainURLs[chain.key], fetcher);
 
