@@ -21,6 +21,7 @@ const ChainSectionHead = ({
   enableDropdown: boolean;
   defaultDropdown?: boolean;
 }) => {
+
   const [clicked, setClicked] = useState(
     defaultDropdown !== undefined ? defaultDropdown : false,
   );
@@ -28,36 +29,38 @@ const ChainSectionHead = ({
   const handleClick = () => {
     setClicked(!clicked);
   };
+
   return (
     <div
       className={`flex flex-col gap-y-[5px] group ${className} `}
       ref={ref ? ref : null}
       style={style}
     >
-      <div className="relative flex items-center gap-x-[15px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-forest-900">
+      <div
+        className={`relative flex items-center gap-x-[15px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-forest-900 select-none ${enableDropdown && 'cursor-pointer'}`}
+        onClick={() => {
+          handleClick();
+        }}
+      >
         <div
-          className={`absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-500 ${
-            enableDropdown ? "hidden" : "block"
-          }`}
+          className={`absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-500 ${enableDropdown ? "hidden" : "block"
+            }`}
           style={{
             boxShadow: "-50px 0px 10px rgba(21, 26, 25, 0.5) inset",
           }}
         ></div>
         <div
-          className="bg-white dark:bg-forest-1000 rounded-full w-[25px] h-[25px] p-[5px] relative"
-          onClick={() => {
-            handleClick();
-          }}
+          className="bg-white dark:bg-forest-1000 rounded-full w-[24px] h-[24px] p-1 flex items-center justify-center relative"
+
         >
           <Icon
             icon={icon ? icon : "gtp:gtp-clock"}
-            className="w-[15px] h-[15px]"
+            className="w-[16px] h-[16px]"
           />
           <Icon
             icon={"gtp:circle-arrow"}
-            className={`w-[4px] h-[9px] absolute top-2 right-0 ${
-              enableDropdown ? "block" : "hidden"
-            }`}
+            className={`w-[4px] h-[9px] absolute top-2 right-0 ${enableDropdown ? "block" : "hidden"
+              }`}
             style={{
               transform: `rotate(${clicked ? "90deg" : "0deg"})`,
               transformOrigin: "-8px 4px",
@@ -69,9 +72,8 @@ const ChainSectionHead = ({
         <div className="text-[20px] font-semibold overflow-hidden">{title}</div>
       </div>
       <div
-        className={`${
-          enableDropdown ? (clicked ? "block" : "hidden") : "block"
-        }`}
+        className={`${enableDropdown ? (clicked ? "block" : "hidden") : "block"
+          }`}
       >
         {children ? children : ""}
       </div>

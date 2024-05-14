@@ -19,7 +19,7 @@ const CategoryComparison = () => {
     error: usageError,
     isLoading: usageLoading,
     isValidating: usageValidating,
-  } = useSWR<CategoryComparisonResponse>(BlockspaceURLs["chain-comparison"]);
+  } = useSWR<CategoryComparisonResponse>(BlockspaceURLs["category-comparison"]);
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(
     "blockspaceShowEthereumMainnet",

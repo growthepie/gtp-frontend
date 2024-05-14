@@ -37,7 +37,7 @@ export const ChainURLs = {
 
 export const BlockspaceURLs = {
   "chain-overview": "https://api.growthepie.xyz/v1/blockspace/overview.json",
-  "chain-comparison":
+  "category-comparison":
     "https://api.growthepie.xyz/v1/blockspace/category_comparison.json",
 };
 

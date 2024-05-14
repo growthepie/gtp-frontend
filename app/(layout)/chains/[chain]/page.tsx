@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import useSWR from "swr";
+import useSWR, { preload } from "swr";
 import { useSWRConfig } from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { AllChains, AllChainsByKeys, AllChainsByUrlKey } from "@/lib/chains";
@@ -181,14 +181,13 @@ const Chain = ({ params }: { params: any }) => {
                   /> */}
                   <div className="w-9 h-9  ">
                     <Icon
-                      icon={`gtp:${
-                        AllChainsByKeys[chainKeys[0]].urlKey
-                      }-logo-monochrome`}
+                      icon={`gtp:${AllChainsByKeys[chainKeys[0]].urlKey
+                        }-logo-monochrome`}
                       className="w-9 h-9"
                       style={{
                         color:
                           AllChainsByKeys[chainKeys[0]].colors[
-                            theme ?? "dark"
+                          theme ?? "dark"
                           ][1],
                       }}
                     />
@@ -202,9 +201,8 @@ const Chain = ({ params }: { params: any }) => {
                 </div>
                 <div className="hidden md:flex items-start space-x-[7px] font-inter uppercase pt-[11px] ">
                   <div
-                    className={`inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm  ${
-                      isMobile ? "ml-[0px]" : "ml-[19px]"
-                    } `}
+                    className={`inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm  ${isMobile ? "ml-[0px]" : "ml-[19px]"
+                      } `}
                   >
                     {master.chains[chainKeys[0]].technology}
                   </div>
@@ -282,9 +280,8 @@ const Chain = ({ params }: { params: any }) => {
                   <Link
                     href={
                       master.chains[chainKeys[0]].rhino_naming
-                        ? `https://app.rhino.fi/bridge?refId=PG_GrowThePie&token=ETH&chainOut=${
-                            master.chains[chainKeys[0]].rhino_naming
-                          }&chain=ETHEREUM`
+                        ? `https://app.rhino.fi/bridge?refId=PG_GrowThePie&token=ETH&chainOut=${master.chains[chainKeys[0]].rhino_naming
+                        }&chain=ETHEREUM`
                         : "https://app.rhino.fi/bridge/?refId=PG_GrowThePie"
                     }
                     className="flex p-[1px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full peer-hover:[&>div>div]:w-[0px] [&>div>div]:w-[45px] peer-hover:[&>div]:gap-x-0"
@@ -347,7 +344,7 @@ const Chain = ({ params }: { params: any }) => {
                   enableDropdown={isMobile}
                   className=" hover:min-w-[250px] xl:min-w-[250px] min-w-[100px]  transition-all duration-300"
                 >
-                  <div className="relative  h-[111px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden ">
+                  <div className="relative  h-[111px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden select-none">
                     <div
                       className="absolute z-20  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 "
                       style={{
@@ -388,9 +385,8 @@ const Chain = ({ params }: { params: any }) => {
                         <Link
                           href={
                             master.chains[chainKeys[0]].rhino_naming
-                              ? `https://app.rhino.fi/bridge?refId=PG_GrowThePie&token=ETH&chainOut=${
-                                  master.chains[chainKeys[0]].rhino_naming
-                                }&chain=ETHEREUM`
+                              ? `https://app.rhino.fi/bridge?refId=PG_GrowThePie&token=ETH&chainOut=${master.chains[chainKeys[0]].rhino_naming
+                              }&chain=ETHEREUM`
                               : "https://app.rhino.fi/bridge/?refId=PG_GrowThePie"
                           }
                         >
@@ -522,7 +518,8 @@ const Chain = ({ params }: { params: any }) => {
                           Stack
                         </div>
                         <div className="text-[10px] leading-[150%]">
-                          {master.chains[chainKeys[0]].bucket}
+
+                          {master.chains[chainKeys[0]].stack.label}
                         </div>
                       </div>
                       <div>
@@ -708,9 +705,8 @@ const Chain = ({ params }: { params: any }) => {
                 <Link
                   href={
                     master.chains[chainKeys[0]].rhino_naming
-                      ? `https://app.rhino.fi/bridge?refId=PG_GrowThePie&token=ETH&chainOut=${
-                          master.chains[chainKeys[0]].rhino_naming
-                        }&chain=ETHEREUM`
+                      ? `https://app.rhino.fi/bridge?refId=PG_GrowThePie&token=ETH&chainOut=${master.chains[chainKeys[0]].rhino_naming
+                      }&chain=ETHEREUM`
                       : "https://app.rhino.fi/bridge/?refId=PG_GrowThePie"
                   }
                   className="flex p-[1px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full peer-hover:[&>div>div]:w-[0px] [&>div>div]:w-[45px] peer-hover:[&>div]:gap-x-0"
