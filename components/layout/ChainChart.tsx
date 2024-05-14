@@ -581,6 +581,8 @@ export default function ChainChart({
           let suffix = displayValues[0][metricKey].suffix;
           let value = y;
 
+          let decimals = 0;
+
           if (!showUsd && dataTypes?.includes("eth")) {
             if (showGwei(name)) {
               prefix = "";
@@ -588,9 +590,19 @@ export default function ChainChart({
             }
           }
 
+          if (prefix) {
+            decimals = 2;
+          }
+
           if (metricKey === "throughput") {
             suffix = "Mgas/s";
+            decimals = 2;
           }
+
+          if (metricKey === "txcosts" && showUsd) {
+            decimals = 3;
+          }
+
           // if (series.name === item.chain_name) {
           return `
                 <div class="flex w-full space-x-2 items-center font-medium mb-1">
@@ -600,12 +612,8 @@ export default function ChainChart({
                       <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
             }">${prefix}</div>
                       ${parseFloat(value).toLocaleString(undefined, {
-              minimumFractionDigits: prefix ? 2 : 0,
-              maximumFractionDigits: prefix
-                ? 2
-                : metricKey === "throughput"
-                  ? 2
-                  : 0,
+              minimumFractionDigits: decimals,
+              maximumFractionDigits: decimals
             })}
                       <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
             }">${suffix}</div>
