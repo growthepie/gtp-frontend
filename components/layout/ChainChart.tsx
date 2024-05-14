@@ -52,6 +52,7 @@ import {
   TopRowChild,
   TopRowParent,
 } from "@/components/layout/TopRow";
+import "@/app/highcharts.axis.css";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -876,14 +877,15 @@ export default function ChainChart({
       min: 0,
       labels: {
         align: "left",
-        y: 11,
+        y: -4,
         x: 2,
         style: {
+          color: "#CDD8D3",
           gridLineColor:
             theme === "dark"
               ? "rgba(215, 223, 222, 0.33)"
               : "rgba(41, 51, 50, 0.33)",
-          fontSize: "10px",
+          fontSize: "8px",
         },
       },
       // gridLineColor:
@@ -1682,6 +1684,7 @@ export default function ChainChart({
                                     </div>
                                   </div>
 
+
                                   {!zoomed
                                     ? (key === "market_cap" ||
                                       key === "txcosts") && (
@@ -1724,28 +1727,16 @@ export default function ChainChart({
                                     )}
                                 </div>
                               ) : (
+
                                 <div className="absolute left-[15px] top-[15px] flex items-center justify-between w-full">
-                                  <div className="text-[16px] font-bold flex gap-x-2 items-center">
+                                  <div className="relative -top-[3px] text-[16px] font-bold flex gap-x-2 items-center">
+
                                     <div>{getFundamentalsByKey[key].label}</div>
                                     <Link
                                       href={`/fundamentals/${getFundamentalsByKey[key].urlKey}`}
                                       className="rounded-full w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] hover:cursor-pointer z-10"
                                     >
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="1em"
-                                        height="1em"
-                                        viewBox="0 0 24 24"
-                                      >
-                                        <path
-                                          fill="none"
-                                          stroke="currentColor"
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth={2}
-                                          d="M5 12h14m-7-7l7 7l-7 7"
-                                        ></path>
-                                      </svg>
+                                      <Icon icon="feather:arrow-right" className="w-[11px] h-[11px]" />
                                     </Link>
                                   </div>
                                   <div className="relative text-[18px] leading-snug font-medium flex space-x-[2px] right-[40px]">
@@ -1755,8 +1746,21 @@ export default function ChainChart({
                                       {displayValues[0][key].suffix}
                                     </div>
                                   </div>
+                                  <div className="absolute top-[27px] right-[17px] w-full flex justify-end items-center pl-[23px] pr-[23px] text-[#5A6462]">
+                                    {displayValues[1] && displayValues[1][key] && (
+                                      <div className="text-[14px] leading-snug font-medium flex space-x-[2px]">
+                                        <div>{displayValues[1][key].prefix}</div>
+                                        <div>{displayValues[1][key].value}</div>
+                                        <div className="text-base pl-0.5">
+                                          {displayValues[1][key].suffix}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+
                                 </div>
                               )}
+
                               <HighchartsReact
                                 // containerProps={{
                                 //   className: isVisible
@@ -2116,6 +2120,7 @@ export default function ChainChart({
                                       ...(
                                         options.yAxis as Highcharts.YAxisOptions
                                       ).labels,
+
                                       formatter: function (
                                         t: Highcharts.AxisLabelsFormatterContextObject,
                                       ) {
@@ -2141,7 +2146,68 @@ export default function ChainChart({
                                   }
                                 }}
                               />
+                              <div className="absolute bottom-[43.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-40">
+                                <ChartWatermark className="w-[102.936px] h-[24.536px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
+                              </div>
+                              <div className="absolute left-[7px] bottom-[5px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50 dark:bg-[#344240]">
+                                <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
+                                {zoomed && zoomMin !== null && (
+                                  <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
+                                    {new Date(zoomMin).toLocaleDateString(
+                                      undefined,
+                                      {
+                                        timeZone: "UTC",
+                                        month: "short",
+                                        // day: "numeric",
+                                        year: "numeric",
+                                      },
+                                    )}
+                                  </div>
+                                )}
+                                {!zoomed && (
+                                  <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">{
+
+                                    selectedTimespan && new Date(
+                                      timespans[selectedTimespan].xMin
+                                    ).toLocaleDateString(undefined, {
+                                      timeZone: "UTC",
+                                      month: "short",
+                                      // day: "numeric",
+                                      year: "numeric",
+                                    })
+                                  }</div>)}
+                              </div>
+                              <div className="absolute right-[9px] bottom-[5px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50 dark:bg-[#344240]">
+                                {zoomed && zoomMax !== null && (
+                                  <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
+                                    {new Date(zoomMax).toLocaleDateString(
+                                      undefined,
+                                      {
+                                        timeZone: "UTC",
+                                        month: "short",
+                                        // day: "numeric",
+                                        year: "numeric",
+                                      },
+                                    )}
+                                  </div>
+                                )}
+                                {!zoomed && (
+                                  <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">{
+                                    new Date(
+                                      timespans[selectedTimespan].xMax
+                                    ).toLocaleDateString(undefined, {
+                                      timeZone: "UTC",
+                                      month: "short",
+                                      // day: "numeric",
+                                      year: "numeric",
+                                    })
+                                  }</div>
+                                )}
+                                <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
+
+                              </div>
                             </div>
+
                           </div>
                         );
                       })}
