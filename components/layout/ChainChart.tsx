@@ -1631,7 +1631,7 @@ export default function ChainChart({
         </TopRowParent>
       </TopRowContainer>
       {IS_DEVELOPMENT || IS_PREVIEW ? (
-        <div className="flex flex-col gap-y-2">
+        <div className="flex flex-col gap-y-[15px]">
           {Object.keys(navigationCategories)
             .filter((group) => {
               return (
@@ -1647,6 +1647,13 @@ export default function ChainChart({
                 defaultDropdown={categoryKey !== "economics" ? true : false}
                 key={categoryKey}
                 icon={"gtp:" + categoryKey}
+                childrenHeight={
+                  Math.round(enabledFundamentalsKeys
+                    .filter((key) => {
+                      return (
+                        getFundamentalsByKey[key].category === categoryKey
+                      );
+                    }).length / (isMobile ? 1 : 2)) * 195}
                 rowEnd={
                   categoriesMissingData[categoryKey].length > 0 && (
                     <Tooltip placement="left" >

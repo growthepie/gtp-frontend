@@ -1,11 +1,12 @@
 "use client";
 import { Icon } from "@iconify/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const ChainSectionHead = ({
   title,
   icon,
   children,
+  childrenHeight,
   className,
   ref,
   style,
@@ -16,6 +17,7 @@ const ChainSectionHead = ({
   title: string;
   icon?: string;
   children?: React.ReactNode;
+  childrenHeight?: number;
   className?: string;
   ref?: React.Ref<HTMLDivElement>;
   style?: React.CSSProperties;
@@ -28,13 +30,31 @@ const ChainSectionHead = ({
     defaultDropdown !== undefined ? defaultDropdown : false,
   );
 
+  // can't interact with content section until dropdown is fully open
+  const [isInteractable, setIsInteractable] = useState(false);
+
   const handleClick = () => {
     setClicked(!clicked);
   };
 
+  useEffect(() => {
+    let interactTimeout: NodeJS.Timeout;
+    const handleInteract = () => {
+      interactTimeout = setTimeout(() => {
+        setIsInteractable(true);
+      }, 500);
+    };
+    handleInteract();
+
+    return () => {
+      clearTimeout(interactTimeout);
+    };
+  }, [clicked]);
+
+
   return (
     <div
-      className={`flex flex-col gap-y-[5px] group ${className} `}
+      className={`flex flex-col group ${className}`}
       ref={ref ? ref : null}
       style={style}
     >
@@ -42,6 +62,12 @@ const ChainSectionHead = ({
         className={`relative flex items-center gap-x-[15px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-[#344240] select-none ${enableDropdown && 'cursor-pointer'}`}
         onClick={() => {
           handleClick();
+          // find .highcharts-tooltip-container and remove them all
+          const chartTooltips = document.querySelectorAll(".highcharts-tooltip-container");
+          chartTooltips.forEach((tooltip) => {
+            // remove the tooltip from the DOM
+            document.body.removeChild(tooltip);
+          });
         }}
       >
         <div
@@ -68,7 +94,9 @@ const ChainSectionHead = ({
               transformOrigin: "-8px 4px",
               transition: "transform 0.5s",
             }}
-            onClick={handleClick}
+            onClick={(e) => {
+              handleClick();
+            }}
           />
         </div>
         <div className="text-[20px] font-semibold overflow-hidden">{title}</div>
@@ -76,10 +104,15 @@ const ChainSectionHead = ({
         {rowEnd ? rowEnd : null}
       </div>
       <div
-        className={`${enableDropdown ? (clicked ? "block" : "hidden") : "block"
-          }`}
+        className="overflow-clip"
+        style={{
+          maxHeight: `${clicked ? childrenHeight ? `${childrenHeight}px` : "1000px" : "0"}`,
+          transition: "all 0.4s",
+        }}
       >
-        {children ? children : ""}
+        <div className="pt-[5px]">
+          {children ? children : ""}
+        </div>
       </div>
 
     </div>
