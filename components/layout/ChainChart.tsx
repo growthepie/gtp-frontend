@@ -53,6 +53,7 @@ import {
   TopRowParent,
 } from "@/components/layout/TopRow";
 import "@/app/highcharts.axis.css";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -1349,7 +1350,7 @@ export default function ChainChart({
     updateChainKey([chainKey[0], prevChainKey]);
   };
 
-  const getNoDataMessage = (chainKey, metricKey) => {
+  const getNoDataMessage = useCallback((chainKey, metricKey) => {
     if (!master) return "";
 
     if (
@@ -1362,7 +1363,34 @@ export default function ChainChart({
       return `${master.chains[chainKey].name} does not charge Transaction Costs`;
 
     return `Data is not available for ${master.chains[chainKey].name}`;
-  };
+  }, [master]);
+
+  const categoriesMissingData = useMemo(() => {
+    // check: !Object.keys(data[0].metrics).includes(key)
+    // message: getNoDataMessage(data[0].chain_id, key)
+
+    const missingData: { [key: string]: { key: string, message: string }[] } = {};
+
+    Object.keys(navigationCategories)
+      .filter((group) => {
+        return (
+          group !== "gtpmetrics" &&
+          group !== "public-goods-funding" &&
+          group !== "developer"
+        );
+      }).forEach((category) => {
+        if (!category) return;
+
+        missingData[category] = navigationItems[1].options
+          .filter((option) => option.key && !Object.keys(data[0].metrics).includes(option.key) && option.category === category)
+          .map((option) => ({
+            key: option.key ?? "",
+            message: getNoDataMessage(data[0].chain_id, option.key),
+          }));
+      });
+
+    return missingData;
+  }, [data, getNoDataMessage]);
 
   if (!master || !data) {
     return (
@@ -1501,48 +1529,46 @@ export default function ChainChart({
                     return 1;
                   }
                   return 0;
-                }
-                )
-                  .map((chain, index) => (
-                    <div
-                      className="flex pl-[21px] pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
-                      onClick={() => {
-                        setCompareTo(false);
-                        delay(400).then(() =>
-                          updateChainKey([chainKey[0], chain.key]),
-                        );
-                      }}
-                      key={index}
-                      onMouseOver={() => {
-                        preload(ChainURLs[chain.key], fetcher);
+                }).map((chain, index) => (
+                  <div
+                    className="flex pl-[21px] pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
+                    onClick={() => {
+                      setCompareTo(false);
+                      delay(400).then(() =>
+                        updateChainKey([chainKey[0], chain.key]),
+                      );
+                    }}
+                    key={index}
+                    onMouseOver={() => {
+                      preload(ChainURLs[chain.key], fetcher);
 
-                      }}
-                    >
+                    }}
+                  >
+                    <Icon
+                      icon="feather:arrow-right-circle"
+                      className="w-6 h-6"
+                      visibility={compChain === chain.key ? "visible" : "hidden"}
+                    />
+                    <div className="flex w-[22px] h-[22px] items-center justify-center">
                       <Icon
-                        icon="feather:arrow-right-circle"
-                        className="w-6 h-6"
-                        visibility={compChain === chain.key ? "visible" : "hidden"}
+                        icon={`gtp:${chain.urlKey}-logo-monochrome`}
+                        className={`transition-all duration-300 ${compChain === chain.key
+                          ? "w-[22px] h-[22px]"
+                          : "w-[15px] h-[15px]"
+                          }`}
+                        style={{
+                          color:
+                            compChain === chain.key
+                              ? AllChainsByKeys[chain.key].colors[
+                              theme ?? "dark"
+                              ][0]
+                              : "#5A6462",
+                        }}
                       />
-                      <div className="flex w-[22px] h-[22px] items-center justify-center">
-                        <Icon
-                          icon={`gtp:${chain.urlKey}-logo-monochrome`}
-                          className={`transition-all duration-300 ${compChain === chain.key
-                            ? "w-[22px] h-[22px]"
-                            : "w-[15px] h-[15px]"
-                            }`}
-                          style={{
-                            color:
-                              compChain === chain.key
-                                ? AllChainsByKeys[chain.key].colors[
-                                theme ?? "dark"
-                                ][0]
-                                : "#5A6462",
-                          }}
-                        />
-                      </div>
-                      <div>{master.chains[chain.key].name}</div>
                     </div>
-                  ))}
+                    <div>{master.chains[chain.key].name}</div>
+                  </div>
+                ))}
             </div>
           </div>
           {compareTo && (
@@ -1621,6 +1647,24 @@ export default function ChainChart({
                 defaultDropdown={categoryKey !== "economics" ? true : false}
                 key={categoryKey}
                 icon={"gtp:" + categoryKey}
+                rowEnd={
+                  categoriesMissingData[categoryKey].length > 0 && (
+                    <Tooltip placement="left" >
+                      <TooltipTrigger>
+                        <Icon icon="feather:info" className="w-6 h-6" />
+                      </TooltipTrigger>
+                      <TooltipContent className="z-50 flex items-center justify-center">
+                        <div className="px-3 py-4 text-xs font-medium bg-forest-100 dark:bg-[#4B5553] rounded-xl shadow-lg z-50 w-auto flex flex-col items-center">
+                          {categoriesMissingData[categoryKey].map((missing) => (
+                            <div key={missing.key}>
+                              <div className="font-semibold">{getFundamentalsByKey[missing.key].label}</div>
+                              <div className="text-[0.6rem] text-forest-600 dark:text-forest-300">{missing.message}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
               >
                 <div className="wrapper h-auto w-full ">
                   <div className="grid grid-cols-1 sm:grid-cols-2  items-start relative gap-2 ">
@@ -1636,6 +1680,8 @@ export default function ChainChart({
                             (d) => d[1] === 0,
                           )
                           : false;
+
+                        if (!Object.keys(data[0].metrics).includes(key)) return null;
 
                         return (
                           <div key={key}>

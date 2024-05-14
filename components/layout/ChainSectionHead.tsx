@@ -11,6 +11,7 @@ const ChainSectionHead = ({
   style,
   enableDropdown,
   defaultDropdown,
+  rowEnd,
 }: {
   title: string;
   icon?: string;
@@ -20,6 +21,7 @@ const ChainSectionHead = ({
   style?: React.CSSProperties;
   enableDropdown: boolean;
   defaultDropdown?: boolean;
+  rowEnd?: React.ReactNode | null;
 }) => {
 
   const [clicked, setClicked] = useState(
@@ -70,6 +72,8 @@ const ChainSectionHead = ({
           />
         </div>
         <div className="text-[20px] font-semibold overflow-hidden">{title}</div>
+        <div className="flex-grow"></div>
+        {rowEnd ? rowEnd : null}
       </div>
       <div
         className={`${enableDropdown ? (clicked ? "block" : "hidden") : "block"
@@ -77,6 +81,7 @@ const ChainSectionHead = ({
       >
         {children ? children : ""}
       </div>
+
     </div>
   );
 };
