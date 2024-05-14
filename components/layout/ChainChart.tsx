@@ -180,6 +180,7 @@ export default function ChainChart({
     return {
       "90d": {
         label: "90 days",
+        shortLabel: "90d",
         value: 90,
         xMin: max - 90 * 24 * 60 * 60 * 1000,
         xMax: max,
@@ -187,6 +188,7 @@ export default function ChainChart({
       },
       "180d": {
         label: "180 days",
+        shortLabel: "180d",
         value: 180,
         xMin: max - 180 * 24 * 60 * 60 * 1000,
         xMax: max,
@@ -194,6 +196,7 @@ export default function ChainChart({
       },
       "365d": {
         label: "1 year",
+        shortLabel: "365d",
         value: 365,
         xMin: max - 365 * 24 * 60 * 60 * 1000,
         xMax: max,
@@ -201,6 +204,7 @@ export default function ChainChart({
       },
       max: {
         label: "Maximum",
+        shortLabel: "Max",
         value: 0,
         xMin: min,
         xMax: max,
@@ -1380,7 +1384,7 @@ export default function ChainChart({
         `}
       </style>
       <TopRowContainer
-        className={`mb-[15px] flex w-full justify-between gap-y-3 lg:gap-y-0 items-center text-xs bg-forest-50 dark:bg-[#1F2726] lg:z-30 flex-col-reverse rounded-t-[15px] md:rounded-t-[20px] rounded-b-[30px] p-[3px] lg:p-0 lg:flex-row lg:rounded-full lg:mb-[30px] transition-shadow duration-300  ${compareTo &&
+        className={`mb-[15px] flex w-full justify-between gap-y-3 lg:gap-y-0 items-center text-xs bg-forest-50 dark:bg-[#1F2726] lg:z-30 flex-col-reverse rounded-t-[15px] md:rounded-t-[20px] rounded-b-[30px] p-[3px] lg:p-0 lg:flex-row lg:rounded-full transition-shadow duration-300  ${compareTo &&
           "shadow-[0px_4px_4px_#00000033] dark:shadow-[0px_4px_4px_#0000003F] lg:shadow-none lg:dark:shadow-none"
           } `}
       >
@@ -1560,12 +1564,13 @@ export default function ChainChart({
                 }}
                 style={{
                   fontSize: isMobile ? "16px" : "",
-                  paddingTop: isMobile ? "10px" : "",
-                  paddingBottom: isMobile ? "10px" : "",
+                  paddingTop: isMobile ? "6px" : "",
+                  paddingBottom: isMobile ? "6px" : "",
                 }}
                 className={`py-[4px] xl:py-[13px]`}
               >
-                {timespans[timespan].label}
+                <span className="hidden sm:block">{timespans[timespan].label}</span>
+                <span className="block text-xs sm:hidden">{timespans[timespan].shortLabel}</span>
               </TopRowChild>
             ))
           ) : (
@@ -1613,6 +1618,7 @@ export default function ChainChart({
                 enableDropdown={true}
                 defaultDropdown={categoryKey !== "economics" ? true : false}
                 key={categoryKey}
+                icon={"gtp:" + categoryKey}
               >
                 <div className="wrapper h-auto w-full ">
                   <div className="grid grid-cols-1 sm:grid-cols-2  items-start relative gap-2 ">

@@ -37,7 +37,7 @@ const ChainSectionHead = ({
       style={style}
     >
       <div
-        className={`relative flex items-center gap-x-[15px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-forest-900 select-none ${enableDropdown && 'cursor-pointer'}`}
+        className={`relative flex items-center gap-x-[15px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-[#344240] select-none ${enableDropdown && 'cursor-pointer'}`}
         onClick={() => {
           handleClick();
         }}
