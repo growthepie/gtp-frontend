@@ -51,6 +51,7 @@ const ChainSectionHead = ({
     };
   }, [clicked]);
 
+  console.log(childrenHeight);
   return (
     <div
       className={`flex flex-col group ${className}`}
@@ -119,7 +120,7 @@ const ChainSectionHead = ({
                   ? `${childrenHeight}px`
                   : "1000px"
                 : "0"
-              : childrenHeight
+              : "120px"
           }`,
           transition: "all 0.4s",
         }}
