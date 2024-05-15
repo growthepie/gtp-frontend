@@ -522,9 +522,9 @@ const Chain = ({ params }: { params: any }) => {
                             </div>
                           </div>
                         </Link>
-                        <div className="absolute peer-hover:visible hover:visible invisible hover:w-[265px] group/interior py-0.5  peer-hover:w-[265px] hover:h-[104px] peer-hover:h-[104px] h-0 w-0 bg-[#151A19] hover:z-20 peer-hover:z-20 z-0 right-1 bottom-1 rounded-[15px] transition-all duration-300 shadow-lg shadow-[#151A19] ">
+                        <div className="absolute peer-hover:visible hover:visible invisible hover:w-[262px] group/interior py-0.5  peer-hover:w-[262px] hover:h-[104px] peer-hover:h-[104px] h-0 w-0 bg-[#151A19] hover:z-20 peer-hover:z-20 z-0 right-1 bottom-1 rounded-[15px] transition-all duration-300 shadow-lg shadow-[#151A19] ">
                           <div className=" flex-col peer-hover:flex group-hover/interior:flex hidden w-full ">
-                            <div className="flex items-center bg-[#1F2726] w-[99%] self-center h-[28px] rounded-full px-[14px] gap-x-[5px] mb-[5px]">
+                            <div className="flex items-center bg-[#1F2726] w-[98%] self-center h-[28px] rounded-full px-[14px] gap-x-[5px] mb-[5px]">
                               <Icon
                                 icon="feather:chevron-right"
                                 className="w-[16px] h-[16px] rotate-90 relative top-0.5 "
