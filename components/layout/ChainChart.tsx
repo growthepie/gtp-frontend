@@ -1663,7 +1663,7 @@ export default function ChainChart({
               <ChainSectionHead
                 title={navigationCategories[categoryKey].label}
                 enableDropdown={true}
-                defaultDropdown={categoryKey !== "economics" ? true : false}
+                defaultDropdown={true}
                 key={categoryKey}
                 icon={"gtp:" + categoryKey}
                 childrenHeight={

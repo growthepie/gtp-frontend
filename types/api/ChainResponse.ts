@@ -10,6 +10,10 @@ export interface ChainsData {
   explorer: string;
   metrics: Metrics;
   ranking: Object;
+  hottest_contract: {
+    data: any[][];
+    types: any[][];
+  };
 }
 export interface Metrics {
   [key: string]: MetricData;

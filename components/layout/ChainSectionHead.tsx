@@ -1,6 +1,7 @@
 "use client";
 import { Icon } from "@iconify/react";
 import { useEffect, useState } from "react";
+import { useUIContext } from "@/contexts/UIContext";
 
 const ChainSectionHead = ({
   title,
@@ -28,7 +29,7 @@ const ChainSectionHead = ({
   const [clicked, setClicked] = useState(
     defaultDropdown !== undefined ? defaultDropdown : false,
   );
-
+  const { isSidebarOpen } = useUIContext();
   // can't interact with content section until dropdown is fully open
   const [isInteractable, setIsInteractable] = useState(false);
 
@@ -57,7 +58,7 @@ const ChainSectionHead = ({
       style={style}
     >
       <div
-        className={`relative flex items-center gap-x-[15px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-[#344240] select-none ${
+        className={`relative flex items-center gap-x-[12px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-[#344240] select-none ${
           enableDropdown && "cursor-pointer"
         }`}
         onClick={() => {
@@ -73,8 +74,12 @@ const ChainSectionHead = ({
         }}
       >
         <div
-          className={`absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-500 ${
+          className={`absolute  inset-0 pointer-events-none shadow-inner rounded-2xl group-hover:opacity-0 transition-opacity duration-500 ${
             enableDropdown ? "hidden" : title === "Menu" ? "hidden" : "block"
+          } ${
+            isSidebarOpen
+              ? "2xl:opacity-0 xl:opacity-100"
+              : "xl:opacity-0 lg:opacity-100"
           }`}
           style={{
             boxShadow: "-50px 0px 10px rgba(21, 26, 25, 0.5) inset",
