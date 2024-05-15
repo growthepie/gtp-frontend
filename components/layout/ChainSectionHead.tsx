@@ -108,7 +108,13 @@ const ChainSectionHead = ({
         className="overflow-clip"
         style={{
           maxHeight: `${
-            clicked ? (childrenHeight ? `${childrenHeight}px` : "1000px") : "0"
+            enableDropdown
+              ? clicked
+                ? childrenHeight
+                  ? `${childrenHeight}px`
+                  : "1000px"
+                : "0"
+              : "auto"
           }`,
           transition: "all 0.4s",
         }}
