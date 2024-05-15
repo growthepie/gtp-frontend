@@ -676,13 +676,10 @@ export const getFundamentalsByKey = (() => {
 
   // Loop through each item in navigationItems
   for (const item of navigationItems) {
-    // Check if the item is related to fundamentals
     if (item.key === "metrics" && item.options && item.options.length > 0) {
       // Loop through each option
       for (const option of item.options) {
-        // Ensure option has a defined key before adding it to the fundamentalsByKey object
         if (option.key) {
-          // Add the option to the fundamentalsByKey object with its key as the title
           fundamentalsByKey[option.key] = option;
         }
       }

@@ -114,7 +114,7 @@ const ChainSectionHead = ({
                   ? `${childrenHeight}px`
                   : "1000px"
                 : "0"
-              : "auto"
+              : childrenHeight
           }`,
           transition: "all 0.4s",
         }}

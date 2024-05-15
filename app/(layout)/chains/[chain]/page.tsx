@@ -24,6 +24,7 @@ import {
   ChainOverviewResponse,
   Chains,
 } from "@/types/api/ChainOverviewResponse";
+import { getFundamentalsByKey } from "@/lib/navigation";
 import ChainSectionHead from "@/components/layout/ChainSectionHead";
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useSessionStorage, useLocalStorage } from "usehooks-ts";
@@ -60,8 +61,6 @@ const Chain = ({ params }: { params: any }) => {
     let retIndex = 23 - Number(pickIndex);
     return retIndex;
   }, [selectedBarIndex, hoverBarIndex]);
-
-  console.log(optIndex);
 
   const {
     data: master,
@@ -151,10 +150,17 @@ const Chain = ({ params }: { params: any }) => {
     }
   }, []);
 
+  console.log(feeData);
   const chainFeeData = useMemo(() => {
-    if (!feeData || !chain) return [];
+    if (
+      !feeData ||
+      !chain ||
+      !feeData.chain_data[String(chain).replace("-", "_")]
+    )
+      return [];
 
-    return feeData.chain_data[chain].hourly.txcosts_median.data;
+    return feeData.chain_data[String(chain).replace("-", "_")].hourly
+      .txcosts_median.data;
   }, [feeData, chain]);
 
   const [isMoreOpen, setIsMoreOpen] = useState(false);
@@ -243,6 +249,8 @@ const Chain = ({ params }: { params: any }) => {
       .toString(16)
       .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
   }, []);
+
+  console.log(chainData);
 
   if (chainKeys.length === 0) return notFound();
 
@@ -442,7 +450,7 @@ const Chain = ({ params }: { params: any }) => {
                     title={"Menu"}
                     enableDropdown={isMobile}
                     defaultDropdown={true}
-                    className=" hover:min-w-[250px] min-w-[250px]   transition-all duration-300"
+                    className=" hover:min-w-[260px] min-w-[260px]   transition-all duration-300"
                   >
                     <div className="relative  h-[111px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden select-none">
                       <div className="flex flex-col justify-between gap-y-[10px] min-w-[160px]">
@@ -522,7 +530,7 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Background"}
                     enableDropdown={isMobile}
-                    className=" hover:min-w-[370px] 2xl:min-w-[370px] min-w-[100px] transition-all duration-300"
+                    className=" hover:min-w-[450px] 2xl:min-w-[450px] min-w-[100px] transition-all duration-300"
                   >
                     <div className="relative h-[111px] flex flex-col justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden ">
                       <div
@@ -532,7 +540,7 @@ const Chain = ({ params }: { params: any }) => {
                             "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
                         }}
                       ></div>
-                      <div className="min-w-[370px] ">
+                      <div className="min-w-[450px] ">
                         <div className="text-[10px] font-semibold text-[#5A6462]">
                           Background Information
                         </div>
@@ -540,9 +548,9 @@ const Chain = ({ params }: { params: any }) => {
                           {master.chains[chainKeys[0]].description}
                         </div>
                       </div>
-                      <div className="flex gap-x-[15px] justify-between xl:max-w-fit max-w-[330px]">
+                      <div className="flex gap-x-[10px] justify-between xl:max-w-fit max-w-[330px]">
                         <div>
-                          <div className="text-[10px] font-semibold text-[#5A6462] min-w-[80px]">
+                          <div className="text-[10px] font-semibold text-[#5A6462] min-w-[70px]">
                             Launch Date
                           </div>
                           <div className="text-[10px] leading-[150%]">
@@ -558,12 +566,32 @@ const Chain = ({ params }: { params: any }) => {
                           <div className="text-[10px] font-semibold text-[#5A6462] min-w-[80px]">
                             Rankings
                           </div>
-                          <div className="text-[10px] leading-[150%]">
-                            {new Date(
-                              master.chains[chainKeys[0]].launch_date,
-                            ).toLocaleDateString(undefined, {
-                              year: "numeric",
-                              month: "long",
+                          <div className="flex gap-x-[2px]">
+                            {Object.keys(getFundamentalsByKey).map((key, i) => {
+                              return (
+                                <div
+                                  className="w-[24px] h-[24px] rounded-full flex items-center justify-center z-0"
+                                  style={{
+                                    backgroundColor: chainData[0]
+                                      ? chainData[0].ranking[key]
+                                        ? getGradientColor(
+                                            chainData[0].ranking[key]
+                                              .color_scale * 100,
+                                          )
+                                        : "#5A6462"
+                                      : "#5A6462",
+                                  }}
+                                  key={key + "rankings"}
+                                >
+                                  <Icon
+                                    icon={`gtp:${String(key).replace(
+                                      "_",
+                                      "-",
+                                    )}`}
+                                    className="w-[15px] h-[15px] z-10"
+                                  />
+                                </div>
+                              );
                             })}
                           </div>
                         </div>
@@ -581,7 +609,7 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Usage"}
                     enableDropdown={isMobile}
-                    className="hover:min-w-[220px] 2xl:min-w-[220px] min-w-[20px] transition-all duration-300"
+                    className="hover:min-w-[230px] 2xl:min-w-[230px] min-w-[20px] transition-all duration-300"
                   >
                     <div className="flex flex-col gap-y-[5px] overflow-hidden relative ">
                       <div
@@ -591,8 +619,8 @@ const Chain = ({ params }: { params: any }) => {
                             "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
                         }}
                       ></div>
-                      <div className="h-[58px] flex gap-x-[3px] pl-[3px] pr-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] min-w-[170px]">
-                        <div className="flex flex-col items-center gap-y-[0px] leading-tight pt-[9px]">
+                      <div className="h-[58px] relative flex gap-x-[3px] pl-[3px] pr-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] min-w-[170px]">
+                        <div className="flex flex-col items-center leading-tight pt-[9px]">
                           <div className="text-[14px] font-semibold w-[44px]  flex justify-center">
                             {chainFeeData[optIndex] &&
                               Intl.NumberFormat(undefined, {
@@ -607,44 +635,80 @@ const Chain = ({ params }: { params: any }) => {
                             cents
                           </div>
                         </div>
-                        <div className="relative flex items-center gap-x-[1px] ">
-                          {Array.from({ length: 24 }, (_, index) => (
-                            <div
-                              key={index.toString() + "circles"}
-                              className="h-[32px] flex items-center justify-end cursor-pointer"
-                              onMouseEnter={() => {
-                                setHoverBarIndex(index);
-                              }}
-                              onMouseLeave={() => {
-                                setHoverBarIndex(null);
-                              }}
-                              onClick={() => {
-                                setSelectedBarIndex(index);
-                              }}
-                            >
+                        <div className="flex flex-col leading-3 gap-y-[0px]">
+                          <div className="text-[10px] text-[#5A6462] font-bold">
+                            What a typical user paid for a
+                          </div>
+                          <div className="relative flex items-center gap-x-[1px]">
+                            {Array.from({ length: 24 }, (_, index) => (
                               <div
-                                className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${
-                                  selectedBarIndex === index
-                                    ? "scale-[160%]"
-                                    : hoverBarIndex === index
-                                    ? "scale-[120%] opacity-90"
-                                    : "scale-100 opacity-50"
-                                }`}
-                                style={{
-                                  backgroundColor: !chainFeeData[23 - index]
-                                    ? "gray"
-                                    : getGradientColor(
-                                        Math.floor(
-                                          chainFeeData[23 - index][3] * 100,
-                                        ),
-                                      ),
+                                key={index.toString() + "circles"}
+                                className="h-[12px] flex items-center justify-end cursor-pointer"
+                                onMouseEnter={() => {
+                                  setHoverBarIndex(index);
                                 }}
-                              ></div>
-                            </div>
-                          ))}
+                                onMouseLeave={() => {
+                                  setHoverBarIndex(null);
+                                }}
+                                onClick={() => {
+                                  setSelectedBarIndex(index);
+                                }}
+                              >
+                                <div
+                                  className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${
+                                    selectedBarIndex === index
+                                      ? "scale-[160%]"
+                                      : hoverBarIndex === index
+                                      ? "scale-[120%] opacity-90"
+                                      : "scale-100 opacity-50"
+                                  }`}
+                                  style={{
+                                    backgroundColor: !chainFeeData[23 - index]
+                                      ? "gray"
+                                      : getGradientColor(
+                                          Math.floor(
+                                            chainFeeData[23 - index][3] * 100,
+                                          ),
+                                        ),
+                                  }}
+                                ></div>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="text-[10px] font-bold ">
+                            Transaction
+                          </div>
                         </div>
+
+                        <Link
+                          href={`/fees`}
+                          className="rounded-full absolute right-2.5  w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] hover:cursor-pointer z-10"
+                        >
+                          <Icon
+                            icon="feather:arrow-right"
+                            className="w-[11px] h-[11px]"
+                          />
+                        </Link>
                       </div>
-                      <div className="h-[48px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]"></div>
+                      <div className="h-[48px] flex relative gap-x-[10px] px-[5px] py-[10px] items-center rounded-[15px] bg-forest-50 dark:bg-[#1F2726]">
+                        <div className="flex-col flex pl-[48px]">
+                          <div className="text-[10px] text-[#5A6462] font-bold ">
+                            Hottest Contract
+                          </div>
+                          <div className="text-[10px] font-bold  ">
+                            Contract name here
+                          </div>
+                        </div>
+                        <Link
+                          href={`/fees`}
+                          className="rounded-full absolute right-2.5 top-2.5  w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] hover:cursor-pointer z-10"
+                        >
+                          <Icon
+                            icon="feather:arrow-right"
+                            className="w-[11px] h-[11px]"
+                          />
+                        </Link>
+                      </div>
                     </div>
                   </ChainSectionHead>
                   <div className="flex gap-x-[1%]">
@@ -670,7 +734,7 @@ const Chain = ({ params }: { params: any }) => {
                             <div className="text-[10px] font-semibold text-[#5A6462]">
                               Stack
                             </div>
-                            <div className="text-[10px] leading-[150%]">
+                            <div className="text-[10px] leading-[150%] font-medium">
                               {master.chains[chainKeys[0]].stack.label}
                             </div>
                           </div>
@@ -678,7 +742,7 @@ const Chain = ({ params }: { params: any }) => {
                             <div className="text-[10px] font-semibold text-[#5A6462]">
                               Technology
                             </div>
-                            <div className="text-[10px] leading-[150%]">
+                            <div className="text-[10px] leading-[150%] font-medium">
                               {master.chains[chainKeys[0]].technology}
                             </div>
                           </div>
@@ -688,15 +752,15 @@ const Chain = ({ params }: { params: any }) => {
                             <div className="text-[10px] font-semibold text-[#5A6462]">
                               Data Availability
                             </div>
-                            <div className="text-[10px] leading-[150%]">
+                            <div className="text-[10px] leading-[150%] font-medium">
                               {master.chains[chainKeys[0]].da_layer}
                             </div>
                           </div>
                           <div>
-                            <div className="text-[10px] font-semibold text-[#5A6462]">
+                            <div className="text-[10px] font-semibold text-[#5A6462] ">
                               Rollup as a Service
                             </div>
-                            <div className="text-[10px] leading-[150%]">
+                            <div className="text-[10px] leading-[150%] font-medium">
                               {master.chains[chainKeys[0]].da_layer}
                             </div>
                           </div>
@@ -729,11 +793,15 @@ const Chain = ({ params }: { params: any }) => {
                               className="flex items-center justify-center font-bold text-white dark:text-forest-1000 rounded-[2px] text-[10px] leading-[120%]"
                               style={{
                                 background: getL2BeatStageColor(
-                                  master.chains[chainKeys[0]].l2beat_stage,
+                                  master.chains[chainKeys[0]].l2beat_stage
+                                    ? master.chains[chainKeys[0]].l2beat_stage
+                                    : "#344240",
                                 ),
                               }}
                             >
-                              {master.chains[chainKeys[0]].l2beat_stage}
+                              {master.chains[chainKeys[0]].l2beat_stage
+                                ? master.chains[chainKeys[0]].l2beat_stage
+                                : "N/A"}
                             </div>
                             <div className="text-[10px] leading-[150%] flex justify-center gap-x-1">
                               <div className="text-[#5A6462]">of</div>

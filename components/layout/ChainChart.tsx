@@ -157,7 +157,6 @@ export default function ChainChart({
       acc.push(...chainsByBucket[bucket]);
       return acc;
     }, []);
-
   }, [master]);
 
   const timespans = useMemo(() => {
@@ -234,7 +233,7 @@ export default function ChainChart({
       Object.keys(item.metrics).forEach((key) => {
         maxUnixtimes.push(
           item.metrics[key].daily.data[
-          item.metrics[key].daily.data.length - 1
+            item.metrics[key].daily.data.length - 1
           ][0],
         );
       });
@@ -612,17 +611,20 @@ export default function ChainChart({
           // if (series.name === item.chain_name) {
           return `
                 <div class="flex w-full space-x-2 items-center font-medium mb-1">
-                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-            }"></div>
+                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                    AllChainsByKeys[name].colors[theme ?? "dark"][0]
+                  }"></div>
                   <div class="flex-1 text-left justify-start font-inter flex">
-                      <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-            }">${prefix}</div>
+                      <div class="opacity-70 mr-0.5 ${
+                        !prefix && "hidden"
+                      }">${prefix}</div>
                       ${parseFloat(value).toLocaleString(undefined, {
-              minimumFractionDigits: decimals,
-              maximumFractionDigits: decimals
-            })}
-                      <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
+                        minimumFractionDigits: decimals,
+                        maximumFractionDigits: decimals,
+                      })}
+                      <div class="opacity-70 ml-0.5 ${
+                        !suffix && "hidden"
+                      }">${suffix}</div>
                   </div>
                 </div>`;
           // } else {
@@ -995,12 +997,12 @@ export default function ChainChart({
             [
               0,
               AllChainsByKeys[data[0].chain_id].colors[theme ?? "dark"][0] +
-              "33",
+                "33",
             ],
             [
               1,
               AllChainsByKeys[data[0].chain_id].colors[theme ?? "dark"][1] +
-              "33",
+                "33",
             ],
           ],
         },
@@ -1200,16 +1202,16 @@ export default function ChainChart({
             const seriesData = item.metrics[key]?.daily.types.includes("eth")
               ? showUsd
                 ? item.metrics[key].daily.data.map((d) => [
-                  d[0],
-                  d[item.metrics[key].daily.types.indexOf("usd")],
-                ])
+                    d[0],
+                    d[item.metrics[key].daily.types.indexOf("usd")],
+                  ])
                 : item.metrics[key].daily.data.map((d) => [
-                  d[0],
-                  showGwei(key)
-                    ? d[item.metrics[key].daily.types.indexOf("eth")] *
-                    1000000000
-                    : d[item.metrics[key].daily.types.indexOf("eth")],
-                ])
+                    d[0],
+                    showGwei(key)
+                      ? d[item.metrics[key].daily.types.indexOf("eth")] *
+                        1000000000
+                      : d[item.metrics[key].daily.types.indexOf("eth")],
+                  ])
               : item.metrics[key]?.daily.data.map((d) => [d[0], d[1]]);
 
             const seriesTypes = item.metrics[key]?.daily.types;
@@ -1232,16 +1234,16 @@ export default function ChainChart({
                 data: item.metrics[key]?.daily.types.includes("eth")
                   ? showUsd
                     ? item.metrics[key].daily.data.map((d) => [
-                      d[0],
-                      d[item.metrics[key].daily.types.indexOf("usd")],
-                    ])
+                        d[0],
+                        d[item.metrics[key].daily.types.indexOf("usd")],
+                      ])
                     : item.metrics[key].daily.data.map((d) => [
-                      d[0],
-                      showGwei(key)
-                        ? d[item.metrics[key].daily.types.indexOf("eth")] *
-                        1000000000
-                        : d[item.metrics[key].daily.types.indexOf("eth")],
-                    ])
+                        d[0],
+                        showGwei(key)
+                          ? d[item.metrics[key].daily.types.indexOf("eth")] *
+                            1000000000
+                          : d[item.metrics[key].daily.types.indexOf("eth")],
+                      ])
                   : item.metrics[key]?.daily.data.map((d) => [d[0], d[1]]),
                 showInLegend: false,
                 marker: {
@@ -1267,13 +1269,13 @@ export default function ChainChart({
                     [
                       0,
                       AllChainsByKeys[item.chain_id].colors[
-                      theme ?? "dark"
+                        theme ?? "dark"
                       ][0] + "33",
                     ],
                     [
                       1,
                       AllChainsByKeys[item.chain_id].colors[
-                      theme ?? "dark"
+                        theme ?? "dark"
                       ][1] + "33",
                     ],
                   ],
@@ -1350,26 +1352,30 @@ export default function ChainChart({
     updateChainKey([chainKey[0], prevChainKey]);
   };
 
-  const getNoDataMessage = useCallback((chainKey, metricKey) => {
-    if (!master) return "";
+  const getNoDataMessage = useCallback(
+    (chainKey, metricKey) => {
+      if (!master) return "";
 
-    if (
-      chainKey === "ethereum" &&
-      ["tvl", "rent_paid", "profit"].includes(metricKey)
-    )
+      if (
+        chainKey === "ethereum" &&
+        ["tvl", "rent_paid", "profit"].includes(metricKey)
+      )
+        return `Data is not available for ${master.chains[chainKey].name}`;
+
+      if (chainKey === "imx" && metricKey === "txcosts")
+        return `${master.chains[chainKey].name} does not charge Transaction Costs`;
+
       return `Data is not available for ${master.chains[chainKey].name}`;
-
-    if (chainKey === "imx" && metricKey === "txcosts")
-      return `${master.chains[chainKey].name} does not charge Transaction Costs`;
-
-    return `Data is not available for ${master.chains[chainKey].name}`;
-  }, [master]);
+    },
+    [master],
+  );
 
   const categoriesMissingData = useMemo(() => {
     // check: !Object.keys(data[0].metrics).includes(key)
     // message: getNoDataMessage(data[0].chain_id, key)
 
-    const missingData: { [key: string]: { key: string, message: string }[] } = {};
+    const missingData: { [key: string]: { key: string; message: string }[] } =
+      {};
 
     Object.keys(navigationCategories)
       .filter((group) => {
@@ -1378,11 +1384,17 @@ export default function ChainChart({
           group !== "public-goods-funding" &&
           group !== "developer"
         );
-      }).forEach((category) => {
+      })
+      .forEach((category) => {
         if (!category) return;
 
         missingData[category] = navigationItems[1].options
-          .filter((option) => option.key && !Object.keys(data[0].metrics).includes(option.key) && option.category === category)
+          .filter(
+            (option) =>
+              option.key &&
+              !Object.keys(data[0].metrics).includes(option.key) &&
+              option.category === category,
+          )
           .map((option) => ({
             key: option.key ?? "",
             message: getNoDataMessage(data[0].chain_id, option.key),
@@ -1400,8 +1412,6 @@ export default function ChainChart({
     );
   }
 
-  // console.log(getFundamentalsByKey);
-
   return (
     <div className="w-full flex-col relative">
       <style>
@@ -1414,16 +1424,18 @@ export default function ChainChart({
         `}
       </style>
       <TopRowContainer
-        className={`mb-[15px] flex w-full justify-between gap-y-3 lg:gap-y-0 items-center text-xs bg-forest-50 dark:bg-[#1F2726] lg:z-30 flex-col-reverse rounded-t-[15px] md:rounded-t-[20px] rounded-b-[30px] p-[3px] lg:p-0 lg:flex-row lg:rounded-full transition-shadow duration-300  ${compareTo &&
+        className={`mb-[15px] flex w-full justify-between gap-y-3 lg:gap-y-0 items-center text-xs bg-forest-50 dark:bg-[#1F2726] lg:z-30 flex-col-reverse rounded-t-[15px] md:rounded-t-[20px] rounded-b-[30px] p-[3px] lg:p-0 lg:flex-row lg:rounded-full transition-shadow duration-300  ${
+          compareTo &&
           "shadow-[0px_4px_4px_#00000033] dark:shadow-[0px_4px_4px_#0000003F] lg:shadow-none lg:dark:shadow-none"
-          } `}
+        } `}
       >
         <div className="flex flex-col relative h-full lg:h-[54px] w-full lg:w-[271px] -my-[1px]">
           <div
-            className={`relative flex rounded-full h-full w-full lg:z-30 p-[5px] cursor-pointer ${compChain
-              ? AllChainsByKeys[compChain].backgrounds[theme ?? "dark"][0]
-              : "bg-white dark:bg-[#151A19]"
-              } ${isMobile ? "w-full" : "w-[271px]"} `}
+            className={`relative flex rounded-full h-full w-full lg:z-30 p-[5px] cursor-pointer ${
+              compChain
+                ? AllChainsByKeys[compChain].backgrounds[theme ?? "dark"][0]
+                : "bg-white dark:bg-[#151A19]"
+            } ${isMobile ? "w-full" : "w-[271px]"} `}
           >
             <div
               className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
@@ -1441,26 +1453,28 @@ export default function ChainChart({
               }}
             >
               <div
-                className={` font-[500] leading-[150%] text-[12px] ${compChain
-                  ? !AllChainsByKeys[compChain].darkTextOnBackground ||
-                    (theme === "light" &&
-                      (compChain === "ethereum" || compChain === "imx"))
-                    ? "text-forest-50"
-                    : "text-[#1F2726]"
-                  : "text-forest-400 dark:text-[#5A6462]"
-                  }`}
+                className={` font-[500] leading-[150%] text-[12px] ${
+                  compChain
+                    ? !AllChainsByKeys[compChain].darkTextOnBackground ||
+                      (theme === "light" &&
+                        (compChain === "ethereum" || compChain === "imx"))
+                      ? "text-forest-50"
+                      : "text-[#1F2726]"
+                    : "text-forest-400 dark:text-[#5A6462]"
+                }`}
               >
                 Compare to
               </div>
               <div
-                className={`flex font-[550] ${compChain
-                  ? !AllChainsByKeys[compChain].darkTextOnBackground ||
-                    (theme === "light" &&
-                      (compChain === "ethereum" || compChain === "imx"))
-                    ? "text-forest-50"
-                    : "text-[#1F2726]"
-                  : ""
-                  } gap-x-[5px] justify-center items-center w-32`}
+                className={`flex font-[550] ${
+                  compChain
+                    ? !AllChainsByKeys[compChain].darkTextOnBackground ||
+                      (theme === "light" &&
+                        (compChain === "ethereum" || compChain === "imx"))
+                      ? "text-forest-50"
+                      : "text-[#1F2726]"
+                    : ""
+                } gap-x-[5px] justify-center items-center w-32`}
               >
                 {compChain && (
                   <Icon
@@ -1484,10 +1498,11 @@ export default function ChainChart({
             </div>
           </div>
           <div
-            className={`flex flex-col relative lg:absolute lg:top-[27px] bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${compareTo
-              ? `max-h-[640px] lg:z-[25] border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-2xl lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
-              : "max-h-0 z-20 overflow-hidden border-transparent rounded-b-[22px]"
-              } `}
+            className={`flex flex-col relative lg:absolute lg:top-[27px] bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${
+              compareTo
+                ? `max-h-[640px] lg:z-[25] border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-2xl lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
+                : "max-h-0 z-20 overflow-hidden border-transparent rounded-b-[22px]"
+            } `}
           >
             <div className="pb-[20px] lg:pb-[10px]">
               <div className="h-[10px] lg:h-[28px]"></div>
@@ -1506,10 +1521,11 @@ export default function ChainChart({
                 <div className="flex w-[22px] h-[22px] items-center justify-center">
                   <Icon
                     icon="feather:x"
-                    className={`transition-all duration-300 ${compChain === null
-                      ? "w-[22px] h-[22px]"
-                      : "w-[15px] h-[15px]"
-                      }`}
+                    className={`transition-all duration-300 ${
+                      compChain === null
+                        ? "w-[22px] h-[22px]"
+                        : "w-[15px] h-[15px]"
+                    }`}
                     style={{
                       color: compChain === null ? "" : "#5A6462",
                     }}
@@ -1517,58 +1533,57 @@ export default function ChainChart({
                 </div>
                 <div className="">None</div>
               </div>
-              {
-                CompChains.sort((chain1, chain2) => {
-                  const nameA = master.chains[chain1.key].name.toLowerCase();
-                  const nameB = master.chains[chain2.key].name.toLowerCase();
+              {CompChains.sort((chain1, chain2) => {
+                const nameA = master.chains[chain1.key].name.toLowerCase();
+                const nameB = master.chains[chain2.key].name.toLowerCase();
 
-                  if (nameA < nameB) {
-                    return -1;
-                  }
-                  if (nameA > nameB) {
-                    return 1;
-                  }
-                  return 0;
-                }).map((chain, index) => (
-                  <div
-                    className="flex pl-[21px] pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
-                    onClick={() => {
-                      setCompareTo(false);
-                      delay(400).then(() =>
-                        updateChainKey([chainKey[0], chain.key]),
-                      );
-                    }}
-                    key={index}
-                    onMouseOver={() => {
-                      preload(ChainURLs[chain.key], fetcher);
-
-                    }}
-                  >
+                if (nameA < nameB) {
+                  return -1;
+                }
+                if (nameA > nameB) {
+                  return 1;
+                }
+                return 0;
+              }).map((chain, index) => (
+                <div
+                  className="flex pl-[21px] pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
+                  onClick={() => {
+                    setCompareTo(false);
+                    delay(400).then(() =>
+                      updateChainKey([chainKey[0], chain.key]),
+                    );
+                  }}
+                  key={index}
+                  onMouseOver={() => {
+                    preload(ChainURLs[chain.key], fetcher);
+                  }}
+                >
+                  <Icon
+                    icon="feather:arrow-right-circle"
+                    className="w-6 h-6"
+                    visibility={compChain === chain.key ? "visible" : "hidden"}
+                  />
+                  <div className="flex w-[22px] h-[22px] items-center justify-center">
                     <Icon
-                      icon="feather:arrow-right-circle"
-                      className="w-6 h-6"
-                      visibility={compChain === chain.key ? "visible" : "hidden"}
-                    />
-                    <div className="flex w-[22px] h-[22px] items-center justify-center">
-                      <Icon
-                        icon={`gtp:${chain.urlKey}-logo-monochrome`}
-                        className={`transition-all duration-300 ${compChain === chain.key
+                      icon={`gtp:${chain.urlKey}-logo-monochrome`}
+                      className={`transition-all duration-300 ${
+                        compChain === chain.key
                           ? "w-[22px] h-[22px]"
                           : "w-[15px] h-[15px]"
-                          }`}
-                        style={{
-                          color:
-                            compChain === chain.key
-                              ? AllChainsByKeys[chain.key].colors[
-                              theme ?? "dark"
+                      }`}
+                      style={{
+                        color:
+                          compChain === chain.key
+                            ? AllChainsByKeys[chain.key].colors[
+                                theme ?? "dark"
                               ][0]
-                              : "#5A6462",
-                        }}
-                      />
-                    </div>
-                    <div>{master.chains[chain.key].name}</div>
+                            : "#5A6462",
+                      }}
+                    />
                   </div>
-                ))}
+                  <div>{master.chains[chain.key].name}</div>
+                </div>
+              ))}
             </div>
           </div>
           {compareTo && (
@@ -1597,8 +1612,12 @@ export default function ChainChart({
                 }}
                 className={`py-[4px] xl:py-[13px]`}
               >
-                <span className="hidden sm:block">{timespans[timespan].label}</span>
-                <span className="block text-xs sm:hidden">{timespans[timespan].shortLabel}</span>
+                <span className="hidden sm:block">
+                  {timespans[timespan].label}
+                </span>
+                <span className="block text-xs sm:hidden">
+                  {timespans[timespan].shortLabel}
+                </span>
               </TopRowChild>
             ))
           ) : (
@@ -1648,15 +1667,15 @@ export default function ChainChart({
                 key={categoryKey}
                 icon={"gtp:" + categoryKey}
                 childrenHeight={
-                  Math.round(enabledFundamentalsKeys
-                    .filter((key) => {
-                      return (
-                        getFundamentalsByKey[key].category === categoryKey
-                      );
-                    }).length / (isMobile ? 1 : 2)) * 195}
+                  Math.round(
+                    enabledFundamentalsKeys.filter((key) => {
+                      return getFundamentalsByKey[key].category === categoryKey;
+                    }).length / (isMobile ? 1 : 2),
+                  ) * 195
+                }
                 rowEnd={
                   categoriesMissingData[categoryKey].length > 0 && (
-                    <Tooltip placement="left" >
+                    <Tooltip placement="left">
                       <TooltipTrigger>
                         <Icon icon="feather:info" className="w-6 h-6" />
                       </TooltipTrigger>
@@ -1664,14 +1683,19 @@ export default function ChainChart({
                         <div className="px-3 py-4 text-xs font-medium bg-forest-100 dark:bg-[#4B5553] rounded-xl shadow-lg z-50 w-auto flex flex-col items-center">
                           {categoriesMissingData[categoryKey].map((missing) => (
                             <div key={missing.key}>
-                              <div className="font-semibold">{getFundamentalsByKey[missing.key].label}</div>
-                              <div className="text-[0.6rem] text-forest-600 dark:text-forest-300">{missing.message}</div>
+                              <div className="font-semibold">
+                                {getFundamentalsByKey[missing.key].label}
+                              </div>
+                              <div className="text-[0.6rem] text-forest-600 dark:text-forest-300">
+                                {missing.message}
+                              </div>
                             </div>
                           ))}
                         </div>
                       </TooltipContent>
                     </Tooltip>
-                  )}
+                  )
+                }
               >
                 <div className="wrapper h-auto w-full ">
                   <div className="grid grid-cols-1 sm:grid-cols-2  items-start relative gap-2 ">
@@ -1684,11 +1708,12 @@ export default function ChainChart({
                       .map((key, i) => {
                         const isAllZeroValues = data[0].metrics[key]
                           ? data[0].metrics[key].daily.data.every(
-                            (d) => d[1] === 0,
-                          )
+                              (d) => d[1] === 0,
+                            )
                           : false;
 
-                        if (!Object.keys(data[0].metrics).includes(key)) return null;
+                        if (!Object.keys(data[0].metrics).includes(key))
+                          return null;
 
                         return (
                           <div key={key}>
@@ -1729,67 +1754,69 @@ export default function ChainChart({
                                       {Object.keys(data[0].metrics).includes(
                                         key,
                                       ) && (
-                                          <Icon
-                                            icon={getNavIcon(key)}
-                                            className="absolute h-[40px] w-[40px] top-[116px] left-[24px] dark:text-[#CDD8D3] opacity-20 pointer-events-none"
-                                          />
-                                        )}
+                                        <Icon
+                                          icon={getNavIcon(key)}
+                                          className="absolute h-[40px] w-[40px] top-[116px] left-[24px] dark:text-[#CDD8D3] opacity-20 pointer-events-none"
+                                        />
+                                      )}
                                     </div>
                                   </div>
 
-
                                   {!zoomed
                                     ? (key === "market_cap" ||
-                                      key === "txcosts") && (
-                                      <div
-                                        className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${key === "txcosts"
-                                          ? "hidden lg:block"
-                                          : ""
+                                        key === "txcosts") && (
+                                        <div
+                                          className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                                            key === "txcosts"
+                                              ? "hidden lg:block"
+                                              : ""
                                           }`}
-                                      ></div>
-                                    )
+                                        ></div>
+                                      )
                                     : (key === "profit" || key === "txcosts") &&
-                                    intervalShown && (
-                                      <div
-                                        className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${key === "txcosts"
-                                          ? "hidden lg:block"
-                                          : ""
+                                      intervalShown && (
+                                        <div
+                                          className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                                            key === "txcosts"
+                                              ? "hidden lg:block"
+                                              : ""
                                           }`}
-                                      >
-                                        <div className="absolute left-[15px] align-bottom flex items-end z-10">
-                                          {new Date(
-                                            intervalShown.min,
-                                          ).toLocaleDateString(undefined, {
-                                            timeZone: "UTC",
-                                            month: "short",
-                                            day: "numeric",
-                                            year: "numeric",
-                                          })}
+                                        >
+                                          <div className="absolute left-[15px] align-bottom flex items-end z-10">
+                                            {new Date(
+                                              intervalShown.min,
+                                            ).toLocaleDateString(undefined, {
+                                              timeZone: "UTC",
+                                              month: "short",
+                                              day: "numeric",
+                                              year: "numeric",
+                                            })}
+                                          </div>
+                                          <div className="absolute right-[15px] align-bottom flex items-end z-10">
+                                            {new Date(
+                                              intervalShown.max,
+                                            ).toLocaleDateString(undefined, {
+                                              timeZone: "UTC",
+                                              month: "short",
+                                              day: "numeric",
+                                              year: "numeric",
+                                            })}
+                                          </div>
                                         </div>
-                                        <div className="absolute right-[15px] align-bottom flex items-end z-10">
-                                          {new Date(
-                                            intervalShown.max,
-                                          ).toLocaleDateString(undefined, {
-                                            timeZone: "UTC",
-                                            month: "short",
-                                            day: "numeric",
-                                            year: "numeric",
-                                          })}
-                                        </div>
-                                      </div>
-                                    )}
+                                      )}
                                 </div>
                               ) : (
-
                                 <div className="absolute left-[15px] top-[15px] flex items-center justify-between w-full">
                                   <div className="relative -top-[3px] text-[16px] font-bold flex gap-x-2 items-center">
-
                                     <div>{getFundamentalsByKey[key].label}</div>
                                     <Link
                                       href={`/fundamentals/${getFundamentalsByKey[key].urlKey}`}
                                       className="rounded-full w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] hover:cursor-pointer z-10"
                                     >
-                                      <Icon icon="feather:arrow-right" className="w-[11px] h-[11px]" />
+                                      <Icon
+                                        icon="feather:arrow-right"
+                                        className="w-[11px] h-[11px]"
+                                      />
                                     </Link>
                                   </div>
                                   <div className="relative text-[18px] leading-snug font-medium flex space-x-[2px] right-[40px]">
@@ -1800,17 +1827,21 @@ export default function ChainChart({
                                     </div>
                                   </div>
                                   <div className="absolute top-[27px] right-[17px] w-full flex justify-end items-center pl-[23px] pr-[23px] text-[#5A6462]">
-                                    {displayValues[1] && displayValues[1][key] && (
-                                      <div className="text-[14px] leading-snug font-medium flex space-x-[2px]">
-                                        <div>{displayValues[1][key].prefix}</div>
-                                        <div>{displayValues[1][key].value}</div>
-                                        <div className="text-base pl-0.5">
-                                          {displayValues[1][key].suffix}
+                                    {displayValues[1] &&
+                                      displayValues[1][key] && (
+                                        <div className="text-[14px] leading-snug font-medium flex space-x-[2px]">
+                                          <div>
+                                            {displayValues[1][key].prefix}
+                                          </div>
+                                          <div>
+                                            {displayValues[1][key].value}
+                                          </div>
+                                          <div className="text-base pl-0.5">
+                                            {displayValues[1][key].suffix}
+                                          </div>
                                         </div>
-                                      </div>
-                                    )}
+                                      )}
                                   </div>
-
                                 </div>
                               )}
 
@@ -1827,10 +1858,10 @@ export default function ChainChart({
                                     ...options.chart,
                                     animation: isAnimate
                                       ? {
-                                        duration: 500,
-                                        delay: 0,
-                                        easing: "easeOutQuint",
-                                      }
+                                          duration: 500,
+                                          delay: 0,
+                                          easing: "easeOutQuint",
+                                        }
                                       : false,
                                     index: enabledFundamentalsKeys.indexOf(key),
                                     margin: zoomed
@@ -1891,7 +1922,7 @@ export default function ChainChart({
                                         if (chart.series.length > 0) {
                                           const lastPoint =
                                             chart.series[0].points[
-                                            chart.series[0].points.length - 1
+                                              chart.series[0].points.length - 1
                                             ];
                                           if (lastPoint && lastPoint.plotY) {
                                             primaryLineEndPos =
@@ -1901,8 +1932,8 @@ export default function ChainChart({
                                           if (chart.series.length > 1) {
                                             const lastPoint =
                                               chart.series[1].points[
-                                              chart.series[1].points.length -
-                                              1
+                                                chart.series[1].points.length -
+                                                  1
                                               ];
                                             if (
                                               lastPoint &&
@@ -1924,7 +1955,7 @@ export default function ChainChart({
                                           (series, seriesIndex) => {
                                             const lastPoint =
                                               series.points[
-                                              series.points.length - 1
+                                                series.points.length - 1
                                               ];
 
                                             if (!lastPoint || !lastPoint.plotY)
@@ -1969,7 +2000,7 @@ export default function ChainChart({
                                                   stroke:
                                                     AllChainsByKeys[series.name]
                                                       .colors[
-                                                    theme ?? "dark"
+                                                      theme ?? "dark"
                                                     ][0],
                                                   "stroke-width": 1,
                                                   "stroke-dasharray": 2,
@@ -2017,7 +2048,7 @@ export default function ChainChart({
                                                   stroke:
                                                     AllChainsByKeys[series.name]
                                                       .colors[
-                                                    theme ?? "dark"
+                                                      theme ?? "dark"
                                                     ][0],
                                                   "stroke-width": 1,
                                                   zIndex:
@@ -2064,7 +2095,7 @@ export default function ChainChart({
                                                       AllChainsByKeys[
                                                         series.name
                                                       ].colors[
-                                                      theme ?? "dark"
+                                                        theme ?? "dark"
                                                       ][0],
                                                     "stroke-width": 1,
                                                     "stroke-dasharray": 2,
@@ -2115,7 +2146,7 @@ export default function ChainChart({
                                                   stroke:
                                                     AllChainsByKeys[series.name]
                                                       .colors[
-                                                    theme ?? "dark"
+                                                      theme ?? "dark"
                                                     ][0],
                                                   "stroke-width": 1,
                                                   "stroke-dasharray": 2,
@@ -2136,7 +2167,7 @@ export default function ChainChart({
                                               .circle(
                                                 linesXPos,
                                                 chart.plotTop -
-                                                (seriesIndex === 0 ? 24 : 0),
+                                                  (seriesIndex === 0 ? 24 : 0),
                                                 3,
                                               )
                                               .attr({
@@ -2218,17 +2249,18 @@ export default function ChainChart({
                                   </div>
                                 )}
                                 {!zoomed && (
-                                  <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">{
-
-                                    selectedTimespan && new Date(
-                                      timespans[selectedTimespan].xMin
-                                    ).toLocaleDateString(undefined, {
-                                      timeZone: "UTC",
-                                      month: "short",
-                                      // day: "numeric",
-                                      year: "numeric",
-                                    })
-                                  }</div>)}
+                                  <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
+                                    {selectedTimespan &&
+                                      new Date(
+                                        timespans[selectedTimespan].xMin,
+                                      ).toLocaleDateString(undefined, {
+                                        timeZone: "UTC",
+                                        month: "short",
+                                        // day: "numeric",
+                                        year: "numeric",
+                                      })}
+                                  </div>
+                                )}
                               </div>
                               <div className="absolute right-[9px] bottom-[5px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50 dark:bg-[#344240]">
                                 {zoomed && zoomMax !== null && (
@@ -2245,22 +2277,20 @@ export default function ChainChart({
                                   </div>
                                 )}
                                 {!zoomed && (
-                                  <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">{
-                                    new Date(
-                                      timespans[selectedTimespan].xMax
+                                  <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
+                                    {new Date(
+                                      timespans[selectedTimespan].xMax,
                                     ).toLocaleDateString(undefined, {
                                       timeZone: "UTC",
                                       month: "short",
                                       // day: "numeric",
                                       year: "numeric",
-                                    })
-                                  }</div>
+                                    })}
+                                  </div>
                                 )}
                                 <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
-
                               </div>
                             </div>
-
                           </div>
                         );
                       })}
@@ -2275,9 +2305,9 @@ export default function ChainChart({
             <div
               id="content-container"
               className={`grid grid-rows-8 lg:grid-rows-4 lg:grid-cols-2 lg:grid-flow-row gap-y-0 gap-x-[15px] `}
-            // style={{
-            //   gridRow: `span ${Math.ceil(enabledFundamentalsKeys.length / 2)}`,
-            // }}
+              // style={{
+              //   gridRow: `span ${Math.ceil(enabledFundamentalsKeys.length / 2)}`,
+              // }}
             >
               {enabledFundamentalsKeys
                 // .filter((key) => enabledFundamentalsKeys.includes(key))
@@ -2337,60 +2367,62 @@ export default function ChainChart({
                         </div>
                         {!zoomed
                           ? (key === "market_cap" || key === "txcosts") && (
-                            <div
-                              className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${key === "txcosts" ? "hidden lg:block" : ""
+                              <div
+                                className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                                  key === "txcosts" ? "hidden lg:block" : ""
                                 }`}
-                            >
-                              <div className="absolute left-[15px] align-bottom flex items-end z-30">
-                                {new Date(
-                                  timespans[selectedTimespan].xMin,
-                                ).toLocaleDateString(undefined, {
-                                  timeZone: "UTC",
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })}
+                              >
+                                <div className="absolute left-[15px] align-bottom flex items-end z-30">
+                                  {new Date(
+                                    timespans[selectedTimespan].xMin,
+                                  ).toLocaleDateString(undefined, {
+                                    timeZone: "UTC",
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </div>
+                                <div className="absolute right-[15px] align-bottom flex items-end z-30">
+                                  {new Date(
+                                    timespans[selectedTimespan].xMax,
+                                  ).toLocaleDateString(undefined, {
+                                    timeZone: "UTC",
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </div>
                               </div>
-                              <div className="absolute right-[15px] align-bottom flex items-end z-30">
-                                {new Date(
-                                  timespans[selectedTimespan].xMax,
-                                ).toLocaleDateString(undefined, {
-                                  timeZone: "UTC",
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })}
-                              </div>
-                            </div>
-                          )
+                            )
                           : (key === "profit" || key === "txcosts") &&
-                          intervalShown && (
-                            <div
-                              className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${key === "txcosts" ? "hidden lg:block" : ""
+                            intervalShown && (
+                              <div
+                                className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                                  key === "txcosts" ? "hidden lg:block" : ""
                                 }`}
-                            >
-                              <div className="absolute left-[15px] align-bottom flex items-end z-10">
-                                {new Date(
-                                  intervalShown.min,
-                                ).toLocaleDateString(undefined, {
-                                  timeZone: "UTC",
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })}
+                              >
+                                <div className="absolute left-[15px] align-bottom flex items-end z-10">
+                                  {new Date(
+                                    intervalShown.min,
+                                  ).toLocaleDateString(undefined, {
+                                    timeZone: "UTC",
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </div>
+                                <div className="absolute right-[15px] align-bottom flex items-end z-10">
+                                  {new Date(
+                                    intervalShown.max,
+                                  ).toLocaleDateString(undefined, {
+                                    timeZone: "UTC",
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </div>
                               </div>
-                              <div className="absolute right-[15px] align-bottom flex items-end z-10">
-                                {new Date(
-                                  intervalShown.max,
-                                ).toLocaleDateString(undefined, {
-                                  timeZone: "UTC",
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })}
-                              </div>
-                            </div>
-                          )}
+                            )}
                       </div>
                     );
                   }
@@ -2417,10 +2449,10 @@ export default function ChainChart({
                                 ...options.chart,
                                 animation: isAnimate
                                   ? {
-                                    duration: 500,
-                                    delay: 0,
-                                    easing: "easeOutQuint",
-                                  }
+                                      duration: 500,
+                                      delay: 0,
+                                      easing: "easeOutQuint",
+                                    }
                                   : false,
                                 index: i,
                                 margin: zoomed ? zoomedMargin : defaultMargin,
@@ -2483,7 +2515,7 @@ export default function ChainChart({
                                     if (chart.series.length > 0) {
                                       const lastPoint =
                                         chart.series[0].points[
-                                        chart.series[0].points.length - 1
+                                          chart.series[0].points.length - 1
                                         ];
                                       if (lastPoint && lastPoint.plotY) {
                                         primaryLineEndPos =
@@ -2493,7 +2525,7 @@ export default function ChainChart({
                                       if (chart.series.length > 1) {
                                         const lastPoint =
                                           chart.series[1].points[
-                                          chart.series[1].points.length - 1
+                                            chart.series[1].points.length - 1
                                           ];
                                         if (
                                           lastPoint &&
@@ -2515,7 +2547,7 @@ export default function ChainChart({
                                       (series, seriesIndex) => {
                                         const lastPoint =
                                           series.points[
-                                          series.points.length - 1
+                                            series.points.length - 1
                                           ];
 
                                         if (!lastPoint || !lastPoint.plotY)
@@ -2677,7 +2709,7 @@ export default function ChainChart({
                                             .circle(
                                               linesXPos,
                                               chart.plotTop -
-                                              (seriesIndex === 0 ? 24 : 0),
+                                                (seriesIndex === 0 ? 24 : 0),
                                               3,
                                             )
                                             .attr({
@@ -2796,64 +2828,66 @@ export default function ChainChart({
                       </div>
                       {!zoomed
                         ? (key === "market_cap" || key === "txcosts") && (
-                          <div
-                            className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${enabledFundamentalsKeys.length - 2 === i
-                              ? "hidden lg:block"
-                              : ""
+                            <div
+                              className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                                enabledFundamentalsKeys.length - 2 === i
+                                  ? "hidden lg:block"
+                                  : ""
                               }`}
-                          >
-                            <div className="absolute left-[15px] align-bottom flex items-end z-10">
-                              {new Date(
-                                timespans[selectedTimespan].xMin,
-                              ).toLocaleDateString(undefined, {
-                                timeZone: "UTC",
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })}
+                            >
+                              <div className="absolute left-[15px] align-bottom flex items-end z-10">
+                                {new Date(
+                                  timespans[selectedTimespan].xMin,
+                                ).toLocaleDateString(undefined, {
+                                  timeZone: "UTC",
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
+                              </div>
+                              <div className="absolute right-[15px] align-bottom flex items-end z-10">
+                                {new Date(
+                                  timespans[selectedTimespan].xMax,
+                                ).toLocaleDateString(undefined, {
+                                  timeZone: "UTC",
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })}
+                              </div>
                             </div>
-                            <div className="absolute right-[15px] align-bottom flex items-end z-10">
-                              {new Date(
-                                timespans[selectedTimespan].xMax,
-                              ).toLocaleDateString(undefined, {
-                                timeZone: "UTC",
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })}
-                            </div>
-                          </div>
-                        )
+                          )
                         : (key === "market_cap" || key === "txcosts") &&
-                        intervalShown && (
-                          <div
-                            className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${key === "txcosts" ? "hidden lg:block" : ""
+                          intervalShown && (
+                            <div
+                              className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                                key === "txcosts" ? "hidden lg:block" : ""
                               }`}
-                          >
-                            <div className="absolute left-[15px] align-bottom flex items-end z-30 ">
-                              {new Date(intervalShown.min).toLocaleDateString(
-                                undefined,
-                                {
-                                  timeZone: "UTC",
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                },
-                              )}
+                            >
+                              <div className="absolute left-[15px] align-bottom flex items-end z-30 ">
+                                {new Date(intervalShown.min).toLocaleDateString(
+                                  undefined,
+                                  {
+                                    timeZone: "UTC",
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  },
+                                )}
+                              </div>
+                              <div className="absolute right-[15px] align-bottom flex items-end z-30">
+                                {new Date(intervalShown.max).toLocaleDateString(
+                                  undefined,
+                                  {
+                                    timeZone: "UTC",
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  },
+                                )}
+                              </div>
                             </div>
-                            <div className="absolute right-[15px] align-bottom flex items-end z-30">
-                              {new Date(intervalShown.max).toLocaleDateString(
-                                undefined,
-                                {
-                                  timeZone: "UTC",
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                },
-                              )}
-                            </div>
-                          </div>
-                        )}
+                          )}
                     </div>
                   );
                 })}

@@ -9,6 +9,7 @@ export interface ChainsData {
   website: string;
   explorer: string;
   metrics: Metrics;
+  ranking: Object;
 }
 export interface Metrics {
   [key: string]: MetricData;
