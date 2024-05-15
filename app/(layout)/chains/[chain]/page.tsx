@@ -571,11 +571,11 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Background"}
                     enableDropdown={isMobile}
-                    className=" hover:min-w-[470px] 2xl:min-w-[470px] min-w-[100px] transition-all duration-300"
+                    className=" hover:min-w-[510px] 2xl:min-w-[510px] max-w-[510px] min-w-[100px] transition-all duration-300"
                   >
                     <div className="relative h-[111px] flex flex-col justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden ">
                       <div
-                        className={`absolute  inset-0 pointer-events-none shadow-inner  rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${
+                        className={`absolute  inset-0 pointer-events-none shadow-inner z-10  rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${
                           isSidebarOpen
                             ? "2xl:opacity-0 xl:opacity-100"
                             : "xl:opacity-0 lg:opacity-100"
@@ -585,15 +585,15 @@ const Chain = ({ params }: { params: any }) => {
                             "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
                         }}
                       ></div>
-                      <div className="min-w-[450px] ">
+                      <div className="min-w-[460px] ">
                         <div className="text-[10px] font-semibold text-[#5A6462]">
                           Background Information
                         </div>
-                        <div className="text-[10px] leading-[150%]  min-w-[450px]">
+                        <div className="text-[10px] leading-[150%]  min-w-[490px]">
                           {master.chains[chainKeys[0]].description}
                         </div>
                       </div>
-                      <div className="flex gap-x-[10px] justify-between min-w-[440px] ">
+                      <div className="flex gap-x-[10px] justify-between min-w-[490px] ">
                         <div>
                           <div className="text-[10px] font-semibold text-[#5A6462] min-w-[70px]">
                             Launch Date
@@ -761,7 +761,12 @@ const Chain = ({ params }: { params: any }) => {
                             {chainData[0]
                               ? `${
                                   chainData[0].hottest_contract
-                                    ? `${chainData[0].hottest_contract.data[0][2]}`
+                                    ? `${
+                                        chainData[0].hottest_contract.data[0]
+                                          ? chainData[0].hottest_contract
+                                              .data[0][2]
+                                          : "N/A"
+                                      }`
                                     : "N/A"
                                 }`
                               : "N/A"}
