@@ -51,7 +51,6 @@ const ChainSectionHead = ({
     };
   }, [clicked]);
 
-  console.log(childrenHeight);
   return (
     <div
       className={`flex flex-col group ${className}`}

@@ -270,7 +270,7 @@ const Chain = ({ params }: { params: any }) => {
         ]}
       />
       <Container className="flex w-full pt-[30px] md:pt-[45px]">
-        {master && chainFeeData && (
+        {master && chainFeeData && chainData[0] && (
           <div className="flex flex-col w-full">
             <div className="flex flex-col md:flex-row justify-between items-start w-full">
               <div className="flex flex-col md:flex-row pb-[15px] md:pb-[15px] items-start">
@@ -571,7 +571,7 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Background"}
                     enableDropdown={isMobile}
-                    className=" hover:min-w-[510px] 2xl:min-w-[510px] max-w-[510px] min-w-[100px] transition-all duration-300"
+                    className=" hover:min-w-[510px] min-w-[100px] transition-all duration-300"
                   >
                     <div className="relative h-[111px] flex flex-col justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden ">
                       <div
@@ -612,7 +612,7 @@ const Chain = ({ params }: { params: any }) => {
                             Rankings
                           </div>
                           <div className="flex gap-x-[2px]">
-                            {Object.keys(getFundamentalsByKey).map((key, i) => {
+                            {Object.keys(chainData[0].ranking).map((key, i) => {
                               return (
                                 <div
                                   className="w-[24px] h-[24px] rounded-full flex items-center justify-center z-0"
@@ -654,7 +654,7 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Usage"}
                     enableDropdown={isMobile}
-                    className="hover:min-w-[230px] 2xl:min-w-[230px] min-w-[35px] transition-all duration-300"
+                    className="hover:min-w-[230px] min-w-[35px] transition-all duration-300"
                   >
                     <div className="flex flex-col gap-y-[5px] overflow-hidden relative ">
                       <div className="h-[58px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] bg-forest-50 dark:bg-[#1F2726] ">
@@ -790,7 +790,7 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Technology"}
                     enableDropdown={isMobile}
-                    className={`transition-all duration-300 hover:min-w-[190px] 2xl:min-w-[170px] min-w-[35px] ${
+                    className={`transition-all duration-300 hover:min-w-[190px] min-w-[35px] ${
                       isMobile ? "hidden" : "block  "
                     }`}
                   >
@@ -847,7 +847,7 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Risk"}
                     enableDropdown={isMobile}
-                    className={`transition-all duration-300 hover:min-w-[130px] 2xl:min-w-[130px] min-w-[20px] ${
+                    className={`transition-all duration-300 hover:min-w-[130px] min-w-[20px] ${
                       isMobile ? "hidden" : "block"
                     }`}
                   >
@@ -952,7 +952,7 @@ const Chain = ({ params }: { params: any }) => {
                       className={`transition-all duration-300 ${
                         isMobile
                           ? "w-[60%]"
-                          : " hover:min-w-[190px] 2xl:min-w-[190px] min-w-[35px] "
+                          : " hover:min-w-[190px]  min-w-[35px] "
                       }`}
                     >
                       <div className="relative h-[111px] flex px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden ">
@@ -1007,7 +1007,7 @@ const Chain = ({ params }: { params: any }) => {
                       className={`transition-all duration-300 ${
                         isMobile
                           ? "w-[39%]"
-                          : "hover:min-w-[130px] 2xl:min-w-[130px] min-w-[35px]"
+                          : "hover:min-w-[130px] min-w-[35px]"
                       }`}
                     >
                       <div className="relative h-[111px] flex gap-x-[10px] px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden">
