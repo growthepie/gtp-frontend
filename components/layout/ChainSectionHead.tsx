@@ -58,9 +58,8 @@ const ChainSectionHead = ({
       style={style}
     >
       <div
-        className={`relative flex items-center gap-x-[12px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-[#344240] select-none ${
-          enableDropdown && "cursor-pointer"
-        }`}
+        className={`relative flex items-center gap-x-[12px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-[#344240] select-none ${enableDropdown && "cursor-pointer"
+          }`}
         onClick={() => {
           handleClick();
           // find .highcharts-tooltip-container and remove them all
@@ -74,13 +73,11 @@ const ChainSectionHead = ({
         }}
       >
         <div
-          className={`absolute  inset-0 pointer-events-none shadow-inner rounded-2xl group-hover:opacity-0 transition-opacity duration-500 ${
-            enableDropdown ? "hidden" : title === "Menu" ? "hidden" : "block"
-          } ${
-            isSidebarOpen
+          className={`absolute  inset-0 pointer-events-none shadow-inner rounded-2xl group-hover:opacity-0 transition-opacity duration-500 ${enableDropdown ? "hidden" : title === "Menu" ? "hidden" : "block"
+            } ${isSidebarOpen
               ? "2xl:opacity-0 xl:opacity-100"
               : "xl:opacity-0 lg:opacity-100"
-          }`}
+            }`}
           style={{
             boxShadow: "-50px 0px 10px rgba(21, 26, 25, 0.5) inset",
           }}
@@ -92,9 +89,8 @@ const ChainSectionHead = ({
           />
           <Icon
             icon={"gtp:circle-arrow"}
-            className={`w-[4px] h-[9px] absolute top-2 right-0 ${
-              enableDropdown ? "block" : "hidden"
-            }`}
+            className={`w-[4px] h-[9px] absolute top-2 right-0 ${enableDropdown ? "block" : "hidden"
+              }`}
             style={{
               transform: `rotate(${clicked ? "90deg" : "0deg"})`,
               transformOrigin: "-8px 4px",
@@ -110,17 +106,16 @@ const ChainSectionHead = ({
         {rowEnd ? rowEnd : null}
       </div>
       <div
-        className="overflow-clip"
+        className="overflow-clip hover:!overflow-visible"
         style={{
-          maxHeight: `${
-            enableDropdown
-              ? clicked
-                ? childrenHeight
-                  ? `${childrenHeight}px`
-                  : "1000px"
-                : "0"
-              : "120px"
-          }`,
+          maxHeight: `${enableDropdown
+            ? clicked
+              ? childrenHeight
+                ? `${childrenHeight}px`
+                : "1000px"
+              : "0"
+            : "120px"
+            }`,
           transition: "all 0.4s",
         }}
       >
