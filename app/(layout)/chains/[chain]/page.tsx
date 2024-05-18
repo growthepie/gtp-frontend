@@ -186,20 +186,20 @@ const Chain = ({ params }: { params: any }) => {
   const getGradientColor = useCallback((percentage, weighted = false) => {
     const colors = !weighted
       ? [
-        { percent: 0, color: "#1DF7EF" },
-        { percent: 20, color: "#76EDA0" },
-        { percent: 50, color: "#FFDF27" },
-        { percent: 70, color: "#FF9B47" },
-        { percent: 100, color: "#FE5468" },
-      ]
+          { percent: 0, color: "#1DF7EF" },
+          { percent: 20, color: "#76EDA0" },
+          { percent: 50, color: "#FFDF27" },
+          { percent: 70, color: "#FF9B47" },
+          { percent: 100, color: "#FE5468" },
+        ]
       : [
-        { percent: 0, color: "#1DF7EF" },
-        { percent: 2, color: "#76EDA0" },
-        { percent: 10, color: "#FFDF27" },
-        { percent: 40, color: "#FF9B47" },
-        { percent: 80, color: "#FE5468" },
-        { percent: 100, color: "#FE5468" }, // Repeat the final color to ensure upper bound
-      ];
+          { percent: 0, color: "#1DF7EF" },
+          { percent: 2, color: "#76EDA0" },
+          { percent: 10, color: "#FFDF27" },
+          { percent: 40, color: "#FF9B47" },
+          { percent: 80, color: "#FE5468" },
+          { percent: 100, color: "#FE5468" }, // Repeat the final color to ensure upper bound
+        ];
 
     let lowerBound = colors[0];
     let upperBound = colors[colors.length - 1];
@@ -227,23 +227,23 @@ const Chain = ({ params }: { params: any }) => {
 
     const r = Math.floor(
       parseInt(lowerBound.color.substring(1, 3), 16) +
-      percentDiff *
-      (parseInt(upperBound.color.substring(1, 3), 16) -
-        parseInt(lowerBound.color.substring(1, 3), 16)),
+        percentDiff *
+          (parseInt(upperBound.color.substring(1, 3), 16) -
+            parseInt(lowerBound.color.substring(1, 3), 16)),
     );
 
     const g = Math.floor(
       parseInt(lowerBound.color.substring(3, 5), 16) +
-      percentDiff *
-      (parseInt(upperBound.color.substring(3, 5), 16) -
-        parseInt(lowerBound.color.substring(3, 5), 16)),
+        percentDiff *
+          (parseInt(upperBound.color.substring(3, 5), 16) -
+            parseInt(lowerBound.color.substring(3, 5), 16)),
     );
 
     const b = Math.floor(
       parseInt(lowerBound.color.substring(5, 7), 16) +
-      percentDiff *
-      (parseInt(upperBound.color.substring(5, 7), 16) -
-        parseInt(lowerBound.color.substring(5, 7), 16)),
+        percentDiff *
+          (parseInt(upperBound.color.substring(5, 7), 16) -
+            parseInt(lowerBound.color.substring(5, 7), 16)),
     );
 
     return `#${r.toString(16).padStart(2, "0")}${g
@@ -279,31 +279,40 @@ const Chain = ({ params }: { params: any }) => {
       href: string;
     }[];
     className?: string;
-  }
+  };
 
-  // Jump to Section 
-  // "gtp:gtp-jump-to-section" 
+  // Jump to Section
+  // "gtp:gtp-jump-to-section"
 
-
-
-  const ExpandingButtonMenu = ({ button, items, className }: ExpandingButtonMenuProps) => {
+  const ExpandingButtonMenu = ({
+    button,
+    items,
+    className,
+  }: ExpandingButtonMenuProps) => {
     return (
-      <div className={`absolute group/jump flex flex-col cursor-pointer hover:top-[10px] hover:left-[5px] hover:right-[5px] transition-all duration-300 ${className}`}>
+      <div
+        className={`absolute group/jump flex flex-col cursor-pointer hover:top-[10px] hover:left-[5px] hover:right-[5px] transition-all duration-300 ${className}`}
+      >
         <div
           className="!z-[15] group-hover/jump:!z-[25] transition-[z-index] delay-100 group-hover/jump:delay-0 w-full flex items-center h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50"
           onMouseEnter={() => {
             track(`hovered ${button.label} button`, {
-              location: isMobile
-                ? `mobile Chain page`
-                : `desktop Chain page`,
+              location: isMobile ? `mobile Chain page` : `desktop Chain page`,
               page: window.location.pathname,
             });
-          }}>
-
-          <div className={`${button.showIconBackground && "bg-white dark:bg-forest-1000"} rounded-full w-[25px] h-[25px] p-[5px]`}>
+          }}
+        >
+          <div
+            className={`${
+              button.showIconBackground && "bg-white dark:bg-forest-1000"
+            } rounded-full w-[25px] h-[25px] p-[5px]`}
+          >
             <Icon
               icon={button.icon}
-              className={`w-[15px] h-[15px] ${button.animateIcon && "transition-transform duration-300 transform group-hover/jump:rotate-90"}`}
+              className={`w-[15px] h-[15px] ${
+                button.animateIcon &&
+                "transition-transform duration-300 transform group-hover/jump:rotate-90"
+              }`}
             />
           </div>
           <div className="whitespace-nowrap text-[14px] font-semibold lg:leading-normal leading-tight">
@@ -311,11 +320,7 @@ const Chain = ({ params }: { params: any }) => {
           </div>
         </div>
         <div className="absolute !z-[11] group-hover/jump:!z-[21]  overflow-hidden whitespace-nowrap  max-h-0 transition-all duration-300 left-0 right-0 top-[16px] bg-white dark:bg-[#151A19] pb-[0px] rounded-b-[22px] group-hover/jump:max-h-[300px] group-hover/jump:pt-[24px] group-hover/jump:pb-[10px] group-hover/jump:shadow-lg group-hover/jump:dark:shadow-[0px_4px_46.2px_0px_#000000]">
-          {items.map((item: {
-            label: string;
-            icon: string;
-            href: string;
-          }) => (
+          {items.map((item: { label: string; icon: string; href: string }) => (
             <Link
               href={item.href}
               key={item.label}
@@ -338,10 +343,7 @@ const Chain = ({ params }: { params: any }) => {
               className="whitespace-nowrap flex items-center gap-x-[10px] h-[32px] font-medium text-sm px-4 py-2 group-hover:w-full w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900"
             >
               <div className="w-4 h-4">
-                <Icon
-                  icon={item.icon}
-                  className="w-4 h-4"
-                />
+                <Icon icon={item.icon} className="w-4 h-4" />
               </div>
               <div>{item.label}</div>
             </Link>
@@ -349,8 +351,7 @@ const Chain = ({ params }: { params: any }) => {
         </div>
       </div>
     );
-  }
-
+  };
 
   if (chainKeys.length === 0) return notFound();
 
@@ -378,13 +379,14 @@ const Chain = ({ params }: { params: any }) => {
                 <div className="flex gap-x-[8px] items-center">
                   <div className="w-9 h-9  ">
                     <Icon
-                      icon={`gtp:${AllChainsByKeys[chainKeys[0]].urlKey
-                        }-logo-monochrome`}
+                      icon={`gtp:${
+                        AllChainsByKeys[chainKeys[0]].urlKey
+                      }-logo-monochrome`}
                       className="w-9 h-9"
                       style={{
                         color:
                           AllChainsByKeys[chainKeys[0]].colors[
-                          theme ?? "dark"
+                            theme ?? "dark"
                           ][1],
                       }}
                     />
@@ -399,8 +401,9 @@ const Chain = ({ params }: { params: any }) => {
                 {!(IS_DEVELOPMENT || IS_PREVIEW) && (
                   <div className="hidden md:flex items-start space-x-[7px] font-inter uppercase pt-[11px] ">
                     <div
-                      className={`inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm  ${isMobile ? "ml-[0px]" : "ml-[19px]"
-                        } `}
+                      className={`inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm  ${
+                        isMobile ? "ml-[0px]" : "ml-[19px]"
+                      } `}
                     >
                       {master.chains[chainKeys[0]].technology}
                     </div>
@@ -554,19 +557,40 @@ const Chain = ({ params }: { params: any }) => {
                       <div className="flex flex-col justify-between gap-y-[10px] min-w-[160px]">
                         <ExpandingButtonMenu
                           className="left-[5px] top-[10px] lg:top-[10px] right-[calc((100%/2)+5px)] lg:right-[105px]"
-                          button={{ label: "Jump to Section", icon: "gtp:gtp-jump-to-section" }}
+                          button={{
+                            label: "Jump to Section",
+                            icon: "gtp:gtp-jump-to-section",
+                          }}
                           items={[
-                            { label: "Fundamentals", icon: "gtp:gtp-fundamentals", href: "#fundamentals" },
-                            { label: "Blockspace", icon: "gtp:gtp-package", href: "#blockspace" },
+                            {
+                              label: "Fundamentals",
+                              icon: "gtp:gtp-fundamentals",
+                              href: "#fundamentals",
+                            },
+                            {
+                              label: "Blockspace",
+                              icon: "gtp:gtp-package",
+                              href: "#blockspace",
+                            },
                           ]}
                         />
                         <ExpandingButtonMenu
                           className="left-[5px] top-[50px] lg:top-[65px] right-[calc((100%/2)+5px)] lg:right-[105px]"
-                          button={{ label: "Block Explorers", icon: "gtp:gtp-block-explorer" }}
+                          button={{
+                            label: "Block Explorers",
+                            icon: "gtp:gtp-block-explorer",
+                          }}
                           items={
-                            master.chains[chainKeys[0]].block_explorer ? [
-                              { label: "Block Explorer", icon: "gtp:gtp-block-explorer", href: master.chains[chainKeys[0]].block_explorer },
-                            ] : []
+                            master.chains[chainKeys[0]].block_explorer
+                              ? [
+                                  {
+                                    label: "Block Explorer",
+                                    icon: "gtp:gtp-block-explorer",
+                                    href: master.chains[chainKeys[0]]
+                                      .block_explorer,
+                                  },
+                                ]
+                              : []
                             // [
                             //   { label: "Fundamentals", icon: "gtp:gtp-fundamentals", href: "#fundamentals" },
                             //   { label: "Blockspace", icon: "gtp:gtp-package", href: "#blockspace" },
@@ -592,8 +616,9 @@ const Chain = ({ params }: { params: any }) => {
                           <Link
                             href={
                               master.chains[chainKeys[0]].rhino_naming
-                                ? `https://app.rhino.fi/bridge?refId=PG_GrowThePie&token=ETH&chainOut=${master.chains[chainKeys[0]].rhino_naming
-                                }&chain=ETHEREUM`
+                                ? `https://app.rhino.fi/bridge?refId=PG_GrowThePie&token=ETH&chainOut=${
+                                    master.chains[chainKeys[0]].rhino_naming
+                                  }&chain=ETHEREUM`
                                 : "https://app.rhino.fi/bridge/?refId=PG_GrowThePie"
                             }
                             className="absolute right-[5px] top-[10px] lg:top-[10px] left-[calc((100%/2)+5px)] lg:left-[175px]"
@@ -613,14 +638,26 @@ const Chain = ({ params }: { params: any }) => {
                         ) : (
                           <div></div>
                         )}
-                        <ExpandingButtonMenu className="right-[5px] top-[50px] lg:top-[65px] mt-auto left-[calc((100%/2)+5px)] lg:left-[175px]"
-                          button={{ label: "More", icon: "feather:chevron-right", showIconBackground: false, animateIcon: true }}
-                          items={
-                            [
-                              { label: "Website", icon: "feather:external-link", href: master.chains[chainKeys[0]].website },
-                              { label: "Twitter", icon: "feather:twitter", href: master.chains[chainKeys[0]].twitter },
-                            ]
-                          }
+                        <ExpandingButtonMenu
+                          className="right-[5px] top-[50px] lg:top-[65px] mt-auto left-[calc((100%/2)+5px)] lg:left-[175px]"
+                          button={{
+                            label: "More",
+                            icon: "feather:chevron-right",
+                            showIconBackground: false,
+                            animateIcon: true,
+                          }}
+                          items={[
+                            {
+                              label: "Website",
+                              icon: "feather:external-link",
+                              href: master.chains[chainKeys[0]].website,
+                            },
+                            {
+                              label: "Twitter",
+                              icon: "feather:twitter",
+                              href: master.chains[chainKeys[0]].twitter,
+                            },
+                          ]}
                         />
                         {/* <div
                           className="group/more peer relative top-0 cursor-pointer"
@@ -686,28 +723,43 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Background"}
                     enableDropdown={isMobile}
-                    className=" hover:min-w-[510px] min-w-[100px] transition-all duration-300"
+                    className={`  min-w-[100px] transition-all duration-300 ${
+                      isMobile ? "min-w-none" : "hover:min-w-[510px]"
+                    }`}
                   >
-                    <div className="relative h-[111px] flex flex-col justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden">
+                    <div
+                      className={`relative flex flex-col justify-between transition-opacity duration-300 px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden ${
+                        isMobile ? "min-h-[169px]" : "h-[111px]"
+                      }`}
+                    >
                       <div
-                        className={`absolute  inset-0 pointer-events-none shadow-inner z-10  rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${isSidebarOpen
-                          ? "2xl:opacity-0 xl:opacity-100"
-                          : "xl:opacity-0 lg:opacity-100"
-                          }`}
+                        className={`absolute inset-0 pointer-events-none shadow-inner z-10  rounded-2xl group-hover:opacity-0 opacity-0 transition-opacity duration-300 ${
+                          isMobile
+                            ? "opacity-0"
+                            : isSidebarOpen
+                            ? "lg:opacity-100 opacity-0"
+                            : "2xl:opacity-0 md:opacity-100"
+                        }`}
                         style={{
                           boxShadow:
                             "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
                         }}
                       ></div>
-                      <div className="min-w-[460px] ">
+                      <div className={`lg:min-w-[460px]`}>
                         <div className="text-[10px] font-semibold text-[#5A6462]">
                           Background Information
                         </div>
-                        <div className="text-[10px] leading-[150%] min-w-[490px]">
+                        <div
+                          className={`text-[10px] leading-[150%] md:min-w-[460px] md:max-w-[460px] `}
+                        >
                           {master.chains[chainKeys[0]].description}
                         </div>
                       </div>
-                      <div className="flex gap-x-[10px] justify-between min-w-[490px] ">
+                      <div
+                        className={`flex gap-x-[10px] justify-between min-w-[490px] ${
+                          isMobile ? "flex-col" : "flex-row"
+                        }`}
+                      >
                         <div>
                           <div className="text-[10px] font-semibold text-[#5A6462] min-w-[70px]">
                             Launch Date
@@ -734,9 +786,9 @@ const Chain = ({ params }: { params: any }) => {
                                     backgroundColor: chainData[0]
                                       ? chainData[0].ranking[key]
                                         ? getGradientColor(
-                                          chainData[0].ranking[key]
-                                            .color_scale * 100,
-                                        )
+                                            chainData[0].ranking[key]
+                                              .color_scale * 100,
+                                          )
                                         : "#5A6462"
                                       : "#5A6462",
                                   }}
@@ -771,77 +823,95 @@ const Chain = ({ params }: { params: any }) => {
                     className="hover:min-w-[230px] min-w-[35px] transition-all duration-300"
                   >
                     <div className="flex flex-col gap-y-[5px] overflow-hidden relative ">
-                      <div className="h-[58px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] bg-forest-50 dark:bg-[#1F2726] ">
+                      <div
+                        className={`h-[58px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] bg-forest-50 dark:bg-[#1F2726] w-full ${
+                          isMobile ? "justify-between" : "justify-normal"
+                        } `}
+                      >
                         <div
-                          className={`absolute  inset-0 pointer-events-none shadow-inner  rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${isSidebarOpen
-                            ? "2xl:opacity-0 xl:opacity-100"
-                            : "xl:opacity-0 lg:opacity-100"
-                            }`}
+                          className={`absolute  inset-0 pointer-events-none shadow-inner rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${
+                            isMobile
+                              ? "opacity-0"
+                              : isSidebarOpen
+                              ? "lg:opacity-100 opacity-0"
+                              : "2xl:opacity-0 md:opacity-100"
+                          }`}
                           style={{
                             boxShadow:
                               "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
                           }}
                         ></div>
-                        <div className="flex flex-col items-center leading-tight pt-[9px] ">
-                          <div className="text-[14px] font-semibold w-[44px]  flex justify-center">
-                            {chainFeeData[optIndex]
-                              ? Intl.NumberFormat(undefined, {
-                                notation: "compact",
-                                maximumFractionDigits: 2,
-                                minimumFractionDigits: 1,
-                              }).format(
-                                chainFeeData[optIndex][showUsd ? 2 : 1] * 100,
-                              )
-                              : "N/A"}
+                        <div className="flex gap-x-[5px]">
+                          <div className="flex flex-col items-center leading-tight pt-[9px] ">
+                            <div className="text-[14px] font-semibold w-[44px]  flex justify-center">
+                              {chainFeeData[0] &&
+                              chainFeeData?.[optIndex]?.[showUsd ? 2 : 1] !==
+                                null
+                                ? Intl.NumberFormat(undefined, {
+                                    notation: "compact",
+                                    maximumFractionDigits: 5,
+                                    minimumFractionDigits: 1,
+                                  }).format(
+                                    chainFeeData[optIndex][showUsd ? 2 : 1] *
+                                      100,
+                                  )
+                                : "N/A"}
+                            </div>
+                            <div className="text-[8px] w-[44px] flex justify-center">
+                              cents
+                            </div>
                           </div>
-                          <div className="text-[8px] w-[44px] flex justify-center">
-                            cents
-                          </div>
-                        </div>
-                        <div className="flex flex-col leading-3 gap-y-[0px] ">
-                          <div className="text-[10px] text-[#5A6462] font-bold">
-                            What a typical user paid for a
-                          </div>
-                          <div className="relative flex items-center gap-x-[1px]">
-                            {Array.from({ length: 24 }, (_, index) => (
-                              <div
-                                key={index.toString() + "circles"}
-                                className="h-[12px] flex items-center justify-end cursor-pointer"
-                                onMouseEnter={() => {
-                                  setHoverBarIndex(index);
-                                }}
-                                onMouseLeave={() => {
-                                  setHoverBarIndex(null);
-                                }}
-                                onClick={() => {
-                                  setSelectedBarIndex(index);
-                                }}
-                              >
+                          <div className="flex flex-col leading-3 gap-y-[0px] justify-self-start">
+                            <div className="text-[10px] text-[#5A6462] font-bold">
+                              What a typical user paid for a
+                            </div>
+                            <div className="relative flex items-center gap-x-[1px]">
+                              {Array.from({ length: 24 }, (_, index) => (
                                 <div
-                                  className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${selectedBarIndex === index
-                                    ? "scale-[160%]"
-                                    : hoverBarIndex === index
-                                      ? "scale-[120%] opacity-90"
-                                      : "scale-100 opacity-50"
-                                    }`}
-                                  style={{
-                                    backgroundColor: !chainFeeData[23 - index]
-                                      ? "gray"
-                                      : getGradientColor(
-                                        Math.floor(
-                                          chainFeeData[23 - index][3] * 100,
-                                        ),
-                                      ),
+                                  key={index.toString() + "circles"}
+                                  className="h-[12px] flex items-center justify-end cursor-pointer"
+                                  onMouseEnter={() => {
+                                    setHoverBarIndex(index);
                                   }}
-                                ></div>
-                              </div>
-                            ))}
-                          </div>
-                          <div className="text-[10px] font-bold ">
-                            Transaction
+                                  onMouseLeave={() => {
+                                    setHoverBarIndex(null);
+                                  }}
+                                  onClick={() => {
+                                    setSelectedBarIndex(index);
+                                  }}
+                                >
+                                  <div
+                                    className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${
+                                      selectedBarIndex === index
+                                        ? "scale-[160%]"
+                                        : hoverBarIndex === index
+                                        ? "scale-[120%] opacity-90"
+                                        : "scale-100 opacity-50"
+                                    }`}
+                                    style={{
+                                      backgroundColor:
+                                        !chainFeeData[23 - index] ||
+                                        !chainFeeData[23 - index][
+                                          showUsd ? 2 : 1
+                                        ]
+                                          ? "gray"
+                                          : getGradientColor(
+                                              Math.floor(
+                                                chainFeeData[23 - index][3] *
+                                                  100,
+                                              ),
+                                            ),
+                                    }}
+                                  ></div>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="text-[10px] font-bold ">
+                              Transaction
+                            </div>
                           </div>
                         </div>
-                        <div className="h-full flex items-start ">
+                        <div className="h-full flex flex-col justify-between items-end pr-[5px]">
                           <Link
                             href={`/fees`}
                             className="rounded-full  w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] hover:cursor-pointer z-10"
@@ -851,14 +921,22 @@ const Chain = ({ params }: { params: any }) => {
                               className="w-[11px] h-[11px]"
                             />
                           </Link>
+                          <div className="text-[8px] font-semibold ">
+                            {optIndex + 1 > 1
+                              ? optIndex + 1 + " hours ago"
+                              : optIndex + 1 + " hour ago"}
+                          </div>
                         </div>
                       </div>
-                      <div className="h-[48px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] bg-forest-50 dark:bg-[#1F2726]  ">
+                      <div className="h-[48px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] bg-forest-50 dark:bg-[#1F2726] justify-between ">
                         <div
-                          className={`absolute  inset-0 pointer-events-none shadow-inner  rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${isSidebarOpen
-                            ? "2xl:opacity-0 xl:opacity-100"
-                            : "xl:opacity-0 lg:opacity-100"
-                            }`}
+                          className={`absolute  inset-0 pointer-events-none shadow-inner opacity-0 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${
+                            isMobile
+                              ? "opacity-0"
+                              : isSidebarOpen
+                              ? "lg:opacity-100 opacity-0"
+                              : "2xl:opacity-0 md:opacity-100"
+                          }`}
                           style={{
                             boxShadow:
                               "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
@@ -870,21 +948,23 @@ const Chain = ({ params }: { params: any }) => {
                           </div>
                           <div className="text-[10px] font-bold min-w-[150px] ">
                             {chainData[0]
-                              ? `${chainData[0].hottest_contract
-                                ? `${chainData[0].hottest_contract.data[0]
-                                  ? chainData[0].hottest_contract
-                                    .data[0][2]
-                                  : "N/A"
+                              ? `${
+                                  chainData[0].hottest_contract
+                                    ? `${
+                                        chainData[0].hottest_contract.data[0]
+                                          ? chainData[0].hottest_contract
+                                              .data[0][2]
+                                          : "N/A"
+                                      }`
+                                    : "N/A"
                                 }`
-                                : "N/A"
-                              }`
                               : "N/A"}
                           </div>
                         </div>
-                        <div className="h-full flex items-start ">
+                        <div className="h-full flex items-start  pr-[5px]">
                           <Link
                             href={`/fees`}
-                            className="rounded-full w-[15px] relative right-1.5 h-[15px] bg-[#344240] flex items-center justify-center text-[10px] hover:cursor-pointer z-10"
+                            className="rounded-full w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] hover:cursor-pointer z-10"
                           >
                             <Icon
                               icon="feather:arrow-right"
@@ -899,26 +979,24 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Technology"}
                     enableDropdown={isMobile}
-                    className={`transition-all duration-300 hover:min-w-[190px] min-w-[35px] ${isMobile ? "hidden" : "block  "
-                      }`}
+                    className={`transition-all duration-300 hover:min-w-[180px] min-w-[35px] ${
+                      isMobile ? "hidden" : "block  "
+                    }`}
                   >
-                    <div className="relative h-[111px] flex px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden ">
+                    <div className="relative h-[111px] flex px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden  ">
                       <div
-                        className={`absolute  inset-0 pointer-events-none shadow-inner  rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${isSidebarOpen
-                          ? "2xl:opacity-0 xl:opacity-100"
-                          : "xl:opacity-0 lg:opacity-100"
-                          }`}
+                        className={`absolute  inset-0 pointer-events-none shadow-inner rounded-2xl group-hover:opacity-0 transition-opacity duration-300 2xl:opacity-0 lg:opacity-100 opacity-0 `}
                         style={{
                           boxShadow:
                             "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
                         }}
                       ></div>
-                      <div className="flex flex-col w-full h-full justify-between ">
+                      <div className="flex flex-col w-full h-full justify-between min-w-[85px] ">
                         <div>
-                          <div className="text-[10px] font-semibold text-[#5A6462] min-w-[85px] ">
+                          <div className="text-[10px] font-semibold text-[#5A6462] ">
                             Stack
                           </div>
-                          <div className="text-[10px] leading-[150%] font-medium min-w-[85px] ">
+                          <div className="text-[10px] leading-[150%] font-medium">
                             {master.chains[chainKeys[0]].stack.label}
                           </div>
                         </div>
@@ -931,8 +1009,8 @@ const Chain = ({ params }: { params: any }) => {
                           </div>
                         </div>
                       </div>
-                      <div className="flex flex-col w-full h-full justify-between ">
-                        <div className="min-w-[90px]">
+                      <div className="flex flex-col w-full h-full justify-between min-w-[90px]">
+                        <div className="">
                           <div className="text-[10px] font-semibold text-[#5A6462] ">
                             Data Availability
                           </div>
@@ -940,7 +1018,7 @@ const Chain = ({ params }: { params: any }) => {
                             {master.chains[chainKeys[0]].da_layer}
                           </div>
                         </div>
-                        <div className="min-w-[90px]">
+                        <div className="">
                           <div className="text-[10px] font-semibold text-[#5A6462] ">
                             Rollup as a Service
                           </div>
@@ -954,15 +1032,13 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Risk"}
                     enableDropdown={isMobile}
-                    className={`transition-all duration-300 hover:min-w-[130px] min-w-[20px] ${isMobile ? "hidden" : "block"
-                      }`}
+                    className={`transition-all duration-300 hover:min-w-[130px] min-w-[20px] ${
+                      isMobile ? "hidden" : "block"
+                    }`}
                   >
-                    <div className="relative h-[111px] flex gap-x-[10px] px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden">
+                    <div className="relative h-[111px] flex gap-x-[10px] px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]  overflow-hidden">
                       <div
-                        className={`absolute  inset-0 pointer-events-none shadow-inner  rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${isSidebarOpen
-                          ? "2xl:opacity-0 xl:opacity-100"
-                          : "xl:opacity-0 lg:opacity-100"
-                          }`}
+                        className={`absolute  inset-0 pointer-events-none shadow-inner  rounded-2xl group-hover:opacity-0 transition-opacity duration-300 xl:opacity-0 lg:opacity-100 `}
                         style={{
                           boxShadow:
                             "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
@@ -1054,19 +1130,15 @@ const Chain = ({ params }: { params: any }) => {
                     <ChainSectionHead
                       title={"Technology"}
                       enableDropdown={isMobile}
-                      className={`transition-all duration-300 ${isMobile
-                        ? "w-[60%]"
-                        : " hover:min-w-[190px]  min-w-[35px] "
-                        }`}
+                      className={`transition-all duration-300 ${
+                        isMobile
+                          ? "w-[60%]"
+                          : " hover:min-w-[190px]  min-w-[35px] "
+                      }`}
                     >
-                      <div className="relative h-[111px] flex px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden ">
-                        <div
-                          className="absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 "
-                          style={{
-                            boxShadow:
-                              "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
-                          }}
-                        ></div>
+                      <div
+                        className={`relative h-[111px] flex px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden `}
+                      >
                         <div className="flex flex-col w-full h-full justify-between ">
                           <div>
                             <div className="text-[10px] font-semibold text-[#5A6462] min-w-[85px] ">
@@ -1108,19 +1180,13 @@ const Chain = ({ params }: { params: any }) => {
                     <ChainSectionHead
                       title={"Risk"}
                       enableDropdown={isMobile}
-                      className={`transition-all duration-300 ${isMobile
-                        ? "w-[39%]"
-                        : "hover:min-w-[130px] min-w-[35px]"
-                        }`}
+                      className={`transition-all duration-300 ${
+                        isMobile
+                          ? "w-[39%]"
+                          : "hover:min-w-[130px] min-w-[35px]"
+                      }`}
                     >
-                      <div className="relative h-[111px] flex gap-x-[10px] px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden">
-                        <div
-                          className={`absolute  inset-0 pointer-events-none shadow-inner xl:opacity-0 lg:opacity-100 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${""}`}
-                          style={{
-                            boxShadow:
-                              "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
-                          }}
-                        ></div>
+                      <div className="relative h-[111px] flex gap-x-[10px] px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] justify-between overflow-hidden">
                         <div className="flex flex-col justify-between gap-y-[10px] h-[86px] min-w-[76px]">
                           <div className="text-[10px] font-semibold text-[#5A6462]">
                             Rollup Stage
@@ -1203,7 +1269,11 @@ const Chain = ({ params }: { params: any }) => {
                     </ChainSectionHead>
                   </div>
                 </div>
-                <div className="flex gap-x-[8px] items-center pb-[15px] scroll-mt-8" ref={JumpToSections.Fundamentals.ref} id="fundamentals">
+                <div
+                  className="flex gap-x-[8px] items-center pb-[15px] scroll-mt-8"
+                  ref={JumpToSections.Fundamentals.ref}
+                  id="fundamentals"
+                >
                   <div className="w-9 h-9  ">
                     <Icon icon={`gtp:fundamentals`} className="w-9 h-9" />
                   </div>
@@ -1313,7 +1383,11 @@ const Chain = ({ params }: { params: any }) => {
         <>
           <Container className="flex flex-col w-full pt-[0px] md:pt-[60px]">
             <div className="flex items-center justify-between md:text-[36px] mb-[15px] relative">
-              <div className="flex gap-x-[8px] items-center scroll-mt-8" ref={JumpToSections.Blockspace.ref} id="blockspace">
+              <div
+                className="flex gap-x-[8px] items-center scroll-mt-8"
+                ref={JumpToSections.Blockspace.ref}
+                id="blockspace"
+              >
                 <Image
                   src="/GTP-Package.svg"
                   alt="GTP Chain"
