@@ -956,7 +956,7 @@ const Chain = ({ params }: { params: any }) => {
                           </div>
                         </div>
                       </div>
-                      <div className="h-[48px] min-w-[260px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] bg-forest-50 dark:bg-[#1F2726] justify-between ">
+                      <div className="h-[48px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] bg-forest-50 dark:bg-[#1F2726] justify-between ">
                         <div
                           className={`absolute  inset-0 pointer-events-none shadow-inner opacity-0 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${
                             isMobile
