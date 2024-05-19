@@ -190,23 +190,6 @@ const Chain = ({ params }: { params: any }) => {
 
   const [isMoreOpen, setIsMoreOpen] = useState(false);
 
-  const getL2BeatStageColor = (stage: string) => {
-    switch (stage) {
-      case "Stage 0":
-        // orange
-        return "#FF8F27";
-      case "Stage 1":
-        // yellow
-        return "#FFB800";
-      case "Stage 2":
-        // green
-        return "#00C48C";
-      default:
-        // grey
-        return "#5A6462";
-    }
-  };
-
   const getGradientColor = useCallback((percentage, weighted = false) => {
     const colors = !weighted
       ? [
@@ -974,7 +957,7 @@ const Chain = ({ params }: { params: any }) => {
                           <div className="text-[10px] text-[#5A6462] font-bold min-w-[150px] ">
                             Hottest Contract
                           </div>
-                          <div className="text-[10px] font-bold min-w-[150px] ">
+                          <div className="text-[10px] font-bold min-w-[190px] ">
                             {chainData[0]
                               ? `${
                                   chainData[0].hottest_contract
@@ -1085,15 +1068,18 @@ const Chain = ({ params }: { params: any }) => {
                           <div
                             className="flex items-center justify-center font-bold text-white dark:text-forest-1000 rounded-[2px] text-[10px] leading-[120%]"
                             style={{
-                              background: getL2BeatStageColor(
-                                master.chains[chainKeys[0]].l2beat_stage
-                                  ? master.chains[chainKeys[0]].l2beat_stage
-                                  : "#344240",
-                              ),
+                              background: master.chains[chainKeys[0]]
+                                .l2beat_stage
+                                ? master.chains[chainKeys[0]].l2beat_stage.hex
+                                  ? master.chains[chainKeys[0]].l2beat_stage.hex
+                                  : "#344240"
+                                : "#344240",
                             }}
                           >
                             {master.chains[chainKeys[0]].l2beat_stage
-                              ? master.chains[chainKeys[0]].l2beat_stage
+                              ? master.chains[chainKeys[0]].l2beat_stage.stage
+                                ? master.chains[chainKeys[0]].l2beat_stage.stage
+                                : "N/A"
                               : "N/A"}
                           </div>
                           <div className="text-[10px] leading-[150%] flex justify-center gap-x-1">
@@ -1101,8 +1087,8 @@ const Chain = ({ params }: { params: any }) => {
                             <div>2 total</div>
                           </div>
                         </div>
-                        <div className="text-[7px] leading-[150%]">
-                          Maturity assessment by
+                        <div className="text-[8px] leading-[150%]">
+                          Assessment by
                         </div>
                       </div>
                       <div className="flex flex-col justify-between gap-y-[10px] h-full">
@@ -1208,7 +1194,7 @@ const Chain = ({ params }: { params: any }) => {
                               Rollup as a Service
                             </div>
                             <div className="text-[10px] leading-[150%] font-medium">
-                              {master.chains[chainKeys[0]].da_layer}
+                              {master.chains[chainKeys[0]].raas}
                             </div>
                           </div>
                         </div>
@@ -1232,15 +1218,20 @@ const Chain = ({ params }: { params: any }) => {
                             <div
                               className="flex items-center justify-center font-bold text-white dark:text-forest-1000 rounded-[2px] text-[10px] leading-[120%]"
                               style={{
-                                background: getL2BeatStageColor(
-                                  master.chains[chainKeys[0]].l2beat_stage
+                                background: master.chains[chainKeys[0]]
+                                  .l2beat_stage
+                                  ? master.chains[chainKeys[0]].l2beat_stage.hex
                                     ? master.chains[chainKeys[0]].l2beat_stage
-                                    : "#344240",
-                                ),
+                                        .hex
+                                    : "#344240"
+                                  : "#344240",
                               }}
                             >
                               {master.chains[chainKeys[0]].l2beat_stage
-                                ? master.chains[chainKeys[0]].l2beat_stage
+                                ? master.chains[chainKeys[0]].l2beat_stage.stage
+                                  ? master.chains[chainKeys[0]].l2beat_stage
+                                      .stage
+                                  : "N/A"
                                 : "N/A"}
                             </div>
                             <div className="text-[10px] leading-[150%] flex justify-center gap-x-1">

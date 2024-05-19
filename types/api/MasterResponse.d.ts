@@ -39,7 +39,10 @@ export interface ChainInfo {
   block_explorer: string;
   rhino_listed: boolean;
   rhino_naming: string;
-  l2beat_stage: string;
+  l2beat_stage: {
+    stage: string;
+    hex: string;
+  };
   l2beat_link: string;
   raas: string;
   stack: {
