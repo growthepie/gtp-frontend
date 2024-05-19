@@ -58,6 +58,30 @@ const Chain = ({ params }: { params: any }) => {
   const isMobile = useMediaQuery("(max-width: 1024px)");
   const { isSidebarOpen } = useUIContext();
 
+  const rankChains = {
+    daa: {
+      Title: "Daily Active Addresses",
+    },
+    fees: {
+      Title: "Fees Paid By Users",
+    },
+    stables_mcap: {
+      Title: "Stablecoin Market Cap",
+    },
+    profit: {
+      Title: "Onchain Profit",
+    },
+    txcosts: {
+      Title: "Transaction Costs",
+    },
+    fdv: {
+      Title: "Fully Diluted Valuation",
+    },
+    throughput: {
+      Title: "Throughput",
+    },
+  };
+
   const optIndex = useMemo(() => {
     let pickIndex = hoverBarIndex ? hoverBarIndex : selectedBarIndex;
     let retIndex = 23 - Number(pickIndex);
@@ -558,7 +582,7 @@ const Chain = ({ params }: { params: any }) => {
                         <ExpandingButtonMenu
                           className="left-[5px] top-[10px] lg:top-[10px] right-[calc((100%/2)+5px)] lg:right-[105px]"
                           button={{
-                            label: "Jump to Section",
+                            label: "Jump to ...",
                             icon: "gtp:gtp-jump-to-section",
                           }}
                           items={[
@@ -577,7 +601,7 @@ const Chain = ({ params }: { params: any }) => {
                         <ExpandingButtonMenu
                           className="left-[5px] top-[50px] lg:top-[65px] right-[calc((100%/2)+5px)] lg:right-[105px]"
                           button={{
-                            label: "Block Explorers",
+                            label: "Explorers ...",
                             icon: "gtp:gtp-block-explorer",
                           }}
                           items={
@@ -778,32 +802,36 @@ const Chain = ({ params }: { params: any }) => {
                             Rankings
                           </div>
                           <div className="flex gap-x-[2px]">
-                            {Object.keys(chainData[0].ranking).map((key, i) => {
-                              return (
-                                <div
-                                  className="w-[24px] h-[24px] rounded-full flex items-center justify-center z-0"
-                                  style={{
-                                    backgroundColor: chainData[0]
-                                      ? chainData[0].ranking[key]
-                                        ? getGradientColor(
-                                            chainData[0].ranking[key]
-                                              .color_scale * 100,
-                                          )
-                                        : "#5A6462"
-                                      : "#5A6462",
-                                  }}
-                                  key={key + "rankings"}
-                                >
-                                  <Icon
-                                    icon={`gtp:${String(key).replace(
-                                      "_",
-                                      "-",
-                                    )}`}
-                                    className="w-[15px] h-[15px] z-10"
-                                  />
-                                </div>
-                              );
-                            })}
+                            {chainData[0].ranking && (
+                              <>
+                                {Object.keys(rankChains).map((key, i) => {
+                                  return (
+                                    <div
+                                      className="w-[24px] h-[24px] rounded-full flex items-center justify-center z-0"
+                                      style={{
+                                        backgroundColor: chainData[0]
+                                          ? chainData[0].ranking[key]
+                                            ? getGradientColor(
+                                                chainData[0].ranking[key]
+                                                  .color_scale * 100,
+                                              )
+                                            : "#5A6462"
+                                          : "#5A6462",
+                                      }}
+                                      key={key + "rankings"}
+                                    >
+                                      <Icon
+                                        icon={`gtp:${String(key).replace(
+                                          "_",
+                                          "-",
+                                        )}`}
+                                        className="w-[15px] h-[15px] z-10"
+                                      />
+                                    </div>
+                                  );
+                                })}{" "}
+                              </>
+                            )}
                           </div>
                         </div>
                         <div className="flex flex-col items-start min-w-[100px]">
@@ -820,7 +848,7 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Usage"}
                     enableDropdown={isMobile}
-                    className="hover:min-w-[230px] min-w-[35px] transition-all duration-300"
+                    className="hover:min-w-[260px] min-w-[35px] transition-all duration-300"
                   >
                     <div className="flex flex-col gap-y-[5px] overflow-hidden relative ">
                       <div
@@ -849,7 +877,7 @@ const Chain = ({ params }: { params: any }) => {
                                 null
                                 ? Intl.NumberFormat(undefined, {
                                     notation: "compact",
-                                    maximumFractionDigits: 5,
+                                    maximumFractionDigits: 2,
                                     minimumFractionDigits: 1,
                                   }).format(
                                     chainFeeData[optIndex][showUsd ? 2 : 1] *
@@ -921,14 +949,14 @@ const Chain = ({ params }: { params: any }) => {
                               className="w-[11px] h-[11px]"
                             />
                           </Link>
-                          <div className="text-[8px] font-semibold ">
+                          <div className="text-[8px] font-semibold min-w-[48px]">
                             {optIndex + 1 > 1
                               ? optIndex + 1 + " hours ago"
                               : optIndex + 1 + " hour ago"}
                           </div>
                         </div>
                       </div>
-                      <div className="h-[48px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] bg-forest-50 dark:bg-[#1F2726] justify-between ">
+                      <div className="h-[48px] min-w-[260px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] bg-forest-50 dark:bg-[#1F2726] justify-between ">
                         <div
                           className={`absolute  inset-0 pointer-events-none shadow-inner opacity-0 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${
                             isMobile
@@ -953,6 +981,9 @@ const Chain = ({ params }: { params: any }) => {
                                     ? `${
                                         chainData[0].hottest_contract.data[0]
                                           ? chainData[0].hottest_contract
+                                              .data[0][1] +
+                                            " - " +
+                                            chainData[0].hottest_contract
                                               .data[0][2]
                                           : "N/A"
                                       }`
@@ -962,6 +993,7 @@ const Chain = ({ params }: { params: any }) => {
                           </div>
                         </div>
                         <div className="h-full flex items-start  pr-[5px]">
+                          {/*
                           <Link
                             href={`/fees`}
                             className="rounded-full w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] hover:cursor-pointer z-10"
@@ -971,6 +1003,7 @@ const Chain = ({ params }: { params: any }) => {
                               className="w-[11px] h-[11px]"
                             />
                           </Link>
+                              */}
                         </div>
                       </div>
                     </div>
@@ -1023,7 +1056,7 @@ const Chain = ({ params }: { params: any }) => {
                             Rollup as a Service
                           </div>
                           <div className="text-[10px] leading-[150%] font-medium">
-                            {master.chains[chainKeys[0]].da_layer}
+                            {master.chains[chainKeys[0]].raas}
                           </div>
                         </div>
                       </div>
@@ -1044,7 +1077,7 @@ const Chain = ({ params }: { params: any }) => {
                             "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
                         }}
                       ></div>
-                      <div className="flex flex-col justify-between gap-y-[10px] h-[86px] min-w-[76px]">
+                      <div className="flex flex-col justify-between gap-y-[10px] h-[86px] min-w-[80px]">
                         <div className="text-[10px] font-semibold text-[#5A6462]">
                           Rollup Stage
                         </div>
@@ -1073,13 +1106,17 @@ const Chain = ({ params }: { params: any }) => {
                         </div>
                       </div>
                       <div className="flex flex-col justify-between gap-y-[10px] h-full">
-                        <div className="flex justify-end items-center">
-                          <div className="rounded-full bg-forest-50 dark:bg-[#344240] w-[15px] h-[15px] p-[2px]">
+                        <div className="flex justify-end items-center ">
+                          <a
+                            href={master.chains[chainKeys[0]].l2beat_link}
+                            target="_blank"
+                            className="rounded-full bg-forest-50 dark:bg-[#344240] w-[15px] h-[15px] p-[2px]"
+                          >
                             <Icon
                               icon="feather:arrow-right"
                               className="w-[11px] h-[11px]"
                             />
-                          </div>
+                          </a>
                         </div>
                         <svg
                           width="25"

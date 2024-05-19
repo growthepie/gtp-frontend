@@ -40,6 +40,8 @@ export interface ChainInfo {
   rhino_listed: boolean;
   rhino_naming: string;
   l2beat_stage: string;
+  l2beat_link: string;
+  raas: string;
   stack: {
     label: string;
     url: string;
