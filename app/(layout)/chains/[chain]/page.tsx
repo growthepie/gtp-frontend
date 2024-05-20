@@ -311,7 +311,8 @@ const Chain = ({ params }: { params: any }) => {
         >
           <div
             className={`${
-              button.showIconBackground && "bg-white dark:bg-forest-1000"
+              button.showIconBackground &&
+              "bg-white dark:bg-forest-1000 relative "
             } rounded-full w-[25px] h-[25px] p-[5px]`}
           >
             <Icon
@@ -320,6 +321,15 @@ const Chain = ({ params }: { params: any }) => {
                 button.animateIcon &&
                 "transition-transform duration-300 transform group-hover/jump:rotate-90"
               }`}
+            />
+            <Icon
+              icon={"gtp:circle-arrow"}
+              className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform duration-500 group-hover/jump:rotate-90 ${
+                button.showIconBackground ? "block" : "hidden"
+              }`}
+              style={{
+                transformOrigin: "-8px 4px",
+              }}
             />
           </div>
           <div className="whitespace-nowrap text-[14px] font-semibold lg:leading-normal leading-tight">
@@ -558,15 +568,16 @@ const Chain = ({ params }: { params: any }) => {
                     title={"Menu"}
                     enableDropdown={isMobile}
                     defaultDropdown={true}
-                    className="hover:min-w-[275px] min-w-[275px] transition-all duration-300"
+                    className="hover:min-w-[250px] min-w-[250px] transition-all duration-300"
                   >
                     <div className="relative h-[97px] lg:h-[111px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-visible select-none">
-                      <div className="flex flex-col justify-between gap-y-[10px] min-w-[160px]">
+                      <div className="flex flex-col justify-between gap-y-[10px] min-w-[120px] ">
                         <ExpandingButtonMenu
-                          className="left-[5px] top-[10px] lg:top-[10px] right-[calc((100%/2)+5px)] lg:right-[105px]"
+                          className="left-[5px] top-[10px] lg:top-[10px] right-[calc((100%/2)+5px)] lg:right-[120px]"
                           button={{
                             label: "Jump to ...",
                             icon: "gtp:gtp-jump-to-section",
+                            showIconBackground: true,
                           }}
                           items={[
                             {
@@ -582,10 +593,11 @@ const Chain = ({ params }: { params: any }) => {
                           ]}
                         />
                         <ExpandingButtonMenu
-                          className="left-[5px] top-[50px] lg:top-[65px] right-[calc((100%/2)+5px)] lg:right-[105px]"
+                          className="left-[5px] top-[50px] lg:top-[65px] right-[calc((100%/2)+5px)] lg:right-[120px]"
                           button={{
-                            label: "Explorers ...",
+                            label: "Explorers",
                             icon: "gtp:gtp-block-explorer",
+                            showIconBackground: true,
                           }}
                           items={
                             master.chains[chainKeys[0]].block_explorer
@@ -618,7 +630,7 @@ const Chain = ({ params }: { params: any }) => {
                           </div>
                         </Link> */}
                       </div>
-                      <div className="flex flex-col justify-between gap-y-[10px] flex-1 min-w-[90px]">
+                      <div className="flex flex-col justify-between gap-y-[10px] flex-1 min-w-[90px] ">
                         {master.chains[chainKeys[0]].rhino_listed ? (
                           <Link
                             href={
@@ -628,7 +640,7 @@ const Chain = ({ params }: { params: any }) => {
                                   }&chain=ETHEREUM`
                                 : "https://app.rhino.fi/bridge/?refId=PG_GrowThePie"
                             }
-                            className="absolute right-[5px] top-[10px] lg:top-[10px] left-[calc((100%/2)+5px)] lg:left-[175px]"
+                            className="absolute right-[5px] top-[10px] lg:top-[10px] left-[calc((100%/2)+5px)] lg:left-[140px]"
                           >
                             <div className="flex items-center w-full h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50">
                               <div className="bg-white dark:bg-forest-1000 rounded-full w-[25px] h-[25px] p-[5px]">
@@ -646,7 +658,7 @@ const Chain = ({ params }: { params: any }) => {
                           <div></div>
                         )}
                         <ExpandingButtonMenu
-                          className="right-[5px] top-[50px] lg:top-[65px] mt-auto left-[calc((100%/2)+5px)] lg:left-[175px]"
+                          className="right-[5px] top-[50px] lg:top-[65px] mt-auto left-[calc((100%/2)+5px)] lg:left-[140px]"
                           button={{
                             label: "More",
                             icon: "feather:chevron-right",
