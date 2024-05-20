@@ -54,6 +54,7 @@ import {
 } from "@/components/layout/TopRow";
 import "@/app/highcharts.axis.css";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
+import { useSWRConfig } from "swr";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -67,18 +68,23 @@ const COLORS = {
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function ChainChart({
-  data,
+  chainData,
   chain,
-  chainKey,
-  updateChainKey,
+  defaultChainKey,
 }: {
-  data: ChainsData[];
+  chainData: ChainsData;
   chain: string;
-  chainKey: string[];
-  updateChainKey: React.Dispatch<React.SetStateAction<string[]>>;
+  defaultChainKey: string;
 }) {
   // Keep track of the mounted state
   const isMounted = useIsMounted();
+
+  const [data, setData] = useState<ChainsData[]>([chainData]);
+
+  const [error, setError] = useState(null);
+  const [validating, setValidating] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [chainKey, setChainKey] = useState<string[]>([defaultChainKey]);
 
   useEffect(() => {
     Highcharts.setOptions({
@@ -135,13 +141,13 @@ export default function ChainChart({
 
     // group master.chains by bucket
     const chainsByBucket = Object.entries(master.chains).reduce(
-      (acc, [chainKey, chainInfo]) => {
+      (acc, [key, chainInfo]) => {
         if (!acc[chainInfo.bucket]) {
           acc[chainInfo.bucket] = [];
         }
 
-        if (chainItemsByKey[chainKey])
-          acc[chainInfo.bucket].push(chainItemsByKey[chainKey]);
+        if (chainItemsByKey[key] && key !== chainKey[0])
+          acc[chainInfo.bucket].push(chainItemsByKey[key]);
 
         return acc;
       },
@@ -158,6 +164,56 @@ export default function ChainChart({
       return acc;
     }, []);
   }, [master]);
+
+  const { cache, mutate } = useSWRConfig();
+
+  const fetchChainData = useCallback(async () => {
+    if (chainKey.length === 0) {
+      return;
+    }
+
+    try {
+      const fetchPromises = chainKey.map(async (key) => {
+        // check if the chain is in the cache
+        const cachedData = cache.get(ChainURLs[key]);
+
+        if (cachedData) {
+          return cachedData.data;
+        }
+
+        // if not, fetch the data
+        const response = await fetch(ChainURLs[key]);
+        const responseData = await response.json();
+
+        // store the data in the cache
+        mutate(ChainURLs[key], responseData, false);
+
+        return responseData;
+      });
+
+      const responseData = await Promise.all(fetchPromises);
+
+      // Flatten the structure by removing the "data" layer
+      const flattenedData = responseData.map((item) => item.data);
+
+      setData(flattenedData);
+      setError(null);
+    } catch (error) {
+      setData([]);
+      setError(error);
+    } finally {
+      setValidating(false);
+      setLoading(false);
+    }
+  }, [chainKey, cache, mutate]);
+
+  useEffect(() => {
+    if (data.length === 0) {
+      setLoading(true);
+      setValidating(true);
+    }
+    fetchChainData();
+  }, [data.length, chainKey, fetchChainData]);
 
   const timespans = useMemo(() => {
     let max = 0;
@@ -1345,11 +1401,11 @@ export default function ChainChart({
   }, [compChain, CompChains]);
 
   const handleNextCompChain = () => {
-    updateChainKey([chainKey[0], nextChainKey]);
+    setChainKey([chainKey[0], nextChainKey]);
   };
 
   const handlePrevCompChain = () => {
-    updateChainKey([chainKey[0], prevChainKey]);
+    setChainKey([chainKey[0], prevChainKey]);
   };
 
   const getNoDataMessage = useCallback(
@@ -1510,7 +1566,7 @@ export default function ChainChart({
                 className="flex pl-[21px] pr-[19px] lg:pr-[15px] py-[5px] gap-x-[10px] items-center text-base leading-[150%] cursor-pointer hover:bg-forest-200/30 dark:hover:bg-forest-500/10"
                 onClick={() => {
                   setCompareTo(false);
-                  delay(300).then(() => updateChainKey([chainKey[0]]));
+                  delay(300).then(() => setChainKey([chainKey[0]]));
                 }}
               >
                 <Icon
@@ -1550,7 +1606,7 @@ export default function ChainChart({
                   onClick={() => {
                     setCompareTo(false);
                     delay(400).then(() =>
-                      updateChainKey([chainKey[0], chain.key]),
+                      setChainKey([chainKey[0], chain.key]),
                     );
                   }}
                   key={index}

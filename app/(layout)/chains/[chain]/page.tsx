@@ -42,16 +42,12 @@ const Chain = ({ params }: { params: any }) => {
 
   const { theme } = useTheme();
 
-  const [chainKeys, setChainKeys] = useState<string[]>(
+  const [chainKey, setChainKey] = useState<string>(
     AllChains.find((c) => c.urlKey === chain)?.key
-      ? [AllChains.find((c) => c.urlKey === chain)?.key as string]
-      : [],
+      ? (AllChains.find((c) => c.urlKey === chain)?.key as string)
+      : "",
   );
 
-  const [chainError, setChainError] = useState(null);
-  const [chainData, setChainData] = useState<ChainsData[]>([]);
-  const [chainValidating, setChainValidating] = useState(false);
-  const [chainLoading, setChainLoading] = useState(false);
   const [openChainList, setOpenChainList] = useState<boolean>(false);
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -89,20 +85,35 @@ const Chain = ({ params }: { params: any }) => {
     isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
+  const [chainError, setChainError] = useState(null);
+  const [chainData, setChainData] = useState<ChainsData | null>(null);
+  const [chainValidating, setChainValidating] = useState(false);
+  const [chainLoading, setChainLoading] = useState(false);
+
+  const {
+    data: usageData,
+    error: usageError,
+    isLoading: usageLoading,
+    isValidating: usageValidating,
+  } = useSWR<ChainData>(ChainBlockspaceURLs[chainKey]);
+
+  const {
+    data: feeData,
+    error: feeError,
+    isLoading: feeLoading,
+    isValidating: feeValidating,
+  } = useSWR("https://api.growthepie.xyz/v1/fees/table.json");
+
   const { cache, mutate } = useSWRConfig();
 
   const fetchChainData = useCallback(async () => {
-    if (chainKeys.length === 0) {
-      return;
-    }
-
     try {
-      const fetchPromises = chainKeys.map(async (chainKey) => {
+      const fetchPromise = async () => {
         // check if the chain is in the cache
         const cachedData = cache.get(ChainURLs[chainKey]);
 
         if (cachedData) {
-          return cachedData.data;
+          return cachedData;
         }
 
         // if not, fetch the data
@@ -113,51 +124,37 @@ const Chain = ({ params }: { params: any }) => {
         mutate(ChainURLs[chainKey], data, false);
 
         return data;
-      });
+      };
 
-      const responseData = await Promise.all(fetchPromises);
+      // Execute the fetchPromise function
+      const responseData = await fetchPromise();
 
-      // Flatten the structure by removing the "data" layer
-      const flattenedData = responseData.map((item) => item.data);
+      const flattenedData = responseData.data;
 
       setChainData(flattenedData);
       setChainError(null);
     } catch (error) {
-      setChainData([]);
+      setChainData(null);
       setChainError(error);
     } finally {
       setChainValidating(false);
       setChainLoading(false);
     }
-  }, [chainKeys, cache, mutate]);
+  }, [chainKey, cache, mutate]);
 
   useEffect(() => {
-    if (chainData.length === 0) {
+    if (!chainData) {
       setChainLoading(true);
       setChainValidating(true);
     }
     fetchChainData();
-  }, [chainData.length, chainKeys, fetchChainData]);
-
-  const {
-    data: usageData,
-    error: usageError,
-    isLoading: usageLoading,
-    isValidating: usageValidating,
-  } = useSWR<ChainData>(ChainBlockspaceURLs[chainKeys[0]]);
-
-  const {
-    data: feeData,
-    error: feeError,
-    isLoading: feeLoading,
-    isValidating: feeValidating,
-  } = useSWR("https://api.growthepie.xyz/v1/fees/table.json");
+  }, [chainData, chainKey, fetchChainData]);
 
   const overviewData = useMemo(() => {
     if (!usageData) return null;
 
-    return { [chainKeys[0]]: usageData };
-  }, [chainKeys, usageData]);
+    return { [chainKey]: usageData };
+  }, [chainKey, usageData]);
 
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
@@ -364,7 +361,7 @@ const Chain = ({ params }: { params: any }) => {
     );
   };
 
-  if (chainKeys.length === 0) return notFound();
+  if (chainKey.length === 0) return notFound();
 
   return (
     <>
@@ -383,22 +380,18 @@ const Chain = ({ params }: { params: any }) => {
         ]}
       />
       <Container className="flex w-full pt-[30px] md:pt-[45px]">
-        {master && chainFeeData && chainData[0] && (
+        {master && chainFeeData && chainData && (
           <div className="flex flex-col w-full">
             <div className="flex flex-col md:flex-row justify-between items-start w-full">
               <div className="flex flex-col md:flex-row pb-[15px] md:pb-[15px] items-start">
                 <div className="flex gap-x-[8px] items-center">
                   <div className="w-9 h-9  ">
                     <Icon
-                      icon={`gtp:${
-                        AllChainsByKeys[chainKeys[0]].urlKey
-                      }-logo-monochrome`}
+                      icon={`gtp:${AllChainsByKeys[chainKey].urlKey}-logo-monochrome`}
                       className="w-9 h-9"
                       style={{
                         color:
-                          AllChainsByKeys[chainKeys[0]].colors[
-                            theme ?? "dark"
-                          ][1],
+                          AllChainsByKeys[chainKey].colors[theme ?? "dark"][1],
                       }}
                     />
                   </div>
@@ -406,7 +399,7 @@ const Chain = ({ params }: { params: any }) => {
                     className="leading-snug text-[30px] md:text-[36px] break-inside-avoid "
                     as="h1"
                   >
-                    {master.chains[chainKeys[0]].name}
+                    {master.chains[chainKey].name}
                   </Heading>
                 </div>
                 {!(IS_DEVELOPMENT || IS_PREVIEW) && (
@@ -416,15 +409,15 @@ const Chain = ({ params }: { params: any }) => {
                         isMobile ? "ml-[0px]" : "ml-[19px]"
                       } `}
                     >
-                      {master.chains[chainKeys[0]].technology}
+                      {master.chains[chainKey].technology}
                     </div>
-                    {master.chains[chainKeys[0]].purpose.includes("(EVM)") ? (
+                    {master.chains[chainKey].purpose.includes("(EVM)") ? (
                       <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400  bg-forest-400 text-forest-50 dark:border-forest-500 dark:bg-forest-500 dark:text-forest-900 px-[4px] font-bold rounded-sm ml-[7px]">
                         EVM
                       </div>
                     ) : (
                       <>
-                        {master.chains[chainKeys[0]].purpose
+                        {master.chains[chainKey].purpose
                           .split(", ")
                           .map((purpose: string) => (
                             <div
@@ -453,7 +446,7 @@ const Chain = ({ params }: { params: any }) => {
 
                   <div className="absolute top-[15px] left-0 z-20 h-0 delay-0 group-hover:h-[119px] overflow-hidden transition-all duration-300 ease-in-out bg-forest-50 dark:bg-forest-1000 rounded-b-[22px] group-hover:pt-[29px] group-hover:pb-[10px] break-inside-avoid w-[91px] group-hover:w-[213px] shadow-transparent group-hover:shadow-[0px_4px_46.2px_0px_#000000]">
                     <Link
-                      href={master.chains[chainKeys[0]].website}
+                      href={master.chains[chainKey].website}
                       className="flex items-center gap-x-[10px] font-medium text-sm px-4 py-2 group-hover:w-[213px] w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900"
                       rel="noreferrer"
                       target="_blank"
@@ -462,7 +455,7 @@ const Chain = ({ params }: { params: any }) => {
                       <div>Website</div>
                     </Link>
                     <Link
-                      href={master.chains[chainKeys[0]].twitter}
+                      href={master.chains[chainKey].twitter}
                       className="flex items-center gap-x-[10px] font-medium text-sm px-4 py-2 group-hover:w-[213px] w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900"
                       rel="noreferrer"
                       target="_blank"
@@ -470,7 +463,7 @@ const Chain = ({ params }: { params: any }) => {
                       <Icon icon="feather:twitter" className="w-4 h-4" />
                       <div>
                         <span className="">@</span>
-                        {master.chains[chainKeys[0]].twitter.split(
+                        {master.chains[chainKey].twitter.split(
                           "https://twitter.com/",
                         )}
                       </div>
@@ -478,7 +471,7 @@ const Chain = ({ params }: { params: any }) => {
                   </div>
                 </div>
                 <Link
-                  href={master.chains[chainKeys[0]].block_explorer}
+                  href={master.chains[chainKey].block_explorer}
                   // className="flex items-center gap-x-[8px] justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-[16px] py-2"
                   className="flex items-center gap-x-[8px] justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-[16px] py-[8px] transition-all duration-300 peer-hover:[&>div]:w-[0px] [&>div]:w-[99px] peer-hover:gap-x-0"
                   rel="noreferrer"
@@ -489,12 +482,12 @@ const Chain = ({ params }: { params: any }) => {
                     Block Explorer
                   </div>
                 </Link>
-                {master.chains[chainKeys[0]].rhino_listed && (
+                {master.chains[chainKey].rhino_listed && (
                   <Link
                     href={
-                      master.chains[chainKeys[0]].rhino_naming
+                      master.chains[chainKey].rhino_naming
                         ? `https://app.rhino.fi/bridge?refId=PG_GrowThePie&token=ETH&chainOut=${
-                            master.chains[chainKeys[0]].rhino_naming
+                            master.chains[chainKey].rhino_naming
                           }&chain=ETHEREUM`
                         : "https://app.rhino.fi/bridge/?refId=PG_GrowThePie"
                     }
@@ -524,23 +517,23 @@ const Chain = ({ params }: { params: any }) => {
               <>
                 <div className="flex items-center mb-[15px]">
                   <div className="text-[16px]">
-                    {master.chains[chainKeys[0]].description
-                      ? master.chains[chainKeys[0]].description
+                    {master.chains[chainKey].description
+                      ? master.chains[chainKey].description
                       : ""}
                   </div>
                 </div>
 
                 <div className="flex md:hidden items-start space-x-[7px] font-inter uppercase  mb-[21px] ">
                   <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm ">
-                    {master.chains[chainKeys[0]].technology}
+                    {master.chains[chainKey].technology}
                   </div>
-                  {master.chains[chainKeys[0]].purpose.includes("(EVM)") ? (
+                  {master.chains[chainKey].purpose.includes("(EVM)") ? (
                     <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400  bg-forest-400 text-forest-50 dark:border-forest-500 dark:bg-forest-500 dark:text-forest-900 px-[4px] font-bold rounded-sm ml-[7px]">
                       EVM
                     </div>
                   ) : (
                     <>
-                      {master.chains[chainKeys[0]].purpose
+                      {master.chains[chainKey].purpose
                         .split(", ")
                         .map((purpose: string) => (
                           <div
@@ -594,12 +587,12 @@ const Chain = ({ params }: { params: any }) => {
                             showIconBackground: true,
                           }}
                           items={
-                            master.chains[chainKeys[0]].block_explorer
+                            master.chains[chainKey].block_explorer
                               ? [
                                   {
                                     label: "Block Explorer",
                                     icon: "gtp:gtp-block-explorer",
-                                    href: master.chains[chainKeys[0]]
+                                    href: master.chains[chainKey]
                                       .block_explorer,
                                   },
                                 ]
@@ -625,13 +618,11 @@ const Chain = ({ params }: { params: any }) => {
                         </Link> */}
                       </div>
                       <div className="flex flex-col justify-between gap-y-[10px] flex-1 min-w-[90px] ">
-                        {master.chains[chainKeys[0]].rhino_listed ? (
+                        {master.chains[chainKey].rhino_listed ? (
                           <Link
                             href={
-                              master.chains[chainKeys[0]].rhino_naming
-                                ? `https://app.rhino.fi/bridge?refId=PG_GrowThePie&token=ETH&chainOut=${
-                                    master.chains[chainKeys[0]].rhino_naming
-                                  }&chain=ETHEREUM`
+                              master.chains[chainKey].rhino_naming
+                                ? `https://app.rhino.fi/bridge?refId=PG_GrowThePie&token=ETH&chainOut=${master.chains[chainKey].rhino_naming}&chain=ETHEREUM`
                                 : "https://app.rhino.fi/bridge/?refId=PG_GrowThePie"
                             }
                             className="absolute right-[5px] top-[10px] lg:top-[10px] left-[calc((100%/2)+5px)] lg:left-[140px]"
@@ -663,12 +654,12 @@ const Chain = ({ params }: { params: any }) => {
                             {
                               label: "Website",
                               icon: "feather:external-link",
-                              href: master.chains[chainKeys[0]].website,
+                              href: master.chains[chainKey].website,
                             },
                             {
                               label: "Twitter",
                               icon: "feather:twitter",
-                              href: master.chains[chainKeys[0]].twitter,
+                              href: master.chains[chainKey].twitter,
                             },
                           ]}
                         />
@@ -699,7 +690,7 @@ const Chain = ({ params }: { params: any }) => {
                               </div>
                             </div>
                             <Link
-                              href={master.chains[chainKeys[0]].website}
+                              href={master.chains[chainKey].website}
                               className="flex items-center gap-x-[10px] h-[28px] font-medium text-sm px-4 py-2 group-hover:w-full w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900"
                               rel="noreferrer"
                               target="_blank"
@@ -711,7 +702,7 @@ const Chain = ({ params }: { params: any }) => {
                               <div>Website</div>
                             </Link>
                             <Link
-                              href={master.chains[chainKeys[0]].twitter}
+                              href={master.chains[chainKey].twitter}
                               className="flex items-center gap-x-[10px] h-[28px] font-medium text-sm px-4 py-2 group-hover:w-full w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900"
                               rel="noreferrer"
                               target="_blank"
@@ -722,7 +713,7 @@ const Chain = ({ params }: { params: any }) => {
                               />
                               <div>
                                 <span className="">@</span>
-                                {master.chains[chainKeys[0]].twitter.split(
+                                {master.chains[chainKey].twitter.split(
                                   "https://twitter.com/",
                                 )}
                               </div>
@@ -765,7 +756,7 @@ const Chain = ({ params }: { params: any }) => {
                         <div
                           className={`text-[10px] leading-[150%] md:min-w-[460px] md:max-w-[460px] `}
                         >
-                          {master.chains[chainKeys[0]].description}
+                          {master.chains[chainKey].description}
                         </div>
                       </div>
                       <div
@@ -779,7 +770,7 @@ const Chain = ({ params }: { params: any }) => {
                           </div>
                           <div className="text-[10px] leading-[150%]">
                             {new Date(
-                              master.chains[chainKeys[0]].launch_date,
+                              master.chains[chainKey].launch_date,
                             ).toLocaleDateString(undefined, {
                               year: "numeric",
                               month: "long",
@@ -791,17 +782,17 @@ const Chain = ({ params }: { params: any }) => {
                             Rankings
                           </div>
                           <div className="flex gap-x-[2px]">
-                            {chainData[0].ranking && (
+                            {chainData.ranking && (
                               <>
                                 {Object.keys(rankChains).map((key, i) => {
                                   return (
                                     <div
                                       className="w-[24px] h-[24px] rounded-full flex items-center justify-center z-0"
                                       style={{
-                                        backgroundColor: chainData[0]
-                                          ? chainData[0].ranking[key]
+                                        backgroundColor: chainData
+                                          ? chainData.ranking[key]
                                             ? getGradientColor(
-                                                chainData[0].ranking[key]
+                                                chainData.ranking[key]
                                                   .color_scale * 100,
                                               )
                                             : "#5A6462"
@@ -828,7 +819,7 @@ const Chain = ({ params }: { params: any }) => {
                             Purpose
                           </div>
                           <div className="text-[10px] leading-[150%]">
-                            {master.chains[chainKeys[0]].purpose}
+                            {master.chains[chainKey].purpose}
                           </div>
                         </div>
                       </div>
@@ -863,15 +854,15 @@ const Chain = ({ params }: { params: any }) => {
                             Hottest Contract
                           </div>
                           <div className="text-[10px] font-bold min-w-[190px] ">
-                            {chainData[0]
+                            {chainData
                               ? `${
-                                  chainData[0].hottest_contract
+                                  chainData.hottest_contract
                                     ? `${
-                                        chainData[0].hottest_contract.data[0]
-                                          ? chainData[0].hottest_contract
+                                        chainData.hottest_contract.data[0]
+                                          ? chainData.hottest_contract
                                               .data[0][1] +
                                             " - " +
-                                            chainData[0].hottest_contract
+                                            chainData.hottest_contract
                                               .data[0][2]
                                           : "N/A"
                                       }`
@@ -918,7 +909,7 @@ const Chain = ({ params }: { params: any }) => {
                             Stack
                           </div>
                           <div className="text-[10px] leading-[150%] font-medium">
-                            {master.chains[chainKeys[0]].stack.label}
+                            {master.chains[chainKey].stack.label}
                           </div>
                         </div>
                         <div>
@@ -926,7 +917,7 @@ const Chain = ({ params }: { params: any }) => {
                             Technology
                           </div>
                           <div className="text-[10px] leading-[150%] font-medium">
-                            {master.chains[chainKeys[0]].technology}
+                            {master.chains[chainKey].technology}
                           </div>
                         </div>
                       </div>
@@ -936,7 +927,7 @@ const Chain = ({ params }: { params: any }) => {
                             Data Availability
                           </div>
                           <div className="text-[10px] leading-[150%] font-medium  ">
-                            {master.chains[chainKeys[0]].da_layer}
+                            {master.chains[chainKey].da_layer}
                           </div>
                         </div>
                         <div className="">
@@ -944,7 +935,7 @@ const Chain = ({ params }: { params: any }) => {
                             Rollup as a Service
                           </div>
                           <div className="text-[10px] leading-[150%] font-medium">
-                            {master.chains[chainKeys[0]].raas}
+                            {master.chains[chainKey].raas}
                           </div>
                         </div>
                       </div>
@@ -973,17 +964,16 @@ const Chain = ({ params }: { params: any }) => {
                           <div
                             className="flex items-center justify-center font-bold text-white dark:text-forest-1000 rounded-[2px] text-[10px] leading-[120%]"
                             style={{
-                              background: master.chains[chainKeys[0]]
-                                .l2beat_stage
-                                ? master.chains[chainKeys[0]].l2beat_stage.hex
-                                  ? master.chains[chainKeys[0]].l2beat_stage.hex
+                              background: master.chains[chainKey].l2beat_stage
+                                ? master.chains[chainKey].l2beat_stage.hex
+                                  ? master.chains[chainKey].l2beat_stage.hex
                                   : "#344240"
                                 : "#344240",
                             }}
                           >
-                            {master.chains[chainKeys[0]].l2beat_stage
-                              ? master.chains[chainKeys[0]].l2beat_stage.stage
-                                ? master.chains[chainKeys[0]].l2beat_stage.stage
+                            {master.chains[chainKey].l2beat_stage
+                              ? master.chains[chainKey].l2beat_stage.stage
+                                ? master.chains[chainKey].l2beat_stage.stage
                                 : "N/A"
                               : "N/A"}
                           </div>
@@ -999,7 +989,7 @@ const Chain = ({ params }: { params: any }) => {
                       <div className="flex flex-col justify-between gap-y-[10px] h-full">
                         <div className="flex justify-end items-center ">
                           <a
-                            href={master.chains[chainKeys[0]].l2beat_link}
+                            href={master.chains[chainKey].l2beat_link}
                             target="_blank"
                             className="rounded-full bg-forest-50 dark:bg-[#344240] w-[15px] h-[15px] p-[2px]"
                           >
@@ -1073,7 +1063,7 @@ const Chain = ({ params }: { params: any }) => {
                               Stack
                             </div>
                             <div className="text-[10px] leading-[150%] font-medium min-w-[85px] ">
-                              {master.chains[chainKeys[0]].stack.label}
+                              {master.chains[chainKey].stack.label}
                             </div>
                           </div>
                           <div>
@@ -1081,7 +1071,7 @@ const Chain = ({ params }: { params: any }) => {
                               Technology
                             </div>
                             <div className="text-[10px] leading-[150%] font-medium">
-                              {master.chains[chainKeys[0]].technology}
+                              {master.chains[chainKey].technology}
                             </div>
                           </div>
                         </div>
@@ -1091,7 +1081,7 @@ const Chain = ({ params }: { params: any }) => {
                               Data Availability
                             </div>
                             <div className="text-[10px] leading-[150%] font-medium  ">
-                              {master.chains[chainKeys[0]].da_layer}
+                              {master.chains[chainKey].da_layer}
                             </div>
                           </div>
                           <div className="min-w-[90px]">
@@ -1099,7 +1089,7 @@ const Chain = ({ params }: { params: any }) => {
                               Rollup as a Service
                             </div>
                             <div className="text-[10px] leading-[150%] font-medium">
-                              {master.chains[chainKeys[0]].raas}
+                              {master.chains[chainKey].raas}
                             </div>
                           </div>
                         </div>
@@ -1123,19 +1113,16 @@ const Chain = ({ params }: { params: any }) => {
                             <div
                               className="flex items-center justify-center font-bold text-white dark:text-forest-1000 rounded-[2px] text-[10px] leading-[120%]"
                               style={{
-                                background: master.chains[chainKeys[0]]
-                                  .l2beat_stage
-                                  ? master.chains[chainKeys[0]].l2beat_stage.hex
-                                    ? master.chains[chainKeys[0]].l2beat_stage
-                                        .hex
+                                background: master.chains[chainKey].l2beat_stage
+                                  ? master.chains[chainKey].l2beat_stage.hex
+                                    ? master.chains[chainKey].l2beat_stage.hex
                                     : "#344240"
                                   : "#344240",
                               }}
                             >
-                              {master.chains[chainKeys[0]].l2beat_stage
-                                ? master.chains[chainKeys[0]].l2beat_stage.stage
-                                  ? master.chains[chainKeys[0]].l2beat_stage
-                                      .stage
+                              {master.chains[chainKey].l2beat_stage
+                                ? master.chains[chainKey].l2beat_stage.stage
+                                  ? master.chains[chainKey].l2beat_stage.stage
                                   : "N/A"
                                 : "N/A"}
                             </div>
@@ -1220,12 +1207,11 @@ const Chain = ({ params }: { params: any }) => {
               </>
             )}
 
-            {chainData.length > 0 && (
+            {chainData && (
               <ChainChart
                 chain={chain}
-                data={chainData}
-                chainKey={chainKeys}
-                updateChainKey={setChainKeys}
+                chainData={chainData}
+                defaultChainKey={chainKey}
               />
             )}
             {/* <div className="flex lg:hidden flex-row-reverse gap-x-[10px] justify-between text-sm mb-8 mt-[30px] lg:mt-[15px]">
@@ -1242,7 +1228,7 @@ const Chain = ({ params }: { params: any }) => {
 
                 <div className="absolute top-[15px] left-0 !z-[-0] h-0 delay-0 group-hover:h-[119px] overflow-hidden transition-all duration-300 ease-in-out bg-forest-50 dark:bg-forest-1000 rounded-b-[22px] group-hover:pt-[29px] group-hover:pb-[10px] break-inside-avoid w-[91px] group-hover:w-[213px] shadow-transparent group-hover:shadow-[0px_4px_46.2px_0px_#000000]">
                   <Link
-                    href={master.chains[chainKeys[0]].website}
+                    href={master.chains[chainKey].website}
                     className="flex items-center gap-x-[10px] font-medium text-sm px-4 py-2 group-hover:w-[213px] w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900"
                     rel="noreferrer"
                     target="_blank"
@@ -1251,7 +1237,7 @@ const Chain = ({ params }: { params: any }) => {
                     <div>Website</div>
                   </Link>
                   <Link
-                    href={master.chains[chainKeys[0]].twitter}
+                    href={master.chains[chainKey].twitter}
                     className="flex items-center gap-x-[10px] font-medium text-sm px-4 py-2 group-hover:w-[213px] w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900"
                     rel="noreferrer"
                     target="_blank"
@@ -1259,7 +1245,7 @@ const Chain = ({ params }: { params: any }) => {
                     <Icon icon="feather:twitter" className="w-4 h-4" />
                     <div>
                       <span className="">@</span>
-                      {master.chains[chainKeys[0]].twitter.split(
+                      {master.chains[chainKey].twitter.split(
                         "https://twitter.com/",
                       )}
                     </div>
@@ -1267,7 +1253,7 @@ const Chain = ({ params }: { params: any }) => {
                 </div>
               </div>
               <Link
-                href={master.chains[chainKeys[0]].block_explorer}
+                href={master.chains[chainKey].block_explorer}
                 // className="flex items-center gap-x-[8px] justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-[16px] py-2"
                 className="flex items-center gap-x-[8px] justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full px-[16px] py-[8px] transition-all duration-300 peer-hover:[&>div]:w-[0px] [&>div]:w-[59px] peer-hover:gap-x-0"
                 rel="noreferrer"
@@ -1278,12 +1264,12 @@ const Chain = ({ params }: { params: any }) => {
                   Explorer
                 </div>
               </Link>
-              {master.chains[chainKeys[0]].rhino_listed && (
+              {master.chains[chainKey].rhino_listed && (
                 <Link
                   href={
-                    master.chains[chainKeys[0]].rhino_naming
+                    master.chains[chainKey].rhino_naming
                       ? `https://app.rhino.fi/bridge?refId=PG_GrowThePie&token=ETH&chainOut=${
-                          master.chains[chainKeys[0]].rhino_naming
+                          master.chains[chainKey].rhino_naming
                         }&chain=ETHEREUM`
                       : "https://app.rhino.fi/bridge/?refId=PG_GrowThePie"
                   }
@@ -1312,7 +1298,7 @@ const Chain = ({ params }: { params: any }) => {
         )}
       </Container>
 
-      {master && overviewData !== null && chainKeys[0] !== "ethereum" && (
+      {master && overviewData !== null && chainKey !== "ethereum" && (
         <>
           <Container className="flex flex-col w-full pt-[0px] md:pt-[60px]">
             <div className="flex items-center justify-between md:text-[36px] mb-[15px] relative">
@@ -1332,13 +1318,13 @@ const Chain = ({ params }: { params: any }) => {
                   className="text-[20px] leading-snug md:text-[30px] !z-[-1]"
                   as="h2"
                 >
-                  {master.chains[chainKeys[0]].name} Blockspace
+                  {master.chains[chainKey].name} Blockspace
                 </Heading>
               </div>
             </div>
             <div className="flex items-center mb-[30px]">
               <div className="text-[16px]">
-                An overview of {master.chains[chainKeys[0]].name} high-level
+                An overview of {master.chains[chainKey].name} high-level
                 blockspace usage. All expressed in share of chain usage. You can
                 toggle between share of chain usage or absolute numbers.
               </div>
@@ -1350,7 +1336,7 @@ const Chain = ({ params }: { params: any }) => {
             setSelectedTimespan={setSelectedTimespan}
             data={overviewData}
             master={master}
-            forceSelectedChain={chainKeys[0]}
+            forceSelectedChain={chainKey}
           />
         </>
       )}
