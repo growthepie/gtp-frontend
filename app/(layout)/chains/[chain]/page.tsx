@@ -35,6 +35,7 @@ import { useMediaQuery } from "usehooks-ts";
 import { useUIContext } from "@/contexts/UIContext";
 import { track } from "@vercel/analytics/react";
 import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
+import UsageFees from "@/components/layout/SingleChains/UsageFees";
 
 const Chain = ({ params }: { params: any }) => {
   const { chain } = params;
@@ -52,8 +53,7 @@ const Chain = ({ params }: { params: any }) => {
   const [chainValidating, setChainValidating] = useState(false);
   const [chainLoading, setChainLoading] = useState(false);
   const [openChainList, setOpenChainList] = useState<boolean>(false);
-  const [hoverBarIndex, setHoverBarIndex] = useState<Number | null>(null);
-  const [selectedBarIndex, setSelectedBarIndex] = useState(23);
+
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const isMobile = useMediaQuery("(max-width: 1024px)");
   const { isSidebarOpen } = useUIContext();
@@ -81,12 +81,6 @@ const Chain = ({ params }: { params: any }) => {
       Title: "Throughput",
     },
   };
-
-  const optIndex = useMemo(() => {
-    let pickIndex = hoverBarIndex ? hoverBarIndex : selectedBarIndex;
-    let retIndex = 23 - Number(pickIndex);
-    return retIndex;
-  }, [selectedBarIndex, hoverBarIndex]);
 
   const {
     data: master,
@@ -846,111 +840,10 @@ const Chain = ({ params }: { params: any }) => {
                     className="hover:min-w-[260px] min-w-[35px] transition-all duration-300"
                   >
                     <div className="flex flex-col gap-y-[5px] overflow-hidden relative ">
-                      <div
-                        className={`h-[58px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] bg-forest-50 dark:bg-[#1F2726] w-full ${
-                          isMobile ? "justify-between" : "justify-normal"
-                        } `}
-                      >
-                        <div
-                          className={`absolute  inset-0 pointer-events-none shadow-inner rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${
-                            isMobile
-                              ? "opacity-0"
-                              : isSidebarOpen
-                              ? "lg:opacity-100 opacity-0"
-                              : "2xl:opacity-0 md:opacity-100"
-                          }`}
-                          style={{
-                            boxShadow:
-                              "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
-                          }}
-                        ></div>
-                        <div className="flex gap-x-[5px]">
-                          <div className="flex flex-col items-center leading-tight pt-[9px] ">
-                            <div className="text-[14px] font-semibold w-[44px]  flex justify-center">
-                              {chainFeeData[0] &&
-                              chainFeeData?.[optIndex]?.[showUsd ? 2 : 1] !==
-                                null
-                                ? Intl.NumberFormat(undefined, {
-                                    notation: "compact",
-                                    maximumFractionDigits: 2,
-                                    minimumFractionDigits: 1,
-                                  }).format(
-                                    chainFeeData[optIndex][showUsd ? 2 : 1] *
-                                      100,
-                                  )
-                                : "N/A"}
-                            </div>
-                            <div className="text-[8px] w-[44px] flex justify-center">
-                              cents
-                            </div>
-                          </div>
-                          <div className="flex flex-col leading-3 gap-y-[0px] justify-self-start">
-                            <div className="text-[10px] text-[#5A6462] font-bold">
-                              What a typical user paid for a
-                            </div>
-                            <div className="relative flex items-center gap-x-[1px]">
-                              {Array.from({ length: 24 }, (_, index) => (
-                                <div
-                                  key={index.toString() + "circles"}
-                                  className="h-[12px] flex items-center justify-end cursor-pointer"
-                                  onMouseEnter={() => {
-                                    setHoverBarIndex(index);
-                                  }}
-                                  onMouseLeave={() => {
-                                    setHoverBarIndex(null);
-                                  }}
-                                  onClick={() => {
-                                    setSelectedBarIndex(index);
-                                  }}
-                                >
-                                  <div
-                                    className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${
-                                      selectedBarIndex === index
-                                        ? "scale-[160%]"
-                                        : hoverBarIndex === index
-                                        ? "scale-[120%] opacity-90"
-                                        : "scale-100 opacity-50"
-                                    }`}
-                                    style={{
-                                      backgroundColor:
-                                        !chainFeeData[23 - index] ||
-                                        !chainFeeData[23 - index][
-                                          showUsd ? 2 : 1
-                                        ]
-                                          ? "gray"
-                                          : getGradientColor(
-                                              Math.floor(
-                                                chainFeeData[23 - index][3] *
-                                                  100,
-                                              ),
-                                            ),
-                                    }}
-                                  ></div>
-                                </div>
-                              ))}
-                            </div>
-                            <div className="text-[10px] font-bold ">
-                              Transaction
-                            </div>
-                          </div>
-                        </div>
-                        <div className="h-full flex flex-col justify-between items-end pr-[5px]">
-                          <Link
-                            href={`/fees`}
-                            className="rounded-full  w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] hover:cursor-pointer z-10"
-                          >
-                            <Icon
-                              icon="feather:arrow-right"
-                              className="w-[11px] h-[11px]"
-                            />
-                          </Link>
-                          <div className="text-[8px] font-semibold min-w-[48px]">
-                            {optIndex + 1 > 1
-                              ? optIndex + 1 + " hours ago"
-                              : optIndex + 1 + " hour ago"}
-                          </div>
-                        </div>
-                      </div>
+                      <UsageFees
+                        chainFeeData={chainFeeData}
+                        showUsd={showUsd}
+                      />
                       <div className="h-[48px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] bg-forest-50 dark:bg-[#1F2726] justify-between ">
                         <div
                           className={`absolute  inset-0 pointer-events-none shadow-inner opacity-0 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${
