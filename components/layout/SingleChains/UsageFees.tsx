@@ -171,7 +171,7 @@ export default function UsageFees({
         >
           <Icon icon="feather:arrow-right" className="w-[11px] h-[11px]" />
         </Link>
-        <div className="text-[8px] font-semibold min-w-[48px]">
+        <div className="text-[8px] font-semibold min-w-[53px]">
           {optIndex + 1 > 1
             ? optIndex + 1 + " hours ago"
             : optIndex + 1 + " hour ago"}
