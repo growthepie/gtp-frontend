@@ -1855,18 +1855,18 @@ export default function ChainChart({
                               </div>
                             ) : (
                               <div className="absolute left-[15px] top-[15px] flex items-center justify-between w-full">
-                                <div className="relative -top-[3px] text-[16px] font-bold flex gap-x-2 items-center">
+                                <Link
+                                  href={`/fundamentals/${getFundamentalsByKey[key].urlKey}`}
+                                  className="relative z-10 -top-[3px] text-[16px] font-bold flex gap-x-2 items-center cursor-pointer"
+                                >
                                   <div>{getFundamentalsByKey[key].label}</div>
-                                  <Link
-                                    href={`/fundamentals/${getFundamentalsByKey[key].urlKey}`}
-                                    className="rounded-full w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] hover:cursor-pointer z-10"
-                                  >
+                                  <div className="rounded-full w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] z-10">
                                     <Icon
                                       icon="feather:arrow-right"
                                       className="w-[11px] h-[11px]"
                                     />
-                                  </Link>
-                                </div>
+                                  </div>
+                                </Link>
                                 <div className="relative text-[18px] leading-snug font-medium flex space-x-[2px] right-[40px]">
                                   <div>{displayValues[0][key].prefix}</div>
                                   <div>{displayValues[0][key].value}</div>
