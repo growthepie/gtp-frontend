@@ -96,7 +96,7 @@ export default function UsageFees({
       } `}
     >
       <div
-        className={`absolute  inset-0 pointer-events-none shadow-inner rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${
+        className={`absolute z-20 inset-0 pointer-events-none shadow-inner rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${
           isMobile
             ? "opacity-0"
             : isSidebarOpen
@@ -171,7 +171,7 @@ export default function UsageFees({
           </div>
         </div>
       </div>
-      <div className="h-full flex flex-col justify-between items-end pr-[5px]">
+      <div className="h-full flex flex-col justify-between items-end pr-[5px] z-10 ">
         <Link
           href={`/fees`}
           className="rounded-full  w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] hover:cursor-pointer z-10"
