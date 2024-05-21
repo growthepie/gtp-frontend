@@ -758,7 +758,7 @@ const Chain = ({ params }: { params: any }) => {
                         }`}
                         style={{
                           boxShadow:
-                            "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
+                            "-67.5px 0px 20px rgba(22, 28, 27, 0.45) inset",
                         }}
                       ></div>
                       <div className={`lg:min-w-[460px]`}>
@@ -927,7 +927,7 @@ const Chain = ({ params }: { params: any }) => {
                           }`}
                           style={{
                             boxShadow:
-                              "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
+                              "-67.5px 0px 20px rgba(22, 28, 27, 0.45) inset",
                           }}
                         ></div>
                         <div className="flex-col flex pl-[48px] ">
@@ -982,7 +982,7 @@ const Chain = ({ params }: { params: any }) => {
                         className={`absolute  inset-0 pointer-events-none shadow-inner rounded-2xl group-hover:opacity-0 transition-opacity duration-300 2xl:opacity-0 lg:opacity-100 opacity-0 `}
                         style={{
                           boxShadow:
-                            "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
+                            "-67.5px 0px 20px rgba(22, 28, 27, 0.45) inset",
                         }}
                       ></div>
                       <div className="flex flex-col w-full h-full justify-between min-w-[85px] ">
@@ -1036,7 +1036,7 @@ const Chain = ({ params }: { params: any }) => {
                         className={`absolute  inset-0 pointer-events-none shadow-inner  rounded-2xl group-hover:opacity-0 transition-opacity duration-300 xl:opacity-0 lg:opacity-100 `}
                         style={{
                           boxShadow:
-                            "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
+                            "-67.5px 0px 20px rgba(22, 28, 27, 0.45) inset",
                         }}
                       ></div>
                       <div className="flex flex-col justify-between gap-y-[10px] h-[86px] min-w-[80px]">
