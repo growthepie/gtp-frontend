@@ -909,7 +909,7 @@ const Chain = ({ params }: { params: any }) => {
                     title={"Usage"}
                     enableDropdown={isMobile}
                     childrenHeight={isMobile ? 116 : 111}
-                    className="hover:min-w-[260px] min-w-[35px] transition-all duration-300"
+                    className="hover:min-w-[230px] min-w-[35px] transition-all duration-300"
                   >
                     <div className="flex flex-col gap-y-[5px] overflow-hidden relative ">
                       <UsageFees
@@ -934,7 +934,7 @@ const Chain = ({ params }: { params: any }) => {
                           <div className="text-[10px] text-[#5A6462] font-bold min-w-[150px] ">
                             Hottest Contract
                           </div>
-                          <div className="text-[10px] font-bold min-w-[190px] ">
+                          <div className="text-[10px] font-bold min-w-[180px]   ">
                             {chainData
                               ? `${
                                   chainData.hottest_contract

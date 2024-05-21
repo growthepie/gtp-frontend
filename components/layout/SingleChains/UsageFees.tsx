@@ -161,7 +161,14 @@ export default function UsageFees({
               </div>
             ))}
           </div>
-          <div className="text-[10px] font-bold ">Transaction</div>
+          <div className="flex justify-between items-center w-[110%] ">
+            <div className="text-[10px] font-bold ">Transaction</div>
+            <div className="text-[8px] font-semibold min-w-[53px]">
+              {optIndex + 1 > 1
+                ? optIndex + 1 + " hours ago"
+                : optIndex + 1 + " hour ago"}
+            </div>
+          </div>
         </div>
       </div>
       <div className="h-full flex flex-col justify-between items-end pr-[5px]">
@@ -171,11 +178,6 @@ export default function UsageFees({
         >
           <Icon icon="feather:arrow-right" className="w-[11px] h-[11px]" />
         </Link>
-        <div className="text-[8px] font-semibold min-w-[53px]">
-          {optIndex + 1 > 1
-            ? optIndex + 1 + " hours ago"
-            : optIndex + 1 + " hour ago"}
-        </div>
       </div>
     </div>
   );
