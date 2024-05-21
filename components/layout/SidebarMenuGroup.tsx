@@ -319,7 +319,7 @@ export default function SidebarMenuGroup({
                       <Tooltip key={option.key} placement="top-start">
                         <TooltipTrigger className="px-0 md:pl-5 w-full">
                           <Link
-                            className={`group flex items-center justify-items-center rounded-l-full md:rounded-r-none relative w-full ${urlParts[1]
+                            className={`group flex items-center justify-items-center rounded-l-full md:rounded-r-none relative w-full whitespace-nowrap ${urlParts[1]
                               .trim()
                               .localeCompare(option.urlKey) === 0
                               ? "bg-[#CDD8D3] dark:bg-forest-1000 hover:bg-[#F0F5F3] dark:hover:bg-[#5A6462]"
