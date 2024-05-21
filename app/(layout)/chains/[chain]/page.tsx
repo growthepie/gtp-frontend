@@ -1383,7 +1383,7 @@ const Chain = ({ params }: { params: any }) => {
 
       {master && overviewData !== null && chainKey !== "ethereum" && (
         <>
-          <Container className="flex flex-col w-full pt-[0px] md:pt-[60px]">
+          <Container className="flex flex-col w-full pt-[30px] md:pt-[60px]">
             <div className="flex items-center justify-between md:text-[36px] mb-[15px] relative">
               <div
                 className="flex gap-x-[8px] items-center scroll-mt-8"
