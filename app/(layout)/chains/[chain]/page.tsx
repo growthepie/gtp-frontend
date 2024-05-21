@@ -713,7 +713,7 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Background"}
                     enableDropdown={isMobile}
-                    childrenHeight={isMobile ? 179 : 111}
+                    childrenHeight={isMobile ? 184 : 111}
                     className={`min-w-[100px] transition-all duration-300 min-w-none" lg:hover:min-w-[510px]`}
                   >
                     <div
@@ -808,6 +808,7 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Usage"}
                     enableDropdown={isMobile}
+                    childrenHeight={isMobile ? 116 : 111}
                     className="hover:min-w-[260px] min-w-[35px] transition-all duration-300"
                   >
                     <div className="flex flex-col gap-y-[5px] overflow-hidden relative ">
@@ -868,6 +869,7 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Technology"}
                     enableDropdown={isMobile}
+                    childrenHeight={isMobile ? 116 : 111}
                     className={`transition-all duration-300 hover:min-w-[180px] min-w-[35px] ${isMobile ? "hidden" : "block  "
                       }`}
                   >
@@ -920,6 +922,7 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Risk"}
                     enableDropdown={isMobile}
+                    childrenHeight={isMobile ? 116 : 111}
                     className={`transition-all duration-300 hover:min-w-[130px] min-w-[20px] ${isMobile ? "hidden" : "block"
                       }`}
                   >
