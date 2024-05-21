@@ -10,6 +10,8 @@ import Image from "next/image";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import { notFound } from "next/navigation";
 import { track } from "@vercel/analytics/server";
+import Link from "next/link";
+import Icon from "@/components/layout/Icon";
 
 type Props = {
   params: { metric: string };
@@ -145,17 +147,41 @@ export default async function Layout({
     <>
       <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
         <div className="flex justify-between items-start w-full mb-[15px]">
-          <div className="flex items-center ">
-            <Image
-              src="/GTP-Fundamentals.svg"
-              alt="GTP Chain"
-              className="object-contain w-[32px] h-[32px] mr-[8px]"
-              height={36}
-              width={36}
-            />
-            <Heading className="text-[36px] leading-snug " as="h1">
-              {pageData.title}
-            </Heading>
+          <div className=" block md:flex items-center ">
+            <div className="flex items-center mb-[5px]">
+              <Image
+                src="/GTP-Fundamentals.svg"
+                alt="GTP Chain"
+                className="object-contain w-[32px] h-[32px] mr-[8px]"
+                height={36}
+                width={36}
+              />
+              <Heading className="text-[36px] leading-snug " as="h1">
+                {pageData.title}
+              </Heading>
+            </div>
+            <div className=" md:p-0 pl-[28px]">
+              <Link
+                href="https://fees.growthepie.xyz/"
+                className={`flex items-center justify-center max-w-[207px] ml-[15px] h-[39px] w-[209px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full  ${
+                  params.metric === "transaction-costs" ? "flex" : "hidden"
+                }`}
+                rel="noreferrer"
+                target="_blank"
+              >
+                <div className="flex items-center pl-[5px] pr-[9px] gap-x-[8px]  justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full py-[6px] transition-all duration-300">
+                  <div className="w-[24px] h-[24px] bg-[#151A19] rounded-full flex items-center justify-center">
+                    <Icon
+                      icon="gtp:detailed-fees"
+                      className="w-[15px] h-[15px]"
+                    />
+                  </div>
+                  <div className="transition-all duration-300 whitespace-nowrap overflow-hidden text-[14px] font-semibold">
+                    Detailed Fees Overview
+                  </div>
+                </div>
+              </Link>
+            </div>
           </div>
         </div>
         <Subheading
