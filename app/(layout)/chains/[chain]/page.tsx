@@ -278,7 +278,7 @@ const Chain = ({ params }: { params: any }) => {
   }: ExpandingButtonMenuProps) => {
     return (
       <div
-        className={`absolute delay-0 hover:delay-300 group/jump flex flex-col cursor-pointer hover:top-[10px] hover:left-[5px] hover:right-[5px] transition-all duration-300 ${className}`}
+        className={`absolute delay-0 hover:delay-500 group/jump flex flex-col cursor-pointer hover:top-[10px] hover:left-[5px] hover:right-[5px] transition-all duration-300 ${className}`}
       >
         <div
           className="!z-[15] group-hover/jump:!z-[25] transition-[z-index] delay-100 group-hover/jump:delay-0 w-full flex items-center h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50"
@@ -297,12 +297,12 @@ const Chain = ({ params }: { params: any }) => {
             <Icon
               icon={button.icon}
               className={`w-[15px] h-[15px] ${button.animateIcon &&
-                "transition-transform duration-300 transform group-hover/jump:rotate-90"
+                "transition-transform duration-300 transform delay-0 group-hover/jump:delay-300 group-hover/jump:rotate-90"
                 }`}
             />
             <Icon
               icon={"gtp:circle-arrow"}
-              className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform duration-500 group-hover/jump:rotate-90 ${button.showIconBackground ? "block" : "hidden"
+              className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform delay-0 group-hover/jump:delay-300 duration-500 group-hover/jump:rotate-90 ${button.showIconBackground ? "block" : "hidden"
                 }`}
               style={{
                 transformOrigin: "-8px 4px",
@@ -313,7 +313,7 @@ const Chain = ({ params }: { params: any }) => {
             {button.label}
           </div>
         </div>
-        <div className="absolute !z-[11] group-hover/jump:!z-[21] delay-0 group-hover/jump:delay-300 overflow-hidden whitespace-nowrap  max-h-0 transition-all duration-300 left-0 right-0 top-[16px] bg-white dark:bg-[#151A19] pb-[0px] rounded-b-[22px] group-hover/jump:max-h-[300px] group-hover/jump:pt-[24px] group-hover/jump:pb-[10px] group-hover/jump:shadow-lg group-hover/jump:dark:shadow-[0px_4px_46.2px_0px_#000000]">
+        <div className="absolute !z-[11] group-hover/jump:!z-[21] delay-0 group-hover/jump:delay-500 overflow-hidden whitespace-nowrap  max-h-0 transition-all duration-300 left-0 right-0 top-[16px] bg-white dark:bg-[#151A19] pb-[0px] rounded-b-[22px] group-hover/jump:max-h-[300px] group-hover/jump:pt-[24px] group-hover/jump:pb-[10px] group-hover/jump:shadow-lg group-hover/jump:dark:shadow-[0px_4px_46.2px_0px_#000000]">
           {items.map((item: { label: string; icon: string; href: string }) => (
             <Link
               href={item.href}
