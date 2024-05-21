@@ -173,20 +173,20 @@ const Chain = ({ params }: { params: any }) => {
   const getGradientColor = useCallback((percentage, weighted = false) => {
     const colors = !weighted
       ? [
-          { percent: 0, color: "#1DF7EF" },
-          { percent: 20, color: "#76EDA0" },
-          { percent: 50, color: "#FFDF27" },
-          { percent: 70, color: "#FF9B47" },
-          { percent: 100, color: "#FE5468" },
-        ]
+        { percent: 0, color: "#1DF7EF" },
+        { percent: 20, color: "#76EDA0" },
+        { percent: 50, color: "#FFDF27" },
+        { percent: 70, color: "#FF9B47" },
+        { percent: 100, color: "#FE5468" },
+      ]
       : [
-          { percent: 0, color: "#1DF7EF" },
-          { percent: 2, color: "#76EDA0" },
-          { percent: 10, color: "#FFDF27" },
-          { percent: 40, color: "#FF9B47" },
-          { percent: 80, color: "#FE5468" },
-          { percent: 100, color: "#FE5468" }, // Repeat the final color to ensure upper bound
-        ];
+        { percent: 0, color: "#1DF7EF" },
+        { percent: 2, color: "#76EDA0" },
+        { percent: 10, color: "#FFDF27" },
+        { percent: 40, color: "#FF9B47" },
+        { percent: 80, color: "#FE5468" },
+        { percent: 100, color: "#FE5468" }, // Repeat the final color to ensure upper bound
+      ];
 
     let lowerBound = colors[0];
     let upperBound = colors[colors.length - 1];
@@ -214,23 +214,23 @@ const Chain = ({ params }: { params: any }) => {
 
     const r = Math.floor(
       parseInt(lowerBound.color.substring(1, 3), 16) +
-        percentDiff *
-          (parseInt(upperBound.color.substring(1, 3), 16) -
-            parseInt(lowerBound.color.substring(1, 3), 16)),
+      percentDiff *
+      (parseInt(upperBound.color.substring(1, 3), 16) -
+        parseInt(lowerBound.color.substring(1, 3), 16)),
     );
 
     const g = Math.floor(
       parseInt(lowerBound.color.substring(3, 5), 16) +
-        percentDiff *
-          (parseInt(upperBound.color.substring(3, 5), 16) -
-            parseInt(lowerBound.color.substring(3, 5), 16)),
+      percentDiff *
+      (parseInt(upperBound.color.substring(3, 5), 16) -
+        parseInt(lowerBound.color.substring(3, 5), 16)),
     );
 
     const b = Math.floor(
       parseInt(lowerBound.color.substring(5, 7), 16) +
-        percentDiff *
-          (parseInt(upperBound.color.substring(5, 7), 16) -
-            parseInt(lowerBound.color.substring(5, 7), 16)),
+      percentDiff *
+      (parseInt(upperBound.color.substring(5, 7), 16) -
+        parseInt(lowerBound.color.substring(5, 7), 16)),
     );
 
     return `#${r.toString(16).padStart(2, "0")}${g
@@ -278,7 +278,7 @@ const Chain = ({ params }: { params: any }) => {
   }: ExpandingButtonMenuProps) => {
     return (
       <div
-        className={`absolute group/jump flex flex-col cursor-pointer hover:top-[10px] hover:left-[5px] hover:right-[5px] transition-all duration-300 ${className}`}
+        className={`absolute delay-0 hover:delay-300 group/jump flex flex-col cursor-pointer hover:top-[10px] hover:left-[5px] hover:right-[5px] transition-all duration-300 ${className}`}
       >
         <div
           className="!z-[15] group-hover/jump:!z-[25] transition-[z-index] delay-100 group-hover/jump:delay-0 w-full flex items-center h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50"
@@ -290,23 +290,20 @@ const Chain = ({ params }: { params: any }) => {
           }}
         >
           <div
-            className={`${
-              button.showIconBackground &&
+            className={`${button.showIconBackground &&
               "bg-white dark:bg-forest-1000 relative "
-            } rounded-full w-[25px] h-[25px] p-[5px]`}
+              } rounded-full w-[25px] h-[25px] p-[5px]`}
           >
             <Icon
               icon={button.icon}
-              className={`w-[15px] h-[15px] ${
-                button.animateIcon &&
+              className={`w-[15px] h-[15px] ${button.animateIcon &&
                 "transition-transform duration-300 transform group-hover/jump:rotate-90"
-              }`}
+                }`}
             />
             <Icon
               icon={"gtp:circle-arrow"}
-              className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform duration-500 group-hover/jump:rotate-90 ${
-                button.showIconBackground ? "block" : "hidden"
-              }`}
+              className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform duration-500 group-hover/jump:rotate-90 ${button.showIconBackground ? "block" : "hidden"
+                }`}
               style={{
                 transformOrigin: "-8px 4px",
               }}
@@ -316,7 +313,7 @@ const Chain = ({ params }: { params: any }) => {
             {button.label}
           </div>
         </div>
-        <div className="absolute !z-[11] group-hover/jump:!z-[21]  overflow-hidden whitespace-nowrap  max-h-0 transition-all duration-300 left-0 right-0 top-[16px] bg-white dark:bg-[#151A19] pb-[0px] rounded-b-[22px] group-hover/jump:max-h-[300px] group-hover/jump:pt-[24px] group-hover/jump:pb-[10px] group-hover/jump:shadow-lg group-hover/jump:dark:shadow-[0px_4px_46.2px_0px_#000000]">
+        <div className="absolute !z-[11] group-hover/jump:!z-[21] delay-0 group-hover/jump:delay-300 overflow-hidden whitespace-nowrap  max-h-0 transition-all duration-300 left-0 right-0 top-[16px] bg-white dark:bg-[#151A19] pb-[0px] rounded-b-[22px] group-hover/jump:max-h-[300px] group-hover/jump:pt-[24px] group-hover/jump:pb-[10px] group-hover/jump:shadow-lg group-hover/jump:dark:shadow-[0px_4px_46.2px_0px_#000000]">
           {items.map((item: { label: string; icon: string; href: string }) => (
             <Link
               href={item.href}
@@ -394,9 +391,8 @@ const Chain = ({ params }: { params: any }) => {
                 {!(IS_DEVELOPMENT || IS_PREVIEW) && (
                   <div className="hidden md:flex items-start space-x-[7px] font-inter uppercase pt-[11px] ">
                     <div
-                      className={`inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm  ${
-                        isMobile ? "ml-[0px]" : "ml-[19px]"
-                      } `}
+                      className={`inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm  ${isMobile ? "ml-[0px]" : "ml-[19px]"
+                        } `}
                     >
                       {master.chains[chainKey].technology}
                     </div>
@@ -542,14 +538,15 @@ const Chain = ({ params }: { params: any }) => {
                 <div className="relative grid lg:grid-flow-col grid-rows-none lg:grid-cols-[270px, auto, auto, auto, 131px] gap-x-[5px] gap-y-[5px] pb-[30px] md:pb-[60px] overflow-visible">
                   <ChainSectionHead
                     title={"Menu"}
-                    enableDropdown={isMobile}
+                    enableDropdown={false}
                     defaultDropdown={true}
+                    height={isMobile ? 97 : 111}
                     className="hover:min-w-[250px] min-w-[250px] transition-all duration-300"
                   >
                     <div className="relative h-[97px] lg:h-[111px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-visible select-none">
                       <div className="flex flex-col justify-between gap-y-[10px] min-w-[120px] ">
                         <ExpandingButtonMenu
-                          className="left-[5px] top-[10px] lg:top-[10px] right-[calc((100%/2)+5px)] lg:right-[120px]"
+                          className={`left-[5px] top-[10px] lg:top-[10px] ${isSidebarOpen ? "right-[calc((100%/2)+5px)] lg:right-[120px]" : "right-[calc((100%/2)+5px)] lg:right-[140px]"}`}
                           button={{
                             label: "Jump to ...",
                             icon: "gtp:gtp-jump-to-section",
@@ -569,7 +566,7 @@ const Chain = ({ params }: { params: any }) => {
                           ]}
                         />
                         <ExpandingButtonMenu
-                          className="left-[5px] top-[50px] lg:top-[65px] right-[calc((100%/2)+5px)] lg:right-[120px]"
+                          className={`left-[5px] top-[50px] lg:top-[65px]  ${isSidebarOpen ? "right-[calc((100%/2)+5px)] lg:right-[120px]" : "right-[calc((100%/2)+5px)] lg:right-[140px]"}`}
                           button={{
                             label: "Explorers",
                             icon: "gtp:gtp-block-explorer",
@@ -578,13 +575,13 @@ const Chain = ({ params }: { params: any }) => {
                           items={
                             master.chains[chainKey].block_explorer
                               ? [
-                                  {
-                                    label: "Block Explorer",
-                                    icon: "gtp:gtp-block-explorer",
-                                    href: master.chains[chainKey]
-                                      .block_explorer,
-                                  },
-                                ]
+                                {
+                                  label: "Block Explorer",
+                                  icon: "gtp:gtp-block-explorer",
+                                  href: master.chains[chainKey]
+                                    .block_explorer,
+                                },
+                              ]
                               : []
                             // [
                             //   { label: "Fundamentals", icon: "gtp:gtp-fundamentals", href: "#fundamentals" },
@@ -716,23 +713,19 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Background"}
                     enableDropdown={isMobile}
-                    className={`  min-w-[100px] transition-all duration-300 ${
-                      isMobile ? "min-w-none" : "hover:min-w-[510px]"
-                    }`}
+                    height={isMobile ? 169 : 111}
+                    className={`min-w-[100px] transition-all duration-300 min-w-none" lg:hover:min-w-[510px]`}
                   >
                     <div
-                      className={`relative flex flex-col justify-between transition-opacity duration-300 px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden ${
-                        isMobile ? "min-h-[169px]" : "h-[111px]"
-                      }`}
+                      className={`relative flex flex-col justify-between transition-opacity duration-300 px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden gap-y-[5px]`}
                     >
                       <div
-                        className={`absolute inset-0 pointer-events-none shadow-inner z-10  rounded-2xl group-hover:opacity-0 opacity-0 transition-opacity duration-300 ${
-                          isMobile
-                            ? "opacity-0"
-                            : isSidebarOpen
+                        className={`absolute inset-0 pointer-events-none shadow-inner z-10  rounded-2xl group-hover:opacity-0 opacity-0 transition-opacity duration-300 ${isMobile
+                          ? "opacity-0"
+                          : isSidebarOpen
                             ? "lg:opacity-100 opacity-0"
                             : "2xl:opacity-0 md:opacity-100"
-                        }`}
+                          }`}
                         style={{
                           boxShadow:
                             "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
@@ -749,9 +742,7 @@ const Chain = ({ params }: { params: any }) => {
                         </div>
                       </div>
                       <div
-                        className={`flex gap-x-[10px] justify-between min-w-[490px] ${
-                          isMobile ? "flex-col" : "flex-row"
-                        }`}
+                        className={`flex gap-x-[10px] gap-y-[5px] justify-between min-w-[490px] flex-col lg:flex-row`}
                       >
                         <div>
                           <div className="text-[10px] font-semibold text-[#5A6462] min-w-[70px]">
@@ -781,9 +772,9 @@ const Chain = ({ params }: { params: any }) => {
                                         backgroundColor: chainData
                                           ? chainData.ranking[key]
                                             ? getGradientColor(
-                                                chainData.ranking[key]
-                                                  .color_scale * 100,
-                                              )
+                                              chainData.ranking[key]
+                                                .color_scale * 100,
+                                            )
                                             : "#5A6462"
                                           : "#5A6462",
                                       }}
@@ -826,13 +817,12 @@ const Chain = ({ params }: { params: any }) => {
                       />
                       <div className="h-[48px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] bg-forest-50 dark:bg-[#1F2726] justify-between ">
                         <div
-                          className={`absolute  inset-0 pointer-events-none shadow-inner opacity-0 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${
-                            isMobile
-                              ? "opacity-0"
-                              : isSidebarOpen
+                          className={`absolute  inset-0 pointer-events-none shadow-inner opacity-0 rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${isMobile
+                            ? "opacity-0"
+                            : isSidebarOpen
                               ? "lg:opacity-100 opacity-0"
                               : "2xl:opacity-0 md:opacity-100"
-                          }`}
+                            }`}
                           style={{
                             boxShadow:
                               "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
@@ -844,19 +834,17 @@ const Chain = ({ params }: { params: any }) => {
                           </div>
                           <div className="text-[10px] font-bold min-w-[190px] ">
                             {chainData
-                              ? `${
+                              ? `${chainData.hottest_contract
+                                ? `${chainData.hottest_contract.data[0]
+                                  ? chainData.hottest_contract
+                                    .data[0][1] +
+                                  " - " +
                                   chainData.hottest_contract
-                                    ? `${
-                                        chainData.hottest_contract.data[0]
-                                          ? chainData.hottest_contract
-                                              .data[0][1] +
-                                            " - " +
-                                            chainData.hottest_contract
-                                              .data[0][2]
-                                          : "N/A"
-                                      }`
-                                    : "N/A"
+                                    .data[0][2]
+                                  : "N/A"
                                 }`
+                                : "N/A"
+                              }`
                               : "N/A"}
                           </div>
                         </div>
@@ -880,9 +868,8 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Technology"}
                     enableDropdown={isMobile}
-                    className={`transition-all duration-300 hover:min-w-[180px] min-w-[35px] ${
-                      isMobile ? "hidden" : "block  "
-                    }`}
+                    className={`transition-all duration-300 hover:min-w-[180px] min-w-[35px] ${isMobile ? "hidden" : "block  "
+                      }`}
                   >
                     <div className="relative h-[111px] flex px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden  ">
                       <div
@@ -933,9 +920,8 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Risk"}
                     enableDropdown={isMobile}
-                    className={`transition-all duration-300 hover:min-w-[130px] min-w-[20px] ${
-                      isMobile ? "hidden" : "block"
-                    }`}
+                    className={`transition-all duration-300 hover:min-w-[130px] min-w-[20px] ${isMobile ? "hidden" : "block"
+                      }`}
                   >
                     <div className="relative h-[111px] flex gap-x-[10px] px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]  overflow-hidden">
                       <div
@@ -1037,11 +1023,10 @@ const Chain = ({ params }: { params: any }) => {
                     <ChainSectionHead
                       title={"Technology"}
                       enableDropdown={isMobile}
-                      className={`transition-all duration-300 ${
-                        isMobile
-                          ? "w-[60%]"
-                          : " hover:min-w-[190px]  min-w-[35px] "
-                      }`}
+                      className={`transition-all duration-300 ${isMobile
+                        ? "w-[60%]"
+                        : " hover:min-w-[190px]  min-w-[35px] "
+                        }`}
                     >
                       <div
                         className={`relative h-[111px] flex px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden `}
@@ -1087,11 +1072,10 @@ const Chain = ({ params }: { params: any }) => {
                     <ChainSectionHead
                       title={"Risk"}
                       enableDropdown={isMobile}
-                      className={`transition-all duration-300 ${
-                        isMobile
-                          ? "w-[39%]"
-                          : "hover:min-w-[130px] min-w-[35px]"
-                      }`}
+                      className={`transition-all duration-300 ${isMobile
+                        ? "w-[39%]"
+                        : "hover:min-w-[130px] min-w-[35px]"
+                        }`}
                     >
                       <div className="relative h-[111px] flex gap-x-[10px] px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] justify-between overflow-hidden">
                         <div className="flex flex-col justify-between gap-y-[10px] h-[86px] min-w-[76px]">
@@ -1120,8 +1104,8 @@ const Chain = ({ params }: { params: any }) => {
                               <div>2 total</div>
                             </div>
                           </div>
-                          <div className="text-[7px] leading-[150%]">
-                            Maturity assessment by
+                          <div className="text-[8px] leading-[150%]">
+                            Assessment by
                           </div>
                         </div>
                         <div className="flex flex-col justify-between gap-y-[10px] h-full">
@@ -1194,15 +1178,18 @@ const Chain = ({ params }: { params: any }) => {
                   </Heading>
                 </div>
               </>
-            )}
+            )
+            }
 
-            {chainData && (
-              <ChainChart
-                chain={chain}
-                chainData={chainData}
-                defaultChainKey={chainKey}
-              />
-            )}
+            {
+              chainData && (
+                <ChainChart
+                  chain={chain}
+                  chainData={chainData}
+                  defaultChainKey={chainKey}
+                />
+              )
+            }
             {/* <div className="flex lg:hidden flex-row-reverse gap-x-[10px] justify-between text-sm mb-8 mt-[30px] lg:mt-[15px]">
               <div className="peer group relative">
                 <div
@@ -1283,9 +1270,9 @@ const Chain = ({ params }: { params: any }) => {
                 </Link>
               )}
             </div> */}
-          </div>
+          </div >
         )}
-      </Container>
+      </Container >
 
       {master && overviewData !== null && chainKey !== "ethereum" && (
         <>
