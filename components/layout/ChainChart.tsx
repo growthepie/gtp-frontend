@@ -2264,7 +2264,7 @@ export default function ChainChart({
                             <div className="absolute bottom-[43.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-40">
                               <ChartWatermark className="w-[102.936px] h-[24.536px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
                             </div>
-                            <div className="absolute left-[7px] bottom-[5px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
+                            <div className="absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
                               <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
                               {zoomed && zoomMin !== null && (
                                 <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
@@ -2293,7 +2293,7 @@ export default function ChainChart({
                                 </div>
                               )}
                             </div>
-                            <div className="absolute right-[9px] bottom-[5px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
+                            <div className="absolute right-[9px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
                               {zoomed && zoomMax !== null && (
                                 <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
                                   {new Date(zoomMax).toLocaleDateString(

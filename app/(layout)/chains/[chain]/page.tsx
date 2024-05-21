@@ -742,7 +742,7 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Background"}
                     enableDropdown={isMobile}
-                    childrenHeight={isMobile ? 184 : 111}
+                    childrenHeight={isMobile ? 184 : 133}
                     className={`min-w-[100px] transition-all duration-300 min-w-none" lg:hover:min-w-[510px]`}
                   >
                     <div
