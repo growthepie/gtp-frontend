@@ -174,8 +174,6 @@ export default async function Page() {
               </>
             }
           />
-        </div>
-        <div className="flex flex-col space-y-[15px] my-0 md:my-[30px]">
           <QuestionAnswer
             className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
             question="What's up with the name?"
