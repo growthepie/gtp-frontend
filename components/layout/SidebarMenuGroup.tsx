@@ -316,7 +316,7 @@ export default function SidebarMenuGroup({
                   {chains.map((option, i) => {
                     return (
                       <Tooltip key={option.key} placement="top-start">
-                        <TooltipTrigger className="px-0 md:pl-5">
+                        <TooltipTrigger className="px-0 md:pl-5 w-full">
                           <Link
                             className={`group flex items-center justify-items-center rounded-l-full md:rounded-r-none relative w-full ${
                               urlParts[1]
@@ -395,7 +395,7 @@ export default function SidebarMenuGroup({
       <Tooltip placement="right">
         <TooltipTrigger className="h-6 pl-0 md:pl-8 overflow-visible w-full relative">
           <div
-            className="relative group  flex items-center justify-items-start mb-2 cursor-pointer"
+            className="relative group flex items-center justify-items-start mb-2 cursor-pointer"
             onClick={handleToggle}
           >
             <div className="w-6 mx-0">
