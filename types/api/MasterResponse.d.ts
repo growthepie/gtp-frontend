@@ -37,6 +37,9 @@ export interface ChainInfo {
   website: string;
   twitter: string;
   block_explorer: string;
+  block_explorers: {
+    [key: string]: string;
+  };
   rhino_listed: boolean;
   rhino_naming: string;
   l2beat_stage: {

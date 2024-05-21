@@ -540,7 +540,7 @@ const Chain = ({ params }: { params: any }) => {
                     title={"Menu"}
                     enableDropdown={false}
                     defaultDropdown={true}
-                    height={isMobile ? 97 : 111}
+                    childrenHeight={isMobile ? 97 : 111}
                     className="hover:min-w-[250px] min-w-[250px] transition-all duration-300"
                   >
                     <div className="relative h-[97px] lg:h-[111px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-visible select-none">
@@ -565,30 +565,30 @@ const Chain = ({ params }: { params: any }) => {
                             },
                           ]}
                         />
-                        <ExpandingButtonMenu
-                          className={`left-[5px] top-[50px] lg:top-[65px]  ${isSidebarOpen ? "right-[calc((100%/2)+5px)] lg:right-[120px]" : "right-[calc((100%/2)+5px)] lg:right-[140px]"}`}
-                          button={{
-                            label: "Explorers",
-                            icon: "gtp:gtp-block-explorer",
-                            showIconBackground: true,
-                          }}
-                          items={
-                            master.chains[chainKey].block_explorer
-                              ? [
-                                {
-                                  label: "Block Explorer",
-                                  icon: "gtp:gtp-block-explorer",
-                                  href: master.chains[chainKey]
-                                    .block_explorer,
-                                },
-                              ]
-                              : []
-                            // [
-                            //   { label: "Fundamentals", icon: "gtp:gtp-fundamentals", href: "#fundamentals" },
-                            //   { label: "Blockspace", icon: "gtp:gtp-package", href: "#blockspace" },
-                            // ]
-                          }
-                        />
+                        <div className="fixed bg-white text-black z-100 bottom-0 right-0">
+                          {Object.keys(master.chains[chainKey].block_explorers).map((explorerKey) =>
+                            <div key={explorerKey}>{explorerKey}</div>
+                          )}
+                        </div>
+                        {master.chains[chainKey].block_explorers && Object.keys(master.chains[chainKey].block_explorers).length > 0 && (
+                          <ExpandingButtonMenu
+                            className={`left-[5px] top-[50px] lg:top-[65px]  ${isSidebarOpen ? "right-[calc((100%/2)+5px)] lg:right-[120px]" : "right-[calc((100%/2)+5px)] lg:right-[140px]"}`}
+                            button={{
+                              label: "Explorers",
+                              icon: "gtp:gtp-block-explorer",
+                              showIconBackground: true,
+                            }}
+                            items={
+
+                              Object.keys(master.chains[chainKey].block_explorers).map((explorerKey) =>
+                              ({
+                                label: explorerKey,
+                                icon: "feather:external-link",
+                                href: master.chains[chainKey].block_explorers[explorerKey]
+                              }))
+                            }
+                          />
+                        )}
                         {/* <Link href="/chains">
                           <div className="flex items-center h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50">
                             <div className="bg-white dark:bg-forest-1000 rounded-full w-[25px] h-[25px] p-[5px]">
@@ -713,7 +713,7 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Background"}
                     enableDropdown={isMobile}
-                    height={isMobile ? 169 : 111}
+                    childrenHeight={isMobile ? 179 : 111}
                     className={`min-w-[100px] transition-all duration-300 min-w-none" lg:hover:min-w-[510px]`}
                   >
                     <div
