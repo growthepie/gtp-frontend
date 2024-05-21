@@ -160,16 +160,16 @@ export default async function Layout({
                 {pageData.title}
               </Heading>
             </div>
-            <div className=" md:p-0 pl-[28px]">
+            <div className=" md:p-0 md:mb-[5px] pl-[28px]">
               <Link
                 href="https://fees.growthepie.xyz/"
-                className={`flex items-center justify-center max-w-[207px] ml-[15px] h-[39px] w-[209px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full  ${
+                className={`flex items-center justify-center ml-[15px] h-[37px] w-[207px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full  ${
                   params.metric === "transaction-costs" ? "flex" : "hidden"
                 }`}
                 rel="noreferrer"
                 target="_blank"
               >
-                <div className="flex items-center pl-[5px] pr-[9px] gap-x-[8px]  justify-between font-semibold bg-forest-50 dark:bg-forest-900 rounded-full py-[6px] transition-all duration-300">
+                <div className="flex items-center h-[35px] pl-[5px] w-[205px] gap-x-[8px] font-semibold bg-forest-50 dark:bg-forest-900 rounded-full transition-all duration-300">
                   <div className="w-[24px] h-[24px] bg-[#151A19] rounded-full flex items-center justify-center">
                     <Icon
                       icon="gtp:detailed-fees"
