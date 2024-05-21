@@ -88,7 +88,7 @@ const ChainSectionHead = ({
               : ""
           }`}
           style={{
-            boxShadow: "-50px 0px 10px rgba(21, 26, 25, 0.5) inset",
+            boxShadow: "-62.5px 0px 10px rgba(22, 28, 27, 0.35) inset",
           }}
         ></div>
         <div className="bg-white dark:bg-forest-1000 rounded-full w-[24px] h-[24px] p-1 flex items-center justify-center relative">
