@@ -36,6 +36,7 @@ import { useUIContext } from "@/contexts/UIContext";
 import { track } from "@vercel/analytics/react";
 import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
 import UsageFees from "@/components/layout/SingleChains/UsageFees";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 
 const Chain = ({ params }: { params: any }) => {
   const { chain } = params;
@@ -346,6 +347,21 @@ const Chain = ({ params }: { params: any }) => {
       </div>
     );
   };
+
+  function ordinal_suffix_of(i) {
+    let j = i % 10,
+      k = i % 100;
+    if (j === 1 && k !== 11) {
+      return i + "st";
+    }
+    if (j === 2 && k !== 12) {
+      return i + "nd";
+    }
+    if (j === 3 && k !== 13) {
+      return i + "rd";
+    }
+    return i + "th";
+  }
 
   if (chainKey.length === 0) return notFound();
 
@@ -766,28 +782,89 @@ const Chain = ({ params }: { params: any }) => {
                               <>
                                 {Object.keys(rankChains).map((key, i) => {
                                   return (
-                                    <div
-                                      className="w-[24px] h-[24px] rounded-full flex items-center justify-center z-0"
-                                      style={{
-                                        backgroundColor: chainData
-                                          ? chainData.ranking[key]
-                                            ? getGradientColor(
-                                              chainData.ranking[key]
-                                                .color_scale * 100,
-                                            )
-                                            : "#5A6462"
-                                          : "#5A6462",
-                                      }}
-                                      key={key + "rankings"}
-                                    >
-                                      <Icon
-                                        icon={`gtp:${String(key).replace(
-                                          "_",
-                                          "-",
-                                        )}`}
-                                        className="w-[15px] h-[15px] z-10"
-                                      />
-                                    </div>
+                                    <Tooltip key={key + "rankings"} placement="bottom" allowInteract>
+                                      <TooltipTrigger>
+                                        <div
+                                          className="w-[24px] h-[24px] rounded-full flex items-center justify-center z-0"
+                                          style={{
+                                            backgroundColor: chainData
+                                              ? chainData.ranking[key]
+                                                ? getGradientColor(
+                                                  chainData.ranking[key]
+                                                    .color_scale * 100,
+                                                )
+                                                : "#5A6462"
+                                              : "#5A6462",
+                                          }}
+
+                                        >
+                                          <Icon
+                                            icon={`gtp:${String(key).replace(
+                                              "_",
+                                              "-",
+                                            )}`}
+                                            className="w-[15px] h-[15px] z-10 text-[#344240]"
+                                          />
+                                        </div>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <div className="flex flex-col items-center">
+                                          {/* tooltip pointer */}
+                                          <div className="z-50 w-0 h-0 border-forest-100 dark:border-[#4B5553] border-b-[5px]" style={{
+                                            borderLeft: "5px solid transparent",
+                                            borderRight: "5px solid transparent",
+
+                                          }}>
+
+
+                                          </div>
+
+
+                                          <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-md font-normal transition-all duration-300">
+                                            <Icon
+                                              icon={`gtp:${String(key).replace(
+                                                "_",
+                                                "-",
+                                              )}`}
+                                              className="w-[24px] h-[24px] z-10"
+                                            />
+                                            <div className="flex flex-col gap-y-[5px] items-center">
+                                              <div className="flex items-center gap-x-[5px] text-[10px] whitespace-nowrap">
+                                                <div
+                                                  className="flex w-2 h-2 rounded-md"
+                                                  style={{
+                                                    backgroundColor: chainData
+                                                      ? chainData.ranking[key]
+                                                        ? getGradientColor(
+                                                          chainData.ranking[key]
+                                                            .color_scale * 100,
+                                                        )
+                                                        : "#5A6462"
+                                                      : "#5A6462",
+                                                  }}
+                                                ></div>
+                                                {chainData.ranking[key] ? (
+                                                  <div className="flex items-end gap-x-1">
+                                                    <div
+                                                      className="flex text-[14px] font-medium ordinal"
+                                                    >
+                                                      {ordinal_suffix_of(chainData.ranking[key].rank)}
+                                                    </div>
+                                                    <div className="flex items-end opacity-40">{chainData.ranking[key] && `out of ${chainData.ranking[key].out_of}`}</div>
+                                                  </div>
+                                                ) :
+                                                  <div className="opacity-40">Not Available</div>
+                                                }
+                                              </div>
+                                              <div className="text-[12px] font-semibold capitalize">
+                                                {master.metrics[key].name}
+                                              </div>
+                                            </div>
+
+                                          </div>
+                                        </div>
+                                      </TooltipContent>
+                                    </Tooltip>
                                   );
                                 })}{" "}
                               </>
