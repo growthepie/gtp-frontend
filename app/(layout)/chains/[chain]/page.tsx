@@ -107,48 +107,37 @@ const Chain = ({ params }: { params: any }) => {
   const { cache, mutate } = useSWRConfig();
 
   const fetchChainData = useCallback(async () => {
+    setChainLoading(true);
+    setChainValidating(true);
+
     try {
-      const fetchPromise = async () => {
-        // check if the chain is in the cache
-        const cachedData = cache.get(ChainURLs[chainKey]);
+      // Fetch the data
+      const response = await fetch(ChainURLs[chainKey]);
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
 
-        if (cachedData) {
-          return cachedData;
-        }
+      // Ensure responseData has the expected structure
+      const flattenedData = data.data || data;
 
-        // if not, fetch the data
-        const response = await fetch(ChainURLs[chainKey]);
-        const data = await response.json();
-
-        // store the data in the cache
-        mutate(ChainURLs[chainKey], data, false);
-
-        return data;
-      };
-
-      // Execute the fetchPromise function
-      const responseData = await fetchPromise();
-
-      const flattenedData = responseData.data;
-
+      // Update state with fetched data
       setChainData(flattenedData);
       setChainError(null);
     } catch (error) {
+      // Handle errors
       setChainData(null);
       setChainError(error);
     } finally {
-      setChainValidating(false);
+      // Ensure loading and validating states are correctly reset
       setChainLoading(false);
+      setChainValidating(false);
     }
-  }, [chainKey, cache, mutate]);
+  }, [chainKey]);
 
   useEffect(() => {
-    if (!chainData) {
-      setChainLoading(true);
-      setChainValidating(true);
-    }
     fetchChainData();
-  }, [chainData, chainKey, fetchChainData]);
+  }, [chainKey, fetchChainData]);
 
   const overviewData = useMemo(() => {
     if (!usageData) return null;
