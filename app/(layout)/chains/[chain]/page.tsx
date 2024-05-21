@@ -742,11 +742,11 @@ const Chain = ({ params }: { params: any }) => {
                   <ChainSectionHead
                     title={"Background"}
                     enableDropdown={isMobile}
-                    childrenHeight={isMobile ? 184 : 133}
+                    childrenHeight={isMobile ? 200 : 111}
                     className={`min-w-[100px] transition-all duration-300 min-w-none" lg:hover:min-w-[510px]`}
                   >
                     <div
-                      className={`min-h-[111px] relative flex flex-col justify-between transition-opacity duration-300 px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden gap-y-[5px]`}
+                      className={`min-h-[111px] lg:max-h-[111px] relative flex flex-col justify-between transition-opacity duration-300 px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden`}
                     >
                       <div
                         className={`absolute inset-0 pointer-events-none shadow-inner z-10  rounded-2xl group-hover:opacity-0 opacity-0 transition-opacity duration-300 ${

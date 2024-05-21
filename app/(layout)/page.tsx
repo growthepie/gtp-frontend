@@ -99,7 +99,7 @@ export default async function Page() {
         <LandingTopContracts />
       </Container>
       <Container>
-        <div className="flex gap-x-0 md:gap-x-12 w-full ml-0 mt-[30px] md:mt-[60px]">
+        {/* <div className="flex gap-x-0 md:gap-x-12 w-full ml-0 mt-[30px] md:mt-[60px]">
           <div className="flex flex-col md:w-1/2 lg:w-2/3 ">
             <div className="flex items-center mb-[15px] md:mb-[15px] gap-x-[8px] py-[10px] md:py-0 ">
               <Icon
@@ -142,7 +142,7 @@ export default async function Page() {
               sizes="25vw"
             />
           </div>
-        </div>
+        </div> */}
 
         <div className="flex mt-[25px] md:mt-[60px] mb-[25px] md:mb-[30px] ml-1.5 md:ml-0 space-x-2 items-center">
           <Icon
@@ -155,6 +155,25 @@ export default async function Page() {
           >
             <div>Frequently Asked Questions</div>
           </Heading>
+        </div>
+        <div className="flex flex-col space-y-[15px] my-0 md:my-[30px]">
+          <QuestionAnswer
+            className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
+            question="What's growthepie?"
+            answer={
+              <>
+                At growthepie, our mission is to provide comprehensive and
+                accurate analytics Ethereum scaling solutions, acting as a
+                trusted data aggregator from reliable sources such as L2Beat and
+                DefiLlama, while also developing our own metrics. Through our
+                analytics interface, we aim to educate and increase
+                transparency. Our goal is to be one of the go-to resources for
+                those seeking to learn more about the potential of layer 2
+                technologies and their impact on the future of the Ethereum
+                ecosystem.
+              </>
+            }
+          />
         </div>
         <div className="flex flex-col space-y-[15px] my-0 md:my-[30px]">
           <QuestionAnswer
