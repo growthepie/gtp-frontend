@@ -133,7 +133,7 @@ export default function ContributorsPage() {
       <div className="bg-forest-50 dark:bg-forest-900 rounded-full px-5 py-3 flex space-x-2 mb-[15px]">
         <Icon icon="gtp:data-sources" className="w-9 h-9" />
         <Heading className="text-3xl font-semibold leading-snug">
-          Data Sources - in addition to our own raw data aggregation
+          Data Sources
         </Heading>
       </div>
       <div className="px-[30px] mb-[15px] py-[10px]">
