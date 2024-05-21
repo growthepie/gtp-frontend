@@ -17,11 +17,17 @@ export default function Share() {
   const pathname = usePathname();
   const [openShare, setOpenShare] = useState(false);
   const [currentURL, setcurrentURL] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [topSelection, setTopSelection] = useSessionStorage(
+
+
+  type TopSelections = "social" | "embed";
+
+  const defaultTopSelection: TopSelections = "social";
+
+  const [topSelection, setTopSelection] = useSessionStorage<TopSelections>(
     "Share.topSelection",
-    "social"
+    defaultTopSelection,
   );
+
   //const [widthValue, setWidthValue] = useState("960px");
   //const [heightValue, setHeightValue] = useState("480px");
   const [isAbsolute, setIsAbsolute] = useState(true);
@@ -33,6 +39,7 @@ export default function Share() {
     navigator.clipboard.writeText(entryText);
   }
 
+  const [copied, setCopied] = useState(false);
   const copyTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -45,7 +52,6 @@ export default function Share() {
   }, []);
 
   const triggerCopy = () => {
-    setCopied(true);
     if (copyTimeout.current) {
       clearTimeout(copyTimeout.current);
       copyTimeout.current = null;
@@ -53,8 +59,25 @@ export default function Share() {
     } else {
       copyTimeout.current = setTimeout(() => {
         setCopied(false);
-      }, 3000); // 3000 milliseconds (3 seconds)
+      }, 2000); // 3000 milliseconds (3 seconds)
     }
+    setCopied(true);
+  };
+  const [markdownCopied, setMarkdownCopied] = useState(false);
+  const copyMarkdownTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const triggerCopyMarkdownEmbed = () => {
+    if (copyMarkdownTimeout.current) {
+      clearTimeout(copyMarkdownTimeout.current);
+      copyMarkdownTimeout.current = null;
+      setMarkdownCopied(false);
+    } else {
+      copyMarkdownTimeout.current = setTimeout(() => {
+        setMarkdownCopied(false);
+      }, 2000); // 3000 milliseconds (3 seconds)
+    }
+    setMarkdownCopied(true);
+
   };
 
   const handleSendEmail = () => {
@@ -131,6 +154,12 @@ export default function Share() {
   const embedIframe = useMemo(() => {
     return `<iframe ${embedDataString}></iframe>`;
   }, [embedDataString]);
+
+  // [Layer 2 Transaction Costs past EIP4844](https://www.growthepie.xyz/embed/fundamentals/transaction-costs?showUsd=true&theme=dark&timespan=180d&scale=absolute&interval=daily&showMainnet=false&chains=zora%2Cstarknet%2Coptimism%2Carbitrum%2Cmantle%2Cbase&zoomed=true&startTimestamp=1707978691244.2397&endTimestamp=1713744000000?display=iframe)
+  const markdownEmbedIframe = useMemo(() => {
+    const url = embedData.src;
+    return `[${embedData.title}](${url}?display=iframe)`;
+  }, [embedData]);
 
   return (
     <>
@@ -227,10 +256,10 @@ export default function Share() {
                       });
                     }}
                   >
-                    Embed Code
+                    Embed
                   </div>)}
                 </div>
-                {topSelection === "social" ? (
+                {topSelection === "social" && (
                   <div className="flex flex-col-reverse items-center mt-[30px] w-full text-[16px] leading-[150%] h-[234px]">
                     <div className="flex flex-col w-full">
                       {/* <div className="w-[251px] h-[181px]  flex items-center justify-center p-0.5 bg-forest-500 dark:bg-[#5A6462] rounded-[6px]">
@@ -348,7 +377,8 @@ export default function Share() {
                       </div>
                     </div>
                   </div>
-                ) : (
+                )}
+                {topSelection === "embed" && (
                   <div className="relative flex flex-col md:flex-row gap-x-[30px] mt-[30px] w-full">
                     {(IS_DEVELOPMENT || IS_PREVIEW) && (
                       <Link href={`${BASE_URL}/embed/test?url=${encodeURIComponent(`${embedData.src}`)}&width=${embedData.width}&height=${embedData.height}&title=${embedData.title}`} target="_blank" rel="noopener" className="absolute -bottom-7 left-10 p-[5px] text-xs px-3 py-1 rounded-full border border-forest-500 dark:border-forest-800  hover:bg-forest-500 dark:hover:bg-[#5A6462] cursor-pointer">
@@ -554,19 +584,22 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                           </div>
                         </div>
 
-                        <div className="group flex items-center gap-x-[10px] h-[54px] rounded-full bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-500 hover:dark:bg-[#5A6462] border-forest-500 dark:border-[#5A6462] border-[3px] px-[15px] cursor-pointer transition-colors" onClick={() => {
-                          copyText(embedIframe);
-                          triggerCopy();
-                          track("copied URL in Share Embed window", {
-                            location: isMobile ? `mobile` : `desktop`,
-                            page: window.location.pathname,
-                          });
-                        }}>
+                        <div
+                          className="group flex items-center gap-x-[10px] h-[54px] rounded-full bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-500 hover:dark:bg-[#5A6462] border-forest-500 dark:border-[#5A6462] border-[3px] px-[15px] cursor-pointer transition-colors"
+                          onClick={() => {
+                            copyText(embedIframe);
+                            triggerCopy();
+                            track("copied URL in Share Embed window", {
+                              location: isMobile ? `mobile` : `desktop`,
+                              page: window.location.pathname,
+                            });
+                          }}
+                        >
                           <Icon
                             className="w-[24px] h-[24px] font-semibold"
                             icon="gtp:code-slash"
                           />
-                          <div>{copied ? "Copied" : "Copy Code"}</div>
+                          <div>{copied ? "HTML Code Copied" : "Copy HTML Code"}</div>
                           <div className="flex ml-auto relative w-[24px] h-[24px]">
                             <Icon
                               className={`absolute  w-[24px] h-[24px] font-semibold transition-all duration-300 text-[#5A6462] group-hover:text-forest-700 dark:group-hover:text-forest-500 ${copied ? "opacity-0" : "opacity-100"
@@ -581,12 +614,20 @@ width="${embedData.width}" height="${embedData.height}" src="${embedData.src}" t
                             />
                           </div>
                         </div>
+                        <div className="absolute -bottom-[22px] right-0 left-1/2 text-center text-xs text-forest-400">or{" "}
+                          <span className="cursor-pointer underline text-forest-900 dark:text-forest-500 hover:text-black dark:hover:text-forest-50" onClick={() => {
+                            copyText(markdownEmbedIframe);
+                            triggerCopyMarkdownEmbed();
+                            track("copied Markdown URL in Share Embed window", {
+                              location: isMobile ? `mobile` : `desktop`,
+                              page: window.location.pathname,
+                            });
+                          }}>{markdownCopied ? "Markdown Code Copied" : "Copy Markdown Code"}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 )}
-
-                {/*Top Row X */}
               </div>
             </>
           )}
