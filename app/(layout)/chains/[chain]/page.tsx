@@ -740,7 +740,7 @@ const Chain = ({ params }: { params: any }) => {
                       <div className="text-[10px] text-[#5A6462] font-bold min-w-[150px] ">
                         Hottest Contract
                       </div>
-                      <div className="text-[10px] font-bold min-w-[180px]   ">
+                      <div className="text-[10px] font-bold min-w-[180px] whitespace-nowrap">
                         {chainData
                           ? `${
                               chainData.hottest_contract
@@ -768,9 +768,7 @@ const Chain = ({ params }: { params: any }) => {
                 title={"Technology"}
                 enableDropdown={isMobile}
                 childrenHeight={isMobile ? 116 : 111}
-                className={`transition-all duration-300 hover:min-w-[180px] min-w-[35px] ${
-                  isMobile ? "hidden" : "block  "
-                }`}
+                className={`transition-all duration-300 hover:min-w-[180px] min-w-[35px] hidden lg:block`}
               >
                 <div className="relative h-[111px] flex px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden  ">
                   <div
@@ -822,9 +820,7 @@ const Chain = ({ params }: { params: any }) => {
                 title={"Risk"}
                 enableDropdown={isMobile}
                 childrenHeight={isMobile ? 116 : 111}
-                className={`transition-all duration-300 hover:min-w-[126px] max-w-[126px] min-w-[20px] ${
-                  isMobile ? "hidden" : "block"
-                }`}
+                className={`flex-shrink transition-all duration-300 hover:min-w-[126px] hover:max-w-[126px] min-w-[35px] hidden lg:block`}
               >
                 <div className="relative h-[111px] flex justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]  overflow-hidden">
                   <div
@@ -921,11 +917,12 @@ const Chain = ({ params }: { params: any }) => {
                 </div>
               </ChainSectionHead>
               <div
-                className={` gap-x-[5px] ${isMobile ? "flex" : "hidden"}`}
+                className={` gap-x-[5px] flex lg:hidden`}
               >
                 <ChainSectionHead
                   title={"Technology"}
                   enableDropdown={isMobile}
+                  childrenHeight={isMobile ? 116 : 111}
                   className={`transition-all duration-300 ${
                     isMobile
                       ? "flex-1"
@@ -976,6 +973,7 @@ const Chain = ({ params }: { params: any }) => {
                 <ChainSectionHead
                   title={"Risk"}
                   enableDropdown={isMobile}
+                  childrenHeight={isMobile ? 116 : 111}
                   className={`transition-all duration-300 ${
                     isMobile
                       ? "w-[126px]"
