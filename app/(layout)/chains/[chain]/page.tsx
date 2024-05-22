@@ -423,9 +423,13 @@ const Chain = ({ params }: { params: any }) => {
                 className="hover:min-w-[250px] min-w-[250px] transition-all duration-300"
               >
                 <div className="relative h-[97px] lg:h-[111px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-visible select-none">
-                  <div className="flex flex-col justify-between gap-y-[10px] min-w-[120px] ">
+                  <div className="flex flex-col justify-between gap-y-[10px] min-w-[120px]  ">
                     <ExpandingButtonMenu
-                      className={`left-[5px] top-[10px] lg:top-[10px] right-[calc((100%/2)+5px)] lg:right-[120px]`}
+                      className={`left-[5px] top-[10px] lg:top-[10px] right-[calc((100%/2)+5px)]  ${
+                        isSidebarOpen
+                          ? "lg:right-[120px]"
+                          : "2xl:right-[135px] lg:right-[120px] "
+                      }`}
                       button={{
                         label: "Jump to ...",
                         icon: "gtp:gtp-jump-to-section",
@@ -448,7 +452,11 @@ const Chain = ({ params }: { params: any }) => {
                       Object.keys(master.chains[chainKey].block_explorers)
                         .length > 0 && (
                         <ExpandingButtonMenu
-                          className={`left-[5px] top-[50px] lg:top-[65px] right-[calc((100%/2)+5px)] lg:right-[120px]`}
+                          className={`left-[5px] top-[50px] lg:top-[65px] right-[calc((100%/2)+5px)] ${
+                            isSidebarOpen
+                              ? "lg:right-[120px]"
+                              : "2xl:right-[135px] lg:right-[120px] "
+                          }`}
                           button={{
                             label: "Explorers",
                             icon: "gtp:gtp-block-explorer",
@@ -474,7 +482,11 @@ const Chain = ({ params }: { params: any }) => {
                             ? `https://app.rhino.fi/bridge?refId=PG_GrowThePie&token=ETH&chainOut=${master.chains[chainKey].rhino_naming}&chain=ETHEREUM`
                             : "https://app.rhino.fi/bridge/?refId=PG_GrowThePie"
                         }
-                        className="absolute right-[5px] top-[10px] lg:top-[10px] left-[calc((100%/2)+5px)] lg:left-[140px]"
+                        className={`absolute right-[5px] top-[10px] lg:top-[10px] left-[calc((100%/2)+5px)]  ${
+                          isSidebarOpen
+                            ? "lg:left-[140px]"
+                            : "2xl:left-[150px] lg:left-[140px]"
+                        }`}
                       >
                         <div className="flex items-center w-full h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50">
                           <div className="bg-white dark:bg-forest-1000 rounded-full w-[25px] h-[25px] p-[5px]">
@@ -492,7 +504,11 @@ const Chain = ({ params }: { params: any }) => {
                       <div></div>
                     )}
                     <ExpandingButtonMenu
-                      className="right-[5px] top-[50px] lg:top-[65px] mt-auto left-[calc((100%/2)+5px)] lg:left-[140px]"
+                      className={`right-[5px] top-[50px] lg:top-[65px] mt-auto left-[calc((100%/2)+5px)] ${
+                        isSidebarOpen
+                          ? "lg:left-[140px]"
+                          : "2xl:left-[150px] lg:left-[140px]"
+                      }`}
                       button={{
                         label: "More",
                         icon: "feather:chevron-right",
@@ -682,7 +698,7 @@ const Chain = ({ params }: { params: any }) => {
                 title={"Usage"}
                 enableDropdown={isMobile}
                 childrenHeight={isMobile ? 116 : 111}
-                className="hover:min-w-[230px] min-w-[35px] transition-all duration-300"
+                className="hover:min-w-[200px] min-w-[35px] transition-all duration-300"
               >
                 <div className="flex flex-col gap-y-[5px] overflow-hidden relative ">
                   <UsageFees chainFeeData={chainFeeData} showUsd={showUsd} />
@@ -692,8 +708,8 @@ const Chain = ({ params }: { params: any }) => {
                         isMobile
                           ? "opacity-0"
                           : isSidebarOpen
-                          ? "lg:opacity-100 opacity-0"
-                          : "2xl:opacity-0 md:opacity-100"
+                          ? "2xl:opacity-0 md:opacity-100 "
+                          : "xl:opacity-0 md:opacity-100"
                       }`}
                       style={{
                         boxShadow:
@@ -704,7 +720,7 @@ const Chain = ({ params }: { params: any }) => {
                       <div className="text-[10px] text-[#5A6462] font-bold min-w-[150px] ">
                         Hottest Contract
                       </div>
-                      <div className="text-[10px] font-bold min-w-[180px] whitespace-nowrap">
+                      <div className="text-[10px] font-bold min-w-[160px] whitespace-nowrap">
                         {chainData
                           ? `${
                               chainData.hottest_contract
@@ -733,7 +749,13 @@ const Chain = ({ params }: { params: any }) => {
               >
                 <div className="relative h-[111px] flex px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden  ">
                   <div
-                    className={`absolute  inset-0 pointer-events-none shadow-inner rounded-2xl group-hover:opacity-0 transition-opacity duration-300 2xl:opacity-0 lg:opacity-100 opacity-0 `}
+                    className={`absolute  inset-0 pointer-events-none shadow-inner rounded-2xl group-hover:opacity-0 transition-opacity duration-300 2xl:opacity-0 lg:opacity-100 opacity-0 ${
+                      isMobile
+                        ? "opacity-0"
+                        : isSidebarOpen
+                        ? "2xl:opacity-0 md:opacity-100 "
+                        : "xl:opacity-0 md:opacity-100"
+                    }`}
                     style={{
                       boxShadow:
                         "-67.5px 0px 20px rgba(22, 28, 27, 0.45) inset",

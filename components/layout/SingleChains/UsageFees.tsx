@@ -100,8 +100,8 @@ export default function UsageFees({
           isMobile
             ? "opacity-0"
             : isSidebarOpen
-            ? "lg:opacity-100 opacity-0"
-            : "2xl:opacity-0 md:opacity-100"
+            ? "2xl:opacity-0 md:opacity-100 "
+            : "xl:opacity-0 md:opacity-100"
         }`}
         style={{
           boxShadow: "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",

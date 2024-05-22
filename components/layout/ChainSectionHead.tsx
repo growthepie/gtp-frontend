@@ -77,14 +77,16 @@ const ChainSectionHead = ({
           className={`absolute  inset-0 pointer-events-none shadow-inner rounded-2xl group-hover:opacity-0 opacity-0 transition-opacity duration-500 ${
             enableDropdown ? "hidden" : title === "Menu" ? "hidden" : "block"
           } ${
-            title === "Background" || title === "Usage"
+            title === "Background"
               ? isSidebarOpen
                 ? "opacity-100"
                 : "2xl:opacity-0 md:opacity-100"
-              : title === "Technology"
-              ? "2xl:opacity-0 md:opacity-100"
               : title === "Risk"
               ? " xl:opacity-0 md:opacity-100 "
+              : title === "Usage" || title === "Technology"
+              ? isSidebarOpen
+                ? "2xl:opacity-0 md:opacity-100 "
+                : "xl:opacity-0 md:opacity-100"
               : ""
           }`}
           style={{
