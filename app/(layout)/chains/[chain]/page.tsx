@@ -283,7 +283,7 @@ const Chain = ({ params }: { params: any }) => {
   }: ExpandingButtonMenuProps) => {
     return (
       <div
-        className={`absolute delay-0 hover:delay-500 group/jump flex flex-col cursor-pointer hover:top-[10px] hover:left-[5px] hover:right-[5px] transition-all duration-300 ${className}`}
+        className={`absolute delay-0 hover:delay-300 group/jump flex flex-col cursor-pointer hover:top-[10px] hover:left-[5px] hover:right-[5px] transition-all duration-300 ${className}`}
       >
         <div
           className="!z-[15] group-hover/jump:!z-[25] transition-[z-index] delay-100 group-hover/jump:delay-0 w-full flex items-center h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50"
@@ -321,7 +321,7 @@ const Chain = ({ params }: { params: any }) => {
             {button.label}
           </div>
         </div>
-        <div className="absolute !z-[11] group-hover/jump:!z-[21] delay-0 group-hover/jump:delay-500 overflow-hidden whitespace-nowrap  max-h-0 transition-all duration-300 left-0 right-0 top-[16px] bg-white dark:bg-[#151A19] pb-[0px] rounded-b-[22px] group-hover/jump:max-h-[300px] group-hover/jump:pt-[24px] group-hover/jump:pb-[10px] group-hover/jump:shadow-lg group-hover/jump:dark:shadow-[0px_4px_46.2px_0px_#000000]">
+        <div className="absolute !z-[11] group-hover/jump:!z-[21] delay-0 group-hover/jump:delay-300 overflow-hidden whitespace-nowrap  max-h-0 transition-all duration-300 left-0 right-0 top-[16px] bg-white dark:bg-[#151A19] pb-[0px] rounded-b-[22px] group-hover/jump:max-h-[300px] group-hover/jump:pt-[24px] group-hover/jump:pb-[10px] group-hover/jump:shadow-lg group-hover/jump:dark:shadow-[0px_4px_46.2px_0px_#000000]">
           {items.map((item: { label: string; icon: string; href: string }) => (
             <Link
               href={item.href}
@@ -454,11 +454,7 @@ const Chain = ({ params }: { params: any }) => {
                 <div className="relative h-[97px] lg:h-[111px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-visible select-none">
                   <div className="flex flex-col justify-between gap-y-[10px] min-w-[120px] ">
                     <ExpandingButtonMenu
-                      className={`left-[5px] top-[10px] lg:top-[10px] ${
-                        isSidebarOpen
-                          ? "right-[calc((100%/2)+5px)] lg:right-[120px]"
-                          : "right-[calc((100%/2)+5px)] lg:right-[140px]"
-                      }`}
+                      className={`left-[5px] top-[10px] lg:top-[10px] right-[calc((100%/2)+5px)] lg:right-[120px]`}
                       button={{
                         label: "Jump to ...",
                         icon: "gtp:gtp-jump-to-section",
@@ -481,11 +477,7 @@ const Chain = ({ params }: { params: any }) => {
                       Object.keys(master.chains[chainKey].block_explorers)
                         .length > 0 && (
                         <ExpandingButtonMenu
-                          className={`left-[5px] top-[50px] lg:top-[65px]  ${
-                            isSidebarOpen
-                              ? "right-[calc((100%/2)+5px)] lg:right-[120px]"
-                              : "right-[calc((100%/2)+5px)] lg:right-[140px]"
-                          }`}
+                          className={`left-[5px] top-[50px] lg:top-[65px] right-[calc((100%/2)+5px)] lg:right-[120px]`}
                           button={{
                             label: "Explorers",
                             icon: "gtp:gtp-block-explorer",
@@ -830,19 +822,19 @@ const Chain = ({ params }: { params: any }) => {
                 title={"Risk"}
                 enableDropdown={isMobile}
                 childrenHeight={isMobile ? 116 : 111}
-                className={`transition-all duration-300 hover:min-w-[130px] min-w-[20px] ${
+                className={`transition-all duration-300 hover:min-w-[126px] max-w-[126px] min-w-[20px] ${
                   isMobile ? "hidden" : "block"
                 }`}
               >
-                <div className="relative h-[111px] flex gap-x-[10px] px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]  overflow-hidden">
+                <div className="relative h-[111px] flex justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]  overflow-hidden">
                   <div
-                    className={`absolute  inset-0 pointer-events-none shadow-inner  rounded-2xl group-hover:opacity-0 transition-opacity duration-300 xl:opacity-0 lg:opacity-100 `}
+                    className={`absolute inset-0 pointer-events-none shadow-inner  rounded-2xl group-hover:opacity-0 transition-opacity duration-300 xl:opacity-0 lg:opacity-100`}
                     style={{
                       boxShadow:
                         "-67.5px 0px 20px rgba(22, 28, 27, 0.45) inset",
                     }}
                   ></div>
-                  <div className="flex flex-col justify-between gap-y-[10px] h-[86px] min-w-[80px]">
+                  <div className="flex flex-col justify-between gap-y-[10px] h-[91px] min-w-[80px]">
                     <div className="text-[10px] font-semibold text-[#5A6462]">
                       Rollup Stage
                     </div>
@@ -868,7 +860,7 @@ const Chain = ({ params }: { params: any }) => {
                         <div>2 total</div>
                       </div>
                     </div>
-                    <div className="text-[8px] leading-[150%]">
+                    <div className="h-[11px] flex items-center text-[8px] leading-[150%]">
                       Assessment by
                     </div>
                   </div>
@@ -936,7 +928,7 @@ const Chain = ({ params }: { params: any }) => {
                   enableDropdown={isMobile}
                   className={`transition-all duration-300 ${
                     isMobile
-                      ? "w-[60%]"
+                      ? "flex-1"
                       : " hover:min-w-[190px]  min-w-[35px] "
                   }`}
                 >
@@ -986,12 +978,12 @@ const Chain = ({ params }: { params: any }) => {
                   enableDropdown={isMobile}
                   className={`transition-all duration-300 ${
                     isMobile
-                      ? "w-[39%]"
-                      : "hover:min-w-[130px] min-w-[35px]"
+                      ? "w-[126px]"
+                      : "hover:min-w-[126px] max-w-[126px] min-w-[35px]"
                   }`}
                 >
-                  <div className="relative h-[111px] flex gap-x-[10px] px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] justify-between overflow-hidden">
-                    <div className="flex flex-col justify-between gap-y-[10px] h-[86px] min-w-[76px]">
+                  <div className="relative h-[111px] flex justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] justify-between overflow-hidden">
+                    <div className="flex flex-col justify-between gap-y-[10px] h-[91px] min-w-[76px]">
                       <div className="text-[10px] font-semibold text-[#5A6462]">
                         Rollup Stage
                       </div>
@@ -1017,7 +1009,7 @@ const Chain = ({ params }: { params: any }) => {
                           <div>2 total</div>
                         </div>
                       </div>
-                      <div className="text-[8px] leading-[150%]">
+                      <div className="h-[11px] flex items-center text-[8px] leading-[150%]">
                         Assessment by
                       </div>
                     </div>
