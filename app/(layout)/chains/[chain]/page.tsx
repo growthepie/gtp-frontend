@@ -964,7 +964,7 @@ const Chain = ({ params }: { params: any }) => {
                       : "hover:min-w-[126px] max-w-[126px] min-w-[35px]"
                   }`}
                 >
-                  <div className="relative h-[111px] flex justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] justify-between overflow-hidden">
+                  <div className="relative h-[111px] flex justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden">
                     <div className="flex flex-col justify-between gap-y-[10px] h-[91px] min-w-[76px]">
                       <div className="text-[10px] font-semibold text-[#5A6462]">
                         Rollup Stage
