@@ -391,7 +391,7 @@ const Chain = ({ params }: { params: any }) => {
       <Container className="flex w-full pt-[30px] md:pt-[45px]">
         {master && chainFeeData && chainData && (
           <div className="flex flex-col w-full">
-            <div className="flex flex-col md:flex-row justify-between items-start w-full">
+            <div id="chains-page-title" className="flex flex-col md:flex-row justify-between items-start w-full">
               <div className="flex flex-col md:flex-row pb-[15px] md:pb-[15px] items-start">
                 <div className="flex gap-x-[8px] items-center">
                   <div className="w-9 h-9  ">

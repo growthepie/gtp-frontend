@@ -1469,7 +1469,7 @@ export default function ChainChart({
   }
 
   return (
-    <div className="w-full flex-col relative " id="#content-container">
+    <div className="w-full flex-col relative " id="chains-content-container">
       <style>
         {`
         .highcharts-tooltip-container {
