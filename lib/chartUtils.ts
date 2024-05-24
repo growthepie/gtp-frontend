@@ -370,10 +370,6 @@ export const baseOptions: any = {
         },
       },
     },
-    panning: {
-      enabled: true,
-    },
-    panKey: "shift",
   },
   title: undefined,
   yAxis: {

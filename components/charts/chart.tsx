@@ -138,7 +138,7 @@ export const Chart = ({
         proceed.apply(this, Array.prototype.slice.call(arguments, 1));
 
         const axis: Highcharts.Axis = this;
-        const ticks: Highcharts.Dictionary<Tick> = axis.ticks;
+        const ticks: Highcharts.Dictionary<Highcharts.Tick> = axis.ticks;
         if (
           axis.isXAxis &&
           axis.options.labels &&
