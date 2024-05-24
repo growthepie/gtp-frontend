@@ -204,5 +204,6 @@ module.exports = {
   plugins: [
     // require("nightwind"),
     require("tailwind-scrollbar")({ nocompatible: true }),
+    require("@tailwindcss/container-queries"),
   ],
 };
