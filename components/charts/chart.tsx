@@ -129,6 +129,38 @@ export const Chart = ({
     highchartsRoundedCorners(Highcharts);
     highchartsAnnotations(Highcharts);
     highchartsPatternFill(Highcharts);
+
+    // update x-axis label sizes if it is a 4 digit number
+    Highcharts.wrap(
+      Highcharts.Axis.prototype,
+      "renderTick",
+      function (proceed) {
+        proceed.apply(this, Array.prototype.slice.call(arguments, 1));
+
+        const axis: Highcharts.Axis = this;
+        const ticks: Highcharts.Dictionary<Tick> = axis.ticks;
+        if (
+          axis.isXAxis &&
+          axis.options.labels &&
+          axis.options.labels.enabled
+        ) {
+          Object.keys(ticks).forEach((tick) => {
+            const tickLabel = ticks[tick].label;
+            if (!tickLabel) return;
+            const tickValue = tickLabel.element.textContent;
+            if (tickValue) {
+              if (tickValue.length === 4) {
+                tickLabel.css({
+                  transform: "scale(1.4)",
+                  fontWeight: "600",
+                });
+              }
+            }
+          });
+        }
+      },
+    );
+
     setHighchartsLoaded(true);
   }, []);
 
@@ -587,7 +619,7 @@ export const Chart = ({
                         tickLength: 25,
                         tickWidth: 1,
                         offset: 0,
-                        minTickInterval: 30 * 24 * 3600 * 1000,
+                        minTickInterval: timespans[timespan].xMax - timespans[timespan].xMin <= 40 * 24 * 3600 * 1000 ? 24 * 3600 * 1000 : 30 * 24 * 3600 * 1000,
                         minPadding: 0,
                         maxPadding: 0,
                         labels: {
@@ -599,18 +631,32 @@ export const Chart = ({
                           overflow: "justify",
                           useHTML: true,
                           formatter: function (this: AxisLabelsFormatterContextObject) {
-                            // if Jan 1st, show year
-                            if (new Date(this.value).getUTCMonth() === 0) {
+
+                            if (timespans[timespan].xMax - timespans[timespan].xMin <= 40 * 24 * 3600 * 1000) {
+                              let isBeginningOfWeek = new Date(this.value).getUTCDay() === 1;
+                              let showMonth = this.isFirst || new Date(this.value).getUTCDate() === 1;
+
                               return new Date(this.value).toLocaleDateString("en-GB", {
                                 timeZone: "UTC",
+                                month: "short",
+                                day: "numeric",
+                                year: this.isFirst ? "numeric" : undefined,
+                              });
+                            }
+                            else {
+                              // if Jan 1st, show year
+                              if (new Date(this.value).getUTCMonth() === 0) {
+                                return new Date(this.value).toLocaleDateString("en-GB", {
+                                  timeZone: "UTC",
+                                  year: "numeric",
+                                });
+                              }
+                              return new Date(this.value).toLocaleDateString("en-GB", {
+                                timeZone: "UTC",
+                                month: "short",
                                 year: "numeric",
                               });
                             }
-                            return new Date(this.value).toLocaleDateString("en-GB", {
-                              timeZone: "UTC",
-                              month: "short",
-                              year: "numeric",
-                            });
                           },
                           y: 40,
                           style: {
@@ -621,6 +667,8 @@ export const Chart = ({
                       },
                       yAxis: {
                         ...baseOptions.yAxis,
+                        showFirstLabel: true,
+                        showLastLabel: true,
                         type: yScale,
                         min: yScale === "percentage" ? 0 : undefined,
                         max: maxY ? maxY : undefined,

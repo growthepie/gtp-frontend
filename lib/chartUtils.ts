@@ -340,6 +340,8 @@ export const baseOptions: any = {
     backgroundColor: "transparent",
     plotBorderColor: "transparent",
     showAxes: false,
+    panning: { enabled: false },
+    panKey: "shift",
     zooming: {
       mouseWheel: {
         enabled: false,
