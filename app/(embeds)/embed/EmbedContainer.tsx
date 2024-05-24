@@ -40,9 +40,9 @@ const EmbedContainer = ({
     if (queryZoomed && queryStartTimestamp && queryEndTimestamp)
       tf = `${new Date(
         Math.round(parseInt(queryStartTimestamp)),
-      ).toLocaleDateString()} - ${new Date(
+      ).toLocaleDateString("en-GB")} - ${new Date(
         Math.round(parseInt(queryEndTimestamp)),
-      ).toLocaleDateString()}`;
+      ).toLocaleDateString("en-GB")}`;
     return tf;
   }, [time_frame, queryZoomed, queryStartTimestamp, queryEndTimestamp]);
 

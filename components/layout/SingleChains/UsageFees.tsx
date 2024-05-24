@@ -112,7 +112,7 @@ export default function UsageFees({
           <div className="text-[14px] font-semibold w-[44px]  flex justify-center">
             {chainFeeData[0] &&
             chainFeeData?.[optIndex]?.[showUsd ? 2 : 1] !== null
-              ? Intl.NumberFormat(undefined, {
+              ? Intl.NumberFormat("en-GB", {
                   notation: "compact",
                   maximumFractionDigits: 2,
                   minimumFractionDigits: 1,

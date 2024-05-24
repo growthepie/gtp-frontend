@@ -116,7 +116,7 @@ const baseOptions: Highcharts.Options = {
     //     if (isYearStart) {
     //       return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
     //     } else {
-    //       return `<span style="">${date.toLocaleDateString(undefined, {
+    //       return `<span style="">${date.toLocaleDateString("en-GB", {
     //         timeZone: "UTC",
     //         month: "short",
     //       })}</span>`;
@@ -206,31 +206,31 @@ export default function LandingChart({
   embed_show_mainnet,
   embed_zoomed,
 }: // timeIntervals,
-// onTimeIntervalChange,
-// showTimeIntervals = true,
-{
-  data: any;
-  master: any;
-  cross_chain_users: number;
-  cross_chain_users_comparison: number;
-  latest_total: number;
-  latest_total_comparison: number;
-  l2_dominance: number;
-  l2_dominance_comparison: number;
-  selectedMetric: string;
-  setSelectedMetric: (metric: string) => void;
-  metric: string;
-  sources: string[];
-  is_embed?: boolean;
-  embed_timespan?: string;
-  embed_start_timestamp?: number;
-  embed_end_timestamp?: number;
-  embed_show_mainnet?: boolean;
-  embed_zoomed?: boolean;
-  // timeIntervals: string[];
-  // onTimeIntervalChange: (interval: string) => void;
-  // showTimeIntervals: boolean;
-}) {
+  // onTimeIntervalChange,
+  // showTimeIntervals = true,
+  {
+    data: any;
+    master: any;
+    cross_chain_users: number;
+    cross_chain_users_comparison: number;
+    latest_total: number;
+    latest_total_comparison: number;
+    l2_dominance: number;
+    l2_dominance_comparison: number;
+    selectedMetric: string;
+    setSelectedMetric: (metric: string) => void;
+    metric: string;
+    sources: string[];
+    is_embed?: boolean;
+    embed_timespan?: string;
+    embed_start_timestamp?: number;
+    embed_end_timestamp?: number;
+    embed_show_mainnet?: boolean;
+    embed_zoomed?: boolean;
+    // timeIntervals: string[];
+    // onTimeIntervalChange: (interval: string) => void;
+    // showTimeIntervals: boolean;
+  }) {
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
   const [isDragging, setIsDragging] = useState(false);
@@ -483,7 +483,7 @@ export default function LandingChart({
 
         // display the left date
         this.chart.leftDateText.attr({
-          text: `${leftDate.toLocaleDateString(undefined, {
+          text: `${leftDate.toLocaleDateString("en-GB", {
             timeZone: "UTC",
             month: "short",
             day: "numeric",
@@ -499,7 +499,7 @@ export default function LandingChart({
 
         // display the right date label with arrow pointing down
         this.chart.rightDateText.attr({
-          text: `${rightDate.toLocaleDateString(undefined, {
+          text: `${rightDate.toLocaleDateString("en-GB", {
             timeZone: "UTC",
             month: "short",
             day: "numeric",
@@ -736,25 +736,25 @@ export default function LandingChart({
       const date = new Date(x);
       const dateString = `
       <div>
-        ${date.toLocaleDateString(undefined, {
-          timeZone: "UTC",
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })}
+        ${date.toLocaleDateString("en-GB", {
+        timeZone: "UTC",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })}
       </div>
       <div>-</div>
       <div>
         ${new Date(date.valueOf() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString(
-          //add 7 days to the date
-          undefined,
-          {
-            timeZone: "UTC",
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          },
-        )}
+        //add 7 days to the date
+        undefined,
+        {
+          timeZone: "UTC",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        },
+      )}
       </div>`;
 
       const tooltip = `<div class="mt-3 mr-3 mb-3 w-60 md:w-60 text-xs font-raleway"><div class="flex-1 font-bold text-[13px] md:text-[1rem] ml-6 mb-2 flex justify-between">${dateString}</div>`;
@@ -801,16 +801,14 @@ export default function LandingChart({
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-                  AllChainsByKeys[name].colors[theme ?? "dark"][0]
-                }"></div>
-                <div class="tooltip-point-name">${
-                  AllChainsByKeys[name].label
-                }</div>
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+              }"></div>
+                <div class="tooltip-point-name">${AllChainsByKeys[name].label
+              }</div>
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                  percentage,
-                  2,
-                )}%</div>
+                percentage,
+                2,
+              )}%</div>
               </div>
               <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
@@ -818,28 +816,25 @@ export default function LandingChart({
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                 style="
                   width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${
-                    AllChainsByKeys[name].colors[theme ?? "dark"][0]
-                  };
+                  background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+              };
                 "></div>
               </div>`;
 
           const value = formatNumber(y);
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-              AllChainsByKeys[name].colors[theme ?? "dark"][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
             }"></div>
-            <div class="tooltip-point-name text-md">${
-              AllChainsByKeys[name].label
+            <div class="tooltip-point-name text-md">${AllChainsByKeys[name].label
             }</div>
             <div class="flex-1 text-right justify-end font-inter flex">
               <div class="inline-block">${parseFloat(y).toLocaleString(
-                undefined,
-                {
-                  minimumFractionDigits: 0,
-                },
-              )}</div>
+                "en-GB",
+              {
+                minimumFractionDigits: 0,
+              },
+            )}</div>
             </div>
           </div>
           <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -848,9 +843,8 @@ export default function LandingChart({
             <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
             style="
               width: ${(y / maxPoint) * 100}%;
-              background-color: ${
-                AllChainsByKeys[name].colors[theme ?? "dark"][0]
-              };
+              background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+            };
             "></div>
           </div>`;
         })
@@ -908,7 +902,7 @@ export default function LandingChart({
 
     setTotalUsersIncrease(
       (l2s.data[l2s.data.length - 1][1] - l2s.data[l2s.data.length - 2][1]) /
-        l2s.data[l2s.data.length - 2][1],
+      l2s.data[l2s.data.length - 2][1],
     );
 
     if (showTotalUsers)
@@ -928,7 +922,7 @@ export default function LandingChart({
     if (filteredData && filteredData[0].name !== "") {
       maxDate = new Date(
         filteredData.length > 0 &&
-        filteredData[0].data[filteredData[0].data.length - 1][0]
+          filteredData[0].data[filteredData[0].data.length - 1][0]
           ? filteredData[0].data[filteredData[0].data.length - 1][0]
           : 0,
       );
@@ -1210,12 +1204,12 @@ export default function LandingChart({
           formatter: function (this: AxisLabelsFormatterContextObject) {
             // if Jan 1st, show year
             if (new Date(this.value).getUTCMonth() === 0) {
-              return new Date(this.value).toLocaleDateString(undefined, {
+              return new Date(this.value).toLocaleDateString("en-GB", {
                 timeZone: "UTC",
                 year: "numeric",
               });
             }
-            return new Date(this.value).toLocaleDateString(undefined, {
+            return new Date(this.value).toLocaleDateString("en-GB", {
               timeZone: "UTC",
               month: isMobile ? "short" : "short",
               year: "numeric",
@@ -1296,13 +1290,13 @@ export default function LandingChart({
             const pointsSettings =
               getSeriesType(series.name) === "column"
                 ? {
-                    pointPlacement: 0.5,
-                    pointPadding: 0.15,
-                    pointRange: timeIntervalToMilliseconds[metric],
-                  }
+                  pointPlacement: 0.5,
+                  pointPadding: 0.15,
+                  pointRange: timeIntervalToMilliseconds[metric],
+                }
                 : {
-                    pointPlacement: 0.5,
-                  };
+                  pointPlacement: 0.5,
+                };
 
             return {
               name: series.name,
@@ -1328,8 +1322,8 @@ export default function LandingChart({
                     0,
                     series.name && theme && EnabledChainsByKeys[series.name]
                       ? EnabledChainsByKeys[series.name]?.colors[
-                          theme ?? "dark"
-                        ][0] + "33"
+                      theme ?? "dark"
+                      ][0] + "33"
                       : [],
                   ],
 
@@ -1337,8 +1331,8 @@ export default function LandingChart({
                     1,
                     series.name && theme && EnabledChainsByKeys[series.name]
                       ? EnabledChainsByKeys[series.name]?.colors[
-                          theme ?? "dark"
-                        ][1] + "33"
+                      theme ?? "dark"
+                      ][1] + "33"
                       : [],
                   ],
                 ],
@@ -1351,44 +1345,44 @@ export default function LandingChart({
               lineWidth: 1,
               ...(getSeriesType(series.name) !== "column"
                 ? {
-                    shadow: {
-                      color:
-                        series.name && theme && EnabledChainsByKeys[series.name]
-                          ? EnabledChainsByKeys[series.name]?.colors[theme][1] +
-                            "FF"
-                          : "transparent",
-                      width: 10,
+                  shadow: {
+                    color:
+                      series.name && theme && EnabledChainsByKeys[series.name]
+                        ? EnabledChainsByKeys[series.name]?.colors[theme][1] +
+                        "FF"
+                        : "transparent",
+                    width: 10,
+                  },
+                  color: {
+                    linearGradient: {
+                      x1: 0,
+                      y1: 0,
+                      x2: 1,
+                      y2: 0,
                     },
-                    color: {
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 1,
-                        y2: 0,
-                      },
-                      stops: [
-                        [
-                          0,
-                          series.name &&
+                    stops: [
+                      [
+                        0,
+                        series.name &&
                           theme &&
                           EnabledChainsByKeys[series.name]
-                            ? EnabledChainsByKeys[series.name]?.colors[theme][0]
-                            : [],
-                        ],
-                        // [0.33, AllChainsByKeys[series.name].colors[1]],
-                        [
-                          1,
-                          series.name &&
-                          theme &&
-                          EnabledChainsByKeys[series.name]
-                            ? EnabledChainsByKeys[series.name]?.colors[theme][1]
-                            : [],
-                        ],
+                          ? EnabledChainsByKeys[series.name]?.colors[theme][0]
+                          : [],
                       ],
-                    },
-                  }
+                      // [0.33, AllChainsByKeys[series.name].colors[1]],
+                      [
+                        1,
+                        series.name &&
+                          theme &&
+                          EnabledChainsByKeys[series.name]
+                          ? EnabledChainsByKeys[series.name]?.colors[theme][1]
+                          : [],
+                      ],
+                    ],
+                  },
+                }
                 : series.name === "all_l2s"
-                ? {
+                  ? {
                     borderColor: "transparent",
                     borderWidth: 0,
                     // shadow: {
@@ -1407,63 +1401,63 @@ export default function LandingChart({
                       stops:
                         theme === "dark"
                           ? [
-                              [
-                                0,
-                                series.name &&
+                            [
+                              0,
+                              series.name &&
                                 theme &&
                                 EnabledChainsByKeys[series.name]
-                                  ? EnabledChainsByKeys[series.name]?.colors[
-                                      theme
-                                    ][0] + "FF"
-                                  : [],
-                              ],
-                              // [
-                              //   0.3,
-                              //   //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
-                              //   AllChainsByKeys[series.name].colors[theme][0] +
-                              //     "FF",
-                              // ],
-                              [
-                                1,
-                                series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                  ? EnabledChainsByKeys[series.name]?.colors[
-                                      theme
-                                    ][1] + "FF"
-                                  : [],
-                              ],
-                            ]
-                          : [
-                              [
-                                0,
-                                series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                  ? EnabledChainsByKeys[series.name]?.colors[
-                                      theme
-                                    ][0] + "FF"
-                                  : [],
-                              ],
-                              // [
-                              //   0.7,
-                              //   AllChainsByKeys[series.name].colors[theme][0] +
-                              //     "88",
-                              // ],
-                              [
-                                1,
-                                series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                  ? EnabledChainsByKeys[series.name]?.colors[
-                                      theme
-                                    ][1] + "FF"
-                                  : [],
-                              ],
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "FF"
+                                : [],
                             ],
+                            // [
+                            //   0.3,
+                            //   //   AllChainsByKeys[series.name].colors[theme][0] + "FF",
+                            //   AllChainsByKeys[series.name].colors[theme][0] +
+                            //     "FF",
+                            // ],
+                            [
+                              1,
+                              series.name &&
+                                theme &&
+                                EnabledChainsByKeys[series.name]
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][1] + "FF"
+                                : [],
+                            ],
+                          ]
+                          : [
+                            [
+                              0,
+                              series.name &&
+                                theme &&
+                                EnabledChainsByKeys[series.name]
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "FF"
+                                : [],
+                            ],
+                            // [
+                            //   0.7,
+                            //   AllChainsByKeys[series.name].colors[theme][0] +
+                            //     "88",
+                            // ],
+                            [
+                              1,
+                              series.name &&
+                                theme &&
+                                EnabledChainsByKeys[series.name]
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][1] + "FF"
+                                : [],
+                            ],
+                          ],
                     },
                   }
-                : {
+                  : {
                     borderColor: theme == "dark" ? "#2A3433" : "#EAECEB",
                     borderWidth: 0,
                     //  series.name &&
@@ -1484,71 +1478,71 @@ export default function LandingChart({
                       stops:
                         theme === "dark"
                           ? [
-                              [
-                                0,
-                                series.name &&
+                            [
+                              0,
+                              series.name &&
                                 theme &&
                                 EnabledChainsByKeys[series.name]
-                                  ? EnabledChainsByKeys[series.name]?.colors[
-                                      theme
-                                    ][0] + "FF"
-                                  : [],
-                              ],
-                              // [
-                              //   0.349,
-                              //   series.name &&
-                              //     theme &&
-                              //     EnabledChainsByKeys[series.name]
-                              //     ? EnabledChainsByKeys[series.name]?.colors[
-                              //     theme
-                              //     ][0] + "88"
-                              //     : [],
-                              // ],
-                              [
-                                1,
-                                // "#151a19FF"
-                                series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                  ? EnabledChainsByKeys[series.name]?.colors[
-                                      theme
-                                    ][0] + "00"
-                                  : [],
-                              ],
-                            ]
-                          : [
-                              [
-                                0,
-                                series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                  ? EnabledChainsByKeys[series.name]?.colors[
-                                      theme
-                                    ][0] + "FF"
-                                  : [],
-                              ],
-                              // [
-                              //   0.349,
-                              //   series.name &&
-                              //     theme &&
-                              //     EnabledChainsByKeys[series.name]
-                              //     ? EnabledChainsByKeys[series.name]?.colors[
-                              //     theme
-                              //     ][0] + "88"
-                              //     : [],
-                              // ],
-                              [
-                                1,
-                                // "#FFFFFFFF"
-                                series.name &&
-                                theme &&
-                                EnabledChainsByKeys[series.name]
-                                  ? EnabledChainsByKeys[series.name]?.colors[
-                                      theme
-                                    ][0] + "00"
-                                  : [],
-                              ],
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "FF"
+                                : [],
                             ],
+                            // [
+                            //   0.349,
+                            //   series.name &&
+                            //     theme &&
+                            //     EnabledChainsByKeys[series.name]
+                            //     ? EnabledChainsByKeys[series.name]?.colors[
+                            //     theme
+                            //     ][0] + "88"
+                            //     : [],
+                            // ],
+                            [
+                              1,
+                              // "#151a19FF"
+                              series.name &&
+                                theme &&
+                                EnabledChainsByKeys[series.name]
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "00"
+                                : [],
+                            ],
+                          ]
+                          : [
+                            [
+                              0,
+                              series.name &&
+                                theme &&
+                                EnabledChainsByKeys[series.name]
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "FF"
+                                : [],
+                            ],
+                            // [
+                            //   0.349,
+                            //   series.name &&
+                            //     theme &&
+                            //     EnabledChainsByKeys[series.name]
+                            //     ? EnabledChainsByKeys[series.name]?.colors[
+                            //     theme
+                            //     ][0] + "88"
+                            //     : [],
+                            // ],
+                            [
+                              1,
+                              // "#FFFFFFFF"
+                              series.name &&
+                                theme &&
+                                EnabledChainsByKeys[series.name]
+                                ? EnabledChainsByKeys[series.name]?.colors[
+                                theme
+                                ][0] + "00"
+                                : [],
+                            ],
+                          ],
                     },
                   }),
               states: {
@@ -1561,14 +1555,14 @@ export default function LandingChart({
                       fill:
                         series.name && theme && EnabledChainsByKeys[series.name]
                           ? EnabledChainsByKeys[series.name]?.colors[
-                              theme ?? "dark"
-                            ][0] + "99"
+                          theme ?? "dark"
+                          ][0] + "99"
                           : "transparent",
                       stroke:
                         series.name && theme && EnabledChainsByKeys[series.name]
                           ? EnabledChainsByKeys[series.name]?.colors[
-                              theme ?? "dark"
-                            ][0] + "66"
+                          theme ?? "dark"
+                          ][0] + "66"
                           : "transparent",
                       "stroke-width": 0,
                     },
@@ -1985,7 +1979,7 @@ const MobileMetricCard = ({
       </div>
       <div className="flex flex-col items-center justify-center w-7/12 gap-y-[3px]">
         <div className="text-[20px] font-[650] leading-[1.2] flex items-end">
-          <div className="text-[20px]">{metric_value.toLocaleString()}</div>
+          <div className="text-[20px]">{metric_value.toLocaleString("en-GB")}</div>
           <div className="text-[20px] leading-tight">{is_multiple && "x"}</div>
         </div>
         <div className="text-[10px] font-medium leading-[1.5]">
@@ -2044,7 +2038,7 @@ const MetricCard = ({
           {metric_name}
         </div>
         <div className="text-[24px] font-[650] leading-[1.33] flex items-end">
-          <div className="text-[24px]">{metric_value.toLocaleString()}</div>
+          <div className="text-[24px]">{metric_value.toLocaleString("en-GB")}</div>
           <div className="text-[24px] leading-tight">{is_multiple && "x"}</div>
         </div>
         <div className="text-[10px] font-medium leading-[1.5]">

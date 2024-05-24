@@ -228,7 +228,7 @@ export default function ChainComponent({
     Object.keys(data.metrics).forEach((key) => {
       maxUnixtimes.push(
         data.metrics[key].daily.data[
-          data.metrics[key].daily.data.length - 1
+        data.metrics[key].daily.data.length - 1
         ][0],
       );
     });
@@ -388,7 +388,7 @@ export default function ChainComponent({
       let valueIndex = 1;
       let valueMultiplier = 1;
 
-      let valueFormat = Intl.NumberFormat(undefined, {
+      let valueFormat = Intl.NumberFormat("en-GB", {
         notation: "compact",
         maximumFractionDigits: 2,
         minimumFractionDigits: 2,
@@ -445,12 +445,12 @@ export default function ChainComponent({
       const date = new Date(x);
       const dateString = `
       <div>
-        ${date.toLocaleDateString(undefined, {
-          timeZone: "UTC",
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })}
+        ${date.toLocaleDateString("en-GB", {
+        timeZone: "UTC",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })}
       </div>
       `;
 
@@ -472,28 +472,25 @@ export default function ChainComponent({
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-1">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-                  AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
-                }"></div>
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
+              }"></div>
                 <!--
-                <div class="tooltip-point-name">${
-                  AllChainsByKeys[data.chain_id].label
-                }</div>
+                <div class="tooltip-point-name">${AllChainsByKeys[data.chain_id].label
+              }</div>
                 -->
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                  percentage,
-                  2,
-                )}%</div>
+                percentage,
+                2,
+              )}%</div>
               </div>
               <!-- <div class="flex ml-6 w-[calc(100% - 24rem)] relative mb-1">
                 <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
 
                 <div class="h-[2px] rounded-full absolute left-0 top-0" style="width: ${Highcharts.numberFormat(
-                  percentage,
-                  2,
-                )}%; background-color: ${
-              AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
-            };"> </div>
+                percentage,
+                2,
+              )}%; background-color: ${AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
+              };"> </div>
               </div> -->`;
 
           let prefix = displayValues[series.name].prefix;
@@ -512,25 +509,21 @@ export default function ChainComponent({
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-1">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-              AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
             }"></div>
             <!--
-            <div class="tooltip-point-name text-md">${
-              AllChainsByKeys[data.chain_id].label
+            <div class="tooltip-point-name text-md">${AllChainsByKeys[data.chain_id].label
             }</div>
             -->
             <div class="flex-1 text-left justify-start font-inter flex">
-                <div class="opacity-70 mr-0.5 ${
-                  !prefix && "hidden"
-                }">${prefix}</div>
-                ${parseFloat(value).toLocaleString(undefined, {
-                  minimumFractionDigits: prefix ? 2 : 0,
-                  maximumFractionDigits: prefix ? 2 : 0,
-                })}
-                <div class="opacity-70 ml-0.5 ${
-                  !suffix && "hidden"
-                }">${suffix}</div>
+                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+            }">${prefix}</div>
+                ${parseFloat(value).toLocaleString("en-GB", {
+              minimumFractionDigits: prefix ? 2 : 0,
+              maximumFractionDigits: prefix ? 2 : 0,
+            })}
+                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+            }">${suffix}</div>
             </div>
           </div>
           <!-- <div class="flex ml-4 w-[calc(100% - 1rem)] relative mb-1">
@@ -539,9 +532,8 @@ export default function ChainComponent({
             <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
               name,
               (y / pointsSum) * 100,
-            )}%; background-color: ${
-            AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
-          }33;"></div>
+            )}%; background-color: ${AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0]
+            }33;"></div>
           </div> -->`;
         })
         .join("");
@@ -924,7 +916,7 @@ export default function ChainComponent({
             if (isYearStart) {
               return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
             } else {
-              return `<span style="">${date.toLocaleDateString(undefined, {
+              return `<span style="">${date.toLocaleDateString("en-GB", {
                 month: "short",
               })}</span>`;
             }
@@ -987,12 +979,12 @@ export default function ChainComponent({
               [
                 0,
                 AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0] +
-                  "33",
+                "33",
               ],
               [
                 1,
                 AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1] +
-                  "33",
+                "33",
               ],
             ],
           },
@@ -1299,27 +1291,27 @@ export default function ChainComponent({
                   data: data.metrics[category].daily.types.includes("eth")
                     ? showUsd
                       ? data.metrics[category].daily.data.map((d) => [
-                          d[0],
-                          d[data.metrics[category].daily.types.indexOf("usd")],
-                        ])
-                      : data.metrics[category].daily.data.map((d) => [
-                          d[0],
-                          showGwei(category)
-                            ? d[
-                                data.metrics[category].daily.types.indexOf(
-                                  "eth",
-                                )
-                              ] * 1000000000
-                            : d[
-                                data.metrics[category].daily.types.indexOf(
-                                  "eth",
-                                )
-                              ],
-                        ])
-                    : data.metrics[category].daily.data.map((d) => [
                         d[0],
-                        d[1],
-                      ]),
+                        d[data.metrics[category].daily.types.indexOf("usd")],
+                      ])
+                      : data.metrics[category].daily.data.map((d) => [
+                        d[0],
+                        showGwei(category)
+                          ? d[
+                          data.metrics[category].daily.types.indexOf(
+                            "eth",
+                          )
+                          ] * 1000000000
+                          : d[
+                          data.metrics[category].daily.types.indexOf(
+                            "eth",
+                          )
+                          ],
+                      ])
+                    : data.metrics[category].daily.data.map((d) => [
+                      d[0],
+                      d[1],
+                    ]),
                   showInLegend: false,
                   marker: {
                     enabled: false,
@@ -1357,11 +1349,11 @@ export default function ChainComponent({
                         attributes: {
                           fill:
                             AllChainsByKeys[data.chain_id]?.colors[
-                              theme ?? "dark"
+                            theme ?? "dark"
                             ][0] + "99",
                           stroke:
                             AllChainsByKeys[data.chain_id]?.colors[
-                              theme ?? "dark"
+                            theme ?? "dark"
                             ][0] + "66",
                         },
                       },
@@ -1443,62 +1435,6 @@ export default function ChainComponent({
           </TooltipContent>
         </Tooltip>
       </div>
-      {/* {!zoomed
-        ? (category === "stables_mcap" || category === "txcosts") && (
-            <div
-              className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
-                category === "txcosts" ? "hidden lg:block" : ""
-              }`}
-            >
-              <div className="absolute left-[15px] align-bottom flex items-end z-30">
-                {new Date(timespans[selectedTimespan].xMin).toLocaleDateString(
-                  undefined,
-                  {
-                    timeZone: "UTC",
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  },
-                )}
-              </div>
-              <div className="absolute right-[15px] align-bottom flex items-end z-30">
-                {new Date(timespans[selectedTimespan].xMax).toLocaleDateString(
-                  undefined,
-                  {
-                    timeZone: "UTC",
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  },
-                )}
-              </div>
-            </div>
-          )
-        : (category === "stables_mcap" || category === "txcosts") &&
-          intervalShown && (
-            <div
-              className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
-                category === "txcosts" ? "hidden lg:block" : ""
-              }`}
-            >
-              <div className="absolute left-[15px] align-bottom flex items-end z-30 ">
-                {new Date(intervalShown.min).toLocaleDateString(undefined, {
-                  timeZone: "UTC",
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </div>
-              <div className="absolute right-[15px] align-bottom flex items-end z-30">
-                {new Date(intervalShown.max).toLocaleDateString(undefined, {
-                  timeZone: "UTC",
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </div>
-            </div>
-          )} */}
     </div>
   );
 }

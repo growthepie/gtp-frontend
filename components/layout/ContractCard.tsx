@@ -123,7 +123,7 @@ export default function ContractCard({
                 <div className="flex flex-row items-center space-x-1 text-sm">
                   <div>{metric.includes("_usd") ? "$" : "Ξ"}</div>
                   <div>
-                    {Intl.NumberFormat(undefined, {
+                    {Intl.NumberFormat("en-GB", {
                       maximumFractionDigits: 2,
                       minimumFractionDigits: 2,
                     }).format(data[types.indexOf(metric)])}
@@ -136,7 +136,7 @@ export default function ContractCard({
                     <Icon icon="feather:users" className="w-4 h-4" />
                   </div>
                   <div>
-                    {Intl.NumberFormat(undefined, {
+                    {Intl.NumberFormat("en-GB", {
                       maximumFractionDigits: 0,
                       minimumFractionDigits: 0,
                     }).format(data[types.indexOf(metric)])}
@@ -149,7 +149,7 @@ export default function ContractCard({
                     <Icon icon="feather:activity" className="w-4 h-4" />
                   </div>
                   <div>
-                    {Intl.NumberFormat(undefined, {
+                    {Intl.NumberFormat("en-GB", {
                       maximumFractionDigits: 0,
                       minimumFractionDigits: 0,
                     }).format(data[types.indexOf(metric)])}

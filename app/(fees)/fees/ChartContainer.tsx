@@ -112,12 +112,12 @@ export default function ChartContainer({
   }
 
   const chartMinMaxXAxisLabels = useMemo(() => {
-    if(!data || !metrics.length || !timeFrames.length || !selectedChains.length) {
+    if (!data || !metrics.length || !timeFrames.length || !selectedChains.length) {
       return ["", ""];
     }
 
     const chains = Object.keys(data.chain_data).filter(chain => selectedChains.includes(chain));
-    
+
     // check the current metric and timeframe for all selected chains
     const selectedMetricData = chains.map(chain => {
       return data.chain_data[chain][metrics[metricIndex]][timeFrames[timeFrameIndex]];
@@ -131,18 +131,16 @@ export default function ChartContainer({
     // get the middle value
     // const middle = min + (max - min) / 2;
 
-    if(timeFrames[timeFrameIndex] === "24hrs") {
+    if (timeFrames[timeFrameIndex] === "24hrs") {
       return [
-        new Date(min).toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'}),
-        // new Date(middle).toLocaleTimeString(undefined, {hour: '2-digit'}),
-        new Date(max).toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'}),
+        new Date(min).toLocaleTimeString("en-GB", { hour: '2-digit', minute: '2-digit' }),
+        new Date(max).toLocaleTimeString("en-GB", { hour: '2-digit', minute: '2-digit' }),
       ];
     }
-    
+
     return [
-      new Date(min).toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'}),
-      // new Date(middle).toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'}),
-      new Date(max).toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'})
+      new Date(min).toLocaleDateString("en-GB", { month: 'short', day: 'numeric', year: 'numeric' }),
+      new Date(max).toLocaleDateString("en-GB", { month: 'short', day: 'numeric', year: 'numeric' })
     ];
   }, [data, metricIndex, metrics, selectedChains, timeFrameIndex, timeFrames]);
 
@@ -255,9 +253,9 @@ export default function ChartContainer({
             {/* xMin and xMax chart labels */}
             <div className="relative w-full px-[15px] pb-[10px]">
               <div className="h-[15px] flex justify-between">
-              {chartMinMaxXAxisLabels.map((label, index) => (
-                <div key={index} className="h-[15px] w-[1px] bg-[#5A6462]"></div>
-              ))}
+                {chartMinMaxXAxisLabels.map((label, index) => (
+                  <div key={index} className="h-[15px] w-[1px] bg-[#5A6462]"></div>
+                ))}
               </div>
               <div className="absolute inset-0 top-[14px] px-[15px] flex justify-between text-[10px]">
                 {chartMinMaxXAxisLabels.map((label, index) => (

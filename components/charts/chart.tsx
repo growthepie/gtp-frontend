@@ -570,17 +570,54 @@ export const Chart = ({
                         ...baseOptions.xAxis,
                         min: timespans[timespan].xMin,
                         max: timespans[timespan].xMax,
-                        minorTicks: true,
-                        minorTickLength: 2,
+                        // minorTicks: true,
+                        // minorTickLength: 2,
+                        // minorTickWidth: 2,
+                        // minorGridLineWidth: 0,
+                        // minorTickInterval: ["7d", "30d"].includes(timespan)
+                        //   ? 1000 * 60 * 60 * 24 * 1
+                        //   : 1000 * 60 * 60 * 24 * 7,
+                        // tickPositions: displayMinorTicksOnly
+                        //   ? undefined
+                        //   : tickPositions,
+                        // labels: getXAxisLabels(),
                         minorTickWidth: 2,
                         minorGridLineWidth: 0,
-                        minorTickInterval: ["7d", "30d"].includes(timespan)
-                          ? 1000 * 60 * 60 * 24 * 1
-                          : 1000 * 60 * 60 * 24 * 7,
-                        tickPositions: displayMinorTicksOnly
-                          ? undefined
-                          : tickPositions,
-                        labels: getXAxisLabels(),
+                        tickColor: "#CDD8D34C",
+                        tickLength: 25,
+                        tickWidth: 1,
+                        offset: 0,
+                        minTickInterval: 30 * 24 * 3600 * 1000,
+                        minPadding: 0,
+                        maxPadding: 0,
+                        labels: {
+                          align: undefined,
+                          rotation: 0,
+                          allowOverlap: false,
+                          // staggerLines: 1,
+                          reserveSpace: true,
+                          overflow: "justify",
+                          useHTML: true,
+                          formatter: function (this: AxisLabelsFormatterContextObject) {
+                            // if Jan 1st, show year
+                            if (new Date(this.value).getUTCMonth() === 0) {
+                              return new Date(this.value).toLocaleDateString("en-GB", {
+                                timeZone: "UTC",
+                                year: "numeric",
+                              });
+                            }
+                            return new Date(this.value).toLocaleDateString("en-GB", {
+                              timeZone: "UTC",
+                              month: "short",
+                              year: "numeric",
+                            });
+                          },
+                          y: 40,
+                          style: {
+                            fontSize: "10px",
+                            color: "#CDD8D3",
+                          },
+                        },
                       },
                       yAxis: {
                         ...baseOptions.yAxis,
@@ -664,8 +701,8 @@ export const Chart = ({
               >
                 <ChartWatermark
                   className={`h-[30.67px] md:h-[46px] ${parseInt(chartHeight, 10) > 200
-                      ? "w-[128px] md:w-[163px]"
-                      : "w-[128.67px] md:w-[193px] "
+                    ? "w-[128px] md:w-[163px]"
+                    : "w-[128.67px] md:w-[193px] "
                     } text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten`}
                 />
               </div>

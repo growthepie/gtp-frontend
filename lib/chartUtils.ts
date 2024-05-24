@@ -36,7 +36,7 @@ export const tooltipFormatter = (
     const { x } = points[0];
 
     const date = x ? new Date(x) : new Date();
-    const dateString = date.toLocaleDateString(undefined, {
+    const dateString = date.toLocaleDateString("en-GB", {
       timeZone: "UTC",
       month: "short",
       day: "numeric",
@@ -73,7 +73,7 @@ export const tooltipFormatter = (
         const fillOpacity = series.options.fillOpacity;
 
         const date = x ? new Date(x) : new Date();
-        const dateString = date.toLocaleDateString(undefined, {
+        const dateString = date.toLocaleDateString("en-GB", {
           timeZone: "UTC",
           month: "short",
           day: "numeric",
@@ -156,7 +156,7 @@ export const tooltipFormatter = (
 
     const date = x ? new Date(x) : new Date();
     const dateString = showTime
-      ? date.toLocaleDateString(undefined, {
+      ? date.toLocaleDateString("en-GB", {
           timeZone: "UTC",
           month: "short",
           day: "numeric",
@@ -164,7 +164,7 @@ export const tooltipFormatter = (
           hour: "numeric",
           minute: "numeric",
         })
-      : date.toLocaleDateString(undefined, {
+      : date.toLocaleDateString("en-GB", {
           timeZone: "UTC",
           month: "short",
           day: "numeric",
@@ -212,7 +212,7 @@ export const tooltipFormatter = (
         const fillOpacity = series.options.fillOpacity;
 
         const date = x ? new Date(x) : new Date();
-        const dateString = date.toLocaleDateString(undefined, {
+        const dateString = date.toLocaleDateString("en-GB", {
           timeZone: "UTC",
           month: "short",
           day: "numeric",
@@ -239,7 +239,7 @@ export const tooltipFormatter = (
         <div class="tooltip-point-name">${label}</div>
         <div class="flex-1 text-right justify-end font-inter flex">
           <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">${prefix}</div>
-          ${parseFloat(value).toLocaleString(undefined, {
+          ${parseFloat(value).toLocaleString("en-GB", {
             minimumFractionDigits: 0,
             maximumFractionDigits: showTime ? (name === "base" ? 4 : 3) : 2,
           })}
@@ -270,7 +270,7 @@ export const tooltipFormatter = (
               <div class="opacity-70 mr-0.5 ${
                 !prefix && "hidden"
               }">${prefix}</div>
-              ${parseFloat(value).toLocaleString(undefined, {
+              ${parseFloat(value).toLocaleString("en-GB", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
@@ -410,7 +410,7 @@ export const baseOptions: any = {
         if (isYearStart) {
           return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
         } else {
-          return `<span style="">${date.toLocaleDateString(undefined, {
+          return `<span style="">${date.toLocaleDateString("en-GB", {
             timeZone: "UTC",
             month: "short",
           })}</span>`;
@@ -701,14 +701,14 @@ export const getXAxisLabels = (dailyTicks = false) => {
         return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
       } else {
         if (dailyTicks && isDayStart) {
-          return `<span style="">${date.toLocaleDateString(undefined, {
+          return `<span style="">${date.toLocaleDateString("en-GB", {
             timeZone: "UTC",
             month: "short",
             day: "numeric",
           })}</span>`;
         }
 
-        return `<span style="">${date.toLocaleDateString(undefined, {
+        return `<span style="">${date.toLocaleDateString("en-GB", {
           timeZone: "UTC",
           month: "short",
         })}</span>`;

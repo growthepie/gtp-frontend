@@ -100,7 +100,7 @@ const baseOptions: Highcharts.Options = {
     //     if (isYearStart) {
     //       return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
     //     } else {
-    //       return `<span style="">${date.toLocaleDateString(undefined, {
+    //       return `<span style="">${date.toLocaleDateString("en-GB", {
     //         timeZone: "UTC",
     //         month: "short",
     //       })}</span>`;
@@ -436,7 +436,7 @@ export default function ComparisonChart({
     function (this: any) {
       const { x, points } = this;
       const date = new Date(x);
-      const dateString = date.toLocaleDateString(undefined, {
+      const dateString = date.toLocaleDateString("en-GB", {
         timeZone: "UTC",
         month: "short",
         day: selectedTimeInterval === "daily" ? "numeric" : undefined,
@@ -528,7 +528,7 @@ export default function ComparisonChart({
             }">${prefix}</div>
                 ${metric_id === "fdv" || metric_id === "market_cap"
               ? shortenNumber(value).toString()
-              : parseFloat(value).toLocaleString(undefined, {
+              : parseFloat(value).toLocaleString("en-GB", {
                 minimumFractionDigits: valuePrefix ? 2 : 0,
                 maximumFractionDigits: valuePrefix
                   ? metric_id === "txcosts"
@@ -573,7 +573,7 @@ export default function ComparisonChart({
 
               <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
           }">${prefix}</div>
-              ${parseFloat(value).toLocaleString(undefined, {
+              ${parseFloat(value).toLocaleString("en-GB", {
             minimumFractionDigits: valuePrefix ? 2 : 0,
             maximumFractionDigits: valuePrefix
               ? 2
@@ -1292,12 +1292,12 @@ export default function ComparisonChart({
           formatter: function (this: AxisLabelsFormatterContextObject) {
             // if Jan 1st, show year
             if (new Date(this.value).getUTCMonth() === 0) {
-              return new Date(this.value).toLocaleDateString(undefined, {
+              return new Date(this.value).toLocaleDateString("en-GB", {
                 timeZone: "UTC",
                 year: "numeric",
               });
             }
-            return new Date(this.value).toLocaleDateString(undefined, {
+            return new Date(this.value).toLocaleDateString("en-GB", {
               timeZone: "UTC",
               month: isMobile ? "short" : "short",
               year: "numeric",

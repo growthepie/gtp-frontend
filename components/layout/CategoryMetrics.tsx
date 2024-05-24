@@ -2304,17 +2304,17 @@ export default function CategoryMetrics({
                                           sortedContracts[
                                             key
                                           ].gas_fees_absolute_usd.toFixed(0),
-                                        ).toLocaleString("en-US")
+                                        ).toLocaleString("en-GB")
                                       : Number(
                                           sortedContracts[
                                             key
                                           ].gas_fees_absolute_eth.toFixed(2),
-                                        ).toLocaleString("en-US")
+                                        ).toLocaleString("en-GB")
                                     : Number(
                                         sortedContracts[
                                           key
                                         ].txcount_absolute.toFixed(0),
-                                      ).toLocaleString("en-US")}
+                                      ).toLocaleString("en-GB")}
                                 </div>
 
                                 {/* <div className="h-[3px] w-[110px] bg-forest-100 dark:bg-forest-900 flex justify-end">

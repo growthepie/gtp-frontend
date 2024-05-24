@@ -112,14 +112,12 @@ export default function Treemap({ d }: { d?: any }) {
   const valueKey = useMemo(() => {
     //"gas_fees_eth_absolute", "gas_fees_usd_absolute", "txcount_absolute", "gas_fees_share_eth", "gas_fees_share_usd", "txcount_share"
     if (selectedValueType === "gas_fees" && selectedValueScale === "absolute")
-      return `${selectedValueType}_${
-        showUsd ? "usd" : "eth"
-      }_${selectedValueScale}`;
+      return `${selectedValueType}_${showUsd ? "usd" : "eth"
+        }_${selectedValueScale}`;
 
     if (selectedValueType === "gas_fees" && selectedValueScale === "share")
-      return `${selectedValueType}_${selectedValueScale}_${
-        showUsd ? "usd" : "eth"
-      }`;
+      return `${selectedValueType}_${selectedValueScale}_${showUsd ? "usd" : "eth"
+        }`;
 
     return `${selectedValueType}_${selectedValueScale}`;
   }, [selectedValueScale, selectedValueType, showUsd]);
@@ -183,17 +181,17 @@ export default function Treemap({ d }: { d?: any }) {
             categoryKey !== "unlabeled"
               ? undefined
               : {
-                  pattern: {
-                    color: AllChainsByKeys[chain].colors["dark"][0] + "55",
-                    path: {
-                      d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
-                      strokeWidth: 3,
-                    },
-                    width: 10,
-                    height: 10,
-                    opacity: 0.99,
+                pattern: {
+                  color: AllChainsByKeys[chain].colors["dark"][0] + "55",
+                  path: {
+                    d: "M 10 0 L 0 10 M 9 11 L 11 9 M -1 1 L 1 -1",
+                    strokeWidth: 3,
                   },
+                  width: 10,
+                  height: 10,
+                  opacity: 0.99,
                 },
+              },
 
           // opacity: 0.11,
           borderColor: AllChainsByKeys[chain].colors["dark"][0],
@@ -445,7 +443,7 @@ export default function Treemap({ d }: { d?: any }) {
       const dateString = "";
       // `
       // <div>
-      //   ${date.toLocaleDateString(undefined, {
+      //   ${date.toLocaleDateString("en-GB", {
       //     timeZone: "UTC",
       //     month: "short",
       //     day: "numeric",
@@ -478,24 +476,22 @@ export default function Treemap({ d }: { d?: any }) {
             <div class="tooltip-point-name text-md">${key}</div>
             -->
             <div class="flex-1 text-left justify-start font-inter flex">
-                <div class="opacity-70 mr-0.5 ${
-                  !prefix && "hidden"
-                }">${prefix}</div>
-                ${y.toLocaleString(undefined, {
-                  minimumFractionDigits: prefix ? 2 : 0,
-                  maximumFractionDigits: prefix ? 2 : 0,
-                })}
-                <div class="opacity-70 ml-0.5 ${
-                  !suffix && "hidden"
-                }">${suffix}</div>
+                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+        }">${prefix}</div>
+                ${y.toLocaleString("en-GB", {
+          minimumFractionDigits: prefix ? 2 : 0,
+          maximumFractionDigits: prefix ? 2 : 0,
+        })}
+                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+        }">${suffix}</div>
             </div>
           </div>
           <!-- <div class="flex ml-4 w-[calc(100% - 1rem)] relative mb-1">
             <div class="h-[2px] w-full bg-gray-200 rounded-full absolute left-0 top-0" > </div>
 
             <div class="h-[2px] rounded-full absolute right-0 top-0" style="width: ${formatNumber(
-              y,
-            )}%; background-color: ${color}33;"></div>
+          y,
+        )}%; background-color: ${color}33;"></div>
           </div> -->`;
 
       return tooltip + tooltipPoints + tooltipEnd;
@@ -549,11 +545,10 @@ export default function Treemap({ d }: { d?: any }) {
         <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 lg:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
           <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
             <button
-              className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium disabled:opacity-30 ${
-                selectedValueType.includes("gas_fees")
-                  ? "bg-forest-500 dark:bg-forest-1000"
-                  : "hover:bg-forest-500/10"
-              }`}
+              className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium disabled:opacity-30 ${selectedValueType.includes("gas_fees")
+                ? "bg-forest-500 dark:bg-forest-1000"
+                : "hover:bg-forest-500/10"
+                }`}
               onClick={() => {
                 setSelectedValueType("gas_fees");
               }}
@@ -561,11 +556,10 @@ export default function Treemap({ d }: { d?: any }) {
               Gas Fees
             </button>
             <button
-              className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
-                selectedValueType.includes("txcount")
-                  ? "bg-forest-500 dark:bg-forest-1000"
-                  : "hover:bg-forest-500/10"
-              }`}
+              className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${selectedValueType.includes("txcount")
+                ? "bg-forest-500 dark:bg-forest-1000"
+                : "hover:bg-forest-500/10"
+                }`}
               onClick={() => {
                 setSelectedValueType("txcount");
               }}
@@ -581,11 +575,10 @@ export default function Treemap({ d }: { d?: any }) {
               <button
                 key={timespan}
                 //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${
-                  selectedTimespan === timespan
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                }`}
+                className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${selectedTimespan === timespan
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
+                  }`}
                 onClick={() => {
                   setSelectedTimespan(timespan);
                   // setXAxis();
@@ -605,15 +598,14 @@ export default function Treemap({ d }: { d?: any }) {
             ))}
           </div>
           <div
-            className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[30px] right-[20px] md:right-[45px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${
-              !isMobile
-                ? ["max", "180d"].includes(selectedTimespan)
-                  ? "translate-y-[calc(-100%+3px)]"
-                  : "translate-y-0 "
-                : ["max", "180d"].includes(selectedTimespan)
+            className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[30px] right-[20px] md:right-[45px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${!isMobile
+              ? ["max", "180d"].includes(selectedTimespan)
+                ? "translate-y-[calc(-100%+3px)]"
+                : "translate-y-0 "
+              : ["max", "180d"].includes(selectedTimespan)
                 ? "translate-y-[calc(100%+3px)]"
                 : "translate-y-0"
-            }`}
+              }`}
           >
             <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
               7-day rolling average
