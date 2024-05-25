@@ -182,7 +182,7 @@ export default function Eiptracker() {
 
   function getDateString(unixPoint) {
     const date = new Date(unixPoint);
-    return date.toLocaleDateString(undefined, {
+    return date.toLocaleDateString("en-GB", {
       timeZone: "UTC",
       month: "short",
       day: "numeric",
@@ -449,7 +449,7 @@ export default function Eiptracker() {
                           {AllChainsByKeys[item.chain.key].label}
                         </div>
                         <div className="w-[18.25%] px-[4px] flex justify-end items-center gap-x-[4px]">
-                          {Intl.NumberFormat(undefined, {
+                          {Intl.NumberFormat("en-GB", {
                             notation: "compact",
                             maximumFractionDigits: showUsd
                               ? feeData.chain_data[item.chain.key][
@@ -467,7 +467,7 @@ export default function Eiptracker() {
                           {`${showUsd ? "$" : "Ξ"}`}
                         </div>
                         <div className="w-[19%] px-[4px] flex justify-end items-center gap-x-[4px] ">
-                          {Intl.NumberFormat(undefined, {
+                          {Intl.NumberFormat("en-GB", {
                             notation: "compact",
                             maximumFractionDigits: showUsd
                               ? feeData.chain_data[item.chain.key][
@@ -488,7 +488,7 @@ export default function Eiptracker() {
                           {feeData.chain_data[item.chain.key][
                             selectedTimescale
                           ]["txcosts_native_median"].data[0]
-                            ? Intl.NumberFormat(undefined, {
+                            ? Intl.NumberFormat("en-GB", {
                               notation: "compact",
                               maximumFractionDigits: showUsd
                                 ? feeData.chain_data[item.chain.key][

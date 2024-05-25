@@ -221,14 +221,14 @@ export default function ChainAnimations({
                   <div>
                     {showUsd
                       ? (Math.round(value * 100) / 100).toLocaleString(
-                          undefined,
+                          "en-GB",
                           {
                             minimumFractionDigits: 0,
                             maximumFractionDigits: 0,
                           },
                         )
                       : (Math.round(value * 100) / 100).toLocaleString(
-                          undefined,
+                          "en-GB",
                           {
                             minimumFractionDigits: 0,
                             maximumFractionDigits: 2,

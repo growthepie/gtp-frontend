@@ -1022,7 +1022,7 @@ export default function FeesPage() {
           >
             {showUsd && !showCents && <div>$</div>}
             <div className="flex items-center">
-              {Intl.NumberFormat(undefined, {
+              {Intl.NumberFormat("en-GB", {
                 notation: "compact",
                 maximumFractionDigits: fractionDigits,
                 minimumFractionDigits: fractionDigits,
@@ -1054,7 +1054,7 @@ export default function FeesPage() {
         >
           {showUsd && !showCents && <div>$</div>}
           <div>
-            {Intl.NumberFormat(undefined, {
+            {Intl.NumberFormat("en-GB", {
               notation: "compact",
               maximumFractionDigits: fractionDigits,
               minimumFractionDigits: fractionDigits,

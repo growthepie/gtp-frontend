@@ -116,7 +116,7 @@ const baseOptions: Highcharts.Options = {
     //     if (isYearStart) {
     //       return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
     //     } else {
-    //       return `<span style="">${date.toLocaleDateString(undefined, {
+    //       return `<span style="">${date.toLocaleDateString("en-GB", {
     //         timeZone: "UTC",
     //         month: "short",
     //       })}</span>`;
@@ -483,7 +483,7 @@ export default function LandingChart({
 
         // display the left date
         this.chart.leftDateText.attr({
-          text: `${leftDate.toLocaleDateString(undefined, {
+          text: `${leftDate.toLocaleDateString("en-GB", {
             timeZone: "UTC",
             month: "short",
             day: "numeric",
@@ -499,7 +499,7 @@ export default function LandingChart({
 
         // display the right date label with arrow pointing down
         this.chart.rightDateText.attr({
-          text: `${rightDate.toLocaleDateString(undefined, {
+          text: `${rightDate.toLocaleDateString("en-GB", {
             timeZone: "UTC",
             month: "short",
             day: "numeric",
@@ -736,7 +736,7 @@ export default function LandingChart({
       const date = new Date(x);
       const dateString = `
       <div>
-        ${date.toLocaleDateString(undefined, {
+        ${date.toLocaleDateString("en-GB", {
           timeZone: "UTC",
           month: "short",
           day: "numeric",
@@ -835,7 +835,7 @@ export default function LandingChart({
             }</div>
             <div class="flex-1 text-right justify-end font-inter flex">
               <div class="inline-block">${parseFloat(y).toLocaleString(
-                undefined,
+                "en-GB",
                 {
                   minimumFractionDigits: 0,
                 },
@@ -1210,12 +1210,12 @@ export default function LandingChart({
           formatter: function (this: AxisLabelsFormatterContextObject) {
             // if Jan 1st, show year
             if (new Date(this.value).getUTCMonth() === 0) {
-              return new Date(this.value).toLocaleDateString(undefined, {
+              return new Date(this.value).toLocaleDateString("en-GB", {
                 timeZone: "UTC",
                 year: "numeric",
               });
             }
-            return new Date(this.value).toLocaleDateString(undefined, {
+            return new Date(this.value).toLocaleDateString("en-GB", {
               timeZone: "UTC",
               month: isMobile ? "short" : "short",
               year: "numeric",
@@ -1721,9 +1721,13 @@ export default function LandingChart({
   return (
     <div
       id="content-container"
-      className="w-full h-full flex flex-col justify-between"
+      className={`w-full h-full flex flex-col justify-between `}
     >
-      <div className="h-[225px] lg:h-[81px] xl:h-[60px]">
+      <div
+        className={`h-[225px] lg:h-[81px] xl:h-[60px] ${
+          isMobile ? "mb-[30px]" : "mb-0"
+        }`}
+      >
         <div className="flex flex-col lg:hidden justify-center pb-[15px] gap-y-[5px]">
           <MobileMetricCard
             icon="feather:users"
@@ -1842,7 +1846,7 @@ export default function LandingChart({
           </TopRowParent>
         </TopRowContainer>
       </div>
-      <div className="flex-1 min-h-0 w-full pt-8 pb-4 md:pt-[52px] md:pb-4 lg:pt-[52px] lg:pb-16">
+      <div className="flex-1 min-h-0 w-full pt-8 pb-4 md:pt-[52px] md:pb-4 lg:pt-[52px] lg:pb-16 ">
         <div
           className="relative h-[284px] md:h-[400px] w-full rounded-xl"
           ref={containerRef}
@@ -1877,7 +1881,7 @@ export default function LandingChart({
           {/* </div> */}
         </div>
       </div>
-      <div className="h-[32px] lg:h-[80px] flex flex-col justify-start">
+      <div className="h-[32px] lg:h-[80px] flex flex-col justify-start ">
         <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative">
           {/* toggle ETH */}
           <div className="flex z-10">
@@ -1985,7 +1989,9 @@ const MobileMetricCard = ({
       </div>
       <div className="flex flex-col items-center justify-center w-7/12 gap-y-[3px]">
         <div className="text-[20px] font-[650] leading-[1.2] flex items-end">
-          <div className="text-[20px]">{metric_value.toLocaleString()}</div>
+          <div className="text-[20px]">
+            {metric_value.toLocaleString("en-GB")}
+          </div>
           <div className="text-[20px] leading-tight">{is_multiple && "x"}</div>
         </div>
         <div className="text-[10px] font-medium leading-[1.5]">
@@ -2044,7 +2050,9 @@ const MetricCard = ({
           {metric_name}
         </div>
         <div className="text-[24px] font-[650] leading-[1.33] flex items-end">
-          <div className="text-[24px]">{metric_value.toLocaleString()}</div>
+          <div className="text-[24px]">
+            {metric_value.toLocaleString("en-GB")}
+          </div>
           <div className="text-[24px] leading-tight">{is_multiple && "x"}</div>
         </div>
         <div className="text-[10px] font-medium leading-[1.5]">

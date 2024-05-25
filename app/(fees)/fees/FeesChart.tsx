@@ -115,7 +115,7 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
       let prefix = valuePrefix;
       let suffix = "";
       let multiplier = 1
-      
+
 
 
 
@@ -125,8 +125,8 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
           suffix = " gwei";
           multiplier = 1e9;
         }
-      }else{
-        if(showCents){
+      } else {
+        if (showCents) {
           prefix = "";
           suffix = " cents"
           multiplier = 100;
@@ -168,7 +168,7 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
     function (this: any) {
       const { x, points } = this;
       const date = new Date(x);
-      let dateString = date.toLocaleDateString(undefined, {
+      let dateString = date.toLocaleDateString("en-GB", {
         month: "short",
         day: "numeric",
         year: "numeric",
@@ -178,8 +178,8 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
       // if so, add the time to the tooltip
       const timeDiff = points[0].series.xData[1] - points[0].series.xData[0];
       if (timeDiff < 1000 * 60 * 60 * 24) {
-        dateString += " " + date.toLocaleTimeString(undefined, {
-          
+        dateString += " " + date.toLocaleTimeString("en-GB", {
+
           hour: "numeric",
           minute: "2-digit",
         });
@@ -254,8 +254,8 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
               suffix = " gwei";
               displayValue = y * 1e9;
             }
-          }else{
-            if(showCents){
+          } else {
+            if (showCents) {
               prefix = "";
               suffix = " cents";
               displayValue = y * 100;
@@ -273,7 +273,7 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
             }">${prefix}</div>
                 ${selectedMetric === "fdv" || selectedMetric === "market_cap"
               ? shortenNumber(displayValue).toString()
-              : parseFloat(displayValue).toLocaleString(undefined, {
+              : parseFloat(displayValue).toLocaleString("en-GB", {
                 minimumFractionDigits: valuePrefix ? 2 : 0,
                 maximumFractionDigits: valuePrefix
                   ? selectedMetric === "txcosts"
@@ -311,7 +311,7 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
           <div class="flex-1 text-right justify-end font-inter flex">
 
               <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">${prefix}</div>
-              ${parseFloat(value).toLocaleString(undefined, {
+              ${parseFloat(value).toLocaleString("en-GB", {
             minimumFractionDigits: valuePrefix ? 2 : 0,
             maximumFractionDigits: valuePrefix ? 2 : 0,
           })}
@@ -520,7 +520,7 @@ export default function FeesChart({ selectedMetric, selectedTimeframe, selectedC
             //   if (isYearStart) {
             //     return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
             //   } else {
-            //     return `<span style="">${date.toLocaleDateString(undefined, {
+            //     return `<span style="">${date.toLocaleDateString("en-GB", {
             //       month: "short",
             //     })}</span>`;
             //   }

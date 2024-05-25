@@ -24,20 +24,20 @@ export default function UsageFees({
   const getGradientColor = useCallback((percentage, weighted = false) => {
     const colors = !weighted
       ? [
-          { percent: 0, color: "#1DF7EF" },
-          { percent: 20, color: "#76EDA0" },
-          { percent: 50, color: "#FFDF27" },
-          { percent: 70, color: "#FF9B47" },
-          { percent: 100, color: "#FE5468" },
-        ]
+        { percent: 0, color: "#1DF7EF" },
+        { percent: 20, color: "#76EDA0" },
+        { percent: 50, color: "#FFDF27" },
+        { percent: 70, color: "#FF9B47" },
+        { percent: 100, color: "#FE5468" },
+      ]
       : [
-          { percent: 0, color: "#1DF7EF" },
-          { percent: 2, color: "#76EDA0" },
-          { percent: 10, color: "#FFDF27" },
-          { percent: 40, color: "#FF9B47" },
-          { percent: 80, color: "#FE5468" },
-          { percent: 100, color: "#FE5468" }, // Repeat the final color to ensure upper bound
-        ];
+        { percent: 0, color: "#1DF7EF" },
+        { percent: 2, color: "#76EDA0" },
+        { percent: 10, color: "#FFDF27" },
+        { percent: 40, color: "#FF9B47" },
+        { percent: 80, color: "#FE5468" },
+        { percent: 100, color: "#FE5468" }, // Repeat the final color to ensure upper bound
+      ];
 
     let lowerBound = colors[0];
     let upperBound = colors[colors.length - 1];
@@ -65,23 +65,23 @@ export default function UsageFees({
 
     const r = Math.floor(
       parseInt(lowerBound.color.substring(1, 3), 16) +
-        percentDiff *
-          (parseInt(upperBound.color.substring(1, 3), 16) -
-            parseInt(lowerBound.color.substring(1, 3), 16)),
+      percentDiff *
+      (parseInt(upperBound.color.substring(1, 3), 16) -
+        parseInt(lowerBound.color.substring(1, 3), 16)),
     );
 
     const g = Math.floor(
       parseInt(lowerBound.color.substring(3, 5), 16) +
-        percentDiff *
-          (parseInt(upperBound.color.substring(3, 5), 16) -
-            parseInt(lowerBound.color.substring(3, 5), 16)),
+      percentDiff *
+      (parseInt(upperBound.color.substring(3, 5), 16) -
+        parseInt(lowerBound.color.substring(3, 5), 16)),
     );
 
     const b = Math.floor(
       parseInt(lowerBound.color.substring(5, 7), 16) +
-        percentDiff *
-          (parseInt(upperBound.color.substring(5, 7), 16) -
-            parseInt(lowerBound.color.substring(5, 7), 16)),
+      percentDiff *
+      (parseInt(upperBound.color.substring(5, 7), 16) -
+        parseInt(lowerBound.color.substring(5, 7), 16)),
     );
 
     return `#${r.toString(16).padStart(2, "0")}${g
@@ -89,20 +89,39 @@ export default function UsageFees({
       .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
   }, []);
 
+  const feeValue = useMemo(() => {
+    let multiplier = 100;
+
+    if (!showUsd) {
+      // showing Gwei
+      multiplier = 1e9;
+    }
+
+    return chainFeeData[0] &&
+      chainFeeData?.[optIndex]?.[showUsd ? 2 : 1] !== null
+      ? Intl.NumberFormat("en-GB", {
+        notation: "compact",
+        maximumFractionDigits: showUsd ? 1 : 2,
+        minimumFractionDigits: showUsd ? 1 : 2,
+      }).format(chainFeeData[optIndex][showUsd ? 2 : 1] * multiplier)
+      : "N/A"
+
+  }, [chainFeeData, optIndex, showUsd]);
+
+
+
   return (
     <div
-      className={`h-[58px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] bg-forest-50 dark:bg-[#1F2726] w-full ${
-        isMobile ? "justify-between" : "justify-normal"
-      } `}
+      className={`h-[58px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] bg-forest-50 dark:bg-[#1F2726] w-full ${isMobile ? "justify-between" : "justify-normal"
+        } `}
     >
       <div
-        className={`absolute z-20 inset-0 pointer-events-none shadow-inner rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${
-          isMobile
-            ? "opacity-0"
-            : isSidebarOpen
+        className={`absolute z-20 inset-0 pointer-events-none shadow-inner rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${isMobile
+          ? "opacity-0"
+          : isSidebarOpen
             ? "2xl:opacity-0 md:opacity-100 "
             : "xl:opacity-0 md:opacity-100"
-        }`}
+          }`}
         style={{
           boxShadow: "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
         }}
@@ -110,16 +129,9 @@ export default function UsageFees({
       <div className="flex gap-x-[5px]">
         <div className="flex flex-col items-center leading-tight pt-[9px] ">
           <div className="text-[14px] font-semibold w-[44px]  flex justify-center">
-            {chainFeeData[0] &&
-            chainFeeData?.[optIndex]?.[showUsd ? 2 : 1] !== null
-              ? Intl.NumberFormat(undefined, {
-                  notation: "compact",
-                  maximumFractionDigits: 2,
-                  minimumFractionDigits: 1,
-                }).format(chainFeeData[optIndex][showUsd ? 2 : 1] * 100)
-              : "N/A"}
+            {feeValue}
           </div>
-          <div className="text-[8px] w-[44px] flex justify-center">cents</div>
+          <div className="text-[8px] w-[44px] flex justify-center">{showUsd ? "cents" : "gwei"}</div>
         </div>
         <div className="flex flex-col leading-3 gap-y-[0px] justify-self-start">
           <div className="text-[10px] text-[#5A6462] font-bold">
@@ -141,21 +153,20 @@ export default function UsageFees({
                 }}
               >
                 <div
-                  className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${
-                    selectedBarIndex === index
-                      ? "scale-[160%]"
-                      : hoverBarIndex === index
+                  className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${selectedBarIndex === index
+                    ? "scale-[160%]"
+                    : hoverBarIndex === index
                       ? "scale-[120%] opacity-90"
                       : "scale-100 opacity-50"
-                  }`}
+                    }`}
                   style={{
                     backgroundColor:
                       !chainFeeData[23 - index] ||
-                      !chainFeeData[23 - index][showUsd ? 2 : 1]
+                        !chainFeeData[23 - index][showUsd ? 2 : 1]
                         ? "gray"
                         : getGradientColor(
-                            Math.floor(chainFeeData[23 - index][3] * 100),
-                          ),
+                          Math.floor(chainFeeData[23 - index][3] * 100),
+                        ),
                   }}
                 ></div>
               </div>
