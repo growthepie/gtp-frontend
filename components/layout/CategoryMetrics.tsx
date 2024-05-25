@@ -275,14 +275,14 @@ export default function CategoryMetrics({
     return {
       "7d": {
         label: "7 days",
-        shortLabel: "7d",
+        shortLabel: "7D",
         value: 7,
         xMin: Date.now() - 7 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
       },
       "30d": {
         label: "30 days",
-        shortLabel: "30d",
+        shortLabel: "30D",
         value: 30,
         xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
@@ -293,7 +293,7 @@ export default function CategoryMetrics({
       // },
       "180d": {
         label: "180 days",
-        shortLabel: "180d",
+        shortLabel: "180D",
         value: 180,
       },
       // "365d": {
@@ -302,6 +302,7 @@ export default function CategoryMetrics({
       // },
       max: {
         label: "All Time",
+        shortLabel: "Max",
         value: 0,
       },
     };
@@ -1027,7 +1028,7 @@ export default function CategoryMetrics({
                         ? "translate-y-[calc(-100%+3px)]"
                         : "translate-y-0 "
                       : ["max", "180d"].includes(selectedTimespan)
-                      ? "translate-y-[calc(100%+3px)]"
+                      ? "translate-y-[calc(50%+3px)]"
                       : "translate-y-0"
                   }`}
                 >
