@@ -207,24 +207,28 @@ export default function OverviewMetrics({
       return {
         "1d": {
           label: "Yesterday",
+          shortLabel: "1D",
           value: 1,
           xMin: Date.now() - 1 * 24 * 60 * 60 * 1000,
           xMax: Date.now(),
         },
         "7d": {
           label: "7 days",
+          shortLabel: "7D",
           value: 7,
           xMin: Date.now() - 7 * 24 * 60 * 60 * 1000,
           xMax: Date.now(),
         },
         "30d": {
           label: "30 days",
+          shortLabel: "30D",
           value: 30,
           xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
           xMax: Date.now(),
         },
         max: {
           label: "All Time",
+          shortLabel: "Max",
           value: 0,
         },
       };
@@ -232,24 +236,28 @@ export default function OverviewMetrics({
       return {
         "7d": {
           label: "7 days",
+          shortLabel: "7D",
           value: 7,
           xMin: Date.now() - 7 * 24 * 60 * 60 * 1000,
           xMax: Date.now(),
         },
         "30d": {
           label: "30 days",
+          shortLabel: "30D",
           value: 30,
           xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
           xMax: Date.now(),
         },
         "180d": {
           label: "180 days",
+          shortLabel: "180D",
           value: 180,
           xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
           xMax: Date.now(),
         },
         max: {
           label: "All Time",
+          shortLabel: "Max",
           value: 0,
         },
       };
@@ -305,7 +313,7 @@ export default function OverviewMetrics({
                   Transaction Count
                 </TopRowChild>
               </TopRowParent>
-              <div className="block lg:hidden w-[70%] mx-auto mt-[5px]">
+              <div className="block lg:hidden w-[70%] mx-auto my-[2.5px]">
                 <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
               </div>
               <TopRowParent>
@@ -328,7 +336,12 @@ export default function OverviewMetrics({
                       // });
                     }}
                   >
-                    {timespans[timespan].label}
+                    <span className="hidden md:block">
+                      {timespans[timespan].label}
+                    </span>
+                    <span className="block md:hidden">
+                      {timespans[timespan].shortLabel}
+                    </span>
                   </TopRowChild>
                 ))}
               </TopRowParent>

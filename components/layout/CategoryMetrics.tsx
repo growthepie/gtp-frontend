@@ -275,12 +275,14 @@ export default function CategoryMetrics({
     return {
       "7d": {
         label: "7 days",
+        shortLabel: "7d",
         value: 7,
         xMin: Date.now() - 7 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
       },
       "30d": {
         label: "30 days",
+        shortLabel: "30d",
         value: 30,
         xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
@@ -291,6 +293,7 @@ export default function CategoryMetrics({
       // },
       "180d": {
         label: "180 days",
+        shortLabel: "180d",
         value: 180,
       },
       // "365d": {
@@ -1009,7 +1012,12 @@ export default function CategoryMetrics({
                       // });
                     }}
                   >
-                    {timespans[timespan].label}
+                    <span className="hidden md:block">
+                      {timespans[timespan].label}
+                    </span>
+                    <span className="block md:hidden">
+                      {timespans[timespan].shortLabel}
+                    </span>
                   </TopRowChild>
                 ))}
                 <div
@@ -1138,7 +1146,7 @@ export default function CategoryMetrics({
                     categories[category] !== "Categories" ? (
                       <div
                         key={category}
-                        className="w-full items-center justify-between flex flex-col"
+                        className="w-full items-center justify-between flex flex-col border-forest-50 border-lr-[1px] "
                       >
                         <div>{categories[category]}</div>
                         <div
