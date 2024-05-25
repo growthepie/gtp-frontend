@@ -1142,12 +1142,19 @@ export default function CategoryMetrics({
           <div id="content-container">
             {IS_PREVIEW || IS_DEVELOPMENT ? (
               <Container>
-                <div className="border-forest-50 flex border-[1px] mx-[2px] mt-[30px] rounded-2xl min-h-[65px] bg-forest-1000">
+                <div className="border-forest-400 dark:border-forest-800 flex border-[0.5px] mx-[2px] mt-[30px] rounded-2xl min-h-[65px] bg-forest-1000  ">
                   {Object.keys(categories).map((category, i) =>
                     categories[category] !== "Categories" ? (
                       <div
                         key={category}
-                        className="w-full items-center justify-between flex flex-col border-forest-50 border-lr-[1px] "
+                        className="w-full hover:cursor-pointer hover:bg-forest-500 dark:hover:bg-white/5 items-center justify-between flex flex-col border-forest-50 border-dotted border-l-[1px] pt-2 pb-0.5 text-[12px] font-semibold "
+                        onClick={() => {
+                          if (selectedCategory === category) {
+                            handleOpen(category);
+                          }
+
+                          setSelectedCategory(category);
+                        }}
                       >
                         <div>{categories[category]}</div>
                         <div
