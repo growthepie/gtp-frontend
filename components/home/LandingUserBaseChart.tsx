@@ -6,7 +6,11 @@ import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
-import { AllChains, AllChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
+import {
+  AllChains,
+  AllChainsByKeys,
+  Get_SupportedChainKeys,
+} from "@/lib/chains";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import LandingChart from "@/components/layout/LandingChart";
 import LandingMetricsTable from "@/components/layout/LandingMetricsTable";
@@ -20,6 +24,7 @@ import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import Container from "@/components/layout/Container";
 import ShowLoading from "@/components/layout/ShowLoading";
 import HorizontalScrollContainer from "../HorizontalScrollContainer";
+import { isMobile } from "react-device-detect";
 
 export default function LandingUserBaseChart() {
   // const isLargeScreen = useMediaQuery("(min-width: 1280px)");
@@ -57,7 +62,6 @@ export default function LandingUserBaseChart() {
     }
   }, [landing, selectedTimeInterval]);
 
-
   useEffect(() => {
     if (!data) return;
 
@@ -73,7 +77,9 @@ export default function LandingUserBaseChart() {
 
     return AllChains.filter(
       (chain) =>
-        Object.keys(data.chains).includes(chain.key) && Get_SupportedChainKeys(master) && chain.key != "ethereum",
+        Object.keys(data.chains).includes(chain.key) &&
+        Get_SupportedChainKeys(master) &&
+        chain.key != "ethereum",
     );
   }, [data, master]);
 
@@ -91,7 +97,11 @@ export default function LandingUserBaseChart() {
       {data && landing && master ? (
         <>
           <Container
-            className={`w-full h-[600px] ${isSidebarOpen ? 'md:h-[718px] lg:h-[626px]' : 'md:h-[718px] lg:h-[657px]'} rounded-[15px] pb-[15px] md:pb-[42px]`}
+            className={`w-full ${isMobile ? "h-[620px]" : "h-[600px]"} ${
+              isSidebarOpen
+                ? "md:h-[718px] lg:h-[626px]"
+                : "md:h-[718px] lg:h-[657px]"
+            } rounded-[15px] pb-[15px] md:pb-[42px]`}
           >
             <LandingChart
               data={Object.keys(data.chains)
