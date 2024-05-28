@@ -3,7 +3,7 @@ import Link from "next/link";
 import Sidebar from "@/components/layout/Sidebar";
 import Icon from "@/components/layout/Icon";
 import EthUsdSwitch from "@/components/layout/EthUsdSwitch";
-import DarkModeSwitch from "@/components/layout/DarkModeSwitch";
+
 import Banner from "@/components/Banner";
 import Notification from "@/components/Notification";
 import HeaderLinks from "@/components/layout/HeaderLinks";
@@ -96,9 +96,9 @@ export default function Header() {
         </div>
       </div>
       {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
-        ["development", "preview"].includes(
-          process.env.NEXT_PUBLIC_VERCEL_ENV,
-        ) ? (
+      ["development", "preview"].includes(
+        process.env.NEXT_PUBLIC_VERCEL_ENV,
+      ) ? (
         <> </>
       ) : (
         <>{/* <SupportUsBanner /> */}</>

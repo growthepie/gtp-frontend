@@ -145,6 +145,15 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const script = `
+  (function() {
+    // Set dark theme
+    document.documentElement.classList.add('dark');
+    // Optionally, set dark theme in local storage
+    localStorage.setItem('theme', 'dark');
+  })();
+`;
+
   return (
     <html
       lang="en"
@@ -153,6 +162,11 @@ export default function RootLayout({
     >
       <Head />
       <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden overflow-y-scroll">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: script,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
