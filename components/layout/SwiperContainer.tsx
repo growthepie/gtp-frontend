@@ -57,7 +57,7 @@ export default function SwiperContainer({ ariaId }: { ariaId?: string }) {
               perPage: 3,
             },
             6000: {
-              perPage: isSidebarOpen ? 3 : 4,
+              perPage: 3,
             },
           },
         }}
