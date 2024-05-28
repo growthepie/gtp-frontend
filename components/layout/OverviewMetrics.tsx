@@ -207,21 +207,21 @@ export default function OverviewMetrics({
       return {
         "1d": {
           label: "Yesterday",
-          shortLabel: "1D",
+          shortLabel: "1d",
           value: 1,
           xMin: Date.now() - 1 * 24 * 60 * 60 * 1000,
           xMax: Date.now(),
         },
         "7d": {
           label: "7 days",
-          shortLabel: "7D",
+          shortLabel: "7d",
           value: 7,
           xMin: Date.now() - 7 * 24 * 60 * 60 * 1000,
           xMax: Date.now(),
         },
         "30d": {
           label: "30 days",
-          shortLabel: "30D",
+          shortLabel: "30d",
           value: 30,
           xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
           xMax: Date.now(),
@@ -236,21 +236,21 @@ export default function OverviewMetrics({
       return {
         "7d": {
           label: "7 days",
-          shortLabel: "7D",
+          shortLabel: "7d",
           value: 7,
           xMin: Date.now() - 7 * 24 * 60 * 60 * 1000,
           xMax: Date.now(),
         },
         "30d": {
           label: "30 days",
-          shortLabel: "30D",
+          shortLabel: "30d",
           value: 30,
           xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
           xMax: Date.now(),
         },
         "180d": {
           label: "180 days",
-          shortLabel: "180D",
+          shortLabel: "180d",
           value: 180,
           xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
           xMax: Date.now(),
