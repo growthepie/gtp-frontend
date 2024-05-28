@@ -400,18 +400,18 @@ export default function FeesChart({
           if (pointX - tooltipWidth / 2 < plotLeft) {
             return {
               x: plotLeft,
-              y: -250,
+              y: (15 * selectedChains.length - 7) * -1,
             };
           }
           if (pointX + tooltipWidth / 2 > plotLeft + plotWidth) {
             return {
               x: plotLeft + plotWidth - tooltipWidth,
-              y: -250,
+              y: (15 * selectedChains.length - 7) * -1,
             };
           }
           return {
             x: pointX - tooltipWidth / 2,
-            y: -250,
+            y: (15 * selectedChains.length - 7) * -1,
           };
         }
 
@@ -420,7 +420,7 @@ export default function FeesChart({
           y: tooltipY - 250,
         };
       },
-      [isMobile],
+      [isMobile, selectedChains],
     );
 
   const dataIndex = useMemo(() => {
