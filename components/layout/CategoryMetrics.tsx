@@ -1142,15 +1142,27 @@ export default function CategoryMetrics({
           <div id="content-container">
             {IS_PREVIEW || IS_DEVELOPMENT ? (
               <Container>
-                <div className="border-forest-400 dark:border-forest-800 flex border-[0.5px] mx-[2px] mt-[30px] rounded-2xl min-h-[65px] bg-forest-1000  ">
+                <div
+                  className={`border-forest-400 dark:border-forest-800 flex border-[0.5px] mx-[2px] mt-[30px] rounded-2xl transition-all duration-300 ease-in-out overflow-hidden bg-forest-1000 ${
+                    openSub ? "h-[130px]" : "h-[65px]"
+                  }`}
+                >
                   {Object.keys(categories).map((category, i) =>
                     categories[category] !== "Categories" ? (
                       <div
                         key={category}
-                        className="w-full hover:cursor-pointer hover:bg-forest-500 dark:hover:bg-white/5 items-center justify-between flex flex-col border-forest-50 border-dotted border-l-[1px] pt-2 pb-0.5 text-[12px] font-semibold "
+                        className={`w-full hover:cursor-pointer items-center justify-between flex flex-col border-forest-50 border-dotted border-l-[1px] pt-2 pb-0.5 text-[12px] font-semibold ${
+                          selectedCategory === category
+                            ? "bg-forest-600"
+                            : "hover:bg-forest-500 dark:hover:bg-white/5"
+                        } ${
+                          selectedCategory === category && openSub
+                            ? "w-[200px] min-w-[200px]"
+                            : "w-full"
+                        }`}
                         onClick={() => {
                           if (selectedCategory === category) {
-                            handleOpen(category);
+                            setOpenSub(!openSub);
                           }
 
                           setSelectedCategory(category);
@@ -1159,9 +1171,11 @@ export default function CategoryMetrics({
                         <div>{categories[category]}</div>
                         <div
                           key={i}
-                          className="relative flex items-center mb-2.5 top-[8px] h-[24px] w-full"
+                          className={`relative transition-transform duration-500 flex items-center mb-2.5 top-[8px] h-[24px] w-full ${
+                            openSub ? "rotate-180 " : "rotate-0"
+                          }`}
                           onClick={() => {
-                            handleOpen(category);
+                            setOpenSub(!openSub);
                           }}
                         >
                           <Icon
