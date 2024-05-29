@@ -79,8 +79,8 @@ const ChainSectionHead = ({
           } ${
             title === "Background"
               ? isSidebarOpen
-                ? "opacity-100"
-                : "2xl:opacity-0 md:opacity-100"
+                ? "lg:opacity-0 md:opacity-100"
+                : "xl:opacity-0 md:opacity-100"
               : title === "Risk"
               ? " xl:opacity-0 md:opacity-100 "
               : title === "Usage"

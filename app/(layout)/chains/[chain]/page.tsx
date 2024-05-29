@@ -414,7 +414,7 @@ const Chain = ({ params }: { params: any }) => {
               </div>
             </div>
 
-            <div className="relative grid lg:grid-flow-col grid-rows-none lg:grid-cols-[270px, auto, auto, auto, 131px] gap-x-[5px] gap-y-[5px] pb-[30px] md:pb-[60px] overflow-visible">
+            <div className="relative grid lg:flex grid-rows-none gap-x-[5px] gap-y-[5px] pb-[30px] md:pb-[60px] overflow-visible">
               <ChainSectionHead
                 title={"Menu"}
                 enableDropdown={false}
@@ -536,7 +536,7 @@ const Chain = ({ params }: { params: any }) => {
                 title={"Background"}
                 enableDropdown={isMobile}
                 childrenHeight={isMobile ? 200 : 111}
-                className={`min-w-[67px] transition-all duration-300 min-w-none" lg:hover:min-w-[480px]`}
+                className={`min-w-[67px] 2xl:min-w-[413px] grow transition-all duration-300 lg:hover:min-w-[415px]`}
               >
                 <div
                   className={`min-h-[111px] lg:max-h-[111px] relative flex flex-col justify-between transition-opacity duration-300 px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden`}
@@ -546,26 +546,26 @@ const Chain = ({ params }: { params: any }) => {
                       isMobile
                         ? "opacity-0"
                         : isSidebarOpen
-                        ? "lg:opacity-100 opacity-0"
-                        : "2xl:opacity-0 md:opacity-100"
+                        ? "lg:opacity-0 md:opacity-100"
+                        : "xl:opacity-0 md:opacity-100"
                     }`}
                     style={{
                       background:
                         "linear-gradient(to right, rgba(0, 0, 0, 0) 0%, rgba(22, 28, 27, 0.76) 100%)",
                     }}
                   ></div>
-                  <div className={`lg:min-w-[460px]  `}>
+                  <div className={`lg:min-w-[390px]  `}>
                     <div className="text-[10px] font-semibold text-[#5A6462]">
                       Background Information
                     </div>
                     <div
-                      className={`text-[10px] leading-[150%] md:min-w-[460px] md:max-w-[460px] `}
+                      className={`text-[10px] leading-[150%] md:min-w-[398px]  md:max-w-[398px] `}
                     >
                       {master.chains[chainKey].description}
                     </div>
                   </div>
                   <div
-                    className={`flex gap-x-[10px] gap-y-[5px] justify-between min-w-[460px] flex-col lg:flex-row`}
+                    className={`flex gap-x-[10px] gap-y-[5px] justify-between min-w-[398px] flex-col lg:flex-row`}
                   >
                     <div>
                       <div className="text-[10px] font-semibold text-[#5A6462] min-w-[70px]">
@@ -698,7 +698,7 @@ const Chain = ({ params }: { params: any }) => {
                 title={"Usage"}
                 enableDropdown={isMobile}
                 childrenHeight={isMobile ? 116 : 111}
-                className="hover:min-w-[200px] min-w-[67px] transition-all duration-300"
+                className="hover:min-w-[222px] min-w-[67px] transition-all duration-300"
               >
                 <div className="flex flex-col gap-y-[5px] overflow-hidden relative ">
                   <UsageFees chainFeeData={chainFeeData} showUsd={showUsd} />
@@ -745,11 +745,11 @@ const Chain = ({ params }: { params: any }) => {
                 title={"Technology"}
                 enableDropdown={isMobile}
                 childrenHeight={isMobile ? 116 : 111}
-                className={`transition-all duration-300 hover:min-w-[180px] min-w-[67px] hidden lg:block`}
+                className={`transition-all duration-300 hover:min-w-[200px] min-w-[67px] hidden lg:block`}
               >
                 <div className="relative h-[111px] flex px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden  ">
                   <div
-                    className={`absolute  inset-0 pointer-events-none shadow-inner rounded-2xl group-hover:opacity-0 transition-opacity duration-300 2xl:opacity-0 lg:opacity-100 opacity-0 ${
+                    className={`absolute  inset-0 pointer-events-none shadow-inner rounded-2xl group-hover:opacity-0 transition-opacity duration-300  opacity-0 ${
                       isMobile
                         ? "opacity-0"
                         : isSidebarOpen
@@ -803,7 +803,7 @@ const Chain = ({ params }: { params: any }) => {
                 title={"Risk"}
                 enableDropdown={isMobile}
                 childrenHeight={isMobile ? 116 : 111}
-                className={`flex-shrink transition-all duration-300 hover:min-w-[126px] hover:max-w-[126px] min-w-[67px] hidden lg:block`}
+                className={`flex-shrink transition-all duration-300 hover:min-w-[122px] hover:max-w-[122px] min-w-[67px] hidden lg:block`}
               >
                 <div className="relative h-[111px] flex justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]  overflow-hidden">
                   <div
