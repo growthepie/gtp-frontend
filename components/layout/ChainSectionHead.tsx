@@ -90,7 +90,8 @@ const ChainSectionHead = ({
               : ""
           }`}
           style={{
-            boxShadow: "-62.5px 0px 10px rgba(22, 28, 27, 0.35) inset",
+            background:
+              "linear-gradient(to right, rgba(0, 0, 0, 0) 10%, rgba(22, 28, 27, 0.76) 100%)",
           }}
         ></div>
         <div className="bg-white dark:bg-forest-1000 rounded-full w-[24px] h-[24px] p-1 flex items-center justify-center relative">
