@@ -753,8 +753,8 @@ const Chain = ({ params }: { params: any }) => {
                       isMobile
                         ? "opacity-0"
                         : isSidebarOpen
-                        ? "2xl:opacity-0 md:opacity-100 "
-                        : "xl:opacity-0 md:opacity-100"
+                        ? "xl:opacity-0 md:opacity-100 "
+                        : "lg:opacity-0 md:opacity-100"
                     }`}
                     style={{
                       background:
