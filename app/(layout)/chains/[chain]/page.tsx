@@ -536,7 +536,7 @@ const Chain = ({ params }: { params: any }) => {
                 title={"Background"}
                 enableDropdown={isMobile}
                 childrenHeight={isMobile ? 200 : 111}
-                className={`min-w-[87px] transition-all duration-300 min-w-none" lg:hover:min-w-[510px]`}
+                className={`min-w-[67px] transition-all duration-300 min-w-none" lg:hover:min-w-[480px]`}
               >
                 <div
                   className={`min-h-[111px] lg:max-h-[111px] relative flex flex-col justify-between transition-opacity duration-300 px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden`}
@@ -554,7 +554,7 @@ const Chain = ({ params }: { params: any }) => {
                         "linear-gradient(to right, rgba(0, 0, 0, 0) 0%, rgba(22, 28, 27, 0.76) 100%)",
                     }}
                   ></div>
-                  <div className={`lg:min-w-[460px]`}>
+                  <div className={`lg:min-w-[460px]  `}>
                     <div className="text-[10px] font-semibold text-[#5A6462]">
                       Background Information
                     </div>
@@ -565,7 +565,7 @@ const Chain = ({ params }: { params: any }) => {
                     </div>
                   </div>
                   <div
-                    className={`flex gap-x-[10px] gap-y-[5px] justify-between min-w-[490px] flex-col lg:flex-row`}
+                    className={`flex gap-x-[10px] gap-y-[5px] justify-between min-w-[460px] flex-col lg:flex-row`}
                   >
                     <div>
                       <div className="text-[10px] font-semibold text-[#5A6462] min-w-[70px]">
@@ -698,7 +698,7 @@ const Chain = ({ params }: { params: any }) => {
                 title={"Usage"}
                 enableDropdown={isMobile}
                 childrenHeight={isMobile ? 116 : 111}
-                className="hover:min-w-[200px] min-w-[87px] transition-all duration-300"
+                className="hover:min-w-[200px] min-w-[67px] transition-all duration-300"
               >
                 <div className="flex flex-col gap-y-[5px] overflow-hidden relative ">
                   <UsageFees chainFeeData={chainFeeData} showUsd={showUsd} />
@@ -745,7 +745,7 @@ const Chain = ({ params }: { params: any }) => {
                 title={"Technology"}
                 enableDropdown={isMobile}
                 childrenHeight={isMobile ? 116 : 111}
-                className={`transition-all duration-300 hover:min-w-[180px] min-w-[87px] hidden lg:block`}
+                className={`transition-all duration-300 hover:min-w-[180px] min-w-[67px] hidden lg:block`}
               >
                 <div className="relative h-[111px] flex px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden  ">
                   <div
@@ -803,7 +803,7 @@ const Chain = ({ params }: { params: any }) => {
                 title={"Risk"}
                 enableDropdown={isMobile}
                 childrenHeight={isMobile ? 116 : 111}
-                className={`flex-shrink transition-all duration-300 hover:min-w-[126px] hover:max-w-[126px] min-w-[87px] hidden lg:block`}
+                className={`flex-shrink transition-all duration-300 hover:min-w-[126px] hover:max-w-[126px] min-w-[67px] hidden lg:block`}
               >
                 <div className="relative h-[111px] flex justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726]  overflow-hidden">
                   <div
