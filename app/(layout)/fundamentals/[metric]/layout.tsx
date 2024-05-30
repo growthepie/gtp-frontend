@@ -203,33 +203,10 @@ export default async function Layout({
                 </a>
               </p>
             </div>
-          ) : pageData.title === "Transaction Costs" ? (
-            <div className="flex flex-col sm:flex-row space-x-1">
-              <span className="inline-flex gap-x-1">
-                <div>
-                  {pageData.description} Check out our new
-                  <a
-                    href="https://fees.growthepie.xyz/"
-                    target="_blank"
-                    className="underline mx-0.5"
-                  >
-                    fees page
-                  </a>
-                  for a more detailed view.
-                </div>
-              </span>
-            </div>
           ) : (
             pageData.description
           )}
-          {pageData.note && (
-            <div className="text-xs">
-              <span className="font-semibold text-forest-200 dark:text-forest-400">
-                Note:{" "}
-              </span>
-              {pageData.note}
-            </div>
-          )}
+
           {pageData.tags && (
             <div className="flex items-center mt-[5px]">
               {pageData.tags.map((tag, i) => (
@@ -253,6 +230,16 @@ export default async function Layout({
           className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[63px] py-[23px] flex flex-col"
           question={`What does ${pageData.title} tell you?`}
           answer={pageData.why}
+          note={
+            pageData.note && (
+              <div className="text-xs">
+                <span className="font-semibold text-forest-200 dark:text-forest-400">
+                  Note:{" "}
+                </span>
+                {pageData.note}
+              </div>
+            )
+          }
           startOpen
         />
       </Container>
