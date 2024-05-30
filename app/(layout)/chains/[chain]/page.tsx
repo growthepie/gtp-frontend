@@ -4,7 +4,7 @@ import useSWR, { preload } from "swr";
 import { useSWRConfig } from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { AllChains, AllChainsByKeys, AllChainsByUrlKey } from "@/lib/chains";
-import ChainChart from "@/components/layout/ChainChart";
+import ChainChart from "@/components/layout/SingleChains/ChainChart";
 import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
 import { Icon } from "@iconify/react";
@@ -25,7 +25,7 @@ import {
   Chains,
 } from "@/types/api/ChainOverviewResponse";
 import { getFundamentalsByKey } from "@/lib/navigation";
-import ChainSectionHead from "@/components/layout/ChainSectionHead";
+import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useSessionStorage, useLocalStorage } from "usehooks-ts";
 import { notFound } from "next/navigation";
