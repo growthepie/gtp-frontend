@@ -97,7 +97,7 @@ export default function UsageFees({
         } `}
     >
       {shadowElement ? shadowElement : null}
-      <div
+      {/* <div
         className={`absolute z-20 inset-0 pointer-events-none shadow-inner rounded-2xl group-hover:opacity-0 transition-opacity duration-300 ${isMobile
           ? "opacity-0"
           : isSidebarOpen
@@ -107,7 +107,7 @@ export default function UsageFees({
         style={{
           boxShadow: "-55px 0px 10px rgba(21, 26, 25, 0.45) inset",
         }}
-      ></div>
+      ></div> */}
       <div className="flex gap-x-[5px]">
         <div className="flex flex-col items-center leading-tight pt-[9px] ">
           <div className="text-[14px] font-semibold w-[44px]  flex justify-center">

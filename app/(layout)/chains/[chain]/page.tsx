@@ -446,14 +446,14 @@ const Chain = ({ params }: { params: any }) => {
               </div>
             </div>
 
-            <div className="w-full grid grid-cols-[auto_126px] lg:flex gap-x-[5px] gap-y-[5px] bg-clip-content">
-              <div className="relative flex col-span-2 lg:col-auto lg:!w-[253px] lg:basis-[253px]">
+            <div className="w-full flex flex-col lg:flex-row gap-x-[5px] gap-y-[5px] bg-clip-content">
+              <div className="relative flex lg:col-auto lg:w-[253px] lg:basis-[253px]">
                 <ChainSectionHead
                   title={"Menu"}
                   enableDropdown={false}
                   defaultDropdown={true}
                   childrenHeight={isMobile ? 97 : 111}
-                  className="transition-all duration-300 w-full"
+                  className="transition-all duration-300 w-full lg:!w-[253px]"
                 >
                   <div className="relative h-[97px] lg:h-[111px] flex gap-x-[10px] px-[5px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-visible select-none">
                     <div className="flex flex-col justify-between gap-y-[10px] min-w-[120px] ">
@@ -550,20 +550,20 @@ const Chain = ({ params }: { params: any }) => {
                 </ChainSectionHead>
               </div>
 
-              <div className="@container col-span-2 min-w-[35px] lg:max-w-[510px] lg:col-auto lg:basis-[510px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[510px] transition-all duration-300">
+              <div className="@container min-w-[67px] lg:max-w-[398px] lg:col-auto lg:basis-[398px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[398px] transition-all duration-300">
 
                 <ChainSectionHead
                   title={"Background"}
                   enableDropdown={isMobile}
                   childrenHeight={isMobile ? 200 : 111}
-                  className={`transition-all duration-300 min-w-[35px] w-full flex flex-1`}
+                  className={`transition-all duration-300 min-w-[67px] w-full flex flex-1`}
                   shadowElement={
-                    <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[510px]:opacity-0 z-10 absolute top-0 bottom-0 right-0 bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)]">
+                    <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[398px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[75px] w-[150px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                     </div>
                   }
                 >
                   <div className={`group bg-clip-border min-h-[111px] lg:max-h-[111px] relative flex flex-col justify-between transition-opacity duration-300 px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden`}>
-                    <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[510px]:opacity-0 z-10 absolute top-0 bottom-0 right-0 bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)]">
+                    <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[398px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[75px] w-[150px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                     </div>
                     {/* <div
                     className={`absolute inset-0 pointer-events-none shadow-inner z-10  rounded-2xl group-hover:opacity-0 opacity-0 transition-opacity duration-300 ${isMobile
@@ -577,18 +577,18 @@ const Chain = ({ params }: { params: any }) => {
                         "-67.5px 0px 20px rgba(22, 28, 27, 0.45) inset",
                     }}
                   ></div> */}
-                    <div className={`lg:min-w-[460px]`}>
+                    <div className={`lg:min-w-[px]`}>
                       <div className="text-[10px] font-semibold text-[#5A6462]">
                         Background Information
                       </div>
                       <div
-                        className={`text-[10px] leading-[150%] md:min-w-[460px] md:max-w-[460px] `}
+                        className={`text-[10px] leading-[150%] md:min-w-[378px] md:max-w-[378px] `}
                       >
                         {master.chains[chainKey].description}
                       </div>
                     </div>
                     <div
-                      className={`flex gap-x-[10px] gap-y-[5px] justify-between min-w-[490px] flex-col lg:flex-row`}
+                      className={`flex gap-x-[10px] gap-y-[5px] justify-between min-w-[378px] flex-col lg:flex-row`}
                     >
                       <div>
                         <div className="text-[10px] font-semibold text-[#5A6462] min-w-[70px]">
@@ -720,15 +720,15 @@ const Chain = ({ params }: { params: any }) => {
                   </div>
                 </ChainSectionHead>
               </div>
-              <div className="flex gap-x-[5px] flex-grow flex-shrink basis-0">
-                <div className="@container col-span-2 min-w-[35px] lg:col-auto lg:basis-[228px] lg:flex-shrink lg:hover:min-w-[228px] transition-all duration-300">
+              <div className="flex flex-col gap-y-[5px] lg:flex-row gap-x-[5px] flex-grow flex-shrink basis-0">
+                <div className="@container min-w-full lg:min-w-[67px] lg:col-auto lg:basis-[228px] lg:flex-shrink lg:hover:min-w-[228px] transition-all duration-300">
                   <ChainSectionHead
                     title={"Usage"}
                     enableDropdown={isMobile}
                     childrenHeight={isMobile ? 116 : 111}
-                    className="transition-all duration-300 min-w-[35px] w-full"
+                    className="transition-all duration-300 min-w-[67px] w-full"
                     shadowElement={
-                      <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 right-0 w-[228px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)]">
+                      <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[75px] w-[150px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                       </div>
                     }
                   >
@@ -737,12 +737,12 @@ const Chain = ({ params }: { params: any }) => {
                         chainFeeData={chainFeeData}
                         showUsd={showUsd}
                         shadowElement={
-                          <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 right-0 w-[228px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)]">
+                          <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[75px] w-[150px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                           </div>
                         }
                       />
                       <div className="bg-clip-border h-[48px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] overflow-hidden bg-forest-50 dark:bg-[#1F2726] justify-between ">
-                        <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 right-0 w-[228px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)]">
+                        <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[75px] w-[150px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                         </div>
                         <div className="flex-col flex pl-[48px] truncate">
                           <div className="text-[10px] text-[#5A6462] font-bold min-w-[150px] ">
@@ -770,55 +770,56 @@ const Chain = ({ params }: { params: any }) => {
                   </ChainSectionHead>
                 </div>
                 <div className="flex gap-x-[5px] flex-grow flex-shrink basis-0">
-                  <div className="@container min-w-[35px] lg:basis-[218px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[218px] transition-all duration-300">
+                  <div className="@container min-w-[calc(100%-125px)] lg:min-w-[67px] lg:basis-[232px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[232px] transition-all duration-300">
 
                     <ChainSectionHead
                       title={"Technology"}
                       enableDropdown={isMobile}
                       childrenHeight={isMobile ? 116 : 111}
-                      className={`transition-all duration-300 min-w-[35px]`}
+                      className={`transition-all duration-300 min-w-[67px]`}
                       shadowElement={
-                        <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[218px]:opacity-0 z-10 absolute top-0 bottom-0 right-0 w-[218px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)]">
+                        <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[232px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[75px] w-[150px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                         </div>
                       }
                     >
-                      <div className="group relative h-[111px] flex px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden  ">
-                        <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[218px]:opacity-0 z-10 absolute top-0 bottom-0 right-0 w-[218px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)]">
+                      <div className="group relative h-[111px] flex px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden">
+                        <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[232px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[75px] w-[150px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                         </div>
-
-                        <div className="flex flex-col w-full h-full justify-between min-w-[85px] ">
-                          <div>
-                            <div className="text-[10px] font-semibold text-[#5A6462] ">
-                              Stack
+                        <div className="w-full min-w-[232px] flex">
+                          <div className="flex flex-col w-full h-full justify-between min-w-[85px]">
+                            <div>
+                              <div className="text-[10px] font-semibold text-[#5A6462] ">
+                                Stack
+                              </div>
+                              <div className="text-[10px] leading-[150%] font-medium">
+                                {master.chains[chainKey].stack.label}
+                              </div>
                             </div>
-                            <div className="text-[10px] leading-[150%] font-medium">
-                              {master.chains[chainKey].stack.label}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-[10px] font-semibold text-[#5A6462]">
-                              Technology
-                            </div>
-                            <div className="text-[10px] leading-[150%] font-medium">
-                              {master.chains[chainKey].technology}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex flex-col w-full h-full justify-between min-w-[90px]">
-                          <div className="">
-                            <div className="text-[10px] font-semibold text-[#5A6462] ">
-                              Data Availability
-                            </div>
-                            <div className="text-[10px] leading-[150%] font-medium  ">
-                              {master.chains[chainKey].da_layer}
+                            <div>
+                              <div className="text-[10px] font-semibold text-[#5A6462]">
+                                Technology
+                              </div>
+                              <div className="text-[10px] leading-[150%] font-medium">
+                                {master.chains[chainKey].technology}
+                              </div>
                             </div>
                           </div>
-                          <div className="">
-                            <div className="text-[10px] font-semibold text-[#5A6462] ">
-                              Rollup as a Service
+                          <div className="flex flex-col w-full h-full justify-between min-w-[90px]">
+                            <div className="">
+                              <div className="text-[10px] font-semibold text-[#5A6462] ">
+                                Data Availability
+                              </div>
+                              <div className="text-[10px] leading-[150%] font-medium  ">
+                                {master.chains[chainKey].da_layer}
+                              </div>
                             </div>
-                            <div className="text-[10px] leading-[150%] font-medium">
-                              {master.chains[chainKey].raas}
+                            <div className="">
+                              <div className="text-[10px] font-semibold text-[#5A6462] ">
+                                Rollup as a Service
+                              </div>
+                              <div className="text-[10px] leading-[150%] font-medium">
+                                {master.chains[chainKey].raas}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -826,20 +827,20 @@ const Chain = ({ params }: { params: any }) => {
                     </ChainSectionHead>
                   </div>
                   <div className="flex gap-x-[5px] flex-grow flex-shrink basis-0">
-                    <div className="@container group min-w-[35px] lg:basis-[125px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[125px] transition-all duration-300">
+                    <div className="@container group min-w-[125px] lg:min-w-[67px] lg:basis-[125px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[125px] transition-all duration-300">
 
                       <ChainSectionHead
                         title={"Risk"}
                         enableDropdown={isMobile}
                         childrenHeight={isMobile ? 116 : 111}
-                        className={`transition-all duration-300 min-w-[35px]`}
+                        className={`transition-all duration-300 min-w-[67px]`}
                         shadowElement={
-                          <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[125px]:opacity-0 z-10 absolute top-0 bottom-0 right-0 w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)]">
+                          <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[125px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[75px] w-[150px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                           </div>
                         }
                       >
                         <div className="relative h-[111px] flex justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden">
-                          <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[125px]:opacity-0 z-10 absolute top-0 bottom-0 right-0 w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)]">
+                          <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[125px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[75px] w-[150px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                           </div>
                           <div className="flex flex-col justify-between gap-y-[10px] h-[91px] min-w-[80px]">
                             <div className="text-[10px] font-semibold text-[#5A6462]">
