@@ -1026,6 +1026,8 @@ export default function FeesPage() {
       const multipliedValue = value * multiplier;
       const fractionDigits = getNumFractionDigits(multipliedValue);
 
+      console.log(multipliedValue + " - " + chain);
+
       // ethereum chain as a special case
       if (chain === "ethereum" && metric === selectedQuantitative) {
         return (
@@ -1075,11 +1077,13 @@ export default function FeesPage() {
             </div>
           )}
           <div>
-            {Intl.NumberFormat(undefined, {
-              notation: "compact",
-              maximumFractionDigits: fractionDigits,
-              minimumFractionDigits: fractionDigits,
-            }).format(multipliedValue)}
+            {multipliedValue < 0.1
+              ? "< 0.1"
+              : Intl.NumberFormat(undefined, {
+                  notation: "compact",
+                  maximumFractionDigits: fractionDigits,
+                  minimumFractionDigits: fractionDigits,
+                }).format(multipliedValue)}
           </div>
           {showUsd && showCents && (
             <div className="pl-0.5 text-[8px] pr-[5px] text-forest-400">
