@@ -3,7 +3,7 @@ import Link from "next/link";
 import Sidebar from "./Sidebar";
 import Icon from "./Icon";
 import EthUsdSwitch from "./EthUsdSwitch";
-import DarkModeSwitch from "./DarkModeSwitch";
+
 import Banner from "@/components/Banner";
 import SupportUsBanner from "./SupportUsBanner";
 import Notification from "@/components/Notification";

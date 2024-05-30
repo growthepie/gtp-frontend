@@ -18,7 +18,7 @@ export function Providers({ children, forcedTheme }: ProvidersProps) {
     <ThemeProvider
       attribute="class"
       defaultTheme="dark"
-      forcedTheme={forcedTheme}
+      forcedTheme={"dark"}
       disableTransitionOnChange
     >
       <SWRConfig

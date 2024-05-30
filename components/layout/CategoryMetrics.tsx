@@ -1142,26 +1142,51 @@ export default function CategoryMetrics({
           <div id="content-container">
             {IS_PREVIEW || IS_DEVELOPMENT ? (
               <Container>
-                <div className="border-forest-400 dark:border-forest-800 flex border-[0.5px] mx-[2px] mt-[30px] rounded-2xl min-h-[65px] bg-forest-1000  ">
+                <div
+                  className={`border-forest-400 dark:border-forest-800 flex border-[0.5px] mx-[2px] mt-[30px] rounded-2xl transition-all duration-300 ease-in-out overflow-hidden bg-forest-1000 ${
+                    openSub ? "h-[130px]" : "h-[65px]"
+                  }`}
+                >
                   {Object.keys(categories).map((category, i) =>
                     categories[category] !== "Categories" ? (
                       <div
                         key={category}
-                        className="w-full hover:cursor-pointer hover:bg-forest-500 dark:hover:bg-white/5 items-center justify-between flex flex-col border-forest-50 border-dotted border-l-[1px] pt-2 pb-0.5 text-[12px] font-semibold "
+                        className={`w-full hover:cursor-pointer overflow-hidden items-center transition-transform  duration-1000 justify-between flex flex-col border-forest-50 border-dotted border-l-[1px] pt-2 pb-0.5 text-[12px] font-semibold ${
+                          selectedCategory === category
+                            ? "bg-forest-600"
+                            : "hover:bg-forest-500 dark:hover:bg-white/5"
+                        } `}
                         onClick={() => {
                           if (selectedCategory === category) {
-                            handleOpen(category);
+                            setOpenSub(!openSub);
                           }
 
                           setSelectedCategory(category);
                         }}
+                        style={{
+                          transition: "min-width 0.5s",
+                          minWidth:
+                            selectedCategory === category && openSub
+                              ? "500px"
+                              : "10px",
+                        }}
                       >
-                        <div>{categories[category]}</div>
+                        <div
+                          className={`flex items-center h-[25px] min-w-[100px] justify-center  ${
+                            selectedCategory === category
+                              ? "text-sm font-bold"
+                              : "text-xs font-medium"
+                          }`}
+                        >
+                          <h1>{categories[category]}</h1>
+                        </div>
                         <div
                           key={i}
-                          className="relative flex items-center mb-2.5 top-[8px] h-[24px] w-full"
+                          className={`relative transition-transform duration-100 flex min-w-[24px] min-h-[24px] items-center mb-2.5 top-[8px] h-[24px] w-full ${
+                            openSub ? "rotate-180 " : "rotate-0"
+                          }`}
                           onClick={() => {
-                            handleOpen(category);
+                            setOpenSub(!openSub);
                           }}
                         >
                           <Icon
@@ -1268,13 +1293,62 @@ export default function CategoryMetrics({
                                 }}
                               >
                                 <div
-                                  className={`flex items-center h-[25px]  mt-1 ${
+                                  key={"label" + category}
+                                  className={`flex self-center min-w-[100px] justify-center mx-auto pb-8 pt-2 h-[30px]  ${
                                     selectedCategory === category
-                                      ? "text-sm font-bold"
-                                      : "text-xs font-medium"
+                                      ? "text-base font-bold "
+                                      : `text-base font-medium truncate hover:text-ellipsis ${
+                                          isCategoryHovered[category]
+                                            ? category === "native_transfers" ||
+                                              category === "token_transfers"
+                                              ? "pl-[0px] w-full"
+                                              : "w-full pl-0"
+                                            : category === "native_transfers" ||
+                                              category === "token_transfers"
+                                            ? "w-full "
+                                            : "w-full pl-0"
+                                        }`
                                   }`}
+                                  style={{
+                                    background:
+                                      selectedCategory === category
+                                        ? "#5A6462"
+                                        : "none",
+                                    backgroundClip:
+                                      selectedCategory === category
+                                        ? "initial"
+                                        : "text",
+                                    WebkitBackgroundClip:
+                                      selectedCategory === category
+                                        ? "initial"
+                                        : "text",
+                                    WebkitTextFillColor:
+                                      selectedCategory === category
+                                        ? "inherit"
+                                        : theme === "light"
+                                        ? "initial"
+                                        : "transparent",
+                                    backgroundImage:
+                                      selectedCategory === category
+                                        ? "none"
+                                        : theme === "light"
+                                        ? "none"
+                                        : `radial-gradient(ellipse at center, rgba(255, 255, 255, 1) 0%, rgba(0, 0, 0, 1) 100%), linear-gradient(90deg, rgba(16, 20, 19, ${
+                                            0.4 +
+                                            (i /
+                                              (Object.keys(categories).length -
+                                                1)) *
+                                              0.4
+                                          }) 0%, #101413 15.10%, rgba(16, 20, 19, 0.00) 48.96%, #101413 86.98%, rgba(16, 20, 19, ${
+                                            0.4 +
+                                            (i /
+                                              (Object.keys(categories).length -
+                                                1)) *
+                                              0.4
+                                          }) 100%)`,
+                                  }}
                                 >
-                                  <h1>{categories[category]}</h1>
+                                  {categories[category]}
                                 </div>
 
                                 <div

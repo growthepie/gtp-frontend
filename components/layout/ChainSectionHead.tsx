@@ -79,18 +79,23 @@ const ChainSectionHead = ({
           } ${
             title === "Background"
               ? isSidebarOpen
-                ? "opacity-100"
-                : "2xl:opacity-0 md:opacity-100"
+                ? "lg:opacity-0 md:opacity-100"
+                : "xl:opacity-0 md:opacity-100"
               : title === "Risk"
               ? " xl:opacity-0 md:opacity-100 "
-              : title === "Usage" || title === "Technology"
+              : title === "Usage"
               ? isSidebarOpen
                 ? "2xl:opacity-0 md:opacity-100 "
                 : "xl:opacity-0 md:opacity-100"
+              : title === "Technology"
+              ? isSidebarOpen
+                ? "xl:opacity-0 md:opacity-100 "
+                : "lg:opacity-0 md:opacity-100"
               : ""
           }`}
           style={{
-            boxShadow: "-62.5px 0px 10px rgba(22, 28, 27, 0.35) inset",
+            background:
+              "linear-gradient(to right, rgba(0, 0, 0, 0) 10%, rgba(22, 28, 27, 0.76) 100%)",
           }}
         ></div>
         <div className="bg-white dark:bg-forest-1000 rounded-full w-[24px] h-[24px] p-1 flex items-center justify-center relative">

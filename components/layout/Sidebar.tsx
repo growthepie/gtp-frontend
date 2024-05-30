@@ -12,7 +12,7 @@ import {
 import { useUIContext } from "@/contexts/UIContext";
 import { Icon } from "@iconify/react";
 import EthUsdSwitch from "./EthUsdSwitch";
-import DarkModeSwitch from "./DarkModeSwitch";
+
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import Backgrounds from "./Backgrounds";
@@ -230,7 +230,6 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                     </Link>
                   </div>
                   <div className="items-end justify-center z-[999] flex space-x-[15px] mt-[2px] mb-[17px]">
-                    <DarkModeSwitch isMobile />
                     <EthUsdSwitch isMobile />
                   </div>
                 </div>

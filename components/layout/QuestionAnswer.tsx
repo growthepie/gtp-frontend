@@ -7,11 +7,13 @@ import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 export default function QuestionAnswer({
   question,
   answer,
+  note,
   className = "",
   startOpen = false,
 }: {
   question: string | React.ReactNode;
   answer: string | React.ReactNode;
+  note?: string | React.ReactNode;
   className?: string;
   startOpen?: boolean;
 }) {
@@ -26,10 +28,11 @@ export default function QuestionAnswer({
         onClick={() => setOpen(!open)}
       >
         <div className="flex w-[13px] h-[13px] items-center justify-center">
-
           <Icon
             icon="feather:arrow-right-circle"
-            className={`w-[13px] h-[13px] transform rotate-0 transition-transform duration-300 ${open ? "rotate-90" : "rotate-0"}`}
+            className={`w-[13px] h-[13px] transform rotate-0 transition-transform duration-300 ${
+              open ? "rotate-90" : "rotate-0"
+            }`}
           />
         </div>
         <div className="font-semibold text-sm leading-snug">{question}</div>
@@ -43,6 +46,14 @@ export default function QuestionAnswer({
         <div ref={ref} className="pt-[15px]">
           {answer}
         </div>
+      </div>
+      <div
+        className={`transition-height duration-300 overflow-hidden text-base`}
+        style={{
+          height: open ? 25 : 0,
+        }}
+      >
+        {note && <div className="pt-[10px]">{note}</div>}
       </div>
     </div>
   );
