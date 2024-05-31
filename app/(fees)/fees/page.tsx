@@ -1077,8 +1077,10 @@ export default function FeesPage() {
             </div>
           )}
           <div>
-            {multipliedValue < 0.1
+            {showCents && multipliedValue < 0.1
               ? "< 0.1"
+              : !showCents && multipliedValue < 0.001
+              ? "< 0.001"
               : Intl.NumberFormat(undefined, {
                   notation: "compact",
                   maximumFractionDigits: fractionDigits,
