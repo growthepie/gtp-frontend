@@ -25,7 +25,7 @@ const CategoryBar = ({
   handleToggleSubcategory,
 }: {
   data: CategoryComparisonResponseData;
-  master: MasterResponse;
+  master: MasterResponse | undefined;
   categories: any;
   querySubcategories: Object | undefined;
   selectedCategory: string;

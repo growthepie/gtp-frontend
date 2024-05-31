@@ -65,6 +65,8 @@ export const ChainBlockspaceURLs = {
   mode: "https://api.growthepie.xyz/v1/chains/blockspace/mode.json",
 };
 
+export const EconomicsURL = "https://api.growthepie.xyz/v1/economics.json";
+
 export const LandingURL = "https://api.growthepie.xyz/v1/landing_page.json";
 
 export const MasterURL = "https://api.growthepie.xyz/v1/master.json";
