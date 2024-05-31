@@ -636,7 +636,6 @@ const Chain = ({ params }: { params: any }) => {
                                   <Tooltip
                                     key={key + "rankings"}
                                     placement="bottom"
-                                    allowInteract
                                   >
                                     <TooltipTrigger>
                                       <div
@@ -791,7 +790,7 @@ const Chain = ({ params }: { params: any }) => {
                   </ChainSectionHead>
                 </div>
                 <div className="flex gap-x-[5px] flex-grow flex-shrink basis-0">
-                  <div className="@container lg:min-w-[67px] lg:basis-[180px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[232px] transition-all duration-300">
+                  <div className="@container lg:min-w-[67px] lg:basis-[232px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[232px] transition-all duration-300">
                     <ChainSectionHead
                       title={"Technology"}
                       enableDropdown={isMobile}
