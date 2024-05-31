@@ -38,7 +38,7 @@ const CategoryBar = ({
   return (
     <Container>
       <div
-        className={`border-forest-400 dark:border-forest-800 flex border-[0.5px] mx-[2px] mt-[30px] rounded-2xl transition-all duration-[650] ease-in-out overflow-hidden bg-forest-1000 ${
+        className={`border-forest-400 dark:border-forest-800 flex border-[0.5px] mx-[2px] mt-[30px] rounded-2xl transition-all min-w-[950px] duration-[650] ease-in-out overflow-hidden bg-forest-1000 ${
           openSub ? "h-[170px]" : "h-[65px]"
         }`}
       >
