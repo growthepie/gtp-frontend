@@ -89,8 +89,8 @@ const ChainSectionHead = ({
                 : "xl:opacity-0 md:opacity-100"
               : title === "Technology"
               ? isSidebarOpen
-                ? "xl:opacity-0 md:opacity-100 "
-                : "lg:opacity-0 md:opacity-100"
+                ? "2xl:opacity-0 md:opacity-100 "
+                : "xl:opacity-0 md:opacity-100"
               : ""
           }`}
           style={{

@@ -4,7 +4,7 @@ import useSWR, { preload } from "swr";
 import { useSWRConfig } from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { AllChains, AllChainsByKeys, AllChainsByUrlKey } from "@/lib/chains";
-import ChainChart from "@/components/layout/ChainChart";
+import ChainChart from "@/components/layout/SingleChains/ChainChart";
 import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
 import { Icon } from "@iconify/react";
@@ -25,7 +25,7 @@ import {
   Chains,
 } from "@/types/api/ChainOverviewResponse";
 import { getFundamentalsByKey } from "@/lib/navigation";
-import ChainSectionHead from "@/components/layout/ChainSectionHead";
+import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead";
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useSessionStorage, useLocalStorage } from "usehooks-ts";
 import { notFound } from "next/navigation";
@@ -720,20 +720,78 @@ const Chain = ({ params }: { params: any }) => {
                       <div className="text-[10px] text-[#5A6462] font-bold min-w-[150px] ">
                         Hottest Contract
                       </div>
-                      <div className="text-[10px] font-bold min-w-[160px] whitespace-nowrap">
-                        {chainData
-                          ? `${
-                              chainData.hottest_contract
-                                ? `${
-                                    chainData.hottest_contract.data[0]
-                                      ? chainData.hottest_contract.data[0][1] +
-                                        " - " +
-                                        chainData.hottest_contract.data[0][2]
-                                      : "N/A"
-                                  }`
-                                : "N/A"
-                            }`
-                          : "N/A"}
+                      <div
+                        className="text-[10px] flex gap-x-1 font-bold min-w-[160px] whitespace-nowrap"
+                        onClick={() => {
+                          if (
+                            !chainData.hottest_contract.data[0][
+                              chainData.hottest_contract.types.indexOf("name")
+                            ]
+                          ) {
+                            navigator.clipboard.writeText(
+                              chainData.hottest_contract.data[0][
+                                chainData.hottest_contract.types.indexOf(
+                                  "address",
+                                )
+                              ],
+                            );
+                          }
+                        }}
+                      >
+                        {chainData ? (
+                          chainData.hottest_contract ? (
+                            chainData.hottest_contract.data[0] ? (
+                              <>
+                                <span
+                                  className={` truncate ${
+                                    chainData.hottest_contract.data[0][
+                                      chainData.hottest_contract.types.indexOf(
+                                        "project_name",
+                                      )
+                                    ]
+                                      ? "max-w-[80px]"
+                                      : "max-w-[140px]"
+                                  }`}
+                                >
+                                  {chainData.hottest_contract.data[0][
+                                    chainData.hottest_contract.types.indexOf(
+                                      "name",
+                                    )
+                                  ] ||
+                                    chainData.hottest_contract.data[0][
+                                      chainData.hottest_contract.types.indexOf(
+                                        "address",
+                                      )
+                                    ]}
+                                </span>
+                                <span>
+                                  {chainData.hottest_contract.data[0][
+                                    chainData.hottest_contract.types.indexOf(
+                                      "project_name",
+                                    )
+                                  ]
+                                    ? "-"
+                                    : ""}{" "}
+                                </span>
+                                <span>
+                                  {
+                                    chainData.hottest_contract.data[0][
+                                      chainData.hottest_contract.types.indexOf(
+                                        "project_name",
+                                      )
+                                    ]
+                                  }
+                                </span>
+                              </>
+                            ) : (
+                              "N/A"
+                            )
+                          ) : (
+                            "N/A"
+                          )
+                        ) : (
+                          "N/A"
+                        )}
                       </div>
                     </div>
                     <div className="h-full flex items-start pr-[5px]"></div>
@@ -753,8 +811,8 @@ const Chain = ({ params }: { params: any }) => {
                       isMobile
                         ? "opacity-0"
                         : isSidebarOpen
-                        ? "xl:opacity-0 md:opacity-100 "
-                        : "lg:opacity-0 md:opacity-100"
+                        ? "2xl:opacity-0 md:opacity-100 "
+                        : "xl:opacity-0 md:opacity-100"
                     }`}
                     style={{
                       background:
