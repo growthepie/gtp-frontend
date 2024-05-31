@@ -415,38 +415,10 @@ const Chain = ({ params }: { params: any }) => {
                     {master.chains[chainKey].name}
                   </Heading>
                 </div>
-                {!(IS_DEVELOPMENT || IS_PREVIEW) && (
-                  <div className="hidden md:flex items-start space-x-[7px] font-inter uppercase pt-[11px] ">
-                    <div
-                      className={`inline-block text-xs leading-[16px] border-[1px] border-forest-400 dark:border-forest-500 px-[4px] font-bold rounded-sm  ${isMobile ? "ml-[0px]" : "ml-[19px]"
-                        } `}
-                    >
-                      {master.chains[chainKey].technology}
-                    </div>
-                    {master.chains[chainKey].purpose.includes("(EVM)") ? (
-                      <div className="inline-block text-xs leading-[16px] border-[1px] border-forest-400  bg-forest-400 text-forest-50 dark:border-forest-500 dark:bg-forest-500 dark:text-forest-900 px-[4px] font-bold rounded-sm ml-[7px]">
-                        EVM
-                      </div>
-                    ) : (
-                      <>
-                        {master.chains[chainKey].purpose
-                          .split(", ")
-                          .map((purpose: string) => (
-                            <div
-                              key={purpose}
-                              className="inline-block text-xs leading-[16px] border-[1px] border-forest-400 bg-forest-400 text-forest-50 dark:border-forest-500 dark:bg-forest-500 dark:text-forest-900 px-[4px] font-bold rounded-sm ml-[7px]"
-                            >
-                              {purpose}
-                            </div>
-                          ))}
-                      </>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
 
-            <div className="w-full flex flex-col lg:flex-row gap-x-[5px] gap-y-[5px] bg-clip-content">
+            <div className="w-full flex flex-col lg:flex-row gap-x-[5px] gap-y-[5px] bg-clip-content pb-[30px] md:pb-[60px]">
               <div className="relative flex lg:col-auto lg:w-[253px] lg:basis-[253px]">
                 <ChainSectionHead
                   title={"Menu"}
@@ -558,12 +530,12 @@ const Chain = ({ params }: { params: any }) => {
                   childrenHeight={isMobile ? 200 : 111}
                   className={`transition-all duration-300 min-w-[67px] w-full flex flex-1`}
                   shadowElement={
-                    <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[398px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[75px] w-[150px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
+                    <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[398px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                     </div>
                   }
                 >
                   <div className={`group bg-clip-border min-h-[111px] lg:max-h-[111px] relative flex flex-col justify-between transition-opacity duration-300 px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden`}>
-                    <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[398px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[75px] w-[150px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
+                    <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[398px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                     </div>
                     {/* <div
                     className={`absolute inset-0 pointer-events-none shadow-inner z-10  rounded-2xl group-hover:opacity-0 opacity-0 transition-opacity duration-300 ${isMobile
@@ -728,7 +700,7 @@ const Chain = ({ params }: { params: any }) => {
                     childrenHeight={isMobile ? 116 : 111}
                     className="transition-all duration-300 min-w-[67px] w-full"
                     shadowElement={
-                      <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[75px] w-[150px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
+                      <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                       </div>
                     }
                   >
@@ -737,12 +709,12 @@ const Chain = ({ params }: { params: any }) => {
                         chainFeeData={chainFeeData}
                         showUsd={showUsd}
                         shadowElement={
-                          <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[75px] w-[150px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
+                          <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                           </div>
                         }
                       />
                       <div className="bg-clip-border h-[48px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] overflow-hidden bg-forest-50 dark:bg-[#1F2726] justify-between ">
-                        <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[75px] w-[150px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
+                        <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                         </div>
                         <div className="flex-col flex pl-[48px] truncate">
                           <div className="text-[10px] text-[#5A6462] font-bold min-w-[150px] ">
@@ -778,12 +750,12 @@ const Chain = ({ params }: { params: any }) => {
                       childrenHeight={isMobile ? 116 : 111}
                       className={`transition-all duration-300 min-w-[67px]`}
                       shadowElement={
-                        <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[232px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[75px] w-[150px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
+                        <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[232px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                         </div>
                       }
                     >
                       <div className="group relative h-[111px] flex px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden">
-                        <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[232px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[75px] w-[150px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
+                        <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[232px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                         </div>
                         <div className="w-full min-w-[232px] flex">
                           <div className="flex flex-col w-full h-full justify-between min-w-[85px]">
@@ -835,12 +807,12 @@ const Chain = ({ params }: { params: any }) => {
                         childrenHeight={isMobile ? 116 : 111}
                         className={`transition-all duration-300 min-w-[67px]`}
                         shadowElement={
-                          <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[125px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[75px] w-[150px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
+                          <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[125px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                           </div>
                         }
                       >
                         <div className="relative h-[111px] flex justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden">
-                          <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[125px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[75px] w-[150px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
+                          <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[125px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                           </div>
                           <div className="flex flex-col justify-between gap-y-[10px] h-[91px] min-w-[80px]">
                             <div className="text-[10px] font-semibold text-[#5A6462]">
