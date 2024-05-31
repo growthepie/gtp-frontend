@@ -38,8 +38,8 @@ const CategoryBar = ({
   return (
     <Container>
       <div
-        className={`border-forest-400 dark:border-forest-800 flex border-[0.5px] mx-[2px] mt-[30px] rounded-2xl transition-all duration-500 ease-in-out overflow-hidden bg-forest-1000 ${
-          openSub ? "h-[160px]" : "h-[65px]"
+        className={`border-forest-400 dark:border-forest-800 flex border-[0.5px] mx-[2px] mt-[30px] rounded-2xl transition-all duration-[650] ease-in-out overflow-hidden bg-forest-1000 ${
+          openSub ? "h-[170px]" : "h-[65px]"
         }`}
       >
         {Object.keys(categories).map((category, i) =>
@@ -59,24 +59,61 @@ const CategoryBar = ({
                 setSelectedCategory(category);
               }}
               style={{
-                transition: "min-width 0.5s",
+                transition: "min-width 0.65s",
                 minWidth:
                   selectedCategory === category && openSub ? "500px" : "10px",
+
+                borderLeft: "0.5px dotted var(--dark-active-text, #CDD8D3)",
+                background:
+                  selectedCategory === category
+                    ? "#5A6462"
+                    : `linear-gradient(
+                    90deg,
+                    rgba(16, 20, 19, ${
+                      0.3 - (i / (Object.keys(categories).length - 1)) * 0.2
+                    }) 0%,
+                    #101413 15.10%,
+                    rgba(16, 20, 19, ${
+                      0.06 + (i / Object.keys(categories).length) * 0.94
+                    }) 48.96%,
+                    #101413 86.98%,
+                    rgba(16, 20, 19, ${
+                      0.3 - (i / (Object.keys(categories).length - 1)) * 0.2
+                    }) 100%
+                  )`,
               }}
             >
               <div
-                className={`flex items-center h-[25px] overflow-hidden min-w-[120px] justify-center  ${
+                className={`flex items-center p-[5px] h-[30px] overflow-hidden min-w-[120px] justify-center  ${
                   selectedCategory === category
                     ? "text-base font-bold"
                     : openSub
                     ? "text-sm font-semibold "
                     : "text-xs font-medium"
                 }`}
+                style={{
+                  background:
+                    selectedCategory === category ? "#5A6462" : "none",
+                  backgroundClip:
+                    selectedCategory === category ? "initial" : "text",
+                  WebkitBackgroundClip:
+                    selectedCategory === category ? "initial" : "text",
+                  WebkitTextFillColor:
+                    selectedCategory === category ? "inherit" : "transparent",
+                  backgroundImage:
+                    selectedCategory === category
+                      ? "none"
+                      : `radial-gradient(ellipse at center, rgba(255, 255, 255, 1) 0%, rgba(0, 0, 0, 1) 100%), linear-gradient(90deg, rgba(16, 20, 19, ${
+                          0.4 + (i / (Object.keys(categories).length - 1)) * 0.4
+                        }) 0%, #101413 15.10%, rgba(16, 20, 19, 0.00) 48.96%, #101413 86.98%, rgba(16, 20, 19, ${
+                          0.4 + (i / (Object.keys(categories).length - 1)) * 0.4
+                        }) 100%)`,
+                }}
               >
                 <h1>{categories[category]}</h1>
               </div>
               <div
-                className={`z-10 min-w-[480px] min-h-[80px] ${
+                className={`z-10 min-w-[490px] basis-0 absolute top-[40px] min-h-[90px] content-center leading-tight  ${
                   selectedCategory === category && openSub
                     ? "flex flex-wrap items-center justify-center gap-y-[5px] gap-x-[5px]"
                     : "hidden"
