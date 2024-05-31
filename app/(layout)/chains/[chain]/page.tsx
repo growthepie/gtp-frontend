@@ -720,20 +720,78 @@ const Chain = ({ params }: { params: any }) => {
                       <div className="text-[10px] text-[#5A6462] font-bold min-w-[150px] ">
                         Hottest Contract
                       </div>
-                      <div className="text-[10px] font-bold min-w-[160px] whitespace-nowrap">
-                        {chainData
-                          ? `${
-                              chainData.hottest_contract
-                                ? `${
-                                    chainData.hottest_contract.data[0]
-                                      ? chainData.hottest_contract.data[0][1] +
-                                        " - " +
-                                        chainData.hottest_contract.data[0][2]
-                                      : "N/A"
-                                  }`
-                                : "N/A"
-                            }`
-                          : "N/A"}
+                      <div
+                        className="text-[10px] flex gap-x-1 font-bold min-w-[160px] whitespace-nowrap"
+                        onClick={() => {
+                          if (
+                            !chainData.hottest_contract.data[0][
+                              chainData.hottest_contract.types.indexOf("name")
+                            ]
+                          ) {
+                            navigator.clipboard.writeText(
+                              chainData.hottest_contract.data[0][
+                                chainData.hottest_contract.types.indexOf(
+                                  "address",
+                                )
+                              ],
+                            );
+                          }
+                        }}
+                      >
+                        {chainData ? (
+                          chainData.hottest_contract ? (
+                            chainData.hottest_contract.data[0] ? (
+                              <>
+                                <span
+                                  className={` truncate ${
+                                    chainData.hottest_contract.data[0][
+                                      chainData.hottest_contract.types.indexOf(
+                                        "project_name",
+                                      )
+                                    ]
+                                      ? "max-w-[80px]"
+                                      : "max-w-[140px]"
+                                  }`}
+                                >
+                                  {chainData.hottest_contract.data[0][
+                                    chainData.hottest_contract.types.indexOf(
+                                      "name",
+                                    )
+                                  ] ||
+                                    chainData.hottest_contract.data[0][
+                                      chainData.hottest_contract.types.indexOf(
+                                        "address",
+                                      )
+                                    ]}
+                                </span>
+                                <span>
+                                  {chainData.hottest_contract.data[0][
+                                    chainData.hottest_contract.types.indexOf(
+                                      "project_name",
+                                    )
+                                  ]
+                                    ? "-"
+                                    : ""}{" "}
+                                </span>
+                                <span>
+                                  {
+                                    chainData.hottest_contract.data[0][
+                                      chainData.hottest_contract.types.indexOf(
+                                        "project_name",
+                                      )
+                                    ]
+                                  }
+                                </span>
+                              </>
+                            ) : (
+                              "N/A"
+                            )
+                          ) : (
+                            "N/A"
+                          )
+                        ) : (
+                          "N/A"
+                        )}
                       </div>
                     </div>
                     <div className="h-full flex items-start pr-[5px]"></div>

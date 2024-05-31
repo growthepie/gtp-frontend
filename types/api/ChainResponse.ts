@@ -14,7 +14,7 @@ export interface ChainsData {
   };
   hottest_contract: {
     data: any[][];
-    types: any[][];
+    types: any[];
   };
 }
 export interface Metrics {
