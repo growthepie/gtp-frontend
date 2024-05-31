@@ -281,6 +281,55 @@ const Chain = ({ params }: { params: any }) => {
   // Jump to Section
   // "gtp:gtp-jump-to-section"
 
+  function dataAvailToArray(x: string) {
+    let retObject: { icon: string; label: string }[] = [];
+    if (typeof x === "string") {
+      // Ensure x is a string
+      if (x.includes("calldata")) {
+        retObject.push({
+          icon: "calldata",
+          label: "Calldata",
+        });
+      }
+
+      if (x.includes("blobs")) {
+        retObject.push({
+          icon: "blobs",
+          label: "Blobs",
+        });
+      }
+
+      if (x.includes("MantleDA")) {
+        retObject.push({
+          icon: "customoffchain",
+          label: "MantleDA",
+        });
+      }
+
+      if (x.includes("DAC")) {
+        retObject.push({
+          icon: "committee",
+          label: "DAC (committee)",
+        });
+      }
+
+      if (x.includes("Celestia")) {
+        retObject.push({
+          icon: "celestiafp",
+          label: "Celestia",
+        });
+      }
+
+      if (x.includes("memo")) {
+        retObject.push({
+          icon: "memofp",
+          label: "Memo",
+        });
+      }
+    }
+    return retObject;
+  }
+
   const ExpandingButtonMenu = ({
     button,
     items,
@@ -742,8 +791,7 @@ const Chain = ({ params }: { params: any }) => {
                   </ChainSectionHead>
                 </div>
                 <div className="flex gap-x-[5px] flex-grow flex-shrink basis-0">
-                  <div className="@container min-w-[calc(100%-125px)] lg:min-w-[67px] lg:basis-[232px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[232px] transition-all duration-300">
-
+                  <div className="@container lg:min-w-[67px] lg:basis-[180px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[232px] transition-all duration-300">
                     <ChainSectionHead
                       title={"Technology"}
                       enableDropdown={isMobile}
@@ -757,7 +805,7 @@ const Chain = ({ params }: { params: any }) => {
                       <div className="group relative h-[111px] flex px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden">
                         <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[232px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                         </div>
-                        <div className="w-full min-w-[232px] flex">
+                        <div className="w-full min-w-[212px] flex">
                           <div className="flex flex-col w-full h-full justify-between min-w-[85px]">
                             <div>
                               <div className="text-[10px] font-semibold text-[#5A6462] ">
@@ -782,7 +830,12 @@ const Chain = ({ params }: { params: any }) => {
                                 Data Availability
                               </div>
                               <div className="text-[10px] leading-[150%] font-medium  ">
-                                {master.chains[chainKey].da_layer}
+                                {dataAvailToArray(master.chains[chainKey].da_layer).map((x) => (
+                                  <div className="flex items-center gap-x-1" key={x.label}>
+                                    <Icon icon={`gtp:${x.icon}`} className="w-[12px] h-[12px]" />
+                                  </div>
+                                ))}
+
                               </div>
                             </div>
                             <div className="">
@@ -798,7 +851,7 @@ const Chain = ({ params }: { params: any }) => {
                       </div>
                     </ChainSectionHead>
                   </div>
-                  <div className="flex gap-x-[5px] flex-grow flex-shrink basis-0">
+                  <div className="flex gap-x-[5px] flex-grow flex-shrink basis-0 lg:max-w-[125px]">
                     <div className="@container group min-w-[125px] lg:min-w-[67px] lg:basis-[125px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[125px] transition-all duration-300">
 
                       <ChainSectionHead
@@ -979,5 +1032,6 @@ const Chain = ({ params }: { params: any }) => {
     </>
   );
 };
+
 
 export default Chain;
