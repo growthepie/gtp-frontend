@@ -74,6 +74,12 @@ const ChainOverview = ({ params }: { params: any }) => {
     icon: "",
   };
 
+  useEffect(() => {
+    if (selectedTimespan === "1d") {
+      setSelectedTimespan("7d");
+    }
+  }, []);
+
   const chainFilter = useMemo(() => {
     const filteredChains: Chains = Object.keys(AllChainsByKeys)
       .filter((chain) => {
