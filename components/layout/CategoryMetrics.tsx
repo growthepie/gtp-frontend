@@ -1149,6 +1149,7 @@ export default function CategoryMetrics({
               >
                 <CategoryBar
                   data={data}
+                  master={master}
                   categories={categories}
                   querySubcategories={querySubcategories}
                   selectedCategory={selectedCategory}
