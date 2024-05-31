@@ -1,6 +1,9 @@
 export interface EconomicsResponse {
-  chain_breakdown: ChainBreakdown;
-  da_fees: Fees;
+  data: {
+    chain_breakdown: ChainBreakdown;
+    da_fees: FeesBreakdown;
+    // Other properties if exist
+  };
 }
 
 export interface ChainBreakdown {
@@ -43,7 +46,7 @@ export interface Profit {
   types: string[];
 }
 
-export interface Fees {
+export interface FeesBreakdown {
   [key: string]: FeesData;
 }
 
