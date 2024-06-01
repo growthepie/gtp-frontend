@@ -662,7 +662,6 @@ const Chain = ({ params }: { params: any }) => {
                                   </TooltipTrigger>
                                   <TooltipContent>
                                     <div className="flex flex-col items-center">
-                                      {/* tooltip pointer */}
                                       <div
                                         className="z-50 w-0 h-0 border-forest-100 dark:border-[#4B5553] border-b-[5px]"
                                         style={{
@@ -758,7 +757,7 @@ const Chain = ({ params }: { params: any }) => {
                           "linear-gradient(to right, rgba(0, 0, 0, 0) 0%, rgba(22, 28, 27, 0.76) 100%)",
                       }}
                     ></div>
-                    <div className="flex-col flex pl-[48px] ">
+                    <div className="flex-col flex pl-[48px]">
                       <div className="text-[10px] text-[#5A6462] font-bold min-w-[150px] ">
                         Hottest Contract
                       </div>
@@ -1278,7 +1277,7 @@ const Chain = ({ params }: { params: any }) => {
                   <div className={`group bg-clip-border min-h-[111px] lg:max-h-[111px] relative flex flex-col justify-between transition-opacity duration-300 px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden`}>
                     <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[398px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                     </div>
-                    <div className="w-full lg:w-[378px] h-[calc(111px-20px)] flex flex-col justify-between">
+                    <div className="w-full lg:w-[378px] h-auto lg:h-[calc(111px-20px)] flex flex-col justify-between gap-y-[5px]">
                       <div className="w-full">
                         <div className="text-[10px] font-semibold text-[#5A6462]">
                           Background Information
@@ -1292,7 +1291,7 @@ const Chain = ({ params }: { params: any }) => {
                       <div
                         className={`w-full flex gap-x-[10px] gap-y-[5px] justify-between flex-col lg:flex-row`}
                       >
-                        <div className="basis-[75px] min-w-[75px]">
+                        <div className="min-w-[75px]">
                           <div className="text-[10px] font-semibold text-[#5A6462] leading-[120%]">
                             Launch Date
                           </div>
@@ -1309,7 +1308,7 @@ const Chain = ({ params }: { params: any }) => {
                           <div className="text-[10px] font-semibold text-[#5A6462] leading-[120%]">
                             Rankings
                           </div>
-                          <div className="flex gap-x-[2px]">
+                          <div className="flex gap-x-[2px] pt-[2px] lg:pt-0">
                             {chainData.ranking && (
                               <>
                                 {Object.keys(rankChains).map((key, i) => {
@@ -1413,7 +1412,7 @@ const Chain = ({ params }: { params: any }) => {
                           <div className="text-[10px] font-semibold text-[#5A6462] leading-[120%]">
                             Purpose
                           </div>
-                          <div className="absolute top-3 left-0 right-0 text-[10px] leading-[150%] truncate hover:whitespace-normal">
+                          <div className="lg:absolute lg:top-3 lg:left-0 lg:right-0 text-[10px] leading-[150%] truncate hover:whitespace-normal">
                             {master.chains[chainKey].purpose}
                           </div>
                         </div>
@@ -1450,20 +1449,77 @@ const Chain = ({ params }: { params: any }) => {
                           <div className="text-[10px] text-[#5A6462] font-bold min-w-[150px] ">
                             Hottest Contract
                           </div>
-                          <div className="text-[10px] font-bold w-full truncate">
-                            {chainData
-                              ? `${chainData.hottest_contract
-                                ? `${chainData.hottest_contract.data[0]
-                                  ? chainData.hottest_contract
-                                    .data[0][1] +
-                                  " - " +
-                                  chainData.hottest_contract
-                                    .data[0][2]
-                                  : "N/A"
-                                }`
-                                : "N/A"
-                              }`
-                              : "N/A"}
+                          <div
+                            className="text-[10px] flex gap-x-1 font-bold min-w-[160px] whitespace-nowrap"
+                            onClick={() => {
+                              if (
+                                !chainData.hottest_contract.data[0][
+                                chainData.hottest_contract.types.indexOf("name")
+                                ]
+                              ) {
+                                navigator.clipboard.writeText(
+                                  chainData.hottest_contract.data[0][
+                                  chainData.hottest_contract.types.indexOf(
+                                    "address",
+                                  )
+                                  ],
+                                );
+                              }
+                            }}
+                          >
+                            {chainData ? (
+                              chainData.hottest_contract ? (
+                                chainData.hottest_contract.data[0] ? (
+                                  <>
+                                    <span
+                                      className={` truncate ${chainData.hottest_contract.data[0][
+                                        chainData.hottest_contract.types.indexOf(
+                                          "project_name",
+                                        )
+                                      ]
+                                        ? "max-w-[80px]"
+                                        : "max-w-[140px]"
+                                        }`}
+                                    >
+                                      {chainData.hottest_contract.data[0][
+                                        chainData.hottest_contract.types.indexOf(
+                                          "name",
+                                        )
+                                      ] ||
+                                        chainData.hottest_contract.data[0][
+                                        chainData.hottest_contract.types.indexOf(
+                                          "address",
+                                        )
+                                        ]}
+                                    </span>
+                                    <span>
+                                      {chainData.hottest_contract.data[0][
+                                        chainData.hottest_contract.types.indexOf(
+                                          "project_name",
+                                        )
+                                      ]
+                                        ? "-"
+                                        : ""}{" "}
+                                    </span>
+                                    <span>
+                                      {
+                                        chainData.hottest_contract.data[0][
+                                        chainData.hottest_contract.types.indexOf(
+                                          "project_name",
+                                        )
+                                        ]
+                                      }
+                                    </span>
+                                  </>
+                                ) : (
+                                  "N/A"
+                                )
+                              ) : (
+                                "N/A"
+                              )
+                            ) : (
+                              "N/A"
+                            )}
                           </div>
                         </div>
                         <div className="h-full flex items-start pr-[5px]"></div>
