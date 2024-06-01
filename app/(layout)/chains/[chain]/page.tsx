@@ -485,7 +485,7 @@ const Chain = ({ params }: { params: any }) => {
                           icon: "gtp:gtp-jump-to-section",
                           showIconBackground: true,
                         }}
-                        items={[
+                        items={overviewData ? [
                           {
                             label: "Fundamentals",
                             icon: "gtp:gtp-fundamentals",
@@ -496,7 +496,11 @@ const Chain = ({ params }: { params: any }) => {
                             icon: "gtp:gtp-package",
                             href: "#blockspace",
                           },
-                        ]}
+                        ] : [{
+                          label: "Fundamentals",
+                          icon: "gtp:gtp-fundamentals",
+                          href: "#fundamentals",
+                        }]}
                       />
                       {master.chains[chainKey].block_explorers &&
                         Object.keys(master.chains[chainKey].block_explorers)
@@ -790,7 +794,7 @@ const Chain = ({ params }: { params: any }) => {
                   </ChainSectionHead>
                 </div>
                 <div className="flex gap-x-[5px] flex-grow flex-shrink basis-0">
-                  <div className="@container lg:min-w-[67px] lg:basis-[232px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[232px] transition-all duration-300">
+                  <div className="@container min-w-[calc(100%-130px)] lg:min-w-[67px] lg:basis-[232px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[232px] transition-all duration-300">
                     <ChainSectionHead
                       title={"Technology"}
                       enableDropdown={isMobile}
@@ -851,7 +855,7 @@ const Chain = ({ params }: { params: any }) => {
                     </ChainSectionHead>
                   </div>
                   <div className="flex gap-x-[5px] flex-grow flex-shrink basis-0 lg:max-w-[125px]">
-                    <div className="@container group min-w-[125px] lg:min-w-[67px] lg:basis-[125px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[125px] transition-all duration-300">
+                    <div className="@container group min-w-[125px] lg:min-w-[67px] lg:basis-[125px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[125px] min-[1700px]:min-w-[125px] transition-all duration-300">
 
                       <ChainSectionHead
                         title={"Risk"}
