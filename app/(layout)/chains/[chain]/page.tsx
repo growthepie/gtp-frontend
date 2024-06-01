@@ -1278,154 +1278,144 @@ const Chain = ({ params }: { params: any }) => {
                   <div className={`group bg-clip-border min-h-[111px] lg:max-h-[111px] relative flex flex-col justify-between transition-opacity duration-300 px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden`}>
                     <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[398px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
                     </div>
-                    {/* <div
-                    className={`absolute inset-0 pointer-events-none shadow-inner z-10  rounded-2xl group-hover:opacity-0 opacity-0 transition-opacity duration-300 ${isMobile
-                      ? "opacity-0"
-                      : isSidebarOpen
-                        ? "lg:opacity-100 opacity-0"
-                        : "2xl:opacity-0 md:opacity-100"
-                      }`}
-                    style={{
-                      boxShadow:
-                        "-67.5px 0px 20px rgba(22, 28, 27, 0.45) inset",
-                    }}
-                  ></div> */}
-                    <div className={`lg:min-w-[px]`}>
-                      <div className="text-[10px] font-semibold text-[#5A6462]">
-                        Background Information
+                    <div className="w-full lg:w-[378px] h-[calc(111px-20px)] flex flex-col justify-between">
+                      <div className="w-full">
+                        <div className="text-[10px] font-semibold text-[#5A6462]">
+                          Background Information
+                        </div>
+                        <div
+                          className={`text-[10px] leading-[150%] md:min-w-[378px] md:max-w-[378px]`}
+                        >
+                          {master.chains[chainKey].description}
+                        </div>
                       </div>
                       <div
-                        className={`text-[10px] leading-[150%] md:min-w-[378px] md:max-w-[378px] `}
+                        className={`w-full flex gap-x-[10px] gap-y-[5px] justify-between flex-col lg:flex-row`}
                       >
-                        {master.chains[chainKey].description}
-                      </div>
-                    </div>
-                    <div
-                      className={`flex gap-x-[10px] gap-y-[5px] justify-between min-w-[378px] flex-col lg:flex-row`}
-                    >
-                      <div>
-                        <div className="text-[10px] font-semibold text-[#5A6462] min-w-[70px]">
-                          Launch Date
+                        <div className="basis-[75px] min-w-[75px]">
+                          <div className="text-[10px] font-semibold text-[#5A6462] leading-[120%]">
+                            Launch Date
+                          </div>
+                          <div className="text-[10px] leading-[150%] whitespace-nowrap">
+                            {new Date(
+                              master.chains[chainKey].launch_date,
+                            ).toLocaleDateString(undefined, {
+                              year: "numeric",
+                              month: "long",
+                            })}
+                          </div>
                         </div>
-                        <div className="text-[10px] leading-[150%]">
-                          {new Date(
-                            master.chains[chainKey].launch_date,
-                          ).toLocaleDateString(undefined, {
-                            year: "numeric",
-                            month: "long",
-                          })}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] font-semibold text-[#5A6462] min-w-[80px]">
-                          Rankings
-                        </div>
-                        <div className="flex gap-x-[2px]">
-                          {chainData.ranking && (
-                            <>
-                              {Object.keys(rankChains).map((key, i) => {
-                                return (
-                                  <Tooltip
-                                    key={key + "rankings"}
-                                    placement="bottom"
-                                  >
-                                    <TooltipTrigger>
-                                      <div
-                                        className="w-[24px] h-[24px] rounded-full flex items-center justify-center z-0"
-                                        style={{
-                                          backgroundColor: chainData
-                                            ? chainData.ranking[key]
-                                              ? getGradientColor(
-                                                chainData.ranking[key]
-                                                  .color_scale * 100,
-                                              )
-                                              : "#5A6462"
-                                            : "#5A6462",
-                                        }}
-                                      >
-                                        <Icon
-                                          icon={`gtp:${String(key).replace(
-                                            "_",
-                                            "-",
-                                          )}`}
-                                          className="w-[15px] h-[15px] z-10 text-[#344240]"
-                                        />
-                                      </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <div className="flex flex-col items-center">
-                                        {/* tooltip pointer */}
+                        <div className="basis-auto">
+                          <div className="text-[10px] font-semibold text-[#5A6462] leading-[120%]">
+                            Rankings
+                          </div>
+                          <div className="flex gap-x-[2px]">
+                            {chainData.ranking && (
+                              <>
+                                {Object.keys(rankChains).map((key, i) => {
+                                  return (
+                                    <Tooltip
+                                      key={key + "rankings"}
+                                      placement="bottom"
+                                    >
+                                      <TooltipTrigger>
                                         <div
-                                          className="z-50 w-0 h-0 border-forest-100 dark:border-[#4B5553] border-b-[5px]"
+                                          className="w-[24px] h-[24px] rounded-full flex items-center justify-center z-0"
                                           style={{
-                                            borderLeft: "5px solid transparent",
-                                            borderRight:
-                                              "5px solid transparent",
+                                            backgroundColor: chainData
+                                              ? chainData.ranking[key]
+                                                ? getGradientColor(
+                                                  chainData.ranking[key]
+                                                    .color_scale * 100,
+                                                )
+                                                : "#5A6462"
+                                              : "#5A6462",
                                           }}
-                                        ></div>
-
-                                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-md font-normal transition-all duration-300">
+                                        >
                                           <Icon
                                             icon={`gtp:${String(key).replace(
                                               "_",
                                               "-",
                                             )}`}
-                                            className="w-[24px] h-[24px] z-10"
+                                            className="w-[15px] h-[15px] z-10 text-[#344240]"
                                           />
-                                          <div className="flex flex-col gap-y-[5px] items-center">
-                                            <div className="flex items-center gap-x-[5px] text-[10px] whitespace-nowrap">
-                                              <div
-                                                className="flex w-2 h-2 rounded-md"
-                                                style={{
-                                                  backgroundColor: chainData
-                                                    ? chainData.ranking[key]
-                                                      ? getGradientColor(
+                                        </div>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <div className="flex flex-col items-center">
+                                          {/* tooltip pointer */}
+                                          <div
+                                            className="z-50 w-0 h-0 border-forest-100 dark:border-[#4B5553] border-b-[5px]"
+                                            style={{
+                                              borderLeft: "5px solid transparent",
+                                              borderRight:
+                                                "5px solid transparent",
+                                            }}
+                                          ></div>
+
+                                          <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-md font-normal transition-all duration-300">
+                                            <Icon
+                                              icon={`gtp:${String(key).replace(
+                                                "_",
+                                                "-",
+                                              )}`}
+                                              className="w-[24px] h-[24px] z-10"
+                                            />
+                                            <div className="flex flex-col gap-y-[5px] items-center">
+                                              <div className="flex items-center gap-x-[5px] text-[10px] whitespace-nowrap">
+                                                <div
+                                                  className="flex w-2 h-2 rounded-md"
+                                                  style={{
+                                                    backgroundColor: chainData
+                                                      ? chainData.ranking[key]
+                                                        ? getGradientColor(
+                                                          chainData.ranking[key]
+                                                            .color_scale * 100,
+                                                        )
+                                                        : "#5A6462"
+                                                      : "#5A6462",
+                                                  }}
+                                                ></div>
+                                                {chainData.ranking[key] ? (
+                                                  <div className="flex items-end gap-x-1">
+                                                    <div className="flex text-[14px] font-medium ordinal">
+                                                      {ordinal_suffix_of(
                                                         chainData.ranking[key]
-                                                          .color_scale * 100,
-                                                      )
-                                                      : "#5A6462"
-                                                    : "#5A6462",
-                                                }}
-                                              ></div>
-                                              {chainData.ranking[key] ? (
-                                                <div className="flex items-end gap-x-1">
-                                                  <div className="flex text-[14px] font-medium ordinal">
-                                                    {ordinal_suffix_of(
-                                                      chainData.ranking[key]
-                                                        .rank,
-                                                    )}
+                                                          .rank,
+                                                      )}
+                                                    </div>
+                                                    <div className="flex items-end opacity-60">
+                                                      {chainData.ranking[key] &&
+                                                        `out of ${chainData.ranking[key].out_of} chains`}
+                                                    </div>
                                                   </div>
-                                                  <div className="flex items-end opacity-60">
-                                                    {chainData.ranking[key] &&
-                                                      `out of ${chainData.ranking[key].out_of} chains`}
+                                                ) : (
+                                                  <div className="opacity-40">
+                                                    Not Available
                                                   </div>
-                                                </div>
-                                              ) : (
-                                                <div className="opacity-40">
-                                                  Not Available
-                                                </div>
-                                              )}
-                                            </div>
-                                            <div className="text-[12px] font-semibold capitalize">
-                                              {master.metrics[key].name}
+                                                )}
+                                              </div>
+                                              <div className="text-[12px] font-semibold capitalize">
+                                                {master.metrics[key].name}
+                                              </div>
                                             </div>
                                           </div>
                                         </div>
-                                      </div>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                );
-                              })}{" "}
-                            </>
-                          )}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  );
+                                })}{" "}
+                              </>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex flex-col items-start min-w-[100px]">
-                        <div className="text-[10px] font-semibold text-[#5A6462] ">
-                          Purpose
-                        </div>
-                        <div className="text-[10px] leading-[150%]">
-                          {master.chains[chainKey].purpose}
+                        <div className="relative flex flex-col items-start overflow-clip w-[108px] hover:overflow-visible">
+                          <div className="text-[10px] font-semibold text-[#5A6462] leading-[120%]">
+                            Purpose
+                          </div>
+                          <div className="absolute top-3 left-0 right-0 text-[10px] leading-[150%] truncate hover:whitespace-normal">
+                            {master.chains[chainKey].purpose}
+                          </div>
                         </div>
                       </div>
                     </div>
