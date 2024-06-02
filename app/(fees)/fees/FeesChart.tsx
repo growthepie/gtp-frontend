@@ -172,6 +172,7 @@ export default function FeesChart({
                 prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
           } else {
             number = prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+            if(val < 1) number = prefix + val.toFixed(2) + suffix;
           }
         }
       }
