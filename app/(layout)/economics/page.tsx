@@ -5,10 +5,11 @@ import useSWR from "swr";
 import { EconomicsURL } from "@/lib/urls";
 import {
   EconomicsResponse,
-  ChainBreakdown,
+  ChainBreakdownResponse,
   FeesBreakdown,
 } from "@/types/api/EconomicsResponse";
 import EconHeadCharts from "@/components/layout/Economics/HeadCharts";
+import ChainBreakdown from "@/components/layout/Economics/ChainBreakdown";
 import ShowLoading from "@/components/layout/ShowLoading";
 
 export default function Economics() {
@@ -31,7 +32,7 @@ export default function Economics() {
   const {
     chain_breakdown,
     da_fees,
-  }: { chain_breakdown: ChainBreakdown; da_fees: FeesBreakdown } =
+  }: { chain_breakdown: ChainBreakdownResponse; da_fees: FeesBreakdown } =
     econData.data;
 
   return (
@@ -52,20 +53,7 @@ export default function Economics() {
         </div>
         <EconHeadCharts da_fees={da_fees} />
       </div>
-      <div className="flex flex-col gap-y-[15px] ">
-        <div className="flex items-center  gap-x-[8px]">
-          <Image
-            src="/GTP-Fundamentals.svg"
-            alt="GTP Chain"
-            className="object-contain w-[32px] h-[32px] "
-            height={36}
-            width={36}
-          />
-          <Heading className="text-[30px] leading-snug " as="h1">
-            Chain Breakdown
-          </Heading>
-        </div>
-      </div>
+      <ChainBreakdown data={chain_breakdown} />
     </div>
   );
 }

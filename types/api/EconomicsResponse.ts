@@ -1,12 +1,12 @@
 export interface EconomicsResponse {
   data: {
-    chain_breakdown: ChainBreakdown;
+    chain_breakdown: ChainBreakdownResponse;
     da_fees: FeesBreakdown;
     // Other properties if exist
   };
 }
 
-export interface ChainBreakdown {
+export interface ChainBreakdownResponse {
   [key: string]: ChainBreakdownData;
 }
 
