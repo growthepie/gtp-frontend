@@ -98,7 +98,7 @@ export default function LabelsPage() {
     error: labelsError,
     isLoading: labelsLoading,
     isValidating: labelsValidating,
-  } = useSWR<LabelsResponseHelper>(LabelsURLS.quick, fallbackFetcher, {
+  } = useSWR<LabelsResponseHelper>(LabelsURLS.full, fallbackFetcher, {
     use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware, labelsMiddleware] : [labelsMiddleware]
   });
 
@@ -194,20 +194,20 @@ export default function LabelsPage() {
                     }}>
                     <div className="flex h-full items-center">
                       <Icon
-                        icon={`gtp:${AllChainsByKeys[labelsData.getData()[item.index].origin_key].urlKey
+                        icon={`gtp:${AllChainsByKeys[labelsData.data[item.index].origin_key].urlKey
                           }-logo-monochrome`}
                         className="w-[15px] h-[15px]"
                         style={{
                           color:
-                            AllChainsByKeys[labelsData.getData()[item.index].origin_key].colors[
+                            AllChainsByKeys[labelsData.data[item.index].origin_key].colors[
                             theme ?? "dark"
                             ][0],
                         }}
                       />
                     </div>
-                    <div className="flex h-full items-center">{labelsData.getData()[item.index].address}</div>
-                    <div className="flex h-full items-center">{labelsData.getData()[item.index].owner_project}</div>
-                    <div className="flex h-full items-center">{labelsData.getData()[item.index].name}</div>
+                    <div className="flex h-full items-center">{labelsData.data[item.index].address}</div>
+                    <div className="flex h-full items-center">{labelsData.data[item.index].owner_project}</div>
+                    <div className="flex h-full items-center">{labelsData.data[item.index].name}</div>
                   </GridTableRow>
                 ))}
               </div>)}

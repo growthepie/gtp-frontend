@@ -39,10 +39,12 @@ export interface ParsedDatum {
 export class LabelsResponseHelper {
   private response: LabelsResponse;
   private typesIndexes: Record<Columns, number>;
+  public data: ParsedDatum[];
 
   constructor(response: LabelsResponse) {
     this.response = response;
     this.typesIndexes = this.getTypesIndexes();
+    this.data = this.getData();
   }
 
   getTypes(): Columns[] {
