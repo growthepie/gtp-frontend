@@ -44,7 +44,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <OctantLinks />
         </div>
         <OctantSubheader />
-        {/* <div className="flex flex-col gap-2 pt-2 text-xs font-medium">
+        <div className="flex flex-col gap-2 pt-2 pb-5 text-xs font-medium">
           <div className="flex flex-row rounded-lg border border-forest-900/20 dark:border-forest-500/20 px-2 py-1  items-center justify-between gap-x-[15px]">
             <div className="flex gap-[5px] items-center whitespace-nowrap">
               <div className="w-5 h-5">
@@ -122,7 +122,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div className="">90-day epochs</div>
             <div className="">Community-led funding</div>
           </div>
-        </div> */}
+        </div>
         <OctantLinksMobile />
       </Container>
       {children}
