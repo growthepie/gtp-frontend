@@ -18,6 +18,8 @@ import {
 } from "react-jsx-highcharts";
 import { FeesBreakdown } from "@/types/api/EconomicsResponse";
 import { useLocalStorage } from "usehooks-ts";
+import { Icon } from "@iconify/react";
+import Link from "next/link";
 import {
   useMemo,
   useState,
@@ -270,7 +272,7 @@ export default function EconHeadCharts({
     );
 
   return (
-    <div className="flex gap-x-[15px]">
+    <div className="flex gap-x-[15px] w-full justify-between">
       {Object.keys(da_fees).map((key, i) => {
         let dataIndex = da_fees[key].daily.types.indexOf(
           showUsd ? "usd" : "eth",
@@ -281,8 +283,16 @@ export default function EconHeadCharts({
             className="relative w-[32%] h-[180px] pt-[10px] bg-[#1F2726] rounded-2xl overflow-hidden"
             key={key}
           >
-            <div className="absolute top-[12px] left-[15px] text-[16px] font-[650] ">
-              {da_fees[key].metric_name}
+            <div className="absolute top-[12px] w-full flex justify-between pl-[15px] text-[16px] font-[650] ">
+              <div className="flex items-center gap-x-2 justify-center">
+                <div>{da_fees[key].metric_name}</div>
+                <div className="rounded-full w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] z-10">
+                  <Icon
+                    icon="feather:arrow-right"
+                    className="w-[11px] h-[11px]"
+                  />
+                </div>
+              </div>
             </div>
 
             <HighchartsProvider Highcharts={Highcharts}>
@@ -371,7 +381,7 @@ export default function EconHeadCharts({
                     }
 
                     // calculate the fraction that 15px is in relation to the pixel width of the chart
-                    const fraction = 18.9 / chart.chartWidth;
+                    const fraction = 18 / chart.chartWidth;
 
                     // create a bordered line from the last point to the top of the chart's container
                     lastPointLines[key][lastPointLines[key].length] =
