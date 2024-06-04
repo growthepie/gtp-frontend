@@ -29,6 +29,7 @@ import {
 import Link from "next/link";
 import { IS_PRODUCTION } from "@/lib/helpers";
 import { useVirtualizer, useWindowVirtualizer } from "@tanstack/react-virtual";
+import ShowLoading from "@/components/layout/ShowLoading";
 
 const devMiddleware = (useSWRNext) => {
   return (key, fetcher, config) => {
@@ -97,11 +98,20 @@ export default function LabelsPage() {
   } = useSWR<MasterResponse>(MasterURL);
 
   const {
-    data: labelsData,
-    error: labelsError,
-    isLoading: labelsLoading,
-    isValidating: labelsValidating,
-  } = useSWR<LabelsResponseHelper>(LabelsURLS.full, fallbackFetcher, {
+    data: quickLabelsData,
+    error: quickLabelsError,
+    isLoading: quickLabelsLoading,
+    isValidating: quickLabelsValidating,
+  } = useSWR<LabelsResponseHelper>(LabelsURLS.quick, fallbackFetcher, {
+    use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware, labelsMiddleware] : [labelsMiddleware]
+  });
+
+  const {
+    data: fullLabelsData,
+    error: fullLabelsError,
+    isLoading: fullLabelsLoading,
+    isValidating: fullLabelsValidating,
+  } = useSWR<LabelsResponseHelper>(quickLabelsData ? LabelsURLS.full : null, fallbackFetcher, {
     use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware, labelsMiddleware] : [labelsMiddleware]
   });
 
@@ -109,13 +119,18 @@ export default function LabelsPage() {
   const listRef = useRef<HTMLDivElement>();
 
   const filteredLabelsData = useMemo(() => {
-    if (!labelsData)
+    if (!quickLabelsData && !fullLabelsData)
       return null;
 
-    return labelsData.data.filter((label) => {
+    if (!fullLabelsData)
+      return quickLabelsData.data.filter((label) => {
+        return labelsChainsFilter.length === 0 || labelsChainsFilter.includes(label.origin_key);
+      });
+
+    return fullLabelsData.data.filter((label) => {
       return labelsChainsFilter.length === 0 || labelsChainsFilter.includes(label.origin_key);
     });
-  }, [labelsData, labelsChainsFilter]);
+  }, [quickLabelsData, fullLabelsData, labelsChainsFilter]);
 
   // The virtualizer
   const virtualizer = useWindowVirtualizer({
@@ -146,6 +161,7 @@ export default function LabelsPage() {
 
   return (
     <>
+      <ShowLoading dataLoading={[masterLoading, quickLabelsLoading]} dataValidating={[masterValidating, quickLabelsLoading]} />
       <Header />
 
       <div className="pb-[114px] pt-[140px]"
@@ -167,7 +183,7 @@ export default function LabelsPage() {
 
         >
           <div className="flex flex-col gap-y-[3px]">
-            {labelsData && (
+            {filteredLabelsData && (
               <GridTableHeader gridDefinitionColumns="pb-[4px] text-[12px] grid-cols-[15px,auto,130px,150px,110px,140px,120px] lg:grid-cols-[15px,auto,130px,150px,110px,140px,120px]">
                 <div className="flex items-center justify-center"></div>
                 <div className="flex items-center justify-start">Contract Address</div>
@@ -202,7 +218,7 @@ export default function LabelsPage() {
               );
             })} */}
             <div ref={listRef} className=" min-w-[1100px]">
-              {labelsData && (<div
+              {filteredLabelsData && (<div
                 className="relative flex-flex-col gap-y-[3px]"
                 style={{
                   height: `${virtualizer.getTotalSize()}px`,
@@ -222,7 +238,6 @@ export default function LabelsPage() {
                     transform: `translateY(${item.start - virtualizer.options.scrollMargin}px)`,
                   }}>
                     <GridTableRow
-
                       gridDefinitionColumns="text-[12px] h-[34px] grid-cols-[15px,auto,130px,150px,110px,140px,120px] lg:grid-cols-[15px,auto,130px,150px,110px,140px,120px] mb-[3px]"
                     >
                       <div className="flex h-full items-center">
@@ -267,7 +282,6 @@ type GridTableProps = {
 
 // grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] lg:grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] 
 // class="select-none grid gap-x-[15px] px-[6px] pt-[30px] text-[11px] items-center font-bold"
-
 const GridTableHeader = ({ children, gridDefinitionColumns }: GridTableProps) => {
   return (
     <div className={`select-none gap-x-[10px] pl-[10px] pr-[20px] pt-[30px] text-[11px] items-center font-bold grid ${gridDefinitionColumns}`}>
@@ -275,6 +289,7 @@ const GridTableHeader = ({ children, gridDefinitionColumns }: GridTableProps) =>
     </div>
   );
 }
+
 // grid grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] lg:grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] 
 // class="gap-x-[15px] rounded-full border border-forest-900/20 dark:border-forest-500/20 px-[6px] py-[5px] text-xs items-center"
 const GridTableRow = ({ children, gridDefinitionColumns, style }: GridTableProps) => {
