@@ -192,7 +192,7 @@ export default function RootLayout({
               <div className="flex flex-col flex-1 overflow-y-hidden z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
                 <div className="w-full mx-auto relative min-h-full">
                   {/* <Header /> */}
-                  <main className="relative flex-1 w-full mx-auto z-10  min-h-full select-none">
+                  <main className="relative flex-1 w-full mx-auto z-10 min-h-screen select-none">
                     {children}
                   </main>
                 </div>
