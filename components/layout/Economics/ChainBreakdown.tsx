@@ -12,15 +12,40 @@ import {
 } from "react";
 import { ChainBreakdownResponse } from "@/types/api/EconomicsResponse";
 import { useLocalStorage } from "usehooks-ts";
+import { AllChainsByKeys } from "@/lib/chains";
+import { MasterResponse } from "@/types/api/MasterResponse";
+
+interface DAvailability {
+  icon: string;
+  label: string;
+}
 
 export default function ChainBreakdown({
   data,
+  master,
 }: {
   data: ChainBreakdownResponse;
+  master: MasterResponse;
 }) {
   const [selectedTimespan, setSelectedTimespan] = useState("max");
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
 
+  //
+  const [openChain, setOpenChain] = useState(() => {
+    const initialState = Object.keys(data).reduce((acc, key) => {
+      acc[key] = false;
+      return acc;
+    }, {});
+    return initialState;
+  });
+
+  const toggleOpenChain = (key) => {
+    setOpenChain((prevState) => ({
+      ...prevState,
+      [key]: !prevState[key],
+    }));
+  };
+  //Handles opening of each chain section
   const timespans = useMemo(() => {
     return {
       "1d": {
@@ -59,7 +84,7 @@ export default function ChainBreakdown({
     let retValue = 0;
     //Loop through for each chain
     Object.keys(data).forEach((key) => {
-      let dataIndex = data[key][selectedTimespan].revenue.types.indexOf(
+      const dataIndex = data[key][selectedTimespan].revenue.types.indexOf(
         showUsd ? "usd" : "eth",
       );
       retValue += data[key][selectedTimespan].revenue.total[dataIndex];
@@ -68,6 +93,70 @@ export default function ChainBreakdown({
     return retValue;
   }, [selectedTimespan, data, showUsd]);
   //Calculate total revenue for referencing in relative revenue bars
+
+  function dataAvailToArray(x: string): DAvailability[] {
+    let retObject: DAvailability[] = [];
+    if (typeof x === "string") {
+      // Ensure x is a string
+      if (x.includes("calldata")) {
+        retObject.push({
+          icon: "calldata",
+          label: "Calldata",
+        });
+      }
+
+      if (x.includes("blobs")) {
+        retObject.push({
+          icon: "blobs",
+          label: "Blobs",
+        });
+      }
+
+      if (x.includes("MantleDA")) {
+        retObject.push({
+          icon: "customoffchain",
+          label: "MantleDA",
+        });
+      }
+
+      if (x.includes("DAC")) {
+        retObject.push({
+          icon: "committee",
+          label: "DAC (committee)",
+        });
+      }
+
+      if (x.includes("Celestia")) {
+        retObject.push({
+          icon: "celestiafp",
+          label: "Celestia",
+        });
+      }
+
+      if (x.includes("memo")) {
+        retObject.push({
+          icon: "memofp",
+          label: "Memo",
+        });
+      }
+    }
+    return retObject;
+  }
+
+  function formatNumber(x: number) {
+    return (
+      <div className="flex gap-x-0.5 ">
+        <span>{showUsd ? "$" : "Ξ"}</span>
+        <span>
+          {Intl.NumberFormat("en-GB", {
+            notation: "compact",
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 0,
+          }).format(x)}
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -108,7 +197,7 @@ export default function ChainBreakdown({
         </div>
         <div
           className="grid "
-          style={{ gridTemplateColumns: "39% 18% 16% 15% 11%" }}
+          style={{ gridTemplateColumns: "32% 19% 17% 16% 15%" }}
         >
           <div className="pl-[44px] flex gap-x-[5px] items-center justify-start ">
             <div className="flex items-center group ">
@@ -214,46 +303,111 @@ export default function ChainBreakdown({
           {/*END TOP ROW */}
           {/*END TOP ROW */}
         </div>
-        <div
-          className="grid rounded-full w-full border-[#CDD8D3] border-[1px] h-[34px] text-[14px] items-center"
-          style={{ gridTemplateColumns: "39% 18% 16% 15% 11%" }}
-        >
-          <div className="flex items-center gap-x-[5px] pl-[12.5px] ">
-            <div className="w-[24px] h-[24px] rounded-full bg-white text-black flex items-center  justify-center text-[10px]">
-              Icon
-            </div>
-            <div>Chain Name</div>
-            <div className="flex items-center bg-[#344240] gap-x-1 h-[18px] text-[14px] rounded-full px-[5px] py-[3px]">
-              <div>Icon</div>
-              <div>Blobs</div>
-            </div>
-          </div>
-          <div className="flex items-center justify-end gap-x-[5px] ">
-            <div className="">{"Revenue$"}</div>
-            <div className="w-[82px] rounded-full bg-milano-red-400 ">
-              {"num"}
-            </div>
-          </div>
-          <div className="flex items-center justify-center gap-x-[5px]">
-            <div>$Costs</div>
-            <div className="flex w-[98px] gap-x-[1px] items-center text-[8px]">
-              <div className="bg-[#FD0F2C] w-[78px] flex items-center justify-start font-bold rounded-l-full pl-[5px] py-[2px]">
-                L1 Proof
+        <div className="flex flex-col gap-y-[5px]">
+          {Object.keys(data).map((key, i) => {
+            const dataIndex = data[key][selectedTimespan].revenue.types.indexOf(
+              showUsd ? "usd" : "eth",
+            );
+            return (
+              <div
+                className="flex flex-col gap-y-[5px]"
+                key={key + " chainGridParent"}
+              >
+                <div
+                  className="grid relative rounded-full w-full border-[#CDD8D3] border-[1px] h-[34px] text-[14px] items-center"
+                  style={{ gridTemplateColumns: "32% 19% 17% 16% 15%" }}
+                >
+                  <div className="flex items-center gap-x-[5px] pl-[10px] ">
+                    <Icon
+                      icon={`gtp:${AllChainsByKeys[key].urlKey}-logo-monochrome`}
+                      className={`w-[22px] h-[24px] rounded-full flex items-center justify-center text-[10px] mr-[5px]`}
+                      style={{
+                        color: AllChainsByKeys[key].colors["dark"][0],
+                      }}
+                    />
+
+                    <div>{AllChainsByKeys[key].label}</div>
+
+                    {dataAvailToArray(master.chains[key].da_layer).map((x) => (
+                      <div
+                        className="flex items-center bg-[#344240] gap-x-1 h-[18px] text-[14px] rounded-full px-[5px] py-[3px]"
+                        key={x.label}
+                      >
+                        <div>{x.label}</div>
+                        <div className="flex items-center gap-x-1">
+                          <Icon
+                            icon={`gtp:${x.icon}`}
+                            className="w-[12px] h-[12px]"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-end gap-x-[5px] ">
+                    <div className="">
+                      {formatNumber(
+                        data[key][selectedTimespan].revenue.total[dataIndex],
+                      )}
+                    </div>
+                    <div
+                      className={`w-[82px] rounded-full bg-[${AllChainsByKeys[key].colors["dark"][0]}]`}
+                    >
+                      {"num"}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-center gap-x-[5px]">
+                    <div>$Costs</div>
+                    <div className="flex w-[98px] gap-x-[1px] items-center text-[8px]">
+                      <div className="bg-[#FD0F2C] w-[78px] flex items-center justify-start font-bold rounded-l-full pl-[5px] py-[2px]">
+                        L1 Proof
+                      </div>
+                      <div className="bg-[#FE5468] w-[19px] rounded-r-full flex items-center font-bold  justify-end  pr-[5px] py-[2px]">
+                        DA
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-end gap-x-[5px]">
+                    <div>Profit$</div>
+                    <div className="w-[82px] rounded-full bg-cyan-600 flex justify-end items-center px-[5px] ">
+                      {"%"}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-end pr-[35px] gap-x-[5px]">
+                    Data GB
+                  </div>
+                  <div
+                    className="absolute -right-2 hover:cursor-pointer"
+                    onClick={() => {
+                      toggleOpenChain(key);
+                    }}
+                  >
+                    <div className="flex relative items-center justify-center w-[22px] h-[22px] bg-[#1F2726] rounded-full">
+                      <div
+                        className={`absolute w-[18px] h-[18px]  rounded-full border-[1px] ${
+                          openChain[key]
+                            ? "border-[#CDD8D3]"
+                            : "border-[#5A6462]"
+                        }`}
+                      ></div>
+                      <Icon
+                        icon="feather:chevron-down"
+                        className={`w-4 h-4  ${
+                          openChain[key] ? "text-[#CDD8D3]" : "text-[#5A6462]"
+                        }`}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/*Chart Area \/ */}
+                <div
+                  className={`w-full transition-height  ${
+                    openChain[key] ? "h-[249px]" : "h-[0px]"
+                  }`}
+                ></div>
               </div>
-              <div className="bg-[#FE5468] w-[19px] rounded-r-full flex items-center font-bold  justify-end  pr-[5px] py-[2px]">
-                DA
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center justify-end gap-x-[5px]">
-            <div>Profit$</div>
-            <div className="w-[82px] rounded-full bg-cyan-600 flex justify-end items-center px-[5px] ">
-              {"%"}
-            </div>
-          </div>
-          <div className="flex items-center justify-end pr-[35px] gap-x-[5px]">
-            Data GB
-          </div>
+            );
+          })}
         </div>
       </div>
     </div>

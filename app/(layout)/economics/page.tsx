@@ -11,6 +11,8 @@ import {
 import EconHeadCharts from "@/components/layout/Economics/HeadCharts";
 import ChainBreakdown from "@/components/layout/Economics/ChainBreakdown";
 import ShowLoading from "@/components/layout/ShowLoading";
+import { MasterResponse } from "@/types/api/MasterResponse";
+import { MasterURL } from "@/lib/urls";
 
 export default function Economics() {
   const {
@@ -20,11 +22,18 @@ export default function Economics() {
     isValidating: econValidating,
   } = useSWR<EconomicsResponse>(EconomicsURL);
 
-  if (!econData) {
+  const {
+    data: master,
+    error: masterError,
+    isLoading: masterLoading,
+    isValidating: masterValidating,
+  } = useSWR<MasterResponse>(MasterURL);
+
+  if (!econData || !master) {
     return (
       <ShowLoading
-        dataLoading={[econLoading]}
-        dataValidating={[econValidating]}
+        dataLoading={[econLoading, masterLoading]}
+        dataValidating={[econValidating, masterValidating]}
       />
     );
   }
@@ -53,7 +62,7 @@ export default function Economics() {
         </div>
         <EconHeadCharts da_fees={da_fees} />
       </div>
-      <ChainBreakdown data={chain_breakdown} />
+      <ChainBreakdown data={chain_breakdown} master={master} />
     </div>
   );
 }
