@@ -9,6 +9,7 @@ import useSWR, { useSWRConfig } from "swr";
 import {
   useEventListener,
   useIsMounted,
+  useSessionStorage,
   useLocalStorage,
   useMediaQuery,
 } from "usehooks-ts";
@@ -68,6 +69,8 @@ export default function LabelsPage() {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
 
+  const [labelsChainsFilter, setLabelsChainsFilter] = useSessionStorage<string[]>('labelsChainsFilter', []);
+
 
   const metrics = useMemo(() => {
     return {
@@ -105,9 +108,18 @@ export default function LabelsPage() {
   // The scrollable element for your list
   const listRef = useRef<HTMLDivElement>();
 
+  const filteredLabelsData = useMemo(() => {
+    if (!labelsData)
+      return null;
+
+    return labelsData.data.filter((label) => {
+      return labelsChainsFilter.length === 0 || labelsChainsFilter.includes(label.origin_key);
+    });
+  }, [labelsData, labelsChainsFilter]);
+
   // The virtualizer
   const virtualizer = useWindowVirtualizer({
-    count: labelsData ? labelsData.getData().length : 0,
+    count: filteredLabelsData ? filteredLabelsData.length : 0,
     // getScrollElement: () => listRef.current,
     estimateSize: () => 37,
     // size: 37,
@@ -138,7 +150,7 @@ export default function LabelsPage() {
 
       <div className="pb-[114px] pt-[140px]"
         style={{
-          maskImage: `linear-gradient(to top, white 200px, transparent 215px, transparent calc(100vh - 215px), white calc(100vh - 200px))`,
+          // maskImage: `linear-gradient(to top, white 200px, transparent 215px, transparent calc(100vh - 215px), white calc(100vh - 200px))`,
         }}
       >
         <LabelsContainer className="w-full pt-[30px] flex items-end sm:items-center justify-between md:justify-start  gap-x-[10px]">
@@ -215,23 +227,23 @@ export default function LabelsPage() {
                     }}>
                     <div className="flex h-full items-center">
                       <Icon
-                        icon={`gtp:${AllChainsByKeys[labelsData.data[item.index].origin_key].urlKey
+                        icon={`gtp:${AllChainsByKeys[filteredLabelsData[item.index].origin_key].urlKey
                           }-logo-monochrome`}
                         className="w-[15px] h-[15px]"
                         style={{
                           color:
-                            AllChainsByKeys[labelsData.data[item.index].origin_key].colors[
+                            AllChainsByKeys[filteredLabelsData[item.index].origin_key].colors[
                             theme ?? "dark"
                             ][0],
                         }}
                       />
                     </div>
-                    <div className="flex h-full items-center">{labelsData.data[item.index].address}</div>
-                    <div className="flex h-full items-center">{labelsData.data[item.index].owner_project}</div>
-                    <div className="flex h-full items-center w-full"><div className="w-full truncate">{labelsData.data[item.index].name}</div></div>
-                    <div className="flex h-full items-center">{master?.blockspace_categories.main_categories[subcategoryToCategoryMapping[labelsData.data[item.index].usage_category]]}</div>
-                    <div className="flex h-full items-center">{master?.blockspace_categories.sub_categories[labelsData.data[item.index].usage_category]}</div>
-                    <div className="flex h-full items-center justify-end">{labelsData.data[item.index].txcount.toLocaleString("en-GB")}</div>
+                    <div className="flex h-full items-center">{filteredLabelsData[item.index].address}</div>
+                    <div className="flex h-full items-center">{filteredLabelsData[item.index].owner_project}</div>
+                    <div className="flex h-full items-center w-full"><div className="w-full truncate">{filteredLabelsData[item.index].name}</div></div>
+                    <div className="flex h-full items-center">{master?.blockspace_categories.main_categories[subcategoryToCategoryMapping[filteredLabelsData[item.index].usage_category]]}</div>
+                    <div className="flex h-full items-center">{master?.blockspace_categories.sub_categories[filteredLabelsData[item.index].usage_category]}</div>
+                    <div className="flex h-full items-center justify-end">{filteredLabelsData[item.index].txcount.toLocaleString("en-GB")}</div>
                   </GridTableRow>
                 ))}
               </div>)}

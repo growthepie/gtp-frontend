@@ -5,8 +5,12 @@ import Container from "@/components/layout/Container";
 
 export default function Footer() {
   return (
-    <div className="fixed left-0 right-0 bottom-0">
-      <div className="background-container !h-screen">
+    <div className="flex flex-col justify-end fixed left-0 right-0 bottom-0 h-[120px] overflow-hidden"
+      style={{
+        maskImage: `linear-gradient(to top, white 0, white 80px, transparent 120px`,
+      }}
+    >
+      <div className="background-container top-0 bottom-0">
         <div className="background-gradient-group">
           <div className="background-gradient-yellow"></div>
           <div className="background-gradient-green"></div>
