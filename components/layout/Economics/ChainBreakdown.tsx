@@ -315,7 +315,7 @@ export default function ChainBreakdown({
               >
                 <div
                   className="grid relative rounded-full w-full border-[#CDD8D3] border-[1px] h-[34px] text-[14px] items-center"
-                  style={{ gridTemplateColumns: "32% 19% 17% 16% 15%" }}
+                  style={{ gridTemplateColumns: "34% 19% 17% 14% 15%" }}
                 >
                   <div className="flex items-center gap-x-[5px] pl-[10px] ">
                     <Icon
