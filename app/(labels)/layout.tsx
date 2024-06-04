@@ -176,7 +176,7 @@ export default function RootLayout({
     >
       <Head />
       <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden overflow-y-scroll relative min-h-screen">
-        <div className="background-container">
+        <div className="background-container fixed">
           <div className="background-gradient-group">
             <div className="background-gradient-yellow"></div>
             <div className="background-gradient-green"></div>

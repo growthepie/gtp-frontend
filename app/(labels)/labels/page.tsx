@@ -19,7 +19,7 @@ import Header from "./Header";
 import { useTransition, animated } from "@react-spring/web";
 
 import Footer from "./Footer";
-import FeesHorizontalScrollContainer from "@/components/FeesHorizontalScrollContainer";
+import LabelsHorizontalScrollContainer from "@/components/LabelsHorizontalScrollContainer";
 import {
   useResizeObserver,
   useWindowSize,
@@ -115,19 +115,40 @@ export default function LabelsPage() {
     overscan: 5,
   })
 
+  const subcategoryToCategoryMapping = useMemo(() => {
+    if (!master)
+      return {};
+
+    let mapping = {};
+
+    Object.keys(master.blockspace_categories.mapping).forEach((category) => {
+      master.blockspace_categories.mapping[category].forEach((subcategory) => {
+        mapping[subcategory] = category;
+      });
+    });
+
+    return mapping;
+  }, [master]);
+
+
+
   return (
     <>
       <Header />
 
-      <div className="pb-[114px] pt-[150px]">
+      <div className="pb-[114px] pt-[140px]"
+        style={{
+          maskImage: `linear-gradient(to top, white 200px, transparent 215px, transparent calc(100vh - 215px), white calc(100vh - 200px))`,
+        }}
+      >
         <LabelsContainer className="w-full pt-[30px] flex items-end sm:items-center justify-between md:justify-start  gap-x-[10px]">
           <h1 className="text-[20px] md:text-[30px] pl-[15px] leading-[120%] font-bold">
             Latest contracts on Ethereum Layer 2s
           </h1>
         </LabelsContainer>
 
-        <FeesHorizontalScrollContainer
-          className="w-full pt-[20px]"
+        <LabelsHorizontalScrollContainer
+          className="w-full pt-[20px] min-w-[1200px]"
         // style={{
         //   maskImage: `linear-gradient(to top, white 10%, transparent 15%, transparent 85%, white 90%)`,
         // }}
@@ -135,7 +156,7 @@ export default function LabelsPage() {
         >
           <div className="flex flex-col gap-y-[3px]">
             {labelsData && (
-              <GridTableHeader gridDefinitionColumns="pb-[4px] text-[12px] grid-cols-[15px,auto,130px,120px,110px,105px,120px] lg:grid-cols-[15px,auto,130px,120px,110px,105px,120px]">
+              <GridTableHeader gridDefinitionColumns="pb-[4px] text-[12px] grid-cols-[15px,auto,130px,150px,110px,140px,120px] lg:grid-cols-[15px,auto,130px,150px,110px,140px,120px]">
                 <div className="flex items-center justify-center"></div>
                 <div className="flex items-center justify-start">Contract Address</div>
                 <div className="flex items-center justify-start">Owner Project</div>
@@ -168,7 +189,7 @@ export default function LabelsPage() {
                 </GridTableRow>
               );
             })} */}
-            <div ref={listRef}>
+            <div ref={listRef} className="">
               {labelsData && (<div
                 className="relative flex-flex-col gap-y-[3px]"
                 style={{
@@ -182,7 +203,7 @@ export default function LabelsPage() {
                 {virtualizer.getVirtualItems().map((item) => (
                   <GridTableRow
                     key={item.index}
-                    gridDefinitionColumns="text-[12px] h-[34px] grid-cols-[15px,auto,130px,120px,110px,105px,120px] lg:grid-cols-[15px,auto,130px,120px,110px,105px,120px]"
+                    gridDefinitionColumns="text-[12px] h-[34px] grid-cols-[15px,auto,130px,150px,110px,140px,120px] lg:grid-cols-[15px,auto,130px,150px,110px,140px,120px]"
                     style={{
                       position: 'absolute',
                       top: 0,
@@ -207,14 +228,17 @@ export default function LabelsPage() {
                     </div>
                     <div className="flex h-full items-center">{labelsData.data[item.index].address}</div>
                     <div className="flex h-full items-center">{labelsData.data[item.index].owner_project}</div>
-                    <div className="flex h-full items-center">{labelsData.data[item.index].name}</div>
+                    <div className="flex h-full items-center w-full"><div className="w-full truncate">{labelsData.data[item.index].name}</div></div>
+                    <div className="flex h-full items-center">{master?.blockspace_categories.main_categories[subcategoryToCategoryMapping[labelsData.data[item.index].usage_category]]}</div>
+                    <div className="flex h-full items-center">{master?.blockspace_categories.sub_categories[labelsData.data[item.index].usage_category]}</div>
+                    <div className="flex h-full items-center justify-end">{labelsData.data[item.index].txcount.toLocaleString("en-GB")}</div>
                   </GridTableRow>
                 ))}
               </div>)}
             </div>
 
           </div>
-        </FeesHorizontalScrollContainer>
+        </LabelsHorizontalScrollContainer>
       </div>
 
       <Footer />

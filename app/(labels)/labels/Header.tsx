@@ -12,7 +12,15 @@ import LabelsContainer from "@/components/layout/LabelsContainer";
 
 export default function Header() {
   return (
-    <div className="fixed flex flex-col w-full z-50">
+    <div className="fixed flex flex-col w-full z-50 items-center">
+      <div className="absolute h-[150px] w-full overflow-hidden">
+        <div className="background-container !h-screen">
+          <div className="background-gradient-group">
+            <div className="background-gradient-yellow"></div>
+            <div className="background-gradient-green"></div>
+          </div>
+        </div>
+      </div>
       <header className="flex justify-between space-x-0 xl:space-x-6 items-end w-full mx-auto px-[20px] pt-[20px] md:px-[60px] md:pt-[30px] ">
         <div className="flex justify-start items-center w-full">
           <div className="flex space-x-0 xl:space-x-6 w-full h-full">
@@ -54,7 +62,7 @@ export default function Header() {
       </LabelsContainer> */}
 
       </header>
-      <LabelsContainer className={`w-full hidden md:block`}>
+      <LabelsContainer className={`absolute top-[76px] w-full hidden md:block`}>
         <div className="flex p-[5px] items-center w-full rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000]">
           <a
             className="flex items-center w-[162px] bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
@@ -68,6 +76,7 @@ export default function Header() {
           </a>
         </div>
       </LabelsContainer>
+
     </div>
   );
 }
