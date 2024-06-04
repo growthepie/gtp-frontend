@@ -160,7 +160,7 @@ export default function LabelsPage() {
         </LabelsContainer>
 
         <LabelsHorizontalScrollContainer
-          className="w-full pt-[20px] min-w-[1200px]"
+          className="w-full pt-[20px]"
         // style={{
         //   maskImage: `linear-gradient(to top, white 10%, transparent 15%, transparent 85%, white 90%)`,
         // }}
@@ -201,7 +201,7 @@ export default function LabelsPage() {
                 </GridTableRow>
               );
             })} */}
-            <div ref={listRef} className="">
+            <div ref={listRef} className=" min-w-[1100px]">
               {labelsData && (<div
                 className="relative flex-flex-col gap-y-[3px]"
                 style={{
@@ -213,38 +213,39 @@ export default function LabelsPage() {
 
               >
                 {virtualizer.getVirtualItems().map((item) => (
-                  <GridTableRow
-                    key={item.index}
-                    gridDefinitionColumns="text-[12px] h-[34px] grid-cols-[15px,auto,130px,150px,110px,140px,120px] lg:grid-cols-[15px,auto,130px,150px,110px,140px,120px]"
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: `${item.size}px`,
-                      transform: `translateY(${item.start - virtualizer.options.scrollMargin
-                        }px)`,
-                    }}>
-                    <div className="flex h-full items-center">
-                      <Icon
-                        icon={`gtp:${AllChainsByKeys[filteredLabelsData[item.index].origin_key].urlKey
-                          }-logo-monochrome`}
-                        className="w-[15px] h-[15px]"
-                        style={{
-                          color:
-                            AllChainsByKeys[filteredLabelsData[item.index].origin_key].colors[
-                            theme ?? "dark"
-                            ][0],
-                        }}
-                      />
-                    </div>
-                    <div className="flex h-full items-center">{filteredLabelsData[item.index].address}</div>
-                    <div className="flex h-full items-center">{filteredLabelsData[item.index].owner_project}</div>
-                    <div className="flex h-full items-center w-full"><div className="w-full truncate">{filteredLabelsData[item.index].name}</div></div>
-                    <div className="flex h-full items-center">{master?.blockspace_categories.main_categories[subcategoryToCategoryMapping[filteredLabelsData[item.index].usage_category]]}</div>
-                    <div className="flex h-full items-center">{master?.blockspace_categories.sub_categories[filteredLabelsData[item.index].usage_category]}</div>
-                    <div className="flex h-full items-center justify-end">{filteredLabelsData[item.index].txcount.toLocaleString("en-GB")}</div>
-                  </GridTableRow>
+                  <div key={item.index} style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: `${item.size}px`,
+                    transform: `translateY(${item.start - virtualizer.options.scrollMargin}px)`,
+                  }}>
+                    <GridTableRow
+
+                      gridDefinitionColumns="text-[12px] h-[34px] grid-cols-[15px,auto,130px,150px,110px,140px,120px] lg:grid-cols-[15px,auto,130px,150px,110px,140px,120px] mb-[3px]"
+                    >
+                      <div className="flex h-full items-center">
+                        <Icon
+                          icon={`gtp:${AllChainsByKeys[filteredLabelsData[item.index].origin_key].urlKey
+                            }-logo-monochrome`}
+                          className="w-[15px] h-[15px]"
+                          style={{
+                            color:
+                              AllChainsByKeys[filteredLabelsData[item.index].origin_key].colors[
+                              theme ?? "dark"
+                              ][0],
+                          }}
+                        />
+                      </div>
+                      <div className="flex h-full items-center">{filteredLabelsData[item.index].address}</div>
+                      <div className="flex h-full items-center">{filteredLabelsData[item.index].owner_project}</div>
+                      <div className="flex h-full items-center w-full"><div className="w-full truncate">{filteredLabelsData[item.index].name}</div></div>
+                      <div className="flex h-full items-center">{master?.blockspace_categories.main_categories[subcategoryToCategoryMapping[filteredLabelsData[item.index].usage_category]]}</div>
+                      <div className="flex h-full items-center">{master?.blockspace_categories.sub_categories[filteredLabelsData[item.index].usage_category]}</div>
+                      <div className="flex h-full items-center justify-end">{filteredLabelsData[item.index].txcount.toLocaleString("en-GB")}</div>
+                    </GridTableRow>
+                  </div>
                 ))}
               </div>)}
             </div>

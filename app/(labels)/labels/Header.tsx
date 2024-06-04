@@ -79,34 +79,34 @@ export default function Header() {
             </div>
           </Link>
           <Search />
-          <Link
+          <div
             className="flex items-center bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
-            href="https://www.growthepie.xyz/"
-            target="_blank"
+          // href="https://www.growthepie.xyz/"
+          // target="_blank"
           >
             <div className="w-6 h-6">
               <NotificationIcon />
             </div>
-          </Link>
-          <Link
+          </div>
+          <div
             className="flex items-center bg-[#1F2726] gap-x-[10px] rounded-full py-[10px] px-[15px] gap font-medium"
-            href="https://www.growthepie.xyz/"
-            target="_blank"
+          // href="https://www.growthepie.xyz/"
+          // target="_blank"
           >
             <div className="w-6 h-6">
               <SettingsIcon />
             </div>
             <div>Settings</div>
-          </Link>
-          <Link
+          </div>
+          <div
             className="flex items-center bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
-            href="https://www.growthepie.xyz/"
-            target="_blank"
+          // href="https://www.growthepie.xyz/"
+          // target="_blank"
           >
             <div className="w-6 h-6">
               <DownloadIcon />
             </div>
-          </Link>
+          </div>
         </div>
       </LabelsContainer>
 
