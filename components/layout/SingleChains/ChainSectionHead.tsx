@@ -14,6 +14,7 @@ const ChainSectionHead = ({
   enableDropdown,
   defaultDropdown,
   rowEnd,
+  disabled,
 }: {
   title: string;
   icon?: string;
@@ -25,6 +26,7 @@ const ChainSectionHead = ({
   enableDropdown: boolean;
   defaultDropdown?: boolean;
   rowEnd?: React.ReactNode | null;
+  disabled?: boolean;
 }) => {
   const [clicked, setClicked] = useState(
     defaultDropdown !== undefined ? defaultDropdown : false,
@@ -53,14 +55,13 @@ const ChainSectionHead = ({
 
   return (
     <div
-      className={`flex flex-col group ${className}`}
+      className={`flex flex-col group ${className} ${disabled ? "opacity-50" : ""}`}
       ref={ref ? ref : null}
       style={style}
     >
       <div
-        className={`relative flex items-center gap-x-[12px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-[#344240] select-none ${
-          enableDropdown && "cursor-pointer"
-        }`}
+        className={`relative flex items-center gap-x-[12px] px-[6px] py-[3px] rounded-full bg-forest-50 dark:bg-[#344240] select-none ${enableDropdown && "cursor-pointer"
+          }`}
         onClick={() => {
           handleClick();
           // find .highcharts-tooltip-container and remove them all
@@ -74,25 +75,23 @@ const ChainSectionHead = ({
         }}
       >
         <div
-          className={`absolute  inset-0 pointer-events-none shadow-inner rounded-2xl group-hover:opacity-0 opacity-0 transition-opacity duration-500 ${
-            enableDropdown ? "hidden" : title === "Menu" ? "hidden" : "block"
-          } ${
-            title === "Background"
+          className={`absolute  inset-0 pointer-events-none shadow-inner rounded-2xl group-hover:opacity-0 opacity-0 transition-opacity duration-500 ${enableDropdown ? "hidden" : title === "Menu" ? "hidden" : "block"
+            } ${title === "Background"
               ? isSidebarOpen
                 ? "lg:opacity-0 md:opacity-100"
                 : "xl:opacity-0 md:opacity-100"
               : title === "Risk"
-              ? " xl:opacity-0 md:opacity-100 "
-              : title === "Usage"
-              ? isSidebarOpen
-                ? "2xl:opacity-0 md:opacity-100 "
-                : "xl:opacity-0 md:opacity-100"
-              : title === "Technology"
-              ? isSidebarOpen
-                ? "2xl:opacity-0 md:opacity-100 "
-                : "xl:opacity-0 md:opacity-100"
-              : ""
-          }`}
+                ? " xl:opacity-0 md:opacity-100 "
+                : title === "Usage"
+                  ? isSidebarOpen
+                    ? "2xl:opacity-0 md:opacity-100 "
+                    : "xl:opacity-0 md:opacity-100"
+                  : title === "Technology"
+                    ? isSidebarOpen
+                      ? "2xl:opacity-0 md:opacity-100 "
+                      : "xl:opacity-0 md:opacity-100"
+                    : ""
+            }`}
           style={{
             background:
               "linear-gradient(to right, rgba(0, 0, 0, 0) 10%, rgba(22, 28, 27, 0.76) 100%)",
@@ -105,9 +104,8 @@ const ChainSectionHead = ({
           />
           <Icon
             icon={"gtp:circle-arrow"}
-            className={`w-[4px] h-[9px] absolute top-2 right-0 ${
-              enableDropdown ? "block" : "hidden"
-            }`}
+            className={`w-[4px] h-[9px] absolute top-2 right-0 ${!enableDropdown || disabled ? "hidden" : "block"
+              }`}
             style={{
               transform: `rotate(${clicked ? "90deg" : "0deg"})`,
               transformOrigin: "-8px 4px",
@@ -125,15 +123,14 @@ const ChainSectionHead = ({
       <div
         className="overflow-clip hover:!overflow-visible"
         style={{
-          maxHeight: `${
-            enableDropdown
-              ? clicked
-                ? childrenHeight
-                  ? `${childrenHeight}px`
-                  : "1000px"
-                : "0"
-              : "120px"
-          }`,
+          maxHeight: `${enableDropdown
+            ? clicked
+              ? childrenHeight
+                ? `${childrenHeight}px`
+                : "1000px"
+              : "0"
+            : "120px"
+            }`,
           transition: "all 0.4s",
         }}
       >
