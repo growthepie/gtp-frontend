@@ -197,7 +197,7 @@ export default function ChainBreakdown({
         </div>
         <div
           className="grid "
-          style={{ gridTemplateColumns: "32% 19% 17% 16% 15%" }}
+          style={{ gridTemplateColumns: "34% 19% 17% 14% 15%" }}
         >
           <div className="pl-[44px] flex gap-x-[5px] items-center justify-start ">
             <div className="flex items-center group ">
