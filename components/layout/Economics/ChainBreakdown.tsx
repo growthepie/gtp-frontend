@@ -197,9 +197,9 @@ export default function ChainBreakdown({
         </div>
         <div
           className="grid "
-          style={{ gridTemplateColumns: "34% 19% 17% 14% 15%" }}
+          style={{ gridTemplateColumns: "auto 150px 170px 110px 140px" }}
         >
-          <div className="pl-[44px] flex gap-x-[5px] items-center justify-start ">
+          <div className="pl-[44px] flex grow gap-x-[5px] items-center justify-start  ">
             <div className="flex items-center group ">
               <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
                 Chain
@@ -207,16 +207,16 @@ export default function ChainBreakdown({
               <div>
                 <Icon
                   icon="formkit:arrowdown"
-                  className="dark:text-forest-50 group-hover:text-forest-50/80 text-black w-[10px] h-[10px]"
+                  className="dark:text-forest-50 group-hover:text-forest-50/80 text-black w-[10px] h-[10px] "
                 />
               </div>
             </div>
-            <div className="flex items-center bg-[#344240] gap-x-1 text-[8px] rounded-full px-[5px] py-[2px]">
+            <div className="flex items-center bg-[#344240] gap-x-1 text-[8px] rounded-full px-[5px] py-[2px] ">
               <div>Data Availability: </div>
               <div>SelectedDA </div>
             </div>
           </div>
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end ">
             {" "}
             <div className="flex items-center group ">
               <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
@@ -230,7 +230,7 @@ export default function ChainBreakdown({
               </div>
             </div>
           </div>
-          <div className="flex items-center justify-center gap-x-[5px]">
+          <div className="flex items-center justify-center gap-x-[5px] ">
             {" "}
             <div className="flex items-center group ">
               <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
@@ -264,7 +264,7 @@ export default function ChainBreakdown({
               </div>
             </div>
           </div>
-          <div className="flex items-center justify-end gap-x-[5px]">
+          <div className="flex items-center justify-end gap-x-[5px] pr-[2px]">
             {" "}
             <div className="flex items-center group ">
               <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
@@ -285,7 +285,7 @@ export default function ChainBreakdown({
               />
             </div>
           </div>
-          <div className="flex items-center justify-end pr-[30px] gap-x-[5px]">
+          <div className="flex items-center justify-end pr-[30px] gap-x-[5px] ">
             {" "}
             <div className="flex items-center group ">
               <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
@@ -315,12 +315,14 @@ export default function ChainBreakdown({
               >
                 <div
                   className="grid relative rounded-full w-full border-[#CDD8D3] border-[1px] h-[34px] text-[14px] items-center"
-                  style={{ gridTemplateColumns: "34% 19% 17% 14% 15%" }}
+                  style={{
+                    gridTemplateColumns: "auto 150px 170px 110px 140px",
+                  }}
                 >
                   <div className="flex items-center gap-x-[5px] pl-[10px] ">
                     <Icon
                       icon={`gtp:${AllChainsByKeys[key].urlKey}-logo-monochrome`}
-                      className={`w-[22px] h-[24px] rounded-full flex items-center justify-center text-[10px] mr-[5px]`}
+                      className={`w-[22px] h-[24px] flex items-center justify-center text-[10px] mr-[5px]`}
                       style={{
                         color: AllChainsByKeys[key].colors["dark"][0],
                       }}
@@ -343,7 +345,7 @@ export default function ChainBreakdown({
                       </div>
                     ))}
                   </div>
-                  <div className="flex items-center justify-end gap-x-[5px] ">
+                  <div className="flex items-center justify-end gap-x-[5px]  ">
                     <div className="">
                       {formatNumber(
                         data[key][selectedTimespan].revenue.total[dataIndex],
@@ -352,7 +354,7 @@ export default function ChainBreakdown({
                     <div
                       className={`w-[82px] rounded-full bg-[${AllChainsByKeys[key].colors["dark"][0]}]`}
                     >
-                      {"num"}
+                      &nbsp;
                     </div>
                   </div>
                   <div className="flex items-center justify-center gap-x-[5px]">
