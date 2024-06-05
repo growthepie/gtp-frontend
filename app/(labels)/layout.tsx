@@ -14,6 +14,7 @@ import Icon from "@/components/layout/Icon";
 import LabelsContainer from "@/components/layout/LabelsContainer";
 import Head from "../(layout)/head";
 import DeveloperTools from "@/components/development/DeveloperTools";
+import LabelsProviders from "./LabelsProviders";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",
@@ -193,7 +194,9 @@ export default function RootLayout({
                 <div className="w-full mx-auto relative min-h-full">
                   {/* <Header /> */}
                   <main className="relative flex-1 w-full mx-auto z-10 min-h-screen select-none">
-                    {children}
+                    <LabelsProviders>
+                      {children}
+                    </LabelsProviders>
                   </main>
                 </div>
               </div>

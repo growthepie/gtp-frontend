@@ -20,8 +20,11 @@ export type Columns =
   | "owner_project"
   | "usage_category"
   | "txcount"
+  | "txcount_change"
   | "gas_fees_usd"
-  | "daa";
+  | "gas_fees_usd_change"
+  | "daa"
+  | "daa_change";
 
 export type Datum = (string | number | null)[];
 
@@ -32,19 +35,24 @@ export interface ParsedDatum {
   owner_project: string | null;
   usage_category: string | null;
   txcount: number;
+  txcount_change: number;
   gas_fees_usd: number;
+  gas_fees_usd_change: number;
   daa: number;
+  daa_change: number;
 }
 
 export class LabelsResponseHelper {
   private response: LabelsResponse;
   private typesIndexes: Record<Columns, number>;
   public data: ParsedDatum[];
+  public types: Columns[];
 
   constructor(response: LabelsResponse) {
     this.response = response;
     this.typesIndexes = this.getTypesIndexes();
     this.data = this.getData();
+    this.types = this.getTypes();
   }
 
   getTypes(): Columns[] {
@@ -74,8 +82,11 @@ export class LabelsResponseHelper {
       owner_project,
       usage_category,
       txcount,
+      txcount_change,
       gas_fees_usd,
+      gas_fees_usd_change,
       daa,
+      daa_change,
     ] = [
       datum[this.typesIndexes.address],
       datum[this.typesIndexes.origin_key],
@@ -83,8 +94,11 @@ export class LabelsResponseHelper {
       datum[this.typesIndexes.owner_project],
       datum[this.typesIndexes.usage_category],
       datum[this.typesIndexes.txcount],
+      datum[this.typesIndexes.txcount_change],
       datum[this.typesIndexes.gas_fees_usd],
+      datum[this.typesIndexes.gas_fees_usd_change],
       datum[this.typesIndexes.daa],
+      datum[this.typesIndexes.daa_change],
     ];
 
     return {
@@ -94,8 +108,11 @@ export class LabelsResponseHelper {
       owner_project: owner_project as string | null,
       usage_category: usage_category as string | null,
       txcount: txcount as number,
+      txcount_change: txcount_change as number,
       gas_fees_usd: gas_fees_usd as number,
+      gas_fees_usd_change: gas_fees_usd_change as number,
       daa: daa as number,
+      daa_change: daa_change as number,
     };
   }
 

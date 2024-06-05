@@ -76,4 +76,5 @@ export const ContractsURL = "https://api.growthepie.xyz/v1/contracts.json";
 export const LabelsURLS = {
   quick: "https://api.growthepie.xyz/v1/labels/quick.json",
   full: "https://api.growthepie.xyz/v1/labels/full.json",
+  sparkline: "https://api.growthepie.xyz/v1/labels/sparkline.json",
 };
