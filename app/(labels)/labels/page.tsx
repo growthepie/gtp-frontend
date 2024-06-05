@@ -56,6 +56,14 @@ function labelsMiddleware(useSWRNext) {
     return useSWRNext(key, extendedFetcher, config)
   }
 }
+const metricKeys = ["txcount", "gas_fees_usd", "daa"];
+const sparklineMetricKeys = ["txcount", "gas_fees", "active_addresses"];
+
+const metricKeysLabels = {
+  txcount: "Transaction Count",
+  gas_fees_usd: "Gas Fees",
+  daa: "Active Addresses",
+};
 
 export default function LabelsPage() {
   const showGwei = true;
@@ -118,9 +126,21 @@ export default function LabelsPage() {
     isValidating: sparklineLabelsValidating,
   } = useSWR<any>(quickLabelsData ? LabelsURLS.sparkline : null);
 
-  const metricKeys = ["txcount", "gas_fees_usd", "daa"];
+
 
   const [currentMetric, setCurrentMetric] = useState(metricKeys[0]);
+
+  const handlePreviousMetric = useCallback(() => {
+    const currentIndex = metricKeys.indexOf(currentMetric);
+    const newIndex = currentIndex === 0 ? metricKeys.length - 1 : currentIndex - 1;
+    setCurrentMetric(metricKeys[newIndex]);
+  }, [currentMetric]);
+
+  const handleNextMetric = useCallback(() => {
+    const currentIndex = metricKeys.indexOf(currentMetric);
+    const newIndex = currentIndex === metricKeys.length - 1 ? 0 : currentIndex + 1;
+    setCurrentMetric(metricKeys[newIndex]);
+  }, [currentMetric]);
 
   // const [metricIndex, setMetricIndex] = useState(0);
   // const [metricChangeIndex, setMetricChangeIndex] = useState(0);
@@ -161,6 +181,20 @@ export default function LabelsPage() {
 
   // The scrollable element for your list
   const listRef = useRef<HTMLDivElement>();
+
+  const data = useMemo(() => {
+    if (!quickLabelsData && !fullLabelsData)
+      return [];
+
+    return quickLabelsData ? quickLabelsData.data : fullLabelsData.data;
+  }, [quickLabelsData, fullLabelsData]);
+
+  const dataTypes = useMemo(() => {
+    if (!quickLabelsData && !fullLabelsData)
+      return {};
+
+    return quickLabelsData ? quickLabelsData.types : fullLabelsData.types;
+  }, [quickLabelsData, fullLabelsData]);
 
   const filteredLabelsData = useMemo<ParsedDatum[]>(() => {
     let rows = [];
@@ -294,7 +328,18 @@ export default function LabelsPage() {
                   <Badge size="sm" label="Subcategory" leftIcon={null} leftIconColor="#FFFFFF" rightIcon="feather:arrow-down" rightIconSize="sm" className="border border-[#5A6462]" />
                 </div>
                 <div className="flex items-center justify-end">Date Deployed</div>
-                <div className="flex items-center justify-end">Transaction Count (7 days)</div>
+                <div className="relative flex items-center justify-end">
+                  <div className=" flex items-center ">
+                    {metricKeysLabels[currentMetric]} (7 days)
+                    <div className="absolute left-[12px] cursor-pointer bg-white/30 opacity-60 rounded-full px-0.5 py-[2px]" onClick={handlePreviousMetric}>
+                      <Icon icon="feather:chevron-left" className="w-[12px] h-[12px]" />
+                    </div>
+                    <div className="absolute -right-[20px] cursor-pointer bg-white/30 opacity-60 rounded-full px-0.5 py-[2px]" onClick={handleNextMetric}>
+                      <Icon icon="feather:chevron-right" className="w-[12px] h-[12px]" />
+                    </div>
+                  </div>
+
+                </div>
               </GridTableHeader>
             )}
 
@@ -460,7 +505,11 @@ export default function LabelsPage() {
                       <div className="flex items-center justify-end gap-x-[3px]">
                         {sparklineLabelsData && (
                           <div>
-                            {sparklineLabelsData.data[`${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address}`] ? <CanvasSparkline chainKey={filteredLabelsData[item.index].origin_key} data={sparklineLabelsData.data[`${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address}`].sparkline} change={filteredLabelsData[item.index][`${currentMetric}_change`]} /> : <div className="text-center w-full text-xs text-forest-800">Unavailable</div>}
+                            {sparklineLabelsData.data[`${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address}`] ? (
+                              <CanvasSparkline chainKey={filteredLabelsData[item.index].origin_key} data={sparklineLabelsData.data[`${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address}`].sparkline.map(d => [d[0], d[sparklineLabelsData.data.types.indexOf(sparklineMetricKeys[metricKeys.indexOf(currentMetric)])]])} change={filteredLabelsData[item.index][`${currentMetric}_change`]} />
+                            ) : (
+                              <div className="text-center w-full text-[#5A6462] text-[10px]">Unavailable</div>
+                            )}
                           </div>
                         )}
                         <div className="flex flex-col justify-center items-end h-[24px]">
