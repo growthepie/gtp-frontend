@@ -11,7 +11,7 @@ import {
 import { GloHolderURL } from "@/lib/urls";
 import useSWR from "swr";
 import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
-import { HolderReponse } from "@/types/api/Holders";
+import { HolderResponse, TableDataBreakdown } from "@/types/api/Holders";
 import { useTransition, animated } from "@react-spring/web";
 import ShowLoading from "@/components/layout/ShowLoading";
 
@@ -29,7 +29,7 @@ export default function StableInsights({}: {}) {
     error: error,
     isLoading: isLoading,
     isValidating: isValidating,
-  } = useSWR<HolderReponse>(GloHolderURL);
+  } = useSWR<HolderResponse>(GloHolderURL);
 
   const timespans = useMemo(() => {
     return {
@@ -114,7 +114,7 @@ export default function StableInsights({}: {}) {
 
   return (
     <>
-      {(IS_DEVELOPMENT || IS_PREVIEW) && sortedTableData && (
+      {(IS_DEVELOPMENT || IS_PREVIEW) && sortedTableData && data && (
         <div className="flex flex-col gap-y-[15px]">
           <div className="flex items-center gap-x-[8px] ">
             <Image
@@ -138,6 +138,7 @@ export default function StableInsights({}: {}) {
               <Image
                 src={"/Glo_Dollar.svg"}
                 className="w-[16px] h-[16px]"
+                alt={"Glo Dollar Icon"}
                 height={16}
                 width={16}
               />
@@ -167,10 +168,11 @@ export default function StableInsights({}: {}) {
                 <div className="pt-[5px] w-full ">
                   Glo Dollar is a fiat-backed stablecoin that funds public
                   goods. With Glo Dollar, you can help fund public goods and
-                  charitable causes just by holding a stablecoin. It's a new,
-                  donationless form of philanthropy. Check here which are the
-                  top supporting Glo Dollar wallets currently.
+                  charitable causes just by holding a stablecoin. It&apos;s a
+                  new, donationless form of philanthropy. Check here which are
+                  the top supporting Glo Dollar wallets currently.
                 </div>
+
                 <div className="pt-[5px] w-full">
                   Check here which are the top supporting Glo Dollar wallets
                   currently.
@@ -180,6 +182,7 @@ export default function StableInsights({}: {}) {
                 <div className="flex justify-between items-center ">
                   <Image
                     src={"/Glo_Dollar.svg"}
+                    alt={"Glo Dollar Icon"}
                     className="w-[36px] h-[36px]"
                     height={36}
                     width={36}
@@ -196,23 +199,17 @@ export default function StableInsights({}: {}) {
             </div>
             <TopRowContainer>
               <TopRowParent>
-                <TopRowChild style={{ background: "#151A19" }}>
-                  By Wallet
-                </TopRowChild>
+                <TopRowChild isSelected={true}>By Wallet</TopRowChild>
               </TopRowParent>
               <TopRowParent>
                 {Object.keys(timespans).map((timespan) => {
                   return (
                     <TopRowChild
-                      className={`${
-                        selectedTimespan === timespan
-                          ? "bg-[#151A19]"
-                          : "bg-inherit"
-                      }`}
-                      key={timespan}
+                      isSelected={selectedTimespan === timespan}
                       onClick={() => {
                         setSelectedTimespan(timespan);
                       }}
+                      key={timespan}
                     >
                       {timespans[timespan].label}
                     </TopRowChild>
