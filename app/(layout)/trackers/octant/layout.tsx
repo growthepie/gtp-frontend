@@ -82,7 +82,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <div className="absolute ml-[0%] w-[25%] h-full bg-forest-900/10 dark:bg-forest-500/10 rounded-none"></div>
                 <div className="absolute ml-[0%] -inset-0 flex justify-between px-0.5 py-0 text-[11px] font-medium leading-4">
                   <div className="absolute -left-7 font-medium font-inter text-[12px]">
-                    35%
+                    25%
                   </div>
                   <div className="absolute right-0 ">Golem Operations</div>
                 </div>
