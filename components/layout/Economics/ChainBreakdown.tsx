@@ -298,8 +298,6 @@ export default function ChainBreakdown({
     },
   );
 
-  console.log(data);
-
   return (
     <div>
       {sortedChainData && (
