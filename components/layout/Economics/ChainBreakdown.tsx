@@ -15,6 +15,7 @@ import { useLocalStorage } from "usehooks-ts";
 import { AllChainsByKeys } from "@/lib/chains";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { sortByDataAvailability } from "./SortHelpers";
+import { useTransition, animated } from "@react-spring/web";
 
 interface DAvailability {
   icon: string;
@@ -262,6 +263,42 @@ export default function ChainBreakdown({
       return acc;
     }, {});
   }, [data, master, DAIndex, allChainsDA, metricSort, selectedTimespan]);
+
+  const transitions = useTransition(
+    (sortOrder
+      ? Object.keys(sortedChainData)
+      : Object.keys(sortedChainData).reverse()
+    ).map((key, index) => {
+      let prevOpenCharts: number = 0;
+      (sortOrder
+        ? Object.keys(sortedChainData)
+        : Object.keys(sortedChainData).reverse()
+      ).map((localKey, localIndex) => {
+        if (localIndex >= index) return;
+
+        if (openChain[localKey]) {
+          prevOpenCharts += 1;
+        }
+      });
+      return {
+        y: index * 39 + prevOpenCharts * 249,
+        height: 39,
+        key: key, // Assuming `chain` is used as a key
+        i: index,
+      };
+    }),
+    {
+      key: (d) => d.key,
+      from: { height: 0 },
+      leave: { height: 0 },
+      enter: ({ y, height }) => ({ y, height }),
+      update: ({ y, height }) => ({ y, height }), // Ensure height change is animated
+      config: { mass: 5, tension: 500, friction: 100 },
+      trail: 25,
+    },
+  );
+
+  console.log(data);
 
   return (
     <div>
@@ -554,27 +591,16 @@ export default function ChainBreakdown({
             className={`relative flex flex-col -mt-[5px] `}
             style={{ minHeight: `500px` }}
           >
-            {(sortOrder
-              ? Object.keys(sortedChainData)
-              : Object.keys(sortedChainData).reverse()
-            ).map((key, i) => {
-              const dataIndex = data[key][
+            {transitions((style, item) => {
+              const dataIndex = data[item.key][
                 selectedTimespan
               ].revenue.types.indexOf(showUsd ? "usd" : "eth");
               const localDataAvail = dataAvailToArray(
-                master.chains[key].da_layer,
+                master.chains[item.key].da_layer,
               )[0];
-              let prevOpenCharts: number = 0;
-              Object.keys(sortedChainData).map((localKey, localIndex) => {
-                if (localIndex >= i) return;
-
-                if (openChain[localKey]) {
-                  prevOpenCharts += 1;
-                }
-              });
 
               return (
-                <div
+                <animated.div
                   className={`absolute w-full flex flex-col pr-0.5 ${
                     enableDASort
                       ? allChainsDA[DAIndex] === localDataAvail.label
@@ -582,29 +608,27 @@ export default function ChainBreakdown({
                         : "opacity-50"
                       : "opacity-100"
                   }`}
-                  style={{
-                    transform: `translateY(${39 * i + 249 * prevOpenCharts}px)`,
-                    transitionProperty: "transform", // Apply transition to transform property
-                    transitionDuration: "600ms", // Set transition duration
-                  }}
-                  key={key + " chainGridParent"}
+                  key={item.key + " chainGridParent"}
+                  style={{ ...style }}
                 >
                   <div
-                    className="grid gap-x-[5px] relative rounded-full w-full border-[#CDD8D3] border-[1px] h-[34px] text-[14px] items-center"
+                    className="grid gap-x-[5px] relative rounded-full w-full border-[#CDD8D3] border-[1px] min-h-[34px] text-[14px] items-center"
                     style={{
                       gridTemplateColumns: "auto 170px 185px 110px 140px",
                     }}
                   >
                     <div className="flex items-center gap-x-[5px] pl-[10px] ">
                       <Icon
-                        icon={`gtp:${AllChainsByKeys[key].urlKey}-logo-monochrome`}
+                        icon={`gtp:${
+                          AllChainsByKeys[item.key].urlKey
+                        }-logo-monochrome`}
                         className={`w-[22px] h-[24px] flex items-center justify-center text-[10px] mr-[5px]`}
                         style={{
-                          color: AllChainsByKeys[key].colors["dark"][0],
+                          color: AllChainsByKeys[item.key].colors["dark"][0],
                         }}
                       />
 
-                      <div>{AllChainsByKeys[key].label}</div>
+                      <div>{AllChainsByKeys[item.key].label}</div>
 
                       <div
                         className="flex items-center bg-[#344240] gap-x-1 h-[18px] text-[14px] rounded-full px-[5px] py-[3px]"
@@ -622,33 +646,35 @@ export default function ChainBreakdown({
                     <div className="flex items-center justify-end gap-x-[5px] ">
                       <div className="">
                         {formatNumber(
-                          data[key][selectedTimespan].revenue.total[dataIndex],
+                          data[item.key][selectedTimespan].revenue.total[
+                            dataIndex
+                          ],
                         )}
                       </div>
                       <div className="min-w-[22px] flex justify-center items-center ">
                         <div
-                          className={`w-[96px] flex items-center justify-center rounded-full bg-[${AllChainsByKeys[key].colors["dark"][0]}]`}
+                          className={`w-[96px] flex items-center justify-center rounded-full bg-[${
+                            AllChainsByKeys[item.key].colors["dark"][0]
+                          }]`}
                           style={{
                             width:
-                              data[key][selectedTimespan].revenue.total[
+                              data[item.key][selectedTimespan].revenue.total[
                                 dataIndex
                               ] /
                                 totalRevenue >
                               0.01
                                 ? (312 *
-                                    data[key][selectedTimespan].revenue.total[
-                                      dataIndex
-                                    ]) /
+                                    data[item.key][selectedTimespan].revenue
+                                      .total[dataIndex]) /
                                   totalRevenue
                                 : `${
                                     (2200 *
-                                      data[key][selectedTimespan].revenue.total[
-                                        dataIndex
-                                      ]) /
+                                      data[item.key][selectedTimespan].revenue
+                                        .total[dataIndex]) /
                                     totalRevenue
                                   }px`,
                             minWidth:
-                              data[key][selectedTimespan].revenue.total[
+                              data[item.key][selectedTimespan].revenue.total[
                                 dataIndex
                               ] /
                                 totalRevenue >
@@ -656,7 +682,7 @@ export default function ChainBreakdown({
                                 ? "22px"
                                 : `6px`,
                             height:
-                              data[key][selectedTimespan].revenue.total[
+                              data[item.key][selectedTimespan].revenue.total[
                                 dataIndex
                               ] /
                                 totalRevenue >
@@ -664,13 +690,12 @@ export default function ChainBreakdown({
                                 ? "full"
                                 : `${
                                     (2200 *
-                                      data[key][selectedTimespan].revenue.total[
-                                        dataIndex
-                                      ]) /
+                                      data[item.key][selectedTimespan].revenue
+                                        .total[dataIndex]) /
                                     totalRevenue
                                   }px`,
                             minHeight:
-                              data[key][selectedTimespan].revenue.total[
+                              data[item.key][selectedTimespan].revenue.total[
                                 dataIndex
                               ] /
                                 totalRevenue >
@@ -686,14 +711,41 @@ export default function ChainBreakdown({
                     <div className="flex items-center justify-center gap-x-[5px]">
                       <div className="min-w-[55px] flex justify-end">
                         {formatNumber(
-                          data[key][selectedTimespan].costs.total[dataIndex],
+                          data[item.key][selectedTimespan].costs.total[
+                            dataIndex
+                          ],
                         )}
                       </div>
                       <div className="flex justify-start w-[98px] gap-x-[1px] items-center text-[8px]">
-                        <div className="bg-[#FD0F2C] w-[78px] flex items-center justify-start font-bold rounded-l-full pl-[5px] py-[2px]">
+                        <div
+                          className="bg-[#FD0F2C] flex items-center justify-start font-bold rounded-l-full pl-[5px] py-[2px]"
+                          style={{
+                            width: `${
+                              97 *
+                              (data[item.key][selectedTimespan].costs
+                                .proof_costs[dataIndex] /
+                                data[item.key][selectedTimespan].costs.total[
+                                  dataIndex
+                                ])
+                            }px`,
+                          }}
+                        >
                           L1 Proof
                         </div>
-                        <div className="bg-[#FE5468] w-[19px] rounded-r-full flex items-center font-bold  justify-end  pr-[5px] py-[2px]">
+                        <div
+                          className="bg-[#FE5468]  rounded-r-full flex items-center font-bold  justify-end  pr-[5px] py-[2px]"
+                          style={{
+                            width: `${
+                              97 *
+                              (data[item.key][selectedTimespan].costs.da_costs[
+                                dataIndex
+                              ] /
+                                data[item.key][selectedTimespan].costs.total[
+                                  dataIndex
+                                ])
+                            }px`,
+                          }}
+                        >
                           DA
                         </div>
                       </div>
@@ -701,7 +753,9 @@ export default function ChainBreakdown({
                     <div className="flex items-center justify-end gap-x-[5px]">
                       <div>
                         {formatNumber(
-                          data[key][selectedTimespan].profit.total[dataIndex],
+                          data[item.key][selectedTimespan].profit.total[
+                            dataIndex
+                          ],
                         )}
                       </div>
                       <div className="w-[82px] rounded-full bg-cyan-600 flex justify-end items-center px-[5px] ">
@@ -709,18 +763,20 @@ export default function ChainBreakdown({
                       </div>
                     </div>
                     <div className="flex items-center justify-end pr-[35px] gap-x-[5px]">
-                      {formatBytes(data[key][selectedTimespan].size.total[0])}
+                      {formatBytes(
+                        data[item.key][selectedTimespan].size.total[0],
+                      )}
                     </div>
                     <div
                       className="absolute -right-2 hover:cursor-pointer"
                       onClick={() => {
-                        toggleOpenChain(key);
+                        toggleOpenChain(item.key);
                       }}
                     >
                       <div className="flex relative items-center justify-center w-[22px] h-[22px] bg-[#1F2726] rounded-full">
                         <div
                           className={`absolute w-[18px] h-[18px]  rounded-full border-[1px] ${
-                            openChain[key]
+                            openChain[item.key]
                               ? "border-[#CDD8D3]"
                               : "border-[#5A6462]"
                           }`}
@@ -728,7 +784,9 @@ export default function ChainBreakdown({
                         <Icon
                           icon="feather:chevron-down"
                           className={`w-4 h-4  ${
-                            openChain[key] ? "text-[#CDD8D3]" : "text-[#5A6462]"
+                            openChain[item.key]
+                              ? "text-[#CDD8D3]"
+                              : "text-[#5A6462]"
                           }`}
                         />
                       </div>
@@ -738,10 +796,10 @@ export default function ChainBreakdown({
                   {/*Chart Area \/ */}
                   <div
                     className={`w-full transition-height  ${
-                      openChain[key] ? "h-[249px]" : "h-[0px]"
+                      openChain[item.key] ? "h-[249px]" : "h-[0px]"
                     }`}
                   ></div>
-                </div>
+                </animated.div>
               );
             })}
           </div>

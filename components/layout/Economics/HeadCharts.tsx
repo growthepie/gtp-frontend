@@ -139,13 +139,14 @@ export default function EconHeadCharts({
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys["all_l2s"].colors["dark"][0]
-              }"></div>
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                  AllChainsByKeys["all_l2s"].colors["dark"][0]
+                }"></div>
                 <div class="tooltip-point-name">${name}</div>
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                percentage,
-                2,
-              )}%</div>
+                  percentage,
+                  2,
+                )}%</div>
               </div>
               
               <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -154,8 +155,9 @@ export default function EconHeadCharts({
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                 style="
                   width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${AllChainsByKeys["all_l2s"].colors["dark"][0]
-              };
+                  background-color: ${
+                    AllChainsByKeys["all_l2s"].colors["dark"][0]
+                  };
                 "></div>
               </div>`;
 
@@ -166,18 +168,21 @@ export default function EconHeadCharts({
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys["all_l2s"].colors["dark"][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+              AllChainsByKeys["all_l2s"].colors["dark"][0]
             }"></div>
             <div class="tooltip-point-name text-md">${name}</div>
             <div class="flex-1 text-right font-inter flex">
-                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-            }">${prefix}</div>
+                <div class="opacity-70 mr-0.5 ${
+                  !prefix && "hidden"
+                }">${prefix}</div>
                 ${parseFloat(displayValue).toLocaleString("en-GB", {
-              minimumFractionDigits: valuePrefix ? 2 : 0,
-              maximumFractionDigits: valuePrefix ? 2 : 0,
-            })}
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
+                  minimumFractionDigits: valuePrefix ? 2 : 0,
+                  maximumFractionDigits: valuePrefix ? 2 : 0,
+                })}
+                <div class="opacity-70 ml-0.5 ${
+                  !suffix && "hidden"
+                }">${suffix}</div>
             </div>
           </div>
           `;
@@ -196,14 +201,16 @@ export default function EconHeadCharts({
           <div class="tooltip-point-name text-md">Total</div>
           <div class="flex-1 text-right justify-end font-inter flex">
 
-              <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-          }">${prefix}</div>
+              <div class="opacity-70 mr-0.5 ${
+                !prefix && "hidden"
+              }">${prefix}</div>
               ${parseFloat(value).toLocaleString("en-GB", {
-            minimumFractionDigits: valuePrefix ? 2 : 0,
-            maximumFractionDigits: valuePrefix ? 2 : 0,
-          })}
-              <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-          }">${suffix}</div>
+                minimumFractionDigits: valuePrefix ? 2 : 0,
+                maximumFractionDigits: valuePrefix ? 2 : 0,
+              })}
+              <div class="opacity-70 ml-0.5 ${
+                !suffix && "hidden"
+              }">${suffix}</div>
           </div>
         </div>
         <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -273,7 +280,7 @@ export default function EconHeadCharts({
 
         return (
           <div
-            className="relative w-full h-[180px] pt-[10px] bg-[#1F2726] rounded-2xl overflow-hidden"
+            className="relative w-full h-[155px] xl:h-[180px] pt-[10px] bg-[#1F2726] rounded-2xl overflow-hidden"
             key={key}
           >
             <div className="absolute top-[12px] w-full flex justify-between pl-[15px] text-[16px] font-[650] ">
@@ -312,13 +319,11 @@ export default function EconHeadCharts({
                       stops: [
                         [
                           0,
-                          AllChainsByKeys["all_l2s"].colors["dark"][0] +
-                          "33",
+                          AllChainsByKeys["all_l2s"].colors["dark"][0] + "33",
                         ],
                         [
                           1,
-                          AllChainsByKeys["all_l2s"].colors["dark"][1] +
-                          "33",
+                          AllChainsByKeys["all_l2s"].colors["dark"][1] + "33",
                         ],
                       ],
                     },
@@ -565,7 +570,9 @@ export default function EconHeadCharts({
                   minorTickInterval={1000 * 60 * 60 * 24 * 1}
                   min={da_fees[key].daily.data[0][0]}
                   max={
-                    da_fees[key].daily.data[da_fees[key].daily.data.length - 1][0]
+                    da_fees[key].daily.data[
+                      da_fees[key].daily.data.length - 1
+                    ][0]
                   }
                 >
                   <XAxis.Title>X Axis</XAxis.Title>
@@ -606,9 +613,11 @@ export default function EconHeadCharts({
                           opacity: 1,
                           attributes: {
                             fill:
-                              AllChainsByKeys["all_l2s"]?.colors["dark"][0] + "99",
+                              AllChainsByKeys["all_l2s"]?.colors["dark"][0] +
+                              "99",
                             stroke:
-                              AllChainsByKeys["all_l2s"]?.colors["dark"][0] + "66",
+                              AllChainsByKeys["all_l2s"]?.colors["dark"][0] +
+                              "66",
                           },
                         },
                         brightness: 0.3,
@@ -626,22 +635,23 @@ export default function EconHeadCharts({
               <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
 
               <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
-                {
-                  new Date(
-                    da_fees[key].daily.data[0][0],
-                  ).toLocaleDateString("en-GB", {
+                {new Date(da_fees[key].daily.data[0][0]).toLocaleDateString(
+                  "en-GB",
+                  {
                     timeZone: "UTC",
                     month: "short",
                     // day: "numeric",
                     year: "numeric",
-                  })}
+                  },
+                )}
               </div>
             </div>
             <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute right-[9px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
-
               <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
                 {new Date(
-                  da_fees[key].daily.data[da_fees[key].daily.data.length - 1][0],
+                  da_fees[key].daily.data[
+                    da_fees[key].daily.data.length - 1
+                  ][0],
                 ).toLocaleDateString("en-GB", {
                   timeZone: "UTC",
                   month: "short",
@@ -654,7 +664,6 @@ export default function EconHeadCharts({
           </div>
         );
       })}
-
     </div>
   );
 }
