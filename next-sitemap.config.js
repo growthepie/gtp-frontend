@@ -14,6 +14,9 @@ const gtpMain = {
     "/blockspace/*",
     "/fees",
     "/helpers",
+    "/fees-explainer",
+    "/contracts",
+    "/economics",
   ],
   robotsTxtOptions: {
     exclude: ["/server-sitemap.xml"],
@@ -39,6 +42,9 @@ const gtpFees = {
     "/privacy-policy",
     "/server-sitemap.xml",
     "/helpers",
+    "/fees-explainer",
+    "/contracts",
+    "/economics",
   ],
   robotsTxtOptions: {
     exclude: ["/server-sitemap.xml"],

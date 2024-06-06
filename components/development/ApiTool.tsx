@@ -37,7 +37,6 @@ export default function ApiTool() {
     return apiRoot;
   }, [apiRoot])
 
-  console.log("currentApiRoot", currentApiRoot)
 
   return (
     <div className="">

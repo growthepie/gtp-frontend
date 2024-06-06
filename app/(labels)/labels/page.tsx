@@ -47,7 +47,6 @@ function labelsMiddleware(useSWRNext) {
     const extendedFetcher = (...args) => {
       return fetcher(...args).then((data) => {
         const labelsHelper = LabelsResponseHelper.fromResponse(data);
-        console.log(labelsHelper);
         return labelsHelper;
       })
     }
@@ -198,7 +197,6 @@ export default function LabelsPage() {
 
   const filteredLabelsData = useMemo<ParsedDatum[]>(() => {
     let rows = [];
-    console.log(quickLabelsData, fullLabelsData);
     if ((!quickLabelsData && !fullLabelsData) || !master)
       return rows;
 
