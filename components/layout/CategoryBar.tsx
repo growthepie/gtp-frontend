@@ -9,9 +9,11 @@ import {
 } from "react";
 import { Icon } from "@iconify/react";
 import { CategoryComparisonResponseData } from "@/types/api/CategoryComparisonResponse";
+import { MasterResponse } from "@/types/api/MasterResponse";
 
 const CategoryBar = ({
   data,
+  master,
   categories,
   querySubcategories,
   selectedCategory,
@@ -23,6 +25,7 @@ const CategoryBar = ({
   handleToggleSubcategory,
 }: {
   data: CategoryComparisonResponseData;
+  master: MasterResponse | undefined;
   categories: any;
   querySubcategories: Object | undefined;
   selectedCategory: string;
@@ -35,10 +38,36 @@ const CategoryBar = ({
 }) => {
   const [openSub, setOpenSub] = useState(querySubcategories ? true : false);
 
+  const [isCategoryHovered, setIsCategoryHovered] = useState<{
+    [key: string]: boolean;
+  }>(() => {
+    if (master) {
+      const initialIsCategoryHovered: { [key: string]: boolean } = {};
+      Object.keys(master.blockspace_categories.main_categories).forEach(
+        (key) => {
+          if (key !== "cross_chain") {
+            initialIsCategoryHovered[key] = false;
+          }
+        },
+      );
+      return initialIsCategoryHovered;
+    }
+
+    return {
+      native_transfers: false,
+      token_transfers: false,
+      nft_fi: false,
+      defi: false,
+      cefi: false,
+      utility: false,
+      scaling: false,
+      gaming: false,
+    };
+  });
   return (
     <Container>
       <div
-        className={`border-forest-400 dark:border-forest-800 flex border-[0.5px] mx-[2px] mt-[30px] rounded-2xl transition-all duration-[650] ease-in-out overflow-hidden bg-forest-1000 ${
+        className={`border-forest-400 dark:border-forest-800 flex border-[0.5px] mx-[2px] mt-[30px] rounded-2xl transition-all min-w-[950px] duration-[650] ease-in-out overflow-hidden bg-forest-1000 ${
           openSub ? "h-[170px]" : "h-[65px]"
         }`}
       >
@@ -58,15 +87,35 @@ const CategoryBar = ({
 
                 setSelectedCategory(category);
               }}
+              onMouseEnter={() => {
+                setIsCategoryHovered((prev) => ({
+                  ...prev,
+                  [category]: true,
+                }));
+              }}
+              onMouseLeave={() => {
+                setIsCategoryHovered((prev) => ({
+                  ...prev,
+                  [category]: false,
+                }));
+              }}
               style={{
                 transition: "min-width 0.65s",
+
                 minWidth:
-                  selectedCategory === category && openSub ? "500px" : "10px",
+                  selectedCategory === category && openSub
+                    ? "500px"
+                    : selectedCategory === category &&
+                      categories[category] === "Token Transfers"
+                    ? "125px"
+                    : "10px",
 
                 borderLeft: "0.5px dotted var(--dark-active-text, #CDD8D3)",
                 background:
                   selectedCategory === category
                     ? "#5A6462"
+                    : isCategoryHovered[category]
+                    ? "#FFFFFF0D"
                     : `linear-gradient(
                     90deg,
                     rgba(16, 20, 19, ${
@@ -84,31 +133,15 @@ const CategoryBar = ({
               }}
             >
               <div
-                className={`flex items-center p-[5px] h-[30px] overflow-hidden min-w-[120px] justify-center  ${
+                className={`flex items-center p-[5px] h-[30px] overflow-hidden min-w-[145px] justify-center  ${
                   selectedCategory === category
-                    ? "text-base font-bold"
+                    ? openSub
+                      ? "text-base font-bold"
+                      : "text-sm font-semibold"
                     : openSub
                     ? "text-sm font-semibold "
                     : "text-xs font-medium"
                 }`}
-                style={{
-                  background:
-                    selectedCategory === category ? "#5A6462" : "none",
-                  backgroundClip:
-                    selectedCategory === category ? "initial" : "text",
-                  WebkitBackgroundClip:
-                    selectedCategory === category ? "initial" : "text",
-                  WebkitTextFillColor:
-                    selectedCategory === category ? "inherit" : "transparent",
-                  backgroundImage:
-                    selectedCategory === category
-                      ? "none"
-                      : `radial-gradient(ellipse at center, rgba(255, 255, 255, 1) 0%, rgba(0, 0, 0, 1) 100%), linear-gradient(90deg, rgba(16, 20, 19, ${
-                          0.4 + (i / (Object.keys(categories).length - 1)) * 0.4
-                        }) 0%, #101413 15.10%, rgba(16, 20, 19, 0.00) 48.96%, #101413 86.98%, rgba(16, 20, 19, ${
-                          0.4 + (i / (Object.keys(categories).length - 1)) * 0.4
-                        }) 100%)`,
-                }}
               >
                 <h1>{categories[category]}</h1>
               </div>

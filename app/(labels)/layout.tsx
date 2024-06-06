@@ -3,24 +3,25 @@ import { Analytics } from "@vercel/analytics/react";
 import { Providers } from "../providers";
 import CookieConsent from "@/components/layout/CookieConsent";
 import { Raleway, Inter, Roboto_Mono } from "next/font/google";
-import Header from "@/components/layout/Header";
 import SidebarContainer from "@/components/layout/SidebarContainer";
-import Backgrounds from "@/components/layout/Backgrounds";
 import { Metadata } from "next";
-import Head from "./head";
 import { Graph } from "schema-dts";
-import Share from "@/components/Share";
-import Details from "@/components/Details";
 import BottomBanner from "@/components/BottomBanner";
+import Backgrounds from "@/components/layout/Backgrounds";
 import "../background.css";
+import Share from "@/components/Share";
+import Icon from "@/components/layout/Icon";
+import LabelsContainer from "@/components/layout/LabelsContainer";
+import Head from "../(layout)/head";
 import DeveloperTools from "@/components/development/DeveloperTools";
+import LabelsProviders from "./LabelsProviders";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",
   "@graph": [
     {
       "@type": "Organization",
-      "@id": "https://www.growthepie.xyz/#organization",
+      "@id": `https://www.growthepie.xyz/#organization`,
       name: "growthepie",
       url: "https://www.growthepie.xyz",
       logo: "https://www.growthepie.xyz/logo_full.png",
@@ -32,8 +33,8 @@ const jsonLd: Graph = {
     },
     {
       "@type": "WebSite",
-      "@id": "https://www.growthepie.xyz/#website",
-      url: "https://www.growthepie.xyz",
+      "@id": `https://www.growthepie.xyz/#website`,
+      url: `https://www.growthepie.xyz/`,
       name: "growthepie",
       description:
         "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
@@ -42,7 +43,7 @@ const jsonLd: Graph = {
         name: "growthepie",
         logo: {
           "@type": "ImageObject",
-          url: "https://www.growthepie.xyz/logo_full.png",
+          url: `https://www.growthepie.xyz/logo_full.png`,
         },
       },
     },
@@ -73,22 +74,44 @@ export const viewport = {
   themeColor: "dark",
 };
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://www.growthepie.xyz"),
+const gtpMain = {
   title: {
+    absolute:
+      "Growing Ethereum’s Ecosystem Together - Layer 2 User Base - growthepie",
     template: "%s - growthepie",
-    default: "Growing Ethereum’s Ecosystem Together - growthepie",
   },
   description:
     "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
+};
+
+const gtpLabels = {
+  title: {
+    absolute: "Ethereum Layer 2 Labels - growthepie",
+    template: "%s - growthepie",
+  },
+  description:
+    "Labels for Ethereum Layer 2 solutions - growthepie. A comprehensive list of labels for Ethereum Layer 2 solutions.",
+};
+const isLabels =
+  process.env.NEXT_PUBLIC_VERCEL_URL &&
+  process.env.NEXT_PUBLIC_VERCEL_URL.includes("labels.");
+
+const host = isLabels ? "labels.growthepie.xyz" : "www.growthepie.xyz";
+
+const title = isLabels ? gtpLabels.title : gtpMain.title;
+const description = isLabels ? gtpLabels.description : gtpMain.description;
+
+export const metadata: Metadata = {
+  metadataBase: new URL(`https://${host}`),
+  title,
+  description,
   openGraph: {
     title: "growthepie",
     description: "Growing Ethereum’s Ecosystem Together",
-    url: "https://www.growthepie.xyz",
-
+    url: `https://${host}`,
     images: [
       {
-        url: "https://www.growthepie.xyz/gtp_og.png",
+        url: `https://${host}/gtp_og.png`,
         width: 1200,
         height: 627,
         alt: "growthepie.xyz",
@@ -105,7 +128,7 @@ export const metadata: Metadata = {
     siteId: "1636391104689094656",
     creator: "@growthepie_eth",
     creatorId: "1636391104689094656",
-    images: ["https://www.growthepie.xyz/gtp_og.png"],
+    images: [`https://${host}/gtp_og.png`],
   },
   robots: {
     index: true,
@@ -146,58 +169,46 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const script = `
-  (function() {
-    // Set dark theme
-    document.documentElement.classList.add('dark');
-    // Optionally, set dark theme in local storage
-    localStorage.setItem('theme', 'dark');
-  })();
-`;
-
   return (
     <html
       lang="en"
-      className={`${raleway.variable} ${inter.variable} ${robotoMono.variable}`}
+      className={`${raleway.variable} ${inter.variable} ${robotoMono.variable} scroll-smooth`}
       suppressHydrationWarning
     >
       <Head />
-      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden overflow-y-scroll">
-        <script
-          dangerouslySetInnerHTML={{
-            __html: script,
-          }}
-        />
+      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden overflow-y-scroll relative min-h-screen">
+        <div className="background-container !fixed">
+          <div className="background-gradient-group">
+            <div className="background-gradient-yellow"></div>
+            <div className="background-gradient-green"></div>
+          </div>
+        </div>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <Providers>
+        <Providers forcedTheme="dark">
           <div className="flex h-fit w-full justify-center">
-            <div className="flex w-full max-w-[1680px] min-h-screen">
-              <SidebarContainer />
-              <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
-                <div className="w-full relative min-h-full">
-                  <div className="background-container">
-                    <div className="background-gradient-group">
-                      <div className="background-gradient-yellow"></div>
-                      <div className="background-gradient-green"></div>
-                    </div>
-                  </div>
-                  <Header />
-                  <main className="flex-1 w-full mx-auto z-10 mb-[165px]">
-                    {children}
-                    <div className="bg-blue-200 z-50"></div>
+            <div className="flex w-full min-h-screen">
+              <div className="flex flex-col flex-1 overflow-y-hidden z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
+                <div className="w-full mx-auto relative min-h-full">
+                  {/* <Header /> */}
+                  <main className="relative flex-1 w-full mx-auto z-10 min-h-screen select-none">
+                    <LabelsProviders>
+                      {children}
+                    </LabelsProviders>
                   </main>
-                  <BottomBanner />
                 </div>
               </div>
-              <div className="z-50 flex fixed bottom-[20px] w-full max-w-[1680px] justify-end pointer-events-none">
-                <div className="pr-[20px] md:pr-[50px] pointer-events-auto">
-                  <div className="relative flex gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#5A6462] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
-                    {/* <Details /> */}
-                    <Share />
-                  </div>
+              <div className="z-50 flex fixed inset-0 w-full justify-end pointer-events-none select-none">
+                <div className="flex flex-col justify-end w-full max-w-[650px] md:max-w-full mx-auto min-h-screen">
+                  <LabelsContainer className="flex w-full justify-end pb-[20px]">
+                    <div className="pointer-events-auto">
+                      <div className="relative flex gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#344240] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
+                        <Share />
+                      </div>
+                    </div>
+                  </LabelsContainer>
                 </div>
               </div>
             </div>
@@ -205,7 +216,6 @@ export default function RootLayout({
           <DeveloperTools />
           <CookieConsent />
         </Providers>
-        <Analytics />
       </body>
     </html>
   );

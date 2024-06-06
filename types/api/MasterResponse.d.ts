@@ -52,6 +52,7 @@ export interface ChainInfo {
     label: string;
     url: string;
   };
+  enable_contracts: boolean;
 }
 
 export interface Metrics {

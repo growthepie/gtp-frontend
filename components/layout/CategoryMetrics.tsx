@@ -1029,8 +1029,8 @@ export default function CategoryMetrics({
                         ? "translate-y-[calc(-100%+3px)]"
                         : "translate-y-0 "
                       : ["max", "180d"].includes(selectedTimespan)
-                      ? "translate-y-[calc(50%+3px)]"
-                      : "translate-y-0"
+                      ? "translate-y-[calc(40%+3px)]"
+                      : "-translate-y-[calc(40%+3px)]"
                   }`}
                 >
                   <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
@@ -1142,18 +1142,25 @@ export default function CategoryMetrics({
       </Container> */}
           <div id="content-container">
             {IS_PREVIEW || IS_DEVELOPMENT ? (
-              <CategoryBar
-                data={data}
-                categories={categories}
-                querySubcategories={querySubcategories}
-                selectedCategory={selectedCategory}
-                setSelectedCategory={setSelectedCategory}
-                checkSubcategory={checkSubcategory}
-                formatSubcategories={formatSubcategories}
-                checkAllSelected={checkAllSelected}
-                handleSelectAllSubcategories={handleSelectAllSubcategories}
-                handleToggleSubcategory={handleToggleSubcategory}
-              />
+              <div
+                className={`w-[100%] mx-auto  overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-2 ${
+                  isSidebarOpen ? "exl:overflow-hidden" : "cxl:overflow-hidden"
+                }`}
+              >
+                <CategoryBar
+                  data={data}
+                  master={master}
+                  categories={categories}
+                  querySubcategories={querySubcategories}
+                  selectedCategory={selectedCategory}
+                  setSelectedCategory={setSelectedCategory}
+                  checkSubcategory={checkSubcategory}
+                  formatSubcategories={formatSubcategories}
+                  checkAllSelected={checkAllSelected}
+                  handleSelectAllSubcategories={handleSelectAllSubcategories}
+                  handleToggleSubcategory={handleToggleSubcategory}
+                />
+              </div>
             ) : (
               <Container className="block w-full !pr-0 lg:!px-[40px] px-[100px] lg:mt-0 mt-6 lg:w-[100%] lg:mx-auto ">
                 <div
