@@ -87,8 +87,6 @@ export default async function Layout({
     icon: "",
   };
 
-  console.log(pageData);
-
   let jsonLd: null | WithContext<CompleteDataFeed> = null;
 
   // if (url) {
@@ -145,13 +143,14 @@ export default async function Layout({
   //     };
   //   }
   // }
+  /* Website Button */
 
   return (
     <>
-      <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
-        <div className="flex justify-between items-start w-full mb-[15px]">
-          <div className=" block md:flex items-center ">
-            <div className="flex items-center mb-[5px]">
+      <Container className="flex flex-col w-full pt-[65px] md:pt-[30px]" isPageRoot>
+        <div className="flex justify-between items-start w-full">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-y-[10px] md:gap-x-[15px] pb-[15px]">
+            <div className="flex items-center">
               <Image
                 src="/GTP-Fundamentals.svg"
                 alt="GTP Chain"
@@ -159,28 +158,30 @@ export default async function Layout({
                 height={36}
                 width={36}
               />
-              <Heading className="text-[36px] leading-snug " as="h1">
-                {pageData.title}
-              </Heading>
+              <div className="flex flex-col md:flex-row items-center gap-x-[15px]">
+                <Heading className="text-[36px] leading-[120%]" as="h1">
+                  {pageData.title}
+                </Heading>
+
+              </div>
             </div>
-            <div className=" md:p-0 md:mb-[5px] pl-[28px]">
+            <div className="pl-[38px] md:pl-0">
               <Link
                 href="https://fees.growthepie.xyz/"
-                className={`flex items-center justify-center ml-[15px] h-[37px] w-[207px] bg-gradient-to-b from-[#FE5468] to-[#FFDF27] rounded-full  ${
-                  params.metric === "transaction-costs" ? "flex" : "hidden"
-                }`}
                 rel="noreferrer"
                 target="_blank"
               >
-                <div className="flex items-center h-[35px] pl-[5px] w-[205px] gap-x-[8px] font-semibold bg-forest-50 dark:bg-forest-900 rounded-full transition-all duration-300">
-                  <div className="w-[24px] h-[24px] bg-[#151A19] rounded-full flex items-center justify-center">
-                    <Icon
-                      icon="gtp:detailed-fees"
-                      className="w-[15px] h-[15px]"
-                    />
-                  </div>
-                  <div className="transition-all duration-300 whitespace-nowrap overflow-hidden text-[14px] font-semibold">
-                    Detailed Fees Overview
+                <div className={`flex items-center justify-center p-[1px] bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)] rounded-full  ${params.metric === "transaction-costs" ? "flex" : "hidden"}`}>
+                  <div className="flex items-center pl-[5px] py-[4px] w-[205px] gap-x-[8px] font-semibold bg-forest-50 dark:bg-forest-900 rounded-full transition-all duration-300">
+                    <div className="w-[24px] h-[24px] bg-[#151A19] rounded-full flex items-center justify-center">
+                      <Icon
+                        icon="gtp:detailed-fees"
+                        className="w-[15px] h-[15px]"
+                      />
+                    </div>
+                    <div className="transition-all duration-300 whitespace-nowrap overflow-hidden text-[14px] font-semibold">
+                      Detailed Fees Overview
+                    </div>
                   </div>
                 </div>
               </Link>
@@ -188,11 +189,11 @@ export default async function Layout({
           </div>
         </div>
         <Subheading
-          className="text-[16px] mb-[30px] w-[99.5%] mx-auto"
+          className="text-[14px] pb-[15px]"
           iconContainerClassName="items-center mb-[15px] md:mb-[32px] relative"
         >
           {typeof pageData.description === "string" &&
-          pageData.description.includes("L2Beat.com.") ? (
+            pageData.description.includes("L2Beat.com.") ? (
             <div>
               <p>
                 {pageData.description.replace("L2Beat.com.", "")}
@@ -246,9 +247,11 @@ export default async function Layout({
           startOpen
         />
       </Container>
-      <Container className="mt-[60px]">
-        <StableInsights />
-      </Container>
+      {params.metric === "stablecoin-market-cap" && (
+        <Container className="pt-[60px]">
+          <StableInsights />
+        </Container>
+      )}
     </>
   );
 }

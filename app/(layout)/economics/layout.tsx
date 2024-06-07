@@ -8,7 +8,7 @@ export default async function Layout({
   children: React.ReactNode;
 }) {
   return (
-    <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
+    <Container className="flex flex-col w-full pt-[65px] md:pt-[45px]" isPageRoot>
       <div className="flex items-center mb-[5px]">
         <Image
           src="/GTP-Metrics-Economics.svg"
