@@ -12,6 +12,7 @@ import { notFound } from "next/navigation";
 import { track } from "@vercel/analytics/server";
 import Link from "next/link";
 import Icon from "@/components/layout/Icon";
+import StableInsights from "@/components/layout/StableInsights";
 
 type Props = {
   params: { metric: string };
@@ -85,6 +86,8 @@ export default async function Layout({
     description: "",
     icon: "",
   };
+
+  console.log(pageData);
 
   let jsonLd: null | WithContext<CompleteDataFeed> = null;
 
@@ -242,6 +245,9 @@ export default async function Layout({
           }
           startOpen
         />
+      </Container>
+      <Container className="mt-[60px]">
+        <StableInsights />
       </Container>
     </>
   );
