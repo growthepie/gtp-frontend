@@ -9,6 +9,7 @@ type HorizontalScrollContainerProps = {
   children: React.ReactNode;
   setHorizontalScrollAmount?: React.Dispatch<React.SetStateAction<number>>;
   style?: React.CSSProperties;
+  header?: React.ReactNode;
 };
 
 export default React.forwardRef(function LabelsHorizontalScrollContainer(
@@ -17,6 +18,7 @@ export default React.forwardRef(function LabelsHorizontalScrollContainer(
     children,
     setHorizontalScrollAmount,
     style,
+    header,
   }: HorizontalScrollContainerProps,
   ref: React.Ref<HTMLDivElement>
 ) {
@@ -147,10 +149,8 @@ export default React.forwardRef(function LabelsHorizontalScrollContainer(
     if (scrollerWidth === 0) {
       return '0px';
     }
-    return currentScrollPercentage * (scrollerWidth / 100) + 'px';
+    return `${currentScrollPercentage / 100 * (scrollerWidth)}px`;
   }, [currentScrollPercentage, scrollerWidth]);
-
-  // const [showScroller, setShowScroller] = useState(false);
 
   const showScroller = useMemo(() => {
     return contentWidth > contentSrollAreaWidth;
@@ -167,8 +167,8 @@ export default React.forwardRef(function LabelsHorizontalScrollContainer(
   };
 
   return (
-    <div className={`w-full px-0 overflow-x-hidden ${className}`} style={style} ref={ref}>
-      <div className={`pt-[10px] px-[20px] md:px-[64px] w-full flex justify-center ${showScroller ? 'block' : 'hidden'}`}>
+    <div className={`w-full px-0 overflow-x-clip ${className}`} style={style} ref={ref}>
+      <div className={`pt-[10px] px-[30px] md:px-[64px] w-full flex justify-center ${showScroller ? 'block' : 'hidden'}`}>
         <div className="w-full pr-[22px] p-0.5 bg-forest-200/50 dark:bg-black/50 rounded-full" onClick={handleBarClick}>
           <div className='w-full' ref={scrollerRef}>
             <div
@@ -183,17 +183,23 @@ export default React.forwardRef(function LabelsHorizontalScrollContainer(
           </div>
         </div>
       </div>
-      <div className="overflow-x-visible ">
-        <div className="pl-[20px] md:pl-[60px] relative overflow-x-scroll scrollbar-none max-w-full" ref={contentSrollAreaRef}>
-
-          <div className={showScroller ? "mr-[20px] md:mr-[60px]" : ''}>
-            <div className="min-w-fit w-full max-w-full pr-[30px] md:pr-[60px]" ref={contentRef} >
+      <div className="overflow-x-visible">
+        <div className="sticky h-[54px] top-[144px] z-[1]">
+          <div
+            className="absolute px-[30px] md:px-[60px]"
+            style={{ left: `${contentSrollAreaRef.current ? -contentSrollAreaRef.current.scrollLeft : 0}px` }}
+          >
+            {header}
+          </div>
+        </div>
+        <div className="pl-[30px] md:pl-[60px] relative overflow-x-scroll scrollbar-none max-w-full" ref={contentSrollAreaRef}>
+          <div className={showScroller ? "mr-[60px] md:mr-[60px]" : ''}>
+            <div className="min-w-fit w-full max-w-full pr-[60px] md:pr-[60px]" ref={contentRef} >
               <div>{children}</div>
             </div>
           </div>
         </div>
       </div>
-
-    </div>
+    </div >
   );
 });
