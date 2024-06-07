@@ -4,12 +4,8 @@ export interface HolderResponse {
 }
 
 export interface ChartDataBreakdown {
-  [key: string]: {
-    data: {
-      [index: number]: [number, number, number];
-    };
-    types: string[];
-  };
+  data: number[][];
+  types: string[];
 }
 
 export interface TableDataBreakdown {
