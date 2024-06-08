@@ -11,6 +11,7 @@ import {
   useCallback,
 } from "react";
 import { ChainBreakdownResponse } from "@/types/api/EconomicsResponse";
+import BreakdownCharts from "@/components/layout/Economics/BreakdownCharts";
 import { useLocalStorage } from "usehooks-ts";
 import { AllChainsByKeys } from "@/lib/chains";
 import { MasterResponse } from "@/types/api/MasterResponse";
@@ -270,19 +271,21 @@ export default function ChainBreakdown({
       : Object.keys(sortedChainData).reverse()
     ).map((key, index) => {
       let prevOpenCharts: number = 0;
-      (sortOrder
-        ? Object.keys(sortedChainData)
-        : Object.keys(sortedChainData).reverse()
-      ).map((localKey, localIndex) => {
-        if (localIndex >= index) return;
+      if (selectedTimespan !== "1d") {
+        (sortOrder
+          ? Object.keys(sortedChainData)
+          : Object.keys(sortedChainData).reverse()
+        ).map((localKey, localIndex) => {
+          if (localIndex >= index) return;
 
-        if (openChain[localKey]) {
-          prevOpenCharts += 1;
-        }
-      });
+          if (openChain[localKey]) {
+            prevOpenCharts += 1;
+          }
+        });
+      }
       return {
         y: index * 39 + prevOpenCharts * 249,
-        height: 39,
+        height: 39 + (openChain[key] ? 249 : 0),
         key: key, // Assuming `chain` is used as a key
         i: index,
       };
@@ -364,7 +367,11 @@ export default function ChainBreakdown({
                         ? "formkit:arrowdown"
                         : "formkit:arrowup"
                     }
-                    className="dark:text-forest-50 group-hover:text-forest-50/80 text-black w-[10px] h-[10px] "
+                    className={` w-[10px] h-[10px] ${
+                      metricSort === "chain"
+                        ? "text-forest-50 opacity-100"
+                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                    } `}
                   />
                 </div>
               </div>
@@ -409,7 +416,11 @@ export default function ChainBreakdown({
                         ? "formkit:arrowdown"
                         : "formkit:arrowup"
                     }
-                    className="dark:text-forest-50 group-hover:text-forest-50/80 text-black w-[10px] h-[10px] "
+                    className={` w-[10px] h-[10px] ${
+                      metricSort === "revenue"
+                        ? "text-forest-50 opacity-100"
+                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                    } `}
                   />
                 </div>
               </div>
@@ -439,12 +450,16 @@ export default function ChainBreakdown({
                         ? "formkit:arrowdown"
                         : "formkit:arrowup"
                     }
-                    className="dark:text-forest-50 group-hover:text-forest-50/80 text-black w-[10px] h-[10px] "
+                    className={` w-[10px] h-[10px] ${
+                      metricSort === "costs"
+                        ? "text-forest-50 opacity-100"
+                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                    } `}
                   />
                 </div>
               </div>
-              <div className="flex items-center gap-x-[1.5px] text-[8px] w-[110px]">
-                <div className="flex justify-center items-center rounded-l-full bg-[#344240] w-[54px] px-[5px] py-[2px] ">
+              <div className="flex items-center  gap-x-[1.5px] text-[8px] w-[110px] cursor-pointer">
+                <div className="flex justify-center group items-center rounded-l-full bg-[#344240] w-[54px] px-[5px] py-[2px] ">
                   <div
                     className=" group-hover:text-forest-50/80 "
                     onClick={() => {
@@ -467,12 +482,16 @@ export default function ChainBreakdown({
                           ? "formkit:arrowdown"
                           : "formkit:arrowup"
                       }
-                      className="dark:text-forest-50 group-hover:text-forest-50/80 text-black w-[8px] h-[8px] "
+                      className={` w-[10px] h-[10px] ${
+                        metricSort === "proof_costs"
+                          ? "text-forest-50 opacity-100"
+                          : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                      } `}
                     />
                   </div>
                 </div>
                 <div
-                  className="flex justify-center items-center rounded-r-full bg-[#344240] w-[54px] px-[5px] py-[2px] "
+                  className="flex justify-center group items-center rounded-r-full bg-[#344240] w-[54px] px-[5px] py-[2px] "
                   onClick={() => {
                     if (metricSort !== "da_costs") {
                       setSortOrder(true);
@@ -492,7 +511,11 @@ export default function ChainBreakdown({
                           ? "formkit:arrowdown"
                           : "formkit:arrowup"
                       }
-                      className="dark:text-forest-50 group-hover:text-forest-50/80 text-black w-[8px] h-[8px] "
+                      className={` w-[10px] h-[10px] ${
+                        metricSort === "da_costs"
+                          ? "text-forest-50 opacity-100"
+                          : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                      } `}
                     />
                   </div>
                 </div>
@@ -523,7 +546,11 @@ export default function ChainBreakdown({
                         ? "formkit:arrowdown"
                         : "formkit:arrowup"
                     }
-                    className="dark:text-forest-50 group-hover:text-forest-50/80 text-black w-[10px] h-[10px] "
+                    className={` w-[10px] h-[10px] ${
+                      metricSort === "profit"
+                        ? "text-forest-50 opacity-100"
+                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                    } `}
                   />
                 </div>
               </div>
@@ -547,7 +574,11 @@ export default function ChainBreakdown({
                       ? "formkit:arrowdown"
                       : "formkit:arrowup"
                   }
-                  className="dark:text-forest-50 group-hover:text-forest-50/80 text-black w-[8px] h-[8px] "
+                  className={` w-[10px] h-[10px] ${
+                    metricSort === "profit_margin"
+                      ? "text-forest-50 opacity-100"
+                      : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                  } `}
                 />
               </div>
             </div>
@@ -576,7 +607,11 @@ export default function ChainBreakdown({
                         ? "formkit:arrowdown"
                         : "formkit:arrowup"
                     }
-                    className="dark:text-forest-50 group-hover:text-forest-50/80 text-black w-[10px] h-[10px] "
+                    className={` w-[10px] h-[10px] ${
+                      metricSort === "size"
+                        ? "text-forest-50 opacity-100"
+                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                    } `}
                   />
                 </div>
               </div>
@@ -793,10 +828,18 @@ export default function ChainBreakdown({
 
                   {/*Chart Area \/ */}
                   <div
-                    className={`w-full transition-height  ${
-                      openChain[item.key] ? "h-[249px]" : "h-[0px]"
+                    className={`w-full transition-height overflow-hidden ${
+                      openChain[item.key] && selectedTimespan !== "1d"
+                        ? "h-[249px]"
+                        : "h-[0px]"
                     }`}
-                  ></div>
+                  >
+                    <BreakdownCharts
+                      data={data[item.key][selectedTimespan]}
+                      timespans={timespans}
+                      selectedTimespan={selectedTimespan}
+                    />
+                  </div>
                 </animated.div>
               );
             })}
