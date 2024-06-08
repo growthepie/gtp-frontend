@@ -14,12 +14,8 @@ import Search from "./Search";
 export default function Header() {
   return (
     <div className="fixed flex flex-col w-full z-50 items-center">
-      <div className="absolute h-[170px] w-full overflow-hidden"
-        style={{
-          maskImage: `linear-gradient(to bottom, white 0, white 150px, transparent 170px`,
-        }}
-      >
-        <div className="background-container !h-screen">
+      <div className="absolute h-[170px] w-full overflow-clip">
+        <div className="background-container !h-screen" style={{ backgroundPosition: "top", maskImage: `linear-gradient(to bottom, white 0, white 150px, transparent 170px`, }}>
           <div className="background-gradient-group">
             <div className="background-gradient-yellow"></div>
             <div className="background-gradient-green"></div>
