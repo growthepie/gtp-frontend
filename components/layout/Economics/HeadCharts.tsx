@@ -16,6 +16,8 @@ import {
   withHighcharts,
   AreaSeries,
 } from "react-jsx-highcharts";
+import { Splide, SplideSlide, SplideTrack } from "@splidejs/react-splide";
+import "@splidejs/splide/css";
 import { FeesBreakdown } from "@/types/api/EconomicsResponse";
 import { useLocalStorage } from "usehooks-ts";
 import { Icon } from "@iconify/react";
@@ -272,398 +274,480 @@ export default function EconHeadCharts({
     );
 
   return (
-    <div className="flex gap-x-[15px] w-full justify-between">
-      {Object.keys(da_fees).map((key, i) => {
-        let dataIndex = da_fees[key].daily.types.indexOf(
-          showUsd ? "usd" : "eth",
-        );
+    <div className="wrapper h-[145px] md:h-[183px] w-full">
+      <Splide
+        options={{
+          gap: "15px",
+          autoHeight: true,
+          width: "100%",
+          breakpoints: {
+            640: {
+              perPage: 1,
+            },
+            900: {
+              perPage: isSidebarOpen ? 1 : 2,
+            },
+            1100: {
+              perPage: 2,
+            },
+            1250: {
+              perPage: isSidebarOpen ? 2 : 3,
+            },
+            1450: {
+              perPage: 3,
+            },
+            1600: {
+              perPage: 3,
+            },
+            6000: {
+              perPage: 3,
+            },
+          },
+        }}
+        aria-labelledby={"economics-traction-title"}
+        hasTrack={false}
+        // onDrag={(e) => {
+        //   setIsDragging(true);
+        // }}
+        // onDragged={(e) => {
+        //   setIsDragging(false);
+        // }}
+      >
+        <SplideTrack>
+          {Object.keys(da_fees).map((key, i) => {
+            let dataIndex = da_fees[key].daily.types.indexOf(
+              showUsd ? "usd" : "eth",
+            );
 
-        return (
-          <div
-            className="relative w-full h-[155px] xl:h-[180px] pt-[10px] bg-[#1F2726] rounded-2xl overflow-hidden"
-            key={key}
-          >
-            <div className="absolute top-[12px] w-full flex justify-between pl-[15px] text-[16px] font-[650] ">
-              <div className="flex items-center gap-x-2 justify-center">
-                <div>{da_fees[key].metric_name}</div>
-                <div className="rounded-full w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] z-10">
-                  <Icon
-                    icon="feather:arrow-right"
-                    className="w-[11px] h-[11px]"
-                  />
+            return (
+              <SplideSlide key={key + i + "Splide"}>
+                <div
+                  className="relative w-full  h-[170px] pt-[10px] bg-[#1F2726] rounded-2xl "
+                  key={key}
+                >
+                  <div className="absolute top-[12px] w-full flex justify-between pl-[15px] text-[16px] font-[650] ">
+                    <div className="flex items-center gap-x-2 justify-center">
+                      <div>{da_fees[key].metric_name}</div>
+                      <div className="rounded-full w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] z-10">
+                        <Icon
+                          icon="feather:arrow-right"
+                          className="w-[11px] h-[11px]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <HighchartsProvider Highcharts={Highcharts}>
+                    <HighchartsChart
+                      containerProps={{
+                        style: { height: "100%", width: "100%" },
+                      }}
+                      plotOptions={{
+                        line: {
+                          lineWidth: 2,
+                        },
+                        area: {
+                          lineWidth: 2,
+                          // marker: {
+                          //   radius: 12,
+                          //   lineWidth: 4,
+                          // },
+                          fillOpacity: 1,
+                          fillColor: {
+                            linearGradient: {
+                              x1: 0,
+                              y1: 0,
+                              x2: 0,
+                              y2: 1,
+                            },
+                            stops: [
+                              [
+                                0,
+                                AllChainsByKeys["all_l2s"].colors["dark"][0] +
+                                  "33",
+                              ],
+                              [
+                                1,
+                                AllChainsByKeys["all_l2s"].colors["dark"][1] +
+                                  "33",
+                              ],
+                            ],
+                          },
+                          // shadow: {
+                          //   color:
+                          //     AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
+                          //   width: 10,
+                          // },
+                          color: {
+                            linearGradient: {
+                              x1: 0,
+                              y1: 0,
+                              x2: 1,
+                              y2: 0,
+                            },
+                            stops: [
+                              [
+                                0,
+                                AllChainsByKeys["all_l2s"]?.colors["dark"][0],
+                              ],
+                              // [0.33, AllChainsByKeys[series.name].colors[1]],
+                              [
+                                1,
+                                AllChainsByKeys["all_l2s"]?.colors["dark"][1],
+                              ],
+                            ],
+                          },
+                          // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
+                          // borderWidth: 1,
+                        },
+                        series: {
+                          zIndex: 10,
+                          animation: false,
+                          marker: {
+                            lineColor: "white",
+                            radius: 0,
+                            symbol: "circle",
+                          },
+                        },
+                      }}
+                    >
+                      <Chart
+                        backgroundColor={"transparent"}
+                        type="area"
+                        panning={{ enabled: true }}
+                        panKey="shift"
+                        zooming={{ type: undefined }}
+                        style={{ borderRadius: 15 }}
+                        animation={{ duration: 50 }}
+                        // margin={[0, 15, 0, 0]} // Use the array form for margin
+                        margin={[0, 15, 0, 0]}
+                        spacingBottom={0}
+                        spacingTop={40}
+                        spacingLeft={0}
+                        spacingRight={0}
+                        onRender={(chartData) => {
+                          const chart = chartData.target as any; // Cast chartData.target to any
+
+                          if (
+                            !chart ||
+                            !chart.series ||
+                            chart.series.length === 0
+                          )
+                            return;
+
+                          // check if gradient exists
+                          if (!document.getElementById("gradient0")) {
+                            // add def containing linear gradient with stop colors for the circle
+                            chart.renderer.definition({
+                              attributes: {
+                                id: "gradient0",
+                                x1: "0%",
+                                y1: "0%",
+                                x2: "0%",
+                                y2: "100%",
+                              },
+                              children: [
+                                {
+                                  tagName: "stop",
+                                  // offset: "0%",
+
+                                  attributes: {
+                                    id: "stop1",
+                                    offset: "0%",
+                                  },
+                                },
+                                {
+                                  tagName: "stop",
+                                  // offset: "100%",
+                                  attributes: {
+                                    id: "stop2",
+                                    offset: "100%",
+                                  },
+                                },
+                              ],
+                              tagName: "linearGradient",
+                              textContent: "",
+                            });
+                            const stop1 = document.getElementById("stop1");
+                            const stop2 = document.getElementById("stop2");
+                            stop1?.setAttribute(
+                              "stop-color",
+                              AllChainsByKeys["all_l2s"].colors["dark"][1],
+                            );
+                            stop1?.setAttribute("stop-opacity", "1");
+                            stop2?.setAttribute(
+                              "stop-color",
+                              AllChainsByKeys["all_l2s"].colors["dark"][0],
+                            );
+                            stop2?.setAttribute("stop-opacity", "0.33");
+                          }
+
+                          // only 1 chart so setting const for i to = 0
+                          const i = 0;
+                          // const chart: Highcharts.Chart = this;
+
+                          const lastPoint: Highcharts.Point =
+                            chart.series[0].points[
+                              chart.series[0].points.length - 1
+                            ];
+
+                          // check if i exists as a key in lastPointLines
+                          if (!lastPointLines[key]) {
+                            lastPointLines[key] = [];
+                          }
+
+                          if (
+                            lastPointLines[key] &&
+                            lastPointLines[key].length > 0
+                          ) {
+                            lastPointLines[key].forEach((line) => {
+                              line.destroy();
+                            });
+                            lastPointLines[key] = [];
+                          }
+
+                          // calculate the fraction that 15px is in relation to the pixel width of the chart
+                          const fraction = 15 / chart.chartWidth;
+
+                          // create a bordered line from the last point to the top of the chart's container
+                          lastPointLines[key][lastPointLines[key].length] =
+                            chart.renderer
+                              .createElement("line")
+                              .attr({
+                                x1: chart.chartWidth * (1 - fraction) + 0.00005,
+                                y1: lastPoint.plotY
+                                  ? lastPoint.plotY + chart.plotTop
+                                  : 0,
+                                x2: chart.chartWidth * (1 - fraction) - 0.00005,
+                                y2: chart.plotTop + 10,
+                                stroke: isSafariBrowser
+                                  ? AllChainsByKeys["all_l2s"].colors["dark"][1]
+                                  : "url('#gradient0')",
+                                "stroke-dasharray": "2",
+                                "stroke-width": 1,
+                                rendering: "crispEdges",
+                              })
+                              .add();
+
+                          // lastPointLines[key][lastPointLines[key].length] =
+                          //   chart.renderer
+                          //     .createElement("line")
+                          //     .attr({
+                          //       x1: chart.chartWidth * (1 - fraction) + 0.5,
+                          //       y1: chart.plotTop / 2 + 0.00005,
+                          //       x2: chart.chartWidth * (1 - fraction),
+                          //       y2: chart.plotTop / 2,
+                          //       stroke: AllChainsByKeys["all_l2s"].colors["dark"][1],
+                          //       "stroke-dasharray": 2,
+                          //       "stroke-width": 1,
+                          //       rendering: "crispEdges",
+                          //     })
+                          //     .add();
+
+                          // create a circle at the end of the line
+                          lastPointLines[key][lastPointLines[key].length] =
+                            chart.renderer
+                              .circle(
+                                chart.chartWidth * (1 - fraction),
+                                chart.plotTop / 3 + 7,
+                                3,
+                              )
+                              .attr({
+                                fill: AllChainsByKeys["all_l2s"].colors[
+                                  "dark"
+                                ][1],
+                                r: 4.5,
+                                zIndex: 9999,
+                                rendering: "crispEdges",
+                              })
+                              .add();
+                        }}
+                      />
+                      <Tooltip
+                        useHTML={true}
+                        shared={true}
+                        split={false}
+                        followPointer={true}
+                        followTouchMove={true}
+                        backgroundColor={"#2A3433EE"}
+                        padding={0}
+                        hideDelay={300}
+                        stickOnContact={true}
+                        shape="rect"
+                        borderRadius={17}
+                        borderWidth={0}
+                        outside={true}
+                        shadow={{
+                          color: "black",
+                          opacity: 0.015,
+                          offsetX: 2,
+                          offsetY: 2,
+                        }}
+                        style={{
+                          color: "rgb(215, 223, 222)",
+                        }}
+                        formatter={tooltipFormatter}
+                        // ensure tooltip is always above the chart
+                        positioner={tooltipPositioner}
+                        valuePrefix={showUsd ? "$" : ""}
+                        valueSuffix={showUsd ? "" : " Gwei"}
+                      />
+                      <XAxis
+                        title={undefined}
+                        type="datetime"
+                        labels={{
+                          useHTML: true,
+                          style: {
+                            color: COLORS.LABEL,
+                            fontSize: "10px",
+                            fontFamily: "var(--font-raleway), sans-serif",
+                            zIndex: 1000,
+                          },
+                          enabled: true,
+                          // formatter: (item) => {
+                          //   const date = new Date(item.value);
+                          //   const isMonthStart = date.getDate() === 1;
+                          //   const isYearStart = isMonthStart && date.getMonth() === 0;
+                          //   if (isYearStart) {
+                          //     return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
+                          //   } else {
+                          //     return `<span style="">${date.toLocaleDateString("en-GB", {
+                          //       month: "short",
+                          //     })}</span>`;
+                          //   }
+                          // },
+                        }}
+                        crosshair={{
+                          width: 0.5,
+                          color: COLORS.PLOT_LINE,
+                          snap: false,
+                        }}
+                        tickmarkPlacement="on"
+                        tickWidth={1}
+                        tickLength={20}
+                        ordinal={false}
+                        minorTicks={false}
+                        minorTickLength={2}
+                        minorTickWidth={2}
+                        minorGridLineWidth={0}
+                        minorTickInterval={1000 * 60 * 60 * 24 * 1}
+                        min={da_fees[key].daily.data[0][0]}
+                        max={
+                          da_fees[key].daily.data[
+                            da_fees[key].daily.data.length - 1
+                          ][0]
+                        }
+                      >
+                        <XAxis.Title>X Axis</XAxis.Title>
+                      </XAxis>
+                      <YAxis
+                        opposite={false}
+                        // showFirstLabel={true}
+                        // showLastLabel={true}
+                        type="linear"
+                        gridLineWidth={1}
+                        gridLineColor={"#5A64624F"}
+                        showFirstLabel={false}
+                        showLastLabel={false}
+                        labels={{
+                          align: "left",
+                          y: 11,
+                          x: 3,
+                          style: {
+                            fontSize: "10px",
+                            color: "#CDD8D34D",
+                          },
+                        }}
+                        min={0}
+                      >
+                        <YAxis.Title>Y Axis</YAxis.Title>
+                        <AreaSeries
+                          name={""}
+                          showInLegend={false}
+                          data={da_fees[key].daily.data.map((d: any) => [
+                            d[0],
+                            d[dataIndex],
+                          ])}
+                          states={{
+                            hover: {
+                              enabled: true,
+                              halo: {
+                                size: 5,
+                                opacity: 1,
+                                attributes: {
+                                  fill:
+                                    AllChainsByKeys["all_l2s"]?.colors[
+                                      "dark"
+                                    ][0] + "99",
+                                  stroke:
+                                    AllChainsByKeys["all_l2s"]?.colors[
+                                      "dark"
+                                    ][0] + "66",
+                                },
+                              },
+                              brightness: 0.3,
+                            },
+                            inactive: {
+                              enabled: true,
+                              opacity: 0.6,
+                            },
+                          }}
+                        ></AreaSeries>
+                      </YAxis>
+                    </HighchartsChart>
+                  </HighchartsProvider>
+                  <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
+                    <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
+
+                    <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
+                      {new Date(
+                        da_fees[key].daily.data[0][0],
+                      ).toLocaleDateString("en-GB", {
+                        timeZone: "UTC",
+                        month: "short",
+                        // day: "numeric",
+                        year: "numeric",
+                      })}
+                    </div>
+                  </div>
+                  <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute right-[9px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
+                    <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
+                      {new Date(
+                        da_fees[key].daily.data[
+                          da_fees[key].daily.data.length - 1
+                        ][0],
+                      ).toLocaleDateString("en-GB", {
+                        timeZone: "UTC",
+                        month: "short",
+                        // day: "numeric",
+                        year: "numeric",
+                      })}
+                    </div>
+                    <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
+                  </div>
                 </div>
-              </div>
-            </div>
-
-            <HighchartsProvider Highcharts={Highcharts}>
-              <HighchartsChart
-                containerProps={{ style: { height: "100%", width: "100%" } }}
-                plotOptions={{
-                  line: {
-                    lineWidth: 2,
-                  },
-                  area: {
-                    lineWidth: 2,
-                    // marker: {
-                    //   radius: 12,
-                    //   lineWidth: 4,
-                    // },
-                    fillOpacity: 1,
-                    fillColor: {
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 0,
-                        y2: 1,
-                      },
-                      stops: [
-                        [
-                          0,
-                          AllChainsByKeys["all_l2s"].colors["dark"][0] + "33",
-                        ],
-                        [
-                          1,
-                          AllChainsByKeys["all_l2s"].colors["dark"][1] + "33",
-                        ],
-                      ],
-                    },
-                    // shadow: {
-                    //   color:
-                    //     AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
-                    //   width: 10,
-                    // },
-                    color: {
-                      linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 1,
-                        y2: 0,
-                      },
-                      stops: [
-                        [0, AllChainsByKeys["all_l2s"]?.colors["dark"][0]],
-                        // [0.33, AllChainsByKeys[series.name].colors[1]],
-                        [1, AllChainsByKeys["all_l2s"]?.colors["dark"][1]],
-                      ],
-                    },
-                    // borderColor: AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
-                    // borderWidth: 1,
-                  },
-                  series: {
-                    zIndex: 10,
-                    animation: false,
-                    marker: {
-                      lineColor: "white",
-                      radius: 0,
-                      symbol: "circle",
-                    },
-                  },
-                }}
-              >
-                <Chart
-                  backgroundColor={"transparent"}
-                  type="area"
-                  panning={{ enabled: true }}
-                  panKey="shift"
-                  zooming={{ type: undefined }}
-                  style={{ borderRadius: 15 }}
-                  animation={{ duration: 50 }}
-                  // margin={[0, 15, 0, 0]} // Use the array form for margin
-                  margin={[0, 15, 0, 0]}
-                  spacingBottom={0}
-                  spacingTop={40}
-                  spacingLeft={0}
-                  spacingRight={0}
-                  onRender={(chartData) => {
-                    const chart = chartData.target as any; // Cast chartData.target to any
-
-                    if (!chart || !chart.series || chart.series.length === 0)
-                      return;
-
-                    // check if gradient exists
-                    if (!document.getElementById("gradient0")) {
-                      // add def containing linear gradient with stop colors for the circle
-                      chart.renderer.definition({
-                        attributes: {
-                          id: "gradient0",
-                          x1: "0%",
-                          y1: "0%",
-                          x2: "0%",
-                          y2: "100%",
-                        },
-                        children: [
-                          {
-                            tagName: "stop",
-                            // offset: "0%",
-
-                            attributes: {
-                              id: "stop1",
-                              offset: "0%",
-                            },
-                          },
-                          {
-                            tagName: "stop",
-                            // offset: "100%",
-                            attributes: {
-                              id: "stop2",
-                              offset: "100%",
-                            },
-                          },
-                        ],
-                        tagName: "linearGradient",
-                        textContent: "",
-                      });
-                      const stop1 = document.getElementById("stop1");
-                      const stop2 = document.getElementById("stop2");
-                      stop1?.setAttribute(
-                        "stop-color",
-                        AllChainsByKeys["all_l2s"].colors["dark"][1],
-                      );
-                      stop1?.setAttribute("stop-opacity", "1");
-                      stop2?.setAttribute(
-                        "stop-color",
-                        AllChainsByKeys["all_l2s"].colors["dark"][0],
-                      );
-                      stop2?.setAttribute("stop-opacity", "0.33");
-                    }
-
-                    // only 1 chart so setting const for i to = 0
-                    const i = 0;
-                    // const chart: Highcharts.Chart = this;
-
-                    const lastPoint: Highcharts.Point =
-                      chart.series[0].points[chart.series[0].points.length - 1];
-
-                    // check if i exists as a key in lastPointLines
-                    if (!lastPointLines[key]) {
-                      lastPointLines[key] = [];
-                    }
-
-                    if (lastPointLines[key] && lastPointLines[key].length > 0) {
-                      lastPointLines[key].forEach((line) => {
-                        line.destroy();
-                      });
-                      lastPointLines[key] = [];
-                    }
-
-                    // calculate the fraction that 15px is in relation to the pixel width of the chart
-                    const fraction = 15 / chart.chartWidth;
-
-                    // create a bordered line from the last point to the top of the chart's container
-                    lastPointLines[key][lastPointLines[key].length] =
-                      chart.renderer
-                        .createElement("line")
-                        .attr({
-                          x1: chart.chartWidth * (1 - fraction) + 0.00005,
-                          y1: lastPoint.plotY
-                            ? lastPoint.plotY + chart.plotTop
-                            : 0,
-                          x2: chart.chartWidth * (1 - fraction) - 0.00005,
-                          y2: chart.plotTop + 10,
-                          stroke: isSafariBrowser
-                            ? AllChainsByKeys["all_l2s"].colors["dark"][1]
-                            : "url('#gradient0')",
-                          "stroke-dasharray": "2",
-                          "stroke-width": 1,
-                          rendering: "crispEdges",
-                        })
-                        .add();
-
-                    // lastPointLines[key][lastPointLines[key].length] =
-                    //   chart.renderer
-                    //     .createElement("line")
-                    //     .attr({
-                    //       x1: chart.chartWidth * (1 - fraction) + 0.5,
-                    //       y1: chart.plotTop / 2 + 0.00005,
-                    //       x2: chart.chartWidth * (1 - fraction),
-                    //       y2: chart.plotTop / 2,
-                    //       stroke: AllChainsByKeys["all_l2s"].colors["dark"][1],
-                    //       "stroke-dasharray": 2,
-                    //       "stroke-width": 1,
-                    //       rendering: "crispEdges",
-                    //     })
-                    //     .add();
-
-                    // create a circle at the end of the line
-                    lastPointLines[key][lastPointLines[key].length] =
-                      chart.renderer
-                        .circle(
-                          chart.chartWidth * (1 - fraction),
-                          chart.plotTop / 3 + 7,
-                          3,
-                        )
-                        .attr({
-                          fill: AllChainsByKeys["all_l2s"].colors["dark"][1],
-                          r: 4.5,
-                          zIndex: 9999,
-                          rendering: "crispEdges",
-                        })
-                        .add();
-                  }}
-                />
-                <Tooltip
-                  useHTML={true}
-                  shared={true}
-                  split={false}
-                  followPointer={true}
-                  followTouchMove={true}
-                  backgroundColor={"#2A3433EE"}
-                  padding={0}
-                  hideDelay={300}
-                  stickOnContact={true}
-                  shape="rect"
-                  borderRadius={17}
-                  borderWidth={0}
-                  outside={true}
-                  shadow={{
-                    color: "black",
-                    opacity: 0.015,
-                    offsetX: 2,
-                    offsetY: 2,
-                  }}
-                  style={{
-                    color: "rgb(215, 223, 222)",
-                  }}
-                  formatter={tooltipFormatter}
-                  // ensure tooltip is always above the chart
-                  positioner={tooltipPositioner}
-                  valuePrefix={showUsd ? "$" : ""}
-                  valueSuffix={showUsd ? "" : " Gwei"}
-                />
-                <XAxis
-                  title={undefined}
-                  type="datetime"
-                  labels={{
-                    useHTML: true,
-                    style: {
-                      color: COLORS.LABEL,
-                      fontSize: "10px",
-                      fontFamily: "var(--font-raleway), sans-serif",
-                      zIndex: 1000,
-                    },
-                    enabled: true,
-                    // formatter: (item) => {
-                    //   const date = new Date(item.value);
-                    //   const isMonthStart = date.getDate() === 1;
-                    //   const isYearStart = isMonthStart && date.getMonth() === 0;
-                    //   if (isYearStart) {
-                    //     return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
-                    //   } else {
-                    //     return `<span style="">${date.toLocaleDateString("en-GB", {
-                    //       month: "short",
-                    //     })}</span>`;
-                    //   }
-                    // },
-                  }}
-                  crosshair={{
-                    width: 0.5,
-                    color: COLORS.PLOT_LINE,
-                    snap: false,
-                  }}
-                  tickmarkPlacement="on"
-                  tickWidth={1}
-                  tickLength={20}
-                  ordinal={false}
-                  minorTicks={false}
-                  minorTickLength={2}
-                  minorTickWidth={2}
-                  minorGridLineWidth={0}
-                  minorTickInterval={1000 * 60 * 60 * 24 * 1}
-                  min={da_fees[key].daily.data[0][0]}
-                  max={
-                    da_fees[key].daily.data[
-                      da_fees[key].daily.data.length - 1
-                    ][0]
-                  }
-                >
-                  <XAxis.Title>X Axis</XAxis.Title>
-                </XAxis>
-                <YAxis
-                  opposite={false}
-                  // showFirstLabel={true}
-                  // showLastLabel={true}
-                  type="linear"
-                  gridLineWidth={1}
-                  gridLineColor={"#5A64624F"}
-                  showFirstLabel={false}
-                  showLastLabel={false}
-                  labels={{
-                    align: "left",
-                    y: 11,
-                    x: 3,
-                    style: {
-                      fontSize: "10px",
-                      color: "#CDD8D34D",
-                    },
-                  }}
-                  min={0}
-                >
-                  <YAxis.Title>Y Axis</YAxis.Title>
-                  <AreaSeries
-                    name={""}
-                    showInLegend={false}
-                    data={da_fees[key].daily.data.map((d: any) => [
-                      d[0],
-                      d[dataIndex],
-                    ])}
-                    states={{
-                      hover: {
-                        enabled: true,
-                        halo: {
-                          size: 5,
-                          opacity: 1,
-                          attributes: {
-                            fill:
-                              AllChainsByKeys["all_l2s"]?.colors["dark"][0] +
-                              "99",
-                            stroke:
-                              AllChainsByKeys["all_l2s"]?.colors["dark"][0] +
-                              "66",
-                          },
-                        },
-                        brightness: 0.3,
-                      },
-                      inactive: {
-                        enabled: true,
-                        opacity: 0.6,
-                      },
-                    }}
-                  ></AreaSeries>
-                </YAxis>
-              </HighchartsChart>
-            </HighchartsProvider>
-            <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
-              <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
-
-              <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
-                {new Date(da_fees[key].daily.data[0][0]).toLocaleDateString(
-                  "en-GB",
-                  {
-                    timeZone: "UTC",
-                    month: "short",
-                    // day: "numeric",
-                    year: "numeric",
-                  },
-                )}
-              </div>
-            </div>
-            <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute right-[9px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
-              <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
-                {new Date(
-                  da_fees[key].daily.data[
-                    da_fees[key].daily.data.length - 1
-                  ][0],
-                ).toLocaleDateString("en-GB", {
-                  timeZone: "UTC",
-                  month: "short",
-                  // day: "numeric",
-                  year: "numeric",
-                })}
-              </div>
-              <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
-            </div>
-          </div>
-        );
-      })}
+              </SplideSlide>
+            );
+          })}
+        </SplideTrack>
+        <div className="splide__arrows relative  bottom-[78px]  md:-mt-0">
+          <button className="splide__arrow splide__arrow--prev rounded-full text-forest-400 bg-white dark:bg-forest-700 -ml-2 md:-ml-14 !w-5 md:!w-8 !h-5 md:!h-8">
+            <Icon
+              icon="feather:chevron-right"
+              className="w-3 h-3 md:w-6 md:h-6 z-50"
+            />
+          </button>
+          <button className="splide__arrow splide__arrow--next rounded-full text-forest-400 bg-white dark:bg-forest-700 -mr-2 md:-mr-14 !w-5 md:!w-8 !h-5 md:!h-8">
+            <Icon
+              icon="feather:chevron-right"
+              className="w-3 h-3 md:w-6 md:h-6 z-50"
+            />
+          </button>
+        </div>
+        <div className="splide__progress ">
+          <div className="splide__progress__bar" />
+        </div>
+      </Splide>
     </div>
   );
 }
