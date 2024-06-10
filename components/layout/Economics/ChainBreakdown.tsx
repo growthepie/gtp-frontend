@@ -136,15 +136,20 @@ export default function ChainBreakdown({
       "90d": {
         label: "90d",
         value: 90,
+        xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
+        xMax: Date.now(),
       },
       "180d": {
         label: "180d",
         value: 180,
+        xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
+        xMax: Date.now(),
       },
 
       max: {
         label: "Max",
         value: 0,
+        xMax: Date.now(),
       },
     };
   }, []);
@@ -301,6 +306,16 @@ export default function ChainBreakdown({
     },
   );
 
+  const minimumHeight = useMemo(() => {
+    let retHeight: number = 39;
+    Object.keys(data).map((key) => {
+      retHeight += 39;
+      retHeight += openChain[key] ? 249 : 0;
+    });
+
+    return retHeight;
+  }, [openChain, data]);
+
   return (
     <div>
       {sortedChainData && (
@@ -389,6 +404,18 @@ export default function ChainBreakdown({
               >
                 <div>Data Availability: </div>
                 <div>{allChainsDA[DAIndex]}</div>
+
+                <Icon
+                  icon={"feather:x-circle"}
+                  className={` dark:text-white text-black w-[10px] -ml-0.5 h-[10px] relative bottom-[0.5px] cursor-pointer ${
+                    DAIndex !== 0 ? "block" : "hidden"
+                  }`}
+                  onClick={(e) => {
+                    setDAIndex(0);
+                    setEnableDASort(false);
+                    e.stopPropagation();
+                  }}
+                />
               </div>
             </div>
             <div className="flex items-center justify-end ">
@@ -622,7 +649,7 @@ export default function ChainBreakdown({
           </div>
           <div
             className={`relative flex flex-col -mt-[5px] `}
-            style={{ minHeight: `500px` }}
+            style={{ minHeight: minimumHeight > 500 ? minimumHeight : 500 }}
           >
             {transitions((style, item) => {
               const dataIndex = data[item.key][
@@ -828,7 +855,7 @@ export default function ChainBreakdown({
 
                   {/*Chart Area \/ */}
                   <div
-                    className={`w-full transition-height overflow-hidden ${
+                    className={`w-full transition-height duration-300 overflow-hidden ${
                       openChain[item.key] && selectedTimespan !== "1d"
                         ? "h-[249px]"
                         : "h-[0px]"
@@ -836,6 +863,8 @@ export default function ChainBreakdown({
                   >
                     <BreakdownCharts
                       data={data[item.key][selectedTimespan]}
+                      dailyData={data[item.key]["daily"]}
+                      chain={item.key}
                       timespans={timespans}
                       selectedTimespan={selectedTimespan}
                     />

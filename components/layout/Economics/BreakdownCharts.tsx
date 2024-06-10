@@ -1,4 +1,4 @@
-import { DurationData } from "@/types/api/EconomicsResponse";
+import { DurationData, DailyData } from "@/types/api/EconomicsResponse";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import Highcharts from "highcharts/highstock";
 import { useLocalStorage } from "usehooks-ts";
@@ -31,10 +31,14 @@ const COLORS = {
 
 export default function BreakdownCharts({
   data,
+  dailyData,
+  chain,
   timespans,
   selectedTimespan,
 }: {
   data: DurationData;
+  dailyData: DailyData;
+  chain: string;
   timespans: Object;
   selectedTimespan: string;
 }) {
@@ -106,6 +110,7 @@ export default function BreakdownCharts({
         .map((point: any) => {
           const { series, y, percentage } = point;
           const { name } = series;
+
           if (selectedScale === "percentage")
             return `
                   <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
@@ -135,10 +140,14 @@ export default function BreakdownCharts({
           let displayValue = y;
 
           return `
-              <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#24E5DF"}"></div>
-                <div class="tooltip-point-name text-md">${name}</div>
-                <div class="flex-1 text-right font-inter flex">
+              <div class="flex w-full justify-between space-x-2 items-center font-medium mb-0.5">
+                <div class="flex gap-x-1 items-center">
+                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                    series.color
+                  }"></div>
+                  <div class="tooltip-point-name text-md">${name}</div>
+                </div>
+                <div class="flex-1 justify-end text-right font-inter flex">
                     <div class="opacity-70 mr-0.5 ${
                       !prefix && "hidden"
                     }">${prefix}</div>
@@ -252,7 +261,7 @@ export default function BreakdownCharts({
   }
 
   return (
-    <div className="w-full h-full ">
+    <div className="w-full h-full min-h-[240px] max-h-[240px] ">
       <HighchartsProvider Highcharts={Highcharts}>
         <HighchartsChart
           containerProps={{
@@ -390,6 +399,11 @@ export default function BreakdownCharts({
             minorTickWidth={2}
             minorGridLineWidth={0}
             minorTickInterval={1000 * 60 * 60 * 24 * 1}
+            min={
+              timespans[selectedTimespan].xMin
+                ? timespans[selectedTimespan].xMin
+                : undefined
+            }
           >
             <XAxis.Title>X Axis</XAxis.Title>
           </XAxis>
@@ -425,10 +439,13 @@ export default function BreakdownCharts({
           >
             <YAxis.Title>Y Axis</YAxis.Title>
             <LineSeries
-              name={""}
+              name={"Profit"}
               showInLegend={false}
-              data={undefined}
-              color={"#24E5DF"}
+              data={dailyData.profit.data.map((d: any) => [
+                d[0],
+                d[dailyData.profit.types.indexOf(showUsd ? "usd" : "eth")],
+              ])}
+              color={"#ECF87F"}
               fillColor={"transparent"}
               fillOpacity={1}
               states={{
@@ -438,8 +455,66 @@ export default function BreakdownCharts({
                     size: 5,
                     opacity: 1,
                     attributes: {
-                      fill: "#24E5DF" + "99",
-                      stroke: "#24E5DF" + "66",
+                      fill: "#ECF87F" + "99",
+                      stroke: "#ECF87F" + "66",
+                    },
+                  },
+                  brightness: 0.3,
+                },
+                inactive: {
+                  enabled: true,
+                  opacity: 0.6,
+                },
+              }}
+            ></LineSeries>
+            <LineSeries
+              name={"Revenue"}
+              showInLegend={false}
+              data={dailyData.revenue.data.map((d: any) => [
+                d[0],
+                d[dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")],
+              ])}
+              color={"#00D100"}
+              fillColor={"transparent"}
+              fillOpacity={1}
+              states={{
+                hover: {
+                  enabled: true,
+                  halo: {
+                    size: 5,
+                    opacity: 1,
+                    attributes: {
+                      fill: "#00D100" + "99",
+                      stroke: "#00D100" + "66",
+                    },
+                  },
+                  brightness: 0.3,
+                },
+                inactive: {
+                  enabled: true,
+                  opacity: 0.6,
+                },
+              }}
+            ></LineSeries>
+            <LineSeries
+              name={"Costs"}
+              showInLegend={false}
+              data={dailyData.costs.data.map((d: any) => [
+                d[0],
+                d[dailyData.costs.types.indexOf(showUsd ? "usd" : "eth")],
+              ])}
+              color={"#FD0F2C"}
+              fillColor={"transparent"}
+              fillOpacity={1}
+              states={{
+                hover: {
+                  enabled: true,
+                  halo: {
+                    size: 5,
+                    opacity: 1,
+                    attributes: {
+                      fill: "#FD0F2C" + "99",
+                      stroke: "#FD0F2C" + "66",
                     },
                   },
                   brightness: 0.3,

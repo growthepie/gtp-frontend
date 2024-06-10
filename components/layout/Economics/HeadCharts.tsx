@@ -273,6 +273,20 @@ export default function EconHeadCharts({
       [isMobile],
     );
 
+  function formatNumber(x: number) {
+    return (
+      <div className="flex gap-x-0.5 ">
+        <span>
+          {Intl.NumberFormat("en-GB", {
+            notation: "standard",
+            maximumFractionDigits: showUsd ? 0 : 2,
+            minimumFractionDigits: 0,
+          }).format(x)}
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div className="wrapper h-[145px] md:h-[183px] w-full">
       <Splide
@@ -322,10 +336,10 @@ export default function EconHeadCharts({
             return (
               <SplideSlide key={key + i + "Splide"}>
                 <div
-                  className="relative w-full  h-[170px] pt-[10px] bg-[#1F2726] rounded-2xl "
+                  className="relative w-full overflow-hidden h-[170px] pt-[10px] bg-[#1F2726] rounded-2xl "
                   key={key}
                 >
-                  <div className="absolute top-[12px] w-full flex justify-between pl-[15px] text-[16px] font-[650] ">
+                  <div className="absolute top-[11px] w-full flex justify-between pl-[15px] pr-[24px] text-[16px] font-[650] ">
                     <div className="flex items-center gap-x-2 justify-center">
                       <div>{da_fees[key].metric_name}</div>
                       <div className="rounded-full w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] z-10">
@@ -334,6 +348,14 @@ export default function EconHeadCharts({
                           className="w-[11px] h-[11px]"
                         />
                       </div>
+                    </div>
+                    <div className="flex ">
+                      <span>{valuePrefix}</span>
+                      {formatNumber(
+                        da_fees[key].daily.data[
+                          da_fees[key].daily.data.length - 1
+                        ][dataIndex],
+                      )}
                     </div>
                   </div>
 
@@ -519,7 +541,7 @@ export default function EconHeadCharts({
                                   ? lastPoint.plotY + chart.plotTop
                                   : 0,
                                 x2: chart.chartWidth * (1 - fraction) - 0.00005,
-                                y2: chart.plotTop + 10,
+                                y2: chart.plotTop + 15,
                                 stroke: isSafariBrowser
                                   ? AllChainsByKeys["all_l2s"].colors["dark"][1]
                                   : "url('#gradient0')",
@@ -549,7 +571,7 @@ export default function EconHeadCharts({
                             chart.renderer
                               .circle(
                                 chart.chartWidth * (1 - fraction),
-                                chart.plotTop / 3 + 7,
+                                chart.plotTop / 3 + 12,
                                 3,
                               )
                               .attr({
