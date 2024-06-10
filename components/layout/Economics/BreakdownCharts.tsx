@@ -12,6 +12,8 @@ import {
   Subtitle,
   Legend,
   LineSeries,
+  SplineSeries,
+  AreaSplineSeries,
   Tooltip,
   PlotBand,
   PlotLine,
@@ -52,6 +54,9 @@ export default function BreakdownCharts({
     // eth symbol
     return "Ξ";
   }, [showUsd]);
+
+  const data1 = [1, 2, 3, 4, 5];
+  const data2 = [2, 3, 2, 5, 6];
 
   const tooltipFormatter = useCallback(
     function (this: any) {
@@ -438,93 +443,42 @@ export default function BreakdownCharts({
             }}
           >
             <YAxis.Title>Y Axis</YAxis.Title>
-            <LineSeries
-              name={"Profit"}
-              showInLegend={false}
+            <SplineSeries
+              name="Revenue"
+              color={"#CDD8D399"}
+              data={dailyData.revenue.data.map((d: any) => [
+                d[0],
+                d[dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")],
+              ])}
+              lineWidth={2}
+            />
+
+            {/* Second line */}
+            <SplineSeries
+              name="Costs"
+              color={"#FE546899"}
+              data={dailyData.costs.data.map((d: any) => [
+                d[0],
+                d[dailyData.costs.types.indexOf(showUsd ? "usd" : "eth")],
+              ])}
+              lineWidth={1}
+            />
+
+            {/* Area between the lines */}
+            <AreaSplineSeries
+              name="Profit"
               data={dailyData.profit.data.map((d: any) => [
                 d[0],
                 d[dailyData.profit.types.indexOf(showUsd ? "usd" : "eth")],
               ])}
               color={"#ECF87F"}
-              fillColor={"transparent"}
-              fillOpacity={1}
-              states={{
-                hover: {
-                  enabled: true,
-                  halo: {
-                    size: 5,
-                    opacity: 1,
-                    attributes: {
-                      fill: "#ECF87F" + "99",
-                      stroke: "#ECF87F" + "66",
-                    },
-                  },
-                  brightness: 0.3,
-                },
-                inactive: {
-                  enabled: true,
-                  opacity: 0.6,
-                },
-              }}
-            ></LineSeries>
-            <LineSeries
-              name={"Revenue"}
+              fillColor={"#00D10099"}
+              enableMouseTracking={false}
               showInLegend={false}
-              data={dailyData.revenue.data.map((d: any) => [
-                d[0],
-                d[dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")],
-              ])}
-              color={"#00D100"}
-              fillColor={"transparent"}
-              fillOpacity={1}
-              states={{
-                hover: {
-                  enabled: true,
-                  halo: {
-                    size: 5,
-                    opacity: 1,
-                    attributes: {
-                      fill: "#00D100" + "99",
-                      stroke: "#00D100" + "66",
-                    },
-                  },
-                  brightness: 0.3,
-                },
-                inactive: {
-                  enabled: true,
-                  opacity: 0.6,
-                },
-              }}
-            ></LineSeries>
-            <LineSeries
-              name={"Costs"}
-              showInLegend={false}
-              data={dailyData.costs.data.map((d: any) => [
-                d[0],
-                d[dailyData.costs.types.indexOf(showUsd ? "usd" : "eth")],
-              ])}
-              color={"#FD0F2C"}
-              fillColor={"transparent"}
-              fillOpacity={1}
-              states={{
-                hover: {
-                  enabled: true,
-                  halo: {
-                    size: 5,
-                    opacity: 1,
-                    attributes: {
-                      fill: "#FD0F2C" + "99",
-                      stroke: "#FD0F2C" + "66",
-                    },
-                  },
-                  brightness: 0.3,
-                },
-                inactive: {
-                  enabled: true,
-                  opacity: 0.6,
-                },
-              }}
-            ></LineSeries>
+              color="rgba(0, 100, 0, 0.5)"
+              fillOpacity={0.5}
+              lineWidth={0}
+            />
           </YAxis>
         </HighchartsChart>
       </HighchartsProvider>
