@@ -553,12 +553,16 @@ export default function StableInsights({}: {}) {
                 </div>
               </div>
 
-              <div className="w-[42.5%]  ">
+              <div className="w-[42.5%] overflow-visible">
                 {" "}
                 <HighchartsProvider Highcharts={Highcharts}>
                   <HighchartsChart
                     containerProps={{
-                      style: { height: "100%", width: "100%" },
+                      style: {
+                        height: "100%",
+                        width: "100%",
+                        overflow: "visible",
+                      },
                     }}
                     plotOptions={{
                       line: {
@@ -639,7 +643,7 @@ export default function StableInsights({}: {}) {
                       animation={{
                         duration: 50,
                       }}
-                      marginBottom={25}
+                      marginBottom={40}
                       marginLeft={0}
                       marginRight={0}
                       marginTop={0}
@@ -683,7 +687,7 @@ export default function StableInsights({}: {}) {
                         allowOverlap: false,
                         reserveSpace: true,
                         overflow: "justify",
-                        y: 20,
+                        y: 30,
                         style: {
                           fontSize: "10px",
                           color: "#CDD8D3",
