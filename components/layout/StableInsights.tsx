@@ -81,24 +81,28 @@ export default function StableInsights({}: {}) {
     return {
       "30d": {
         label: "30 days",
+        shortLabel: "30d",
         value: 30,
         xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
       },
       "90d": {
         label: "90 days",
+        shortLabel: "90d",
         value: 90,
         xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
       },
       "180d": {
         label: "180 days",
+        shortLabel: "180d",
         value: 180,
         xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
       },
       max: {
         label: "Maximum",
+        shortLabel: "Max",
         value: 0,
       },
     };
@@ -399,13 +403,13 @@ export default function StableInsights({}: {}) {
                 }}
               />
             </div>
-            <div className="text-[#1F2726] text-[20px] font-bold">
+            <div className="text-[#1F2726] text-[15px] sm:text-[20px] font-bold">
               Top 10 Glo Dollar Stablecoin Holders
             </div>
           </div>
           <div
             className={`overflow-clip hover:!overflow-visible flex flex-col gap-y-[10px] px-[30px] ${
-              clicked ? "max-h-[1330px] lg:max-h-[739px]" : "max-h-[0px]"
+              clicked ? "max-h-[1400px] lg:max-h-[739px]" : "max-h-[0px]"
             }`}
             style={{
               transition: "all 0.5s",
@@ -426,7 +430,7 @@ export default function StableInsights({}: {}) {
                   currently.
                 </div>
               </div>
-              <div className="h-[65px] sm:h-[96px] w-[300px] md:w-[249px] self-start lg:self-end rounded-2xl bg-[#344240] flex flex-col px-[15px] py-[10px]">
+              <div className="h-[65px] max-w-[100%] md:h-[96px] w-[300px] md:w-[249px] self-start lg:self-end rounded-2xl bg-[#344240] flex flex-col px-[15px] py-[10px]">
                 <div className="flex justify-normal lg:gap-x-0 gap-x-[15px] lg:justify-between items-center ">
                   <Image
                     src={"/Glo_Dollar.svg"}
@@ -435,12 +439,12 @@ export default function StableInsights({}: {}) {
                     height={36}
                     width={36}
                   />
-                  <div className="sm:text-[36px] -ml-1 flex gap-x-0.5 font-bold">
+                  <div className="md:text-[36px] text-[16px] -ml-1 flex gap-x-0.5 font-bold">
                     <span>Glo</span>
                     <span>Dollar</span>
                   </div>
                 </div>
-                <div className="text-[12px] flex md:ml-0 ml-[30px] lg:items-center lg:justify-center ">
+                <div className="text-[10px] flex md:ml-0 ml-[30px] lg:items-center lg:justify-center ">
                   More about Glo Dollar on their website
                 </div>
               </div>
@@ -462,7 +466,9 @@ export default function StableInsights({}: {}) {
                       }}
                       key={timespan}
                     >
-                      {timespans[timespan].label}
+                      {isMobile
+                        ? timespans[timespan].shortLabel
+                        : timespans[timespan].label}
                     </TopRowChild>
                   );
                 })}
@@ -472,7 +478,11 @@ export default function StableInsights({}: {}) {
               <div className="flex flex-col gap-y-[15px] relative h-[493px] w-full lg:w-[57.5%] ">
                 <div
                   className="w-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px]"
-                  style={{ gridTemplateColumns: "auto 120px 50px" }}
+                  style={{
+                    gridTemplateColumns: `auto ${
+                      isMobile ? "100px" : "150px"
+                    } 50px`,
+                  }}
                 >
                   <div className="text-[14px] font-bold items-center ">
                     Holder
@@ -499,15 +509,19 @@ export default function StableInsights({}: {}) {
                   }
                   return (
                     <animated.div
-                      className="absolute w-full rounded-full border-[#5A6462] top-[30px] border-[1px] h-[34px]"
+                      className="absolute w-full rounded-full border-[#5A6462] top-[30px] border-[1px] h-[34px] "
                       style={{ ...style }}
                     >
                       <div
                         className="w-full h-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px] "
-                        style={{ gridTemplateColumns: "auto 100px 50px" }}
+                        style={{
+                          gridTemplateColumns: `auto ${
+                            isMobile ? "100px" : "150px"
+                          } 50px`,
+                        }}
                       >
-                        <div className="xl:text-[12px] text-[12px] lg:text-[10px] h-full gap-x-[5px] flex items-center ">
-                          <div className="sm:max-w-auto max-w-[150px] truncate">
+                        <div className="xl:text-[12px] text-[11px] lg:text-[10px] h-full gap-x-[5px] flex items-center ">
+                          <div className="sm:max-w-auto max-w-[100px] truncate">
                             {item.key}
                           </div>
                           {data.holders_table[item.key].website && (
@@ -530,11 +544,11 @@ export default function StableInsights({}: {}) {
                             </Link>
                           )}
                         </div>
-                        <div className="xl:text-[12px] text-[12px] lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
+                        <div className="xl:text-[12px]  text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
                           ${formatNumber(data.holders_table[item.key].balance)}
                         </div>
 
-                        <div className="flex text-[10px] h-[18px] justify-center items-center bg-[#344240]  rounded-full my-auto ml-1  py-[2px] px-[2px]">
+                        <div className="flex  text-[11px]  h-[18px] justify-center items-center bg-[#344240]  rounded-full my-auto ml-1  py-[2px] px-[2px]">
                           <div className="xl:text-[9px] text-[9px] lg:text-[8px] flex items-center justify-center gap-x-0.5">
                             %
                             {formatNumber(
@@ -549,18 +563,18 @@ export default function StableInsights({}: {}) {
                 <div className="absolute w-full rounded-full border-forest-200 border-dashed top-[420px] border-[1px] h-[34px]">
                   <div
                     className="w-full h-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px] "
-                    style={{ gridTemplateColumns: "auto 120px 50px" }}
+                    style={{ gridTemplateColumns: `auto 100px 50px` }}
                   >
-                    <div className="text-[12px] h-full flex grow items-center ">
+                    <div className="xl:text-[12px]  text-[11px] sm:leading-normal leading-tight  lg:text-[10px] h-full flex grow items-center ">
                       Top 10+ Holders Combined
                     </div>
                     {combinedHolders && (
-                      <div className="text-[12px] h-full flex items-center justify-end gap-x-0.5">
+                      <div className="xl:text-[12px]  text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
                         ${formatNumber(combinedHolders[0])}
                       </div>
                     )}
                     {combinedHolders && (
-                      <div className="flex text-[10px] h-[18px] justify-center items-center bg-[#344240] rounded-full my-auto ml-1 py-[2px] px-[2px]">
+                      <div className="flex xl:text-[12px]  text-[11px]  lg:text-[10px] h-[18px] justify-center items-center bg-[#344240] rounded-full my-auto ml-1 py-[2px] px-[2px]">
                         <div className="text-[9px] flex items-center justify-center gap-x-0.5">
                           %{formatNumber(combinedHolders[1] * 100)}
                         </div>
@@ -573,7 +587,7 @@ export default function StableInsights({}: {}) {
                     className="w-full h-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px] "
                     style={{ gridTemplateColumns: "auto 120px 50px" }}
                   >
-                    <div className="text-[12px] h-full flex grow items-center ">
+                    <div className="text-[12px] h-full flex grow items-center sm:leading-normal leading-tight ">
                       Total Glo Dollar Market Cap
                     </div>
                   </div>
