@@ -15,6 +15,7 @@ import { HolderResponse, TableDataBreakdown } from "@/types/api/Holders";
 import { useTransition, animated } from "@react-spring/web";
 import ShowLoading from "@/components/layout/ShowLoading";
 import Highcharts from "highcharts/highstock";
+import Link from "next/link";
 import {
   HighchartsProvider,
   HighchartsChart,
@@ -403,14 +404,15 @@ export default function StableInsights({}: {}) {
             </div>
           </div>
           <div
-            className="overflow-clip hover:!overflow-visible flex flex-col gap-y-[10px] px-[30px]"
+            className={`overflow-clip hover:!overflow-visible flex flex-col gap-y-[10px] px-[30px] ${
+              clicked ? "max-h-[1330px] lg:max-h-[739px]" : "max-h-[0px]"
+            }`}
             style={{
-              maxHeight: `${clicked ? "739px" : "0px"}`,
-              transition: "all 0.4s",
+              transition: "all 0.5s",
             }}
           >
-            <div className="flex lg:flex-row md:flex-col w-full justify-between px-[10px]">
-              <div className="flex flex-col gap-y-[5px] max-w-[520px] xl:max-w-[690px]">
+            <div className="flex lg:flex-row lg:gap-y-0 gap-y-[10px] flex-col  w-full lg:justify-between px-[10px]">
+              <div className="flex flex-col gap-y-[5px] lg:max-w-[520px] xl:max-w-[690px]">
                 <div className="pt-[5px] w-full ">
                   Glo Dollar is a fiat-backed stablecoin that funds public
                   goods. With Glo Dollar, you can help fund public goods and
@@ -424,8 +426,8 @@ export default function StableInsights({}: {}) {
                   currently.
                 </div>
               </div>
-              <div className="h-[96px] w-[249px] self-end rounded-2xl bg-[#344240] flex flex-col px-[15px] py-[10px]">
-                <div className="flex justify-between items-center ">
+              <div className="h-[96px] w-[300px] lg:w-[249px] self-start lg:self-end rounded-2xl bg-[#344240] flex flex-col px-[15px] py-[10px]">
+                <div className="flex justify-normal lg:gap-x-0 gap-x-[15px] lg:justify-between items-center ">
                   <Image
                     src={"/Glo_Dollar.svg"}
                     alt={"Glo Dollar Icon"}
@@ -438,7 +440,7 @@ export default function StableInsights({}: {}) {
                     <span>Dollar</span>
                   </div>
                 </div>
-                <div className="text-[12px] flex items-center justify-center ">
+                <div className="text-[12px] flex lg:ml-0 ml-[50px] lg:items-center lg:justify-center ">
                   More about Glo Dollar on their website
                 </div>
               </div>
@@ -447,7 +449,10 @@ export default function StableInsights({}: {}) {
               <TopRowParent>
                 <TopRowChild isSelected={true}>By Wallet</TopRowChild>
               </TopRowParent>
-              <TopRowParent>
+              <div className="block lg:hidden w-[70%] mx-auto my-[10px]">
+                <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
+              </div>
+              <TopRowParent className="">
                 {Object.keys(timespans).map((timespan) => {
                   return (
                     <TopRowChild
@@ -463,8 +468,8 @@ export default function StableInsights({}: {}) {
                 })}
               </TopRowParent>
             </TopRowContainer>
-            <div className="flex w-full gap-x-[5px] ">
-              <div className="flex flex-col gap-y-[15px] relative h-[493px]  w-[57.5%] ">
+            <div className="flex lg:flex-row flex-col-reverse w-full lg:gap-y-0 gap-y-[15px] gap-x-[5px] ">
+              <div className="flex flex-col gap-y-[15px] relative h-[493px] w-full lg:w-[57.5%] ">
                 <div
                   className="w-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px]"
                   style={{ gridTemplateColumns: "auto 120px 50px" }}
@@ -488,6 +493,7 @@ export default function StableInsights({}: {}) {
                   </div>
                 </div>
                 {transitions((style, item) => {
+                  console.log(data.holders_table[item.key]);
                   if (item.i > 9) {
                     return;
                   }
@@ -498,17 +504,36 @@ export default function StableInsights({}: {}) {
                     >
                       <div
                         className="w-full h-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px] "
-                        style={{ gridTemplateColumns: "auto 120px 50px" }}
+                        style={{ gridTemplateColumns: "auto 100px 50px" }}
                       >
-                        <div className="text-[12px] h-full flex grow items-center ">
+                        <div className="xl:text-[12px] text-[12px] lg:text-[10px] h-full gap-x-[5px] flex items-center ">
                           {item.key}
+                          {data.holders_table[item.key].website && (
+                            <Link href={data.holders_table[item.key].website}>
+                              <Image
+                                src="/webvector.svg"
+                                alt="GTP Chain"
+                                className="object-contain w-[15px] h-[15px] "
+                                height={15}
+                                width={15}
+                              />
+                            </Link>
+                          )}
+                          {data.holders_table[item.key].twitter && (
+                            <Link href={data.holders_table[item.key].twitter}>
+                              <Icon
+                                icon="gtp:twitter"
+                                className="object-contain w-[15px] h-[15px] "
+                              />
+                            </Link>
+                          )}
                         </div>
-                        <div className="text-[12px] h-full flex items-center justify-end  gap-x-0.5">
+                        <div className="xl:text-[12px] text-[12px] lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
                           ${formatNumber(data.holders_table[item.key].balance)}
                         </div>
 
-                        <div className="flex text-[10px] h-[18px] justify-center items-center bg-[#344240] rounded-full my-auto ml-1  py-[2px] px-[2px]">
-                          <div className="text-[9px] flex items-center justify-center gap-x-0.5">
+                        <div className="flex text-[10px] h-[18px] justify-center items-center bg-[#344240]  rounded-full my-auto ml-1  py-[2px] px-[2px]">
+                          <div className="xl:text-[9px] text-[9px] lg:text-[8px] flex items-center justify-center gap-x-0.5">
                             %
                             {formatNumber(
                               data.holders_table[item.key].share * 100,
@@ -553,7 +578,7 @@ export default function StableInsights({}: {}) {
                 </div>
               </div>
 
-              <div className="w-[42.5%] overflow-visible">
+              <div className="w-full lg:w-[42.5%] overflow-visible">
                 {" "}
                 <HighchartsProvider Highcharts={Highcharts}>
                   <HighchartsChart
@@ -631,7 +656,7 @@ export default function StableInsights({}: {}) {
                       backgroundColor={"transparent"}
                       type="line"
                       panning={{
-                        enabled: true,
+                        enabled: false,
                       }}
                       panKey="shift"
                       zooming={{
@@ -643,7 +668,7 @@ export default function StableInsights({}: {}) {
                       animation={{
                         duration: 50,
                       }}
-                      marginBottom={40}
+                      marginBottom={38}
                       marginLeft={0}
                       marginRight={0}
                       marginTop={0}
