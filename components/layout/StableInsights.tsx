@@ -31,6 +31,11 @@ import {
   withHighcharts,
   AreaSeries,
 } from "react-jsx-highcharts";
+import {
+  AxisLabelsFormatterContextObject,
+  GradientColorStopObject,
+} from "highcharts/highstock";
+import { baseOptions } from "@/lib/chartUtils";
 import { AllChainsByKeys } from "@/lib/chains";
 import { useUIContext } from "@/contexts/UIContext";
 import { useLocalStorage } from "usehooks-ts";
@@ -340,6 +345,19 @@ export default function StableInsights({}: {}) {
     );
   }
 
+  const combinedHolders = useMemo(() => {
+    if (!data) return;
+
+    let retValue: [number, number] = [0, 0];
+
+    Object.keys(data.holders_table).map((key) => {
+      retValue[0] = retValue[0] + data.holders_table[key].balance;
+      retValue[1] = retValue[1] + data.holders_table[key].share;
+    });
+
+    return retValue;
+  }, [data, showUsd]);
+
   return (
     <>
       {(IS_DEVELOPMENT || IS_PREVIEW) && sortedTableData && data && (
@@ -446,7 +464,7 @@ export default function StableInsights({}: {}) {
               </TopRowParent>
             </TopRowContainer>
             <div className="flex w-full gap-x-[5px] ">
-              <div className="flex flex-col gap-y-[15px] relative h-[493px]  w-[60%] ">
+              <div className="flex flex-col gap-y-[15px] relative h-[493px]  w-[57.5%] ">
                 <div
                   className="w-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px]"
                   style={{ gridTemplateColumns: "auto 120px 50px" }}
@@ -454,32 +472,14 @@ export default function StableInsights({}: {}) {
                   <div className="text-[14px] font-bold items-center ">
                     Holder
                   </div>
-                  <div
-                    className="flex justify-end items-center text-[14px] font-bold cursor-pointer"
-                    onClick={() => {
-                      if (sortMetric === "balance") {
-                        setSortOrder(!sortOrder);
-                      } else {
-                        setSortMetric("balance");
-                      }
-                    }}
-                  >
+                  <div className="flex justify-end items-center text-[14px] font-bold cursor-pointer">
                     <div>Amount</div>{" "}
                     <Icon
                       icon={sortOrder ? "formkit:arrowdown" : "formkit:arrowup"}
                       className="dark:text-forest-50 group-hover:text-forest-50/80 text-black w-[10px] h-[10px] "
                     />
                   </div>
-                  <div
-                    className="flex text-[10px] justify-center items-center bg-[#344240] rounded-full py-[2px] px-[2px] cursor-pointer"
-                    onClick={() => {
-                      if (sortMetric === "share") {
-                        setSortOrder(!sortOrder);
-                      } else {
-                        setSortMetric("share");
-                      }
-                    }}
-                  >
+                  <div className="flex text-[10px] justify-center items-center bg-[#344240] rounded-full py-[2px] px-[2px] cursor-pointer">
                     <div>Share</div>
                     <Icon
                       icon={sortOrder ? "formkit:arrowdown" : "formkit:arrowup"}
@@ -527,6 +527,18 @@ export default function StableInsights({}: {}) {
                     <div className="text-[12px] h-full flex grow items-center ">
                       Top 10+ Holders Combined
                     </div>
+                    {combinedHolders && (
+                      <div className="text-[12px] h-full flex items-center justify-end gap-x-0.5">
+                        ${formatNumber(combinedHolders[0])}
+                      </div>
+                    )}
+                    {combinedHolders && (
+                      <div className="flex text-[10px] h-[18px] justify-center items-center bg-[#344240] rounded-full my-auto ml-1 py-[2px] px-[2px]">
+                        <div className="text-[9px] flex items-center justify-center gap-x-0.5">
+                          %{formatNumber(combinedHolders[1] * 100)}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="absolute w-full rounded-full border-forest-100 top-[459px] bg-[#5A6462] border-[1px] h-[34px]">
@@ -541,12 +553,16 @@ export default function StableInsights({}: {}) {
                 </div>
               </div>
 
-              <div className="w-[40%] ">
+              <div className="w-[42.5%] overflow-visible">
                 {" "}
                 <HighchartsProvider Highcharts={Highcharts}>
                   <HighchartsChart
                     containerProps={{
-                      style: { height: "100%", width: "100%" },
+                      style: {
+                        height: "100%",
+                        width: "100%",
+                        overflow: "visible",
+                      },
                     }}
                     plotOptions={{
                       line: {
@@ -627,7 +643,7 @@ export default function StableInsights({}: {}) {
                       animation={{
                         duration: 50,
                       }}
-                      marginBottom={1}
+                      marginBottom={40}
                       marginLeft={0}
                       marginRight={0}
                       marginTop={0}
@@ -662,16 +678,65 @@ export default function StableInsights({}: {}) {
                       valueSuffix={""}
                     />
                     <XAxis
+                      {...baseOptions.xAxis}
                       title={undefined}
                       type="datetime"
                       labels={{
                         useHTML: true,
+                        align: undefined,
+                        allowOverlap: false,
+                        reserveSpace: true,
+                        overflow: "justify",
+                        y: 30,
                         style: {
-                          color: COLORS.LABEL,
                           fontSize: "10px",
-                          fontFamily: "var(--font-raleway), sans-serif",
-                          zIndex: 1000,
+                          color: "#CDD8D3",
                         },
+                        formatter: function (
+                          this: AxisLabelsFormatterContextObject,
+                        ) {
+                          if (
+                            timespans[selectedTimespan].xMax -
+                              timespans[selectedTimespan].xMin <=
+                            40 * 24 * 3600 * 1000
+                          ) {
+                            let isBeginningOfWeek =
+                              new Date(this.value).getUTCDay() === 1;
+                            let showMonth =
+                              this.isFirst ||
+                              new Date(this.value).getUTCDate() === 1;
+
+                            return new Date(this.value).toLocaleDateString(
+                              "en-GB",
+                              {
+                                timeZone: "UTC",
+                                month: "short",
+                                day: "numeric",
+                                year: this.isFirst ? "numeric" : undefined,
+                              },
+                            );
+                          } else {
+                            // if Jan 1st, show year
+                            if (new Date(this.value).getUTCMonth() === 0) {
+                              return new Date(this.value).toLocaleDateString(
+                                "en-GB",
+                                {
+                                  timeZone: "UTC",
+                                  year: "numeric",
+                                },
+                              );
+                            }
+                            return new Date(this.value).toLocaleDateString(
+                              "en-GB",
+                              {
+                                timeZone: "UTC",
+                                month: "short",
+                                year: "numeric",
+                              },
+                            );
+                          }
+                        },
+
                         enabled: true,
                       }}
                       crosshair={{
@@ -687,7 +752,13 @@ export default function StableInsights({}: {}) {
                       minorTickLength={2}
                       minorTickWidth={2}
                       minorGridLineWidth={0}
-                      minorTickInterval={1000 * 60 * 60 * 24 * 1}
+                      minorTickInterval={
+                        timespans[selectedTimespan].xMax -
+                          timespans[selectedTimespan].xMin <=
+                        40 * 24 * 3600 * 1000
+                          ? 24 * 3600 * 1000
+                          : 30 * 24 * 3600 * 1000
+                      }
                       min={
                         timespans[selectedTimespan].value
                           ? data.chart.data[data.chart.data.length - 1][0] -
@@ -710,7 +781,7 @@ export default function StableInsights({}: {}) {
                       gridLineWidth={1}
                       gridLineColor={"#5A64624F"}
                       showFirstLabel={false}
-                      showLastLabel={false}
+                      showLastLabel={true}
                       labels={{
                         align: "left",
                         y: 11,
