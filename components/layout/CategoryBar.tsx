@@ -67,7 +67,7 @@ const CategoryBar = ({
   return (
     <Container>
       <div
-        className={`border-forest-400 dark:border-forest-800 flex border-[0.5px] mx-[2px] mt-[30px] rounded-2xl transition-all min-w-[950px] duration-[650] ease-in-out overflow-hidden bg-forest-1000 ${
+        className={`border-forest-400 dark:border-forest-800 flex border-[0.5px] mx-[2px] mt-[30px] rounded-2xl transition-all min-w-[950px] duration-[700ms] ease-in-out overflow-hidden bg-forest-1000 ${
           openSub ? "h-[170px]" : "h-[65px]"
         }`}
       >
@@ -75,7 +75,7 @@ const CategoryBar = ({
           categories[category] !== "Categories" ? (
             <div
               key={category}
-              className={`w-full relative hover:cursor-pointer overflow-hidden items-center transition-transform  duration-1000 justify-between flex flex-col border-forest-50 border-dotted border-l-[1px] pt-2 pb-0.5 text-[12px] font-semibold ${
+              className={`w-full relative hover:cursor-pointer overflow-hidden items-center transition-transform  duration-[700ms]  justify-between flex flex-col border-forest-50 border-dotted border-l-[1px] pt-2 pb-0.5 text-[12px] font-semibold ${
                 selectedCategory === category
                   ? "bg-[#5A6462]"
                   : "hover:bg-forest-500 dark:hover:bg-white/5"
@@ -100,11 +100,13 @@ const CategoryBar = ({
                 }));
               }}
               style={{
-                transition: "min-width 0.65s",
+                transition: "min-width .7s",
 
                 minWidth:
                   selectedCategory === category && openSub
-                    ? "500px"
+                    ? Object.keys(data[category].subcategories.list).length > 7
+                      ? "650px"
+                      : "500px"
                     : selectedCategory === category &&
                       categories[category] === "Token Transfers"
                     ? "125px"
@@ -143,13 +145,15 @@ const CategoryBar = ({
                     : "text-xs font-medium"
                 }`}
               >
-                <h1>{categories[category]}</h1>
+                <h1 className="text-[14px]">{categories[category]}</h1>
               </div>
               <div
-                className={`z-10 min-w-[490px] basis-0 absolute top-[40px] min-h-[90px] content-center leading-tight  ${
+                className={`z-10  basis-0 absolute top-[40px] min-h-[90px] content-center leading-tight  ${
                   selectedCategory === category && openSub
                     ? "flex flex-wrap items-center justify-center gap-y-[5px] gap-x-[5px]"
                     : "hidden"
+                } ${
+                  category === "utility" ? "min-w-[640px]" : "min-w-[490px]"
                 }`}
               >
                 {category !== "unlabeled" && category !== "native_transfers" ? (
@@ -163,11 +167,13 @@ const CategoryBar = ({
                       e.stopPropagation();
                     }}
                   >
-                    <div className="mr-2">Select All Subcategories</div>
-                    <div className="rounded-full bg-forest-900 mr-[1px]">
+                    <div className="mr-2 text-[10px]">
+                      Select All Subcategories
+                    </div>
+                    <div className="rounded-full flex items-center justify-center bg-forest-900 w-[15px] h-[15px]">
                       <Icon
                         icon="feather:check-circle"
-                        className={`w-[14px] h-[14px] ${
+                        className={`w-[13px] h-[13px] ${
                           checkAllSelected(category)
                             ? "opacity-100"
                             : "opacity-0"
@@ -190,13 +196,13 @@ const CategoryBar = ({
                         e.stopPropagation();
                       }}
                     >
-                      <div className="mr-2">
+                      <div className="mr-2 text-[10px]">
                         {formatSubcategories(subcategory)}
                       </div>
-                      <div className="rounded-full bg-forest-900">
+                      <div className="rounded-full flex items-center justify-center bg-forest-900 w-[15px] h-[15px]">
                         <Icon
                           icon="feather:check-circle"
-                          className={`w-[14px] h-[14px]  ${
+                          className={`w-[13px] h-[13px]  ${
                             checkSubcategory(category, subcategory)
                               ? "opacity-100"
                               : "opacity-0"

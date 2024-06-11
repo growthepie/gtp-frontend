@@ -12,7 +12,7 @@ import { track } from "@vercel/analytics";
 
 export default function Header() {
   return (
-    <header className="flex justify-between space-x-0 xl:space-x-6 items-start max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[50px] md:pt-[50px]">
+    <header className="flex justify-between space-x-0 xl:space-x-6 items-start max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[50px] md:pt-[52px]">
       <div className="flex justify-between items-center w-full">
         <div className="flex space-x-0 xl:space-x-6 w-full">
           {/*Banner/Notification Area */}
@@ -58,9 +58,9 @@ export default function Header() {
         </div>
       </div>
       {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
-      ["development", "preview"].includes(
-        process.env.NEXT_PUBLIC_VERCEL_ENV,
-      ) ? (
+        ["development", "preview"].includes(
+          process.env.NEXT_PUBLIC_VERCEL_ENV,
+        ) ? (
         <> </>
       ) : (
         <>{/* <SupportUsBanner /> */}</>

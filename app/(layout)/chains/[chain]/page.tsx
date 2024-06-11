@@ -436,7 +436,7 @@ const Chain = ({ params }: { params: any }) => {
           !usageError && usageValidating,
         ]}
       />
-      <Container className="flex w-full pt-[30px] md:pt-[45px]">
+      <Container className="flex w-full pt-[30px] md:pt-[30px]" isPageRoot>
         {master && chainFeeData && chainData && (
           <div className="flex flex-col w-full">
             <div id="chains-page-title" className="flex flex-col md:flex-row justify-between items-start w-full">

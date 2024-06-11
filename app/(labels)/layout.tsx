@@ -176,7 +176,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <Head />
-      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden overflow-y-scroll relative min-h-screen">
+      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-clip relative min-h-screen">
         <div className="background-container !fixed">
           <div className="background-gradient-group">
             <div className="background-gradient-yellow"></div>
@@ -189,26 +189,26 @@ export default function RootLayout({
         />
         <Providers forcedTheme="dark">
           <div className="flex h-fit w-full justify-center">
-            <div className="flex w-full min-h-screen">
-              <div className="flex flex-col flex-1 overflow-y-hidden z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
+            <div className="flex w-full min-h-screen overflow-y-visible">
+              <div className="flex flex-col flex-1 overflow-y-clip z-10 overflow-x-clip relative min-h-full bg-white dark:bg-inherit">
                 <div className="w-full mx-auto relative min-h-full">
                   {/* <Header /> */}
                   <main className="relative flex-1 w-full mx-auto z-10 min-h-screen select-none">
-                    <LabelsProviders>
-                      {children}
-                    </LabelsProviders>
+                    {/* <LabelsProviders> */}
+                    {children}
+                    {/* </LabelsProviders> */}
                   </main>
                 </div>
               </div>
               <div className="z-50 flex fixed inset-0 w-full justify-end pointer-events-none select-none">
                 <div className="flex flex-col justify-end w-full max-w-[650px] md:max-w-full mx-auto min-h-screen">
-                  <LabelsContainer className="flex w-full justify-end pb-[20px]">
+                  {/* <LabelsContainer className="flex w-full justify-end pb-[20px]">
                     <div className="pointer-events-auto">
                       <div className="relative flex gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#344240] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
                         <Share />
                       </div>
                     </div>
-                  </LabelsContainer>
+                  </LabelsContainer> */}
                 </div>
               </div>
             </div>

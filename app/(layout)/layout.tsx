@@ -178,14 +178,14 @@ export default function RootLayout({
               <SidebarContainer />
               <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
                 <div className="w-full relative min-h-full">
-                  <div className="background-container">
+                  <div className="background-container !fixed">
                     <div className="background-gradient-group">
                       <div className="background-gradient-yellow"></div>
                       <div className="background-gradient-green"></div>
                     </div>
                   </div>
                   <Header />
-                  <main className="flex-1 w-full mx-auto z-10 mb-[165px]">
+                  <main className="flex-1 w-full mx-auto z-10 pb-[165px]">
                     {children}
                     <div className="bg-blue-200 z-50"></div>
                   </main>
