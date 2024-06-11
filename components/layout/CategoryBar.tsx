@@ -67,7 +67,7 @@ const CategoryBar = ({
   return (
     <Container>
       <div
-        className={`border-forest-400 dark:border-forest-800 flex border-[0.5px] mx-[2px] mt-[30px] rounded-2xl transition-all min-w-[950px] duration-[750ms] ease-in-out overflow-hidden bg-forest-1000 ${
+        className={`border-forest-400 dark:border-forest-800 flex border-[0.5px] mx-[2px] mt-[30px] rounded-2xl transition-all min-w-[950px] duration-[700ms] ease-in-out overflow-hidden bg-forest-1000 ${
           openSub ? "h-[170px]" : "h-[65px]"
         }`}
       >
@@ -75,7 +75,7 @@ const CategoryBar = ({
           categories[category] !== "Categories" ? (
             <div
               key={category}
-              className={`w-full relative hover:cursor-pointer overflow-hidden items-center transition-transform  duration-[750ms]  justify-between flex flex-col border-forest-50 border-dotted border-l-[1px] pt-2 pb-0.5 text-[12px] font-semibold ${
+              className={`w-full relative hover:cursor-pointer overflow-hidden items-center transition-transform  duration-[700ms]  justify-between flex flex-col border-forest-50 border-dotted border-l-[1px] pt-2 pb-0.5 text-[12px] font-semibold ${
                 selectedCategory === category
                   ? "bg-[#5A6462]"
                   : "hover:bg-forest-500 dark:hover:bg-white/5"
@@ -100,11 +100,13 @@ const CategoryBar = ({
                 }));
               }}
               style={{
-                transition: "min-width .75s",
+                transition: "min-width .7s",
 
                 minWidth:
                   selectedCategory === category && openSub
-                    ? "500px"
+                    ? Object.keys(data[category].subcategories.list).length > 7
+                      ? "650px"
+                      : "500px"
                     : selectedCategory === category &&
                       categories[category] === "Token Transfers"
                     ? "125px"
@@ -146,10 +148,12 @@ const CategoryBar = ({
                 <h1 className="text-[14px]">{categories[category]}</h1>
               </div>
               <div
-                className={`z-10 min-w-[490px] basis-0 absolute top-[40px] min-h-[90px] content-center leading-tight  ${
+                className={`z-10  basis-0 absolute top-[40px] min-h-[90px] content-center leading-tight  ${
                   selectedCategory === category && openSub
                     ? "flex flex-wrap items-center justify-center gap-y-[5px] gap-x-[5px]"
                     : "hidden"
+                } ${
+                  category === "utility" ? "min-w-[640px]" : "min-w-[490px]"
                 }`}
               >
                 {category !== "unlabeled" && category !== "native_transfers" ? (
