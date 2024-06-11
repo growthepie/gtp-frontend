@@ -309,18 +309,18 @@ export default function StableInsights({}: {}) {
           if (pointX - tooltipWidth / 2 < plotLeft) {
             return {
               x: plotLeft,
-              y: -250,
+              y: 0,
             };
           }
           if (pointX + tooltipWidth / 2 > plotLeft + plotWidth) {
             return {
               x: plotLeft + plotWidth - tooltipWidth,
-              y: -250,
+              y: 0,
             };
           }
           return {
             x: pointX - tooltipWidth / 2,
-            y: -250,
+            y: 0,
           };
         }
 
@@ -413,7 +413,7 @@ export default function StableInsights({}: {}) {
           >
             <div className="flex lg:flex-row lg:gap-y-0 gap-y-[10px] flex-col  w-full lg:justify-between px-[10px]">
               <div className="flex flex-col gap-y-[5px] lg:max-w-[520px] xl:max-w-[690px]">
-                <div className="pt-[5px] w-full ">
+                <div className="pt-[5px] md:text-base text-[13px] w-full ">
                   Glo Dollar is a fiat-backed stablecoin that funds public
                   goods. With Glo Dollar, you can help fund public goods and
                   charitable causes just by holding a stablecoin. It&apos;s a
@@ -421,26 +421,26 @@ export default function StableInsights({}: {}) {
                   the top supporting Glo Dollar wallets currently.
                 </div>
 
-                <div className="pt-[5px] w-full">
+                <div className="pt-[5px] md:text-base text-[13px] w-full">
                   Check here which are the top supporting Glo Dollar wallets
                   currently.
                 </div>
               </div>
-              <div className="h-[96px] w-[300px] lg:w-[249px] self-start lg:self-end rounded-2xl bg-[#344240] flex flex-col px-[15px] py-[10px]">
+              <div className="h-[65px] sm:h-[96px] w-[300px] md:w-[249px] self-start lg:self-end rounded-2xl bg-[#344240] flex flex-col px-[15px] py-[10px]">
                 <div className="flex justify-normal lg:gap-x-0 gap-x-[15px] lg:justify-between items-center ">
                   <Image
                     src={"/Glo_Dollar.svg"}
                     alt={"Glo Dollar Icon"}
-                    className="w-[36px] h-[36px]"
+                    className="w-[18px] h-[18px]  md:w-[36px] md:h-[36px]"
                     height={36}
                     width={36}
                   />
-                  <div className="text-[36px] -ml-1 flex gap-x-0.5 font-bold">
+                  <div className="sm:text-[36px] -ml-1 flex gap-x-0.5 font-bold">
                     <span>Glo</span>
                     <span>Dollar</span>
                   </div>
                 </div>
-                <div className="text-[12px] flex lg:ml-0 ml-[50px] lg:items-center lg:justify-center ">
+                <div className="text-[12px] flex md:ml-0 ml-[30px] lg:items-center lg:justify-center ">
                   More about Glo Dollar on their website
                 </div>
               </div>
@@ -507,7 +507,9 @@ export default function StableInsights({}: {}) {
                         style={{ gridTemplateColumns: "auto 100px 50px" }}
                       >
                         <div className="xl:text-[12px] text-[12px] lg:text-[10px] h-full gap-x-[5px] flex items-center ">
-                          {item.key}
+                          <div className="sm:max-w-auto max-w-[150px] truncate">
+                            {item.key}
+                          </div>
                           {data.holders_table[item.key].website && (
                             <Link href={data.holders_table[item.key].website}>
                               <Image
@@ -653,6 +655,7 @@ export default function StableInsights({}: {}) {
                     }}
                   >
                     <Chart
+                      title={undefined}
                       backgroundColor={"transparent"}
                       type="line"
                       panning={{
