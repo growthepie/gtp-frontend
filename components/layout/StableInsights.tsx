@@ -474,8 +474,8 @@ export default function StableInsights({}: {}) {
                 })}
               </TopRowParent>
             </TopRowContainer>
-            <div className="flex lg:flex-row flex-col-reverse w-full lg:gap-y-0 gap-y-[15px] gap-x-[5px] ">
-              <div className="flex flex-col gap-y-[15px] relative h-[493px] w-full lg:w-[57.5%] ">
+            <div className="flex lg:flex-row flex-col-reverse w-full lg:gap-y-0 gap-y-[15px] gap-x-[5px]  overflow-scroll">
+              <div className="flex flex-col gap-y-[15px] relative h-[493px] w-full lg:w-[57.5%] min-w-[300px] ">
                 <div
                   className="w-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px]"
                   style={{
@@ -509,7 +509,7 @@ export default function StableInsights({}: {}) {
                   }
                   return (
                     <animated.div
-                      className="absolute w-full rounded-full border-[#5A6462] top-[30px] border-[1px] h-[34px] "
+                      className="absolute w-full rounded-full border-[#5A6462] top-[30px] border-[1px] h-[34px] min-w-[300px]"
                       style={{ ...style }}
                     >
                       <div

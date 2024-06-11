@@ -32,6 +32,8 @@ module.exports = {
         exl: "1330px",
         mdl: "1000px",
         xs: "480px",
+        "2xs": "420px",
+        "3xs": "340px",
       },
       colors: {
         ethereum: {
