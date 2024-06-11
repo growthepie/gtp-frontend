@@ -63,7 +63,7 @@ export default function Header() {
       </LabelsContainer> */}
 
       </header>
-      <LabelsContainer className={`absolute top-[76px] w-full hidden md:block`}>
+      <LabelsContainer className={`absolute top-[76px] w-full hidden sm:block`}>
         <div className="flex p-[5px] items-center w-full rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000] gap-x-[15px]">
           <Link
             className="flex items-center bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
@@ -85,14 +85,14 @@ export default function Header() {
             </div>
           </div>
           <div
-            className="flex items-center bg-[#1F2726] gap-x-[10px] rounded-full py-[10px] px-[15px] gap font-medium"
+            className="flex items-center bg-[#1F2726] gap-x-[10px] rounded-full py-[10px] pl-[10px] pr-[0px] lg:pl-[15px] lg:pr-[15px] gap font-medium transition-all duration-300"
           // href="https://www.growthepie.xyz/"
           // target="_blank"
           >
             <div className="w-6 h-6">
               <SettingsIcon />
             </div>
-            <div>Settings</div>
+            <div className="max-w-0 lg:max-w-[100px] overflow-hidden transition-all duration-300">Settings</div>
           </div>
           <div
             className="flex items-center bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"

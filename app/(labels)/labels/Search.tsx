@@ -6,6 +6,7 @@ import { MasterURL } from '@/lib/urls';
 import { MasterResponse } from '@/types/api/MasterResponse';
 import { AllChainsByKeys, Get_SupportedChainKeys } from '@/lib/chains';
 import { useSessionStorage } from 'usehooks-ts';
+import useDragScroll from '@/hooks/useDragScroll';
 
 export default function Search() {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -51,7 +52,6 @@ export default function Search() {
     gas_fees_usd_change: [],
     daa: [],
     daa_change: [],
-
   });
 
 
@@ -61,6 +61,44 @@ export default function Search() {
       [key]: labelsFilters[key].includes(value) ? labelsFilters[key].filter(f => f !== value) : [...labelsFilters[key], value]
     });
   }, [labelsFilters, setLabelsFilters]);
+
+
+  const [search, setSearch] = useState<string>('');
+
+  const [labelsAutocomplete, setLabelsAutocomplete] = useSessionStorage<{
+    address: string[];
+    origin_key: string[];
+    name: string[];
+    owner_project: string[];
+    category: string[];
+    subcategory: string[];
+
+  }>('labelsAutocomplete', {
+    address: [],
+    origin_key: [],
+    name: [],
+    owner_project: [],
+    category: [],
+    subcategory: [],
+
+  });
+
+  // bold the search terms in the badges
+  const boldSearch = (text: string) => {
+    const searchLower = search.toLowerCase();
+    const textLower = text.toLowerCase();
+    const index = textLower.indexOf(searchLower);
+    if (index === -1) return text;
+    return (
+      <>
+        {text.substring(0, index)}
+        <span className="font-bold underline">{text.substring(index, index + search.length)}</span>
+        {text.substring(index + search.length)}
+      </>
+    );
+  };
+
+  const [labelsOwnerProjects, setLabelsOwnerProjects] = useSessionStorage<string[]>('labelsOwnerProjects', []);
 
 
 
@@ -83,6 +121,7 @@ export default function Search() {
         rightIcon="heroicons-solid:x-circle"
         rightIconColor="#FE5468"
         showLabel={isOpen}
+
       />
     ));
 
@@ -149,6 +188,39 @@ export default function Search() {
   }, [handleFilter, isOpen, labelsFilters.category, labelsFilters.name, labelsFilters.origin_key, labelsFilters.owner_project, labelsFilters.subcategory, master]);
 
 
+
+
+  useEffect(() => {
+    if (!master || labelsOwnerProjects.length === 0) return;
+
+    if (search.length === 0) {
+      setLabelsAutocomplete({
+        address: [],
+        name: [],
+        owner_project: [],
+        category: [],
+        subcategory: [],
+        origin_key: []
+      });
+      return;
+    }
+
+    const categoryAutocomplete = Object.keys(master.blockspace_categories.main_categories).filter(category => master.blockspace_categories.main_categories[category].toLowerCase().includes(search.toLowerCase()));
+    const subcategoryAutocomplete = Object.keys(master.blockspace_categories.sub_categories).filter(subcategory => master.blockspace_categories.sub_categories[subcategory].toLowerCase().includes(search.toLowerCase()));
+    const chainAutocomplete = Object.keys(master.chains).filter(chainKey => master.chains[chainKey].name.toLowerCase().includes(search.toLowerCase()));
+    const ownerProjectAutocomplete = labelsOwnerProjects.filter(ownerProject => ownerProject.toLowerCase().includes(search.toLowerCase()));
+
+    setLabelsAutocomplete({
+      address: [],
+      name: [],
+      owner_project: ownerProjectAutocomplete,
+      category: categoryAutocomplete,
+      subcategory: subcategoryAutocomplete,
+      origin_key: chainAutocomplete
+    });
+  }, [labelsOwnerProjects, master, search, setLabelsAutocomplete]);
+
+
   return (
     <div className="relative w-full">
       <div className='fixed inset-0 bg-black/10 z-0' onClick={() => setIsOpen(false)} style={{ opacity: isOpen ? 0.5 : 0, pointerEvents: isOpen ? 'auto' : 'none' }} />
@@ -174,12 +246,14 @@ export default function Search() {
                 )}
               </div>
             )}
-            <div className='flex gap-x-[10px] flex-1 grow-1 shrink-1 '>
-              <input ref={inputRef} className="px-[11px] h-full flex-1 bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none" placeholder="Search" />
+            <div className='flex gap-x-[10px] flex-1 grow-1 shrink-1'>
+              <input ref={inputRef} className="px-[11px] h-full flex-1 bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none" placeholder="Search" value={search} onChange={(e) => setSearch(e.target.value)} />
               <div className='flex gap-x-[10px] shrink-0 '>
-                <div className="flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full">
-                  <div className="text-[8px] text-[#CDD8D3] font-medium">{labelsNumberFiltered.toLocaleString("en-GB")} contracts</div>
-                </div>
+                {labelsNumberFiltered && (
+                  <div className="flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full">
+                    <div className="text-[8px] text-[#CDD8D3] font-medium">{labelsNumberFiltered.toLocaleString("en-GB")} contracts</div>
+                  </div>
+                )}
                 {Object.values(labelsFilters).flat().length > 0 && (
                   <div
                     className="flex items-center justify-center bg-[linear-gradient(-9deg,#FE5468,#FFDF27)] rounded-full w-[24px] h-[24px] cursor-pointer"
@@ -206,7 +280,7 @@ export default function Search() {
               </div>
             </div>
           </div>
-          <div className={`absolute rounded-b-[22px] bg-[#151A19] left-0 right-0 top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] transition-all duration-300 ${isOpen ? "max-h-[240px]" : "max-h-0"} overflow-hidden`}>
+          <div className={`absolute rounded-b-[22px] bg-[#151A19] left-0 right-0 top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] transition-all duration-300 ${isOpen ? "max-h-[500px]" : "max-h-0"} overflow-hidden overflow-y-auto lg:overflow-y-hidden scrollbar-thin scrollbar-thumb-forest-700 scrollbar-track-transparent`}>
             <div className='flex flex-col pl-[12px] pr-[25px] pb-[15px] pt-[29px] gap-y-[10px] text-[10px]'>
               <div className="flex gap-x-[10px] items-center">
                 <div className="w-[15px] h-[15px]"><Icon icon="heroicons-solid:qrcode" className='w-[15px] h-[15px]' /></div>
@@ -217,6 +291,8 @@ export default function Search() {
                   <div className="flex items-center justify-center w-[15px] h-[15px]"><Icon icon="heroicons-solid:plus-circle" className='text-[#5A6462] w-[15px] h-[15px]' /></div>
                 </div>
               </div>
+
+
               <div className="flex gap-x-[10px] items-start">
                 <div className="w-[15px] h-[15px]"><Icon icon="gtp:gtp-chain-alt" className='w-[15px] h-[15px] text-white' /></div>
                 <div className="text-white leading-[150%]">Chain</div>
@@ -228,33 +304,129 @@ export default function Search() {
                     ).map(chainKey => (
                       <Badge
                         key={chainKey}
-                        onClick={() => handleFilter('origin_key', chainKey)}
-                        label={master.chains[chainKey].name}
+                        onClick={(e) => {
+                          handleFilter('origin_key', chainKey)
+                          e.stopPropagation();
+                        }}
+                        label={labelsAutocomplete.origin_key.length > 0 ? boldSearch(master.chains[chainKey].name) : master.chains[chainKey].name}
                         leftIcon={`gtp:${AllChainsByKeys[chainKey].urlKey}-logo-monochrome`}
-                        leftIconColor={AllChainsByKeys[chainKey].colors["dark"][0] + 99}
+                        leftIconColor={AllChainsByKeys[chainKey].colors["dark"][0]}
                         rightIcon="heroicons-solid:plus-circle"
+                        className={`${search.length > 0 ? labelsAutocomplete.origin_key.includes(chainKey) ? "opacity-100" : "opacity-30" : "opacity-100"} transition-all`}
                       />
                     ))}
                   </div>
                 )}
               </div>
-              <div className="flex gap-x-[10px] items-center">
+              {/* <div className="flex gap-x-[10px] items-center">
                 <div className="w-[15px] h-[15px]"><Icon icon="feather:tag" className='w-[15px] h-[15px]' /></div>
-                <div className="text-white leading-[150%]">Usage Category</div>
+                <div className="text-white leading-[150%] whitespace-nowrap">Category</div>
                 <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
+                <div className="grid grid-flow-col grid-cols-4 grid-rows-2 justify-between items-center flex-1 pl-[18px] gap-x-[5px] gap-y-[5px]">
+                  {master && Object.entries(master.blockspace_categories.main_categories).map(([categoryKey, category]) => (
+                    <Badge
+                      key={categoryKey}
+                      size='sm'
+                      onClick={(e) => {
+                        handleFilter('subcategory', categoryKey)
+                        e.stopPropagation();
+                      }}
+                      label={labelsAutocomplete.category.length > 0 ? boldSearch(master.blockspace_categories.main_categories[categoryKey]) : master.blockspace_categories.main_categories[categoryKey]}
+                      leftIcon={undefined}
+                      leftIconColor={'#CDD8D3'}
+                      rightIcon="heroicons-solid:plus-circle"
+                      className={`w-fit justify-between ${search.length > 0 ? labelsAutocomplete.category.includes(categoryKey) ? "opacity-100" : "opacity-30" : "opacity-100"} transition-all`}
+                    />
+                  ))}
+                </div>
                 <div className="flex items-center bg-[#344240] rounded-full pl-[2px] pr-[5px] gap-x-[5px]">
                   <div className="flex items-center justify-center w-[25px] h-[25px]"><Icon icon="feather:search" className='text-[#CDD8D3] w-[15px] h-[15px]' /></div>
                   <div className="flex items-center justify-center w-[15px] h-[15px]"><Icon icon="heroicons-solid:plus-circle" className='text-[#5A6462] w-[15px] h-[15px]' /></div>
+                </div>
+              </div> */}
+              <div className="flex gap-x-[10px] items-start w-full">
+                <div className="w-[15px] h-[15px] mt-1"><Icon icon="feather:tag" className='w-[15px] h-[15px]' /></div>
+                <div className="text-white leading-[150%] whitespace-nowrap mt-1">Categories</div>
+                <div className="w-[6px] h-[6px] bg-[#344240] rounded-full mt-2.5" />
+                <div className="flex-1">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-x-[5px] gap-y-[5px]">
+                    {master && Object.keys(master.blockspace_categories.main_categories).filter(
+                      categoryKey => search.length > 0 ? master.blockspace_categories.main_categories[categoryKey].toLowerCase().includes(search.toLowerCase()) || master.blockspace_categories.mapping[categoryKey].some(subcategoryKey => master.blockspace_categories.sub_categories[subcategoryKey].toLowerCase().includes(search.toLowerCase())) : master.blockspace_categories.main_categories[categoryKey]
+                    ).map(categoryKey => (
+                      <NestedSelection
+                        key={categoryKey}
+                        parent={
+                          <Badge
+                            key={categoryKey}
+                            size='sm'
+                            onClick={(e) => {
+                              handleFilter('category', categoryKey)
+                              e.stopPropagation();
+                            }}
+                            label={labelsAutocomplete.category.length > 0 ? boldSearch(master.blockspace_categories.main_categories[categoryKey]) : master.blockspace_categories.main_categories[categoryKey]}
+                            leftIcon={undefined}
+                            rightIconColor={labelsFilters.category.includes(categoryKey) ? '#FE5468' : '#5A6462'}
+                            rightIcon={labelsFilters.category.includes(categoryKey) ? "heroicons-solid:x-circle" : "heroicons-solid:plus-circle"}
+                            className={`w-fit h-fit justify-between bg-transparent rounded-l-[15px] ${search.length > 0 ? labelsAutocomplete.category.includes(categoryKey) ? "opacity-100" : "opacity-30" : "opacity-100"} transition-all duration-300`}
+                          />
+                        }>
+                        {master.blockspace_categories.mapping[categoryKey].sort((a, b) => a.localeCompare(b)).filter(
+
+                          subcategoryKey => search.length > 0 ? master.blockspace_categories.sub_categories[subcategoryKey] && labelsAutocomplete.subcategory.includes(subcategoryKey) : master.blockspace_categories.sub_categories[subcategoryKey]
+                        ).map((subcategory, i) => subcategory === "unlabeled" ? null : (
+                          <Badge
+                            key={subcategory}
+                            size="sm"
+                            onClick={(e) => {
+                              handleFilter('subcategory', subcategory)
+                              e.stopPropagation();
+                            }}
+                            label={labelsAutocomplete.subcategory.length > 0 ? boldSearch(master.blockspace_categories.sub_categories[subcategory]) : master.blockspace_categories.sub_categories[subcategory]}
+                            leftIcon={undefined}
+                            rightIconColor={labelsFilters.subcategory.includes(subcategory) ? '#FE5468' : '#5A6462'}
+                            rightIcon={labelsFilters.subcategory.includes(subcategory) ? "heroicons-solid:x-circle" : "heroicons-solid:plus-circle"}
+                            className={`w-fit h-fit ${search.length > 0 ? labelsAutocomplete.subcategory.includes(subcategory) ? "opacity-100" : "opacity-30" : "opacity-100"} transition-all`}
+                          />
+                        ))}
+
+                      </NestedSelection>
+
+                    ))}
+                  </div>
                 </div>
               </div>
-              <div className="flex gap-x-[10px] items-center">
-                <div className="w-[15px] h-[15px]"><Icon icon="feather:tag" className='w-[15px] h-[15px]' /></div>
-                <div className="text-white leading-[150%]">Owner Project</div>
-                <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
-                <div className="flex items-center bg-[#344240] rounded-full pl-[2px] pr-[5px] gap-x-[5px]">
-                  <div className="flex items-center justify-center w-[25px] h-[25px]"><Icon icon="feather:search" className='text-[#CDD8D3] w-[15px] h-[15px]' /></div>
-                  <div className="flex items-center justify-center w-[15px] h-[15px]"><Icon icon="heroicons-solid:plus-circle" className='text-[#5A6462] w-[15px] h-[15px]' /></div>
-                </div>
+              {/* <div>
+                {JSON.stringify(labelsFilters)}
+              </div> */}
+              <div className="flex gap-x-[10px] items-start">
+                <div className="w-[15px] h-[15px] mt-1"><Icon icon="feather:tag" className='w-[15px] h-[15px]' /></div>
+                <div className="text-white leading-[150%] whitespace-nowrap mt-1">Owner Project</div>
+                <div className="w-[6px] h-[6px] bg-[#344240] rounded-full mt-2.5" />
+                <FilterSelectionContainer className="flex-1">
+                  {labelsAutocomplete.owner_project.length > 0 ? labelsAutocomplete.owner_project.map(ownerProject => (
+                    <Badge
+                      key={ownerProject}
+                      onClick={() => handleFilter('owner_project', ownerProject)}
+                      label={ownerProject}
+                      leftIcon="feather:tag"
+                      leftIconColor="#CDD8D3"
+                      rightIcon={labelsFilters.owner_project.includes(ownerProject) ? "heroicons-solid:x-circle" : "heroicons-solid:plus-circle"}
+                      rightIconColor={labelsFilters.owner_project.includes(ownerProject) ? "#FE5468" : "#5A6462"}
+                      showLabel={true}
+                    />
+                  )) : labelsOwnerProjects.map(ownerProject => (
+                    <Badge
+                      key={ownerProject}
+                      onClick={() => handleFilter('owner_project', ownerProject)}
+                      label={ownerProject}
+                      leftIcon="feather:tag"
+                      leftIconColor="#CDD8D3"
+                      rightIcon={labelsFilters.owner_project.includes(ownerProject) ? "heroicons-solid:x-circle" : "heroicons-solid:plus-circle"}
+                      rightIconColor={labelsFilters.owner_project.includes(ownerProject) ? "#FE5468" : "#5A6462"}
+                      showLabel={true}
+                    />
+                  ))}
+                </FilterSelectionContainer>
               </div>
             </div>
           </div>
@@ -262,7 +434,7 @@ export default function Search() {
 
       </div>
 
-    </div>
+    </div >
   );
 }
 const SearchIcon = () => (
@@ -292,8 +464,8 @@ const SearchIcon = () => (
   </svg>)
 
 type BadgeProps = {
-  onClick: () => void;
-  label: string;
+  onClick: (e: React.MouseEvent<HTMLDivElement>) => void;
+  label: string | React.ReactNode;
   leftIcon?: string;
   leftIconColor?: string;
   rightIcon: string;
@@ -345,3 +517,81 @@ export const AddIcon = ({ className, onClick }: IconProps) => (
 export const RemoveIcon = ({ className, onClick }: IconProps) => (
   <div className={`w-[15px] h-[15px] ${className} ${onClick && "cursor-pointer"}`} onClick={onClick}><Icon icon="heroicons-solid:x-circle" className='w-[15px] h-[15px]' style={{ color: '#FE5468' }} /></div>
 );
+
+
+
+type NestedSelectionProps = {
+  parent: React.ReactNode;
+  children: React.ReactNode;
+};
+const NestedSelection = ({ parent, children }: NestedSelectionProps) => (
+  <div className='flex'>
+    <div className={`flex items-center justify-start gap-x-[0px] bg-gray-500/5 rounded-[15px] justify-items-start justify-self-start overflow-hidden`}>
+      <div className='p-1 rounded-l-[15px]'>
+        {parent}
+      </div>
+      <FilterSelectionContainer className='px-1'>
+        {children}
+      </FilterSelectionContainer>
+
+    </div>
+  </div>
+
+);
+
+type FilterSelectionContainerProps = {
+  children: React.ReactNode;
+  className?: string;
+};
+
+export const FilterSelectionContainer = ({ children, className }: FilterSelectionContainerProps) => (
+  <DraggableContainer className={`flex gap-x-[10px] items-center justify-start h-full ${className} overflow-x-hidden`} direction="horizontal">
+    {children}
+  </DraggableContainer>
+);
+
+
+type DraggableContainerProps = {
+  children: React.ReactNode;
+  className?: string;
+  direction?: 'horizontal' | 'vertical';
+};
+export const DraggableContainer = ({ children, className, direction }: DraggableContainerProps) => {
+  const { containerRef, showLeftGradient, showRightGradient } = useDragScroll('horizontal');
+
+  const [maskGradient, setMaskGradient] = useState<string>('');
+
+  useEffect(() => {
+    if (showLeftGradient && showRightGradient) {
+      setMaskGradient('linear-gradient(to right, transparent, black 50px, black calc(100% - 50px), transparent)');
+    }
+    else if (showLeftGradient) {
+      setMaskGradient('linear-gradient(to right, transparent, black 50px, black)');
+    }
+    else if (showRightGradient) {
+      setMaskGradient('linear-gradient(to left, transparent, black 50px, black)');
+    }
+    else {
+      setMaskGradient('');
+    }
+  }, [showLeftGradient, showRightGradient]);
+
+  return (
+    <div
+      ref={containerRef}
+      className={`flex gap-x-[10px] items-center overflow-x-hidden h-full ${className}`}
+      style={{
+        maskClip: 'padding-box',
+        WebkitMaskClip: 'padding-box',
+        WebkitMaskImage: maskGradient,
+        maskImage: maskGradient,
+        WebkitMaskSize: '100% 100%',
+        maskSize: '100% 100%',
+        transition: 'all 0.3s',
+      }}>
+
+      {children}
+    </div>
+
+  );
+};

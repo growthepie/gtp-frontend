@@ -26,6 +26,7 @@ import Sparkline from "./Sparkline";
 import CanvasSparkline from "./CanvasSparkline";
 import { AddIcon, Badge, RemoveIcon } from "./Search";
 import { formatNumber } from "@/lib/chartUtils";
+import { CanvasSparklineProvider, useCanvasSparkline } from "./CanvasSparkline";
 
 const devMiddleware = (useSWRNext) => {
   return (key, fetcher, config) => {
@@ -69,7 +70,7 @@ export default function LabelsPage() {
   const showCents = true;
 
   //True is default descending false ascending
-  const { theme } = useTheme();
+  // const { theme } = useTheme();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
 
@@ -181,6 +182,8 @@ export default function LabelsPage() {
   // The scrollable element for your list
   const listRef = useRef<HTMLDivElement>();
 
+  const [labelsOwnerProjects, setLabelsOwnerProjects] = useSessionStorage<string[]>('labelsOwnerProjects', []);
+
   const data = useMemo(() => {
     if (!quickLabelsData && !fullLabelsData)
       return [];
@@ -194,82 +197,6 @@ export default function LabelsPage() {
 
     return quickLabelsData ? quickLabelsData.types : fullLabelsData.types;
   }, [quickLabelsData, fullLabelsData]);
-
-  const filteredLabelsData = useMemo<ParsedDatum[]>(() => {
-    let rows = [];
-    if ((!quickLabelsData && !fullLabelsData) || !master)
-      return rows;
-
-
-    const categorySubcategoryFilters = labelsFilters.category.length > 0 ? labelsFilters.category.reduce((acc, category) => {
-      return [...acc, ...master.blockspace_categories.mapping[category]];
-    }, []) : [];
-
-    const allSubcategoryFilters = [...labelsFilters.subcategory, ...categorySubcategoryFilters];
-
-    if (!fullLabelsData) {
-      return quickLabelsData.data.filter((label) => {
-        if (labelsFilters.origin_key.length > 0 && !labelsFilters.origin_key.includes(label.origin_key))
-          return false;
-
-        if (labelsFilters.name.length > 0 && !labelsFilters.name.includes(label.name))
-          return false;
-
-        if (labelsFilters.owner_project.length > 0 && !labelsFilters.owner_project.includes(label.owner_project))
-          return false;
-
-        if (allSubcategoryFilters.length > 0 && !allSubcategoryFilters.includes(label.usage_category))
-          return false;
-
-        return true;
-      });
-    }
-
-    return fullLabelsData.data.filter((label) => {
-      if (labelsFilters.origin_key.length > 0 && !labelsFilters.origin_key.includes(label.origin_key))
-        return false;
-
-      if (labelsFilters.name.length > 0 && !labelsFilters.name.includes(label.name))
-        return false;
-
-      if (labelsFilters.owner_project.length > 0 && !labelsFilters.owner_project.includes(label.owner_project))
-        return false;
-
-      if (allSubcategoryFilters.length > 0 && !allSubcategoryFilters.includes(label.usage_category))
-        return false;
-
-      return true;
-    });
-
-    return rows;
-  }, [master, quickLabelsData, fullLabelsData, labelsFilters.category, labelsFilters.subcategory, labelsFilters.origin_key, labelsFilters.name, labelsFilters.owner_project]);
-
-
-  useEffect(() => {
-    if (filteredLabelsData) {
-      setLabelsNumberFiltered(filteredLabelsData.length);
-    }
-  }, [filteredLabelsData, setLabelsNumberFiltered]);
-
-  // The virtualizer
-  const virtualizer = useWindowVirtualizer({
-    count: filteredLabelsData ? filteredLabelsData.length : 0,
-    // getScrollElement: () => listRef.current,
-    estimateSize: () => 37,
-    // size: 37,
-    scrollMargin: listRef.current?.offsetTop ?? 0,
-    overscan: 5,
-  })
-
-  const items = virtualizer.getVirtualItems()
-
-  const [paddingTop, paddingBottom] =
-    items.length > 0
-      ? [
-        Math.max(0, items[0].start - virtualizer.options.scrollMargin),
-        Math.max(0, virtualizer.getTotalSize() - items[items.length - 1].end),
-      ]
-      : [0, 0]
 
   const subcategoryToCategoryMapping = useMemo(() => {
     if (!master)
@@ -285,6 +212,69 @@ export default function LabelsPage() {
 
     return mapping;
   }, [master]);
+
+  const filteredLabelsData = useMemo<ParsedDatum[]>(() => {
+    let rows = [];
+
+    if ((!quickLabelsData && !fullLabelsData) || !master)
+      return rows;
+
+    if (!fullLabelsData) {
+      rows = quickLabelsData.data;
+    } else {
+      rows = fullLabelsData.data;
+    }
+
+
+
+    const numFilters = Object.values(labelsFilters).flat().length;
+
+    if (numFilters === 0)
+      return rows;
+
+    return rows;
+  }, [quickLabelsData, fullLabelsData, master, labelsFilters]);
+
+
+
+  useEffect(() => {
+    if (filteredLabelsData) {
+      setLabelsNumberFiltered(filteredLabelsData.length);
+
+
+    }
+  }, [filteredLabelsData, setLabelsNumberFiltered]);
+
+
+  useEffect(() => {
+    const uniqueOwnerProjects = [...new Set(data.filter(
+      (label) => label.owner_project
+    ).map((label) => label.owner_project).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())))];
+    setLabelsOwnerProjects(uniqueOwnerProjects);
+  }, [data, setLabelsOwnerProjects]);
+
+  // The virtualizer
+  const virtualizer = useWindowVirtualizer({
+    count: filteredLabelsData ? filteredLabelsData.length : 0,
+    // getScrollElement: () => listRef.current,
+    estimateSize: () => 37,
+    // size: 37,
+    scrollMargin: listRef.current?.offsetTop ?? 0,
+    overscan: 5,
+    getItemKey: (index) => `${filteredLabelsData[index].origin_key}_${filteredLabelsData[index].address}}`,
+  })
+
+  const items = virtualizer.getVirtualItems()
+
+  const [paddingTop, paddingBottom] =
+    items.length > 0
+      ? [
+        Math.max(0, items[0].start - virtualizer.options.scrollMargin),
+        Math.max(0, virtualizer.getTotalSize() - items[items.length - 1].end),
+      ]
+      : [0, 0]
+
+
 
 
 
@@ -302,9 +292,8 @@ export default function LabelsPage() {
   return (
     <>
       <ShowLoading dataLoading={[masterLoading, quickLabelsLoading]} dataValidating={[masterValidating, quickLabelsLoading]} />
-      <Header />
 
-
+      {master && <Header />}
 
       <div className="relative pb-[114px] pt-[140px]">
         <LabelsContainer className="w-full pt-[30px] flex items-end sm:items-center justify-between md:justify-start gap-x-[10px] z-[21]">
@@ -385,7 +374,7 @@ export default function LabelsPage() {
                         style={{
                           color:
                             AllChainsByKeys[filteredLabelsData[item.index].origin_key].colors[
-                            theme ?? "dark"
+                            "dark"
                             ][0],
                         }}
                       />
@@ -491,20 +480,34 @@ export default function LabelsPage() {
                         )}
                         <div>{filteredLabelsData[item.index].txcount.toLocaleString("en-GB")}</div>
                       </div> */}
-                    <div className="flex items-center justify-end gap-x-[3px]">
-                      {sparklineLabelsData && (
-                        <div>
-                          {sparklineLabelsData.data[`${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address}`] ? (
-                            <CanvasSparkline chainKey={filteredLabelsData[item.index].origin_key} data={sparklineLabelsData.data[`${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address}`].sparkline.map(d => [d[0], d[sparklineLabelsData.data.types.indexOf(sparklineMetricKeys[metricKeys.indexOf(currentMetric)])]])} change={filteredLabelsData[item.index][`${currentMetric}_change`]} />
-                          ) : (
-                            <div className="text-center w-full text-[#5A6462] text-[10px]">Unavailable</div>
-                          )}
-                        </div>
+                    <div className="flex items-center justify-between pl-[20px]">
+                      {/* {sparklineLabelsData && sparklineLabelsData.data[`${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address}`] ? (
+                        <CanvasSparklineProvider data={sparklineLabelsData.data[`${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address}`].sparkline.map(d => [d[0], d[sparklineLabelsData.data.types.indexOf(sparklineMetricKeys[metricKeys.indexOf(currentMetric)])]])} change={filteredLabelsData[item.index][`${currentMetric}_change`]}>
+                          <CanvasSparkline chainKey={filteredLabelsData[item.index].origin_key} />
+                        </CanvasSparklineProvider>
+
+                      ) : (
+                        <div className="text-center w-full text-[#5A6462] text-[10px]">Unavailable</div>
                       )}
+
                       <div className="flex flex-col justify-center items-end h-[24px]">
                         <div className="min-w-[55px] text-right">{filteredLabelsData[item.index][currentMetric].toLocaleString("en-GB")}</div>
                         <div className={`text-[9px] text-right leading-[1] ${filteredLabelsData[item.index][`${currentMetric}_change`] > 0 ? "font-normal" : "text-[#FE5468] font-semibold "}`}>{filteredLabelsData[item.index][`${currentMetric}_change`] > 0 && "+"}{formatNumber(filteredLabelsData[item.index][`${currentMetric}_change`] * 100, true, false)}%</div>
-                      </div>
+                      </div> */}
+                      {sparklineLabelsData && sparklineLabelsData.data[`${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address}`] ? (
+                        <CanvasSparklineProvider
+                          data={sparklineLabelsData.data[`${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address}`].sparkline.map(d => [d[0], d[sparklineLabelsData.data.types.indexOf(sparklineMetricKeys[metricKeys.indexOf(currentMetric)])]])}
+                          change={filteredLabelsData[item.index][`${currentMetric}_change`]}
+                          value={filteredLabelsData[item.index][currentMetric]}
+                        >
+                          <LabelsSparkline
+                            chainKey={filteredLabelsData[item.index].origin_key}
+
+                          />
+                        </CanvasSparklineProvider>
+                      ) : (
+                        <div className="text-center w-full text-[#5A6462] text-[10px]">Unavailable</div>
+                      )}
                     </div>
                   </GridTableRow>
                 </div>
@@ -545,4 +548,24 @@ const GridTableRow = ({ children, gridDefinitionColumns, style }: GridTableProps
       {children}
     </div>
   );
+}
+
+const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
+  const { data, change, value, hoverValue } = useCanvasSparkline();
+  return (
+    <>
+      <CanvasSparkline chainKey={chainKey} />
+      {hoverValue ? (
+        <div className="flex flex-col justify-center items-end h-[24px]">
+          <div className="min-w-[55px] text-right">{hoverValue.toLocaleString("en-GB")}</div>
+          <div className={`text-[9px] text-right leading-[1]`}>&nbsp;</div>
+        </div>
+      ) : (
+        <div className="flex flex-col justify-center items-end h-[24px]">
+          <div className="min-w-[55px] text-right">{value.toLocaleString("en-GB")}</div>
+          <div className={`text-[9px] text-right leading-[1] ${change > 0 ? "font-normal" : "text-[#FE5468] font-semibold "}`}>{change > 0 && "+"}{formatNumber(change * 100, true, false)}%</div>
+        </div>
+      )}
+    </>
+  )
 }
