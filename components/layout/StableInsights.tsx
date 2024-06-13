@@ -8,6 +8,11 @@ import {
   TopRowParent,
   TopRowChild,
 } from "@/components/layout/TopRow";
+import {
+  Tooltip as InfoToolTip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/layout/Tooltip";
 import { GloHolderURL } from "@/lib/urls";
 import useSWR from "swr";
 import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
@@ -504,7 +509,7 @@ export default function StableInsights({}: {}) {
               </TopRowParent>
             </TopRowContainer>
             <div className="flex lg:flex-row flex-col-reverse w-full lg:gap-y-0 gap-y-[15px] gap-x-[5px]  overflow-scroll">
-              <div className="flex flex-col gap-y-[15px] relative h-[493px] w-full lg:w-[57.5%] min-w-[300px] ">
+              <div className="flex flex-col gap-y-[15px] relative h-[493px] w-full lg:w-[50%] min-w-[300px] ">
                 <div
                   className="w-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px]"
                   style={{
@@ -630,13 +635,13 @@ export default function StableInsights({}: {}) {
                 </div>
               </div>
 
-              <div className="w-full lg:w-[42.5%] md:h-auto h-[300px] overflow-visible">
+              <div className="w-full lg:w-[50%] md:h-auto h-[300px] overflow-visible">
                 {" "}
                 <HighchartsProvider Highcharts={Highcharts}>
                   <HighchartsChart
                     containerProps={{
                       style: {
-                        height: "100%",
+                        height: "94%",
                         width: "100%",
                         overflow: "visible",
                       },
@@ -724,7 +729,7 @@ export default function StableInsights({}: {}) {
                       marginBottom={38}
                       marginLeft={0}
                       marginRight={0}
-                      marginTop={0}
+                      marginTop={10}
                     />
                     <Tooltip
                       useHTML={true}
@@ -915,6 +920,23 @@ export default function StableInsights({}: {}) {
                   </HighchartsChart>
                 </HighchartsProvider>
               </div>
+            </div>
+            <div className="w-full bg-[#1F2726] rounded-full h-[36px] flex justify-end items-center py-[3px] px-[5px]">
+              <div className="mr-[15px] h-full text-[16px] w-[158px] rounded-full flex items-center justify-center bg-[#151A19]">
+                Total Market Cap
+              </div>
+              <InfoToolTip placement="left" allowInteract>
+                <TooltipTrigger>
+                  <div className="p-1 z-10 mr-0 md:-mr-0.5">
+                    <Icon icon="feather:info" className="w-6 h-6" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
+                  <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
+                    {}
+                  </div>
+                </TooltipContent>
+              </InfoToolTip>
             </div>
           </div>
         </div>
