@@ -396,7 +396,6 @@ export default function StableInsights({}: {}) {
     return retValue;
   }, [data, showUsd]);
 
-  console.log(data ? data : "");
   return (
     <>
       {(IS_DEVELOPMENT || IS_PREVIEW) && sortedTableData && data && (
@@ -464,7 +463,11 @@ export default function StableInsights({}: {}) {
                   currently.
                 </div>
               </div>
-              <div className="h-[60px] max-w-[100%] md:h-[96px] w-[176px] md:w-[249px] self-start lg:self-end rounded-2xl bg-[#344240] flex flex-col px-[15px] py-[5px] md:py-[10px]">
+              <a
+                className="h-[60px] max-w-[100%] md:h-[96px] w-[176px] md:w-[249px] self-start lg:self-end rounded-2xl bg-[#344240] flex flex-col px-[15px] py-[5px] md:py-[10px]"
+                href="https://www.glodollar.org/"
+                target="_blank"
+              >
                 <div className="flex gap-x-[10px] md:gap-x-[15px] items-center ">
                   <Image
                     src={"/Glo_Dollar.svg"}
@@ -481,7 +484,7 @@ export default function StableInsights({}: {}) {
                 <div className="md:text-[12px] text-[8px] flex  lg:items-center lg:justify-start ">
                   More about Glo Dollar on their website
                 </div>
-              </div>
+              </a>
             </div>
             <TopRowContainer>
               <TopRowParent>
@@ -932,8 +935,9 @@ export default function StableInsights({}: {}) {
                   </div>
                 </TooltipTrigger>
                 <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
-                  <div className="px-3 text-sm font-medium bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
-                    {}
+                  <div className="px-3 font-medium gap-x-1 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
+                    Data Sources:{" "}
+                    <span className="font-normal">Glo Dollar</span>
                   </div>
                 </TooltipContent>
               </InfoToolTip>
