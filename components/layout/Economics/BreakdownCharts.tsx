@@ -382,8 +382,6 @@ export default function BreakdownCharts({
     return zonesArray;
   }, [ProfitArea]);
 
-  console.log(zones ? zones : "");
-
   return (
     <div className="w-full h-full min-h-[240px] max-h-[240px] ">
       <HighchartsProvider Highcharts={Highcharts}>

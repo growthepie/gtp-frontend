@@ -396,6 +396,8 @@ export default function StableInsights({}: {}) {
     return retValue;
   }, [data, showUsd]);
 
+  console.log(data ? data : "");
+
   return (
     <>
       {(IS_DEVELOPMENT || IS_PREVIEW) && sortedTableData && data && (
@@ -937,7 +939,11 @@ export default function StableInsights({}: {}) {
                 <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
                   <div className="px-3 font-medium gap-x-1 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
                     Data Sources:{" "}
-                    <span className="font-normal">Glo Dollar</span>
+                    {data.source.map((key, index) => (
+                      <span key={index} className="font-normal">
+                        {key}
+                      </span>
+                    ))}
                   </div>
                 </TooltipContent>
               </InfoToolTip>

@@ -1,6 +1,7 @@
 export interface HolderResponse {
   chart: ChartDataBreakdown;
   holders_table: TableDataBreakdown;
+  source: string[];
 }
 
 export interface ChartDataBreakdown {
