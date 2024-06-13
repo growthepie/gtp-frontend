@@ -51,6 +51,16 @@ const COLORS = {
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
 
+type TopHolderData = {
+  combined: {
+    total: number;
+  };
+  others: {
+    share: number;
+    total: number;
+  };
+};
+
 export default function StableInsights({}: {}) {
   const [clicked, setClicked] = useState(true);
   const [sortOrder, setSortOrder] = useState(true);
@@ -351,18 +361,37 @@ export default function StableInsights({}: {}) {
   }
 
   const combinedHolders = useMemo(() => {
-    if (!data) return;
+    if (!data || !sortedTableData) return;
 
-    let retValue: [number, number] = [0, 0];
+    let retValue: TopHolderData = {
+      combined: {
+        total: 0,
+      },
+      others: {
+        share: 0,
+        total: data.chart.data[data.chart.data.length - 1][2],
+      },
+    };
 
     Object.keys(data.holders_table).map((key) => {
-      retValue[0] = retValue[0] + data.holders_table[key].balance;
-      retValue[1] = retValue[1] + data.holders_table[key].share;
+      retValue.combined.total =
+        retValue.combined.total + data.holders_table[key].balance;
     });
+
+    Object.keys(sortedTableData).map((key, i) => {
+      if (i <= 9) {
+        retValue.others.total =
+          retValue.others.total - data.holders_table[key].balance;
+      }
+    });
+
+    retValue.others.share =
+      retValue.others.total / data.chart.data[data.chart.data.length - 1][2];
 
     return retValue;
   }, [data, showUsd]);
 
+  console.log(data ? data : "");
   return (
     <>
       {(IS_DEVELOPMENT || IS_PREVIEW) && sortedTableData && data && (
@@ -503,7 +532,6 @@ export default function StableInsights({}: {}) {
                   </div>
                 </div>
                 {transitions((style, item) => {
-                  console.log(data.holders_table[item.key]);
                   if (item.i > 9) {
                     return;
                   }
@@ -566,17 +594,17 @@ export default function StableInsights({}: {}) {
                     style={{ gridTemplateColumns: `auto 100px 50px` }}
                   >
                     <div className="xl:text-[12px]  text-[11px] sm:leading-normal leading-tight  lg:text-[10px] h-full flex grow items-center ">
-                      Top 10+ Holders Combined
+                      Other Holders Combined
                     </div>
                     {combinedHolders && (
                       <div className="xl:text-[12px]  text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
-                        ${formatNumber(combinedHolders[0])}
+                        ${formatNumber(combinedHolders.others.total)}
                       </div>
                     )}
                     {combinedHolders && (
                       <div className="flex xl:text-[12px]  text-[11px]  lg:text-[10px] h-[18px] justify-center items-center bg-[#344240] rounded-full my-auto ml-1 py-[2px] px-[2px]">
                         <div className="text-[9px] flex items-center justify-center gap-x-0.5">
-                          %{formatNumber(combinedHolders[1] * 100)}
+                          %{formatNumber(combinedHolders.others.share * 100)}
                         </div>
                       </div>
                     )}
@@ -590,6 +618,14 @@ export default function StableInsights({}: {}) {
                     <div className="text-[12px] h-full flex grow items-center sm:leading-normal leading-tight ">
                       Total Glo Dollar Market Cap
                     </div>
+                    {combinedHolders && (
+                      <div className="xl:text-[12px]  text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
+                        $
+                        {formatNumber(
+                          data.chart.data[data.chart.data.length - 1][2],
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
