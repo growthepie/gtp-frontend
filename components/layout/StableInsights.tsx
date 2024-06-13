@@ -430,28 +430,28 @@ export default function StableInsights({}: {}) {
                   currently.
                 </div>
               </div>
-              <div className="h-[65px] max-w-[100%] md:h-[96px] w-[300px] md:w-[249px] self-start lg:self-end rounded-2xl bg-[#344240] flex flex-col px-[15px] py-[10px]">
-                <div className="flex justify-normal lg:gap-x-0 gap-x-[15px] lg:justify-between items-center ">
+              <div className="h-[60px] max-w-[100%] md:h-[96px] w-[176px] md:w-[249px] self-start lg:self-end rounded-2xl bg-[#344240] flex flex-col px-[15px] py-[5px] md:py-[10px]">
+                <div className="flex gap-x-[10px] md:gap-x-[15px] items-center ">
                   <Image
                     src={"/Glo_Dollar.svg"}
                     alt={"Glo Dollar Icon"}
-                    className="w-[18px] h-[18px]  md:w-[36px] md:h-[36px]"
+                    className="w-[24px] h-[24px]  md:w-[36px] md:h-[36px]"
                     height={36}
                     width={36}
                   />
-                  <div className="md:text-[36px] text-[16px] -ml-1 flex gap-x-0.5 font-bold">
+                  <div className="md:text-[34px] text-[22px] -ml-1 flex gap-x-1 font-bold">
                     <span>Glo</span>
                     <span>Dollar</span>
                   </div>
                 </div>
-                <div className="text-[10px] flex md:ml-0 ml-[30px] lg:items-center lg:justify-center ">
+                <div className="md:text-[12px] text-[8px] flex  lg:items-center lg:justify-start ">
                   More about Glo Dollar on their website
                 </div>
               </div>
             </div>
             <TopRowContainer>
               <TopRowParent>
-                <TopRowChild isSelected={true}>By Wallet</TopRowChild>
+                <TopRowChild isSelected={true}>By Holder</TopRowChild>
               </TopRowParent>
               <div className="block lg:hidden w-[70%] mx-auto my-[10px]">
                 <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
@@ -521,7 +521,7 @@ export default function StableInsights({}: {}) {
                         }}
                       >
                         <div className="xl:text-[12px] text-[11px] lg:text-[10px] h-full gap-x-[5px] flex items-center ">
-                          <div className="sm:max-w-auto max-w-[100px] truncate">
+                          <div className="sm:max-w-full 3xs:max-w-[100px] truncate">
                             {item.key}
                           </div>
                           {data.holders_table[item.key].website && (
@@ -594,7 +594,7 @@ export default function StableInsights({}: {}) {
                 </div>
               </div>
 
-              <div className="w-full lg:w-[42.5%] overflow-visible">
+              <div className="w-full lg:w-[42.5%] md:h-auto h-[300px] overflow-visible">
                 {" "}
                 <HighchartsProvider Highcharts={Highcharts}>
                   <HighchartsChart
@@ -671,7 +671,7 @@ export default function StableInsights({}: {}) {
                     <Chart
                       title={undefined}
                       backgroundColor={"transparent"}
-                      type="line"
+                      type="area"
                       panning={{
                         enabled: false,
                       }}
@@ -846,7 +846,7 @@ export default function StableInsights({}: {}) {
                       }}
                     >
                       <YAxis.Title>Y Axis</YAxis.Title>
-                      <LineSeries
+                      <AreaSeries
                         name={""}
                         showInLegend={false}
                         data={data.chart.data.map((d: any) => [
@@ -854,7 +854,7 @@ export default function StableInsights({}: {}) {
                           d[showUsd ? 2 : 1],
                         ])}
                         color={"#24E5DF"}
-                        fillColor={"transparent"}
+                        fillColor={"#24E5DF33"}
                         fillOpacity={1}
                         states={{
                           hover: {
@@ -874,7 +874,7 @@ export default function StableInsights({}: {}) {
                             opacity: 0.6,
                           },
                         }}
-                      ></LineSeries>
+                      ></AreaSeries>
                     </YAxis>
                   </HighchartsChart>
                 </HighchartsProvider>
