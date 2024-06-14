@@ -346,6 +346,7 @@ export default function ChainBreakdown({
                       onClick={() => {
                         setSelectedTimespan(key);
                       }}
+                      key={key}
                     >
                       {timespans[key].label}
                     </div>
