@@ -396,8 +396,6 @@ export default function StableInsights({}: {}) {
     return retValue;
   }, [data, showUsd]);
 
-  console.log(data ? data : "");
-
   return (
     <>
       {(IS_DEVELOPMENT || IS_PREVIEW) && sortedTableData && data && (
@@ -452,21 +450,20 @@ export default function StableInsights({}: {}) {
           >
             <div className="flex lg:flex-row lg:gap-y-0 gap-y-[10px] flex-col  w-full lg:justify-between px-[10px]">
               <div className="flex flex-col gap-y-[5px] lg:max-w-[520px] xl:max-w-[690px]">
-                <div className="pt-[5px] md:text-base text-[13px] w-full ">
+                <div className="pt-[5px] md:text-base text-[11px] w-full ">
                   Glo Dollar is a fiat-backed stablecoin that funds public
                   goods. With Glo Dollar, you can help fund public goods and
                   charitable causes just by holding a stablecoin. It&apos;s a
-                  new, donationless form of philanthropy. Check here which are
-                  the top supporting Glo Dollar wallets currently.
+                  new, donationless form of philanthropy.
                 </div>
 
-                <div className="pt-[5px] md:text-base text-[13px] w-full">
+                <div className="pt-[5px] md:text-base text-[11px] w-full">
                   Check here which are the top supporting Glo Dollar wallets
                   currently.
                 </div>
               </div>
               <a
-                className="h-[60px] max-w-[100%] md:h-[96px] w-[176px] md:w-[249px] self-start lg:self-end rounded-2xl bg-[#344240] flex flex-col px-[15px] py-[5px] md:py-[10px]"
+                className="h-[60px] max-w-[100%] md:h-[96px] w-[176px] md:w-[249px] self-start lg:self-end rounded-2xl bg-[#2F3B3A] flex flex-col px-[15px] py-[5px] md:py-[10px]"
                 href="https://www.glodollar.org/"
                 target="_blank"
               >
@@ -732,9 +729,23 @@ export default function StableInsights({}: {}) {
                         duration: 50,
                       }}
                       marginBottom={38}
-                      marginLeft={0}
+                      marginLeft={40}
                       marginRight={0}
                       marginTop={10}
+                      onRender={(chartData) => {
+                        const chart = chartData.target as any;
+                        if (chart && chart.series[0]) {
+                          const yAxis = chart.series[0].yAxis;
+
+                          Object.keys(yAxis.ticks).map((key, i) => {
+                            const lastVal = Object.keys(yAxis.ticks).length - 1;
+                            const gridLine = yAxis.ticks[key].gridLine.element;
+                            if (i === lastVal) {
+                              gridLine.setAttribute("stroke", "#CDD8D3");
+                            }
+                          });
+                        }
+                      }}
                     />
                     <Tooltip
                       useHTML={true}
@@ -862,18 +873,20 @@ export default function StableInsights({}: {}) {
                       <XAxis.Title>X Axis</XAxis.Title>
                     </XAxis>
                     <YAxis
+                      title={undefined}
                       opposite={false}
                       // showFirstLabel={true}
                       // showLastLabel={true}
                       type="linear"
                       gridLineWidth={1}
                       gridLineColor={"#5A64624F"}
-                      showFirstLabel={false}
+                      showFirstLabel={true}
                       showLastLabel={true}
+                      tickAmount={4}
                       labels={{
                         align: "left",
-                        y: 11,
-                        x: 3,
+                        y: 3,
+                        x: -37,
                         style: {
                           fontSize: "10px",
                           color: "#CDD8D34D",
@@ -891,7 +904,6 @@ export default function StableInsights({}: {}) {
                         },
                       }}
                     >
-                      <YAxis.Title>Y Axis</YAxis.Title>
                       <AreaSeries
                         name={""}
                         showInLegend={false}
