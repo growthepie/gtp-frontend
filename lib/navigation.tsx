@@ -473,10 +473,10 @@ export const navigationItems: NavigationItem[] = [
       },
 
       {
-        label: "zkSync Era",
+        label: "ZKsync Era",
         page: {
           description:
-            "zkSync Era is a Layer 2 protocol that scales Ethereum with cutting-edge ZK tech. Their mission isn't to merely increase Ethereum's throughput, but to fully preserve its foundational values – freedom, self-sovereignty, decentralization – at scale.",
+            "ZKsync Era is a Layer 2 protocol that scales Ethereum with cutting-edge ZK tech. Their mission isn't to merely increase Ethereum's throughput, but to fully preserve its foundational values – freedom, self-sovereignty, decentralization – at scale.",
         },
         icon: "gtp:zksync-era-logo-monochrome",
         key: "zksync_era",

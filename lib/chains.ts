@@ -187,14 +187,14 @@ export const AllChains: Chain[] = [
     darkTextOnBackground: false,
   },
   {
-    label: "zkSync Era",
+    label: "ZKsync Era",
     icon: "/icons/zksync-era.png",
     key: "zksync_era",
     urlKey: "zksync-era",
     chainType: "L2",
     ecosystem: ["all-chains", "Hyperchain", "zk-rollup"],
     description:
-      "zkSync Era is a Layer 2 protocol that scales Ethereum with cutting-edge ZK tech. Their mission isn't to merely increase Ethereum's throughput, but to fully preserve its foundational values – freedom, self-sovereignty, decentralization – at scale.",
+      "ZKsync Era is a Layer 2 protocol that scales Ethereum with cutting-edge ZK tech. Their mission isn't to merely increase Ethereum's throughput, but to fully preserve its foundational values – freedom, self-sovereignty, decentralization – at scale.",
     border: {
       light: ["border-[#390094]", "border-[#390094]"],
       dark: ["border-[#7C32F4]", "border-[#7C32F4]"],
