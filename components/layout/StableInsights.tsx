@@ -444,7 +444,7 @@ export default function StableInsights({}: {}) {
           </div>
           <div
             className={`overflow-clip hover:!overflow-visible flex flex-col gap-y-[10px] px-[30px] ${
-              clicked ? "max-h-[1400px] lg:max-h-[739px]" : "max-h-[0px]"
+              clicked ? "max-h-[1400px] lg:max-h-[829px]" : "max-h-[0px]"
             }`}
             style={{
               transition: "all 0.5s",
@@ -513,7 +513,7 @@ export default function StableInsights({}: {}) {
                 })}
               </TopRowParent>
             </TopRowContainer>
-            <div className="flex lg:flex-row flex-col-reverse w-full lg:gap-y-0 gap-y-[15px] gap-x-[5px]  overflow-scroll">
+            <div className="flex lg:flex-row flex-col-reverse w-full lg:gap-y-0 gap-y-[15px] gap-x-[5px] h-auto lg:h-[507px] overflow-scroll">
               <div className="flex flex-col gap-y-[15px] relative h-[493px] w-full lg:w-[50%] min-w-[300px] ">
                 <div
                   className="w-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px]"
@@ -559,7 +559,7 @@ export default function StableInsights({}: {}) {
                         }}
                       >
                         <div className="xl:text-[12px] text-[11px] lg:text-[10px] h-full gap-x-[5px] flex items-center ">
-                          <div className="sm:max-w-full 3xs:max-w-[100px] truncate">
+                          <div className="xl:max-w-full sm:max-w-[120px] 3xs:max-w-[100px] truncate">
                             {item.key}
                           </div>
                           {data.holders_table[item.key].website && (
