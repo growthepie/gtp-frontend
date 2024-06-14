@@ -33,8 +33,6 @@ const COLORS = {
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
 
-addHighchartsMore(Highcharts);
-
 type AreaData = {
   seriesData: any[][]; // Replace 'any' with the specific type if known
   profitData: any[][]; // Replace 'any' with the specific type if known
@@ -53,6 +51,8 @@ export default function BreakdownCharts({
   timespans: Object;
   selectedTimespan: string;
 }) {
+  addHighchartsMore(Highcharts);
+
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const reversePerformer = true;
   const selectedScale: string = "absolute";
