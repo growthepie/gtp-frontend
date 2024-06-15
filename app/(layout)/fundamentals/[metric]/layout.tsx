@@ -147,7 +147,10 @@ export default async function Layout({
 
   return (
     <>
-      <Container className="flex flex-col w-full pt-[65px] md:pt-[30px]" isPageRoot>
+      <Container
+        className="flex flex-col w-full pt-[65px] md:pt-[30px]"
+        isPageRoot
+      >
         <div className="flex justify-between items-start w-full">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-y-[10px] md:gap-x-[15px] pb-[15px]">
             <div className="flex items-center">
@@ -162,7 +165,6 @@ export default async function Layout({
                 <Heading className="text-[36px] leading-[120%]" as="h1">
                   {pageData.title}
                 </Heading>
-
               </div>
             </div>
             <div className="pl-[38px] md:pl-0">
@@ -171,7 +173,11 @@ export default async function Layout({
                 rel="noreferrer"
                 target="_blank"
               >
-                <div className={`flex items-center justify-center p-[1px] bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)] rounded-full  ${params.metric === "transaction-costs" ? "flex" : "hidden"}`}>
+                <div
+                  className={`flex items-center justify-center p-[1px] bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)] rounded-full  ${
+                    params.metric === "transaction-costs" ? "flex" : "hidden"
+                  }`}
+                >
                   <div className="flex items-center pl-[5px] py-[4px] w-[205px] gap-x-[8px] font-semibold bg-forest-50 dark:bg-forest-900 rounded-full transition-all duration-300">
                     <div className="w-[24px] h-[24px] bg-[#151A19] rounded-full flex items-center justify-center">
                       <Icon
@@ -193,7 +199,7 @@ export default async function Layout({
           iconContainerClassName="items-center mb-[15px] md:mb-[32px] relative"
         >
           {typeof pageData.description === "string" &&
-            pageData.description.includes("L2Beat.com.") ? (
+          pageData.description.includes("L2Beat.com.") ? (
             <div>
               <p>
                 {pageData.description.replace("L2Beat.com.", "")}
@@ -247,11 +253,6 @@ export default async function Layout({
           startOpen
         />
       </Container>
-      {params.metric === "stablecoin-market-cap" && (
-        <Container className="pt-[60px]">
-          <StableInsights />
-        </Container>
-      )}
     </>
   );
 }
