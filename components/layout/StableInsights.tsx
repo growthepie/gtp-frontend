@@ -402,53 +402,24 @@ export default function StableInsights({}: {}) {
         <div className="flex flex-col gap-y-[15px]">
           <div className="flex items-center gap-x-[8px] ">
             <Image
-              src="/GTP-Package.svg"
-              alt="GTP Chain"
+              src="/Glo_Dollar.svg"
+              alt="Glo Dollar Icon"
               className="object-contain w-[32px] h-[32px] "
               height={36}
               width={36}
             />
-            <Heading className="text-[30px] leading-snug " as="h1">
-              Stablecoin Insights
+            <Heading className="text-[36px] leading-snug " as="h1">
+              Glo Dollar Stablecoin Holders
             </Heading>
           </div>
-          <div className="w-full h-[36px] bg-[#24E5DF] rounded-full flex items-center pl-2 gap-x-[10px] ">
-            <div
-              className="bg-white dark:bg-forest-1000 rounded-full w-[24px] h-[24px] p-1 flex items-center justify-center relative cursor-pointer "
-              onClick={(e) => {
-                handleClick();
-              }}
-            >
-              <Image
-                src={"/Glo_Dollar.svg"}
-                className="w-[16px] h-[16px]"
-                alt={"Glo Dollar Icon"}
-                height={16}
-                width={16}
-              />
-              <Icon
-                icon={"gtp:circle-arrow"}
-                className={`w-[4px] h-[9px] absolute top-2 right-0 `}
-                style={{
-                  transform: `rotate(${clicked ? "90deg" : "0deg"})`,
-                  transformOrigin: "-8px 4px",
-                  transition: "transform 0.5s",
-                }}
-              />
-            </div>
-            <div className="text-[#1F2726] text-[15px] sm:text-[20px] font-bold">
-              Top 10 Glo Dollar Stablecoin Holders
-            </div>
-          </div>
+
           <div
-            className={`overflow-clip hover:!overflow-visible flex flex-col gap-y-[10px] px-[30px] ${
-              clicked ? "max-h-[1400px] lg:max-h-[829px]" : "max-h-[0px]"
-            }`}
+            className={`overflow-clip hover:!overflow-visible flex flex-col gap-y-[10px]  `}
             style={{
               transition: "all 0.5s",
             }}
           >
-            <div className="flex lg:flex-row lg:gap-y-0 gap-y-[10px] flex-col  w-full lg:justify-between px-[10px]">
+            <div className="flex lg:flex-row lg:gap-y-0 gap-y-[10px] flex-col  w-full lg:justify-between">
               <div className="flex flex-col gap-y-[5px] lg:max-w-[520px] xl:max-w-[690px]">
                 <div className="pt-[5px] md:text-base text-[11px] w-full ">
                   Glo Dollar is a fiat-backed stablecoin that funds public
@@ -510,7 +481,7 @@ export default function StableInsights({}: {}) {
                 })}
               </TopRowParent>
             </TopRowContainer>
-            <div className="flex lg:flex-row flex-col-reverse w-full lg:gap-y-0 gap-y-[15px] gap-x-[5px] h-auto lg:h-[507px] overflow-scroll">
+            <div className="flex lg:flex-row flex-col-reverse w-full mt-[5px] lg:gap-y-0 gap-y-[15px] gap-x-[5px] h-auto lg:h-[507px] overflow-scroll">
               <div className="flex flex-col gap-y-[15px] relative h-[493px] w-full lg:w-[50%] min-w-[300px] ">
                 <div
                   className="w-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px]"
@@ -643,7 +614,7 @@ export default function StableInsights({}: {}) {
                   <HighchartsChart
                     containerProps={{
                       style: {
-                        height: "94%",
+                        height: "91%",
                         width: "100%",
                         overflow: "visible",
                       },
@@ -731,7 +702,7 @@ export default function StableInsights({}: {}) {
                       marginBottom={38}
                       marginLeft={40}
                       marginRight={0}
-                      marginTop={10}
+                      marginTop={35}
                       onRender={(chartData) => {
                         const chart = chartData.target as any;
                         if (chart && chart.series[0]) {
@@ -740,8 +711,8 @@ export default function StableInsights({}: {}) {
                           Object.keys(yAxis.ticks).map((key, i) => {
                             const lastVal = Object.keys(yAxis.ticks).length - 1;
                             const gridLine = yAxis.ticks[key].gridLine.element;
-                            if (i === lastVal) {
-                              gridLine.setAttribute("stroke", "#CDD8D3");
+                            if (i === 0) {
+                              gridLine.setAttribute("stroke", "#CDD8D333");
                             }
                           });
                         }
@@ -786,7 +757,7 @@ export default function StableInsights({}: {}) {
                         allowOverlap: false,
                         reserveSpace: true,
                         overflow: "justify",
-                        y: 30,
+                        y: 35,
                         style: {
                           fontSize: "10px",
                           color: "#CDD8D3",
@@ -879,17 +850,17 @@ export default function StableInsights({}: {}) {
                       // showLastLabel={true}
                       type="linear"
                       gridLineWidth={1}
-                      gridLineColor={"#5A64624F"}
+                      gridLineColor={"#CDD8D355"}
                       showFirstLabel={true}
                       showLastLabel={true}
-                      tickAmount={4}
+                      tickAmount={3}
                       labels={{
                         align: "left",
                         y: 3,
                         x: -37,
                         style: {
                           fontSize: "10px",
-                          color: "#CDD8D34D",
+                          color: "#CDD8D3",
                         },
                         formatter: function () {
                           const value = this.value as number | bigint;
@@ -897,8 +868,8 @@ export default function StableInsights({}: {}) {
                             valuePrefix +
                             Intl.NumberFormat("en-GB", {
                               notation: "compact",
-                              maximumFractionDigits: 2,
-                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 1,
+                              minimumFractionDigits: 0,
                             }).format(value)
                           );
                         },
