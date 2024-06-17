@@ -503,7 +503,7 @@ export default function StableInsights({}: {}) {
                     <div>Share</div>
                   </div>
                 </div>
-                <div className="max-h-[425px] pr-4 w-full overflow-hidden gap-y-[5px] flex flex-col overflow-y-scroll scrollbar-utility scrollbar-thumb-forest-900 ">
+                <div className="max-h-[425px] pr-4 w-full overflow-hidden gap-y-[5px] flex flex-col overflow-y-scroll scroll-utility ">
                   {Object.keys(sortedTableData).map((key, i) => {
                     const topValue = Object.keys(sortedTableData)[0];
 
