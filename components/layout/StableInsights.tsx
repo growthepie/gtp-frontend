@@ -508,11 +508,8 @@ export default function StableInsights({}: {}) {
                     const topValue = Object.keys(sortedTableData)[0];
 
                     return (
-                      <div className="min-h-[34px] min-w-[300px]">
-                        <div
-                          className=" w-full rounded-full border-[#5A6462] border-[1px] h-full"
-                          key={key + i}
-                        >
+                      <div className="min-h-[34px] min-w-[300px]" key={key + i}>
+                        <div className=" w-full rounded-full border-[#5A6462] border-[1px] h-full">
                           <div
                             className="w-full h-full grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] relative overflow-hidden rounded-full"
                             style={{
