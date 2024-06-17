@@ -906,7 +906,7 @@ export default function StableInsights({}: {}) {
                 </HighchartsProvider>
               </div>
             </div>
-            <div className="w-full bg-[#1F2726] rounded-full h-[36px] flex justify-end items-center py-[3px] px-[5px] -mt-[15px]">
+            <div className="w-full bg-[#1F2726] rounded-full h-[36px] flex justify-end items-center py-[3px] px-[5px] lg:-mt-[15px]">
               <div className="mr-[15px] h-full text-[16px] w-[158px] rounded-full flex items-center justify-center bg-[#151A19]">
                 Total Market Cap
               </div>
