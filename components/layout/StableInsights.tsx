@@ -415,21 +415,21 @@ export default function StableInsights({}: {}) {
           </div>
 
           <div
-            className={`overflow-clip hover:!overflow-visible flex flex-col gap-y-[10px]  `}
+            className={`overflow-clip hover:!overflow-visible flex flex-col gap-y-[10px] -mt-[10px] `}
             style={{
               transition: "all 0.5s",
             }}
           >
-            <div className="flex lg:flex-row lg:gap-y-0 gap-y-[10px] flex-col  w-full lg:justify-between">
-              <div className="flex flex-col gap-y-[5px] lg:max-w-[520px] xl:max-w-[690px]">
-                <div className="pt-[5px] md:text-base text-[11px] w-full ">
+            <div className="flex lg:flex-row lg:gap-y-0 gap-y-[10px] flex-col   w-full lg:justify-between mb-[10px]">
+              <div className="flex flex-col gap-y-[10px] lg:max-w-[520px] xl:max-w-[690px]">
+                <div className="pt-[5px] md:text-[14px] text-[12px] w-full ">
                   Glo Dollar is a fiat-backed stablecoin that funds public
                   goods. With Glo Dollar, you can help fund public goods and
                   charitable causes just by holding a stablecoin. It&apos;s a
                   new, donationless form of philanthropy.
                 </div>
 
-                <div className="pt-[5px] md:text-base text-[11px] w-full">
+                <div className="pt-[5px] md:text-[14px] text-[12px] w-full">
                   Check here which are the top supporting Glo Dollar wallets
                   currently.
                 </div>
