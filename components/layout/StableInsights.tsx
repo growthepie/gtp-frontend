@@ -485,10 +485,10 @@ export default function StableInsights({}: {}) {
                 })}
               </TopRowParent>
             </TopRowContainer>
-            <div className="flex lg:flex-row flex-col-reverse w-full mt-[5px] lg:gap-y-0 gap-y-[15px] gap-x-[5px] h-auto lg:h-[507px] xs:overflow-auto 3xs:overflow-x-scroll">
-              <div className="flex flex-col gap-y-[15px] relative h-[493px] w-full lg:w-[50%] min-w-[300px] ">
+            <div className="flex lg:flex-row flex-col-reverse w-full mt-[5px] lg:gap-y-0 gap-y-[15px] gap-x-[5px]  h-auto lg:h-[507px] xs:overflow-auto 3xs:overflow-x-scroll">
+              <div className="flex flex-col gap-y-[15px] relative h-[493px] w-full lg:w-[50%] min-w-[300px]  ">
                 <div
-                  className="w-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px]"
+                  className="w-full grid px-[10px] gap-x-[5px] pl-[15px] xs:pr-[32px] pr-[15px] "
                   style={{
                     gridTemplateColumns: `auto ${
                       isMobile ? "100px" : "150px"
@@ -513,130 +513,138 @@ export default function StableInsights({}: {}) {
                     />
                   </div>
                 </div>
-                {transitions((style, item) => {
-                  if (item.i > 9) {
-                    return;
-                  }
-                  return (
-                    <animated.div
-                      className="absolute w-full rounded-full border-[#5A6462] top-[30px] border-[1px] h-[34px] min-w-[300px]"
-                      style={{ ...style }}
-                    >
+                <div className="max-h-[385px] w-full overflow-hidden gap-y-[5px] flex flex-col overflow-y-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
+                  {Object.keys(sortedTableData).map((key, i) => {
+                    return (
                       <div
-                        className="w-full h-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px] relative overflow-hidden rounded-full"
-                        style={{
-                          gridTemplateColumns: `auto ${
-                            isMobile || isSidebarOpen ? "100px" : "150px"
-                          } 50px`,
-                        }}
+                        className=" w-[99%] rounded-full border-[#5A6462] border-[1px] min-h-[34px] min-w-[300px]"
+                        key={key + i}
                       >
+                        <div
+                          className="w-full h-full grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] relative overflow-hidden rounded-full"
+                          style={{
+                            gridTemplateColumns: `auto ${
+                              isMobile || isSidebarOpen ? "100px" : "150px"
+                            } 50px`,
+                          }}
+                        >
+                          <div
+                            className={`absolute left-2 top-[31px] h-[2px] w-[90%] `}
+                          >
+                            <div
+                              className={` bg-forest-100 h-full `}
+                              style={{
+                                width:
+                                  data.holders_table[key].share * 100 + "%",
+                              }}
+                            ></div>
+                          </div>
+                          <div className="xl:text-[12px] text-[11px] lg:text-[10px] h-full gap-x-[5px] flex items-center ">
+                            <div
+                              className={` truncate  ${
+                                isSidebarOpen
+                                  ? "2xl:max-w-full xl:max-w-[160px] lg:max-w-[120px] sm:max-w-[120px] 3xs:max-w-[90px]"
+                                  : "xl:max-w-full sm:max-w-[150px] 3xs:max-w-[86px]"
+                              }`}
+                            >
+                              {key}
+                            </div>
+                            {data.holders_table[key].website && (
+                              <a
+                                href={data.holders_table[key].website}
+                                target="_blank"
+                              >
+                                <Image
+                                  src="/webvector.svg"
+                                  alt="GTP Chain"
+                                  className="object-contain w-[15px] h-[15px] "
+                                  height={15}
+                                  width={15}
+                                />
+                              </a>
+                            )}
+                            {data.holders_table[key].twitter && (
+                              <a
+                                href={data.holders_table[key].twitter}
+                                target="_blank"
+                              >
+                                <Icon
+                                  icon="gtp:twitter"
+                                  className="object-contain w-[15px] h-[15px] "
+                                />
+                              </a>
+                            )}
+                          </div>
+                          <div className="xl:text-[12px]  text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
+                            ${formatNumber(data.holders_table[key].balance)}
+                          </div>
+
+                          <div className="flex  text-[11px]  h-[18px] justify-center items-center bg-[#344240]  rounded-full my-auto ml-1  py-[2px] px-[2px]">
+                            <div className="xl:text-[9px] text-[9px] lg:text-[8px] flex items-center justify-center gap-x-0.5">
+                              {formatNumber(
+                                data.holders_table[key].share * 100,
+                              )}
+                              %
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div className=" w-[99%] rounded-full border-forest-200 border-dashed border-[1px] min-h-[34px]">
+                    <div
+                      className="w-full h-full grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] relative rounded-full overflow-hidden"
+                      style={{ gridTemplateColumns: `auto 100px 50px` }}
+                    >
+                      {combinedHolders && (
                         <div
                           className={`absolute left-2 top-[31px] h-[2px] w-[90%] `}
                         >
                           <div
                             className={` bg-forest-100 h-full `}
                             style={{
-                              width:
-                                data.holders_table[item.key].share * 100 + "%",
+                              width: combinedHolders.others.share * 100 + "%",
                             }}
                           ></div>
                         </div>
-                        <div className="xl:text-[12px] text-[11px] lg:text-[10px] h-full gap-x-[5px] flex items-center ">
-                          <div
-                            className={` truncate  ${
-                              isSidebarOpen
-                                ? "2xl:max-w-full xl:max-w-[160px] lg:max-w-[120px] sm:max-w-[120px] 3xs:max-w-[100px]"
-                                : "xl:max-w-full sm:max-w-[150px] 3xs:max-w-[100px]"
-                            }`}
-                          >
-                            {item.key}
-                          </div>
-                          {data.holders_table[item.key].website && (
-                            <Link href={data.holders_table[item.key].website}>
-                              <Image
-                                src="/webvector.svg"
-                                alt="GTP Chain"
-                                className="object-contain w-[15px] h-[15px] "
-                                height={15}
-                                width={15}
-                              />
-                            </Link>
-                          )}
-                          {data.holders_table[item.key].twitter && (
-                            <Link href={data.holders_table[item.key].twitter}>
-                              <Icon
-                                icon="gtp:twitter"
-                                className="object-contain w-[15px] h-[15px] "
-                              />
-                            </Link>
-                          )}
-                        </div>
+                      )}
+                      <div className="xl:text-[12px]  text-[11px] sm:leading-normal leading-tight  lg:text-[10px] h-full flex grow items-center ">
+                        Other Holders Combined
+                      </div>
+                      {combinedHolders && (
                         <div className="xl:text-[12px]  text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
-                          ${formatNumber(data.holders_table[item.key].balance)}
+                          ${formatNumber(combinedHolders.others.total)}
                         </div>
-
-                        <div className="flex  text-[11px]  h-[18px] justify-center items-center bg-[#344240]  rounded-full my-auto ml-1  py-[2px] px-[2px]">
-                          <div className="xl:text-[9px] text-[9px] lg:text-[8px] flex items-center justify-center gap-x-0.5">
-                            {formatNumber(
-                              data.holders_table[item.key].share * 100,
-                            )}
-                            %
+                      )}
+                      {combinedHolders && (
+                        <div className="flex xl:text-[12px]  text-[11px]  lg:text-[10px] h-[18px] justify-center items-center bg-[#344240] rounded-full my-auto ml-1 py-[2px] px-[2px]">
+                          <div className="text-[9px] flex items-center justify-center gap-x-0.5">
+                            {formatNumber(combinedHolders.others.share * 100)} %
                           </div>
                         </div>
-                      </div>
-                    </animated.div>
-                  );
-                })}
-                <div className="absolute w-full rounded-full border-forest-200 border-dashed top-[420px] border-[1px] h-[34px]">
-                  <div
-                    className="w-full h-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px] relative rounded-full overflow-hidden"
-                    style={{ gridTemplateColumns: `auto 100px 50px` }}
-                  >
-                    {combinedHolders && (
-                      <div
-                        className={`absolute left-2 top-[31px] h-[2px] w-[90%] `}
-                      >
-                        <div
-                          className={` bg-forest-100 h-full `}
-                          style={{
-                            width: combinedHolders.others.share * 100 + "%",
-                          }}
-                        ></div>
-                      </div>
-                    )}
-                    <div className="xl:text-[12px]  text-[11px] sm:leading-normal leading-tight  lg:text-[10px] h-full flex grow items-center ">
-                      Other Holders Combined
+                      )}
                     </div>
-                    {combinedHolders && (
-                      <div className="xl:text-[12px]  text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
-                        ${formatNumber(combinedHolders.others.total)}
-                      </div>
-                    )}
-                    {combinedHolders && (
-                      <div className="flex xl:text-[12px]  text-[11px]  lg:text-[10px] h-[18px] justify-center items-center bg-[#344240] rounded-full my-auto ml-1 py-[2px] px-[2px]">
-                        <div className="text-[9px] flex items-center justify-center gap-x-0.5">
-                          {formatNumber(combinedHolders.others.share * 100)} %
-                        </div>
-                      </div>
-                    )}
                   </div>
-                </div>
-                <div className="absolute w-full rounded-full border-forest-100 top-[459px] bg-[#5A6462] border-[1px] h-[34px]">
-                  <div
-                    className="w-full h-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px] "
-                    style={{ gridTemplateColumns: `auto 100px 50px` }}
-                  >
-                    <div className="text-[12px] h-full flex grow items-center sm:leading-normal leading-tight min-w-[80px]">
-                      Total Glo Dollar Market Cap
-                    </div>
-                    {combinedHolders && (
-                      <div className="xl:text-[12px]  text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
-                        $
-                        {formatNumber(
-                          data.chart.data[data.chart.data.length - 1][2],
+
+                  <div className="absolute w-full  top-[426px] xs:pr-[17px]  ">
+                    <div className="flex items-center h-[34px] bg-[#5A6462] border-[1px] border-forest-100 rounded-full">
+                      <div
+                        className="w-full h-full grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] "
+                        style={{ gridTemplateColumns: `auto 100px 50px` }}
+                      >
+                        <div className="text-[12px] h-full flex grow items-center sm:leading-normal leading-tight min-w-[90px]">
+                          Total Glo Dollar Market Cap
+                        </div>
+                        {combinedHolders && (
+                          <div className="xl:text-[12px]  text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
+                            $
+                            {formatNumber(
+                              data.chart.data[data.chart.data.length - 1][2],
+                            )}
+                          </div>
                         )}
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -929,7 +937,7 @@ export default function StableInsights({}: {}) {
                 </HighchartsProvider>
               </div>
             </div>
-            <div className="w-full bg-[#1F2726] rounded-full h-[36px] flex justify-end items-center py-[3px] px-[5px] lg:-mt-[15px]">
+            <div className="w-full bg-[#1F2726] rounded-full h-[36px] flex justify-end items-center py-[3px] px-[5px] lg:-mt-[45px]">
               <div className="mr-[15px] h-full text-[16px] w-[158px] rounded-full flex items-center justify-center bg-[#151A19]">
                 Total Market Cap
               </div>
