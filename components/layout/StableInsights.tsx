@@ -503,7 +503,7 @@ export default function StableInsights({}: {}) {
                     <div>Share</div>
                   </div>
                 </div>
-                <div className="max-h-[425px] pr-2 w-full overflow-hidden gap-y-[5px] flex flex-col overflow-y-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
+                <div className="max-h-[425px] pr-4 w-full overflow-hidden gap-y-[5px] flex flex-col overflow-y-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
                   {Object.keys(sortedTableData).map((key, i) => {
                     const topValue = Object.keys(sortedTableData)[0];
 
@@ -587,7 +587,7 @@ export default function StableInsights({}: {}) {
                       </div>
                     );
                   })}
-                  <div className=" w-[97.5%] rounded-full border-forest-200 border-dashed border-[1px] min-h-[34px]">
+                  <div className=" w-[100%] pr-2 rounded-full border-forest-200 border-dashed border-[1px] min-h-[34px]">
                     <div
                       className="w-full h-full grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] relative rounded-full overflow-hidden"
                       style={{ gridTemplateColumns: `auto 100px 50px` }}
