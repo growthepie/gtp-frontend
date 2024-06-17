@@ -521,7 +521,7 @@ export default function StableInsights({}: {}) {
                           }}
                         >
                           <div
-                            className={`absolute left-2 top-[31px] h-[2px] w-[96%] `}
+                            className={`absolute left-2 top-[31px] h-[2px] w-[98%] `}
                           >
                             <div
                               className={` bg-forest-100 h-full `}
