@@ -421,7 +421,7 @@ export default function StableInsights({}: {}) {
             }}
           >
             <div className="flex lg:flex-row lg:gap-y-0 gap-y-[10px] flex-col   w-full lg:justify-between mb-[10px]">
-              <div className="flex flex-col gap-y-[10px] lg:max-w-[520px] xl:max-w-[690px]">
+              <div className="flex flex-col gap-y-[10px] lg:max-w-[520px] xl:max-w-[618px]">
                 <div className="pt-[5px] md:text-[14px] text-[12px] w-full ">
                   Glo Dollar is a fiat-backed stablecoin that funds public
                   goods. With Glo Dollar, you can help fund public goods and
