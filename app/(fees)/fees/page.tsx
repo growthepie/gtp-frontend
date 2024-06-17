@@ -170,7 +170,9 @@ export default function FeesPage() {
   function dataAvailToArray(x: string): DAvailability[] {
     let retObject: DAvailability[] = [];
     if (typeof x === "string") {
-      // Ensure x is a string
+      // Convert x to lowercase to ensure case-insensitive matching
+      x = x.toLowerCase();
+
       if (x.includes("calldata")) {
         retObject.push({
           icon: "calldata",
@@ -185,21 +187,21 @@ export default function FeesPage() {
         });
       }
 
-      if (x.includes("MantleDA")) {
+      if (x.includes("mantleda")) {
         retObject.push({
           icon: "customoffchain",
           label: "MantleDA",
         });
       }
 
-      if (x.includes("DAC")) {
+      if (x.includes("dac")) {
         retObject.push({
           icon: "committee",
           label: "DAC (committee)",
         });
       }
 
-      if (x.includes("Celestia")) {
+      if (x.includes("celestia")) {
         retObject.push({
           icon: "celestiafp",
           label: "Celestia",
@@ -212,6 +214,13 @@ export default function FeesPage() {
           label: "Memo",
         });
       }
+    }
+
+    if (retObject === []) {
+      retObject.push({
+        icon: "fa:circle",
+        label: "N/A",
+      });
     }
     return retObject;
   }
