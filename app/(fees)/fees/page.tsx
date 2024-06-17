@@ -187,10 +187,10 @@ export default function FeesPage() {
         });
       }
 
-      if (x.includes("mantleda")) {
+      if (x.includes("mantleda") || x.includes("eiganda")) {
         retObject.push({
           icon: "customoffchain",
-          label: "MantleDA",
+          label: "EigenDA",
         });
       }
 
@@ -216,7 +216,7 @@ export default function FeesPage() {
       }
     }
 
-    if (retObject === []) {
+    if (retObject.length === 0) {
       retObject.push({
         icon: "fa:circle",
         label: "N/A",
