@@ -76,6 +76,7 @@ export default function StableInsights({}: {}) {
     setClicked(!clicked);
   };
   const { isMobile } = useUIContext();
+  const { isSidebarOpen } = useUIContext();
   const {
     data: data,
     error: error,
@@ -481,8 +482,8 @@ export default function StableInsights({}: {}) {
                 })}
               </TopRowParent>
             </TopRowContainer>
-            <div className="flex lg:flex-row flex-col-reverse w-full mt-[5px] lg:gap-y-0 gap-y-[15px] gap-x-[5px] h-auto lg:h-[507px] overflow-scroll">
-              <div className="flex flex-col gap-y-[15px] relative h-[493px] w-full lg:w-[50%] min-w-[300px] ">
+            <div className="flex lg:flex-row flex-col-reverse w-full mt-[5px] lg:gap-y-0 gap-y-[15px] gap-x-[5px] h-auto lg:h-[507px] xs:overflow-auto 3xs:overflow-x-scroll">
+              <div className="flex flex-col gap-y-[15px] relative h-[493px] w-full lg:w-[50%] min-w-[300px]   b">
                 <div
                   className="w-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px]"
                   style={{
@@ -522,12 +523,18 @@ export default function StableInsights({}: {}) {
                         className="w-full h-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px] "
                         style={{
                           gridTemplateColumns: `auto ${
-                            isMobile ? "100px" : "150px"
+                            isMobile || isSidebarOpen ? "100px" : "150px"
                           } 50px`,
                         }}
                       >
                         <div className="xl:text-[12px] text-[11px] lg:text-[10px] h-full gap-x-[5px] flex items-center ">
-                          <div className="xl:max-w-full sm:max-w-[120px] 3xs:max-w-[100px] truncate">
+                          <div
+                            className={` truncate ${
+                              isSidebarOpen
+                                ? "2xl:max-w-full xl:max-w-[160px] lg:max-w-[50px] sm:max-w-[120px] 3xs:max-w-[100px]"
+                                : "xl:max-w-full sm:max-w-[150px] 3xs:max-w-[100px]"
+                            }`}
+                          >
                             {item.key}
                           </div>
                           {data.holders_table[item.key].website && (
@@ -556,10 +563,10 @@ export default function StableInsights({}: {}) {
 
                         <div className="flex  text-[11px]  h-[18px] justify-center items-center bg-[#344240]  rounded-full my-auto ml-1  py-[2px] px-[2px]">
                           <div className="xl:text-[9px] text-[9px] lg:text-[8px] flex items-center justify-center gap-x-0.5">
-                            %
                             {formatNumber(
                               data.holders_table[item.key].share * 100,
                             )}
+                            %
                           </div>
                         </div>
                       </div>
@@ -582,7 +589,7 @@ export default function StableInsights({}: {}) {
                     {combinedHolders && (
                       <div className="flex xl:text-[12px]  text-[11px]  lg:text-[10px] h-[18px] justify-center items-center bg-[#344240] rounded-full my-auto ml-1 py-[2px] px-[2px]">
                         <div className="text-[9px] flex items-center justify-center gap-x-0.5">
-                          %{formatNumber(combinedHolders.others.share * 100)}
+                          {formatNumber(combinedHolders.others.share * 100)} %
                         </div>
                       </div>
                     )}
@@ -591,9 +598,9 @@ export default function StableInsights({}: {}) {
                 <div className="absolute w-full rounded-full border-forest-100 top-[459px] bg-[#5A6462] border-[1px] h-[34px]">
                   <div
                     className="w-full h-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px] "
-                    style={{ gridTemplateColumns: "auto 120px 50px" }}
+                    style={{ gridTemplateColumns: `auto 100px 50px` }}
                   >
-                    <div className="text-[12px] h-full flex grow items-center sm:leading-normal leading-tight ">
+                    <div className="text-[12px] h-full flex grow items-center sm:leading-normal leading-tight min-w-[80px]">
                       Total Glo Dollar Market Cap
                     </div>
                     {combinedHolders && (
@@ -752,16 +759,13 @@ export default function StableInsights({}: {}) {
                       title={undefined}
                       type="datetime"
                       labels={{
-                        useHTML: true,
                         align: undefined,
+                        rotation: 0,
                         allowOverlap: false,
+                        // staggerLines: 1,
                         reserveSpace: true,
                         overflow: "justify",
-                        y: 35,
-                        style: {
-                          fontSize: "10px",
-                          color: "#CDD8D3",
-                        },
+                        useHTML: true,
                         formatter: function (
                           this: AxisLabelsFormatterContextObject,
                         ) {
@@ -806,8 +810,11 @@ export default function StableInsights({}: {}) {
                             );
                           }
                         },
-
-                        enabled: true,
+                        y: 30,
+                        style: {
+                          fontSize: "10px",
+                          color: "#CDD8D3",
+                        },
                       }}
                       crosshair={{
                         width: 0.5,
@@ -818,17 +825,6 @@ export default function StableInsights({}: {}) {
                       tickWidth={1}
                       tickLength={20}
                       ordinal={false}
-                      minorTicks={true}
-                      minorTickLength={2}
-                      minorTickWidth={2}
-                      minorGridLineWidth={0}
-                      minorTickInterval={
-                        timespans[selectedTimespan].xMax -
-                          timespans[selectedTimespan].xMin <=
-                        40 * 24 * 3600 * 1000
-                          ? 24 * 3600 * 1000
-                          : 30 * 24 * 3600 * 1000
-                      }
                       min={
                         timespans[selectedTimespan].value
                           ? data.chart.data[data.chart.data.length - 1][0] -
@@ -840,9 +836,7 @@ export default function StableInsights({}: {}) {
                           : data.chart.data[0][0]
                       }
                       max={data.chart.data[data.chart.data.length - 1][0]}
-                    >
-                      <XAxis.Title>X Axis</XAxis.Title>
-                    </XAxis>
+                    ></XAxis>
                     <YAxis
                       title={undefined}
                       opposite={false}
