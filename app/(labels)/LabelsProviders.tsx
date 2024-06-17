@@ -21,7 +21,7 @@ export default function Providers({ children }: ProvidersProps) {
         castBigIntToDouble: true,
       },
     }
-    initializeDuckDb({ config, debug: false });
+    initializeDuckDb({ config, debug: true });
   }, []);
 
 

@@ -1,8 +1,8 @@
 ﻿export interface LabelsResponse {
-  data: Data;
+  data: LabelsData;
 }
 
-export interface Data {
+export interface LabelsData {
   sort: Sort;
   types: Columns[];
   data: Datum[];
@@ -28,7 +28,7 @@ export type Columns =
 
 export type Datum = (string | number | null)[];
 
-export interface ParsedDatum {
+export interface LabelsRow {
   address: string;
   origin_key: string;
   name: string | null;
@@ -45,7 +45,7 @@ export interface ParsedDatum {
 export class LabelsResponseHelper {
   private response: LabelsResponse;
   private typesIndexes: Record<Columns, number>;
-  public data: ParsedDatum[];
+  public data: LabelsRow[];
   public types: Columns[];
 
   constructor(response: LabelsResponse) {
@@ -66,7 +66,7 @@ export class LabelsResponseHelper {
     }, {} as Record<Columns, number>);
   }
 
-  getData(): ParsedDatum[] {
+  getData(): LabelsRow[] {
     return this.response.data.data.map((datum) => this.parseDatum(datum));
   }
 
@@ -74,7 +74,7 @@ export class LabelsResponseHelper {
     return this.response.data.sort;
   }
 
-  private parseDatum(datum: Datum): ParsedDatum {
+  private parseDatum(datum: Datum): LabelsRow {
     const [
       address,
       origin_key,

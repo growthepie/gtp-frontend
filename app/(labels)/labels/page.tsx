@@ -274,10 +274,6 @@ export default function LabelsPage() {
       ]
       : [0, 0]
 
-
-
-
-
   const handleFilter = useCallback((key: string, value: string | number) => {
     setLabelsFilters({
       ...labelsFilters,

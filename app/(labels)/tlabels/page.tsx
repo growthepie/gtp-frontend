@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import useSWR from 'swr';
-import { LabelsURLS, MasterURL } from '@/lib/urls';
+import { LabelsURLS, MasterURL, LabelsParquetURLS } from '@/lib/urls';
 import { useDuckDb, useDuckDbQuery } from 'duckdb-wasm-kit';
 import { runQuery } from "duckdb-wasm-kit";
 import { useSessionStorage } from 'usehooks-ts';
@@ -20,6 +20,10 @@ import { MasterResponse } from '@/types/api/MasterResponse';
 import { AllChainsByKeys } from '@/lib/chains';
 import { AddIcon, Badge, RemoveIcon } from "../labels/Search";
 import CanvasSparkline, { CanvasSparklineProvider, useCanvasSparkline } from '../labels/CanvasSparkline';
+import { insertParquetFromURL } from '@/lib/react-duckdb/insertParquet';
+import { formatNumber } from "@/lib/chartUtils";
+
+const sparklineMetricKeys = ["txcount", "gas_fees", "active_addresses"];
 
 export default function LabelsPage() {
   const { db, loading, error } = useDuckDb();
@@ -59,32 +63,33 @@ export default function LabelsPage() {
         // };
 
         // transform to columnar format
-        const labelsDataColumnar = {
-          "address": labelsData.map(row => row[0]),
-          "origin_key": labelsData.map(row => row[1]),
-          "name": labelsData.map(row => row[2]),
-          "owner_project": labelsData.map(row => row[3]),
-          "usage_category": labelsData.map(row => row[4]),
-          "txcount": labelsData.map(row => row[5]),
-          "txcount_change": labelsData.map(row => row[6]),
-          "gas_fees_usd": labelsData.map(row => row[7]),
-          "gas_fees_usd_change": labelsData.map(row => row[8]),
-          "daa": labelsData.map(row => row[9]),
-          "daa_change": labelsData.map(row => row[10]),
-        };
+        // const labelsDataColumnar = {
+        //   "address": labelsData.map(row => row[0]),
+        //   "origin_key": labelsData.map(row => row[1]),
+        //   "name": labelsData.map(row => row[2]),
+        //   "owner_project": labelsData.map(row => row[3]),
+        //   "usage_category": labelsData.map(row => row[4]),
+        //   "txcount": labelsData.map(row => row[5]),
+        //   "txcount_change": labelsData.map(row => row[6]),
+        //   "gas_fees_usd": labelsData.map(row => row[7]),
+        //   "gas_fees_usd_change": labelsData.map(row => row[8]),
+        //   "daa": labelsData.map(row => row[9]),
+        //   "daa_change": labelsData.map(row => row[10]),
+        // };
 
 
 
-        // Drop the table if it already exists
-        await runQuery(db, 'DROP TABLE IF EXISTS labels;');
+        // // Drop the table if it already exists
+        // await runQuery(db, 'DROP TABLE IF EXISTS labels;');
 
 
-        // Insert the data
-        await db.registerFileText('labels.json', JSON.stringify(labelsDataColumnar));
-        const conn = await db.connect();
+        // // Insert the data
+        // await db.registerFileText('labels.json', JSON.stringify(labelsDataColumnar));
+        // const conn = await db.connect();
 
 
-        await conn.insertJSONFromPath('labels.json', { name: 'labels' });
+        // await conn.insertJSONFromPath('labels.json', { name: 'labels' });
+        await insertParquetFromURL(db, LabelsParquetURLS.quick, 'labels');
 
 
         console.log('Data synced successfully');
