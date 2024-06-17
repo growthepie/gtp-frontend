@@ -405,11 +405,14 @@ export default function StableInsights({}: {}) {
             <Image
               src="/Glo_Dollar.svg"
               alt="Glo Dollar Icon"
-              className="object-contain w-[32px] h-[32px] "
+              className="object-contain  sm:w-[36px] sm:h-[36px] xs:w-[24px] xs:h-[24px]  3xs:w-[18px] 3xs:h-[18px]"
               height={36}
               width={36}
             />
-            <Heading className="text-[36px] leading-snug " as="h1">
+            <Heading
+              className="sm:text-[36px] xs:text-[24px] 3xs:text-[17px]  leading-snug "
+              as="h1"
+            >
               Glo Dollar Stablecoin Holders
             </Heading>
           </div>
@@ -422,20 +425,20 @@ export default function StableInsights({}: {}) {
           >
             <div className="flex lg:flex-row lg:gap-y-0 gap-y-[10px] flex-col   w-full lg:justify-between mb-[10px]">
               <div className="flex flex-col gap-y-[10px] lg:max-w-[520px] xl:max-w-[618px]">
-                <div className="pt-[5px] md:text-[14px] text-[12px] w-full ">
+                <div className="pt-[5px] sm:text-[14px] text-[12px] w-full ">
                   Glo Dollar is a fiat-backed stablecoin that funds public
                   goods. With Glo Dollar, you can help fund public goods and
                   charitable causes just by holding a stablecoin. It&apos;s a
                   new, donationless form of philanthropy.
                 </div>
 
-                <div className="pt-[5px] md:text-[14px] text-[12px] w-full">
+                <div className="pt-[5px] sm:text-[14px] text-[12px] w-full">
                   Check here which are the top supporting Glo Dollar wallets
                   currently.
                 </div>
               </div>
               <a
-                className="h-[60px] max-w-[100%] md:h-[96px] w-[176px] md:w-[249px] self-start lg:self-end rounded-2xl bg-[#2F3B3A] flex flex-col px-[15px] py-[5px] md:py-[10px]"
+                className="h-[52px] max-w-[100%] sm:h-[96px] w-[175px] sm:w-[249px] self-start lg:self-end rounded-2xl bg-[#2F3B3A] flex flex-col px-[15px] py-[5px] md:py-[10px]"
                 href="https://www.glodollar.org/"
                 target="_blank"
               >
@@ -443,16 +446,16 @@ export default function StableInsights({}: {}) {
                   <Image
                     src={"/Glo_Dollar.svg"}
                     alt={"Glo Dollar Icon"}
-                    className="w-[24px] h-[24px]  md:w-[36px] md:h-[36px]"
+                    className="sm:w-[36px] sm:h-[36px]  w-[18px] h-[18px]"
                     height={36}
                     width={36}
                   />
-                  <div className="md:text-[34px] text-[22px] -ml-1 flex gap-x-1 font-bold">
+                  <div className="sm:text-[34px] text-[17px] -ml-1 flex gap-x-1 font-bold">
                     <span>Glo</span>
                     <span>Dollar</span>
                   </div>
                 </div>
-                <div className="md:text-[12px] text-[8px] flex  lg:items-center lg:justify-start ">
+                <div className="sm:text-[12px] text-[8px] flex  lg:items-center lg:justify-start ">
                   More about Glo Dollar on their website
                 </div>
               </a>
@@ -483,7 +486,7 @@ export default function StableInsights({}: {}) {
               </TopRowParent>
             </TopRowContainer>
             <div className="flex lg:flex-row flex-col-reverse w-full mt-[5px] lg:gap-y-0 gap-y-[15px] gap-x-[5px] h-auto lg:h-[507px] xs:overflow-auto 3xs:overflow-x-scroll">
-              <div className="flex flex-col gap-y-[15px] relative h-[493px] w-full lg:w-[50%] min-w-[300px]   b">
+              <div className="flex flex-col gap-y-[15px] relative h-[493px] w-full lg:w-[50%] min-w-[300px] ">
                 <div
                   className="w-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px]"
                   style={{
@@ -495,14 +498,14 @@ export default function StableInsights({}: {}) {
                   <div className="text-[14px] font-bold items-center ">
                     Holder
                   </div>
-                  <div className="flex justify-end items-center text-[14px] font-bold cursor-pointer">
+                  <div className="flex justify-end items-center text-[14px] font-bold ">
                     <div>Amount</div>{" "}
                     <Icon
                       icon={sortOrder ? "formkit:arrowdown" : "formkit:arrowup"}
                       className="dark:text-forest-50 group-hover:text-forest-50/80 text-black w-[10px] h-[10px] "
                     />
                   </div>
-                  <div className="flex text-[10px] justify-center items-center bg-[#344240] rounded-full py-[2px] px-[2px] cursor-pointer">
+                  <div className="flex text-[10px] justify-center items-center bg-[#344240] rounded-full py-[2px] px-[2px] ">
                     <div>Share</div>
                     <Icon
                       icon={sortOrder ? "formkit:arrowdown" : "formkit:arrowup"}
@@ -529,9 +532,9 @@ export default function StableInsights({}: {}) {
                       >
                         <div className="xl:text-[12px] text-[11px] lg:text-[10px] h-full gap-x-[5px] flex items-center ">
                           <div
-                            className={` truncate ${
+                            className={` truncate  ${
                               isSidebarOpen
-                                ? "2xl:max-w-full xl:max-w-[160px] lg:max-w-[50px] sm:max-w-[120px] 3xs:max-w-[100px]"
+                                ? "2xl:max-w-full xl:max-w-[160px] lg:max-w-[120px] sm:max-w-[120px] 3xs:max-w-[100px]"
                                 : "xl:max-w-full sm:max-w-[150px] 3xs:max-w-[100px]"
                             }`}
                           >
@@ -903,7 +906,7 @@ export default function StableInsights({}: {}) {
                 </HighchartsProvider>
               </div>
             </div>
-            <div className="w-full bg-[#1F2726] rounded-full h-[36px] flex justify-end items-center py-[3px] px-[5px]">
+            <div className="w-full bg-[#1F2726] rounded-full h-[36px] flex justify-end items-center py-[3px] px-[5px] -mt-[15px]">
               <div className="mr-[15px] h-full text-[16px] w-[158px] rounded-full flex items-center justify-center bg-[#151A19]">
                 Total Market Cap
               </div>
