@@ -523,13 +523,24 @@ export default function StableInsights({}: {}) {
                       style={{ ...style }}
                     >
                       <div
-                        className="w-full h-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px] "
+                        className="w-full h-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px] relative overflow-hidden rounded-full"
                         style={{
                           gridTemplateColumns: `auto ${
                             isMobile || isSidebarOpen ? "100px" : "150px"
                           } 50px`,
                         }}
                       >
+                        <div
+                          className={`absolute left-2 top-[31px] h-[2px] w-[90%] `}
+                        >
+                          <div
+                            className={` bg-forest-100 h-full `}
+                            style={{
+                              width:
+                                data.holders_table[item.key].share * 100 + "%",
+                            }}
+                          ></div>
+                        </div>
                         <div className="xl:text-[12px] text-[11px] lg:text-[10px] h-full gap-x-[5px] flex items-center ">
                           <div
                             className={` truncate  ${
@@ -578,9 +589,19 @@ export default function StableInsights({}: {}) {
                 })}
                 <div className="absolute w-full rounded-full border-forest-200 border-dashed top-[420px] border-[1px] h-[34px]">
                   <div
-                    className="w-full h-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px] "
+                    className="w-full h-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px] relative rounded-full overflow-hidden"
                     style={{ gridTemplateColumns: `auto 100px 50px` }}
                   >
+                    <div
+                      className={`absolute left-2 top-[31px] h-[2px] w-[90%] `}
+                    >
+                      <div
+                        className={` bg-forest-100 h-full `}
+                        style={{
+                          width: combinedHolders.others.share * 100 + "%",
+                        }}
+                      ></div>
+                    </div>
                     <div className="xl:text-[12px]  text-[11px] sm:leading-normal leading-tight  lg:text-[10px] h-full flex grow items-center ">
                       Other Holders Combined
                     </div>
