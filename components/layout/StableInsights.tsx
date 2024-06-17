@@ -503,8 +503,10 @@ export default function StableInsights({}: {}) {
                     <div>Share</div>
                   </div>
                 </div>
-                <div className="max-h-[385px] w-full overflow-hidden gap-y-[5px] flex flex-col overflow-y-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
+                <div className="max-h-[425px] w-full overflow-hidden gap-y-[5px] flex flex-col overflow-y-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
                   {Object.keys(sortedTableData).map((key, i) => {
+                    const topValue = Object.keys(sortedTableData)[0];
+
                     return (
                       <div
                         className=" w-[99%] rounded-full border-[#5A6462] border-[1px] min-h-[34px] min-w-[300px]"
@@ -519,13 +521,17 @@ export default function StableInsights({}: {}) {
                           }}
                         >
                           <div
-                            className={`absolute left-2 top-[31px] h-[2px] w-[90%] `}
+                            className={`absolute left-2 top-[31px] h-[2px] w-[96%] `}
                           >
                             <div
                               className={` bg-forest-100 h-full `}
                               style={{
-                                width:
-                                  data.holders_table[key].share * 100 + "%",
+                                width: `${
+                                  ((data.holders_table[key].share * 100) /
+                                    (data.holders_table[topValue].share *
+                                      100)) *
+                                  100
+                                }%`,
                               }}
                             ></div>
                           </div>
@@ -586,18 +592,6 @@ export default function StableInsights({}: {}) {
                       className="w-full h-full grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] relative rounded-full overflow-hidden"
                       style={{ gridTemplateColumns: `auto 100px 50px` }}
                     >
-                      {combinedHolders && (
-                        <div
-                          className={`absolute left-2 top-[31px] h-[2px] w-[90%] `}
-                        >
-                          <div
-                            className={` bg-forest-100 h-full `}
-                            style={{
-                              width: combinedHolders.others.share * 100 + "%",
-                            }}
-                          ></div>
-                        </div>
-                      )}
                       <div className="xl:text-[12px]  text-[11px] sm:leading-normal leading-tight  lg:text-[10px] h-full flex grow items-center ">
                         Other Holders Combined
                       </div>
@@ -616,7 +610,7 @@ export default function StableInsights({}: {}) {
                     </div>
                   </div>
 
-                  <div className="absolute w-full  top-[421px] xs:pr-[17px]  ">
+                  <div className="absolute w-full  top-[460px] xs:pr-[17px]  ">
                     <div className="flex items-center h-[34px] bg-[#5A6462] border-[1px] border-forest-100 rounded-full">
                       <div
                         className="w-full h-full grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] "
@@ -927,7 +921,7 @@ export default function StableInsights({}: {}) {
                 </HighchartsProvider>
               </div>
             </div>
-            <div className="w-full bg-[#1F2726] rounded-full h-[36px] flex justify-end items-center py-[3px] px-[5px] lg:-mt-[45px]">
+            <div className="w-full bg-[#1F2726] rounded-full h-[36px] flex justify-end items-center py-[3px] px-[5px] lg:-mt-[15px]">
               <div className="mr-[15px] h-full text-[16px] w-[158px] rounded-full flex items-center justify-center bg-[#151A19]">
                 Total Market Cap
               </div>
