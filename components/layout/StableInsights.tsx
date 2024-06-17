@@ -385,10 +385,8 @@ export default function StableInsights({}: {}) {
     });
 
     Object.keys(sortedTableData).map((key, i) => {
-      if (i <= 9) {
-        retValue.others.total =
-          retValue.others.total - data.holders_table[key].balance;
-      }
+      retValue.others.total =
+        retValue.others.total - data.holders_table[key].balance;
     });
 
     retValue.others.share =
@@ -486,9 +484,9 @@ export default function StableInsights({}: {}) {
               </TopRowParent>
             </TopRowContainer>
             <div className="flex lg:flex-row flex-col-reverse w-full mt-[5px] lg:gap-y-0 gap-y-[15px] gap-x-[5px]  h-auto lg:h-[507px] xs:overflow-auto 3xs:overflow-x-scroll">
-              <div className="flex flex-col gap-y-[15px] relative h-[493px] w-full lg:w-[50%] min-w-[300px]  ">
+              <div className="flex flex-col gap-y-[15px] relative h-[493px] w-full lg:w-[50%] min-w-[300px] ">
                 <div
-                  className="w-full grid px-[10px] gap-x-[5px] pl-[15px] xs:pr-[32px] pr-[15px] "
+                  className="w-full grid px-[10px] gap-x-[5px] pl-[15px] xs:pr-[32px] pr-[15px] -mb-[5px] "
                   style={{
                     gridTemplateColumns: `auto ${
                       isMobile ? "100px" : "150px"
@@ -500,17 +498,9 @@ export default function StableInsights({}: {}) {
                   </div>
                   <div className="flex justify-end items-center text-[14px] font-bold ">
                     <div>Amount</div>{" "}
-                    <Icon
-                      icon={sortOrder ? "formkit:arrowdown" : "formkit:arrowup"}
-                      className="dark:text-forest-50 group-hover:text-forest-50/80 text-black w-[10px] h-[10px] "
-                    />
                   </div>
-                  <div className="flex text-[10px] justify-center items-center bg-[#344240] rounded-full py-[2px] px-[2px] ">
+                  <div className="flex text-[10px] justify-center ml-0.5 items-center bg-[#344240] rounded-full py-[2px] px-[2px] ">
                     <div>Share</div>
-                    <Icon
-                      icon={sortOrder ? "formkit:arrowdown" : "formkit:arrowup"}
-                      className="dark:text-forest-50 group-hover:text-forest-50/80 text-black w-[8px] h-[8px] "
-                    />
                   </div>
                 </div>
                 <div className="max-h-[385px] w-full overflow-hidden gap-y-[5px] flex flex-col overflow-y-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
@@ -626,7 +616,7 @@ export default function StableInsights({}: {}) {
                     </div>
                   </div>
 
-                  <div className="absolute w-full  top-[426px] xs:pr-[17px]  ">
+                  <div className="absolute w-full  top-[421px] xs:pr-[17px]  ">
                     <div className="flex items-center h-[34px] bg-[#5A6462] border-[1px] border-forest-100 rounded-full">
                       <div
                         className="w-full h-full grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] "
