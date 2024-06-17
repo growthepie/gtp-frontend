@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@download/blockies": "^1.0.3",
+    "@duckdb/duckdb-wasm": "^1.28.1-dev106.0",
+    "@duckdb/react-duckdb": "^1.28.1-dev106.0",
     "@floating-ui/react": "^0.22.3",
     "@react-hook/media-query": "^1.1.1",
     "@react-spring/web": "^9.7.2",
@@ -21,6 +23,7 @@
     "@vercel/analytics": "^1.1.1",
     "concurrently": "^8.2.1",
     "cookies-next": "^2.1.1",
+    "duckdb-wasm-kit": "^0.1.35",
     "framer-motion": "^10.3.2",
     "graphql": "^16.7.1",
     "graphql-request": "^6.1.0",
