@@ -187,7 +187,7 @@ export default function FeesPage() {
         });
       }
 
-      if (x.includes("mantleda") || x.includes("eiganda")) {
+      if (x.includes("mantleda") || x.includes("eigenda")) {
         retObject.push({
           icon: "customoffchain",
           label: "EigenDA",
