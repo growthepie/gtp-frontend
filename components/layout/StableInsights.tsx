@@ -503,84 +503,86 @@ export default function StableInsights({}: {}) {
                     <div>Share</div>
                   </div>
                 </div>
-                <div className="max-h-[425px] pr-4 w-full overflow-hidden gap-y-[5px] flex flex-col overflow-y-scroll scroll-utility ">
+                <div className="max-h-[425px] w-full overflow-hidden gap-y-[5px] flex flex-col overflow-y-scroll pr-2 ">
                   {Object.keys(sortedTableData).map((key, i) => {
                     const topValue = Object.keys(sortedTableData)[0];
 
                     return (
-                      <div
-                        className=" w-full rounded-full border-[#5A6462] border-[1px] min-h-[34px] min-w-[300px]"
-                        key={key + i}
-                      >
+                      <div className="min-h-[34px] min-w-[300px]">
                         <div
-                          className="w-full h-full grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] relative overflow-hidden rounded-full"
-                          style={{
-                            gridTemplateColumns: `auto ${
-                              isMobile || isSidebarOpen ? "100px" : "150px"
-                            } 50px`,
-                          }}
+                          className=" w-full rounded-full border-[#5A6462] border-[1px] h-full"
+                          key={key + i}
                         >
                           <div
-                            className={`absolute left-2 top-[31px] h-[2px] w-[98%] `}
+                            className="w-full h-full grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] relative overflow-hidden rounded-full"
+                            style={{
+                              gridTemplateColumns: `auto ${
+                                isMobile || isSidebarOpen ? "100px" : "150px"
+                              } 50px`,
+                            }}
                           >
                             <div
-                              className={` bg-forest-100 h-full `}
-                              style={{
-                                width: `${
-                                  ((data.holders_table[key].share * 100) /
-                                    (data.holders_table[topValue].share *
-                                      100)) *
-                                  100
-                                }%`,
-                              }}
-                            ></div>
-                          </div>
-                          <div className="xl:text-[12px] text-[11px] lg:text-[10px] h-full gap-x-[5px] flex items-center ">
-                            <div
-                              className={` truncate  ${
-                                isSidebarOpen
-                                  ? "2xl:max-w-full xl:max-w-[160px] lg:max-w-[120px] sm:max-w-[120px] 3xs:max-w-[90px]"
-                                  : "xl:max-w-full sm:max-w-[150px] 3xs:max-w-[86px]"
-                              }`}
+                              className={`absolute left-2 top-[31px] h-[2px] w-[98%] `}
                             >
-                              {key}
+                              <div
+                                className={` bg-forest-100 h-full `}
+                                style={{
+                                  width: `${
+                                    ((data.holders_table[key].share * 100) /
+                                      (data.holders_table[topValue].share *
+                                        100)) *
+                                    100
+                                  }%`,
+                                }}
+                              ></div>
                             </div>
-                            {data.holders_table[key].website && (
-                              <a
-                                href={data.holders_table[key].website}
-                                target="_blank"
+                            <div className="xl:text-[12px] text-[11px] lg:text-[10px] h-full gap-x-[5px] flex items-center ">
+                              <div
+                                className={` truncate  ${
+                                  isSidebarOpen
+                                    ? "2xl:max-w-full xl:max-w-[160px] lg:max-w-[120px] sm:max-w-[120px] 3xs:max-w-[90px]"
+                                    : "xl:max-w-full sm:max-w-[150px] 3xs:max-w-[86px]"
+                                }`}
                               >
-                                <Image
-                                  src="/webvector.svg"
-                                  alt="GTP Chain"
-                                  className="object-contain w-[15px] h-[15px] "
-                                  height={15}
-                                  width={15}
-                                />
-                              </a>
-                            )}
-                            {data.holders_table[key].twitter && (
-                              <a
-                                href={data.holders_table[key].twitter}
-                                target="_blank"
-                              >
-                                <Icon
-                                  icon="gtp:twitter"
-                                  className="object-contain w-[15px] h-[15px] "
-                                />
-                              </a>
-                            )}
-                          </div>
-                          <div className="xl:text-[12px]  text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
-                            ${formatNumber(data.holders_table[key].balance)}
-                          </div>
-
-                          <div className="flex  text-[11px]  h-[18px] justify-center items-center bg-[#344240]  rounded-full my-auto ml-1  py-[2px] px-[2px]">
-                            <div className="xl:text-[9px] text-[9px] lg:text-[8px] flex items-center justify-center gap-x-0.5">
-                              {formatNumber(
-                                data.holders_table[key].share * 100,
+                                {key}
+                              </div>
+                              {data.holders_table[key].website && (
+                                <a
+                                  href={data.holders_table[key].website}
+                                  target="_blank"
+                                >
+                                  <Image
+                                    src="/webvector.svg"
+                                    alt="GTP Chain"
+                                    className="object-contain w-[15px] h-[15px] "
+                                    height={15}
+                                    width={15}
+                                  />
+                                </a>
                               )}
-                              %
+                              {data.holders_table[key].twitter && (
+                                <a
+                                  href={data.holders_table[key].twitter}
+                                  target="_blank"
+                                >
+                                  <Icon
+                                    icon="gtp:twitter"
+                                    className="object-contain w-[15px] h-[15px] "
+                                  />
+                                </a>
+                              )}
+                            </div>
+                            <div className="xl:text-[12px]  text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
+                              ${formatNumber(data.holders_table[key].balance)}
+                            </div>
+
+                            <div className="flex  text-[11px]  h-[18px] justify-center items-center bg-[#344240]  rounded-full my-auto ml-1  py-[2px] px-[2px]">
+                              <div className="xl:text-[9px] text-[9px] lg:text-[8px] flex items-center justify-center gap-x-0.5">
+                                {formatNumber(
+                                  data.holders_table[key].share * 100,
+                                )}
+                                %
+                              </div>
                             </div>
                           </div>
                         </div>
