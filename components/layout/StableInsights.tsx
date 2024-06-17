@@ -503,7 +503,7 @@ export default function StableInsights({}: {}) {
                     <div>Share</div>
                   </div>
                 </div>
-                <div className="max-h-[425px] pr-4 w-full overflow-hidden gap-y-[5px] flex flex-col overflow-y-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
+                <div className="max-h-[425px] pr-4 w-full overflow-hidden gap-y-[5px] flex flex-col overflow-y-scroll scrollbar-utility scrollbar-thumb-forest-900 ">
                   {Object.keys(sortedTableData).map((key, i) => {
                     const topValue = Object.keys(sortedTableData)[0];
 
@@ -633,8 +633,15 @@ export default function StableInsights({}: {}) {
                 </div>
               </div>
 
-              <div className="w-full lg:w-[50%] md:h-auto h-[300px] overflow-visible">
+              <div className="w-full relative lg:w-[50%] md:h-auto h-[300px] overflow-visible">
                 {" "}
+                <Image
+                  src="/glowatermark.svg"
+                  alt="GTP Chain"
+                  className="absolute top-[42%] left-[35%] w-[226px] h-[60px] "
+                  height={60}
+                  width={226}
+                />
                 <HighchartsProvider Highcharts={Highcharts}>
                   <HighchartsChart
                     containerProps={{

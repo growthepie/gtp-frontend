@@ -206,5 +206,27 @@ module.exports = {
   plugins: [
     require("tailwind-scrollbar")({ nocompatible: true }),
     require("@tailwindcss/container-queries"),
+    function ({ addUtilities }) {
+      const newUtilities = {
+        ".scrollbar-utility": {
+          "scrollbar-width": "thin",
+          "scrollbar-gutter": "stable both-edges",
+          "&::-webkit-scrollbar": {
+            width: "12px",
+          },
+          "&::-webkit-scrollbar-track": {
+            "background-color": "rgba(34, 85, 50, 0.05)",
+            "border-radius": "12px",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            "background-color": "#2d2f2e",
+            "border-radius": "12px",
+            border: "3px solid rgba(34, 85, 50, 0.05)",
+          },
+        },
+      };
+
+      addUtilities(newUtilities, ["responsive", "hover"]);
+    },
   ],
 };
