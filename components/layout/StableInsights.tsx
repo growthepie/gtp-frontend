@@ -592,16 +592,18 @@ export default function StableInsights({}: {}) {
                     className="w-full h-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px] relative rounded-full overflow-hidden"
                     style={{ gridTemplateColumns: `auto 100px 50px` }}
                   >
-                    <div
-                      className={`absolute left-2 top-[31px] h-[2px] w-[90%] `}
-                    >
+                    {combinedHolders && (
                       <div
-                        className={` bg-forest-100 h-full `}
-                        style={{
-                          width: combinedHolders.others.share * 100 + "%",
-                        }}
-                      ></div>
-                    </div>
+                        className={`absolute left-2 top-[31px] h-[2px] w-[90%] `}
+                      >
+                        <div
+                          className={` bg-forest-100 h-full `}
+                          style={{
+                            width: combinedHolders.others.share * 100 + "%",
+                          }}
+                        ></div>
+                      </div>
+                    )}
                     <div className="xl:text-[12px]  text-[11px] sm:leading-normal leading-tight  lg:text-[10px] h-full flex grow items-center ">
                       Other Holders Combined
                     </div>
