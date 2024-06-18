@@ -624,7 +624,7 @@ export default function StableInsights({ }: {}) {
                   })}
                   <div className="min-w-[300px] w-[97.5%] mb-[5px] min-h-[34px] rounded-full border-forest-200 border-dashed border-[1px]">
                     <div
-                      className="w-full h-full min-h-[34px] grid items-center px-[10px] gap-x-[5px] pl-[15px] pr-[15px] relative rounded-full overflow-hidden"
+                      className="w-full h-full min-h-[34px] grid items-center px-[10px] gap-x-[5px] pl-[15px] pr-[15px] md:pr-[13px] relative rounded-full overflow-hidden"
                       style={{ gridTemplateColumns: `auto 100px 50px` }}
                     >
                       <div className="xl:text-[12px]  text-[11px] sm:leading-normal leading-tight  lg:text-[10px] h-full flex grow items-center ">
