@@ -9,7 +9,7 @@ import { BASE_URL } from "@/lib/helpers";
 import { useTheme } from "next-themes";
 import { track } from "@vercel/analytics";
 import useSWR from "swr";
-import { Notification } from "@/app/api/notifications/route";
+import type { Notification } from "@/app/api/notifications/route";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 
 const currentDateTime = new Date().getTime();
