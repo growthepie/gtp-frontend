@@ -67,7 +67,7 @@ type TopHolderData = {
   };
 };
 
-export default function StableInsights({}: {}) {
+export default function StableInsights({ }: {}) {
   const [clicked, setClicked] = useState(true);
   const [sortOrder, setSortOrder] = useState(true);
   const [sortMetric, setSortMetric] = useState("balance");
@@ -145,14 +145,14 @@ export default function StableInsights({}: {}) {
   const transitions = useTransition(
     sortedTableData
       ? (sortOrder
-          ? Object.keys(sortedTableData)
-          : Object.keys(sortedTableData).reverse()
-        ).map((key, index) => ({
-          y: index * 39,
-          height: 34,
-          key: key,
-          i: index,
-        }))
+        ? Object.keys(sortedTableData)
+        : Object.keys(sortedTableData).reverse()
+      ).map((key, index) => ({
+        y: index * 39,
+        height: 34,
+        key: key,
+        i: index,
+      }))
       : [],
     {
       key: (d) => d.key,
@@ -228,9 +228,9 @@ export default function StableInsights({}: {}) {
                 <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#24E5DF"}"></div>
                 <div class="tooltip-point-name">${name}</div>
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                  percentage,
-                  2,
-                )}%</div>
+              percentage,
+              2,
+            )}%</div>
               </div>
               
               <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -239,9 +239,8 @@ export default function StableInsights({}: {}) {
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                 style="
                   width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${
-                    AllChainsByKeys["all_l2s"].colors["dark"][0]
-                  };
+                  background-color: ${AllChainsByKeys["all_l2s"].colors["dark"][0]
+              };
                 "></div>
               </div>`;
 
@@ -255,16 +254,14 @@ export default function StableInsights({}: {}) {
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#24E5DF"}"></div>
             <div class="tooltip-point-name text-md">${name}</div>
             <div class="flex-1 text-right font-inter flex">
-                <div class="opacity-70 mr-0.5 ${
-                  !prefix && "hidden"
-                }">${prefix}</div>
+                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+            }">${prefix}</div>
                 ${parseFloat(displayValue).toLocaleString("en-GB", {
-                  minimumFractionDigits: valuePrefix ? 2 : 0,
-                  maximumFractionDigits: valuePrefix ? 2 : 0,
-                })}
-                <div class="opacity-70 ml-0.5 ${
-                  !suffix && "hidden"
-                }">${suffix}</div>
+              minimumFractionDigits: valuePrefix ? 2 : 0,
+              maximumFractionDigits: valuePrefix ? 2 : 0,
+            })}
+                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+            }">${suffix}</div>
             </div>
           </div>
           `;
@@ -283,16 +280,14 @@ export default function StableInsights({}: {}) {
           <div class="tooltip-point-name text-md">Total</div>
           <div class="flex-1 text-right justify-end font-inter flex">
 
-              <div class="opacity-70 mr-0.5 ${
-                !prefix && "hidden"
-              }">${prefix}</div>
+              <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+          }">${prefix}</div>
               ${parseFloat(value).toLocaleString("en-GB", {
-                minimumFractionDigits: valuePrefix ? 2 : 0,
-                maximumFractionDigits: valuePrefix ? 2 : 0,
-              })}
-              <div class="opacity-70 ml-0.5 ${
-                !suffix && "hidden"
-              }">${suffix}</div>
+            minimumFractionDigits: valuePrefix ? 2 : 0,
+            maximumFractionDigits: valuePrefix ? 2 : 0,
+          })}
+              <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+          }">${suffix}</div>
           </div>
         </div>
         <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -396,6 +391,47 @@ export default function StableInsights({}: {}) {
     return retValue;
   }, [data, showUsd]);
 
+  useEffect(() => {
+    Highcharts.setOptions({
+      lang: {
+        numericSymbols: ["K", " M", "B", "T", "P", "E"],
+      },
+    });
+
+
+    // update x-axis label sizes if it is a 4 digit number
+    Highcharts.wrap(
+      Highcharts.Axis.prototype,
+      "renderTick",
+      function (proceed) {
+        proceed.apply(this, Array.prototype.slice.call(arguments, 1));
+
+        const axis: Highcharts.Axis = this;
+        const ticks: Highcharts.Dictionary<Highcharts.Tick> = axis.ticks;
+        if (
+          axis.isXAxis &&
+          axis.options.labels &&
+          axis.options.labels.enabled
+        ) {
+          Object.keys(ticks).forEach((tick) => {
+            const tickLabel = ticks[tick].label;
+            if (!tickLabel) return;
+            const tickValue = tickLabel.element.textContent;
+            if (tickValue) {
+              if (tickValue.length === 4) {
+                tickLabel.css({
+                  transform: "scale(1.4)",
+                  fontWeight: "600",
+                });
+              }
+            }
+          });
+        }
+      },
+    );
+
+  }, []);
+
   return (
     <>
       {(IS_DEVELOPMENT || IS_PREVIEW) && sortedTableData && data && (
@@ -487,63 +523,59 @@ export default function StableInsights({}: {}) {
             <div className="flex lg:flex-row flex-col-reverse w-full mt-[5px] lg:gap-y-0 gap-y-[15px] gap-x-[5px]  h-auto lg:h-[507px] xs:overflow-auto 3xs:overflow-x-scroll">
               <div className="flex flex-col gap-y-[15px] relative h-[496px] w-full lg:w-[50%] min-w-[300px] ">
                 <div
-                  className="w-full grid px-[10px] gap-x-[5px] pl-[15px] pr-[36px] -mb-[5px] "
+                  className="w-[97%] grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] -mb-[5px] items-center"
                   style={{
-                    gridTemplateColumns: `auto ${
-                      isMobile ? "100px" : "150px"
-                    } 50px`,
+                    gridTemplateColumns: `auto ${isMobile ? "100px" : "150px"
+                      } 50px`,
                   }}
                 >
-                  <div className="text-[14px] font-bold items-center ">
-                    Holder
+                  <div className="flex items-center justify-start text-[12px] font-semibold ">
+                    <div>Holder</div>
                   </div>
-                  <div className="flex justify-end items-center text-[14px] font-bold ">
-                    <div>Amount</div>{" "}
+                  <div className="flex justify-end items-center text-[12px] font-semibold ">
+                    <div>Amount</div>
                   </div>
-                  <div className="flex text-[10px] justify-center ml-0.5 items-center bg-[#344240] rounded-full py-[2px] px-[2px] ">
-                    <div>Share</div>
+                  <div className="flex justify-end items-center">
+                    <div className="flex text-[8px] justify-center items-center bg-[#344240] rounded-full h-[16px] w-[45px]">Share</div>
                   </div>
                 </div>
-                <Scrollbars className="max-h-[403px] gap-y-[5px] w-full overflow-hidden flex flex-col overflow-y-auto ">
+                <Scrollbars className="max-h-[403px] gap-y-[5px] w-full overflow-hidden flex flex-col overflow-y-auto">
                   {Object.keys(sortedTableData).map((key, i) => {
                     const topValue = Object.keys(sortedTableData)[0];
 
                     return (
                       <div
-                        className=" min-w-[300px] w-[97.5%] mb-[5px]"
+                        className={`min-w-[300px] w-[97.5%] ${i < Object.keys(sortedTableData).length ? "mb-[5px]" : "mb-[0px]"}`}
                         key={key + i}
                       >
                         <div className=" min-h-[34px] w-full rounded-full border-[#5A6462] border-[1px] h-full">
                           <div
                             className="w-full h-full min-h-[34px] grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] relative overflow-hidden rounded-full"
                             style={{
-                              gridTemplateColumns: `auto ${
-                                isMobile || isSidebarOpen ? "100px" : "150px"
-                              } 50px`,
+                              gridTemplateColumns: `auto ${isMobile || isSidebarOpen ? "100px" : "150px"
+                                } 50px`,
                             }}
                           >
                             <div
-                              className={`absolute left-2 top-[31px] h-[2px] w-[98%] `}
+                              className={`absolute left-2 top-[32px] h-[2px] w-[98%] `}
                             >
                               <div
-                                className={` bg-forest-100 h-full `}
+                                className={` bg-[#24E5DF] h-full `}
                                 style={{
-                                  width: `${
-                                    ((data.holders_table[key].share * 100) /
-                                      (data.holders_table[topValue].share *
-                                        100)) *
+                                  width: `${((data.holders_table[key].share * 100) /
+                                    (data.holders_table[topValue].share *
+                                      100)) *
                                     100
-                                  }%`,
+                                    }%`,
                                 }}
                               ></div>
                             </div>
                             <div className="xl:text-[12px] text-[11px] lg:text-[10px] h-full gap-x-[5px] flex items-center ">
                               <div
-                                className={` truncate  ${
-                                  isSidebarOpen
-                                    ? "2xl:max-w-full xl:max-w-[160px] lg:max-w-[120px] sm:max-w-[120px] 3xs:max-w-[90px]"
-                                    : "xl:max-w-full sm:max-w-[150px] 3xs:max-w-[86px]"
-                                }`}
+                                className={` truncate  ${isSidebarOpen
+                                  ? "2xl:max-w-full xl:max-w-[160px] lg:max-w-[120px] sm:max-w-[120px] 3xs:max-w-[90px]"
+                                  : "xl:max-w-full sm:max-w-[150px] 3xs:max-w-[86px]"
+                                  }`}
                               >
                                 {key}
                               </div>
@@ -573,12 +605,12 @@ export default function StableInsights({}: {}) {
                                 </a>
                               )}
                             </div>
-                            <div className="xl:text-[12px]  text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
+                            <div className="text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
                               ${formatNumber(data.holders_table[key].balance)}
                             </div>
 
-                            <div className="flex  text-[11px]  h-[18px] justify-center items-center bg-[#344240]  rounded-full my-auto ml-1  py-[2px] px-[2px]">
-                              <div className="xl:text-[9px] text-[9px] lg:text-[8px] flex items-center justify-center gap-x-0.5">
+                            <div className="flex justify-end items-center">
+                              <div className="text-[9px] lg:text-[8px] flex items-center justify-center bg-[#5A6462] rounded-full h-[16px] w-[45px]">
                                 {formatNumber(
                                   data.holders_table[key].share * 100,
                                 )}
@@ -592,7 +624,7 @@ export default function StableInsights({}: {}) {
                   })}
                   <div className="min-w-[300px] w-[97.5%] mb-[5px] min-h-[34px] rounded-full border-forest-200 border-dashed border-[1px]">
                     <div
-                      className="w-full h-full min-h-[34px] grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] relative rounded-full overflow-hidden"
+                      className="w-full h-full min-h-[34px] grid items-center px-[10px] gap-x-[5px] pl-[15px] pr-[15px] relative rounded-full overflow-hidden"
                       style={{ gridTemplateColumns: `auto 100px 50px` }}
                     >
                       <div className="xl:text-[12px]  text-[11px] sm:leading-normal leading-tight  lg:text-[10px] h-full flex grow items-center ">
@@ -604,7 +636,7 @@ export default function StableInsights({}: {}) {
                         </div>
                       )}
                       {combinedHolders && (
-                        <div className="flex xl:text-[12px]  text-[11px]  lg:text-[10px] h-[18px] justify-center items-center bg-[#344240] rounded-full my-auto ml-1 py-[2px] px-[2px]">
+                        <div className="flex text-[8px] h-[16px] w-[45px] justify-center items-center bg-[#5A6462] rounded-full ml-1">
                           <div className="text-[9px] flex items-center justify-center gap-x-0.5">
                             {formatNumber(combinedHolders.others.share * 100)} %
                           </div>
@@ -613,7 +645,7 @@ export default function StableInsights({}: {}) {
                     </div>
                   </div>
                 </Scrollbars>
-                <div className="absolute min-w-[300px] w-[97.5%]  top-[435px] ">
+                <div className="absolute min-w-[300px] w-[97.5%]  top-[430px] ">
                   <div className="flex items-center h-[34px] bg-[#5A6462] border-[1px] border-forest-100 rounded-full">
                     <div
                       className="w-full h-full grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] "
@@ -675,12 +707,12 @@ export default function StableInsights({}: {}) {
                             [
                               0,
                               AllChainsByKeys["all_l2s"].colors["dark"][0] +
-                                "33",
+                              "33",
                             ],
                             [
                               1,
                               AllChainsByKeys["all_l2s"].colors["dark"][1] +
-                                "33",
+                              "33",
                             ],
                           ],
                         },
@@ -798,7 +830,7 @@ export default function StableInsights({}: {}) {
                         ) {
                           if (
                             timespans[selectedTimespan].xMax -
-                              timespans[selectedTimespan].xMin <=
+                            timespans[selectedTimespan].xMin <=
                             40 * 24 * 3600 * 1000
                           ) {
                             let isBeginningOfWeek =
@@ -855,11 +887,11 @@ export default function StableInsights({}: {}) {
                       min={
                         timespans[selectedTimespan].value
                           ? data.chart.data[data.chart.data.length - 1][0] -
-                            timespans[selectedTimespan].value *
-                              24 *
-                              60 *
-                              60 *
-                              1000
+                          timespans[selectedTimespan].value *
+                          24 *
+                          60 *
+                          60 *
+                          1000
                           : data.chart.data[0][0]
                       }
                       max={data.chart.data[data.chart.data.length - 1][0]}
