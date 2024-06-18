@@ -439,18 +439,15 @@ export default function StableInsights({}: {}) {
     <>
       {sortedTableData && data && (
         <div className="flex flex-col gap-y-[15px]">
-          <div className="flex items-center gap-x-[8px] ">
+          <div className="flex items-center gap-x-[5px] ">
             <Image
               src="/Glo_Dollar.svg"
               alt="Glo Dollar Icon"
-              className="object-contain  sm:w-[36px] sm:h-[36px] xs:w-[24px] xs:h-[24px]  3xs:w-[18px] 3xs:h-[18px]"
+              className="object-contain w-[32px] h-[32px] mr-[8px]"
               height={36}
               width={36}
             />
-            <Heading
-              className="sm:text-[36px] xs:text-[24px] 3xs:text-[17px]  leading-snug "
-              as="h1"
-            >
+            <Heading className="text-[36px] leading-[120%]" as="h1">
               Glo Dollar Holders
             </Heading>
           </div>
