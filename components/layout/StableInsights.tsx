@@ -439,7 +439,7 @@ export default function StableInsights({}: {}) {
     <>
       {sortedTableData && data && (
         <div className="flex flex-col gap-y-[15px]">
-          <div className="flex items-center gap-x-[8px] ">
+          <div className="flex items-center gap-x-[5px] ">
             <Image
               src="/Glo_Dollar.svg"
               alt="Glo Dollar Icon"
