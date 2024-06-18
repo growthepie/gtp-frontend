@@ -125,6 +125,8 @@ export default function StableInsights({}: {}) {
     };
   }, []);
 
+  console.log(data ? data : "No Data Found");
+
   const sortedTableData = useMemo(() => {
     if (!data) return;
 
