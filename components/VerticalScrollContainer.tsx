@@ -9,9 +9,11 @@ type VerticalScrollContainerProps = {
   height: number;
   paddingRight?: number;
   paddingLeft?: number;
+  paddingTop?: number;
+  paddingBottom?: number;
 };
 
-export default function VerticalScrollContainer({ children, className, height, paddingRight, paddingLeft }: VerticalScrollContainerProps) {
+export default function VerticalScrollContainer({ children, className, height, paddingRight, paddingLeft, paddingTop, paddingBottom }: VerticalScrollContainerProps) {
 
   const [currentScrollPercentage, setCurrentScrollPercentage] = useState(0);
   const [contentSrollAreaRef, { height: contentSrollAreaHeight }] = useElementSizeObserver<HTMLDivElement>();
@@ -208,6 +210,8 @@ export default function VerticalScrollContainer({ children, className, height, p
             maskSize: '100% 100%',
             paddingRight: paddingRight ? `${paddingRight}px` : undefined,
             paddingLeft: paddingLeft ? `${paddingLeft}px` : undefined,
+            paddingTop: paddingTop ? `${paddingTop}px` : undefined,
+            paddingBottom: paddingBottom ? `${paddingBottom}px` : undefined,
           }}
         >
           <div className={showScroller ? "" : ''}>

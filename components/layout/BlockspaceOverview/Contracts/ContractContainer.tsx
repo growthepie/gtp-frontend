@@ -42,25 +42,25 @@ export default function ContractContainer() {
       if (data) {
         const contractsData = allCats
           ? (() => {
-              let contractArray = [];
+            let contractArray = [];
 
-              for (const categoryKey in data[standardChainKey]["overview"][
-                selectedTimespan
-              ]) {
-                const categoryData =
-                  data[standardChainKey]["overview"][selectedTimespan][
-                    categoryKey
-                  ].contracts.data;
+            for (const categoryKey in data[standardChainKey]["overview"][
+              selectedTimespan
+            ]) {
+              const categoryData =
+                data[standardChainKey]["overview"][selectedTimespan][
+                  categoryKey
+                ].contracts.data;
 
-                // Concatenate and flatten data to the contractArray
-                contractArray = contractArray.concat(categoryData);
-              }
+              // Concatenate and flatten data to the contractArray
+              contractArray = contractArray.concat(categoryData);
+            }
 
-              return contractArray;
-            })()
+            return contractArray;
+          })()
           : data[standardChainKey]["overview"][selectedTimespan][
-              selectedCategory
-            ].contracts.data;
+            selectedCategory
+          ].contracts.data;
 
         const types =
           data[standardChainKey]["overview"][selectedTimespan][selectedCategory]
@@ -207,9 +207,8 @@ export default function ContractContainer() {
   return (
     <>
       <div
-        className={`fixed inset-0 z-[90] flex items-center justify-center transition-opacity duration-200  ${
-          selectedContract ? "opacity-80" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 z-[90] flex items-center justify-center transition-opacity duration-200  ${selectedContract ? "opacity-80" : "opacity-0 pointer-events-none"
+          }`}
       >
         <div
           className={`absolute inset-0 bg-white dark:bg-black`}
@@ -239,9 +238,8 @@ export default function ContractContainer() {
                       : "formkit:arrowup"
                     : "formkit:arrowdown"
                 }
-                className={` dark:text-white text-black ${
-                  contractCategory === "chain" ? "opacity-100" : "opacity-20"
-                }`}
+                className={` dark:text-white text-black ${contractCategory === "chain" ? "opacity-100" : "opacity-20"
+                  }`}
               />
             </button>
 
@@ -265,9 +263,8 @@ export default function ContractContainer() {
                       : "formkit:arrowup"
                     : "formkit:arrowdown"
                 }
-                className={` dark:text-white text-black ${
-                  contractCategory === "contract" ? "opacity-100" : "opacity-20"
-                }`}
+                className={` dark:text-white text-black ${contractCategory === "contract" ? "opacity-100" : "opacity-20"
+                  }`}
               />
             </button>
           </div>
@@ -293,11 +290,10 @@ export default function ContractContainer() {
                       : "formkit:arrowup"
                     : "formkit:arrowdown"
                 }
-                className={` dark:text-white text-black ${
-                  contractCategory === "subcategory"
-                    ? "opacity-100"
-                    : "opacity-20"
-                }`}
+                className={` dark:text-white text-black ${contractCategory === "subcategory"
+                  ? "opacity-100"
+                  : "opacity-20"
+                  }`}
               />
             </button>
           </div>
@@ -327,9 +323,8 @@ export default function ContractContainer() {
                       : "formkit:arrowup"
                     : "formkit:arrowdown"
                 }
-                className={` dark:text-white text-black ${
-                  contractCategory === "value" ? "opacity-100" : "opacity-20"
-                }`}
+                className={` dark:text-white text-black ${contractCategory === "value" ? "opacity-100" : "opacity-20"
+                  }`}
               />
             </button>
 
@@ -338,7 +333,7 @@ export default function ContractContainer() {
             </div>
           </div>
         </div>
-        <div>
+        <div className="flex flex-col w-full">
           {(!sortOrder
             ? Object.keys(sortedContracts)
             : Object.keys(sortedContracts).reverse()
@@ -362,16 +357,14 @@ export default function ContractContainer() {
                 />
               );
             })}
-          <div className="w-full flex justify-center mb-2">
+          <div className="w-full flex justify-center pb-2">
             <button
-              className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${
-                Object.keys(sortedContracts).length <= 10 ? "hidden" : "visible"
-              } ${
-                Object.keys(sortedContracts).length <= maxDisplayedContracts ||
-                maxDisplayedContracts >= 50
+              className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 ${Object.keys(sortedContracts).length <= 10 ? "hidden" : "visible"
+                } ${Object.keys(sortedContracts).length <= maxDisplayedContracts ||
+                  maxDisplayedContracts >= 50
                   ? "hidden"
                   : "visible"
-              }`}
+                }`}
               onClick={() => {
                 setShowMore(!showMore);
                 if (

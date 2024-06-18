@@ -7,9 +7,14 @@ type HorizontalScrollContainerProps = {
   className?: string;
   children: React.ReactNode;
   includeMargin?: boolean;
+  paddingRight?: number;
+  paddingLeft?: number;
+  paddingTop?: number;
+  paddingBottom?: number;
+  forcedMinWidth?: number;
 };
 
-export default function HorizontalScrollContainer({ children, className, includeMargin = true }: HorizontalScrollContainerProps) {
+export default function HorizontalScrollContainer({ children, className, includeMargin = true, paddingRight = 0, paddingLeft = 0, paddingTop = 0, paddingBottom = 0, forcedMinWidth }: HorizontalScrollContainerProps) {
 
   const [currentScrollPercentage, setCurrentScrollPercentage] = useState(0);
   const [contentSrollAreaRef, { width: contentSrollAreaWidth }] = useElementSizeObserver<HTMLDivElement>();
@@ -203,10 +208,14 @@ export default function HorizontalScrollContainer({ children, className, include
             maskImage: maskGradient,
             WebkitMaskSize: '100% 100%',
             maskSize: '100% 100%',
+            paddingRight: paddingRight ? `${paddingRight}px` : undefined,
+            paddingLeft: paddingLeft ? `${paddingLeft}px` : undefined,
+            paddingTop: paddingTop ? `${paddingTop}px` : undefined,
+            paddingBottom: paddingBottom ? `${paddingBottom}px` : undefined,
           }}
         >
           <div className={showScroller && includeMargin ? "mr-[20px] md:mr-[50px]" : ''}>
-            <div className={`min-w-fit w-full max-w-full ${includeMargin && "pr-[20px] md:pr-[50px]"}`} ref={contentRef} >
+            <div className={`w-full max-w-full ${includeMargin && "pr-[20px] md:pr-[50px]"}`} ref={contentRef} style={{ minWidth: forcedMinWidth ? `${forcedMinWidth}px` : 'fit-content' }}>
               <div>{children}</div>
             </div>
           </div>
