@@ -125,8 +125,6 @@ export default function StableInsights({}: {}) {
     };
   }, []);
 
-  console.log(data ? data : "No Data Found");
-
   const sortedTableData = useMemo(() => {
     if (!data) return;
 
@@ -439,7 +437,7 @@ export default function StableInsights({}: {}) {
 
   return (
     <>
-      {(IS_DEVELOPMENT || IS_PREVIEW) && sortedTableData && data && (
+      {sortedTableData && data && (
         <div className="flex flex-col gap-y-[15px]">
           <div className="flex items-center gap-x-[8px] ">
             <Image
