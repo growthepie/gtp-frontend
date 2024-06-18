@@ -10,11 +10,12 @@ type ContainerProps = {
 export default function Container({
   children,
   id,
+  className = '',
   ref,
-  className = "",
   style,
-  isPageRoot,
+  isPageRoot = false,
 }: ContainerProps) {
+
   if (isPageRoot) {
     return (
       <div

@@ -18,11 +18,10 @@ export function TopRowChild({
 }) {
   return (
     <button
-      className={`rounded-full px-[16px] py-[4px] grow text-sm lg:text-base lg:px-4 lg:py-[14px] xl:px-6 xl:py-4 font-medium  ${
-        isSelected
-          ? "bg-forest-500 dark:bg-forest-1000"
-          : "hover:bg-forest-500/10"
-      } ${className} `}
+      className={`select-none rounded-full px-[16px] py-[4px] grow text-sm lg:text-base lg:px-4 lg:py-[14px] xl:px-6 xl:py-4 font-medium  ${isSelected
+        ? "bg-forest-500 dark:bg-forest-1000"
+        : "hover:bg-forest-500/10"
+        } ${className} `}
       onClick={onClick}
       ref={ref ?? null}
       style={style}
@@ -47,7 +46,7 @@ export function TopRowContainer({
 }) {
   return (
     <div
-      className={`flex flex-col rounded-[15px] py-[3px] px-[3px] text-xs lg:gap-y-0 lg:text-base lg:flex lg:flex-row w-full justify-between items-center lg:rounded-full dark:bg-[#1F2726] bg-forest-50
+      className={`select-none flex flex-col rounded-[15px] py-[3px] px-[3px] text-xs lg:gap-y-0 lg:text-base lg:flex lg:flex-row w-full justify-between items-center lg:rounded-full dark:bg-[#1F2726] bg-forest-50
         ${className} `}
       ref={ref ?? null}
       style={style}
@@ -72,7 +71,7 @@ export function TopRowParent({
 }) {
   return (
     <div
-      className={`flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 gap-x-[4px] lg:gap-x-[5px] ${className}`}
+      className={`select-none flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 gap-x-[4px] lg:gap-x-[5px] ${className}`}
       ref={ref ?? null}
       style={style}
     >

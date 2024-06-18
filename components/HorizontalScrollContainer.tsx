@@ -39,11 +39,21 @@ export default function HorizontalScrollContainer({ children, className }: Horiz
       if (!contentSrollAreaRef.current || !grabberRef.current) {
         return;
       }
-      const dx = e.clientX - startPos.x;
-      const scrollableWidth = contentSrollAreaRef.current.scrollWidth - contentSrollAreaRef.current.clientWidth;
-      const scrollLeft = startPos.left + dx;
-      contentSrollAreaRef.current.scrollLeft = Math.max(0, Math.min(scrollableWidth, scrollLeft));
 
+      // calculate the distance moved by the mouse
+      const dx = e.clientX - startPos.x;
+
+      // calculate the scrollable width
+      const scrollableWidth = contentSrollAreaRef.current.scrollWidth - contentSrollAreaRef.current.clientWidth;
+
+      // scale the dx value to match the scrollable width proportionately
+      const scaledDx = (dx / contentSrollAreaRef.current.clientWidth) * scrollableWidth;
+
+      // calculate the new scrollLeft value
+      const scrollLeft = startPos.left + scaledDx;
+
+      // set the new scrollLeft value
+      contentSrollAreaRef.current.scrollLeft = Math.max(0, Math.min(scrollableWidth, scrollLeft));
 
       updateScrollableAreaScroll();
       updateCursor(grabberRef.current);
@@ -143,16 +153,57 @@ export default function HorizontalScrollContainer({ children, className }: Horiz
     if (!contentSrollAreaRef.current) {
       return;
     }
+
     const scrollableWidth = contentSrollAreaRef.current.scrollWidth - contentSrollAreaRef.current.clientWidth;
-    const clickX = e.clientX - contentSrollAreaRef.current.getBoundingClientRect().left;
-    const scrollLeft = (clickX / contentSrollAreaRef.current.clientWidth) * scrollableWidth;
-    contentSrollAreaRef.current.scrollLeft = scrollLeft;
+    const dx = e.clientX - contentSrollAreaRef.current.getBoundingClientRect().left;
+    const scrollLeft = (dx / contentSrollAreaRef.current.clientWidth) * scrollableWidth;
+    contentSrollAreaRef.current.scrollLeft = Math.max(0, Math.min(scrollableWidth, scrollLeft));
+    updateScrollableAreaScroll();
+
+    handleMouseDown(e);
   };
+
+
+  const [maskGradient, setMaskGradient] = useState<string>('');
+
+  const showLeftGradient = useMemo(() => {
+    return currentScrollPercentage > 0;
+  }, [currentScrollPercentage]);
+
+  const showRightGradient = useMemo(() => {
+    return currentScrollPercentage < 100;
+  }, [currentScrollPercentage]);
+
+  useEffect(() => {
+    if (showLeftGradient && showRightGradient) {
+      setMaskGradient('linear-gradient(to right, transparent, black 50px, black calc(100% - 50px), transparent)');
+    }
+    else if (showLeftGradient) {
+      setMaskGradient('linear-gradient(to right, transparent, black 50px, black)');
+    }
+    else if (showRightGradient) {
+      setMaskGradient('linear-gradient(to left, transparent, black 50px, black)');
+    }
+    else {
+      setMaskGradient('');
+    }
+  }, [showLeftGradient, showRightGradient]);
 
   return (
     <div className={`w-full px-0 overflow-x-hidden ${className}`}>
       <div className="overflow-x-visible">
-        <div className="pl-[20px] md:pl-[50px] relative overflow-x-scroll scrollbar-none max-w-full" ref={contentSrollAreaRef}>
+        <div
+          className="pl-[20px] md:pl-[50px] relative overflow-x-scroll scrollbar-none max-w-full"
+          ref={contentSrollAreaRef}
+          style={{
+            maskClip: 'padding-box',
+            WebkitMaskClip: 'padding-box',
+            WebkitMaskImage: maskGradient,
+            maskImage: maskGradient,
+            WebkitMaskSize: '100% 100%',
+            maskSize: '100% 100%',
+          }}
+        >
           <div className={showScroller ? "mr-[20px] md:mr-[50px]" : ''}>
             <div className="min-w-fit w-full max-w-full pr-[20px] md:pr-[50px]" ref={contentRef} >
               <div>{children}</div>
@@ -161,10 +212,10 @@ export default function HorizontalScrollContainer({ children, className }: Horiz
         </div>
       </div>
       <div className={`pt-[10px] px-[20px] md:px-[50px] w-full flex justify-center ${showScroller ? 'block' : 'hidden'}`}>
-        <div className="w-full pr-[22px] p-0.5 bg-forest-200/50 dark:bg-black/50 rounded-full" onClick={handleBarClick}>
+        <div className="w-full pr-[22px] p-0.5 bg-black/30 rounded-full" onMouseDown={handleBarClick}>
           <div className='w-full' ref={scrollerRef}>
             <div
-              className="w-5 h-2 bg-white dark:bg-forest-1000 rounded-full"
+              className="w-5 h-2 bg-forest-400/30 rounded-full"
               style={{
                 transform: `translateX(${scrollerX})`,
                 cursor: 'grab'
