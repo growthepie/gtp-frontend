@@ -645,14 +645,6 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "octant",
         urlKey: "octant",
       },
-      {
-        label: "Glo Dollar Holders",
-        icon: "",
-        category: "public-goods-funding",
-        key: "glodollar",
-        rootKey: "glodollar",
-        urlKey: "glodollar",
-      },
     ],
   },
 
