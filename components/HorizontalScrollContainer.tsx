@@ -6,9 +6,10 @@ import { useElementSizeObserver } from '@/hooks/useElementSizeObserver';
 type HorizontalScrollContainerProps = {
   className?: string;
   children: React.ReactNode;
+  includeMargin?: boolean;
 };
 
-export default function HorizontalScrollContainer({ children, className }: HorizontalScrollContainerProps) {
+export default function HorizontalScrollContainer({ children, className, includeMargin = true }: HorizontalScrollContainerProps) {
 
   const [currentScrollPercentage, setCurrentScrollPercentage] = useState(0);
   const [contentSrollAreaRef, { width: contentSrollAreaWidth }] = useElementSizeObserver<HTMLDivElement>();
@@ -193,7 +194,7 @@ export default function HorizontalScrollContainer({ children, className }: Horiz
     <div className={`w-full px-0 overflow-x-hidden ${className}`}>
       <div className="overflow-x-visible">
         <div
-          className="pl-[20px] md:pl-[50px] relative overflow-x-scroll scrollbar-none max-w-full"
+          className={`${includeMargin && "pl-[20px] md:pl-[50px]"} relative overflow-x-scroll scrollbar-none max-w-full`}
           ref={contentSrollAreaRef}
           style={{
             maskClip: 'padding-box',
@@ -204,8 +205,8 @@ export default function HorizontalScrollContainer({ children, className }: Horiz
             maskSize: '100% 100%',
           }}
         >
-          <div className={showScroller ? "mr-[20px] md:mr-[50px]" : ''}>
-            <div className="min-w-fit w-full max-w-full pr-[20px] md:pr-[50px]" ref={contentRef} >
+          <div className={showScroller && includeMargin ? "mr-[20px] md:mr-[50px]" : ''}>
+            <div className={`min-w-fit w-full max-w-full ${includeMargin && "pr-[20px] md:pr-[50px]"}`} ref={contentRef} >
               <div>{children}</div>
             </div>
           </div>

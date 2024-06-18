@@ -3,13 +3,15 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useElementSizeObserver } from '@/hooks/useElementSizeObserver';
 
-type HorizontalScrollContainerProps = {
+type VerticalScrollContainerProps = {
   className?: string;
   children: React.ReactNode;
   height: number;
+  paddingRight?: number;
+  paddingLeft?: number;
 };
 
-export default function VerticalScrollContainer({ children, className, height }: HorizontalScrollContainerProps) {
+export default function VerticalScrollContainer({ children, className, height, paddingRight, paddingLeft }: VerticalScrollContainerProps) {
 
   const [currentScrollPercentage, setCurrentScrollPercentage] = useState(0);
   const [contentSrollAreaRef, { height: contentSrollAreaHeight }] = useElementSizeObserver<HTMLDivElement>();
@@ -204,6 +206,8 @@ export default function VerticalScrollContainer({ children, className, height }:
             maskImage: maskGradient,
             WebkitMaskSize: '100% 100%',
             maskSize: '100% 100%',
+            paddingRight: paddingRight ? `${paddingRight}px` : undefined,
+            paddingLeft: paddingLeft ? `${paddingLeft}px` : undefined,
           }}
         >
           <div className={showScroller ? "" : ''}>
