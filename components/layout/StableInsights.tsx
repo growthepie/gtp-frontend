@@ -46,6 +46,7 @@ import { AllChainsByKeys } from "@/lib/chains";
 import { useUIContext } from "@/contexts/UIContext";
 import { useLocalStorage } from "usehooks-ts";
 import { tooltipFormatter, tooltipPositioner } from "@/lib/chartUtils";
+import { Scrollbars } from "react-custom-scrollbars";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -503,15 +504,18 @@ export default function StableInsights({}: {}) {
                     <div>Share</div>
                   </div>
                 </div>
-                <div className="max-h-[425px] w-full overflow-hidden gap-y-[5px] flex flex-col overflow-y-scroll pr-2 ">
+                <Scrollbars className="max-h-[403px] gap-y-[5px] w-full overflow-hidden flex flex-col overflow-y-auto ">
                   {Object.keys(sortedTableData).map((key, i) => {
                     const topValue = Object.keys(sortedTableData)[0];
 
                     return (
-                      <div className="min-h-[34px] min-w-[300px]" key={key + i}>
-                        <div className=" w-full rounded-full border-[#5A6462] border-[1px] h-full">
+                      <div
+                        className=" min-w-[300px] w-[97.5%] mb-[5px]"
+                        key={key + i}
+                      >
+                        <div className=" min-h-[34px] w-full rounded-full border-[#5A6462] border-[1px] h-full">
                           <div
-                            className="w-full h-full grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] relative overflow-hidden rounded-full"
+                            className="w-full h-full min-h-[34px] grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] relative overflow-hidden rounded-full"
                             style={{
                               gridTemplateColumns: `auto ${
                                 isMobile || isSidebarOpen ? "100px" : "150px"
@@ -586,9 +590,9 @@ export default function StableInsights({}: {}) {
                       </div>
                     );
                   })}
-                  <div className=" w-[100%] pr-2 rounded-full border-forest-200 border-dashed border-[1px] min-h-[34px]">
+                  <div className="min-w-[300px] w-[97.5%] mb-[5px] min-h-[34px] rounded-full border-forest-200 border-dashed border-[1px]">
                     <div
-                      className="w-full h-full grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] relative rounded-full overflow-hidden"
+                      className="w-full h-full min-h-[34px] grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] relative rounded-full overflow-hidden"
                       style={{ gridTemplateColumns: `auto 100px 50px` }}
                     >
                       <div className="xl:text-[12px]  text-[11px] sm:leading-normal leading-tight  lg:text-[10px] h-full flex grow items-center ">
@@ -608,25 +612,24 @@ export default function StableInsights({}: {}) {
                       )}
                     </div>
                   </div>
-
-                  <div className="absolute w-full pr-2 top-[460px] xs:pr-[17px]  ">
-                    <div className="flex items-center h-[34px] bg-[#5A6462] border-[1px] border-forest-100 rounded-full">
-                      <div
-                        className="w-full h-full grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] "
-                        style={{ gridTemplateColumns: `auto 100px 50px` }}
-                      >
-                        <div className="text-[12px] h-full flex grow items-center sm:leading-normal leading-tight min-w-[90px]">
-                          Total Glo Dollar Market Cap
-                        </div>
-                        {combinedHolders && (
-                          <div className="xl:text-[12px]  text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
-                            $
-                            {formatNumber(
-                              data.chart.data[data.chart.data.length - 1][2],
-                            )}
-                          </div>
-                        )}
+                </Scrollbars>
+                <div className="absolute min-w-[300px] w-[97.5%]  top-[435px] ">
+                  <div className="flex items-center h-[34px] bg-[#5A6462] border-[1px] border-forest-100 rounded-full">
+                    <div
+                      className="w-full h-full grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] "
+                      style={{ gridTemplateColumns: `auto 100px 50px` }}
+                    >
+                      <div className="text-[12px] h-full flex grow items-center sm:leading-normal leading-tight min-w-[90px]">
+                        Total Glo Dollar Market Cap
                       </div>
+                      {combinedHolders && (
+                        <div className="xl:text-[12px]  text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
+                          $
+                          {formatNumber(
+                            data.chart.data[data.chart.data.length - 1][2],
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
