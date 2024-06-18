@@ -1,6 +1,7 @@
 import { DurationData, DailyData } from "@/types/api/EconomicsResponse";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import Highcharts from "highcharts/highstock";
+import addHighchartsMore from "highcharts/highcharts-more";
 import { useLocalStorage } from "usehooks-ts";
 import {
   HighchartsProvider,
@@ -15,6 +16,7 @@ import {
   SplineSeries,
   AreaSplineSeries,
   Tooltip,
+  AreaRangeSeries,
   PlotBand,
   PlotLine,
   withHighcharts,
@@ -31,6 +33,11 @@ const COLORS = {
   ANNOTATION_BG: "rgb(215, 223, 222)",
 };
 
+type AreaData = {
+  seriesData: any[][]; // Replace 'any' with the specific type if known
+  profitData: any[][]; // Replace 'any' with the specific type if known
+};
+
 export default function BreakdownCharts({
   data,
   dailyData,
@@ -44,6 +51,8 @@ export default function BreakdownCharts({
   timespans: Object;
   selectedTimespan: string;
 }) {
+  addHighchartsMore(Highcharts);
+
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const reversePerformer = true;
   const selectedScale: string = "absolute";
@@ -122,9 +131,9 @@ export default function BreakdownCharts({
                     <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#24E5DF"}"></div>
                     <div class="tooltip-point-name">${name}</div>
                     <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-              percentage,
-              2,
-            )}%</div>
+                      percentage,
+                      2,
+                    )}%</div>
                   </div>
                   
                   <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -133,8 +142,9 @@ export default function BreakdownCharts({
                     <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                     style="
                       width: ${(percentage / maxPercentage) * 100}%;
-                      background-color: ${AllChainsByKeys["all_l2s"].colors["dark"][0]
-              };
+                      background-color: ${
+                        AllChainsByKeys["all_l2s"].colors["dark"][0]
+                      };
                     "></div>
                   </div>`;
 
@@ -146,19 +156,22 @@ export default function BreakdownCharts({
           return `
               <div class="flex w-full justify-between space-x-2 items-center font-medium mb-0.5">
                 <div class="flex gap-x-1 items-center">
-                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color
-            }"></div>
+                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                    series.color
+                  }"></div>
                   <div class="tooltip-point-name text-md">${name}</div>
                 </div>
                 <div class="flex-1 justify-end text-right font-inter flex">
-                    <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-            }">${prefix}</div>
+                    <div class="opacity-70 mr-0.5 ${
+                      !prefix && "hidden"
+                    }">${prefix}</div>
                     ${parseFloat(displayValue).toLocaleString("en-GB", {
-              minimumFractionDigits: valuePrefix ? 2 : 0,
-              maximumFractionDigits: valuePrefix ? 2 : 0,
-            })}
-                    <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
+                      minimumFractionDigits: valuePrefix ? 2 : 0,
+                      maximumFractionDigits: valuePrefix ? 2 : 0,
+                    })}
+                    <div class="opacity-70 ml-0.5 ${
+                      !suffix && "hidden"
+                    }">${suffix}</div>
                 </div>
               </div>
               `;
@@ -177,14 +190,16 @@ export default function BreakdownCharts({
               <div class="tooltip-point-name text-md">Total</div>
               <div class="flex-1 text-right justify-end font-inter flex">
     
-                  <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-          }">${prefix}</div>
+                  <div class="opacity-70 mr-0.5 ${
+                    !prefix && "hidden"
+                  }">${prefix}</div>
                   ${parseFloat(value).toLocaleString("en-GB", {
-            minimumFractionDigits: valuePrefix ? 2 : 0,
-            maximumFractionDigits: valuePrefix ? 2 : 0,
-          })}
-                  <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-          }">${suffix}</div>
+                    minimumFractionDigits: valuePrefix ? 2 : 0,
+                    maximumFractionDigits: valuePrefix ? 2 : 0,
+                  })}
+                  <div class="opacity-70 ml-0.5 ${
+                    !suffix && "hidden"
+                  }">${suffix}</div>
               </div>
             </div>
             <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -258,6 +273,114 @@ export default function BreakdownCharts({
       </div>
     );
   }
+
+  const ProfitArea = useMemo(() => {
+    const largerData =
+      dailyData.revenue.data.length > dailyData.costs.data.length
+        ? "revenue"
+        : "costs";
+    const smallerData = largerData === "revenue" ? "costs" : "revenue";
+    let activateLesser = false;
+    let lesserIndex = 0;
+    let retArray: Array<[string | number, number, number]> = [];
+    let isProfitableArray: Array<[string | number, boolean]> = [];
+
+    dailyData[largerData].data.forEach((data, i) => {
+      if (
+        dailyData[largerData].data[i][0] ===
+        dailyData[smallerData].data[lesserIndex][0]
+      ) {
+        activateLesser = true;
+      }
+
+      if (
+        activateLesser &&
+        lesserIndex < dailyData[smallerData].data.length - 1
+      ) {
+        if (
+          dailyData[largerData].data[i][0] ===
+          dailyData[smallerData].data[lesserIndex][0]
+        ) {
+          const timestamp = dailyData[largerData].data[i][0];
+          const smallerValue =
+            dailyData[largerData].data[i][
+              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
+            ] >
+            dailyData[smallerData].data[lesserIndex][
+              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
+            ]
+              ? dailyData[smallerData].data[lesserIndex][
+                  dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
+                ]
+              : dailyData[largerData].data[i][
+                  dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
+                ];
+
+          const largerValue =
+            dailyData[largerData].data[i][
+              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
+            ] >
+            dailyData[smallerData].data[lesserIndex][
+              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
+            ]
+              ? dailyData[largerData].data[i][
+                  dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
+                ]
+              : dailyData[smallerData].data[lesserIndex][
+                  dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
+                ];
+
+          retArray.push([timestamp, smallerValue, largerValue]);
+
+          const profitable =
+            largerData === "revenue"
+              ? dailyData[largerData].data[i][1] >
+                dailyData[smallerData].data[lesserIndex][1]
+              : dailyData[largerData].data[i][1] <
+                dailyData[smallerData].data[lesserIndex][1];
+
+          isProfitableArray.push([timestamp, profitable]);
+        }
+        lesserIndex++;
+      }
+    });
+
+    return { seriesData: retArray, profitData: isProfitableArray } as AreaData;
+  }, [dailyData, data]);
+
+  const zones = useMemo(() => {
+    if (!ProfitArea) return;
+    const zonesArray: { value: number; fillColor: string }[] = [];
+
+    if (ProfitArea.profitData.length > 0) {
+      let startTimestamp = ProfitArea.profitData[0][0];
+      let startColor = ProfitArea.profitData[0][1] ? "#0000FF" : "#FF0000"; // Blue if true, red if false
+
+      for (let i = 1; i < ProfitArea.profitData.length; i++) {
+        const [timestamp, isProfitable] = ProfitArea.profitData[i];
+
+        if (isProfitable !== ProfitArea.profitData[i - 1][1]) {
+          // End of streak, push current zone
+          zonesArray.push({
+            value: startTimestamp,
+            fillColor: startColor,
+          });
+
+          // Start new streak
+          startTimestamp = timestamp;
+          startColor = isProfitable ? "#0000FF" : "#FF0000";
+        }
+      }
+
+      // Push the last streak
+      zonesArray.push({
+        value: startTimestamp,
+        fillColor: startColor,
+      });
+    }
+
+    return zonesArray;
+  }, [ProfitArea]);
 
   return (
     <div className="w-full h-full min-h-[240px] max-h-[240px] ">
@@ -439,7 +562,7 @@ export default function BreakdownCharts({
             <YAxis.Title>Y Axis</YAxis.Title>
             <SplineSeries
               name="Revenue"
-              color={"#CDD8D399"}
+              color={AllChainsByKeys[chain].colors["dark"][0]}
               data={dailyData.revenue.data.map((d: any) => [
                 d[0],
                 d[dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")],
@@ -459,19 +582,24 @@ export default function BreakdownCharts({
             />
 
             {/* Area between the lines */}
-            <AreaSplineSeries
+            <AreaRangeSeries
               name="Profit"
-              data={dailyData.profit.data.map((d: any) => [
-                d[0],
-                d[dailyData.profit.types.indexOf(showUsd ? "usd" : "eth")],
-              ])}
               color={"#ECF87F"}
-              fillColor={"#00D10099"}
               enableMouseTracking={false}
               showInLegend={false}
-              // color="rgba(0, 100, 0, 0.5)"
+              data={ProfitArea.seriesData}
               fillOpacity={0.5}
               lineWidth={0}
+              zones={[
+                {
+                  value: 1693094400000,
+                  fillColor: "#0000FF",
+                },
+                {
+                  value: 1701043200000,
+                  fillColor: "#FF0000",
+                },
+              ]}
             />
           </YAxis>
         </HighchartsChart>

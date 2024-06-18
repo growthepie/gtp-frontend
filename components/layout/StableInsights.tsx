@@ -8,6 +8,11 @@ import {
   TopRowParent,
   TopRowChild,
 } from "@/components/layout/TopRow";
+import {
+  Tooltip as InfoToolTip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/layout/Tooltip";
 import { GloHolderURL } from "@/lib/urls";
 import useSWR from "swr";
 import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
@@ -41,6 +46,7 @@ import { AllChainsByKeys } from "@/lib/chains";
 import { useUIContext } from "@/contexts/UIContext";
 import { useLocalStorage } from "usehooks-ts";
 import { tooltipFormatter, tooltipPositioner } from "@/lib/chartUtils";
+import { Scrollbars } from "react-custom-scrollbars-2";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -49,6 +55,16 @@ const COLORS = {
   LABEL_HOVER: "#6c7696",
   TOOLTIP_BG: "#1b2135",
   ANNOTATION_BG: "rgb(215, 223, 222)",
+};
+
+type TopHolderData = {
+  combined: {
+    total: number;
+  };
+  others: {
+    share: number;
+    total: number;
+  };
 };
 
 export default function StableInsights({}: {}) {
@@ -61,6 +77,7 @@ export default function StableInsights({}: {}) {
     setClicked(!clicked);
   };
   const { isMobile } = useUIContext();
+  const { isSidebarOpen } = useUIContext();
   const {
     data: data,
     error: error,
@@ -81,24 +98,28 @@ export default function StableInsights({}: {}) {
     return {
       "30d": {
         label: "30 days",
+        shortLabel: "30d",
         value: 30,
         xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
       },
       "90d": {
         label: "90 days",
+        shortLabel: "90d",
         value: 90,
         xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
       },
       "180d": {
         label: "180 days",
+        shortLabel: "180d",
         value: 180,
         xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
       },
       max: {
         label: "Maximum",
+        shortLabel: "Max",
         value: 0,
       },
     };
@@ -347,17 +368,72 @@ export default function StableInsights({}: {}) {
   }
 
   const combinedHolders = useMemo(() => {
-    if (!data) return;
+    if (!data || !sortedTableData) return;
 
-    let retValue: [number, number] = [0, 0];
+    let retValue: TopHolderData = {
+      combined: {
+        total: 0,
+      },
+      others: {
+        share: 0,
+        total: data.chart.data[data.chart.data.length - 1][2],
+      },
+    };
 
     Object.keys(data.holders_table).map((key) => {
-      retValue[0] = retValue[0] + data.holders_table[key].balance;
-      retValue[1] = retValue[1] + data.holders_table[key].share;
+      retValue.combined.total =
+        retValue.combined.total + data.holders_table[key].balance;
     });
+
+    Object.keys(sortedTableData).map((key, i) => {
+      retValue.others.total =
+        retValue.others.total - data.holders_table[key].balance;
+    });
+
+    retValue.others.share =
+      retValue.others.total / data.chart.data[data.chart.data.length - 1][2];
 
     return retValue;
   }, [data, showUsd]);
+
+  useEffect(() => {
+    Highcharts.setOptions({
+      lang: {
+        numericSymbols: ["K", " M", "B", "T", "P", "E"],
+      },
+    });
+
+    // update x-axis label sizes if it is a 4 digit number
+    Highcharts.wrap(
+      Highcharts.Axis.prototype,
+      "renderTick",
+      function (proceed) {
+        proceed.apply(this, Array.prototype.slice.call(arguments, 1));
+
+        const axis: Highcharts.Axis = this;
+        const ticks: Highcharts.Dictionary<Highcharts.Tick> = axis.ticks;
+        if (
+          axis.isXAxis &&
+          axis.options.labels &&
+          axis.options.labels.enabled
+        ) {
+          Object.keys(ticks).forEach((tick) => {
+            const tickLabel = ticks[tick].label;
+            if (!tickLabel) return;
+            const tickValue = tickLabel.element.textContent;
+            if (tickValue) {
+              if (tickValue.length === 4) {
+                tickLabel.css({
+                  transform: "scale(1.4)",
+                  fontWeight: "600",
+                });
+              }
+            }
+          });
+        }
+      },
+    );
+  }, []);
 
   return (
     <>
@@ -365,89 +441,66 @@ export default function StableInsights({}: {}) {
         <div className="flex flex-col gap-y-[15px]">
           <div className="flex items-center gap-x-[8px] ">
             <Image
-              src="/GTP-Package.svg"
-              alt="GTP Chain"
-              className="object-contain w-[32px] h-[32px] "
+              src="/Glo_Dollar.svg"
+              alt="Glo Dollar Icon"
+              className="object-contain  sm:w-[36px] sm:h-[36px] xs:w-[24px] xs:h-[24px]  3xs:w-[18px] 3xs:h-[18px]"
               height={36}
               width={36}
             />
-            <Heading className="text-[30px] leading-snug " as="h1">
-              Stablecoin Insights
+            <Heading
+              className="sm:text-[36px] xs:text-[24px] 3xs:text-[17px]  leading-snug "
+              as="h1"
+            >
+              Glo Dollar Holders
             </Heading>
           </div>
-          <div className="w-full h-[36px] bg-[#24E5DF] rounded-full flex items-center pl-2 gap-x-[10px] ">
-            <div
-              className="bg-white dark:bg-forest-1000 rounded-full w-[24px] h-[24px] p-1 flex items-center justify-center relative cursor-pointer "
-              onClick={(e) => {
-                handleClick();
-              }}
-            >
-              <Image
-                src={"/Glo_Dollar.svg"}
-                className="w-[16px] h-[16px]"
-                alt={"Glo Dollar Icon"}
-                height={16}
-                width={16}
-              />
-              <Icon
-                icon={"gtp:circle-arrow"}
-                className={`w-[4px] h-[9px] absolute top-2 right-0 `}
-                style={{
-                  transform: `rotate(${clicked ? "90deg" : "0deg"})`,
-                  transformOrigin: "-8px 4px",
-                  transition: "transform 0.5s",
-                }}
-              />
-            </div>
-            <div className="text-[#1F2726] text-[20px] font-bold">
-              Top 10 Glo Dollar Stablecoin Holders
-            </div>
-          </div>
+
           <div
-            className={`overflow-clip hover:!overflow-visible flex flex-col gap-y-[10px] px-[30px] ${
-              clicked ? "max-h-[1330px] lg:max-h-[739px]" : "max-h-[0px]"
-            }`}
+            className={`overflow-clip hover:!overflow-visible flex flex-col gap-y-[10px] -mt-[10px] `}
             style={{
               transition: "all 0.5s",
             }}
           >
-            <div className="flex lg:flex-row lg:gap-y-0 gap-y-[10px] flex-col  w-full lg:justify-between px-[10px]">
-              <div className="flex flex-col gap-y-[5px] lg:max-w-[520px] xl:max-w-[690px]">
-                <div className="pt-[5px] md:text-base text-[13px] w-full ">
+            <div className="flex lg:flex-row lg:gap-y-0 gap-y-[10px] flex-col   w-full lg:justify-between mb-[10px]">
+              <div className="flex flex-col gap-y-[10px] lg:max-w-[520px] xl:max-w-[618px]">
+                <div className="pt-[5px] sm:text-[14px] text-[12px] w-full ">
                   Glo Dollar is a fiat-backed stablecoin that funds public
                   goods. With Glo Dollar, you can help fund public goods and
                   charitable causes just by holding a stablecoin. It&apos;s a
-                  new, donationless form of philanthropy. Check here which are
-                  the top supporting Glo Dollar wallets currently.
+                  new, donationless form of philanthropy.
                 </div>
 
-                <div className="pt-[5px] md:text-base text-[13px] w-full">
+                <div className="pt-[5px] sm:text-[14px] text-[12px] w-full">
                   Check here which are the top supporting Glo Dollar wallets
                   currently.
                 </div>
               </div>
-              <div className="h-[65px] sm:h-[96px] w-[300px] md:w-[249px] self-start lg:self-end rounded-2xl bg-[#344240] flex flex-col px-[15px] py-[10px]">
-                <div className="flex justify-normal lg:gap-x-0 gap-x-[15px] lg:justify-between items-center ">
+              <a
+                className="h-[52px] max-w-[100%] sm:h-[96px] w-[175px] sm:w-[249px] self-start lg:self-end rounded-2xl bg-[#2F3B3A] flex flex-col px-[15px] py-[5px] md:py-[10px]"
+                href="https://www.glodollar.org/"
+                target="_blank"
+              >
+                <div className="flex gap-x-[10px] md:gap-x-[15px] items-center ">
                   <Image
                     src={"/Glo_Dollar.svg"}
                     alt={"Glo Dollar Icon"}
-                    className="w-[18px] h-[18px]  md:w-[36px] md:h-[36px]"
+                    className="sm:w-[36px] sm:h-[36px]  w-[18px] h-[18px]"
                     height={36}
                     width={36}
                   />
-                  <div className="sm:text-[36px] -ml-1 flex gap-x-0.5 font-bold">
+                  <div className="sm:text-[34px] text-[17px] -ml-1 flex gap-x-1 font-bold">
                     <span>Glo</span>
                     <span>Dollar</span>
                   </div>
                 </div>
-                <div className="text-[12px] flex md:ml-0 ml-[30px] lg:items-center lg:justify-center ">
+                <div className="sm:text-[12px] text-[8px] flex  lg:items-center lg:justify-start ">
                   More about Glo Dollar on their website
                 </div>
-              </div>
+              </a>
             </div>
             <TopRowContainer>
               <TopRowParent>
-                <TopRowChild isSelected={true}>By Wallet</TopRowChild>
+                <TopRowChild isSelected={true}>By Holder</TopRowChild>
               </TopRowParent>
               <div className="block lg:hidden w-[70%] mx-auto my-[10px]">
                 <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
@@ -462,131 +515,185 @@ export default function StableInsights({}: {}) {
                       }}
                       key={timespan}
                     >
-                      {timespans[timespan].label}
+                      {isMobile
+                        ? timespans[timespan].shortLabel
+                        : timespans[timespan].label}
                     </TopRowChild>
                   );
                 })}
               </TopRowParent>
             </TopRowContainer>
-            <div className="flex lg:flex-row flex-col-reverse w-full lg:gap-y-0 gap-y-[15px] gap-x-[5px] ">
-              <div className="flex flex-col gap-y-[15px] relative h-[493px] w-full lg:w-[57.5%] ">
+            <div className="flex lg:flex-row flex-col-reverse w-full mt-[5px] lg:gap-y-0 gap-y-[15px] gap-x-[5px]  h-auto lg:h-[507px] xs:overflow-auto 3xs:overflow-x-scroll">
+              <div className="flex flex-col gap-y-[15px] relative h-[496px] w-full lg:w-[50%] min-w-[300px] ">
                 <div
-                  className="w-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px]"
-                  style={{ gridTemplateColumns: "auto 120px 50px" }}
+                  className="w-[97%] grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] -mb-[5px] items-center"
+                  style={{
+                    gridTemplateColumns: `auto ${
+                      isMobile ? "100px" : "150px"
+                    } 50px`,
+                  }}
                 >
-                  <div className="text-[14px] font-bold items-center ">
-                    Holder
+                  <div className="flex items-center justify-start text-[12px] font-semibold ">
+                    <div>Holder</div>
                   </div>
-                  <div className="flex justify-end items-center text-[14px] font-bold cursor-pointer">
-                    <div>Amount</div>{" "}
-                    <Icon
-                      icon={sortOrder ? "formkit:arrowdown" : "formkit:arrowup"}
-                      className="dark:text-forest-50 group-hover:text-forest-50/80 text-black w-[10px] h-[10px] "
-                    />
+                  <div className="flex justify-end items-center text-[12px] font-semibold ">
+                    <div>Amount</div>
                   </div>
-                  <div className="flex text-[10px] justify-center items-center bg-[#344240] rounded-full py-[2px] px-[2px] cursor-pointer">
-                    <div>Share</div>
-                    <Icon
-                      icon={sortOrder ? "formkit:arrowdown" : "formkit:arrowup"}
-                      className="dark:text-forest-50 group-hover:text-forest-50/80 text-black w-[8px] h-[8px] "
-                    />
-                  </div>
-                </div>
-                {transitions((style, item) => {
-                  console.log(data.holders_table[item.key]);
-                  if (item.i > 9) {
-                    return;
-                  }
-                  return (
-                    <animated.div
-                      className="absolute w-full rounded-full border-[#5A6462] top-[30px] border-[1px] h-[34px]"
-                      style={{ ...style }}
-                    >
-                      <div
-                        className="w-full h-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px] "
-                        style={{ gridTemplateColumns: "auto 100px 50px" }}
-                      >
-                        <div className="xl:text-[12px] text-[12px] lg:text-[10px] h-full gap-x-[5px] flex items-center ">
-                          <div className="sm:max-w-auto max-w-[150px] truncate">
-                            {item.key}
-                          </div>
-                          {data.holders_table[item.key].website && (
-                            <Link href={data.holders_table[item.key].website}>
-                              <Image
-                                src="/webvector.svg"
-                                alt="GTP Chain"
-                                className="object-contain w-[15px] h-[15px] "
-                                height={15}
-                                width={15}
-                              />
-                            </Link>
-                          )}
-                          {data.holders_table[item.key].twitter && (
-                            <Link href={data.holders_table[item.key].twitter}>
-                              <Icon
-                                icon="gtp:twitter"
-                                className="object-contain w-[15px] h-[15px] "
-                              />
-                            </Link>
-                          )}
-                        </div>
-                        <div className="xl:text-[12px] text-[12px] lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
-                          ${formatNumber(data.holders_table[item.key].balance)}
-                        </div>
-
-                        <div className="flex text-[10px] h-[18px] justify-center items-center bg-[#344240]  rounded-full my-auto ml-1  py-[2px] px-[2px]">
-                          <div className="xl:text-[9px] text-[9px] lg:text-[8px] flex items-center justify-center gap-x-0.5">
-                            %
-                            {formatNumber(
-                              data.holders_table[item.key].share * 100,
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </animated.div>
-                  );
-                })}
-                <div className="absolute w-full rounded-full border-forest-200 border-dashed top-[420px] border-[1px] h-[34px]">
-                  <div
-                    className="w-full h-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px] "
-                    style={{ gridTemplateColumns: "auto 120px 50px" }}
-                  >
-                    <div className="text-[12px] h-full flex grow items-center ">
-                      Top 10+ Holders Combined
+                  <div className="flex justify-end items-center">
+                    <div className="flex text-[8px] justify-center items-center bg-[#344240] rounded-full h-[16px] w-[45px]">
+                      Share
                     </div>
-                    {combinedHolders && (
-                      <div className="text-[12px] h-full flex items-center justify-end gap-x-0.5">
-                        ${formatNumber(combinedHolders[0])}
-                      </div>
-                    )}
-                    {combinedHolders && (
-                      <div className="flex text-[10px] h-[18px] justify-center items-center bg-[#344240] rounded-full my-auto ml-1 py-[2px] px-[2px]">
-                        <div className="text-[9px] flex items-center justify-center gap-x-0.5">
-                          %{formatNumber(combinedHolders[1] * 100)}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
-                <div className="absolute w-full rounded-full border-forest-100 top-[459px] bg-[#5A6462] border-[1px] h-[34px]">
-                  <div
-                    className="w-full h-full grid px-[10px] gap-x-[10px] pl-[15px] pr-[15px] "
-                    style={{ gridTemplateColumns: "auto 120px 50px" }}
-                  >
-                    <div className="text-[12px] h-full flex grow items-center ">
-                      Total Glo Dollar Market Cap
+                <Scrollbars className="max-h-[403px] gap-y-[5px] w-full overflow-hidden flex flex-col overflow-y-auto">
+                  {Object.keys(sortedTableData).map((key, i) => {
+                    const topValue = Object.keys(sortedTableData)[0];
+
+                    return (
+                      <div
+                        className={`min-w-[300px] w-[97.5%] ${
+                          i < Object.keys(sortedTableData).length
+                            ? "mb-[5px]"
+                            : "mb-[0px]"
+                        }`}
+                        key={key + i}
+                      >
+                        <div className=" min-h-[34px] w-full rounded-full border-[#5A6462] border-[1px] h-full">
+                          <div
+                            className="w-full h-full min-h-[34px] grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] relative overflow-hidden rounded-full"
+                            style={{
+                              gridTemplateColumns: `auto ${
+                                isMobile || isSidebarOpen ? "100px" : "150px"
+                              } 50px`,
+                            }}
+                          >
+                            <div
+                              className={`absolute left-2 top-[32px] h-[2px] w-[98%] `}
+                            >
+                              <div
+                                className={` bg-[#24E5DF] h-full `}
+                                style={{
+                                  width: `${
+                                    ((data.holders_table[key].share * 100) /
+                                      (data.holders_table[topValue].share *
+                                        100)) *
+                                    100
+                                  }%`,
+                                }}
+                              ></div>
+                            </div>
+                            <div className="xl:text-[12px] text-[11px] lg:text-[10px] h-full gap-x-[5px] flex items-center ">
+                              <div
+                                className={` truncate  ${
+                                  isSidebarOpen
+                                    ? "2xl:max-w-full xl:max-w-[160px] lg:max-w-[120px] sm:max-w-[120px] 3xs:max-w-[90px]"
+                                    : "xl:max-w-full sm:max-w-[150px] 3xs:max-w-[86px]"
+                                }`}
+                              >
+                                {key}
+                              </div>
+                              {data.holders_table[key].website && (
+                                <a
+                                  href={data.holders_table[key].website}
+                                  target="_blank"
+                                >
+                                  <Image
+                                    src="/webvector.svg"
+                                    alt="GTP Chain"
+                                    className="object-contain w-[15px] h-[15px] "
+                                    height={15}
+                                    width={15}
+                                  />
+                                </a>
+                              )}
+                              {data.holders_table[key].twitter && (
+                                <a
+                                  href={data.holders_table[key].twitter}
+                                  target="_blank"
+                                >
+                                  <Icon
+                                    icon="gtp:twitter"
+                                    className="object-contain w-[15px] h-[15px] "
+                                  />
+                                </a>
+                              )}
+                            </div>
+                            <div className="text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
+                              ${formatNumber(data.holders_table[key].balance)}
+                            </div>
+
+                            <div className="flex justify-end items-center">
+                              <div className="text-[9px] lg:text-[8px] flex items-center justify-center bg-[#5A6462] rounded-full h-[16px] w-[45px]">
+                                {formatNumber(
+                                  data.holders_table[key].share * 100,
+                                )}
+                                %
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div className="min-w-[300px] w-[97.5%] mb-[5px] min-h-[34px] rounded-full border-forest-200 border-dashed border-[1px]">
+                    <div
+                      className="w-full h-full min-h-[34px] grid items-center px-[10px] gap-x-[5px] pl-[15px] pr-[15px] md:pr-[13px] relative rounded-full overflow-hidden"
+                      style={{ gridTemplateColumns: `auto 100px 50px` }}
+                    >
+                      <div className="xl:text-[12px]  text-[11px] sm:leading-normal leading-tight  lg:text-[10px] h-full flex grow items-center ">
+                        Other Holders Combined
+                      </div>
+                      {combinedHolders && (
+                        <div className="xl:text-[12px]  text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
+                          ${formatNumber(combinedHolders.others.total)}
+                        </div>
+                      )}
+                      {combinedHolders && (
+                        <div className="flex text-[8px] h-[16px] w-[45px] justify-center items-center bg-[#5A6462] rounded-full ml-1">
+                          <div className="text-[9px] flex items-center justify-center gap-x-0.5">
+                            {formatNumber(combinedHolders.others.share * 100)} %
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Scrollbars>
+                <div className="absolute min-w-[300px] w-[97.5%]  top-[430px] ">
+                  <div className="flex items-center h-[34px] bg-[#5A6462] border-[1px] border-forest-100 rounded-full">
+                    <div
+                      className="w-full h-full grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] "
+                      style={{ gridTemplateColumns: `auto 100px 50px` }}
+                    >
+                      <div className="text-[12px] h-full flex grow items-center sm:leading-normal leading-tight min-w-[90px]">
+                        Total Glo Dollar Market Cap
+                      </div>
+                      {combinedHolders && (
+                        <div className="xl:text-[12px]  text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
+                          $
+                          {formatNumber(
+                            data.chart.data[data.chart.data.length - 1][2],
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="w-full lg:w-[42.5%] overflow-visible">
+              <div className="w-full relative lg:w-[50%] md:h-auto h-[300px] overflow-visible">
                 {" "}
+                <Image
+                  src="/glowatermark.svg"
+                  alt="GTP Chain"
+                  className="absolute top-[42%] left-[35%] w-[226px] h-[60px] "
+                  height={60}
+                  width={226}
+                />
                 <HighchartsProvider Highcharts={Highcharts}>
                   <HighchartsChart
                     containerProps={{
                       style: {
-                        height: "100%",
+                        height: "91%",
                         width: "100%",
                         overflow: "visible",
                       },
@@ -657,7 +764,7 @@ export default function StableInsights({}: {}) {
                     <Chart
                       title={undefined}
                       backgroundColor={"transparent"}
-                      type="line"
+                      type="area"
                       panning={{
                         enabled: false,
                       }}
@@ -672,9 +779,23 @@ export default function StableInsights({}: {}) {
                         duration: 50,
                       }}
                       marginBottom={38}
-                      marginLeft={0}
+                      marginLeft={40}
                       marginRight={0}
-                      marginTop={0}
+                      marginTop={35}
+                      onRender={(chartData) => {
+                        const chart = chartData.target as any;
+                        if (chart && chart.series[0]) {
+                          const yAxis = chart.series[0].yAxis;
+
+                          Object.keys(yAxis.ticks).map((key, i) => {
+                            const lastVal = Object.keys(yAxis.ticks).length - 1;
+                            const gridLine = yAxis.ticks[key].gridLine.element;
+                            if (i === 0) {
+                              gridLine.setAttribute("stroke", "#CDD8D333");
+                            }
+                          });
+                        }
+                      }}
                     />
                     <Tooltip
                       useHTML={true}
@@ -710,16 +831,13 @@ export default function StableInsights({}: {}) {
                       title={undefined}
                       type="datetime"
                       labels={{
-                        useHTML: true,
                         align: undefined,
+                        rotation: 0,
                         allowOverlap: false,
+                        // staggerLines: 1,
                         reserveSpace: true,
                         overflow: "justify",
-                        y: 30,
-                        style: {
-                          fontSize: "10px",
-                          color: "#CDD8D3",
-                        },
+                        useHTML: true,
                         formatter: function (
                           this: AxisLabelsFormatterContextObject,
                         ) {
@@ -764,8 +882,11 @@ export default function StableInsights({}: {}) {
                             );
                           }
                         },
-
-                        enabled: true,
+                        y: 30,
+                        style: {
+                          fontSize: "10px",
+                          color: "#CDD8D3",
+                        },
                       }}
                       crosshair={{
                         width: 0.5,
@@ -776,17 +897,6 @@ export default function StableInsights({}: {}) {
                       tickWidth={1}
                       tickLength={20}
                       ordinal={false}
-                      minorTicks={true}
-                      minorTickLength={2}
-                      minorTickWidth={2}
-                      minorGridLineWidth={0}
-                      minorTickInterval={
-                        timespans[selectedTimespan].xMax -
-                          timespans[selectedTimespan].xMin <=
-                        40 * 24 * 3600 * 1000
-                          ? 24 * 3600 * 1000
-                          : 30 * 24 * 3600 * 1000
-                      }
                       min={
                         timespans[selectedTimespan].value
                           ? data.chart.data[data.chart.data.length - 1][0] -
@@ -798,25 +908,25 @@ export default function StableInsights({}: {}) {
                           : data.chart.data[0][0]
                       }
                       max={data.chart.data[data.chart.data.length - 1][0]}
-                    >
-                      <XAxis.Title>X Axis</XAxis.Title>
-                    </XAxis>
+                    ></XAxis>
                     <YAxis
+                      title={undefined}
                       opposite={false}
                       // showFirstLabel={true}
                       // showLastLabel={true}
                       type="linear"
                       gridLineWidth={1}
-                      gridLineColor={"#5A64624F"}
-                      showFirstLabel={false}
+                      gridLineColor={"#CDD8D355"}
+                      showFirstLabel={true}
                       showLastLabel={true}
+                      tickAmount={3}
                       labels={{
                         align: "left",
-                        y: 11,
-                        x: 3,
+                        y: 3,
+                        x: -37,
                         style: {
                           fontSize: "10px",
-                          color: "#CDD8D34D",
+                          color: "#CDD8D3",
                         },
                         formatter: function () {
                           const value = this.value as number | bigint;
@@ -824,15 +934,14 @@ export default function StableInsights({}: {}) {
                             valuePrefix +
                             Intl.NumberFormat("en-GB", {
                               notation: "compact",
-                              maximumFractionDigits: 2,
-                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 1,
+                              minimumFractionDigits: 0,
                             }).format(value)
                           );
                         },
                       }}
                     >
-                      <YAxis.Title>Y Axis</YAxis.Title>
-                      <LineSeries
+                      <AreaSeries
                         name={""}
                         showInLegend={false}
                         data={data.chart.data.map((d: any) => [
@@ -840,7 +949,7 @@ export default function StableInsights({}: {}) {
                           d[showUsd ? 2 : 1],
                         ])}
                         color={"#24E5DF"}
-                        fillColor={"transparent"}
+                        fillColor={"#24E5DF33"}
                         fillOpacity={1}
                         states={{
                           hover: {
@@ -860,11 +969,33 @@ export default function StableInsights({}: {}) {
                             opacity: 0.6,
                           },
                         }}
-                      ></LineSeries>
+                      ></AreaSeries>
                     </YAxis>
                   </HighchartsChart>
                 </HighchartsProvider>
               </div>
+            </div>
+            <div className="w-full bg-[#1F2726] rounded-full h-[36px] flex justify-end items-center py-[3px] px-[5px] lg:-mt-[15px]">
+              <div className="mr-[15px] h-full text-[16px] w-[158px] rounded-full flex items-center justify-center bg-[#151A19]">
+                Total Market Cap
+              </div>
+              <InfoToolTip placement="left" allowInteract>
+                <TooltipTrigger>
+                  <div className="p-1 z-10 mr-0 md:-mr-0.5">
+                    <Icon icon="feather:info" className="w-6 h-6" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="z-50 flex items-center justify-center pr-[3px]">
+                  <div className="px-3 font-medium gap-x-1 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-autow-[420px] h-[80px] flex items-center">
+                    Data Sources:{" "}
+                    {data.source.map((key, index) => (
+                      <span key={index} className="font-normal">
+                        {key}
+                      </span>
+                    ))}
+                  </div>
+                </TooltipContent>
+              </InfoToolTip>
             </div>
           </div>
         </div>
