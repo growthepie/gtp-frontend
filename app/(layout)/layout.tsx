@@ -185,9 +185,8 @@ export default function RootLayout({
                     </div>
                   </div>
                   <Header />
-                  <main className="flex-1 w-full mx-auto z-10 pb-[165px]">
+                  <main className="flex-1 w-full mx-auto z-10 pb-[165px] min-h-[calc(100vh-218px-56px)] md:min-h-[calc(100vh-207px-80px)]">
                     {children}
-                    <div className="bg-blue-200 z-50"></div>
                   </main>
                   <BottomBanner />
                 </div>
