@@ -46,7 +46,7 @@ import { AllChainsByKeys } from "@/lib/chains";
 import { useUIContext } from "@/contexts/UIContext";
 import { useLocalStorage } from "usehooks-ts";
 import { tooltipFormatter, tooltipPositioner } from "@/lib/chartUtils";
-import { Scrollbars } from "react-custom-scrollbars";
+import { Scrollbars } from "react-custom-scrollbars-2";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -67,7 +67,7 @@ type TopHolderData = {
   };
 };
 
-export default function StableInsights({ }: {}) {
+export default function StableInsights({}: {}) {
   const [clicked, setClicked] = useState(true);
   const [sortOrder, setSortOrder] = useState(true);
   const [sortMetric, setSortMetric] = useState("balance");
@@ -145,14 +145,14 @@ export default function StableInsights({ }: {}) {
   const transitions = useTransition(
     sortedTableData
       ? (sortOrder
-        ? Object.keys(sortedTableData)
-        : Object.keys(sortedTableData).reverse()
-      ).map((key, index) => ({
-        y: index * 39,
-        height: 34,
-        key: key,
-        i: index,
-      }))
+          ? Object.keys(sortedTableData)
+          : Object.keys(sortedTableData).reverse()
+        ).map((key, index) => ({
+          y: index * 39,
+          height: 34,
+          key: key,
+          i: index,
+        }))
       : [],
     {
       key: (d) => d.key,
@@ -228,9 +228,9 @@ export default function StableInsights({ }: {}) {
                 <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#24E5DF"}"></div>
                 <div class="tooltip-point-name">${name}</div>
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-              percentage,
-              2,
-            )}%</div>
+                  percentage,
+                  2,
+                )}%</div>
               </div>
               
               <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -239,8 +239,9 @@ export default function StableInsights({ }: {}) {
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                 style="
                   width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${AllChainsByKeys["all_l2s"].colors["dark"][0]
-              };
+                  background-color: ${
+                    AllChainsByKeys["all_l2s"].colors["dark"][0]
+                  };
                 "></div>
               </div>`;
 
@@ -254,14 +255,16 @@ export default function StableInsights({ }: {}) {
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#24E5DF"}"></div>
             <div class="tooltip-point-name text-md">${name}</div>
             <div class="flex-1 text-right font-inter flex">
-                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-            }">${prefix}</div>
+                <div class="opacity-70 mr-0.5 ${
+                  !prefix && "hidden"
+                }">${prefix}</div>
                 ${parseFloat(displayValue).toLocaleString("en-GB", {
-              minimumFractionDigits: valuePrefix ? 2 : 0,
-              maximumFractionDigits: valuePrefix ? 2 : 0,
-            })}
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
+                  minimumFractionDigits: valuePrefix ? 2 : 0,
+                  maximumFractionDigits: valuePrefix ? 2 : 0,
+                })}
+                <div class="opacity-70 ml-0.5 ${
+                  !suffix && "hidden"
+                }">${suffix}</div>
             </div>
           </div>
           `;
@@ -280,14 +283,16 @@ export default function StableInsights({ }: {}) {
           <div class="tooltip-point-name text-md">Total</div>
           <div class="flex-1 text-right justify-end font-inter flex">
 
-              <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-          }">${prefix}</div>
+              <div class="opacity-70 mr-0.5 ${
+                !prefix && "hidden"
+              }">${prefix}</div>
               ${parseFloat(value).toLocaleString("en-GB", {
-            minimumFractionDigits: valuePrefix ? 2 : 0,
-            maximumFractionDigits: valuePrefix ? 2 : 0,
-          })}
-              <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-          }">${suffix}</div>
+                minimumFractionDigits: valuePrefix ? 2 : 0,
+                maximumFractionDigits: valuePrefix ? 2 : 0,
+              })}
+              <div class="opacity-70 ml-0.5 ${
+                !suffix && "hidden"
+              }">${suffix}</div>
           </div>
         </div>
         <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -398,7 +403,6 @@ export default function StableInsights({ }: {}) {
       },
     });
 
-
     // update x-axis label sizes if it is a 4 digit number
     Highcharts.wrap(
       Highcharts.Axis.prototype,
@@ -429,7 +433,6 @@ export default function StableInsights({ }: {}) {
         }
       },
     );
-
   }, []);
 
   return (
@@ -525,8 +528,9 @@ export default function StableInsights({ }: {}) {
                 <div
                   className="w-[97%] grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] -mb-[5px] items-center"
                   style={{
-                    gridTemplateColumns: `auto ${isMobile ? "100px" : "150px"
-                      } 50px`,
+                    gridTemplateColumns: `auto ${
+                      isMobile ? "100px" : "150px"
+                    } 50px`,
                   }}
                 >
                   <div className="flex items-center justify-start text-[12px] font-semibold ">
@@ -536,7 +540,9 @@ export default function StableInsights({ }: {}) {
                     <div>Amount</div>
                   </div>
                   <div className="flex justify-end items-center">
-                    <div className="flex text-[8px] justify-center items-center bg-[#344240] rounded-full h-[16px] w-[45px]">Share</div>
+                    <div className="flex text-[8px] justify-center items-center bg-[#344240] rounded-full h-[16px] w-[45px]">
+                      Share
+                    </div>
                   </div>
                 </div>
                 <Scrollbars className="max-h-[403px] gap-y-[5px] w-full overflow-hidden flex flex-col overflow-y-auto">
@@ -545,15 +551,20 @@ export default function StableInsights({ }: {}) {
 
                     return (
                       <div
-                        className={`min-w-[300px] w-[97.5%] ${i < Object.keys(sortedTableData).length ? "mb-[5px]" : "mb-[0px]"}`}
+                        className={`min-w-[300px] w-[97.5%] ${
+                          i < Object.keys(sortedTableData).length
+                            ? "mb-[5px]"
+                            : "mb-[0px]"
+                        }`}
                         key={key + i}
                       >
                         <div className=" min-h-[34px] w-full rounded-full border-[#5A6462] border-[1px] h-full">
                           <div
                             className="w-full h-full min-h-[34px] grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] relative overflow-hidden rounded-full"
                             style={{
-                              gridTemplateColumns: `auto ${isMobile || isSidebarOpen ? "100px" : "150px"
-                                } 50px`,
+                              gridTemplateColumns: `auto ${
+                                isMobile || isSidebarOpen ? "100px" : "150px"
+                              } 50px`,
                             }}
                           >
                             <div
@@ -562,20 +573,22 @@ export default function StableInsights({ }: {}) {
                               <div
                                 className={` bg-[#24E5DF] h-full `}
                                 style={{
-                                  width: `${((data.holders_table[key].share * 100) /
-                                    (data.holders_table[topValue].share *
-                                      100)) *
+                                  width: `${
+                                    ((data.holders_table[key].share * 100) /
+                                      (data.holders_table[topValue].share *
+                                        100)) *
                                     100
-                                    }%`,
+                                  }%`,
                                 }}
                               ></div>
                             </div>
                             <div className="xl:text-[12px] text-[11px] lg:text-[10px] h-full gap-x-[5px] flex items-center ">
                               <div
-                                className={` truncate  ${isSidebarOpen
-                                  ? "2xl:max-w-full xl:max-w-[160px] lg:max-w-[120px] sm:max-w-[120px] 3xs:max-w-[90px]"
-                                  : "xl:max-w-full sm:max-w-[150px] 3xs:max-w-[86px]"
-                                  }`}
+                                className={` truncate  ${
+                                  isSidebarOpen
+                                    ? "2xl:max-w-full xl:max-w-[160px] lg:max-w-[120px] sm:max-w-[120px] 3xs:max-w-[90px]"
+                                    : "xl:max-w-full sm:max-w-[150px] 3xs:max-w-[86px]"
+                                }`}
                               >
                                 {key}
                               </div>
@@ -707,12 +720,12 @@ export default function StableInsights({ }: {}) {
                             [
                               0,
                               AllChainsByKeys["all_l2s"].colors["dark"][0] +
-                              "33",
+                                "33",
                             ],
                             [
                               1,
                               AllChainsByKeys["all_l2s"].colors["dark"][1] +
-                              "33",
+                                "33",
                             ],
                           ],
                         },
@@ -830,7 +843,7 @@ export default function StableInsights({ }: {}) {
                         ) {
                           if (
                             timespans[selectedTimespan].xMax -
-                            timespans[selectedTimespan].xMin <=
+                              timespans[selectedTimespan].xMin <=
                             40 * 24 * 3600 * 1000
                           ) {
                             let isBeginningOfWeek =
@@ -887,11 +900,11 @@ export default function StableInsights({ }: {}) {
                       min={
                         timespans[selectedTimespan].value
                           ? data.chart.data[data.chart.data.length - 1][0] -
-                          timespans[selectedTimespan].value *
-                          24 *
-                          60 *
-                          60 *
-                          1000
+                            timespans[selectedTimespan].value *
+                              24 *
+                              60 *
+                              60 *
+                              1000
                           : data.chart.data[0][0]
                       }
                       max={data.chart.data[data.chart.data.length - 1][0]}

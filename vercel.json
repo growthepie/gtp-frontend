@@ -7,11 +7,5 @@
       "path": "/api/optimism-retropgf-3/crons",
       "schedule": "*/5 * * * *"
     }
-  ],
-  "build": {
-    "env": {
-      "NPM_FLAGS": "--legacy-peer-deps"
-    },
-    "buildCommand": "npm install $NPM_FLAGS && npm run build"
-  }
+  ]
 }
