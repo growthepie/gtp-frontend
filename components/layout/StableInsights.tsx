@@ -432,6 +432,16 @@ export default function StableInsights({ }: {}) {
     );
   }, []);
 
+  const topValue = useMemo(() => {
+    if (!data) return 0;
+
+    return Object.keys(data.holders_table).reduce((maxKey, key) =>
+      data.holders_table[key].balance > data.holders_table[maxKey].balance
+        ? key
+        : maxKey,
+    );
+  }, [data]);
+
   return (
     <>
       {sortedTableData && data && (
@@ -523,7 +533,7 @@ export default function StableInsights({ }: {}) {
                   <div className="font-semibold text-[14px]">Holder</div>
                   <div className="flex justify-end font-semibold text-[12px]">Amount</div>
                   <div className="flex justify-end">
-                    <div className="flex justify-center text-[9px] items-center bg-[#344240] rounded-full h-[16px] w-[45px]">Share</div>
+                    <div className="flex justify-center text-[9px] items-center bg-[#344240] rounded-full h-[16px] w-[45px] font-medium leading-tight">Share</div>
                   </div>
                 </GridTableHeader>
                 <VerticalScrollContainer height={420}>
@@ -532,6 +542,11 @@ export default function StableInsights({ }: {}) {
                       <GridTableRow
                         key={key + i}
                         gridDefinitionColumns="grid-cols-[minmax(0,1600px),100px,50px]"
+                        databarWidth={`${(sortedTableData[key].balance / Object.values(sortedTableData)[0].balance) * 100}%`}
+                        databarStyle={{
+                          // shimmering
+                          background: `#24E5DF`,
+                        }}
                       >
                         <div className="flex gap-x-[10px]">
                           {key.substring(0, 2) === "0x" ? (
@@ -569,12 +584,13 @@ export default function StableInsights({ }: {}) {
                         </div>
                         <div className="flex justify-end text-[14px]">${formatNumber(data.holders_table[key].balance)}</div>
                         <div className="flex justify-end">
-                          <div className="flex justify-center text-[9px] items-center bg-[#5A6462] rounded-full h-[16px] w-[45px]">
+                          <div className="flex justify-center text-[9px] items-center bg-[#5A6462] rounded-full h-[16px] w-[45px] font-medium leading-tight">
                             {formatNumber(data.holders_table[key].share * 100)}%
                           </div>
                         </div>
                       </GridTableRow>
                     ))}
+
                     <GridTableRow
                       gridDefinitionColumns="grid-cols-[minmax(0,1600px),100px,50px]"
                     >
@@ -949,6 +965,8 @@ type GridTableProps = {
   children: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
+  databarWidth?: number | string;
+  databarStyle?: React.CSSProperties;
 };
 
 const GridTableHeader = ({ children, gridDefinitionColumns, className, style }: GridTableProps) => {
@@ -961,10 +979,24 @@ const GridTableHeader = ({ children, gridDefinitionColumns, className, style }: 
 
 // grid grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] lg:grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] 
 // class="gap-x-[15px] rounded-full border border-forest-900/20 dark:border-forest-500/20 px-[6px] py-[5px] text-xs items-center"
-const GridTableRow = ({ children, gridDefinitionColumns, style, className }: GridTableProps) => {
+const GridTableRow = ({ children, gridDefinitionColumns, style, className, databarWidth, databarStyle }: GridTableProps) => {
   return (
-    <div className={`h-[34px] select-text gap-x-[10px] rounded-full border border-forest-900/20 dark:border-forest-500/20 pl-[15px] pr-[11px] py-[5px] text-xs items-center grid ${gridDefinitionColumns} ${className ?? ""}`} style={style}>
+    <div className={`relative h-[34px] select-text gap-x-[10px] rounded-full border border-forest-900/20 dark:border-forest-500/20 pl-[15px] pr-[11px] py-[5px] text-xs items-center grid ${gridDefinitionColumns} ${className ?? ""}`} style={style}>
       {children}
+
+      {databarWidth && (
+        <div
+          className="flex flex-col justify-end items-end absolute inset-0 rounded-full overflow-hidden"
+        >
+          <div
+            className="h-[1px]"
+            style={{
+              width: databarWidth,
+              ...databarStyle,
+            }}
+          ></div>
+        </div>
+      )}
     </div>
   );
 }
