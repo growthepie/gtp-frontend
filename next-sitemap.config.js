@@ -17,6 +17,7 @@ const gtpMain = {
     "/fees-explainer",
     "/contracts",
     "/economics",
+    "/scroll",
   ],
   robotsTxtOptions: {
     exclude: ["/server-sitemap.xml"],
@@ -45,6 +46,7 @@ const gtpFees = {
     "/fees-explainer",
     "/contracts",
     "/economics",
+    "/scroll",
   ],
   robotsTxtOptions: {
     exclude: ["/server-sitemap.xml"],

@@ -166,7 +166,7 @@ export default function Share() {
       <div>
         <div>
           <button
-            className="flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-[#1F2726] rounded-full px-4 py-2"
+            className="select-none flex items-center space-x-2 justify-between font-semibold bg-forest-50 dark:bg-[#1F2726] rounded-full px-4 py-2"
             onClick={() => {
               setOpenShare(true);
               track("opened Share window", {

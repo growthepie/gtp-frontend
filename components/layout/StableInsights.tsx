@@ -47,6 +47,8 @@ import { useUIContext } from "@/contexts/UIContext";
 import { useLocalStorage } from "usehooks-ts";
 import { tooltipFormatter, tooltipPositioner } from "@/lib/chartUtils";
 import { Scrollbars } from "react-custom-scrollbars-2";
+import VerticalScrollContainer from "../VerticalScrollContainer";
+import "@/app/highcharts.axis.css";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -67,7 +69,7 @@ type TopHolderData = {
   };
 };
 
-export default function StableInsights({}: {}) {
+export default function StableInsights({ }: {}) {
   const [clicked, setClicked] = useState(true);
   const [sortOrder, setSortOrder] = useState(true);
   const [sortMetric, setSortMetric] = useState("balance");
@@ -145,14 +147,14 @@ export default function StableInsights({}: {}) {
   const transitions = useTransition(
     sortedTableData
       ? (sortOrder
-          ? Object.keys(sortedTableData)
-          : Object.keys(sortedTableData).reverse()
-        ).map((key, index) => ({
-          y: index * 39,
-          height: 34,
-          key: key,
-          i: index,
-        }))
+        ? Object.keys(sortedTableData)
+        : Object.keys(sortedTableData).reverse()
+      ).map((key, index) => ({
+        y: index * 39,
+        height: 34,
+        key: key,
+        i: index,
+      }))
       : [],
     {
       key: (d) => d.key,
@@ -228,9 +230,9 @@ export default function StableInsights({}: {}) {
                 <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#24E5DF"}"></div>
                 <div class="tooltip-point-name">${name}</div>
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                  percentage,
-                  2,
-                )}%</div>
+              percentage,
+              2,
+            )}%</div>
               </div>
               
               <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -239,9 +241,8 @@ export default function StableInsights({}: {}) {
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                 style="
                   width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${
-                    AllChainsByKeys["all_l2s"].colors["dark"][0]
-                  };
+                  background-color: ${AllChainsByKeys["all_l2s"].colors["dark"][0]
+              };
                 "></div>
               </div>`;
 
@@ -255,16 +256,14 @@ export default function StableInsights({}: {}) {
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#24E5DF"}"></div>
             <div class="tooltip-point-name text-md">${name}</div>
             <div class="flex-1 text-right font-inter flex">
-                <div class="opacity-70 mr-0.5 ${
-                  !prefix && "hidden"
-                }">${prefix}</div>
+                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+            }">${prefix}</div>
                 ${parseFloat(displayValue).toLocaleString("en-GB", {
-                  minimumFractionDigits: valuePrefix ? 2 : 0,
-                  maximumFractionDigits: valuePrefix ? 2 : 0,
-                })}
-                <div class="opacity-70 ml-0.5 ${
-                  !suffix && "hidden"
-                }">${suffix}</div>
+              minimumFractionDigits: valuePrefix ? 2 : 0,
+              maximumFractionDigits: valuePrefix ? 2 : 0,
+            })}
+                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+            }">${suffix}</div>
             </div>
           </div>
           `;
@@ -283,16 +282,14 @@ export default function StableInsights({}: {}) {
           <div class="tooltip-point-name text-md">Total</div>
           <div class="flex-1 text-right justify-end font-inter flex">
 
-              <div class="opacity-70 mr-0.5 ${
-                !prefix && "hidden"
-              }">${prefix}</div>
+              <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+          }">${prefix}</div>
               ${parseFloat(value).toLocaleString("en-GB", {
-                minimumFractionDigits: valuePrefix ? 2 : 0,
-                maximumFractionDigits: valuePrefix ? 2 : 0,
-              })}
-              <div class="opacity-70 ml-0.5 ${
-                !suffix && "hidden"
-              }">${suffix}</div>
+            minimumFractionDigits: valuePrefix ? 2 : 0,
+            maximumFractionDigits: valuePrefix ? 2 : 0,
+          })}
+              <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+          }">${suffix}</div>
           </div>
         </div>
         <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -439,11 +436,11 @@ export default function StableInsights({}: {}) {
     <>
       {sortedTableData && data && (
         <div className="flex flex-col gap-y-[15px]">
-          <div className="flex items-center gap-x-[5px] ">
+          <div className="flex items-center gap-x-[8px]">
             <Image
               src="/Glo_Dollar.svg"
               alt="Glo Dollar Icon"
-              className="object-contain w-[32px] h-[32px] mr-[8px]"
+              className="object-contain w-[32px] h-[32px]"
               height={36}
               width={36}
             />
@@ -453,27 +450,26 @@ export default function StableInsights({}: {}) {
           </div>
 
           <div
-            className={`overflow-clip hover:!overflow-visible flex flex-col gap-y-[10px] -mt-[10px] `}
-            style={{
-              transition: "all 0.5s",
-            }}
+            className={``}
+
           >
-            <div className="flex lg:flex-row lg:gap-y-0 gap-y-[10px] flex-col   w-full lg:justify-between mb-[10px]">
-              <div className="flex flex-col gap-y-[10px] lg:max-w-[520px] xl:max-w-[618px]">
-                <div className="pt-[5px] sm:text-[14px] text-[12px] w-full ">
+            <div className="flex lg:flex-row lg:gap-y-0 gap-y-[20px] flex-col w-full lg:justify-between pb-[30px]">
+              <div className="flex flex-col gap-y-[20px] lg:max-w-[520px] xl:max-w-[618px]">
+                <p className="text-[14px] w-full">
                   Glo Dollar is a fiat-backed stablecoin that funds public
                   goods. With Glo Dollar, you can help fund public goods and
                   charitable causes just by holding a stablecoin. It&apos;s a
                   new, donationless form of philanthropy.
-                </div>
+                </p>
 
-                <div className="pt-[5px] sm:text-[14px] text-[12px] w-full">
-                  Check here which are the top supporting Glo Dollar wallets
-                  currently.
-                </div>
+                <p className="text-[14px] w-full">
+                  The Glo Dollar holders table shows the top Glo Dollar holders by balance.
+                  {/* Check here which are the top supporting Glo Dollar wallets
+                  currently. */}
+                </p>
               </div>
               <a
-                className="h-[52px] max-w-[100%] sm:h-[96px] w-[175px] sm:w-[249px] self-start lg:self-end rounded-2xl bg-[#2F3B3A] flex flex-col px-[15px] py-[5px] md:py-[10px]"
+                className="select-none h-[52px] max-w-[100%] sm:h-[96px] w-[175px] sm:w-[249px] self-start lg:self-end rounded-2xl bg-[#2F3B3A] flex flex-col px-[15px] py-[5px] md:py-[10px]"
                 href="https://www.glodollar.org/"
                 target="_blank"
               >
@@ -520,181 +516,127 @@ export default function StableInsights({}: {}) {
                 })}
               </TopRowParent>
             </TopRowContainer>
-            <div className="flex lg:flex-row flex-col-reverse w-full mt-[5px] lg:gap-y-0 gap-y-[15px] gap-x-[5px]  h-auto lg:h-[507px] xs:overflow-auto 3xs:overflow-x-scroll">
-              <div className="flex flex-col gap-y-[15px] relative h-[496px] w-full lg:w-[50%] min-w-[300px] ">
-                <div
-                  className="w-[97%] grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] -mb-[5px] items-center"
-                  style={{
-                    gridTemplateColumns: `auto ${
-                      isMobile ? "100px" : "150px"
-                    } 50px`,
-                  }}
-                >
-                  <div className="flex items-center justify-start text-[12px] font-semibold ">
-                    <div>Holder</div>
-                  </div>
-                  <div className="flex justify-end items-center text-[12px] font-semibold ">
-                    <div>Amount</div>
-                  </div>
-                  <div className="flex justify-end items-center">
-                    <div className="flex text-[8px] justify-center items-center bg-[#344240] rounded-full h-[16px] w-[45px]">
-                      Share
-                    </div>
-                  </div>
-                </div>
-                <Scrollbars className="max-h-[403px] gap-y-[5px] w-full overflow-hidden flex flex-col overflow-y-auto">
-                  {Object.keys(sortedTableData).map((key, i) => {
-                    const topValue = Object.keys(sortedTableData)[0];
 
-                    return (
-                      <div
-                        className={`min-w-[300px] w-[97.5%] ${
-                          i < Object.keys(sortedTableData).length
-                            ? "mb-[5px]"
-                            : "mb-[0px]"
-                        }`}
+            <div className="flex flex-col-reverse lg:flex-row w-full gap-x-[10px] gap-y-[5px]">
+              <div className="w-full lg:flex-1 lg:pt-[10px] relative">
+                <GridTableHeader gridDefinitionColumns="grid-cols-[auto,100px,50px]">
+                  <div className="font-semibold text-[14px]">Holder</div>
+                  <div className="flex justify-end font-semibold text-[12px]">Amount</div>
+                  <div className="flex justify-end">
+                    <div className="flex justify-center text-[9px] items-center bg-[#344240] rounded-full h-[16px] w-[45px]">Share</div>
+                  </div>
+                </GridTableHeader>
+                <VerticalScrollContainer height={420}>
+                  <div className="flex flex-col gap-y-[5px]">
+                    {Object.keys(sortedTableData).map((key, i) => (
+                      <GridTableRow
                         key={key + i}
+                        gridDefinitionColumns="grid-cols-[minmax(0,1600px),100px,50px]"
                       >
-                        <div className=" min-h-[34px] w-full rounded-full border-[#5A6462] border-[1px] h-full">
-                          <div
-                            className="w-full h-full min-h-[34px] grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] relative overflow-hidden rounded-full"
-                            style={{
-                              gridTemplateColumns: `auto ${
-                                isMobile || isSidebarOpen ? "100px" : "150px"
-                              } 50px`,
-                            }}
-                          >
-                            <div
-                              className={`absolute left-2 top-[32px] h-[2px] w-[98%] `}
+                        <div className="flex gap-x-[10px]">
+                          {key.substring(0, 2) === "0x" ? (
+                            <div className="flex min-w-0">
+                              <div className="text-[12px] truncate min-w-0">
+                                {key.substring(0, 38)}
+                              </div>
+                              <div className="text-[12px]">
+                                {key.substring(38)}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-[12px] truncate min-w-0">
+                              {key}
+                            </div>
+                          )}
+                          {data.holders_table[key].website && (
+                            <a
+                              href={data.holders_table[key].website}
+                              target="_blank"
+                              className="w-[15px] h-[15px] flex items-center"
                             >
-                              <div
-                                className={` bg-[#24E5DF] h-full `}
-                                style={{
-                                  width: `${
-                                    ((data.holders_table[key].share * 100) /
-                                      (data.holders_table[topValue].share *
-                                        100)) *
-                                    100
-                                  }%`,
-                                }}
-                              ></div>
-                            </div>
-                            <div className="xl:text-[12px] text-[11px] lg:text-[10px] h-full gap-x-[5px] flex items-center ">
-                              <div
-                                className={` truncate  ${
-                                  isSidebarOpen
-                                    ? "2xl:max-w-full xl:max-w-[160px] lg:max-w-[120px] sm:max-w-[120px] 3xs:max-w-[90px]"
-                                    : "xl:max-w-full sm:max-w-[150px] 3xs:max-w-[86px]"
-                                }`}
-                              >
-                                {key}
-                              </div>
-                              {data.holders_table[key].website && (
-                                <a
-                                  href={data.holders_table[key].website}
-                                  target="_blank"
-                                >
-                                  <Image
-                                    src="/webvector.svg"
-                                    alt="GTP Chain"
-                                    className="object-contain w-[15px] h-[15px] "
-                                    height={15}
-                                    width={15}
-                                  />
-                                </a>
-                              )}
-                              {data.holders_table[key].twitter && (
-                                <a
-                                  href={data.holders_table[key].twitter}
-                                  target="_blank"
-                                >
-                                  <Icon
-                                    icon="gtp:twitter"
-                                    className="object-contain w-[15px] h-[15px] "
-                                  />
-                                </a>
-                              )}
-                            </div>
-                            <div className="text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
-                              ${formatNumber(data.holders_table[key].balance)}
-                            </div>
-
-                            <div className="flex justify-end items-center">
-                              <div className="text-[9px] lg:text-[8px] flex items-center justify-center bg-[#5A6462] rounded-full h-[16px] w-[45px]">
-                                {formatNumber(
-                                  data.holders_table[key].share * 100,
-                                )}
-                                %
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div className="min-w-[300px] w-[97.5%] mb-[5px] min-h-[34px] rounded-full border-forest-200 border-dashed border-[1px]">
-                    <div
-                      className="w-full h-full min-h-[34px] grid items-center px-[10px] gap-x-[5px] pl-[15px] pr-[15px] md:pr-[13px] relative rounded-full overflow-hidden"
-                      style={{ gridTemplateColumns: `auto 100px 50px` }}
-                    >
-                      <div className="xl:text-[12px]  text-[11px] sm:leading-normal leading-tight  lg:text-[10px] h-full flex grow items-center ">
-                        Other Holders Combined
-                      </div>
-                      {combinedHolders && (
-                        <div className="xl:text-[12px]  text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
-                          ${formatNumber(combinedHolders.others.total)}
-                        </div>
-                      )}
-                      {combinedHolders && (
-                        <div className="flex text-[8px] h-[16px] w-[45px] justify-center items-center bg-[#5A6462] rounded-full ml-1">
-                          <div className="text-[9px] flex items-center justify-center gap-x-0.5">
-                            {formatNumber(combinedHolders.others.share * 100)} %
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </Scrollbars>
-                <div className="absolute min-w-[300px] w-[97.5%]  top-[430px] ">
-                  <div className="flex items-center h-[34px] bg-[#5A6462] border-[1px] border-forest-100 rounded-full">
-                    <div
-                      className="w-full h-full grid px-[10px] gap-x-[5px] pl-[15px] pr-[15px] "
-                      style={{ gridTemplateColumns: `auto 100px 50px` }}
-                    >
-                      <div className="text-[12px] h-full flex grow items-center sm:leading-normal leading-tight min-w-[90px]">
-                        Total Glo Dollar Market Cap
-                      </div>
-                      {combinedHolders && (
-                        <div className="xl:text-[12px]  text-[11px]  lg:text-[10px] h-full flex items-center justify-end gap-x-0.5">
-                          $
-                          {formatNumber(
-                            data.chart.data[data.chart.data.length - 1][2],
+                              <WorldIcon />
+                            </a>
+                          )}
+                          {data.holders_table[key].twitter && (
+                            <a
+                              href={data.holders_table[key].twitter}
+                              target="_blank"
+                              className="w-[15px] h-[15px] flex items-center"
+                            >
+                              <XIcon />
+                            </a>
                           )}
                         </div>
+                        <div className="flex justify-end text-[14px]">${formatNumber(data.holders_table[key].balance)}</div>
+                        <div className="flex justify-end">
+                          <div className="flex justify-center text-[9px] items-center bg-[#5A6462] rounded-full h-[16px] w-[45px]">
+                            {formatNumber(data.holders_table[key].share * 100)}%
+                          </div>
+                        </div>
+                      </GridTableRow>
+                    ))}
+                    <GridTableRow
+                      gridDefinitionColumns="grid-cols-[minmax(0,1600px),100px,50px]"
+                    >
+                      <div className="text-[12px] truncate min-w-0">Other Holders Combined</div>
+                      {combinedHolders && (
+                        <div className="flex justify-end text-[14px]">${formatNumber(combinedHolders.others.total)}</div>
                       )}
-                    </div>
+                      {combinedHolders && (
+                        <div className="flex justify-end">
+                          <div className="flex justify-center text-[9px] items-center bg-[#5A6462] rounded-full h-[16px] w-[45px]">
+                            {formatNumber(combinedHolders.others.share * 100)}%
+                          </div>
+                        </div>
+                      )}
+                    </GridTableRow>
+                    {/* gap for the last row */}
+
                   </div>
+                </VerticalScrollContainer>
+                <div className="pr-[22px] pt-[5px]">
+                  <GridTableRow gridDefinitionColumns="grid-cols-[minmax(0,1600px),100px,50px]" className="bg-[#5A6462] !border-[#CDD8D3] font-medium">
+                    <div className="text-[12px] truncate min-w-0">Total Glo Dollar Holders</div>
+                    <div className="flex justify-end text-[14px]">${combinedHolders ? formatNumber(combinedHolders.combined.total) : 0}</div>
+                    <div className="flex justify-end">
+
+                    </div>
+                  </GridTableRow>
                 </div>
               </div>
-
-              <div className="w-full relative lg:w-[50%] md:h-auto h-[300px] overflow-visible">
-                {" "}
-                <Image
-                  src="/glowatermark.svg"
-                  alt="GTP Chain"
-                  className="absolute top-[42%] left-[35%] w-[226px] h-[60px] "
-                  height={60}
-                  width={226}
-                />
+              <div className="w-full lg:flex-1 lg:min-w-[500px] relative h-[300px] md:h-auto pt-[37px] pb-[25px]">
+                <div className="inset-0 absolute z-10 flex items-center justify-center pointer-events-none select-none">
+                  <Image
+                    src="/glowatermark.svg"
+                    alt="GTP Chain"
+                    className="w-[226px] h-[60px] "
+                    height={60}
+                    width={226}
+                  />
+                </div>
                 <HighchartsProvider Highcharts={Highcharts}>
                   <HighchartsChart
                     containerProps={{
                       style: {
-                        height: "91%",
-                        width: "100%",
+                        height: "100%",
+                        width: undefined,
                         overflow: "visible",
                       },
                     }}
+                    // responsive={{
+                    //   rules: [
+                    //     {
+                    //       condition: {
+                    //         maxWidth: 500,
+                    //       },
+                    //       chartOptions: {
+                    //         legend: {
+                    //           enabled: false,
+                    //         },
+                    //       },
+                    //     },
+                    //   ],
+                    // }}
                     plotOptions={{
                       line: {
                         lineWidth: 2,
@@ -717,12 +659,12 @@ export default function StableInsights({}: {}) {
                             [
                               0,
                               AllChainsByKeys["all_l2s"].colors["dark"][0] +
-                                "33",
+                              "33",
                             ],
                             [
                               1,
                               AllChainsByKeys["all_l2s"].colors["dark"][1] +
-                                "33",
+                              "33",
                             ],
                           ],
                         },
@@ -775,10 +717,11 @@ export default function StableInsights({}: {}) {
                       animation={{
                         duration: 50,
                       }}
-                      marginBottom={38}
-                      marginLeft={40}
-                      marginRight={0}
-                      marginTop={35}
+                      // marginBottom={38}
+                      marginLeft={30}
+                      // marginRight={0}
+                      marginTop={4}
+
                       onRender={(chartData) => {
                         const chart = chartData.target as any;
                         if (chart && chart.series[0]) {
@@ -840,7 +783,7 @@ export default function StableInsights({}: {}) {
                         ) {
                           if (
                             timespans[selectedTimespan].xMax -
-                              timespans[selectedTimespan].xMin <=
+                            timespans[selectedTimespan].xMin <=
                             40 * 24 * 3600 * 1000
                           ) {
                             let isBeginningOfWeek =
@@ -890,18 +833,18 @@ export default function StableInsights({}: {}) {
                         color: COLORS.PLOT_LINE,
                         snap: false,
                       }}
-                      tickmarkPlacement="on"
+                      // tickmarkPlacement="on"
                       tickWidth={1}
                       tickLength={20}
                       ordinal={false}
                       min={
                         timespans[selectedTimespan].value
                           ? data.chart.data[data.chart.data.length - 1][0] -
-                            timespans[selectedTimespan].value *
-                              24 *
-                              60 *
-                              60 *
-                              1000
+                          timespans[selectedTimespan].value *
+                          24 *
+                          60 *
+                          60 *
+                          1000
                           : data.chart.data[0][0]
                       }
                       max={data.chart.data[data.chart.data.length - 1][0]}
@@ -972,7 +915,7 @@ export default function StableInsights({}: {}) {
                 </HighchartsProvider>
               </div>
             </div>
-            <div className="w-full bg-[#1F2726] rounded-full h-[36px] flex justify-end items-center py-[3px] px-[5px] lg:-mt-[15px]">
+            <div className="select-none w-full bg-[#1F2726] rounded-full h-[36px] flex justify-end items-center py-[3px] px-[5px] mt-[10px]">
               <div className="mr-[15px] h-full text-[16px] w-[158px] rounded-full flex items-center justify-center bg-[#151A19]">
                 Total Market Cap
               </div>
@@ -1000,3 +943,42 @@ export default function StableInsights({}: {}) {
     </>
   );
 }
+
+type GridTableProps = {
+  gridDefinitionColumns: string;
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+};
+
+const GridTableHeader = ({ children, gridDefinitionColumns, className, style }: GridTableProps) => {
+  return (
+    <div className={`h-[40px] select-none gap-x-[10px] pl-[15px] pr-[33px] text-[11px] items-center font-semibold grid ${gridDefinitionColumns} ${className ?? ""}`} style={style}>
+      {children}
+    </div>
+  );
+}
+
+// grid grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] lg:grid-cols-[32px,minmax(240px,800px),130px,120px,110px,105px,120px] 
+// class="gap-x-[15px] rounded-full border border-forest-900/20 dark:border-forest-500/20 px-[6px] py-[5px] text-xs items-center"
+const GridTableRow = ({ children, gridDefinitionColumns, style, className }: GridTableProps) => {
+  return (
+    <div className={`h-[34px] select-text gap-x-[10px] rounded-full border border-forest-900/20 dark:border-forest-500/20 pl-[15px] pr-[11px] py-[5px] text-xs items-center grid ${gridDefinitionColumns} ${className ?? ""}`} style={style}>
+      {children}
+    </div>
+  );
+}
+
+const WorldIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M7.52757 1.86364C4.12609 1.86364 1.36865 4.61098 1.36865 8C1.36865 11.389 4.12609 14.1364 7.52757 14.1364C10.9291 14.1364 13.6865 11.389 13.6865 8C13.6865 4.61098 10.9291 1.86364 7.52757 1.86364ZM0 8C0 3.85786 3.37021 0.5 7.52757 0.5C11.6849 0.5 15.0551 3.85786 15.0551 8C15.0551 12.1421 11.6849 15.5 7.52757 15.5C3.37021 15.5 0 12.1421 0 8Z" fill="#CDD8D3" />
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M0 8C0 7.62344 0.306383 7.31818 0.684325 7.31818H14.3708C14.7488 7.31818 15.0551 7.62344 15.0551 8C15.0551 8.37656 14.7488 8.68182 14.3708 8.68182H0.684325C0.306383 8.68182 0 8.37656 0 8Z" fill="#CDD8D3" />
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M5.47476 8C5.52166 10.0965 6.24532 12.1149 7.52757 13.7608C8.80982 12.1149 9.53349 10.0965 9.58039 8C9.53349 5.90352 8.80982 3.88512 7.52757 2.23918C6.24532 3.88512 5.52166 5.90352 5.47476 8ZM7.52757 1.18182L7.02231 0.721984C5.19874 2.71107 4.16242 5.2924 4.1061 7.9858C4.1059 7.99527 4.1059 8.00473 4.1061 8.0142C4.16242 10.7076 5.19874 13.2889 7.02231 15.278C7.15196 15.4194 7.33533 15.5 7.52757 15.5C7.71981 15.5 7.90319 15.4194 8.03284 15.278C9.85641 13.2889 10.8927 10.7076 10.949 8.0142C10.9492 8.00473 10.9492 7.99527 10.949 7.9858C10.8927 5.2924 9.85641 2.71107 8.03284 0.721984L7.52757 1.18182Z" fill="#CDD8D3" />
+  </svg>
+);
+
+const XIcon = () => (
+  <svg width="15" height="16" viewBox="0 0 15 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M8.51237 6.85148L13.8026 0.5H12.549L7.95548 6.0149L4.28669 0.5H0.0551758L5.60311 8.8395L0.0551758 15.5H1.30885L6.15968 9.67608L10.0342 15.5H14.2657L8.51237 6.85148ZM6.79529 8.91297L6.23317 8.08255L1.76057 1.47476H3.68614L7.29558 6.80746L7.8577 7.63788L12.5495 14.5696H10.624L6.79529 8.91297Z" fill="#CDD8D3" />
+  </svg>
+);
