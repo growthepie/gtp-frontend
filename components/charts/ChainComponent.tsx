@@ -3,6 +3,7 @@
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts/highstock";
 import highchartsAnnotations from "highcharts/modules/annotations";
+// import highchartsDebug from "highcharts/modules/debugger";
 import {
   useState,
   useEffect,
@@ -387,7 +388,7 @@ export default function ChainComponent({
       let valueIndex = 1;
       let valueMultiplier = 1;
 
-      let valueFormat = Intl.NumberFormat(undefined, {
+      let valueFormat = Intl.NumberFormat("en-GB", {
         notation: "compact",
         maximumFractionDigits: 2,
         minimumFractionDigits: 2,
@@ -444,7 +445,7 @@ export default function ChainComponent({
       const date = new Date(x);
       const dateString = `
       <div>
-        ${date.toLocaleDateString(undefined, {
+        ${date.toLocaleDateString("en-GB", {
         timeZone: "UTC",
         month: "short",
         day: "numeric",
@@ -517,7 +518,7 @@ export default function ChainComponent({
             <div class="flex-1 text-left justify-start font-inter flex">
                 <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
             }">${prefix}</div>
-                ${parseFloat(value).toLocaleString(undefined, {
+                ${parseFloat(value).toLocaleString("en-GB", {
               minimumFractionDigits: prefix ? 2 : 0,
               maximumFractionDigits: prefix ? 2 : 0,
             })}
@@ -752,6 +753,7 @@ export default function ChainComponent({
   };
 
   useEffect(() => {
+    // highchartsDebug(Highcharts);
     window.addEventListener("resize", handleResize);
 
     animationTimeout.current = setTimeout(() => {
@@ -795,14 +797,15 @@ export default function ChainComponent({
     }
   }, [isAnimate, selectedTimespan, timespans, zoomed]);
 
-  const options: Highcharts.Options = useMemo(() => {
+  const options: Highcharts.Options | any = useMemo(() => {
     return {
       accessibility: { enabled: false },
       exporting: { enabled: false },
       chart: {
+        // displayErrors: false,
         type: "area",
-        height: isMobile ? 146 : 176,
-        width: "100%",
+        height: isMobile ? "146px" : "176px",
+        // width: "100%",
         backgroundColor: undefined,
         margin: [1, 0, 0, 0],
         spacingBottom: 0,
@@ -839,10 +842,10 @@ export default function ChainComponent({
           },
         },
 
-        // style: {
-        //   //@ts-ignore
-        //   borderRadius: "0 0 15px 15px",
-        // },
+        style: {
+          //@ts-ignore
+          borderRadius: "0 0 15px 15px",
+        },
       },
 
       title: undefined,
@@ -888,9 +891,7 @@ export default function ChainComponent({
           color: COLORS.PLOT_LINE,
           snap: false,
         },
-        min: zoomed
-          ? zoomMin
-          : timespans[selectedTimespan].xMin,
+        min: zoomed ? zoomMin : timespans[selectedTimespan].xMin,
         max: zoomed ? zoomMax : timespans[selectedTimespan].xMax,
         tickPositions: getTickPositions(
           timespans[selectedTimespan].xMin,
@@ -915,7 +916,7 @@ export default function ChainComponent({
             if (isYearStart) {
               return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
             } else {
-              return `<span style="">${date.toLocaleDateString(undefined, {
+              return `<span style="">${date.toLocaleDateString("en-GB", {
                 month: "short",
               })}</span>`;
             }
@@ -977,19 +978,21 @@ export default function ChainComponent({
             stops: [
               [
                 0,
-                AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0] + "33",
+                AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0] +
+                "33",
               ],
               [
                 1,
-                AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1] + "33",
+                AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1] +
+                "33",
               ],
             ],
           },
-          shadow: {
-            color:
-              AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
-            width: 10,
-          },
+          // shadow: {
+          //   color:
+          //     AllChainsByKeys[data.chain_id]?.colors[theme ?? "dark"][1] + "33",
+          //   width: 10,
+          // },
           color: {
             linearGradient: {
               x1: 0,
@@ -1034,13 +1037,76 @@ export default function ChainComponent({
         enabled: false,
       },
     };
-  }, [data.chain_id, getTickPositions, isAnimate, isMobile, onXAxisSetExtremes, selectedTimespan, theme, timespans, tooltipFormatter, tooltipPositioner, zoomMax, zoomMin, zoomed]);
+  }, [
+    data.chain_id,
+    getTickPositions,
+    isAnimate,
+    isMobile,
+    onXAxisSetExtremes,
+    selectedTimespan,
+    theme,
+    timespans,
+    tooltipFormatter,
+    tooltipPositioner,
+    zoomMax,
+    zoomMin,
+    zoomed,
+  ]);
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
   const delayPromises = [];
 
   const onChartRender = (chart: Highcharts.Chart) => {
+    if (!chart || !chart.series) return;
+
+    // check if gradient exists
+    if (!document.getElementById("gradient0")) {
+      // add def containing linear gradient with stop colors for the circle
+      chart.renderer.definition({
+        attributes: {
+          id: "gradient0",
+          x1: "0%",
+          y1: "0%",
+          x2: "0%",
+          y2: "100%",
+        },
+        children: [
+          {
+            tagName: "stop",
+            // offset: "0%",
+
+            attributes: {
+              id: "stop1",
+              offset: "0%",
+            },
+          },
+          {
+            tagName: "stop",
+            // offset: "100%",
+            attributes: {
+              id: "stop2",
+              offset: "100%",
+            },
+          },
+        ],
+        tagName: "linearGradient",
+        textContent: "",
+      });
+      const stop1 = document.getElementById("stop1");
+      const stop2 = document.getElementById("stop2");
+      stop1?.setAttribute(
+        "stop-color",
+        AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1],
+      );
+      stop1?.setAttribute("stop-opacity", "1");
+      stop2?.setAttribute(
+        "stop-color",
+        AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
+      );
+      stop2?.setAttribute("stop-opacity", "0.33");
+    }
+
     // only 1 chart so setting const for i to = 0
     const i = 0;
     // const chart: Highcharts.Chart = this;
@@ -1070,7 +1136,9 @@ export default function ChainComponent({
         y1: lastPoint.plotY ? lastPoint.plotY + chart.plotTop : 0,
         x2: chart.chartWidth * (1 - fraction) - 0.00005,
         y2: chart.plotTop / 2,
-        stroke: isSafariBrowser ? AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1] : "url('#gradient0')",
+        stroke: isSafariBrowser
+          ? AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1]
+          : "url('#gradient0')",
         "stroke-dasharray": "2",
         "stroke-width": 1,
         rendering: "crispEdges",
@@ -1193,52 +1261,9 @@ export default function ChainComponent({
 
                 margin: zoomed ? zoomMargin : defaultMargin,
                 events: {
-                  load: function () {
-                    const chart = this;
-                    // chart.reflow();
-                    // add def containing linear gradient with stop colors for the circle
-                    chart.renderer.definition({
-                      attributes: {
-                        id: "gradient0",
-                        x1: "0%",
-                        y1: "0%",
-                        x2: "0%",
-                        y2: "100%",
-                      },
-                      children: [
-                        {
-                          tagName: "stop",
-                          offset: "0%",
-                          attributes: {
-                            id: "stop1",
-                          },
-                        },
-                        {
-                          tagName: "stop",
-                          offset: "100%",
-                          attributes: {
-                            id: "stop2",
-                          },
-                        },
-                      ],
-                      tagName: "linearGradient",
-                      textContent: "",
-                    });
-                    const stop1 = document.getElementById("stop1");
-                    const stop2 = document.getElementById("stop2");
-
-                    stop1?.setAttribute(
-                      "stop-color",
-                      AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][1],
-                    );
-                    stop1?.setAttribute("stop-opacity", "1");
-
-                    stop2?.setAttribute(
-                      "stop-color",
-                      AllChainsByKeys[data.chain_id].colors[theme ?? "dark"][0],
-                    );
-                    stop2?.setAttribute("stop-opacity", "0.33");
-                  },
+                  // render: function () {
+                  //   const chart = this;
+                  // },
                   render: function () {
                     const chart = this;
                     onChartRender(chart);
@@ -1247,7 +1272,9 @@ export default function ChainComponent({
               },
               yAxis: {
                 ...options.yAxis,
+
                 labels: {
+                  enabled: false,
                   ...(options.yAxis as Highcharts.YAxisOptions).labels,
                   formatter: function (
                     t: Highcharts.AxisLabelsFormatterContextObject,
@@ -1328,7 +1355,6 @@ export default function ChainComponent({
                             AllChainsByKeys[data.chain_id]?.colors[
                             theme ?? "dark"
                             ][0] + "66",
-                          strokeWidth: 0,
                         },
                       },
                       brightness: 0.3,
@@ -1409,62 +1435,6 @@ export default function ChainComponent({
           </TooltipContent>
         </Tooltip>
       </div>
-      {/* {!zoomed
-        ? (category === "stables_mcap" || category === "txcosts") && (
-            <div
-              className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
-                category === "txcosts" ? "hidden lg:block" : ""
-              }`}
-            >
-              <div className="absolute left-[15px] align-bottom flex items-end z-30">
-                {new Date(timespans[selectedTimespan].xMin).toLocaleDateString(
-                  undefined,
-                  {
-                    timeZone: "UTC",
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  },
-                )}
-              </div>
-              <div className="absolute right-[15px] align-bottom flex items-end z-30">
-                {new Date(timespans[selectedTimespan].xMax).toLocaleDateString(
-                  undefined,
-                  {
-                    timeZone: "UTC",
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  },
-                )}
-              </div>
-            </div>
-          )
-        : (category === "stables_mcap" || category === "txcosts") &&
-          intervalShown && (
-            <div
-              className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
-                category === "txcosts" ? "hidden lg:block" : ""
-              }`}
-            >
-              <div className="absolute left-[15px] align-bottom flex items-end z-30 ">
-                {new Date(intervalShown.min).toLocaleDateString(undefined, {
-                  timeZone: "UTC",
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </div>
-              <div className="absolute right-[15px] align-bottom flex items-end z-30">
-                {new Date(intervalShown.max).toLocaleDateString(undefined, {
-                  timeZone: "UTC",
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </div>
-            </div>
-          )} */}
     </div>
   );
 }

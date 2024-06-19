@@ -12,7 +12,7 @@ import {
 import { useUIContext } from "@/contexts/UIContext";
 import { Icon } from "@iconify/react";
 import EthUsdSwitch from "./EthUsdSwitch";
-import DarkModeSwitch from "./DarkModeSwitch";
+
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import Backgrounds from "./Backgrounds";
@@ -191,7 +191,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                 </div>
               </div>
               <div className="z-[999] mt-[30px] h-[calc(100vh-100px)] w-full flex flex-col justify-between overflow-hidden relative pointer-events-auto">
-                <div className="flex-1 w-full overflow-x-hidden relative overflow-y-scroll scrollbar-thin scrollbar-thumb-forest-1000/50 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
+                <div className="flex-1 w-full overflow-x-hidden relative overflow-y-auto scrollbar-thin scrollbar-thumb-forest-1000/50 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
                   {navigationItems.map((item) => (
                     <SidebarMenuGroup
                       key={item.name + "_item"}
@@ -199,9 +199,6 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                       sidebarOpen={isMobileSidebarOpen}
                     />
                   ))}
-                </div>
-
-                <div className="flex flex-col justify-end pt-3 pb-6 relative mb-[17px] pointer-events-auto">
                   <SidebarMenuGroup
                     key={apiDocsItem.name + "_item"}
                     item={apiDocsItem}
@@ -212,6 +209,9 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                     item={contributorsItem}
                     sidebarOpen={isMobileSidebarOpen}
                   />
+                </div>
+
+                <div className="flex flex-col justify-end pt-3 pb-6 relative mb-[17px] pointer-events-auto">
                   <div className="text-[0.7rem] flex justify-evenly w-full gap-x-12 text-inherit leading-[1] px-2  mb-[17px]">
                     <Link href="/privacy-policy">Privacy Policy</Link>
                     <Link href="/imprint">Imprint</Link>
@@ -230,7 +230,6 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                     </Link>
                   </div>
                   <div className="items-end justify-center z-[999] flex space-x-[15px] mt-[2px] mb-[17px]">
-                    <DarkModeSwitch isMobile />
                     <EthUsdSwitch isMobile />
                   </div>
                 </div>
@@ -268,8 +267,6 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
             sidebarOpen={isSidebarOpen}
           />
         ))}
-      </div>
-      <div className="flex flex-col justify-end pt-6 pb-3 relative">
         <SidebarMenuGroup
           key={apiDocsItem.name + "_item"}
           item={apiDocsItem}
@@ -281,6 +278,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           sidebarOpen={isSidebarOpen}
         />
       </div>
+      <div className="flex flex-col justify-end pt-6 pb-3 relative"></div>
       <div className="mt-[80px"></div>
     </motion.div>
   );

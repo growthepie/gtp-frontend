@@ -528,7 +528,7 @@ export default function Page() {
                     {`${formatNumber(
                       parseInt(value as string),
                       false,
-                    ).toLocaleString()}`}
+                    ).toLocaleString("en-GB")}`}
                   </div>
                 ))
                 .reduce((prev, curr) => {
@@ -795,7 +795,7 @@ export default function Page() {
                         <div className="flex-1 text-right">
                           {RPGF3ResultsById[
                             info.row.original.id
-                          ].awarded.toLocaleString()}
+                          ].awarded.toLocaleString("en-GB")}
                         </div>
                         <div className="text-left opacity-60 text-xs font-normal">
                           OP
@@ -812,7 +812,7 @@ export default function Page() {
                                 projectsResponse.prices.optimism.usd *
                                 RPGF3ResultsById[info.row.original.id]
                                   .awarded,
-                              ).toLocaleString()}
+                              ).toLocaleString("en-GB")}
                             </div>
                             <div className="text-left opacity-60 text-[0.65rem]">
                               USD
@@ -825,7 +825,7 @@ export default function Page() {
                         Median Amount:{" "}
                         {RPGF3ResultsById[
                           info.row.original.id
-                        ].result_median_amount.toLocaleString()}{" "}
+                        ].result_median_amount.toLocaleString("en-GB")}{" "}
                         OP
                       </div>
                     </div>
@@ -1126,7 +1126,7 @@ export default function Page() {
                                       $
                                     </span>
                                   )}
-                                  {parseInt(value as string).toLocaleString()}
+                                  {parseInt(value as string).toLocaleString("en-GB")}
                                   {currency === "OP" && (
                                     <>
                                       {" "}
@@ -1907,17 +1907,17 @@ export default function Page() {
                                           projectsUniqueValues[header.id] ? (
                                           projectsUniqueValues[
                                             header.id
-                                          ].toLocaleString()
+                                          ].toLocaleString("en-GB")
                                         ) : (
                                           <>
                                             {dataUniqueValues[
                                               header.id
-                                            ].toLocaleString()}
+                                            ].toLocaleString("en-GB")}
                                             <span className="text-forest-900/30 dark:text-forest-500/30">
                                               {"/"}
                                               {projectsUniqueValues[
                                                 header.id
-                                              ].toLocaleString()}
+                                              ].toLocaleString("en-GB")}
                                             </span>
                                           </>
                                         )}
@@ -2095,7 +2095,7 @@ export default function Page() {
         </div>
         <QuestionAnswer
           startOpen={false}
-          className="z-50 rounded-3xl bg-forest-50 dark:bg-forest-900 px-[30px] py-[23px] flex flex-col absolute bottom-8 left-[20px] right-[20px] md:left-[50px] md:right-[50px]"
+          className="z-50 rounded-3xl bg-forest-50 dark:bg-forest-900 px-[30px] py-[23px] flex flex-col absolute bottom-[240px] left-[20px] right-[20px] md:left-[50px] md:right-[50px]"
           question={"What can you see in this list?"}
           answer={
             <div className="text-xs lg:text-sm">

@@ -88,7 +88,7 @@ addCollection({
 
 export default function ContributorsPage() {
   return (
-    <Container className="mx-auto mt-[65px] md:mt-[45px] flex flex-col">
+    <Container className="mx-auto pt-[65px] md:pt-[30px] flex flex-col" isPageRoot>
       <Heading className="text-[48px] mb-[30px] leading-snug" as="h1">
         Contributors
       </Heading>
@@ -112,10 +112,10 @@ export default function ContributorsPage() {
               rel="noopener noreferrer"
               href={s.url}
               className="relative text-center"
-              // style={{
-              //   width: s.width,
-              //   height: s.height,
-              // }}
+            // style={{
+            //   width: s.width,
+            //   height: s.height,
+            // }}
             >
               <Image
                 src={s.image}
@@ -123,20 +123,22 @@ export default function ContributorsPage() {
                 width={s.width}
                 height={s.height}
                 className="brightness-[.55] grayscale-100 dark:brightness-100 grayscale-0"
-                // fill
+              // fill
               />
             </Link>
           ))}
         </div>
       </div>
 
-      <div className="bg-forest-50 dark:bg-forest-900 rounded-full px-5 py-3 flex space-x-2 mb-[45px]">
+      <div className="bg-forest-50 dark:bg-forest-900 rounded-full px-5 py-3 flex space-x-2 mb-[15px]">
         <Icon icon="gtp:data-sources" className="w-9 h-9" />
         <Heading className="text-3xl font-semibold leading-snug">
           Data Sources
         </Heading>
       </div>
-
+      <div className="px-[30px] mb-[15px] py-[10px]">
+        <div>In addition to own raw data aggregation, we also source some data from:</div>
+      </div>
       <div className="mb-[90px]">
         <div className="grid grid-cols-2 lg:grid-cols-4 items-center justify-items-center gap-x-[45px] gap-y-[30px] mx-5">
           {Datasources.map((s) => (
@@ -146,10 +148,10 @@ export default function ContributorsPage() {
               rel="noopener noreferrer"
               href={s.url}
               className="relative text-center"
-              // style={{
-              //   width: s.width,
-              //   height: s.height,
-              // }}
+            // style={{
+            //   width: s.width,
+            //   height: s.height,
+            // }}
             >
               <Image
                 src={s.image}
@@ -157,7 +159,7 @@ export default function ContributorsPage() {
                 width={s.width}
                 height={s.height}
                 className="brightness-[.55] grayscale-100 dark:brightness-100 grayscale-0"
-                // fill
+              // fill
               />
             </Link>
           ))}

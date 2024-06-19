@@ -492,17 +492,17 @@ export default function ContractsPage({ params }: { params: any }) {
                                   contractsUniqueValues[header.id] ? (
                                   contractsUniqueValues[
                                     header.id
-                                  ].toLocaleString()
+                                  ].toLocaleString("en-GB")
                                 ) : (
                                   <>
                                     {dataUniqueValues[
                                       header.id
-                                    ].toLocaleString()}
+                                    ].toLocaleString("en-GB")}
                                     <span className="text-forest-900/30 dark:text-forest-500/30">
                                       {"/"}
                                       {contractsUniqueValues[
                                         header.id
-                                      ].toLocaleString()}
+                                      ].toLocaleString("en-GB")}
                                     </span>
                                   </>
                                 )}

@@ -36,9 +36,9 @@ export default function EthUsdSwitch({ isMobile }: EthUsdSwitchProps) {
   }
 
   return (
-    <div className="flex justify-between">
+    <div className="select-none flex justify-between">
       <div className="flex items-center">
-        <input id="toggle" type="checkbox" className="hidden" />
+        <input type="checkbox" className="hidden" />
         <label htmlFor="toggle" className="flex items-center cursor-pointer">
           {/* <div
             className="mr-2 font-medium"

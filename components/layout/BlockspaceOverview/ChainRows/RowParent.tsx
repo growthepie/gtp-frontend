@@ -64,8 +64,7 @@ export default function RowParent({ chainKey, index }) {
         DisabledStates[selectedMode][chainKey] ? (
         <>
           <div
-            className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium text-white dark:text-black ${
-              ""
+            className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium text-white dark:text-black ${""
               // AllChainsByKeys[chainKey].darkTextOnBackground === true
               //   ? "text-white dark:text-black"
               //   : "text-white"
@@ -103,8 +102,7 @@ export default function RowParent({ chainKey, index }) {
         </>
       ) : (
         <div
-          className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium text-white dark:text-black ${
-            ""
+          className={`flex flex-row flex-grow h-full items-center rounded-full text-xs font-medium text-white dark:text-black ${""
             // AllChainsByKeys[chainKey].darkTextOnBackground === true
             //   ? "text-white dark:text-black"
             //   : "text-white"
@@ -114,10 +112,17 @@ export default function RowParent({ chainKey, index }) {
             className={`flex items-center h-[45px] pl-[20px] w-[155px] min-w-[155px] ${forceSelectedChain
                 ? isCategoryHovered("all_chain")
                   ? isCategoryHovered("all_chain") && allCats
-                    ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]}`
-                    : `rounded-l-full py-[24px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]}`
+                    ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[
+                    theme ?? "dark"
+                    ][1]
+                    }`
+                    : `rounded-l-full py-[24px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[
+                    theme ?? "dark"
+                    ][1]
+                    }`
                   : allCats
-                    ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]}`
+                    ? `rounded-l-full py-[25px] -my-[5px] z-[2] shadow-lg ${AllChainsByKeys[chainKey].backgrounds[theme ?? "dark"][1]
+                    }`
                     : "z-1"
                 : ""
               }  ${forceSelectedChain
@@ -167,7 +172,7 @@ export default function RowParent({ chainKey, index }) {
 
               return (
                 <RowChildren
-                  key={chainKey}
+                  key={`${chainKey}-${categoryKey}`}
                   chainKey={chainKey}
                   categoryKey={categoryKey}
                   i={i}

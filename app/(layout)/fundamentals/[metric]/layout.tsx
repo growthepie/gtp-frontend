@@ -10,6 +10,9 @@ import Image from "next/image";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import { notFound } from "next/navigation";
 import { track } from "@vercel/analytics/server";
+import Link from "next/link";
+import Icon from "@/components/layout/Icon";
+import StableInsights from "@/components/layout/StableInsights";
 
 type Props = {
   params: { metric: string };
@@ -40,9 +43,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ?.options.find((item) => item.urlKey === params.metric);
 
   if (option) {
+    const currentDate = new Date();
+    // Set the time to 2 am
+    currentDate.setHours(2, 0, 0, 0);
+    // Convert the date to a string in the format YYYYMMDD (e.g., 20240424)
+    const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, "");
     return {
       title: option.page?.title,
       description: option.page?.why,
+      openGraph: {
+        images: [
+          {
+            url: `https://api.growthepie.xyz/v1/og_images/fundamentals/${params.metric}.png?date=${dateString}`,
+            width: 1200,
+            height: 627,
+            alt: "growthepie.xyz",
+          },
+        ],
+      },
     };
   }
 
@@ -125,26 +143,59 @@ export default async function Layout({
   //     };
   //   }
   // }
+  /* Website Button */
 
   return (
     <>
-      <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
-        <div className="flex justify-between items-start w-full mb-[15px]">
-          <div className="flex items-center ">
-            <Image
-              src="/GTP-Fundamentals.svg"
-              alt="GTP Chain"
-              className="object-contain w-[32px] h-[32px] mr-[8px]"
-              height={36}
-              width={36}
-            />
-            <Heading className="text-[36px] leading-snug " as="h1">
-              {pageData.title}
-            </Heading>
+      <Container
+        className="flex flex-col w-full pt-[65px] md:pt-[30px]"
+        isPageRoot
+      >
+        <div className="flex justify-between items-start w-full">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-y-[10px] md:gap-x-[15px] pb-[15px]">
+            <div className="flex items-center">
+              <Image
+                src="/GTP-Fundamentals.svg"
+                alt="GTP Chain"
+                className="object-contain w-[32px] h-[32px] mr-[8px]"
+                height={36}
+                width={36}
+              />
+              <div className="flex flex-col md:flex-row items-center gap-x-[15px]">
+                <Heading className="text-[36px] leading-[120%]" as="h1">
+                  {pageData.title}
+                </Heading>
+              </div>
+            </div>
+            <div className="pl-[38px] md:pl-0">
+              <Link
+                href="https://fees.growthepie.xyz/"
+                rel="noreferrer"
+                target="_blank"
+              >
+                <div
+                  className={`flex items-center justify-center p-[1px] bg-[linear-gradient(144.58deg,#FE5468_20.78%,#FFDF27_104.18%)] rounded-full  ${
+                    params.metric === "transaction-costs" ? "flex" : "hidden"
+                  }`}
+                >
+                  <div className="flex items-center pl-[5px] py-[4px] w-[205px] gap-x-[8px] font-semibold bg-forest-50 dark:bg-forest-900 rounded-full transition-all duration-300">
+                    <div className="w-[24px] h-[24px] bg-[#151A19] rounded-full flex items-center justify-center">
+                      <Icon
+                        icon="gtp:detailed-fees"
+                        className="w-[15px] h-[15px]"
+                      />
+                    </div>
+                    <div className="transition-all duration-300 whitespace-nowrap overflow-hidden text-[14px] font-semibold">
+                      Detailed Fees Overview
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </div>
           </div>
         </div>
         <Subheading
-          className="text-[16px] mb-[30px] w-[99.5%] mx-auto"
+          className="text-[14px] pb-[15px]"
           iconContainerClassName="items-center mb-[15px] md:mb-[32px] relative"
         >
           {typeof pageData.description === "string" &&
@@ -162,33 +213,10 @@ export default async function Layout({
                 </a>
               </p>
             </div>
-          ) : pageData.title === "Transaction Costs" ? (
-            <div className="flex flex-col sm:flex-row space-x-1">
-              <span className="inline-flex gap-x-1">
-                <div>
-                  {pageData.description} Check out our new
-                  <a
-                    href="https://fees.growthepie.xyz/"
-                    target="_blank"
-                    className="underline mx-0.5"
-                  >
-                    fees page
-                  </a>
-                  for a more detailed view.
-                </div>
-              </span>
-            </div>
           ) : (
             pageData.description
           )}
-          {pageData.note && (
-            <div className="text-xs">
-              <span className="font-semibold text-forest-200 dark:text-forest-400">
-                Note:{" "}
-              </span>
-              {pageData.note}
-            </div>
-          )}
+
           {pageData.tags && (
             <div className="flex items-center mt-[5px]">
               {pageData.tags.map((tag, i) => (
@@ -212,6 +240,16 @@ export default async function Layout({
           className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[63px] py-[23px] flex flex-col"
           question={`What does ${pageData.title} tell you?`}
           answer={pageData.why}
+          note={
+            pageData.note && (
+              <div className="text-xs">
+                <span className="font-semibold text-forest-200 dark:text-forest-400">
+                  Note:{" "}
+                </span>
+                {pageData.note}
+              </div>
+            )
+          }
           startOpen
         />
       </Container>

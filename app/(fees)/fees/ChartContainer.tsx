@@ -166,15 +166,13 @@ export default function ChartContainer({
 
   return (
     <div
-      className={`relative w-full bg-[#1F2726] rounded-t-[30px] pt-[15px] ${
-        isMobile ? "pb-[55px]" : "pb-[30px]"
-      }`}
+      className={`relative w-full bg-[#1F2726] rounded-t-[30px] pt-[15px] ${isMobile ? "pb-[55px]" : "pb-[30px]"
+        }`}
     >
       <div className="absolute -top-[12px] left-0 right-0 flex justify-center z-50">
         <div
-          className={`flex items-center gap-x-[10px] text-[10px] pl-[15px] pr-[20px] py-[3px] leading-[150%] rounded-full bg-[#1F2726] shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000] cursor-pointer border-[1.5px] border-forest-500 dark:border-[#344240] ${
-            isOpen ? "" : "hard-shine-2"
-          }`}
+          className={`flex items-center gap-x-[10px] text-[10px] pl-[15px] pr-[20px] py-[3px] leading-[150%] rounded-full bg-[#1F2726] shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000] cursor-pointer border-[1.5px] border-forest-500 dark:border-[#344240] ${isOpen ? "" : "hard-shine-2"
+            }`}
           onClick={() => {
             const wasOpen = isOpen;
 
@@ -196,9 +194,8 @@ export default function ChartContainer({
           <div className="w-[16px] h-[16px]">
             <Icon
               icon="feather:chevron-up"
-              className={`w-[16px] h-[16px] transition-transform duration-300 ${
-                isOpen ? "-rotate-180" : "rotate-0"
-              }`}
+              className={`w-[16px] h-[16px] transition-transform duration-300 ${isOpen ? "-rotate-180" : "rotate-0"
+                }`}
             />
           </div>
           <div
@@ -215,14 +212,12 @@ export default function ChartContainer({
       </div>
       {metrics.length > 0 && timeFrames.length > 0 && (
         <div
-          className={`overflow-hidden transition-all duration-300 ${
-            isOpen ? "max-h-[400px] pb-[55px]" : "max-h-[51px]"
-          }`}
+          className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[400px] pb-[55px]" : "max-h-[51px]"
+            }`}
         >
           <div
-            className={`w-full  flex flex-col gap-y-[10px] md:gap-y-[5px] transition-all duration-200 ${
-              isOpen ? "delay-0 opacity-100" : "delay-100 opacity-0"
-            }`}
+            className={`w-full  flex flex-col gap-y-[10px] md:gap-y-[5px] transition-all duration-200 ${isOpen ? "delay-0 opacity-100" : "delay-100 opacity-0"
+              }`}
           >
             <div className="w-full flex flex-col md:flex-row gap-y-[10px] md:gap-y-0 justify-between px-[15px]">
               <div className="flex gap-x-1 text-[20px] leading-[120%]">

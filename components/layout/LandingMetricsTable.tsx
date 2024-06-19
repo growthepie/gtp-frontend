@@ -330,7 +330,7 @@ export default function LandingMetricsTable({
                         {/* <div className="flex flex-1 align-middle items-center"> */}
                         <div className="flex w-full justify-end items-center pr-[60px] lg:pr-8 ">
                           <div className="flex items-center">
-                            {Intl.NumberFormat(undefined, {
+                            {Intl.NumberFormat("en-GB", {
                               notation: "compact",
                               maximumFractionDigits: 2,
                               minimumFractionDigits: 0,

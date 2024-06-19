@@ -17,19 +17,30 @@ export async function GET(request: Request) {
   const masterChainKeys = Object.keys(masterData.chains);
 
   const pages = [
-    ...fundamentals.options.map(
-      (option) => `https://www.growthepie.xyz/fundamentals/${option.urlKey}`,
-    ),
-    ...blockspace.options.map(
-      (option) => `https://www.growthepie.xyz/blockspace/${option.urlKey}`,
+    ...fundamentals.options
+      .filter((c) => c.excludeFromSitemap !== true)
+      .map(
+        (option) => `https://www.growthepie.xyz/fundamentals/${option.urlKey}`,
+      ),
+    ...blockspace.options
+      .filter((c) => c.excludeFromSitemap !== true)
+      .map(
+        (option) => `https://www.growthepie.xyz/blockspace/${option.urlKey}`,
+      ),
+    ...Object.keys(masterData.blockspace_categories.main_categories).map(
+      (category) =>
+        `https://www.growthepie.xyz/blockspace/chain-overview/${category}`,
     ),
     ...chains.options
       .filter(
-        (c) => c.key && Get_SupportedChainKeys(masterData).includes(c.key),
+        (c) =>
+          c.key &&
+          Get_SupportedChainKeys(masterData).includes(c.key) &&
+          c.excludeFromSitemap !== true,
       )
       .map((option) => `https://www.growthepie.xyz/chains/${option.urlKey}`),
     ...trackers.options
-      .filter((c) => c.hide !== true)
+      .filter((c) => c.hide !== true && c.excludeFromSitemap !== true)
       .map((option) => `https://www.growthepie.xyz/trackers/${option.urlKey}`),
   ];
 

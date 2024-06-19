@@ -10,6 +10,7 @@ export const MetricsURLs = {
   profit: "https://api.growthepie.xyz/v1/metrics/profit.json",
   "fully-diluted-valuation": "https://api.growthepie.xyz/v1/metrics/fdv.json",
   "market-cap": "https://api.growthepie.xyz/v1/metrics/market_cap.json",
+  throughput: "https://api.growthepie.xyz/v1/metrics/throughput.json",
 };
 
 export const ChainURLs = {
@@ -36,7 +37,7 @@ export const ChainURLs = {
 
 export const BlockspaceURLs = {
   "chain-overview": "https://api.growthepie.xyz/v1/blockspace/overview.json",
-  "chain-comparison":
+  "category-comparison":
     "https://api.growthepie.xyz/v1/blockspace/category_comparison.json",
 };
 
@@ -64,8 +65,18 @@ export const ChainBlockspaceURLs = {
   mode: "https://api.growthepie.xyz/v1/chains/blockspace/mode.json",
 };
 
+export const EconomicsURL = "https://api.growthepie.xyz/v1/economics.json";
+
 export const LandingURL = "https://api.growthepie.xyz/v1/landing_page.json";
 
 export const MasterURL = "https://api.growthepie.xyz/v1/master.json";
 
 export const ContractsURL = "https://api.growthepie.xyz/v1/contracts.json";
+
+export const GloHolderURL = "https://api.growthepie.xyz/v1/glo_dollar.json";
+
+export const LabelsURLS = {
+  quick: "https://api.growthepie.xyz/v1/labels/quick.json",
+  full: "https://api.growthepie.xyz/v1/labels/full.json",
+  sparkline: "https://api.growthepie.xyz/v1/labels/sparkline.json",
+};

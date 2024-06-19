@@ -29,7 +29,9 @@ export type NavigationItem = {
     key?: string;
     rootKey?: string;
     urlKey: string;
+    excludeFromSitemap?: boolean;
     hide?: boolean;
+    showNew?: boolean;
   }[];
   href?: string;
 };
@@ -38,30 +40,37 @@ export const navigationCategories = {
   activity: {
     label: "Activity",
     icon: "feather:clock",
+    group: "fundamentals",
   },
   "value-locked": {
     label: "Value Locked",
     icon: "feather:star",
+    group: "fundamentals",
   },
   economics: {
     label: "Economics",
     icon: "feather:credit-card",
+    group: "fundamentals",
   },
   developer: {
     label: "Developer",
     icon: "feather:code",
+    group: "developer",
   },
   convenience: {
     label: "Convenience",
     icon: "gtp:transaction-costs",
+    group: "fundamentals",
   },
   "public-goods-funding": {
     label: "Public Goods Funding",
     icon: "feather:sun",
+    group: "trackers",
   },
   gtpmetrics: {
     label: "More In-Depth Metrics",
     icon: "gtp:gtp-pie-monochrome",
+    group: "trackers",
   },
 };
 
@@ -109,6 +118,21 @@ export const navigationItems: NavigationItem[] = [
         key: "txcount",
         rootKey: "metricsTxCount",
         urlKey: "transaction-count",
+      },
+      {
+        label: "Throughput",
+        category: "activity",
+        page: {
+          title: "Throughput",
+          description:
+            "A chains throughput measured in gas per second. We only include EVM equivalent Layer 2 gas usage.",
+          why: "Throughput is a crucial metric for assessing scalability, reflecting a blockchain's actual compute capacity more accurately than transaction counts, which can vary in complexity (i.e. 21,000 gas for an eth transfer vs 280,000 gas for a simple Uniswap swap). Similarly to how modern storage devices are marketed with specs on read/write speeds rather than the number of files they can process, throughput provides a direct measure of a blockchain's ability to handle compute effectively. Throughput also reveals how close a chain is to its operational limits. This metric is essential for app developers and Layer 2 teams to gauge growth potential, potential cost implications, and performance constraints.",
+          icon: "feather:sunrise",
+        },
+        icon: "feather:sunrise",
+        key: "throughput",
+        rootKey: "throughput",
+        urlKey: "throughput",
       },
       {
         label: "Stablecoin Market Cap",
@@ -345,6 +369,7 @@ export const navigationItems: NavigationItem[] = [
         key: "chain-overview",
         rootKey: "chainOverview",
         urlKey: "chain-overview",
+        excludeFromSitemap: true,
       },
       {
         label: "Category Comparison",
@@ -447,10 +472,10 @@ export const navigationItems: NavigationItem[] = [
       },
 
       {
-        label: "zkSync Era",
+        label: "ZKsync Era",
         page: {
           description:
-            "zkSync Era is a Layer 2 protocol that scales Ethereum with cutting-edge ZK tech. Their mission isn't to merely increase Ethereum's throughput, but to fully preserve its foundational values – freedom, self-sovereignty, decentralization – at scale.",
+            "ZKsync Era is a Layer 2 protocol that scales Ethereum with cutting-edge ZK tech. Their mission isn't to merely increase Ethereum's throughput, but to fully preserve its foundational values – freedom, self-sovereignty, decentralization – at scale.",
         },
         icon: "gtp:zksync-era-logo-monochrome",
         key: "zksync_era",
@@ -594,6 +619,16 @@ export const navigationItems: NavigationItem[] = [
     icon: "gtp:tracker",
     options: [
       {
+        label: "fees.growthepie.xyz",
+        icon: "gtp:gtp-pie",
+        category: "gtpmetrics",
+        key: "feesxyz",
+        rootKey: "feesxyz",
+        urlKey: "feesxyz",
+        excludeFromSitemap: true,
+
+      },
+      {
         label: "OP RetroPGF 3",
         icon: "gtp:optimism-logo-monochrome",
         category: "public-goods-funding",
@@ -602,12 +637,21 @@ export const navigationItems: NavigationItem[] = [
         urlKey: "optimism-retropgf-3",
       },
       {
-        label: "fees.growthepie.xyz",
-        icon: "gtp:gtp-pie",
-        category: "gtpmetrics",
-        key: "feesxyz",
-        rootKey: "feesxyz",
-        urlKey: "feesxyz",
+        label: "Octant",
+        icon: "",
+        category: "public-goods-funding",
+        key: "octant",
+        rootKey: "octant",
+        urlKey: "octant",
+      },
+      {
+        label: "Glo Dollar",
+        icon: "",
+        category: "public-goods-funding",
+        key: "glodollar",
+        rootKey: "glodollar",
+        urlKey: "glodollar",
+        showNew: true,
       },
     ],
   },
@@ -635,13 +679,23 @@ export const contributorsItem: NavigationItem = {
   href: "/contributors",
 };
 
-// export const rpgfItem: NavigationItem = {
-//   name: "RPGF3 Tracker",
-//   label: "RPGF3 Tracker",
-//   icon: "gtp:optimism-logo-monochrome",
-//   options: [],
-//   href: "/optimism-retropgf-3",
-// };
+export const getFundamentalsByKey = (() => {
+  const fundamentalsByKey = {};
+
+  // Loop through each item in navigationItems
+  for (const item of navigationItems) {
+    if (item.key === "metrics" && item.options && item.options.length > 0) {
+      // Loop through each option
+      for (const option of item.options) {
+        if (option.key) {
+          fundamentalsByKey[option.key] = option;
+        }
+      }
+    }
+  }
+
+  return fundamentalsByKey;
+})();
 
 export const apiDocsItem: NavigationItem = {
   name: "API Documentation",

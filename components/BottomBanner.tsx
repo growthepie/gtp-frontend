@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import DarkModeSwitch from "@/components/layout/DarkModeSwitch";
+
 import { track } from "@vercel/analytics";
 import Icon from "@/components/layout/Icon";
 
@@ -92,9 +92,7 @@ export default function BottomBanner() {
             © {new Date().getFullYear()} growthepie 🥧📏
           </div>
         </div>
-        <div className="hidden md:flex justify-end">
-          <DarkModeSwitch />
-        </div>
+        <div className="hidden md:flex justify-end"></div>
       </div>
     </div>
   );

@@ -129,6 +129,38 @@ export const Chart = ({
     highchartsRoundedCorners(Highcharts);
     highchartsAnnotations(Highcharts);
     highchartsPatternFill(Highcharts);
+
+    // update x-axis label sizes if it is a 4 digit number
+    Highcharts.wrap(
+      Highcharts.Axis.prototype,
+      "renderTick",
+      function (proceed) {
+        proceed.apply(this, Array.prototype.slice.call(arguments, 1));
+
+        const axis: Highcharts.Axis = this;
+        const ticks: Highcharts.Dictionary<Highcharts.Tick> = axis.ticks;
+        if (
+          axis.isXAxis &&
+          axis.options.labels &&
+          axis.options.labels.enabled
+        ) {
+          Object.keys(ticks).forEach((tick) => {
+            const tickLabel = ticks[tick].label;
+            if (!tickLabel) return;
+            const tickValue = tickLabel.element.textContent;
+            if (tickValue) {
+              if (tickValue.length === 4) {
+                tickLabel.css({
+                  transform: "scale(1.4)",
+                  fontWeight: "600",
+                });
+              }
+            }
+          });
+        }
+      },
+    );
+
     setHighchartsLoaded(true);
   }, []);
 
@@ -570,20 +602,73 @@ export const Chart = ({
                         ...baseOptions.xAxis,
                         min: timespans[timespan].xMin,
                         max: timespans[timespan].xMax,
-                        minorTicks: true,
-                        minorTickLength: 2,
+                        // minorTicks: true,
+                        // minorTickLength: 2,
+                        // minorTickWidth: 2,
+                        // minorGridLineWidth: 0,
+                        // minorTickInterval: ["7d", "30d"].includes(timespan)
+                        //   ? 1000 * 60 * 60 * 24 * 1
+                        //   : 1000 * 60 * 60 * 24 * 7,
+                        // tickPositions: displayMinorTicksOnly
+                        //   ? undefined
+                        //   : tickPositions,
+                        // labels: getXAxisLabels(),
                         minorTickWidth: 2,
                         minorGridLineWidth: 0,
-                        minorTickInterval: ["7d", "30d"].includes(timespan)
-                          ? 1000 * 60 * 60 * 24 * 1
-                          : 1000 * 60 * 60 * 24 * 7,
-                        tickPositions: displayMinorTicksOnly
-                          ? undefined
-                          : tickPositions,
-                        labels: getXAxisLabels(),
+                        tickColor: "#CDD8D34C",
+                        tickLength: 25,
+                        tickWidth: 1,
+                        offset: 0,
+                        minTickInterval: timespans[timespan].xMax - timespans[timespan].xMin <= 40 * 24 * 3600 * 1000 ? 24 * 3600 * 1000 : 30 * 24 * 3600 * 1000,
+                        minPadding: 0,
+                        maxPadding: 0,
+                        labels: {
+                          align: undefined,
+                          rotation: 0,
+                          allowOverlap: false,
+                          // staggerLines: 1,
+                          reserveSpace: true,
+                          overflow: "justify",
+                          useHTML: true,
+                          formatter: function (this: AxisLabelsFormatterContextObject) {
+
+                            if (timespans[timespan].xMax - timespans[timespan].xMin <= 40 * 24 * 3600 * 1000) {
+                              let isBeginningOfWeek = new Date(this.value).getUTCDay() === 1;
+                              let showMonth = this.isFirst || new Date(this.value).getUTCDate() === 1;
+
+                              return new Date(this.value).toLocaleDateString("en-GB", {
+                                timeZone: "UTC",
+                                month: "short",
+                                day: "numeric",
+                                year: this.isFirst ? "numeric" : undefined,
+                              });
+                            }
+                            else {
+                              // if Jan 1st, show year
+                              if (new Date(this.value).getUTCMonth() === 0) {
+                                return new Date(this.value).toLocaleDateString("en-GB", {
+                                  timeZone: "UTC",
+                                  year: "numeric",
+                                });
+                              }
+                              return new Date(this.value).toLocaleDateString("en-GB", {
+                                timeZone: "UTC",
+                                month: "short",
+                                year: "numeric",
+                              });
+                            }
+                          },
+                          y: 40,
+                          style: {
+                            fontSize: "10px",
+                            color: "#CDD8D3",
+                          },
+                        },
                       },
                       yAxis: {
                         ...baseOptions.yAxis,
+                        showFirstLabel: true,
+                        showLastLabel: true,
                         type: yScale,
                         min: yScale === "percentage" ? 0 : undefined,
                         max: maxY ? maxY : undefined,
@@ -664,8 +749,8 @@ export const Chart = ({
               >
                 <ChartWatermark
                   className={`h-[30.67px] md:h-[46px] ${parseInt(chartHeight, 10) > 200
-                      ? "w-[128px] md:w-[163px]"
-                      : "w-[128.67px] md:w-[193px] "
+                    ? "w-[128px] md:w-[163px]"
+                    : "w-[128.67px] md:w-[193px] "
                     } text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten`}
                 />
               </div>

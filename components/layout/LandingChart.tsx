@@ -37,6 +37,11 @@ import ChartWatermark from "./ChartWatermark";
 import { BASE_URL, IS_PREVIEW } from "@/lib/helpers";
 import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
 import "../../app/highcharts.axis.css";
+import {
+  TopRowContainer,
+  TopRowChild,
+  TopRowParent,
+} from "@/components/layout/TopRow";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -111,7 +116,7 @@ const baseOptions: Highcharts.Options = {
     //     if (isYearStart) {
     //       return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
     //     } else {
-    //       return `<span style="">${date.toLocaleDateString(undefined, {
+    //       return `<span style="">${date.toLocaleDateString("en-GB", {
     //         timeZone: "UTC",
     //         month: "short",
     //       })}</span>`;
@@ -478,7 +483,7 @@ export default function LandingChart({
 
         // display the left date
         this.chart.leftDateText.attr({
-          text: `${leftDate.toLocaleDateString(undefined, {
+          text: `${leftDate.toLocaleDateString("en-GB", {
             timeZone: "UTC",
             month: "short",
             day: "numeric",
@@ -494,7 +499,7 @@ export default function LandingChart({
 
         // display the right date label with arrow pointing down
         this.chart.rightDateText.attr({
-          text: `${rightDate.toLocaleDateString(undefined, {
+          text: `${rightDate.toLocaleDateString("en-GB", {
             timeZone: "UTC",
             month: "short",
             day: "numeric",
@@ -731,7 +736,7 @@ export default function LandingChart({
       const date = new Date(x);
       const dateString = `
       <div>
-        ${date.toLocaleDateString(undefined, {
+        ${date.toLocaleDateString("en-GB", {
           timeZone: "UTC",
           month: "short",
           day: "numeric",
@@ -783,7 +788,10 @@ export default function LandingChart({
         .filter((point: any) => {
           const { series, y, percentage } = point;
           const { name } = series;
-          const supportedChainKeys = Get_SupportedChainKeys(master);
+          const supportedChainKeys = Get_SupportedChainKeys(master, [
+            "all_l2s",
+            "multiple",
+          ]);
 
           return supportedChainKeys.includes(name);
         })
@@ -827,7 +835,7 @@ export default function LandingChart({
             }</div>
             <div class="flex-1 text-right justify-end font-inter flex">
               <div class="inline-block">${parseFloat(y).toLocaleString(
-                undefined,
+                "en-GB",
                 {
                   minimumFractionDigits: 0,
                 },
@@ -850,7 +858,7 @@ export default function LandingChart({
 
       return tooltip + tooltipPoints + tooltipEnd;
     },
-    [formatNumber, selectedMetric, selectedScale, theme],
+    [formatNumber, master, selectedMetric, selectedScale, theme],
   );
 
   const tooltipPositioner =
@@ -869,10 +877,7 @@ export default function LandingChart({
             ? pointX + distance
             : pointX - tooltipWidth - distance;
 
-        const tooltipY =
-          pointY - tooltipHeight / 2 < plotTop
-            ? pointY + distance
-            : pointY - tooltipHeight / 2;
+        const tooltipY = pointY - tooltipHeight / 2;
 
         if (isMobile) {
           if (tooltipX + tooltipWidth > plotLeft + plotWidth) {
@@ -1205,12 +1210,12 @@ export default function LandingChart({
           formatter: function (this: AxisLabelsFormatterContextObject) {
             // if Jan 1st, show year
             if (new Date(this.value).getUTCMonth() === 0) {
-              return new Date(this.value).toLocaleDateString(undefined, {
+              return new Date(this.value).toLocaleDateString("en-GB", {
                 timeZone: "UTC",
                 year: "numeric",
               });
             }
-            return new Date(this.value).toLocaleDateString(undefined, {
+            return new Date(this.value).toLocaleDateString("en-GB", {
               timeZone: "UTC",
               month: isMobile ? "short" : "short",
               year: "numeric",
@@ -1468,7 +1473,7 @@ export default function LandingChart({
                     //   theme
                     //   ][0] + "33"
                     //   : [],
-                    shadow: "none",
+                    shadow: null,
                     color: {
                       linearGradient: {
                         x1: 0,
@@ -1624,7 +1629,6 @@ export default function LandingChart({
     zoomMin,
     zoomed,
     is_embed,
-    daysShown,
   ]);
 
   // const resituateChart = debounce(() => {
@@ -1715,8 +1719,15 @@ export default function LandingChart({
     );
 
   return (
-    <div className="w-full h-full flex flex-col justify-between">
-      <div className="h-[225px] lg:h-[81px] xl:h-[60px]">
+    <div
+      id="content-container"
+      className={`w-full h-full flex flex-col justify-between `}
+    >
+      <div
+        className={`h-[225px] lg:h-[81px] xl:h-[60px] ${
+          isMobile ? "mb-[30px]" : "mb-0"
+        }`}
+      >
         <div className="flex flex-col lg:hidden justify-center pb-[15px] gap-y-[5px]">
           <MobileMetricCard
             icon="feather:users"
@@ -1743,14 +1754,11 @@ export default function LandingChart({
             />
           </div>
         </div>
-        <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs xl:text-base xl:flex xl:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 xl:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
-          <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center space-x-[4px] xl:space-x-1">
-            <button
-              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                showTotalUsers
-                  ? "bg-forest-500 dark:bg-forest-1000"
-                  : "hover:bg-forest-500/10"
-              }`}
+        <TopRowContainer>
+          <TopRowParent>
+            <TopRowChild
+              isSelected={showTotalUsers}
+              className={"-px-2"}
               onClick={() => {
                 setShowTotalUsers(true);
                 setSelectedScale("absolute");
@@ -1758,13 +1766,9 @@ export default function LandingChart({
               }}
             >
               Total Users
-            </button>
-            <button
-              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                "absolute" === selectedScale && !showTotalUsers
-                  ? "bg-forest-500 dark:bg-forest-1000"
-                  : "hover:bg-forest-500/10"
-              }`}
+            </TopRowChild>
+            <TopRowChild
+              isSelected={"absolute" === selectedScale && !showTotalUsers}
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("absolute");
@@ -1772,14 +1776,10 @@ export default function LandingChart({
               }}
             >
               Users per Chain
-            </button>
+            </TopRowChild>
 
-            <button
-              className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                "percentage" === selectedScale
-                  ? "bg-forest-500 dark:bg-forest-1000"
-                  : "hover:bg-forest-500/10"
-              }`}
+            <TopRowChild
+              isSelected={"percentage" === selectedScale}
               onClick={() => {
                 setShowTotalUsers(false);
                 setSelectedScale("percentage");
@@ -1787,22 +1787,18 @@ export default function LandingChart({
               }}
             >
               Percentage
-            </button>
-          </div>
-          <div className="block xl:hidden w-[70%] mx-auto my-[10px]">
+            </TopRowChild>
+          </TopRowParent>
+          <div className="block lg:hidden w-[70%] mx-auto my-[10px]">
             <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
           </div>
-          <div className="flex w-full xl:w-auto justify-between xl:justify-center items-stretch xl:items-center mx-4 xl:mx-0 space-x-[4px] xl:space-x-1">
+          <TopRowParent>
             {!zoomed ? (
               Object.keys(timespans).map((timespan) => (
-                <button
+                <TopRowChild
                   key={timespan}
                   //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                  className={`rounded-full grow px-4 py-1.5 xl:py-4 font-medium ${
-                    selectedTimespan === timespan
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
-                  }`}
+                  isSelected={selectedTimespan === timespan}
                   onClick={() => {
                     setSelectedTimespan(timespan);
                     // setXAxis();
@@ -1820,7 +1816,7 @@ export default function LandingChart({
                   }}
                 >
                   {timespans[timespan].label}
-                </button>
+                </TopRowChild>
               ))
             ) : (
               <>
@@ -1847,10 +1843,10 @@ export default function LandingChart({
                 </button>
               </>
             )}
-          </div>
-        </div>
+          </TopRowParent>
+        </TopRowContainer>
       </div>
-      <div className="flex-1 min-h-0 w-full pt-8 pb-4 md:pt-[52px] md:pb-4 lg:pt-[52px] lg:pb-16">
+      <div className="flex-1 min-h-0 w-full pt-8 pb-4 md:pt-[52px] md:pb-4 lg:pt-[52px] lg:pb-16 ">
         <div
           className="relative h-[284px] md:h-[400px] w-full rounded-xl"
           ref={containerRef}
@@ -1885,7 +1881,7 @@ export default function LandingChart({
           {/* </div> */}
         </div>
       </div>
-      <div className="h-[32px] lg:h-[80px] flex flex-col justify-start">
+      <div className="h-[32px] lg:h-[80px] flex flex-col justify-start ">
         <div className="flex justify-between items-center rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative">
           {/* toggle ETH */}
           <div className="flex z-10">
@@ -1993,7 +1989,9 @@ const MobileMetricCard = ({
       </div>
       <div className="flex flex-col items-center justify-center w-7/12 gap-y-[3px]">
         <div className="text-[20px] font-[650] leading-[1.2] flex items-end">
-          <div className="text-[20px]">{metric_value.toLocaleString()}</div>
+          <div className="text-[20px]">
+            {metric_value.toLocaleString("en-GB")}
+          </div>
           <div className="text-[20px] leading-tight">{is_multiple && "x"}</div>
         </div>
         <div className="text-[10px] font-medium leading-[1.5]">
@@ -2052,7 +2050,9 @@ const MetricCard = ({
           {metric_name}
         </div>
         <div className="text-[24px] font-[650] leading-[1.33] flex items-end">
-          <div className="text-[24px]">{metric_value.toLocaleString()}</div>
+          <div className="text-[24px]">
+            {metric_value.toLocaleString("en-GB")}
+          </div>
           <div className="text-[24px] leading-tight">{is_multiple && "x"}</div>
         </div>
         <div className="text-[10px] font-medium leading-[1.5]">
