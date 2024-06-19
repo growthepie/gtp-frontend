@@ -133,7 +133,6 @@ export const navigationItems: NavigationItem[] = [
         key: "throughput",
         rootKey: "throughput",
         urlKey: "throughput",
-        showNew: true,
       },
       {
         label: "Stablecoin Market Cap",
@@ -627,7 +626,7 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "feesxyz",
         urlKey: "feesxyz",
         excludeFromSitemap: true,
-        showNew: true,
+
       },
       {
         label: "OP RetroPGF 3",
@@ -644,6 +643,15 @@ export const navigationItems: NavigationItem[] = [
         key: "octant",
         rootKey: "octant",
         urlKey: "octant",
+      },
+      {
+        label: "Glo Dollar",
+        icon: "",
+        category: "public-goods-funding",
+        key: "glodollar",
+        rootKey: "glodollar",
+        urlKey: "glodollar",
+        showNew: true,
       },
     ],
   },
