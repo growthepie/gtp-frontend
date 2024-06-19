@@ -80,3 +80,8 @@ export const LabelsURLS = {
   full: "https://api.growthepie.xyz/v1/labels/full.json",
   sparkline: "https://api.growthepie.xyz/v1/labels/sparkline.json",
 };
+
+export const FeesURLs = {
+  table: "https://api.growthepie.xyz/v1/fees/table.json",
+  linechart: "https://api.growthepie.xyz/v1/fees/linechart.json",
+};

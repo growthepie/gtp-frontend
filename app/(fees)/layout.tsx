@@ -13,6 +13,7 @@ import Share from "@/components/Share";
 import Icon from "@/components/layout/Icon";
 import FeesContainer from "@/components/layout/FeesContainer";
 import Head from "../(layout)/head";
+import DeveloperTools from "@/components/development/DeveloperTools";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",
@@ -241,6 +242,7 @@ export default function RootLayout({
               <div className="hidden 2xl:block">{"2xl"}</div>
             </div>
           )}
+          <DeveloperTools />
           <CookieConsent />
         </Providers>
       </body>
