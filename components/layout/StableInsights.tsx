@@ -444,6 +444,7 @@ export default function StableInsights({ }: {}) {
 
   return (
     <>
+      <ShowLoading dataLoading={[isLoading]} dataValidating={[isValidating]} />
       {sortedTableData && data && (
         <div className="flex flex-col gap-y-[15px]">
           <div className="flex items-center gap-x-[8px]">
