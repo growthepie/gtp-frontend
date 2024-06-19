@@ -544,8 +544,7 @@ export default function StableInsights({ }: {}) {
                         gridDefinitionColumns="grid-cols-[minmax(0,1600px),100px,50px]"
                         databarWidth={`${(sortedTableData[key].balance / Object.values(sortedTableData)[0].balance) * 100}%`}
                         databarStyle={{
-                          // shimmering
-                          background: `#24E5DF`,
+                          background: "linear-gradient(-90deg, #24E5DF99 0px, #24E5DF 300px)",
                         }}
                       >
                         <div className="flex gap-x-[10px]">
@@ -986,7 +985,7 @@ const GridTableRow = ({ children, gridDefinitionColumns, style, className, datab
 
       {databarWidth && (
         <div
-          className="flex flex-col justify-end items-end absolute inset-0 rounded-full overflow-hidden"
+          className="flex flex-col justify-end items-end absolute inset-[-1px] rounded-full overflow-hidden pointer-events-none"
         >
           <div
             className="h-[1px]"
