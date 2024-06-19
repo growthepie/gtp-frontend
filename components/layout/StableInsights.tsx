@@ -463,7 +463,7 @@ export default function StableInsights({ }: {}) {
                 </p>
 
                 <p className="text-[14px] w-full">
-                  The Glo Dollar holders table shows the top Glo Dollar holders by balance.
+                  Explore the top wallets currently holding Glo Dollar and supporting public goods.
                   {/* Check here which are the top supporting Glo Dollar wallets
                   currently. */}
                 </p>
