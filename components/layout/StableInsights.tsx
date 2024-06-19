@@ -604,7 +604,7 @@ export default function StableInsights({ }: {}) {
                   </GridTableRow>
                 </div>
               </div>
-              <div className="w-full lg:flex-1 lg:min-w-[500px] relative h-[300px] md:h-auto pt-[37px] pb-[25px]">
+              <div className="w-full lg:flex-1 lg:min-w-[500px] relative h-[300px] md:h-auto pt-[46px] pb-[25px]">
                 <div className="inset-0 absolute z-10 flex items-center justify-center pointer-events-none select-none">
                   <Image
                     src="/glowatermark.svg"
