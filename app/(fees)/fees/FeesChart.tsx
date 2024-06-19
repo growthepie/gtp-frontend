@@ -172,6 +172,7 @@ export default function FeesChart({
                 prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
           } else {
             number = prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
+            if(val < 1) number = prefix + val.toFixed(2) + suffix;
           }
         }
       }
@@ -400,18 +401,18 @@ export default function FeesChart({
           if (pointX - tooltipWidth / 2 < plotLeft) {
             return {
               x: plotLeft,
-              y: -250,
+              y: (15 * selectedChains.length - 7) * -1,
             };
           }
           if (pointX + tooltipWidth / 2 > plotLeft + plotWidth) {
             return {
               x: plotLeft + plotWidth - tooltipWidth,
-              y: -250,
+              y: (15 * selectedChains.length - 7) * -1,
             };
           }
           return {
             x: pointX - tooltipWidth / 2,
-            y: -250,
+            y: (15 * selectedChains.length - 7) * -1,
           };
         }
 
@@ -420,7 +421,7 @@ export default function FeesChart({
           y: tooltipY - 250,
         };
       },
-      [isMobile],
+      [isMobile, selectedChains],
     );
 
   const dataIndex = useMemo(() => {

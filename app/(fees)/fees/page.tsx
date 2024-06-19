@@ -65,23 +65,23 @@ const getGradientColor = (percentage) => {
 
   const r = Math.floor(
     parseInt(lowerBound.color.substring(1, 3), 16) +
-      percentDiff *
-        (parseInt(upperBound.color.substring(1, 3), 16) -
-          parseInt(lowerBound.color.substring(1, 3), 16)),
+    percentDiff *
+    (parseInt(upperBound.color.substring(1, 3), 16) -
+      parseInt(lowerBound.color.substring(1, 3), 16)),
   );
 
   const g = Math.floor(
     parseInt(lowerBound.color.substring(3, 5), 16) +
-      percentDiff *
-        (parseInt(upperBound.color.substring(3, 5), 16) -
-          parseInt(lowerBound.color.substring(3, 5), 16)),
+    percentDiff *
+    (parseInt(upperBound.color.substring(3, 5), 16) -
+      parseInt(lowerBound.color.substring(3, 5), 16)),
   );
 
   const b = Math.floor(
     parseInt(lowerBound.color.substring(5, 7), 16) +
-      percentDiff *
-        (parseInt(upperBound.color.substring(5, 7), 16) -
-          parseInt(lowerBound.color.substring(5, 7), 16)),
+    percentDiff *
+    (parseInt(upperBound.color.substring(5, 7), 16) -
+      parseInt(lowerBound.color.substring(5, 7), 16)),
   );
 
   return `#${r.toString(16).padStart(2, "0")}${g
@@ -187,7 +187,9 @@ export default function FeesPage() {
   function dataAvailToArray(x: string): DAvailability[] {
     let retObject: DAvailability[] = [];
     if (typeof x === "string") {
-      // Ensure x is a string
+      // Convert x to lowercase to ensure case-insensitive matching
+      x = x.toLowerCase();
+
       if (x.includes("calldata")) {
         retObject.push({
           icon: "calldata",
@@ -202,21 +204,21 @@ export default function FeesPage() {
         });
       }
 
-      if (x.includes("MantleDA")) {
+      if (x.includes("mantleda") || x.includes("eigenda")) {
         retObject.push({
           icon: "customoffchain",
-          label: "MantleDA",
+          label: "EigenDA",
         });
       }
 
-      if (x.includes("DAC")) {
+      if (x.includes("dac")) {
         retObject.push({
           icon: "committee",
           label: "DAC (committee)",
         });
       }
 
-      if (x.includes("Celestia")) {
+      if (x.includes("celestia")) {
         retObject.push({
           icon: "celestiafp",
           label: "Celestia",
@@ -229,6 +231,13 @@ export default function FeesPage() {
           label: "Memo",
         });
       }
+    }
+
+    if (retObject.length === 0) {
+      retObject.push({
+        icon: "fa:circle",
+        label: "N/A",
+      });
     }
     return retObject;
   }
@@ -470,8 +479,8 @@ export default function FeesPage() {
           chain,
           txCost: (data as any)["hourly"][selectedQuantitative]?.data[index]
             ? (data as any)["hourly"][selectedQuantitative]?.data[index][
-                showUsd ? 2 : 1
-              ]
+            showUsd ? 2 : 1
+            ]
             : null,
         }),
       );
@@ -487,7 +496,7 @@ export default function FeesPage() {
       return sortedChains.reduce((acc, { chain }) => {
         if (
           feeData.chain_data[chain]?.["hourly"]?.[selectedQuantitative]?.data?.[
-            index
+          index
           ] !== undefined
         ) {
           acc[chain] =
@@ -518,8 +527,8 @@ export default function FeesPage() {
           chain,
           txCost: (data as any)["hourly"][selectedQuantitative]?.data[index]
             ? (data as any)["hourly"][selectedQuantitative]?.data[index][
-                showUsd ? 2 : 1
-              ]
+            showUsd ? 2 : 1
+            ]
             : null,
         }),
       );
@@ -535,7 +544,7 @@ export default function FeesPage() {
       return sortedChains.reduce((acc, { chain }) => {
         if (
           feeData.chain_data[chain]?.["hourly"]?.[selectedQuantitative]?.data?.[
-            index
+          index
           ] !== undefined
         ) {
           acc[chain] =
@@ -565,20 +574,20 @@ export default function FeesPage() {
   const getGradientColor = useCallback((percentage, weighted = false) => {
     const colors = !weighted
       ? [
-          { percent: 0, color: "#1DF7EF" },
-          { percent: 20, color: "#76EDA0" },
-          { percent: 50, color: "#FFDF27" },
-          { percent: 70, color: "#FF9B47" },
-          { percent: 100, color: "#FE5468" },
-        ]
+        { percent: 0, color: "#1DF7EF" },
+        { percent: 20, color: "#76EDA0" },
+        { percent: 50, color: "#FFDF27" },
+        { percent: 70, color: "#FF9B47" },
+        { percent: 100, color: "#FE5468" },
+      ]
       : [
-          { percent: 0, color: "#1DF7EF" },
-          { percent: 2, color: "#76EDA0" },
-          { percent: 10, color: "#FFDF27" },
-          { percent: 40, color: "#FF9B47" },
-          { percent: 80, color: "#FE5468" },
-          { percent: 100, color: "#FE5468" }, // Repeat the final color to ensure upper bound
-        ];
+        { percent: 0, color: "#1DF7EF" },
+        { percent: 2, color: "#76EDA0" },
+        { percent: 10, color: "#FFDF27" },
+        { percent: 40, color: "#FF9B47" },
+        { percent: 80, color: "#FE5468" },
+        { percent: 100, color: "#FE5468" }, // Repeat the final color to ensure upper bound
+      ];
 
     let lowerBound = colors[0];
     let upperBound = colors[colors.length - 1];
@@ -606,23 +615,23 @@ export default function FeesPage() {
 
     const r = Math.floor(
       parseInt(lowerBound.color.substring(1, 3), 16) +
-        percentDiff *
-          (parseInt(upperBound.color.substring(1, 3), 16) -
-            parseInt(lowerBound.color.substring(1, 3), 16)),
+      percentDiff *
+      (parseInt(upperBound.color.substring(1, 3), 16) -
+        parseInt(lowerBound.color.substring(1, 3), 16)),
     );
 
     const g = Math.floor(
       parseInt(lowerBound.color.substring(3, 5), 16) +
-        percentDiff *
-          (parseInt(upperBound.color.substring(3, 5), 16) -
-            parseInt(lowerBound.color.substring(3, 5), 16)),
+      percentDiff *
+      (parseInt(upperBound.color.substring(3, 5), 16) -
+        parseInt(lowerBound.color.substring(3, 5), 16)),
     );
 
     const b = Math.floor(
       parseInt(lowerBound.color.substring(5, 7), 16) +
-        percentDiff *
-          (parseInt(upperBound.color.substring(5, 7), 16) -
-            parseInt(lowerBound.color.substring(5, 7), 16)),
+      percentDiff *
+      (parseInt(upperBound.color.substring(5, 7), 16) -
+        parseInt(lowerBound.color.substring(5, 7), 16)),
     );
 
     return `#${r.toString(16).padStart(2, "0")}${g
@@ -969,17 +978,17 @@ export default function FeesPage() {
       return !feeIndexSort[optIndex][chain]
         ? "gray"
         : getGradientColor(
-            Math.floor(
-              (feeIndexSort[optIndex][chain][showUsd ? 2 : 1] /
-                feeIndexSort[optIndex][
-                  Object.keys(feeIndexSort[optIndex])[
-                    Object.keys(feeIndexSort[optIndex]).length - 1
-                  ]
-                ][showUsd ? 2 : 1]) *
-                100,
-            ),
-            true,
-          );
+          Math.floor(
+            (feeIndexSort[optIndex][chain][showUsd ? 2 : 1] /
+              feeIndexSort[optIndex][
+              Object.keys(feeIndexSort[optIndex])[
+              Object.keys(feeIndexSort[optIndex]).length - 1
+              ]
+              ][showUsd ? 2 : 1]) *
+            100,
+          ),
+          true,
+        );
     },
     [feeIndexSort, optIndex, getGradientColor, showUsd],
   );
@@ -992,8 +1001,8 @@ export default function FeesPage() {
 
       const value = feeData.chain_data[chain]["hourly"][metric].data[optIndex]
         ? feeData.chain_data[chain]["hourly"][metric].data[optIndex][
-            showUsd ? 2 : 1
-          ]
+        showUsd ? 2 : 1
+        ]
         : null;
 
       const usdClasses = "justify-center w-[60px] md:w-[65px] -mr-1.5";
@@ -1042,6 +1051,8 @@ export default function FeesPage() {
       }
       const multipliedValue = value * multiplier;
       const fractionDigits = getNumFractionDigits(multipliedValue);
+
+      console.log(multipliedValue + " - " + chain);
 
       // ethereum chain as a special case
       if (chain === "ethereum" && metric === selectedQuantitative) {
@@ -1092,11 +1103,15 @@ export default function FeesPage() {
             </div>
           )}
           <div>
-            {Intl.NumberFormat(undefined, {
-              notation: "compact",
-              maximumFractionDigits: fractionDigits,
-              minimumFractionDigits: fractionDigits,
-            }).format(multipliedValue)}
+            {showCents && multipliedValue < 0.1
+              ? "< 0.1"
+              : !showCents && multipliedValue < 0.001
+                ? "< 0.001"
+                : Intl.NumberFormat(undefined, {
+                  notation: "compact",
+                  maximumFractionDigits: fractionDigits,
+                  minimumFractionDigits: fractionDigits,
+                }).format(multipliedValue)}
           </div>
           {showUsd && showCents && (
             <div className="pl-0.5 text-[8px] pr-[5px] text-forest-400">
@@ -1157,7 +1172,7 @@ export default function FeesPage() {
             ? `${isMobile ? 313 + 60 : 413 + 60}px`
             : `${96 + 60}px`,
         }}
-        // ref={pageRef}
+      // ref={pageRef}
       >
         <Header />
 
@@ -1174,11 +1189,10 @@ export default function FeesPage() {
               <div className="font-semibold">Main platform</div>
             </a>
             <div
-              className={`flex items-center relative h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-[15px] py-[10px] gap transition-all z-40 duration-300 hover:cursor-pointer ${
-                hoverSettings
+              className={`flex items-center relative h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-[15px] py-[10px] gap transition-all z-40 duration-300 hover:cursor-pointer ${hoverSettings
                   ? "w-[308px] justify-start"
                   : "w-[128px] justify-start"
-              }`}
+                }`}
               onMouseEnter={() => {
                 setHoverSettings(true);
               }}
@@ -1187,9 +1201,8 @@ export default function FeesPage() {
               }}
             >
               <div
-                className={`transition-all ${
-                  hoverSettings ? "hidden" : "block"
-                }`}
+                className={`transition-all ${hoverSettings ? "hidden" : "block"
+                  }`}
               >
                 <Icon
                   icon="gtp:gtp-settings"
@@ -1197,9 +1210,8 @@ export default function FeesPage() {
                 />
               </div>
               <div
-                className={`transition-all ${
-                  hoverSettings ? "block" : "hidden"
-                }`}
+                className={`transition-all ${hoverSettings ? "block" : "hidden"
+                  }`}
               >
                 <Icon
                   icon="feather:chevron-down"
@@ -1210,11 +1222,10 @@ export default function FeesPage() {
             </div>
 
             <div
-              className={`absolute top-6 bg-[#151A19] right-[5px] rounded-b-2xl z-20 transition-all duration-[290ms] overflow-hidden px-2 ${
-                hoverSettings
+              className={`absolute top-6 bg-[#151A19] right-[5px] rounded-b-2xl z-20 transition-all duration-[290ms] overflow-hidden px-2 ${hoverSettings
                   ? "w-[308px] h-[188px] shadow-[0px_4px_46.2px_0px_#000000] "
                   : "w-[0px] h-[10px] shadow-transparent"
-              }`}
+                }`}
               onMouseEnter={() => {
                 setHoverSettings(true);
               }}
@@ -1227,9 +1238,8 @@ export default function FeesPage() {
                   <div className="flex items-center mx-2 w-full gap-x-[10px]">
                     <Icon
                       icon="gtp:gtp-dollar"
-                      className={`h-[15px] w-[15px] mt-1 font-[900] text-[#CDD8D3] relative -top-[3px] ${
-                        hoverSettings ? "text-sm" : ""
-                      }`}
+                      className={`h-[15px] w-[15px] mt-1 font-[900] text-[#CDD8D3] relative -top-[3px] ${hoverSettings ? "text-sm" : ""
+                        }`}
                     />
                     <div className="text-[10px] text-white">Denominates in</div>
                     <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
@@ -1244,9 +1254,8 @@ export default function FeesPage() {
                           Full Dollar
                         </div>
                         <div
-                          className={`w-full text-center ${
-                            !showCents && "opacity-50"
-                          }`}
+                          className={`w-full text-center ${!showCents && "opacity-50"
+                            }`}
                         >
                           USD cents
                         </div>
@@ -1319,9 +1328,8 @@ export default function FeesPage() {
                                   Enabled
                                 </div>
                                 <div
-                                  className={`w-full text-center ${
-                                    metrics[metric].enabled && "opacity-50"
-                                  }`}
+                                  className={`w-full text-center ${metrics[metric].enabled && "opacity-50"
+                                    }`}
                                 >
                                   Disabled
                                 </div>
@@ -1411,17 +1419,15 @@ export default function FeesPage() {
               >
                 <div className="pl-[10px] flex-1 flex">
                   <div
-                    className={`flex items-center gap-x-[5px] ${
-                      isMobile ? "w-[23%]" : "w-[27%]"
-                    }`}
+                    className={`flex items-center gap-x-[5px] ${isMobile ? "w-[23%]" : "w-[27%]"
+                      }`}
                   >
                     <div
                       className={`flex items-center h-[0px] w-[18px] md:h-[0px] md:w-[24px]`}
                     >
                       <div
-                        className={`${
-                          isMobile ? "h-[0px] w-[18px]" : "h-[0px] w-[24px]"
-                        }`}
+                        className={`${isMobile ? "h-[0px] w-[18px]" : "h-[0px] w-[24px]"
+                          }`}
                       />
                     </div>
                     <div
@@ -1443,11 +1449,10 @@ export default function FeesPage() {
                               : "formkit:arrowup"
                             : "formkit:arrowdown"
                         }
-                        className={` dark:text-white text-black w-[10px] h-[10px] ${
-                          selectedQualitative === "chain"
+                        className={` dark:text-white text-black w-[10px] h-[10px] ${selectedQualitative === "chain"
                             ? "opacity-100"
                             : "opacity-20"
-                        }`}
+                          }`}
                       />{" "}
                     </div>
                     <div
@@ -1464,9 +1469,8 @@ export default function FeesPage() {
                         : ""}
                       <Icon
                         icon={"feather:x-circle"}
-                        className={` dark:text-white text-black w-[10px] h-[10px] relative bottom-[0.5px] ${
-                          availabilityFilter ? "block" : "hidden"
-                        }`}
+                        className={` dark:text-white text-black w-[10px] h-[10px] relative bottom-[0.5px] ${availabilityFilter ? "block" : "hidden"
+                          }`}
                         onClick={() => {
                           setAvailabilityFilter(false);
                         }}
@@ -1474,69 +1478,126 @@ export default function FeesPage() {
                     </div>
                   </div>
                   <div
-                    className={`flex justify-between ${
-                      isMobile ? "w-[47.5%]" : "w-[50.5%]  pl-[35px] pr-[25px]"
-                    }`}
+                    className={`flex items-center justify-end ${isMobile ? "w-[15%]" : "w-[15%]"
+                      }`}
                   >
-                    {Object.keys(metrics)
-                      .filter((metricKey) => metrics[metricKey].enabled)
-                      .map((metric) => {
-                        return (
-                          <div
-                            className="flex items-center"
-                            key={metric + "_topbar"}
-                          >
-                            <div
-                              className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px] z-10"
-                              onClick={() => {
-                                if (selectedQuantitative === metric) {
-                                  if (selectedQualitative) {
-                                    setSelectedQualitative(null);
-                                  } else {
-                                    setSortOrder(!sortOrder);
-                                  }
-                                } else {
-                                  setSelectedQualitative(null);
-                                  setSelectedQuantitative(metric);
-                                }
-                              }}
-                            >
-                              {" "}
-                              <div>{metrics[metric].title}</div>
-                              <Icon
-                                icon={
-                                  !selectedQualitative &&
-                                  selectedQuantitative === metric
-                                    ? sortOrder
-                                      ? "formkit:arrowdown"
-                                      : "formkit:arrowup"
-                                    : "formkit:arrowdown"
-                                }
-                                className={`dark:text-white text-black w-[10px] h-[10px] ${
-                                  !selectedQualitative &&
-                                  selectedQuantitative === metric
-                                    ? "opacity-100"
-                                    : "opacity-20"
-                                }`}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
+                    <div
+                      className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px] z-10"
+                      onClick={() => {
+                        if (selectedQuantitative === "txcosts_median") {
+                          if (selectedQualitative) {
+                            setSelectedQualitative(null);
+                          } else {
+                            setSortOrder(!sortOrder);
+                          }
+                        } else {
+                          setSelectedQualitative(null);
+                          setSelectedQuantitative("txcosts_median");
+                        }
+                      }}
+                    >
+                      <div>Median Fee</div>
+                      <Icon
+                        icon={
+                          !selectedQualitative &&
+                            selectedQuantitative === "txcosts_median"
+                            ? sortOrder
+                              ? "formkit:arrowdown"
+                              : "formkit:arrowup"
+                            : "formkit:arrowdown"
+                        }
+                        className={`dark:text-white text-black w-[10px] h-[10px] ${!selectedQualitative &&
+                            selectedQuantitative === "txcosts_median"
+                            ? "opacity-100"
+                            : "opacity-20"
+                          }`}
+                      />
+                    </div>
                   </div>
-
                   <div
-                    className={`relative pl-[14px] flex flex-col justify-end space-x-[1px] font-normal  ${
-                      isMobile ? "w-[29.5%]" : "w-[22.5%]"
-                    }`}
+                    className={`flex items-center justify-end ${isMobile ? "w-[16%]" : "w-[16%]"
+                      }`}
+                  >
+                    <div
+                      className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px] z-10"
+                      onClick={() => {
+                        if (selectedQuantitative === "txcosts_native_median") {
+                          if (selectedQualitative) {
+                            setSelectedQualitative(null);
+                          } else {
+                            setSortOrder(!sortOrder);
+                          }
+                        } else {
+                          setSelectedQualitative(null);
+                          setSelectedQuantitative("txcosts_native_median");
+                        }
+                      }}
+                    >
+                      <div>Transfer ETH</div>
+                      <Icon
+                        icon={
+                          !selectedQualitative &&
+                            selectedQuantitative === "txcosts_native_median"
+                            ? sortOrder
+                              ? "formkit:arrowdown"
+                              : "formkit:arrowup"
+                            : "formkit:arrowdown"
+                        }
+                        className={`dark:text-white text-black w-[10px] h-[10px] ${!selectedQualitative &&
+                            selectedQuantitative === "txcosts_native_median"
+                            ? "opacity-100"
+                            : "opacity-20"
+                          }`}
+                      />
+                    </div>
+                  </div>
+                  <div
+                    className={`pr-[20px] flex items-center justify-end ${isMobile ? "w-[16.5%]" : "w-[19.5%]"
+                      }`}
+                  >
+                    <div
+                      className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px] z-10"
+                      onClick={() => {
+                        if (selectedQuantitative === "txcosts_swap") {
+                          if (selectedQualitative) {
+                            setSelectedQualitative(null);
+                          } else {
+                            setSortOrder(!sortOrder);
+                          }
+                        } else {
+                          setSelectedQualitative(null);
+                          setSelectedQuantitative("txcosts_swap");
+                        }
+                      }}
+                    >
+                      <div>Swap Token</div>
+                      <Icon
+                        icon={
+                          !selectedQualitative &&
+                            selectedQuantitative === "txcosts_swap"
+                            ? sortOrder
+                              ? "formkit:arrowdown"
+                              : "formkit:arrowup"
+                            : "formkit:arrowdown"
+                        }
+                        className={`dark:text-white text-black w-[10px] h-[10px] ${!selectedQualitative &&
+                            selectedQuantitative === "txcosts_swap"
+                            ? "opacity-100"
+                            : "opacity-20"
+                          }`}
+                      />
+                    </div>
+                  </div>
+                  <div
+                    className={`relative pl-[14px] flex flex-col justify-end space-x-[1px] font-normal  ${isMobile ? "w-[29.5%]" : "w-[22.5%]"
+                      }`}
                   >
                     <div className="relative flex space-x-[1px] items-end -bottom-2">
                       <div
-                        className={`absolute right-[35px] md:right-[25px] w-[29px] h-[12px] text-[8px] transition-all duration-100 ${
-                          selectedBarIndex >= 18 && selectedBarIndex <= 22
+                        className={`absolute right-[35px] md:right-[25px] w-[29px] h-[12px] text-[8px] transition-all duration-100 ${selectedBarIndex >= 18 && selectedBarIndex <= 22
                             ? "-top-[22px]"
                             : "-top-2"
-                        }`}
+                          }`}
                       >
                         hourly
                       </div>
@@ -1544,13 +1605,12 @@ export default function FeesPage() {
                         <div
                           key={index.toString() + "columns"}
                           className={`flex items-end w-[5px] origin-bottom  border-t border-x border-[#344240] bg-[#344240] hover:cursor-pointer rounded-t-full transition-transform duration-100 
-                          ${
-                            selectedBarIndex === index
+                          ${selectedBarIndex === index
                               ? "scale-[1.5] bg-transparent"
                               : hoverBarIndex === index
-                              ? "scale-x-[100%]"
-                              : "scale-x-[100%]"
-                          }
+                                ? "scale-x-[100%]"
+                                : "scale-x-[100%]"
+                            }
                           `}
                           onMouseEnter={() => {
                             setHoverBarIndex(index);
@@ -1563,13 +1623,12 @@ export default function FeesPage() {
                           }}
                         >
                           <div
-                            className={`w-[5px] transition-all duration-0  ${
-                              selectedBarIndex === index
+                            className={`w-[5px] transition-all duration-0  ${selectedBarIndex === index
                                 ? "h-[16px]"
                                 : hoverBarIndex === index
-                                ? "h-[14px]"
-                                : "h-[8px]"
-                            }`}
+                                  ? "h-[14px]"
+                                  : "h-[8px]"
+                              }`}
                           ></div>
                         </div>
                       ))}
@@ -1609,47 +1668,41 @@ export default function FeesPage() {
                     <animated.div
                       key={item.chain[0]}
                       className={`border-forest-700 border-[1px] mb-1 absolute rounded-full border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] flex items-center
-                      ${
-                        isMobile
+                      ${isMobile
                           ? "text-[12px] w-[650px]"
                           : "text-[14px] w-[808px]"
-                      } ${
-                        selectedChains[item.chain[1]]
+                        } ${selectedChains[item.chain[1]]
                           ? "opacity-100"
                           : "opacity-50"
-                      }`}
+                        }`}
                       style={{ ...style }}
                     >
                       <div
-                        className={`flex justify-start items-center h-full gap-x-[5px] ${
-                          isMobile ? "w-[23%]" : "w-[27%]"
-                        }`}
+                        className={`flex justify-start items-center h-full gap-x-[5px] ${isMobile ? "w-[23%]" : "w-[27%]"
+                          }`}
                       >
                         <div
                           className={`flex items-center h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
                         >
                           <Icon
-                            icon={`gtp:${
-                              AllChainsByKeys[item.chain[1]].urlKey
-                            }-logo-monochrome`}
-                            className={`${
-                              isMobile
+                            icon={`gtp:${AllChainsByKeys[item.chain[1]].urlKey
+                              }-logo-monochrome`}
+                            className={`${isMobile
                                 ? "h-[18px] w-[18px]"
                                 : "h-[24px] w-[24px]"
-                            }`}
+                              }`}
                             style={{
                               color:
                                 AllChainsByKeys[item.chain[1]].colors[
-                                  theme ?? "dark"
+                                theme ?? "dark"
                                 ][0],
                             }}
                           />
                         </div>
                         <Link
                           className="pr-[5px] hover:underline"
-                          href={`https://www.growthepie.xyz/chains/${
-                            AllChainsByKeys[item.chain[1]].urlKey
-                          }`}
+                          href={`https://www.growthepie.xyz/chains/${AllChainsByKeys[item.chain[1]].urlKey
+                            }`}
                           target="_blank"
                         >
                           {isMobile
@@ -1657,11 +1710,10 @@ export default function FeesPage() {
                             : AllChainsByKeys[item.chain[1]].label}
                         </Link>
                         <div
-                          className={`bg-[#344240] flex rounded-full  items-center  transition-width overflow-hidden duration-300 ${
-                            isMobile
+                          className={`bg-[#344240] flex rounded-full  items-center  transition-width overflow-hidden duration-300 ${isMobile
                               ? "px-[4px] py-[2px] gap-x-[1px]"
                               : "px-[5px] py-[3px] gap-x-[2px]"
-                          }`}
+                            }`}
                           onMouseEnter={() => {
                             setHoveredItems({
                               hoveredChain: item.chain[1],
@@ -1702,35 +1754,31 @@ export default function FeesPage() {
                               >
                                 <Icon
                                   icon={`gtp:${avail.icon}`}
-                                  className={`${
-                                    dataAvailByFilter &&
-                                    selectedAvailability === avail.label &&
-                                    selectedChains[item.chain[1]]
+                                  className={`${dataAvailByFilter &&
+                                      selectedAvailability === avail.label &&
+                                      selectedChains[item.chain[1]]
                                       ? "text-forest-200"
                                       : "text-[#5A6462] "
-                                  }
-                                  ${
-                                    isMobile
+                                    }
+                                  ${isMobile
                                       ? "h-[10px] w-[10px] "
                                       : "h-[12px] w-[12px] "
-                                  }`}
+                                    }`}
                                 />
                                 <div
-                                  className={`text-[8px] text-center font-semibold overflow-hidden ${
-                                    selectedAvailability === avail.label &&
-                                    selectedQualitative === "availability"
+                                  className={`text-[8px] text-center font-semibold overflow-hidden ${selectedAvailability === avail.label &&
+                                      selectedQualitative === "availability"
                                       ? "text-forest-200"
                                       : "text-[#5A6462] "
-                                  } ${
-                                    hoveredItems.hoveredDA === avail.label &&
-                                    hoveredItems.hoveredChain === item.chain[1]
+                                    } ${hoveredItems.hoveredDA === avail.label &&
+                                      hoveredItems.hoveredChain === item.chain[1]
                                       ? ""
                                       : "-mr-[2px]"
-                                  }`}
+                                    }`}
                                   style={{
                                     maxWidth:
                                       hoveredItems.hoveredDA === avail.label &&
-                                      hoveredItems.hoveredChain ===
+                                        hoveredItems.hoveredChain ===
                                         item.chain[1]
                                         ? "50px"
                                         : "0px",
@@ -1758,9 +1806,8 @@ export default function FeesPage() {
                         </div>
                       </div>
                       <div
-                        className={`flex justify-between pl-[40px] pr-[22.5px] ${
-                          isMobile ? "w-[47.5%]" : "w-[50.5%]"
-                        }`}
+                        className={`flex justify-between pl-[40px] pr-[22.5px] ${isMobile ? "w-[47.5%]" : "w-[50.5%]"
+                          }`}
                       >
                         {Object.keys(metrics)
                           .filter((metricKey) => metrics[metricKey].enabled)
@@ -1797,9 +1844,8 @@ export default function FeesPage() {
                         {getFormattedLastValue(item.chain[1], "txcosts_swap")}
                       </div> */}
                       <div
-                        className={`pl-[15px] relative flex items-center h-full space-x-[1px] ${
-                          isMobile ? "w-[29.5%]" : "w-[22.5%]"
-                        }`}
+                        className={`pl-[15px] relative flex items-center h-full space-x-[1px] ${isMobile ? "w-[29.5%]" : "w-[22.5%]"
+                          }`}
                       >
                         {Array.from({ length: 24 }, (_, index) => (
                           <div
@@ -1816,25 +1862,24 @@ export default function FeesPage() {
                             }}
                           >
                             <div
-                              className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${
-                                selectedBarIndex === index
+                              className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${selectedBarIndex === index
                                   ? "scale-[160%]"
                                   : hoverBarIndex === index
-                                  ? "scale-[120%] opacity-90"
-                                  : "scale-100 opacity-50"
-                              }`}
+                                    ? "scale-[120%] opacity-90"
+                                    : "scale-100 opacity-50"
+                                }`}
                               style={{
                                 backgroundColor: !feeIndexSort[23 - index][
                                   item.chain[1]
                                 ]
                                   ? "gray"
                                   : getGradientColor(
-                                      Math.floor(
-                                        feeIndexSort[23 - index][
-                                          item.chain[1]
-                                        ][3] * 100,
-                                      ),
+                                    Math.floor(
+                                      feeIndexSort[23 - index][
+                                      item.chain[1]
+                                      ][3] * 100,
                                     ),
+                                  ),
                               }}
                             ></div>
                           </div>
@@ -1842,11 +1887,10 @@ export default function FeesPage() {
                       </div>
                       <div className="absolute left-[99%]">
                         <div
-                          className={`relative flex items-center justify-end w-[22px] h-[22px] rounded-full cursor-pointer ${
-                            selectedChains[item.chain[1]]
+                          className={`relative flex items-center justify-end w-[22px] h-[22px] rounded-full cursor-pointer ${selectedChains[item.chain[1]]
                               ? " bg-white dark:bg-forest-1000 dark:hover:forest-800"
                               : " bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
-                          }`}
+                            }`}
                           onClick={() => {
                             if (selectedQualitative === "availability") {
                               if (
@@ -1856,7 +1900,7 @@ export default function FeesPage() {
                               ) {
                                 if (
                                   dataAvailByChain[item.chain[1]][0].label ===
-                                    selectedAvailability &&
+                                  selectedAvailability &&
                                   !manualSelectedChains[item.chain[1]]
                                 ) {
                                   setManualSelectedChains(
@@ -1877,7 +1921,7 @@ export default function FeesPage() {
                                   );
                                 } else if (
                                   dataAvailByChain[item.chain[1]][0].label !==
-                                    selectedAvailability &&
+                                  selectedAvailability &&
                                   manualSelectedChains[item.chain[1]]
                                 ) {
                                   setManualSelectedChains(
@@ -1947,11 +1991,10 @@ export default function FeesPage() {
                               strokeWidth="2"
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              className={`w-[22px] h-[22px]  ${
-                                !selectedChains[item.chain[1]]
+                              className={`w-[22px] h-[22px]  ${!selectedChains[item.chain[1]]
                                   ? "opacity-100"
                                   : "opacity-0"
-                              }`}
+                                }`}
                             >
                               <circle
                                 xmlns="http://www.w3.org/2000/svg"
@@ -1962,19 +2005,17 @@ export default function FeesPage() {
                             </svg>
                           </div>
                           <div
-                            className={`p-0.5 rounded-full ${
-                              !selectedChains[item.chain[1]]
+                            className={`p-0.5 rounded-full ${!selectedChains[item.chain[1]]
                                 ? "bg-forest-50 dark:bg-[#1F2726]"
                                 : "bg-white dark:bg-[#1F2726]"
-                            }`}
+                              }`}
                           >
                             <Icon
                               icon="feather:check-circle"
-                              className={`w-[17.6px] h-[17.6px] ${
-                                !selectedChains[item.chain[1]]
+                              className={`w-[17.6px] h-[17.6px] ${!selectedChains[item.chain[1]]
                                   ? "opacity-0"
                                   : "opacity-100"
-                              }`}
+                                }`}
                               style={{
                                 color: selectedChains[item.chain[1]]
                                   ? undefined
@@ -1995,20 +2036,18 @@ export default function FeesPage() {
                   >
                     <div className="w-[638px] md:w-[796px] flex items-center">
                       <div
-                        className={`flex justify-start items-center h-full gap-x-[5px] ${
-                          isMobile ? "w-[23%]" : "w-[27%]"
-                        }`}
+                        className={`flex justify-start items-center h-full gap-x-[5px] ${isMobile ? "w-[23%]" : "w-[27%]"
+                          }`}
                       >
                         <div
                           className={`flex items-center h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
                         >
                           <Icon
                             icon={`gtp:${AllChainsByKeys["ethereum"].urlKey}-logo-monochrome`}
-                            className={`${
-                              isMobile
+                            className={`${isMobile
                                 ? "h-[18px] w-[18px]"
                                 : "h-[24px] w-[24px]"
-                            }`}
+                              }`}
                             style={{
                               color:
                                 AllChainsByKeys["ethereum"].colors["light"][1],
@@ -2027,9 +2066,8 @@ export default function FeesPage() {
                       </div>
 
                       <div
-                        className={`flex justify-between pl-[40px] pr-[22.5px] ${
-                          isMobile ? "w-[47.5%]" : "w-[50.5%]"
-                        }`}
+                        className={`flex justify-between pl-[40px] pr-[22.5px] ${isMobile ? "w-[47.5%]" : "w-[50.5%]"
+                          }`}
                       >
                         {Object.keys(metrics)
                           .filter((metricKey) => metrics[metricKey].enabled)
@@ -2045,9 +2083,8 @@ export default function FeesPage() {
                           })}
                       </div>
                       <div
-                        className={`pl-[15px] relative flex items-center h-full space-x-[1px] ${
-                          isMobile ? "w-[29.5%]" : "w-[22.5%]"
-                        }`}
+                        className={`pl-[15px] relative flex items-center h-full space-x-[1px] ${isMobile ? "w-[29.5%]" : "w-[22.5%]"
+                          }`}
                       >
                         {Array.from({ length: 24 }, (_, index) => (
                           <div
@@ -2064,23 +2101,24 @@ export default function FeesPage() {
                             }}
                           >
                             <div
-                              className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${
-                                selectedBarIndex === index
+                              className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${selectedBarIndex === index
                                   ? "scale-[160%]"
                                   : hoverBarIndex === index
-                                  ? "scale-[120%] opacity-90"
-                                  : "scale-100 opacity-50"
-                              }`}
+                                    ? "scale-[120%] opacity-90"
+                                    : "scale-100 opacity-50"
+                                }`}
                               style={{
-                                backgroundColor: !feeIndexSort[23 - index]
+                                backgroundColor: !feeIndexSortWithEthereum[
+                                  23 - index
+                                ]["ethereum"][3]
                                   ? "gray"
                                   : getGradientColor(
-                                      Math.floor(
-                                        feeIndexSortWithEthereum[23 - index][
-                                          "ethereum"
-                                        ][3] * 100,
-                                      ),
+                                    Math.floor(
+                                      feeIndexSortWithEthereum[23 - index][
+                                      "ethereum"
+                                      ][3] * 100,
                                     ),
+                                  ),
                               }}
                             ></div>
                           </div>
