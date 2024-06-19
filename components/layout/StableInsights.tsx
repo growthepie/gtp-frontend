@@ -548,9 +548,22 @@ export default function StableInsights({ }: {}) {
                           background: "linear-gradient(-90deg, #24E5DF99 0px, #24E5DF 300px)",
                         }}
                       >
-                        <div className="flex gap-x-[10px]">
+                        <div className="flex gap-x-[10px]" onClick={(e) => {
+                          if (e.detail === 2) {
+
+                            const holder = document.getElementById(key);
+                            if (!holder) return;
+
+                            // select the text inside the element
+                            const selection = window.getSelection();
+                            const range = document.createRange();
+                            range.selectNode(holder);
+                            selection?.removeAllRanges();
+                            selection?.addRange(range);
+                          }
+                        }}>
                           {key.substring(0, 2) === "0x" ? (
-                            <div className="flex min-w-0">
+                            <div className="flex min-w-0" id={key}>
                               <div className="text-[12px] truncate min-w-0">
                                 {key.substring(0, 38)}
                               </div>
@@ -613,7 +626,7 @@ export default function StableInsights({ }: {}) {
                 <div className="pr-[22px] pt-[5px]">
                   <GridTableRow gridDefinitionColumns="grid-cols-[minmax(0,1600px),100px,50px]" className="bg-[#5A6462] !border-[#CDD8D3] font-medium">
                     <div className="text-[12px] truncate min-w-0">Total Glo Dollar Holders</div>
-                    <div className="flex justify-end text-[14px]">${combinedHolders ? formatNumber(combinedHolders.combined.total) : 0}</div>
+                    <div className="flex justify-end text-[14px]">${formatNumber(data.chart.data[data.chart.data.length - 1][2])}</div>
                     <div className="flex justify-end">
 
                     </div>
