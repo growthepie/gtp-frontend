@@ -180,20 +180,20 @@ const Chain = ({ params }: { params: any }) => {
   const getGradientColor = useCallback((percentage, weighted = false) => {
     const colors = !weighted
       ? [
-        { percent: 0, color: "#1DF7EF" },
-        { percent: 20, color: "#76EDA0" },
-        { percent: 50, color: "#FFDF27" },
-        { percent: 70, color: "#FF9B47" },
-        { percent: 100, color: "#FE5468" },
-      ]
+          { percent: 0, color: "#1DF7EF" },
+          { percent: 20, color: "#76EDA0" },
+          { percent: 50, color: "#FFDF27" },
+          { percent: 70, color: "#FF9B47" },
+          { percent: 100, color: "#FE5468" },
+        ]
       : [
-        { percent: 0, color: "#1DF7EF" },
-        { percent: 2, color: "#76EDA0" },
-        { percent: 10, color: "#FFDF27" },
-        { percent: 40, color: "#FF9B47" },
-        { percent: 80, color: "#FE5468" },
-        { percent: 100, color: "#FE5468" }, // Repeat the final color to ensure upper bound
-      ];
+          { percent: 0, color: "#1DF7EF" },
+          { percent: 2, color: "#76EDA0" },
+          { percent: 10, color: "#FFDF27" },
+          { percent: 40, color: "#FF9B47" },
+          { percent: 80, color: "#FE5468" },
+          { percent: 100, color: "#FE5468" }, // Repeat the final color to ensure upper bound
+        ];
 
     let lowerBound = colors[0];
     let upperBound = colors[colors.length - 1];
@@ -221,23 +221,23 @@ const Chain = ({ params }: { params: any }) => {
 
     const r = Math.floor(
       parseInt(lowerBound.color.substring(1, 3), 16) +
-      percentDiff *
-      (parseInt(upperBound.color.substring(1, 3), 16) -
-        parseInt(lowerBound.color.substring(1, 3), 16)),
+        percentDiff *
+          (parseInt(upperBound.color.substring(1, 3), 16) -
+            parseInt(lowerBound.color.substring(1, 3), 16)),
     );
 
     const g = Math.floor(
       parseInt(lowerBound.color.substring(3, 5), 16) +
-      percentDiff *
-      (parseInt(upperBound.color.substring(3, 5), 16) -
-        parseInt(lowerBound.color.substring(3, 5), 16)),
+        percentDiff *
+          (parseInt(upperBound.color.substring(3, 5), 16) -
+            parseInt(lowerBound.color.substring(3, 5), 16)),
     );
 
     const b = Math.floor(
       parseInt(lowerBound.color.substring(5, 7), 16) +
-      percentDiff *
-      (parseInt(upperBound.color.substring(5, 7), 16) -
-        parseInt(lowerBound.color.substring(5, 7), 16)),
+        percentDiff *
+          (parseInt(upperBound.color.substring(5, 7), 16) -
+            parseInt(lowerBound.color.substring(5, 7), 16)),
     );
 
     return `#${r.toString(16).padStart(2, "0")}${g
@@ -297,20 +297,23 @@ const Chain = ({ params }: { params: any }) => {
           }}
         >
           <div
-            className={`${button.showIconBackground &&
+            className={`${
+              button.showIconBackground &&
               "bg-white dark:bg-forest-1000 relative "
-              } rounded-full w-[25px] h-[25px] p-[5px]`}
+            } rounded-full w-[25px] h-[25px] p-[5px]`}
           >
             <Icon
               icon={button.icon}
-              className={`w-[15px] h-[15px] ${button.animateIcon &&
+              className={`w-[15px] h-[15px] ${
+                button.animateIcon &&
                 "transition-transform duration-300 transform delay-0 group-hover/jump:delay-300 group-hover/jump:rotate-90"
-                }`}
+              }`}
             />
             <Icon
               icon={"gtp:circle-arrow"}
-              className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform delay-0 group-hover/jump:delay-300 duration-500 group-hover/jump:rotate-90 ${button.showIconBackground ? "block" : "hidden"
-                }`}
+              className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform delay-0 group-hover/jump:delay-300 duration-500 group-hover/jump:rotate-90 ${
+                button.showIconBackground ? "block" : "hidden"
+              }`}
               style={{
                 transformOrigin: "-8px 4px",
               }}
@@ -439,7 +442,10 @@ const Chain = ({ params }: { params: any }) => {
       <Container className="flex w-full pt-[30px] md:pt-[30px]" isPageRoot>
         {master && chainFeeData && chainData && (
           <div className="flex flex-col w-full">
-            <div id="chains-page-title" className="flex flex-col md:flex-row justify-between items-start w-full">
+            <div
+              id="chains-page-title"
+              className="flex flex-col md:flex-row justify-between items-start w-full"
+            >
               <div className="flex flex-col md:flex-row pb-[15px] md:pb-[15px] items-start">
                 <div className="flex gap-x-[8px] items-center">
                   <div className="w-9 h-9  ">
@@ -479,22 +485,28 @@ const Chain = ({ params }: { params: any }) => {
                           icon: "gtp:gtp-jump-to-section",
                           showIconBackground: true,
                         }}
-                        items={overviewData ? [
-                          {
-                            label: "Fundamentals",
-                            icon: "gtp:gtp-fundamentals",
-                            href: "#fundamentals",
-                          },
-                          {
-                            label: "Blockspace",
-                            icon: "gtp:gtp-package",
-                            href: "#blockspace",
-                          },
-                        ] : [{
-                          label: "Fundamentals",
-                          icon: "gtp:gtp-fundamentals",
-                          href: "#fundamentals",
-                        }]}
+                        items={
+                          overviewData
+                            ? [
+                                {
+                                  label: "Fundamentals",
+                                  icon: "gtp:gtp-fundamentals",
+                                  href: "#fundamentals",
+                                },
+                                {
+                                  label: "Blockspace",
+                                  icon: "gtp:gtp-package",
+                                  href: "#blockspace",
+                                },
+                              ]
+                            : [
+                                {
+                                  label: "Fundamentals",
+                                  icon: "gtp:gtp-fundamentals",
+                                  href: "#fundamentals",
+                                },
+                              ]
+                        }
                       />
                       {master.chains[chainKey].block_explorers &&
                         Object.keys(master.chains[chainKey].block_explorers)
@@ -570,20 +582,19 @@ const Chain = ({ params }: { params: any }) => {
               </div>
 
               <div className="@container min-w-[67px] lg:max-w-[398px] lg:col-auto lg:basis-[398px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[398px] transition-all duration-300">
-
                 <ChainSectionHeadAlt
                   title={"Background"}
                   enableDropdown={isMobile}
                   childrenHeight={isMobile ? 200 : 111}
                   className={`transition-all duration-300 min-w-[67px] w-full flex flex-1`}
                   shadowElement={
-                    <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[398px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
-                    </div>
+                    <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[398px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
                   }
                 >
-                  <div className={`group bg-clip-border min-h-[111px] lg:max-h-[111px] relative flex flex-col justify-between transition-opacity duration-300 px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden`}>
-                    <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[398px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
-                    </div>
+                  <div
+                    className={`group bg-clip-border min-h-[111px] lg:max-h-[111px] relative flex flex-col justify-between transition-opacity duration-300 px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden`}
+                  >
+                    <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[398px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
                     <div className="w-full lg:w-[378px] h-auto lg:h-[calc(111px-20px)] flex flex-col justify-between gap-y-[5px]">
                       <div className="w-full">
                         <div className="text-[10px] font-semibold text-[#5A6462]">
@@ -631,9 +642,9 @@ const Chain = ({ params }: { params: any }) => {
                                             backgroundColor: chainData
                                               ? chainData.ranking[key]
                                                 ? getGradientColor(
-                                                  chainData.ranking[key]
-                                                    .color_scale * 100,
-                                                )
+                                                    chainData.ranking[key]
+                                                      .color_scale * 100,
+                                                  )
                                                 : "#5A6462"
                                               : "#5A6462",
                                           }}
@@ -653,7 +664,8 @@ const Chain = ({ params }: { params: any }) => {
                                           <div
                                             className="z-50 w-0 h-0 border-forest-100 dark:border-[#4B5553] border-b-[5px]"
                                             style={{
-                                              borderLeft: "5px solid transparent",
+                                              borderLeft:
+                                                "5px solid transparent",
                                               borderRight:
                                                 "5px solid transparent",
                                             }}
@@ -675,9 +687,10 @@ const Chain = ({ params }: { params: any }) => {
                                                     backgroundColor: chainData
                                                       ? chainData.ranking[key]
                                                         ? getGradientColor(
-                                                          chainData.ranking[key]
-                                                            .color_scale * 100,
-                                                        )
+                                                            chainData.ranking[
+                                                              key
+                                                            ].color_scale * 100,
+                                                          )
                                                         : "#5A6462"
                                                       : "#5A6462",
                                                   }}
@@ -736,8 +749,7 @@ const Chain = ({ params }: { params: any }) => {
                     childrenHeight={isMobile ? 116 : 111}
                     className="transition-all duration-300 min-w-[67px] w-full"
                     shadowElement={
-                      <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
-                      </div>
+                      <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
                     }
                   >
                     <div className="group flex flex-col gap-y-[5px] overflow-hidden relative">
@@ -745,13 +757,11 @@ const Chain = ({ params }: { params: any }) => {
                         chainFeeData={chainFeeData}
                         showUsd={showUsd}
                         shadowElement={
-                          <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
-                          </div>
+                          <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
                         }
                       />
                       <div className="bg-clip-border h-[48px] flex relative gap-x-[5px] px-[5px] py-[10px] items-center rounded-[15px] overflow-hidden bg-forest-50 dark:bg-[#1F2726] justify-between ">
-                        <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
-                        </div>
+                        <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[228px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
                         <div className="flex-col flex pl-[48px] truncate">
                           <div className="text-[10px] text-[#5A6462] font-bold min-w-[150px] ">
                             Hottest Contract
@@ -761,14 +771,16 @@ const Chain = ({ params }: { params: any }) => {
                             onClick={() => {
                               if (
                                 !chainData.hottest_contract.data[0][
-                                chainData.hottest_contract.types.indexOf("name")
+                                  chainData.hottest_contract.types.indexOf(
+                                    "name",
+                                  )
                                 ]
                               ) {
                                 navigator.clipboard.writeText(
                                   chainData.hottest_contract.data[0][
-                                  chainData.hottest_contract.types.indexOf(
-                                    "address",
-                                  )
+                                    chainData.hottest_contract.types.indexOf(
+                                      "address",
+                                    )
                                   ],
                                 );
                               }
@@ -779,14 +791,15 @@ const Chain = ({ params }: { params: any }) => {
                                 chainData.hottest_contract.data[0] ? (
                                   <>
                                     <span
-                                      className={` truncate ${chainData.hottest_contract.data[0][
-                                        chainData.hottest_contract.types.indexOf(
-                                          "project_name",
-                                        )
-                                      ]
-                                        ? "max-w-[80px]"
-                                        : "max-w-[140px]"
-                                        }`}
+                                      className={` truncate ${
+                                        chainData.hottest_contract.data[0][
+                                          chainData.hottest_contract.types.indexOf(
+                                            "project_name",
+                                          )
+                                        ]
+                                          ? "max-w-[80px]"
+                                          : "max-w-[140px]"
+                                      }`}
                                     >
                                       {chainData.hottest_contract.data[0][
                                         chainData.hottest_contract.types.indexOf(
@@ -794,9 +807,9 @@ const Chain = ({ params }: { params: any }) => {
                                         )
                                       ] ||
                                         chainData.hottest_contract.data[0][
-                                        chainData.hottest_contract.types.indexOf(
-                                          "address",
-                                        )
+                                          chainData.hottest_contract.types.indexOf(
+                                            "address",
+                                          )
                                         ]}
                                     </span>
                                     <span>
@@ -811,9 +824,9 @@ const Chain = ({ params }: { params: any }) => {
                                     <span>
                                       {
                                         chainData.hottest_contract.data[0][
-                                        chainData.hottest_contract.types.indexOf(
-                                          "project_name",
-                                        )
+                                          chainData.hottest_contract.types.indexOf(
+                                            "project_name",
+                                          )
                                         ]
                                       }
                                     </span>
@@ -842,13 +855,11 @@ const Chain = ({ params }: { params: any }) => {
                       childrenHeight={isMobile ? 116 : 111}
                       className={`transition-all duration-300 min-w-[67px]`}
                       shadowElement={
-                        <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[232px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
-                        </div>
+                        <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[232px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
                       }
                     >
                       <div className="group relative h-[111px] flex px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] gap-x-[5px] overflow-hidden">
-                        <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[232px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
-                        </div>
+                        <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[232px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
                         <div className="w-full min-w-[212px] flex">
                           <div className="flex flex-col w-full h-full justify-between min-w-[85px]">
                             <div>
@@ -874,12 +885,19 @@ const Chain = ({ params }: { params: any }) => {
                                 Data Availability
                               </div>
                               <div className="text-[10px] leading-[150%] font-medium  ">
-                                {dataAvailToArray(master.chains[chainKey].da_layer).map((x) => (
-                                  <div className="flex items-center gap-x-1" key={x.label}>
-                                    <Icon icon={`gtp:${x.icon}`} className="w-[12px] h-[12px]" />
+                                {dataAvailToArray(
+                                  master.chains[chainKey].da_layer,
+                                ).map((x) => (
+                                  <div
+                                    className="flex items-center gap-x-1"
+                                    key={x.label}
+                                  >
+                                    <Icon
+                                      icon={`gtp:${x.icon}`}
+                                      className="w-[12px] h-[12px]"
+                                    />
                                   </div>
                                 ))}
-
                               </div>
                             </div>
                             <div className="">
@@ -897,20 +915,17 @@ const Chain = ({ params }: { params: any }) => {
                   </div>
                   <div className="flex gap-x-[5px] flex-grow flex-shrink basis-0 lg:max-w-[125px]">
                     <div className="@container group min-w-[125px] lg:min-w-[67px] lg:basis-[125px] lg:flex-grow lg:flex-shrink lg:hover:min-w-[125px] min-[1700px]:min-w-[125px] transition-all duration-300">
-
                       <ChainSectionHeadAlt
                         title={"Risk"}
                         enableDropdown={isMobile}
                         childrenHeight={isMobile ? 116 : 111}
                         className={`transition-all duration-300 min-w-[67px]`}
                         shadowElement={
-                          <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[125px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
-                          </div>
+                          <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[125px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
                         }
                       >
                         <div className="relative h-[111px] flex justify-between px-[10px] py-[10px] rounded-[15px] bg-forest-50 dark:bg-[#1F2726] overflow-hidden">
-                          <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[125px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none">
-                          </div>
+                          <div className="transition-all duration-300 opacity-100 group-hover:opacity-0 @[125px]:opacity-0 z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none"></div>
                           <div className="flex flex-col justify-between gap-y-[10px] h-[91px] min-w-[80px]">
                             <div className="text-[10px] font-semibold text-[#5A6462]">
                               Rollup Stage
@@ -919,7 +934,8 @@ const Chain = ({ params }: { params: any }) => {
                               <div
                                 className="flex items-center justify-center font-bold text-white dark:text-forest-1000 rounded-[2px] text-[10px] leading-[120%]"
                                 style={{
-                                  background: master.chains[chainKey].l2beat_stage
+                                  background: master.chains[chainKey]
+                                    .l2beat_stage
                                     ? master.chains[chainKey].l2beat_stage.hex
                                       ? master.chains[chainKey].l2beat_stage.hex
                                       : "#344240"
@@ -1021,6 +1037,7 @@ const Chain = ({ params }: { params: any }) => {
             {chainData && (
               <ChainChart
                 chain={chain}
+                master={master}
                 chainData={chainData}
                 defaultChainKey={chainKey}
               />

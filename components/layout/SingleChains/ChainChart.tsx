@@ -73,10 +73,12 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function ChainChart({
   chainData,
+  master,
   chain,
   defaultChainKey,
 }: {
   chainData: ChainsData;
+  master: MasterResponse;
   chain: string;
   defaultChainKey: string;
 }) {
@@ -119,13 +121,6 @@ export default function ChainChart({
 
   const zoomedMargin = [49, 15, 0, 0];
   const defaultMargin = [49, 15, 0, 0];
-
-  const {
-    data: master,
-    error: masterError,
-    isLoading: masterLoading,
-    isValidating: masterValidating,
-  } = useSWR<MasterResponse>(MasterURL);
 
   const CompChains = useMemo(() => {
     if (!master) return [];
@@ -538,13 +533,13 @@ export default function ChainChart({
         suffix: string;
       };
     }[] = [];
+
     data.forEach((item, chainIndex) => {
       Object.keys(item.metrics).forEach((key) => {
         let prefix = "";
         let suffix = "";
         let valueIndex = 1;
         let valueMultiplier = 1;
-        console.log(key);
 
         let valueFormat = Intl.NumberFormat("en-GB", {
           notation: "compact",
@@ -600,10 +595,11 @@ export default function ChainChart({
       });
     });
     return p;
-  }, [data, showUsd, intervalShown]);
+  }, [data, master, showUsd, intervalShown]);
 
   const tooltipFormatter = useCallback(
     function (this: Highcharts.TooltipFormatterContextObject) {
+      if (!master) return;
       const { x, points } = this;
 
       if (!points || !x) return;
@@ -642,32 +638,17 @@ export default function ChainChart({
 
           const dataTypes = series.options.custom.types;
           const metricKey = series.options.custom.metric;
+          const units = Object.keys(master.metrics[metricKey].units);
+          const unitKey =
+            units.find((unit) => unit !== "usd" && unit !== "eth") ||
+            (showUsd ? "usd" : "eth");
 
-          let prefix = displayValues[0][metricKey].prefix;
-          let suffix = displayValues[0][metricKey].suffix;
+          const prefix = master.metrics[metricKey].units[unitKey].prefix;
+          const suffix = master.metrics[metricKey].units[unitKey].suffix;
           let value = y;
 
-          let decimals = 0;
-
-          if (!showUsd && dataTypes?.includes("eth")) {
-            if (showGwei(name)) {
-              prefix = "";
-              suffix = " Gwei";
-            }
-          }
-
-          if (prefix) {
-            decimals = 2;
-          }
-
-          if (metricKey === "throughput") {
-            suffix = "Mgas/s";
-            decimals = 2;
-          }
-
-          if (metricKey === "txcosts" && showUsd) {
-            decimals = 4;
-          }
+          const decimals =
+            master.metrics[metricKey].units[unitKey].decimals_tooltip;
 
           // if (series.name === item.chain_name) {
           return `
@@ -1224,6 +1205,8 @@ export default function ChainChart({
   //   ,
   //   [data, pointHover, showGwei, showUsd, theme],
   // );
+
+  console.log(master ? master : "no data");
 
   useEffect(() => {
     enabledFundamentalsKeys.forEach(async (key, i) => {
