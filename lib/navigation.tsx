@@ -569,6 +569,7 @@ export const navigationItems: NavigationItem[] = [
         key: "metis",
         rootKey: "chainsMetis",
         urlKey: "metis",
+        showNew: true,
       },
       {
         label: "Manta Pacific",
@@ -626,7 +627,6 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "feesxyz",
         urlKey: "feesxyz",
         excludeFromSitemap: true,
-
       },
       {
         label: "OP RetroPGF 3",
