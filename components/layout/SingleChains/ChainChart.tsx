@@ -353,20 +353,18 @@ export default function ChainChart({
 
   const formatNumber = useCallback(
     (key: string, value: number | string, isAxis = false) => {
-      let prefix = prefixes[key];
-      let suffix = "";
+      const units = Object.keys(master.metrics[key].units);
+      const unitKey =
+        units.find((unit) => unit !== "usd" && unit !== "eth") ||
+        (showUsd ? "usd" : "eth");
+      const prefix = master.metrics[key].units[unitKey].prefix
+        ? master.metrics[key].units[unitKey].prefix
+        : "";
+      const suffix = master.metrics[key].units[unitKey].suffix
+        ? master.metrics[key].units[unitKey].suffix
+        : "";
+      console.log(prefix);
       let val = parseFloat(value as string);
-
-      if (
-        !showUsd &&
-        data[0].metrics[key].daily.types.includes("eth") &&
-        selectedScale !== "percentage"
-      ) {
-        if (showGwei(key)) {
-          prefix = "";
-          suffix = " Gwei";
-        }
-      }
 
       let number = d3.format(`.2~s`)(val).replace(/G/, "B");
 
@@ -391,6 +389,8 @@ export default function ChainChart({
           }
         }
       }
+      console.log(number);
+      console.log(suffix);
 
       return number;
     },
@@ -536,38 +536,23 @@ export default function ChainChart({
 
     data.forEach((item, chainIndex) => {
       Object.keys(item.metrics).forEach((key) => {
-        let prefix = "";
-        let suffix = "";
-        let valueIndex = 1;
-        let valueMultiplier = 1;
+        const units = Object.keys(master.metrics[key].units);
+        const unitKey =
+          units.find((unit) => unit !== "usd" && unit !== "eth") ||
+          (showUsd ? "usd" : "eth");
 
+        let prefix = master.metrics[key].units[unitKey].prefix;
+        let suffix = master.metrics[key].units[unitKey].suffix;
+        let valueIndex = showUsd ? 1 : 2;
+        let valueMultiplier = 1;
+        console.log(master.metrics[key].units[unitKey]);
         let valueFormat = Intl.NumberFormat("en-GB", {
           notation: "compact",
-          maximumFractionDigits: key === "txcosts" ? 4 : 2,
-          minimumFractionDigits: 2,
+          maximumFractionDigits: master.metrics[key].units[unitKey].decimals,
+          minimumFractionDigits: master.metrics[key].units[unitKey].decimals,
         });
 
         let navItem = navigationItems[1].options.find((ni) => ni.key === key);
-
-        if (item.metrics[key].daily.types.includes("eth")) {
-          if (!showUsd) {
-            prefix = "Ξ";
-            valueIndex = item.metrics[key].daily.types.indexOf("eth");
-            if (navItem && navItem.page?.showGwei) {
-              prefix = "";
-              suffix = " Gwei";
-              valueMultiplier = 1000000000;
-            }
-          } else {
-            prefix = "$";
-
-            valueIndex = item.metrics[key].daily.types.indexOf("usd");
-          }
-        } else {
-          if (key === "throughput") {
-            suffix = "Mgas/s";
-          }
-        }
 
         let dateIndex = item.metrics[key].daily.data.length - 1;
 
@@ -582,7 +567,9 @@ export default function ChainChart({
         }
 
         let value = valueFormat.format(
-          item.metrics[key].daily.data[dateIndex][valueIndex] * valueMultiplier,
+          item.metrics[key].daily.data[dateIndex][
+            master.metrics[key].units[unitKey].currency ? valueIndex : 1
+          ] * valueMultiplier,
         );
 
         if (p.length < chainIndex + 1) p[chainIndex] = {};
@@ -1206,8 +1193,6 @@ export default function ChainChart({
   //   [data, pointHover, showGwei, showUsd, theme],
   // );
 
-  console.log(master ? master : "no data");
-
   useEffect(() => {
     enabledFundamentalsKeys.forEach(async (key, i) => {
       if (chartComponents.current[i]) {
@@ -1251,10 +1236,8 @@ export default function ChainChart({
                   ])
                 : item.metrics[key].daily.data.map((d) => [
                     d[0],
-                    showGwei(key)
-                      ? d[item.metrics[key].daily.types.indexOf("eth")] *
-                        1000000000
-                      : d[item.metrics[key].daily.types.indexOf("eth")],
+
+                    d[item.metrics[key].daily.types.indexOf("eth")],
                   ])
               : item.metrics[key]?.daily.data.map((d) => [d[0], d[1]]);
 
@@ -1862,12 +1845,7 @@ export default function ChainChart({
                                 </Link>
                                 <div className="relative text-[18px] leading-snug font-medium flex space-x-[2px] right-[40px]">
                                   <div>{displayValues[0][key].prefix}</div>
-                                  <div>
-                                    {Number(displayValues[0][key].value) <
-                                    0.0001
-                                      ? "<0.0001"
-                                      : displayValues[0][key].value}
-                                  </div>
+                                  <div>{displayValues[0][key].value}</div>
                                   <div className="text-base pl-0.5">
                                     {displayValues[0][key].suffix}
                                   </div>
