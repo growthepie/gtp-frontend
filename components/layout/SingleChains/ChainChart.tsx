@@ -360,10 +360,14 @@ export default function ChainChart({
       const prefix = master.metrics[key].units[unitKey].prefix
         ? master.metrics[key].units[unitKey].prefix
         : "";
-      const suffix = master.metrics[key].units[unitKey].suffix
+      let suffix = master.metrics[key].units[unitKey].suffix
         ? master.metrics[key].units[unitKey].suffix
         : "";
-      console.log(prefix);
+
+      if (showGwei(key) && !showUsd) {
+        suffix = " Gwei";
+      }
+
       let val = parseFloat(value as string);
 
       let number = d3.format(`.2~s`)(val).replace(/G/, "B");
@@ -389,8 +393,6 @@ export default function ChainChart({
           }
         }
       }
-      console.log(number);
-      console.log(suffix);
 
       return number;
     },
@@ -544,12 +546,12 @@ export default function ChainChart({
         let prefix = master.metrics[key].units[unitKey].prefix;
         let suffix = master.metrics[key].units[unitKey].suffix;
         let valueIndex = showUsd ? 1 : 2;
-        let valueMultiplier = 1;
-        console.log(master.metrics[key].units[unitKey]);
+        let valueMultiplier = showGwei(key) ? 1000000000 : 1;
+
         let valueFormat = Intl.NumberFormat("en-GB", {
           notation: "compact",
-          maximumFractionDigits: master.metrics[key].units[unitKey].decimals,
-          minimumFractionDigits: master.metrics[key].units[unitKey].decimals,
+          maximumFractionDigits: 2,
+          minimumFractionDigits: 2,
         });
 
         let navItem = navigationItems[1].options.find((ni) => ni.key === key);
@@ -648,8 +650,12 @@ export default function ChainChart({
                         !prefix && "hidden"
                       }">${prefix}</div>
                       ${parseFloat(value).toLocaleString("en-GB", {
-                        minimumFractionDigits: decimals,
-                        maximumFractionDigits: decimals,
+                        minimumFractionDigits: showGwei(metricKey)
+                          ? 2
+                          : decimals,
+                        maximumFractionDigits: showGwei(metricKey)
+                          ? 2
+                          : decimals,
                       })}
                       <div class="opacity-70 ml-0.5 ${
                         !suffix && "hidden"
@@ -1236,8 +1242,10 @@ export default function ChainChart({
                   ])
                 : item.metrics[key].daily.data.map((d) => [
                     d[0],
-
-                    d[item.metrics[key].daily.types.indexOf("eth")],
+                    showGwei(key)
+                      ? d[item.metrics[key].daily.types.indexOf("eth")] *
+                        1000000000
+                      : d[item.metrics[key].daily.types.indexOf("eth")],
                   ])
               : item.metrics[key]?.daily.data.map((d) => [d[0], d[1]]);
 
@@ -1439,6 +1447,7 @@ export default function ChainChart({
     );
   }
 
+  console.log(master ? master : "");
   return (
     <div className="w-full flex-col relative " id="chains-content-container">
       <style>
