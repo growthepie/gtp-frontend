@@ -67,23 +67,23 @@ const getGradientColor = (percentage) => {
 
   const r = Math.floor(
     parseInt(lowerBound.color.substring(1, 3), 16) +
-    percentDiff *
-    (parseInt(upperBound.color.substring(1, 3), 16) -
-      parseInt(lowerBound.color.substring(1, 3), 16)),
+      percentDiff *
+        (parseInt(upperBound.color.substring(1, 3), 16) -
+          parseInt(lowerBound.color.substring(1, 3), 16)),
   );
 
   const g = Math.floor(
     parseInt(lowerBound.color.substring(3, 5), 16) +
-    percentDiff *
-    (parseInt(upperBound.color.substring(3, 5), 16) -
-      parseInt(lowerBound.color.substring(3, 5), 16)),
+      percentDiff *
+        (parseInt(upperBound.color.substring(3, 5), 16) -
+          parseInt(lowerBound.color.substring(3, 5), 16)),
   );
 
   const b = Math.floor(
     parseInt(lowerBound.color.substring(5, 7), 16) +
-    percentDiff *
-    (parseInt(upperBound.color.substring(5, 7), 16) -
-      parseInt(lowerBound.color.substring(5, 7), 16)),
+      percentDiff *
+        (parseInt(upperBound.color.substring(5, 7), 16) -
+          parseInt(lowerBound.color.substring(5, 7), 16)),
   );
 
   return `#${r.toString(16).padStart(2, "0")}${g
@@ -121,13 +121,13 @@ export default function FeesPage() {
       title: "Swap Token",
       enabled: true,
     },
-
   });
 
   const NUM_HOURS = useMemo(() => {
     if (!feeData) return 0;
 
-    const length = feeData.chain_data["ethereum"]["hourly"]["txcosts_median"].data.length;
+    const length =
+      feeData.chain_data["ethereum"]["hourly"]["txcosts_median"].data.length;
 
     setSelectedBarIndex(length - 1);
 
@@ -154,15 +154,11 @@ export default function FeesPage() {
     }
 
     return length;
-
   }, [feeData]);
-
 
   const isMobile = useMediaQuery("(max-width: 767px)");
 
   const showGwei = true;
-
-
 
   const { width: windowWidth = 0, height: windowHeight = 0 } = useWindowSize();
   const [selectedTimescale, setSelectedTimescale] = useState("hourly");
@@ -205,8 +201,6 @@ export default function FeesPage() {
 
   // start Bottom Chart state
   const [isChartOpen, setIsChartOpen] = useState(false);
-
-
 
   const toggleMetric = (metricKey) => {
     setMetrics((prevMetrics) => ({
@@ -299,7 +293,6 @@ export default function FeesPage() {
     return retObject;
   }
 
-
   const dataAvailByChain = useMemo<{ [key: string]: DAvailability[] }>(() => {
     if (!master) return {};
     const availByChain: { [key: string]: DAvailability[] } = {};
@@ -382,7 +375,14 @@ export default function FeesPage() {
     }
 
     return sortedChains;
-  }, [feeData, master, selectedChains, sortOrder, dataAvailByChain, selectedAvailability]);
+  }, [
+    feeData,
+    master,
+    selectedChains,
+    sortOrder,
+    dataAvailByChain,
+    selectedAvailability,
+  ]);
 
   //Disable not selected data availabilities
 
@@ -430,7 +430,14 @@ export default function FeesPage() {
 
     prevSelectedAvailabilityRef.current = availabilityFilter;
     prevSelectedLayerRef.current = selectedAvailability;
-  }, [feeData, master, selectedAvailability, setSelectedChains, availabilityFilter, dataAvailByChain]);
+  }, [
+    feeData,
+    master,
+    selectedAvailability,
+    setSelectedChains,
+    availabilityFilter,
+    dataAvailByChain,
+  ]);
 
   const sortByMetric = useMemo(() => {
     if (!feeData) return [];
@@ -466,11 +473,11 @@ export default function FeesPage() {
         }
 
         // If both chains are selected or unselected, sort by median cost
-        const aTxCost = aData[(NUM_HOURS - 1) - selectedBarIndex]
-          ? aData[(NUM_HOURS - 1) - selectedBarIndex][showUsd ? 2 : 1]
+        const aTxCost = aData[NUM_HOURS - 1 - selectedBarIndex]
+          ? aData[NUM_HOURS - 1 - selectedBarIndex][showUsd ? 2 : 1]
           : null;
-        const bTxCost = bData[(NUM_HOURS - 1) - selectedBarIndex]
-          ? bData[(NUM_HOURS - 1) - selectedBarIndex][showUsd ? 2 : 1]
+        const bTxCost = bData[NUM_HOURS - 1 - selectedBarIndex]
+          ? bData[NUM_HOURS - 1 - selectedBarIndex][showUsd ? 2 : 1]
           : null;
 
         if (aTxCost === null && bTxCost === null) return 0;
@@ -488,7 +495,7 @@ export default function FeesPage() {
     showUsd,
     selectedBarIndex,
     sortOrder,
-    NUM_HOURS
+    NUM_HOURS,
   ]);
 
   const finalSort = useMemo(() => {
@@ -500,8 +507,6 @@ export default function FeesPage() {
       return sortByMetric;
     }
   }, [feeData, selectedQualitative, sortByChains, sortByMetric]);
-
-
 
   const feeIndexSortWithEthereum = useMemo(() => {
     if (!feeData) return [];
@@ -519,7 +524,9 @@ export default function FeesPage() {
         ([chain, data]) => ({
           chain,
           txCost: (data as any)["hourly"][selectedQuantitative]?.data[index]
-            ? (data as any)["hourly"][selectedQuantitative]?.data[index][valueIndex]
+            ? (data as any)["hourly"][selectedQuantitative]?.data[index][
+                valueIndex
+              ]
             : null,
         }),
       );
@@ -529,15 +536,13 @@ export default function FeesPage() {
       );
 
       const sortedChains = filteredChainsData.sort((a, b) => {
-
-
         return a.txCost - b.txCost;
       });
 
       return sortedChains.reduce((acc, { chain }) => {
         if (
           feeData.chain_data[chain]?.["hourly"]?.[selectedQuantitative]?.data?.[
-          index
+            index
           ] !== undefined
         ) {
           acc[chain] =
@@ -557,8 +562,6 @@ export default function FeesPage() {
     return filteredSortedCosts;
   }, [feeData, selectedQuantitative, showUsd, NUM_HOURS]);
 
-  console.log("feeIndexSortWithEthereum", feeIndexSortWithEthereum);
-
   const feeIndexSort = useMemo(() => {
     if (!feeData) return [];
 
@@ -570,8 +573,8 @@ export default function FeesPage() {
           chain,
           txCost: (data as any)["hourly"][selectedQuantitative]?.data[index]
             ? (data as any)["hourly"][selectedQuantitative]?.data[index][
-            showUsd ? 2 : 1
-            ]
+                showUsd ? 2 : 1
+              ]
             : null,
         }),
       );
@@ -587,7 +590,7 @@ export default function FeesPage() {
       return sortedChains.reduce((acc, { chain }) => {
         if (
           feeData.chain_data[chain]?.["hourly"]?.[selectedQuantitative]?.data?.[
-          index
+            index
           ] !== undefined
         ) {
           acc[chain] =
@@ -610,27 +613,27 @@ export default function FeesPage() {
 
   const optIndex = useMemo(() => {
     let pickIndex = hoverBarIndex ? hoverBarIndex : selectedBarIndex;
-    let retIndex = (NUM_HOURS - 1) - Number(pickIndex);
+    let retIndex = NUM_HOURS - 1 - Number(pickIndex);
     return retIndex;
   }, [selectedBarIndex, hoverBarIndex, NUM_HOURS]);
 
   const getGradientColor = useCallback((percentage, weighted = false) => {
     const colors = !weighted
       ? [
-        { percent: 0, color: "#1DF7EF" },
-        { percent: 20, color: "#76EDA0" },
-        { percent: 50, color: "#FFDF27" },
-        { percent: 70, color: "#FF9B47" },
-        { percent: 100, color: "#FE5468" },
-      ]
+          { percent: 0, color: "#1DF7EF" },
+          { percent: 20, color: "#76EDA0" },
+          { percent: 50, color: "#FFDF27" },
+          { percent: 70, color: "#FF9B47" },
+          { percent: 100, color: "#FE5468" },
+        ]
       : [
-        { percent: 0, color: "#1DF7EF" },
-        { percent: 2, color: "#76EDA0" },
-        { percent: 10, color: "#FFDF27" },
-        { percent: 40, color: "#FF9B47" },
-        { percent: 80, color: "#FE5468" },
-        { percent: 100, color: "#FE5468" }, // Repeat the final color to ensure upper bound
-      ];
+          { percent: 0, color: "#1DF7EF" },
+          { percent: 2, color: "#76EDA0" },
+          { percent: 10, color: "#FFDF27" },
+          { percent: 40, color: "#FF9B47" },
+          { percent: 80, color: "#FE5468" },
+          { percent: 100, color: "#FE5468" }, // Repeat the final color to ensure upper bound
+        ];
 
     let lowerBound = colors[0];
     let upperBound = colors[colors.length - 1];
@@ -658,23 +661,23 @@ export default function FeesPage() {
 
     const r = Math.floor(
       parseInt(lowerBound.color.substring(1, 3), 16) +
-      percentDiff *
-      (parseInt(upperBound.color.substring(1, 3), 16) -
-        parseInt(lowerBound.color.substring(1, 3), 16)),
+        percentDiff *
+          (parseInt(upperBound.color.substring(1, 3), 16) -
+            parseInt(lowerBound.color.substring(1, 3), 16)),
     );
 
     const g = Math.floor(
       parseInt(lowerBound.color.substring(3, 5), 16) +
-      percentDiff *
-      (parseInt(upperBound.color.substring(3, 5), 16) -
-        parseInt(lowerBound.color.substring(3, 5), 16)),
+        percentDiff *
+          (parseInt(upperBound.color.substring(3, 5), 16) -
+            parseInt(lowerBound.color.substring(3, 5), 16)),
     );
 
     const b = Math.floor(
       parseInt(lowerBound.color.substring(5, 7), 16) +
-      percentDiff *
-      (parseInt(upperBound.color.substring(5, 7), 16) -
-        parseInt(lowerBound.color.substring(5, 7), 16)),
+        percentDiff *
+          (parseInt(upperBound.color.substring(5, 7), 16) -
+            parseInt(lowerBound.color.substring(5, 7), 16)),
     );
 
     return `#${r.toString(16).padStart(2, "0")}${g
@@ -922,6 +925,9 @@ export default function FeesPage() {
   // ]);
 
   // returns which chain has the lowest median fee in the selected time period
+
+  console.log(feeData ? feeData : "");
+  console.log(master ? master : "");
   const lowestMedianFee = useMemo(() => {
     if (!feeData) return null;
 
@@ -1031,17 +1037,17 @@ export default function FeesPage() {
       return !feeIndexSort[optIndex][chain]
         ? "gray"
         : getGradientColor(
-          Math.floor(
-            (feeIndexSort[optIndex][chain][showUsd ? 2 : 1] /
-              feeIndexSort[optIndex][
-              Object.keys(feeIndexSort[optIndex])[
-              Object.keys(feeIndexSort[optIndex]).length - 1
-              ]
-              ][showUsd ? 2 : 1]) *
-            100,
-          ),
-          true,
-        );
+            Math.floor(
+              (feeIndexSort[optIndex][chain][showUsd ? 2 : 1] /
+                feeIndexSort[optIndex][
+                  Object.keys(feeIndexSort[optIndex])[
+                    Object.keys(feeIndexSort[optIndex]).length - 1
+                  ]
+                ][showUsd ? 2 : 1]) *
+                100,
+            ),
+            true,
+          );
     },
     [feeIndexSort, optIndex, getGradientColor, showUsd],
   );
@@ -1050,9 +1056,12 @@ export default function FeesPage() {
     (chain, metric) => {
       // feeData.chain_data[item.chain[1]]?.hourly?.txcosts_native_median?.data[optIndex]
       // true, feeData.chain_data["ethereum"]["hourly"]["txcosts_swap"].data[optIndex][showUsd ? 2 : 1]
-      if (!feeData || !(metric in feeData.chain_data[chain]["hourly"])) return null;
-
-      console.log("metric", metric, "chain", chain, "optIndex", optIndex)
+      if (
+        !feeData ||
+        !(metric in feeData.chain_data[chain]["hourly"]) ||
+        !master
+      )
+        return null;
 
       let valueIndex = showUsd ? 2 : 1;
       if (metric === "tps") {
@@ -1063,10 +1072,14 @@ export default function FeesPage() {
         ? feeData.chain_data[chain]["hourly"][metric].data[optIndex][valueIndex]
         : null;
 
-      const usdClasses = "justify-center w-[60px] md:w-[65px] -mr-1.5";
-      const gweiClasses = "justify-end w-[75px] md:w-[85px] -mr-1.5";
-      const centsClasses = "justify-end w-[65px] md:w-[75px] -mr-1.5";
-      const tpsClasses = "justify-center w-[60px] md:w-[65px]";
+      const units = Object.keys(master.fee_metrics[metric].units);
+      const unitKey =
+        units.find((unit) => unit !== "usd" && unit !== "eth") ||
+        (showUsd ? "usd" : "eth");
+
+      const usdClasses = " w-[60px] md:w-[65px] -mr-1.5";
+      const gweiClasses = "w-[75px] md:w-[85px] -mr-1.5";
+      const centsClasses = " w-[65px] md:w-[75px] -mr-1.5";
 
       let classes = usdClasses;
       // if (showGwei && !showUsd) classes = gweiClasses;
@@ -1086,6 +1099,7 @@ export default function FeesPage() {
         }
       }
 
+      console.log(classes + " " + metric);
       // return N/A if value is null
       if (value === null)
         return (
@@ -1102,10 +1116,10 @@ export default function FeesPage() {
 
       // multiply value by 1000000000 if showGwei is true
       let multiplier = 1;
-      if (showGwei && !showUsd) {
+      if (master.fee_metrics[metric].currency && showGwei && !showUsd) {
         multiplier = 1000000000;
       }
-      if (showCents && showUsd) {
+      if (master.fee_metrics[metric].currency && showCents && showUsd) {
         multiplier = 100;
       }
       const multipliedValue = value * multiplier;
@@ -1113,38 +1127,27 @@ export default function FeesPage() {
 
       // console.log(multipliedValue + " - " + chain);
 
-      if (metric === "tps") {
-        return (
-          <div
-            className={`flex items-center ${tpsClasses} h-[24px] transition-colors duration-100 border rounded-full`}
-            style={{
-              borderColor:
-                selectedQuantitative === metric ? getValueColor(chain) : "transparent",
-            }}
-          >
-            <div className="flex items-center">
-              {Intl.NumberFormat("en-GB", {
-                notation: "compact",
-                maximumFractionDigits: fractionDigits,
-                minimumFractionDigits: fractionDigits,
-              }).format(value)}
-            </div>
-          </div>
-        );
-      }
-
       // ethereum chain as a special case
       if (chain === "ethereum" && metric === selectedQuantitative) {
         return (
           <div
-            className={`font-semibold flex items-center ${classes} h-[24px] transition-colors duration-100 border rounded-full`}
+            className={`font-semibold flex items-center ${classes} h-[24px] transition-colors duration-100 border rounded-full justify-end pr-2 `}
             style={{
               background: "#FE5468",
               borderColor: "#FF3838",
               color: "#1F2726",
             }}
           >
-            {showUsd && !showCents && <div className="text-[10px]">$</div>}
+            {master.fee_metrics[metric].currency && showUsd && !showCents && (
+              <div className="text-[10px]">$</div>
+            )}
+            {!master.fee_metrics[metric].currency && (
+              <div className="text-[10px]">
+                {master.fee_metrics[metric].prefix
+                  ? master.fee_metrics[metric].prefix
+                  : ""}
+              </div>
+            )}
             <div className="flex items-center">
               {Intl.NumberFormat("en-GB", {
                 notation: "compact",
@@ -1152,14 +1155,28 @@ export default function FeesPage() {
                 minimumFractionDigits: fractionDigits,
               }).format(multipliedValue)}
             </div>
-            {showUsd && showCents && (
+            {master.fee_metrics[metric].currency && showUsd && showCents && (
               <div className="pl-0.5 text-[8px] pr-[5px] text-forest-900">
                 {" cents"}
               </div>
             )}
-            {!showUsd && showGwei && (
+            {master.fee_metrics[metric].currency && !showUsd && showGwei && (
               <div className="pl-0.5 text-[8px] pr-[5px] text-forest-900">
                 {" gwei"}
+              </div>
+            )}
+
+            {!master.fee_metrics[metric].currency && (
+              <div
+                className={`text-[8px] text-forest-900 ${
+                  master.fee_metrics[metric].units[unitKey].suffix
+                    ? "pr-[5px] pl-0.5"
+                    : "pr-[0px] pl-0 "
+                }`}
+              >
+                {master.fee_metrics[metric].units[unitKey].suffix
+                  ? master.fee_metrics[metric].units[unitKey].suffix
+                  : ""}
               </div>
             )}
           </div>
@@ -1168,7 +1185,7 @@ export default function FeesPage() {
 
       return (
         <div
-          className={`flex items-center ${classes} h-[24px] transition-colors duration-100 border rounded-full`}
+          className={`flex items-center ${classes}  h-[24px] transition-colors duration-100 border rounded-full justify-end  pr-2  `}
           style={{
             borderColor:
               selectedQuantitative === metric && selectedQualitative !== "chain"
@@ -1176,30 +1193,54 @@ export default function FeesPage() {
                 : "transparent",
           }}
         >
-          {showUsd && !showCents && (
+          {master.fee_metrics[metric].currency && showUsd && !showCents && (
             <div className="text-[9px] text-center mt-[1px] pr-[2px] text-forest-400">
               $
             </div>
           )}
-          <div>
+          {!master.fee_metrics[metric].currency && (
+            <div className="text-[10px]">
+              {master.fee_metrics[metric].prefix
+                ? master.fee_metrics[metric].prefix
+                : ""}
+            </div>
+          )}
+          <div className="self-center ">
             {showCents && multipliedValue < 0.1
               ? "< 0.1"
               : !showCents && multipliedValue < 0.001
-                ? "< 0.001"
-                : Intl.NumberFormat(undefined, {
+              ? "< 0.001"
+              : Intl.NumberFormat(undefined, {
                   notation: "compact",
-                  maximumFractionDigits: fractionDigits,
-                  minimumFractionDigits: fractionDigits,
+                  maximumFractionDigits:
+                    unitKey === "eth" && showGwei
+                      ? 2
+                      : master.fee_metrics[metric].units[unitKey].decimals,
+                  minimumFractionDigits:
+                    unitKey === "eth" && showGwei
+                      ? 2
+                      : master.fee_metrics[metric].units[unitKey].decimals,
                 }).format(multipliedValue)}
           </div>
-          {showUsd && showCents && (
-            <div className="pl-0.5 text-[8px] pr-[5px] text-forest-400">
-              {" cents"}
+          {master.fee_metrics[metric].currency && showUsd && showCents && (
+            <div className="pl-0.5 text-[8px] text-forest-400">{" cents"}</div>
+          )}
+          {master.fee_metrics[metric].currency && !showUsd && showGwei && (
+            <div className="pl-0.5 text-[8px]  pr-[5px] text-forest-400">
+              {" gwei"}
             </div>
           )}
-          {!showUsd && showGwei && (
-            <div className="pl-0.5 text-[8px] pr-[5px] text-forest-400">
-              {" gwei"}
+          {!master.fee_metrics[metric].currency && (
+            <div
+              className={` text-[8px]  text-forest-900 ${
+                master.fee_metrics[metric].units[unitKey].suffix
+                  ? "pr-[5px] pl-0.5"
+                  : "pr-[0px] pl-0 "
+              }`}
+            >
+              {master.fee_metrics[metric].units[unitKey].suffix
+                ? master.fee_metrics[metric].units[unitKey].suffix
+                : ""}
             </div>
           )}
           {/* <div className="pl-0.5 text-[0.5rem] pr-[5px] text-forest-400">
@@ -1244,7 +1285,11 @@ export default function FeesPage() {
 
   return (
     <>
-      <ShowLoading dataLoading={[feeLoading, masterLoading]} dataValidating={[feeValidating, masterValidating]} fullScreen={true} />
+      <ShowLoading
+        dataLoading={[feeLoading, masterLoading]}
+        dataValidating={[feeValidating, masterValidating]}
+        fullScreen={true}
+      />
       <div
         className="relative min-h-screen w-full flex flex-col transition-all duration-300"
         style={{
@@ -1252,7 +1297,7 @@ export default function FeesPage() {
             ? `${isMobile ? 313 + 60 : 413 + 60}px`
             : `${96 + 60}px`,
         }}
-      // ref={pageRef}
+        // ref={pageRef}
       >
         <Header />
 
@@ -1269,10 +1314,11 @@ export default function FeesPage() {
               <div className="font-semibold">Main platform</div>
             </a>
             <div
-              className={`flex items-center relative h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-[15px] py-[10px] gap transition-all z-40 duration-300 hover:cursor-pointer ${hoverSettings
-                ? "w-[308px] justify-start"
-                : "w-[128px] justify-start"
-                }`}
+              className={`flex items-center relative h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-[15px] py-[10px] gap transition-all z-40 duration-300 hover:cursor-pointer ${
+                hoverSettings
+                  ? "w-[308px] justify-start"
+                  : "w-[128px] justify-start"
+              }`}
               onMouseEnter={() => {
                 setHoverSettings(true);
               }}
@@ -1281,8 +1327,9 @@ export default function FeesPage() {
               }}
             >
               <div
-                className={`transition-all ${hoverSettings ? "hidden" : "block"
-                  }`}
+                className={`transition-all ${
+                  hoverSettings ? "hidden" : "block"
+                }`}
               >
                 <Icon
                   icon="gtp:gtp-settings"
@@ -1290,8 +1337,9 @@ export default function FeesPage() {
                 />
               </div>
               <div
-                className={`transition-all ${hoverSettings ? "block" : "hidden"
-                  }`}
+                className={`transition-all ${
+                  hoverSettings ? "block" : "hidden"
+                }`}
               >
                 <Icon
                   icon="feather:chevron-down"
@@ -1302,10 +1350,11 @@ export default function FeesPage() {
             </div>
 
             <div
-              className={`absolute top-6 min-h-0 bg-[#151A19] right-[5px] rounded-b-2xl z-20 transition-all duration-[290ms] overflow-hidden px-2 ${hoverSettings
-                ? "w-[308px] h-[208px] shadow-[0px_4px_46.2px_0px_#000000] "
-                : "w-[0px] h-[10px] shadow-transparent"
-                }`}
+              className={`absolute top-6 min-h-0 bg-[#151A19] right-[5px] rounded-b-2xl z-20 transition-all duration-[290ms] overflow-hidden px-2 ${
+                hoverSettings
+                  ? "w-[308px] h-[208px] shadow-[0px_4px_46.2px_0px_#000000] "
+                  : "w-[0px] h-[10px] shadow-transparent"
+              }`}
               onMouseEnter={() => {
                 setHoverSettings(true);
               }}
@@ -1318,8 +1367,9 @@ export default function FeesPage() {
                   <div className="flex items-center mx-2 w-full gap-x-[10px]">
                     <Icon
                       icon="gtp:gtp-dollar"
-                      className={`h-[15px] w-[15px] mt-1 font-[900] text-[#CDD8D3] relative -top-[3px] ${hoverSettings ? "text-sm" : ""
-                        }`}
+                      className={`h-[15px] w-[15px] mt-1 font-[900] text-[#CDD8D3] relative -top-[3px] ${
+                        hoverSettings ? "text-sm" : ""
+                      }`}
                     />
                     <div className="text-[10px] text-white">Denominates in</div>
                     <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
@@ -1334,8 +1384,9 @@ export default function FeesPage() {
                           Full Dollar
                         </div>
                         <div
-                          className={`w-full text-center ${!showCents && "opacity-50"
-                            }`}
+                          className={`w-full text-center ${
+                            !showCents && "opacity-50"
+                          }`}
                         >
                           USD cents
                         </div>
@@ -1408,8 +1459,9 @@ export default function FeesPage() {
                                   Enabled
                                 </div>
                                 <div
-                                  className={`w-full text-center ${metrics[metric].enabled && "opacity-50"
-                                    }`}
+                                  className={`w-full text-center ${
+                                    metrics[metric].enabled && "opacity-50"
+                                  }`}
                                 >
                                   Disabled
                                 </div>
@@ -1498,15 +1550,14 @@ export default function FeesPage() {
                 className={`relative w-[808px] flex justify-start pt-[10px] pb-[8px] text-[10px] md:text-[12px] font-bold leading-[1]`}
               >
                 <div className="pl-[10px] pr-[20px] flex-1 grid grid-cols-[180px,auto,180px]">
-                  <div
-                    className={`flex items-center gap-x-[5px]`}
-                  >
+                  <div className={`flex items-center gap-x-[5px]`}>
                     <div
                       className={`flex items-center h-[0px] w-[18px] md:h-[0px] md:w-[24px]`}
                     >
                       <div
-                        className={`${isMobile ? "h-[0px] w-[18px]" : "h-[0px] w-[24px]"
-                          }`}
+                        className={`${
+                          isMobile ? "h-[0px] w-[18px]" : "h-[0px] w-[24px]"
+                        }`}
                       />
                     </div>
                     <div
@@ -1528,10 +1579,11 @@ export default function FeesPage() {
                               : "formkit:arrowup"
                             : "formkit:arrowdown"
                         }
-                        className={` dark:text-white text-black w-[10px] h-[10px] ${selectedQualitative === "chain"
-                          ? "opacity-100"
-                          : "opacity-20"
-                          }`}
+                        className={` dark:text-white text-black w-[10px] h-[10px] ${
+                          selectedQualitative === "chain"
+                            ? "opacity-100"
+                            : "opacity-20"
+                        }`}
                       />{" "}
                     </div>
                     <div
@@ -1548,26 +1600,37 @@ export default function FeesPage() {
                         : ""}
                       <Icon
                         icon={"feather:x-circle"}
-                        className={` dark:text-white text-black w-[10px] h-[10px] relative bottom-[0.5px] ${availabilityFilter ? "block" : "hidden"
-                          }`}
+                        className={` dark:text-white text-black w-[10px] h-[10px] relative bottom-[0.5px] ${
+                          availabilityFilter ? "block" : "hidden"
+                        }`}
                         onClick={() => {
                           setAvailabilityFilter(false);
                         }}
                       />{" "}
                     </div>
                   </div>
-                  <div className="grid grid-flow-col">
-                    {Object.keys(metrics).map((metric) => {
+                  <div className="grid grid-flow-col w-full ">
+                    {Object.keys(metrics).map((metric, i) => {
                       if (!metrics[metric].enabled)
-                        return (
-                          <div key={metric + "_header"}>
-                          </div>
-                        );
-
+                        return <div key={metric + "_header"}></div>;
+                      const colors = [
+                        "bg-red-500",
+                        "bg-green-500",
+                        "bg-blue-500",
+                        "bg-yellow-500",
+                        "bg-purple-500",
+                        "bg-pink-500",
+                        "bg-indigo-500",
+                        "bg-teal-500",
+                        "bg-orange-500",
+                      ];
                       return (
-                        <div className={`pr-[20px] flex items-center justify-end `} key={metric + "_header"}>
+                        <div
+                          className={`pr-[20px]  flex items-center min-w-[95px] justify-end `}
+                          key={metric + "_header"}
+                        >
                           <div
-                            className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px] z-10"
+                            className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px]  z-10"
                             onClick={() => {
                               if (selectedQuantitative === metric) {
                                 if (selectedQualitative) {
@@ -1581,21 +1644,22 @@ export default function FeesPage() {
                               }
                             }}
                           >
-                            <div>{metrics[metric].title}</div>
+                            <div className="">{metrics[metric].title}</div>
                             <Icon
                               icon={
                                 !selectedQualitative &&
-                                  selectedQuantitative === metric
+                                selectedQuantitative === metric
                                   ? sortOrder
                                     ? "formkit:arrowdown"
                                     : "formkit:arrowup"
                                   : "formkit:arrowdown"
                               }
-                              className={`dark:text-white text-black w-[10px] h-[10px] ${!selectedQualitative &&
+                              className={`dark:text-white text-black w-[10px] h-[10px] ${
+                                !selectedQualitative &&
                                 selectedQuantitative === metric
-                                ? "opacity-100"
-                                : "opacity-20"
-                                }`}
+                                  ? "opacity-100"
+                                  : "opacity-20"
+                              }`}
                             />
                           </div>
                         </div>
@@ -1607,10 +1671,11 @@ export default function FeesPage() {
                   >
                     <div className="relative flex space-x-[1px] items-end -bottom-2">
                       <div
-                        className={`absolute right-[35px] md:right-[25px] w-[29px] h-[12px] text-[8px] transition-all duration-100 ${selectedBarIndex >= 18 && selectedBarIndex <= 22
-                          ? "-top-[22px]"
-                          : "-top-2"
-                          }`}
+                        className={`absolute right-[35px] md:right-[25px] w-[29px] h-[12px] text-[8px] transition-all duration-100 ${
+                          selectedBarIndex >= 18 && selectedBarIndex <= 22
+                            ? "-top-[22px]"
+                            : "-top-2"
+                        }`}
                       >
                         hourly
                       </div>
@@ -1618,12 +1683,13 @@ export default function FeesPage() {
                         <div
                           key={index.toString() + "columns"}
                           className={`flex items-end w-[5px] origin-bottom  border-t border-x border-[#344240] bg-[#344240] hover:cursor-pointer rounded-t-full transition-transform duration-100 
-                          ${selectedBarIndex === index
+                          ${
+                            selectedBarIndex === index
                               ? "scale-[1.5] bg-transparent"
                               : hoverBarIndex === index
-                                ? "scale-x-[100%]"
-                                : "scale-x-[100%]"
-                            }
+                              ? "scale-x-[100%]"
+                              : "scale-x-[100%]"
+                          }
                           `}
                           onMouseEnter={() => {
                             setHoverBarIndex(index);
@@ -1636,12 +1702,13 @@ export default function FeesPage() {
                           }}
                         >
                           <div
-                            className={`w-[5px] transition-all duration-0  ${selectedBarIndex === index
-                              ? "h-[16px]"
-                              : hoverBarIndex === index
+                            className={`w-[5px] transition-all duration-0  ${
+                              selectedBarIndex === index
+                                ? "h-[16px]"
+                                : hoverBarIndex === index
                                 ? "h-[14px]"
                                 : "h-[8px]"
-                              }`}
+                            }`}
                           ></div>
                         </div>
                       ))}
@@ -1681,13 +1748,15 @@ export default function FeesPage() {
                     <animated.div
                       key={item.chain[0]}
                       className={`border-forest-700 border-[1px] mb-1 absolute rounded-full border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] pr-[20px] flex-1 grid grid-cols-[180px,auto,180px] items-center
-                      ${isMobile
+                      ${
+                        isMobile
                           ? "text-[12px] w-[650px]"
                           : "text-[14px] w-[808px]"
-                        } ${selectedChains[item.chain[1]]
+                      } ${
+                        selectedChains[item.chain[1]]
                           ? "opacity-100"
                           : "opacity-50"
-                        }`}
+                      }`}
                       style={{ ...style }}
                     >
                       <div
@@ -1697,24 +1766,27 @@ export default function FeesPage() {
                           className={`flex items-center h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
                         >
                           <Icon
-                            icon={`gtp:${AllChainsByKeys[item.chain[1]].urlKey
-                              }-logo-monochrome`}
-                            className={`${isMobile
-                              ? "h-[18px] w-[18px]"
-                              : "h-[24px] w-[24px]"
-                              }`}
+                            icon={`gtp:${
+                              AllChainsByKeys[item.chain[1]].urlKey
+                            }-logo-monochrome`}
+                            className={`${
+                              isMobile
+                                ? "h-[18px] w-[18px]"
+                                : "h-[24px] w-[24px]"
+                            }`}
                             style={{
                               color:
                                 AllChainsByKeys[item.chain[1]].colors[
-                                theme ?? "dark"
+                                  theme ?? "dark"
                                 ][0],
                             }}
                           />
                         </div>
                         <Link
                           className="pr-[5px] hover:underline"
-                          href={`https://www.growthepie.xyz/chains/${AllChainsByKeys[item.chain[1]].urlKey
-                            }`}
+                          href={`https://www.growthepie.xyz/chains/${
+                            AllChainsByKeys[item.chain[1]].urlKey
+                          }`}
                           target="_blank"
                         >
                           {isMobile
@@ -1722,10 +1794,11 @@ export default function FeesPage() {
                             : AllChainsByKeys[item.chain[1]].label}
                         </Link>
                         <div
-                          className={`bg-[#344240] flex rounded-full  items-center  transition-width overflow-hidden duration-300 ${isMobile
-                            ? "px-[4px] py-[2px] gap-x-[1px]"
-                            : "px-[5px] py-[3px] gap-x-[2px]"
-                            }`}
+                          className={`bg-[#344240] flex rounded-full  items-center  transition-width overflow-hidden duration-300 ${
+                            isMobile
+                              ? "px-[4px] py-[2px] gap-x-[1px]"
+                              : "px-[5px] py-[3px] gap-x-[2px]"
+                          }`}
                           onMouseEnter={() => {
                             setHoveredItems({
                               hoveredChain: item.chain[1],
@@ -1766,31 +1839,35 @@ export default function FeesPage() {
                               >
                                 <Icon
                                   icon={`gtp:${avail.icon}`}
-                                  className={`${dataAvailByFilter &&
+                                  className={`${
+                                    dataAvailByFilter &&
                                     selectedAvailability === avail.label &&
                                     selectedChains[item.chain[1]]
-                                    ? "text-forest-200"
-                                    : "text-[#5A6462] "
-                                    }
-                                  ${isMobile
+                                      ? "text-forest-200"
+                                      : "text-[#5A6462] "
+                                  }
+                                  ${
+                                    isMobile
                                       ? "h-[10px] w-[10px] "
                                       : "h-[12px] w-[12px] "
-                                    }`}
+                                  }`}
                                 />
                                 <div
-                                  className={`text-[8px] text-center font-semibold overflow-hidden ${selectedAvailability === avail.label &&
+                                  className={`text-[8px] text-center font-semibold overflow-hidden ${
+                                    selectedAvailability === avail.label &&
                                     selectedQualitative === "availability"
-                                    ? "text-forest-200"
-                                    : "text-[#5A6462] "
-                                    } ${hoveredItems.hoveredDA === avail.label &&
-                                      hoveredItems.hoveredChain === item.chain[1]
+                                      ? "text-forest-200"
+                                      : "text-[#5A6462] "
+                                  } ${
+                                    hoveredItems.hoveredDA === avail.label &&
+                                    hoveredItems.hoveredChain === item.chain[1]
                                       ? ""
                                       : "-mr-[2px]"
-                                    }`}
+                                  }`}
                                   style={{
                                     maxWidth:
                                       hoveredItems.hoveredDA === avail.label &&
-                                        hoveredItems.hoveredChain ===
+                                      hoveredItems.hoveredChain ===
                                         item.chain[1]
                                         ? "50px"
                                         : "0px",
@@ -1823,15 +1900,29 @@ export default function FeesPage() {
                       <div className="grid grid-flow-col">
                         {Object.keys(metrics)
                           // .filter((metricKey) => metrics[metricKey].enabled)
-                          .map((metric) => {
+                          .map((metric, i) => {
                             if (!metrics[metric].enabled)
                               return (
-                                <div key={metric + "_barcontent"} className="flex items-center justify-end"></div>
-                              )
+                                <div
+                                  key={metric + "_barcontent"}
+                                  className=" flex items-center justify-end "
+                                ></div>
+                              );
 
+                            const colors = [
+                              "bg-red-500",
+                              "bg-green-500",
+                              "bg-blue-500",
+                              "bg-yellow-500",
+                              "bg-purple-500",
+                              "bg-pink-500",
+                              "bg-indigo-500",
+                              "bg-teal-500",
+                              "bg-orange-500",
+                            ];
                             return (
                               <div
-                                className="flex items-center justify-end"
+                                className={`flex items-center justify-end pr-[15px] min-w-[95px] `}
                                 key={metric + "_barcontent"}
                               >
                                 {getFormattedLastValue(item.chain[1], metric)}
@@ -1879,24 +1970,25 @@ export default function FeesPage() {
                             }}
                           >
                             <div
-                              className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${selectedBarIndex === index
-                                ? "scale-[160%]"
-                                : hoverBarIndex === index
+                              className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${
+                                selectedBarIndex === index
+                                  ? "scale-[160%]"
+                                  : hoverBarIndex === index
                                   ? "scale-[120%] opacity-90"
                                   : "scale-100 opacity-50"
-                                }`}
+                              }`}
                               style={{
-                                backgroundColor: !feeIndexSort[(NUM_HOURS - 1) - index][
-                                  item.chain[1]
-                                ]
+                                backgroundColor: !feeIndexSort[
+                                  NUM_HOURS - 1 - index
+                                ][item.chain[1]]
                                   ? "gray"
                                   : getGradientColor(
-                                    Math.floor(
-                                      feeIndexSort[(NUM_HOURS - 1) - index][
-                                      item.chain[1]
-                                      ][3] * 100,
+                                      Math.floor(
+                                        feeIndexSort[NUM_HOURS - 1 - index][
+                                          item.chain[1]
+                                        ][3] * 100,
+                                      ),
                                     ),
-                                  ),
                               }}
                             ></div>
                           </div>
@@ -1904,10 +1996,11 @@ export default function FeesPage() {
                       </div>
                       <div className="absolute left-[99%]">
                         <div
-                          className={`relative flex items-center justify-end w-[22px] h-[22px] rounded-full cursor-pointer ${selectedChains[item.chain[1]]
-                            ? " bg-white dark:bg-forest-1000 dark:hover:forest-800"
-                            : " bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
-                            }`}
+                          className={`relative flex items-center justify-end w-[22px] h-[22px] rounded-full cursor-pointer ${
+                            selectedChains[item.chain[1]]
+                              ? " bg-white dark:bg-forest-1000 dark:hover:forest-800"
+                              : " bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
+                          }`}
                           onClick={() => {
                             if (selectedQualitative === "availability") {
                               if (
@@ -1917,7 +2010,7 @@ export default function FeesPage() {
                               ) {
                                 if (
                                   dataAvailByChain[item.chain[1]][0].label ===
-                                  selectedAvailability &&
+                                    selectedAvailability &&
                                   !manualSelectedChains[item.chain[1]]
                                 ) {
                                   setManualSelectedChains(
@@ -1938,7 +2031,7 @@ export default function FeesPage() {
                                   );
                                 } else if (
                                   dataAvailByChain[item.chain[1]][0].label !==
-                                  selectedAvailability &&
+                                    selectedAvailability &&
                                   manualSelectedChains[item.chain[1]]
                                 ) {
                                   setManualSelectedChains(
@@ -2008,10 +2101,11 @@ export default function FeesPage() {
                               strokeWidth="2"
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              className={`w-[22px] h-[22px]  ${!selectedChains[item.chain[1]]
-                                ? "opacity-100"
-                                : "opacity-0"
-                                }`}
+                              className={`w-[22px] h-[22px]  ${
+                                !selectedChains[item.chain[1]]
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              }`}
                             >
                               <circle
                                 xmlns="http://www.w3.org/2000/svg"
@@ -2022,17 +2116,19 @@ export default function FeesPage() {
                             </svg>
                           </div>
                           <div
-                            className={`p-0.5 rounded-full ${!selectedChains[item.chain[1]]
-                              ? "bg-forest-50 dark:bg-[#1F2726]"
-                              : "bg-white dark:bg-[#1F2726]"
-                              }`}
+                            className={`p-0.5 rounded-full ${
+                              !selectedChains[item.chain[1]]
+                                ? "bg-forest-50 dark:bg-[#1F2726]"
+                                : "bg-white dark:bg-[#1F2726]"
+                            }`}
                           >
                             <Icon
                               icon="feather:check-circle"
-                              className={`w-[17.6px] h-[17.6px] ${!selectedChains[item.chain[1]]
-                                ? "opacity-0"
-                                : "opacity-100"
-                                }`}
+                              className={`w-[17.6px] h-[17.6px] ${
+                                !selectedChains[item.chain[1]]
+                                  ? "opacity-0"
+                                  : "opacity-100"
+                              }`}
                               style={{
                                 color: selectedChains[item.chain[1]]
                                   ? undefined
@@ -2060,10 +2156,9 @@ export default function FeesPage() {
                       >
                         <Icon
                           icon={`gtp:${AllChainsByKeys["ethereum"].urlKey}-logo-monochrome`}
-                          className={`${isMobile
-                            ? "h-[18px] w-[18px]"
-                            : "h-[24px] w-[24px]"
-                            }`}
+                          className={`${
+                            isMobile ? "h-[18px] w-[18px]" : "h-[24px] w-[24px]"
+                          }`}
                           style={{
                             color:
                               AllChainsByKeys["ethereum"].colors["light"][1],
@@ -2081,25 +2176,25 @@ export default function FeesPage() {
                       </Link>
                     </div>
 
-                    <div
-                      className={`grid grid-flow-col`}
-                    >
-                      {Object.keys(metrics)
-                        .map((metric) => {
-                          if (!metrics[metric].enabled)
-                            return (
-                              <div key={metric + "_barcontent"} className="flex items-center justify-end"></div>
-                            )
-
+                    <div className={`grid grid-flow-col`}>
+                      {Object.keys(metrics).map((metric) => {
+                        if (!metrics[metric].enabled)
                           return (
                             <div
+                              key={metric + "_barcontent"}
                               className="flex items-center justify-end"
-                              key={metric + "_ethbar"}
-                            >
-                              {getFormattedLastValue("ethereum", metric)}
-                            </div>
+                            ></div>
                           );
-                        })}
+
+                        return (
+                          <div
+                            className="flex items-center justify-end pr-[15px] min-w-[95px] "
+                            key={metric + "_ethbar"}
+                          >
+                            {getFormattedLastValue("ethereum", metric)}
+                          </div>
+                        );
+                      })}
                     </div>
                     <div
                       className={`pl-[15px] relative flex items-center h-full space-x-[1px] justify-end`}
@@ -2119,30 +2214,33 @@ export default function FeesPage() {
                           }}
                         >
                           <div
-                            className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${selectedBarIndex === index
-                              ? "scale-[160%]"
-                              : hoverBarIndex === index
+                            className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${
+                              selectedBarIndex === index
+                                ? "scale-[160%]"
+                                : hoverBarIndex === index
                                 ? "scale-[120%] opacity-90"
                                 : "scale-100 opacity-50"
-                              }`}
+                            }`}
                             style={{
                               backgroundColor: !feeIndexSortWithEthereum[
-                                (NUM_HOURS - 1) - index
+                                NUM_HOURS - 1 - index
                               ]["ethereum"][3]
                                 ? "gray"
                                 : getGradientColor(
-                                  Math.floor(
-                                    feeIndexSortWithEthereum[(NUM_HOURS - 1) - index][
-                                    "ethereum"
-                                    ][3] * 100,
+                                    Math.floor(
+                                      feeIndexSortWithEthereum[
+                                        NUM_HOURS - 1 - index
+                                      ]["ethereum"][3] * 100,
+                                    ),
                                   ),
-                                ),
                             }}
                           ></div>
                         </div>
                       ))}
                       <div className="absolute left-[12px] top-[34px] w-[148px] h-[10px] border-forest-600 border-x-[1px] flex justify-between text-[10px]">
-                        <div className="relative top-2">{NUM_HOURS} Hours Ago</div>
+                        <div className="relative top-2">
+                          {NUM_HOURS} Hours Ago
+                        </div>
                         <div className="relative top-2">Now</div>
                       </div>
                     </div>
