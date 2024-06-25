@@ -8,14 +8,15 @@ type SlidingFooterContainerProps = {
 
 export default React.forwardRef(function OffScreenSlider(
   { children, floatingChildren }: SlidingFooterContainerProps,
-  ref: React.Ref<HTMLDivElement>
+  ref: React.Ref<HTMLDivElement>,
 ) {
   return (
-    <div className={"fixed w-full max-w-[650px] md:max-w-[900px] mx-auto bottom-0"} ref={ref}>
+    <div
+      className={"fixed w-full max-w-[650px] md:max-w-[980px] mx-auto bottom-0"}
+      ref={ref}
+    >
       {floatingChildren}
-      <FeesContainer>
-        {children}
-      </FeesContainer>
+      <FeesContainer>{children}</FeesContainer>
     </div>
   );
 });

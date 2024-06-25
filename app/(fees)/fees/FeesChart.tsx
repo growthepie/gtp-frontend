@@ -207,7 +207,7 @@ export default function FeesChart({
       if (timeDiff < 1000 * 60 * 60 * 24) {
         dateString +=
           " " +
-          date.toLocaleTimeString(undefined, {
+          date.toLocaleTimeString("en-GB", {
             hour: "numeric",
             minute: "2-digit",
           });
@@ -315,7 +315,7 @@ export default function FeesChart({
                 ${
                   selectedMetric === "fdv" || selectedMetric === "market_cap"
                     ? shortenNumber(displayValue).toString()
-                    : parseFloat(displayValue).toLocaleString(undefined, {
+                    : parseFloat(displayValue).toLocaleString("en-GB", {
                         minimumFractionDigits: valuePrefix
                           ? showCents
                             ? 2
@@ -364,7 +364,7 @@ export default function FeesChart({
               <div class="opacity-70 mr-0.5 ${
                 !prefix && "hidden"
               }">${prefix}</div>
-              ${parseFloat(value).toLocaleString(undefined, {
+              ${parseFloat(value).toLocaleString("en-GB", {
                 minimumFractionDigits: valuePrefix ? 2 : 0,
                 maximumFractionDigits: valuePrefix ? 2 : 0,
               })}

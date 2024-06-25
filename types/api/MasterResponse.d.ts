@@ -10,20 +10,7 @@
 export interface Chains {
   [key: string]: ChainInfo;
 }
-// {
-//   "name": "Base",
-//   "deployment": "PROD",
-//   "name_short": "Base",
-//   "description": "Base is an fully EVM compatible optimistic rollup built on the OP Stack. It is incubated inside of Coinbase. Public mainnet launch was on August 9th 2023.",
-//   "symbol": "-",
-//   "bucket": "OP Chains",
-//   "technology": "Optimistic Rollup",
-//   "purpose": "General Purpose (EVM)",
-//   "launch_date": "2023-07-13",
-//   "website": "https://base.org/",
-//   "twitter": "https://twitter.com/base",
-//   "block_explorer": "https://basescan.org/"
-// }
+
 export interface ChainInfo {
   name: string;
   deployment: "PROD" | "DEV";
@@ -69,32 +56,30 @@ export interface MetricInfo {
 }
 
 export interface FeeMetrics {
-  txcosts_native_median: Txcosts;
-  txcosts_median: Txcosts;
-  txcosts_swap: Txcosts;
-  txcosts_avg: Txcosts;
+  txcosts_native_median: FeeSchema;
+  txcosts_median: FeeSchema;
+  tps: FeeSchema;
+  throughput: FeeSchema;
+  txcosts_swap: FeeSchema;
+  txcosts_avg: FeeSchema;
 }
 
-export interface Txcosts {
-  name: string;
-  units: { [key: string]: Unit };
+export interface UnitSchema {
   currency: boolean;
-  priority: number;
-}
-
-export enum Prefix {
-  Empty = "$",
-  Ξ = "Ξ",
-}
-
-export interface Unit {
-  currency: boolean;
-  prefix: Prefix | null;
+  prefix: null | string;
   suffix: null | string;
   decimals: number;
   decimals_tooltip: number;
   agg: boolean;
   agg_tooltip: boolean;
+}
+
+export interface FeeSchema {
+  name: string;
+  units: { [key: string]: UnitSchema };
+  currency: boolean;
+  priority: number;
+  invert_normalization: boolean;
 }
 
 export interface BlockspaceCategories {

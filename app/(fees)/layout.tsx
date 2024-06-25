@@ -198,7 +198,7 @@ export default function RootLayout({
         />
         <Providers forcedTheme="dark">
           <div className="flex h-fit w-full justify-center">
-            <div className="flex w-full max-w-[650px] md:max-w-[900px] min-h-screen">
+            <div className="flex w-full max-w-[750px] md:max-w-[980px] min-h-screen">
               <div className="flex flex-col flex-1 overflow-y-auto z-10 overflow-x-hidden relative min-h-full bg-white dark:bg-inherit">
                 <div className="w-full mx-auto relative min-h-full">
                   {/* <Header /> */}

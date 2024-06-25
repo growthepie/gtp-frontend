@@ -137,12 +137,11 @@ export default function ChartContainer({
 
     if (timeFrames[timeFrameIndex] === "24hrs") {
       return [
-        new Date(min).toLocaleTimeString(undefined, {
+        new Date(min).toLocaleTimeString("en-GB", {
           hour: "2-digit",
           minute: "2-digit",
         }),
-        // new Date(middle).toLocaleTimeString(undefined, {hour: '2-digit'}),
-        new Date(max).toLocaleTimeString(undefined, {
+        new Date(max).toLocaleTimeString("en-GB", {
           hour: "2-digit",
           minute: "2-digit",
         }),
@@ -150,13 +149,12 @@ export default function ChartContainer({
     }
 
     return [
-      new Date(min).toLocaleDateString(undefined, {
+      new Date(min).toLocaleDateString("en-GB", {
         month: "short",
         day: "numeric",
         year: "numeric",
       }),
-      // new Date(middle).toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'}),
-      new Date(max).toLocaleDateString(undefined, {
+      new Date(max).toLocaleDateString("en-GB", {
         month: "short",
         day: "numeric",
         year: "numeric",

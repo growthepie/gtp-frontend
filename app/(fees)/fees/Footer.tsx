@@ -6,6 +6,7 @@ import { track } from "@vercel/analytics";
 import Container from "@/components/layout/Container";
 import { useMediaQuery } from "usehooks-ts";
 import Share from "@/components/Share";
+import { MasterResponse } from "@/types/api/MasterResponse";
 
 export default function Footer({
   showCents,
@@ -17,6 +18,7 @@ export default function Footer({
   metrics,
   setMetrics,
   enabledMetricsCount,
+  master,
 }: {
   showCents: boolean;
   setShowCents: React.Dispatch<React.SetStateAction<boolean>>;
@@ -26,19 +28,20 @@ export default function Footer({
   setSelectedQuantitative: React.Dispatch<React.SetStateAction<string>>;
   metrics: {
     [key: string]: {
-      title: string;
+      width: string;
       enabled: boolean;
     };
   };
   setMetrics: React.Dispatch<
     React.SetStateAction<{
       [key: string]: {
-        title: string;
+        width: string;
         enabled: boolean;
       };
     }>
   >;
   enabledMetricsCount: number;
+  master: MasterResponse | undefined;
 }) {
   const isMobile = useMediaQuery("(max-width: 767px)");
   return (
@@ -139,9 +142,14 @@ export default function Footer({
         <div
           className={`absolute bottom-6 bg-[#151A19] rounded-2xl z-0  left-0 right-0 mx-auto transition-all duration-[290ms] overflow-hidden px-2 ${
             hoverSettings
-              ? "w-[90vw] h-[268px] shadow-[0px_4px_46.2px_0px_#000000] "
-              : "w-[0px] h-[10px] shadow-transparent"
+              ? "w-[90vw] shadow-[0px_4px_46.2px_0px_#000000] "
+              : "w-[0px] shadow-transparent"
           }`}
+          style={{
+            height: hoverSettings
+              ? `calc(130px + 28px * (1 + ${Object.keys(metrics).length}))`
+              : "10px",
+          }}
           onMouseEnter={() => {
             setHoverSettings(true);
           }}
@@ -149,124 +157,192 @@ export default function Footer({
             setHoverSettings(false);
           }}
         >
-          <div className={`mt-[42px] flex flex-col relative h-fit`}>
-            <div className="flex flex-col w-full absolute min-w-[280px]">
-              <div className="flex items-center mx-2 w-full gap-x-[10px] justify-center">
-                <Icon
-                  icon="gtp:gtp-dollar"
-                  className={`h-[15px] w-[15px] mt-1 font-[900] text-[#CDD8D3] relative -top-[3px] ${
-                    hoverSettings ? "text-sm" : ""
-                  }`}
-                />
-                <div className="text-[10px] text-white">Denominates in</div>
-                <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
-                <div
-                  className="relative w-[143px] h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
-                  onClick={() => {
-                    setShowCents(!showCents);
-                  }}
-                >
-                  <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px] ">
-                    <div className="w-full flex items-start justify-center">
-                      Full Dollar
-                    </div>
-                    <div
-                      className={`w-full text-center ${
-                        !showCents && "opacity-50"
-                      }`}
-                    >
-                      USD cents
-                    </div>
+          <div
+            className={`pt-[5px] flex flex-col h-[calc(100px + 28px * (1 + ${
+              Object.keys(metrics).length
+            }))] w-full`}
+          >
+            <div className="flex flex-col w-full">
+              <div className="flex items-center w-full">
+                <div className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full pl-[0px] pr-[15px]">
+                  <div className="font-normal text-forest-500/50 text-right">
+                    Units
                   </div>
-                  <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
+                  <div className="grid grid-cols-[100px,6px,auto] gap-x-[10px] items-center w-full place-items-center whitespace-nowrap">
+                    <div className="flex flex-1 items-center place-self-end">
+                      <Icon
+                        icon="gtp:gtp-dollar"
+                        className={`h-[15px] w-[15px] font-[900] text-[#CDD8D3] relative ${
+                          hoverSettings ? "text-sm" : ""
+                        }`}
+                      />
+                      <div className="font-semibold text-right pl-[8px]">
+                        USD Display
+                      </div>
+                    </div>
+                    {/* <div className="flex gap-x-[10px] items-center"> */}
+                    <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
                     <div
-                      className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
-                      style={{
-                        transform: !showCents
-                          ? "translateX(0%)"
-                          : "translateX(100%)",
+                      className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
+                      onClick={() => {
+                        setShowCents(!showCents);
                       }}
                     >
-                      {!showCents ? "Full Dollar" : "USD cents"}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center mx-2 w-full gap-x-[10px] relative min-w-[280px] justify-center">
-                <div className="relative top-2  left-1 z-20 flex flex-col gap-y-2 text-[12px]">
-                  <div className="font-semibold">Metrics:</div>
-                  {Object.keys(metrics).map((metric) => {
-                    return (
-                      <div
-                        className="flex w-full justify-between min-w-[260px]"
-                        key={metric + "_settings"}
-                      >
-                        <div className="font-semibold">
-                          {metrics[metric].title}
+                      <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px]">
+                        <div className="w-full flex items-start justify-center">
+                          Full Dollar
                         </div>
                         <div
-                          className="relative w-[143px] h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
-                          onClick={() => {
-                            if (
-                              enabledMetricsCount > 1 ||
-                              !metrics[metric].enabled
-                            ) {
-                              if (
-                                metrics[metric].enabled &&
-                                selectedQuantitative === metric
-                              ) {
-                                for (const metricKey of Object.keys(metrics)) {
-                                  if (
-                                    metrics[metricKey].enabled &&
-                                    metricKey !== metric
-                                  ) {
-                                    setSelectedQuantitative(metricKey);
-                                    break; // Exit loop once the first enabled metric is found
-                                  }
-                                }
-                              }
-                              if (!metrics[metric].enabled) {
-                                setSelectedQuantitative(metric);
-                              }
-
-                              setMetrics((prevMetrics) => ({
-                                ...prevMetrics,
-                                [metric]: {
-                                  ...prevMetrics[metric],
-                                  enabled: !prevMetrics[metric].enabled,
-                                },
-                              }));
-                            }
-                          }}
+                          className={`w-full text-center ${
+                            !showCents && "opacity-50"
+                          }`}
                         >
-                          <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px] ">
-                            <div className="w-full flex items-start justify-center">
-                              Enabled
-                            </div>
-                            <div
-                              className={`w-full text-center ${
-                                metrics[metric].enabled && "opacity-50"
-                              }`}
-                            >
-                              Disabled
-                            </div>
-                          </div>
-                          <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
-                            <div
-                              className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
-                              style={{
-                                transform: metrics[metric].enabled
-                                  ? "translateX(0%)"
-                                  : "translateX(100%)",
-                              }}
-                            >
-                              {metrics[metric].enabled ? "Enabled" : "Disabled"}
-                            </div>
-                          </div>
+                          US Cents
                         </div>
                       </div>
-                    );
-                  })}
+                      <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
+                        <div
+                          className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
+                          style={{
+                            transform: !showCents
+                              ? "translateX(0%)"
+                              : "translateX(100%)",
+                          }}
+                        >
+                          {!showCents ? "Full Dollar" : "US cents"}
+                        </div>
+                      </div>
+                    </div>
+                    {/* </div> */}
+                  </div>
+                  <div className="font-normal text-forest-500/50 text-right">
+                    Metrics
+                  </div>
+                  {master &&
+                    Object.keys(master.fee_metrics)
+                      .filter((metricKey) => metrics[metricKey])
+                      .sort(
+                        (a, b) =>
+                          master.fee_metrics[a].priority -
+                          master.fee_metrics[b].priority,
+                      )
+                      .map((metric) => {
+                        const enabledMetricKeysByPriority = Object.keys(metrics)
+                          .filter((metricKey) => metrics[metricKey].enabled)
+                          .sort(
+                            (a, b) =>
+                              master.fee_metrics[b].priority -
+                              master.fee_metrics[a].priority,
+                          );
+
+                        return (
+                          <div
+                            className="grid grid-cols-[100px,6px,auto] gap-x-[10px] items-center w-full place-items-center whitespace-nowrap"
+                            key={metric + "_settings"}
+                          >
+                            <div className="flex flex-1 items-center place-self-end">
+                              <Icon
+                                icon=""
+                                className={`h-[15px] w-[15px] font-[900] text-[#CDD8D3] relative self-center justify-self-center ${
+                                  hoverSettings ? "text-sm" : ""
+                                }`}
+                              />
+                              <div className="flex-1 font-semibold">
+                                {master.fee_metrics[metric].name}
+                              </div>
+                            </div>
+                            {/* <div className="flex gap-x-[10px] items-center"> */}
+                            <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
+                            <div
+                              className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
+                              onClick={() => {
+                                if (
+                                  enabledMetricsCount > 1 ||
+                                  !metrics[metric].enabled
+                                ) {
+                                  if (
+                                    metrics[metric].enabled &&
+                                    selectedQuantitative === metric
+                                  ) {
+                                    for (const metricKey of Object.keys(
+                                      metrics,
+                                    )) {
+                                      if (
+                                        metrics[metricKey].enabled &&
+                                        metricKey !== metric
+                                      ) {
+                                        setSelectedQuantitative(metricKey);
+                                        break; // Exit loop once the first enabled metric is found
+                                      }
+                                    }
+                                  }
+                                  if (!metrics[metric].enabled) {
+                                    setSelectedQuantitative(metric);
+                                  }
+
+                                  const prevMetrics = { ...metrics };
+
+                                  const isEnabling =
+                                    !prevMetrics[metric].enabled;
+
+                                  // if enabling another metric will exceed the limit of 4 enabled metrics, disable the previously enabled metric with the lowest priority
+                                  if (isEnabling && enabledMetricsCount === 4) {
+                                    const lowestPriorityMetricKey =
+                                      enabledMetricKeysByPriority[0];
+
+                                    prevMetrics[
+                                      lowestPriorityMetricKey
+                                    ].enabled = false;
+                                  }
+
+                                  // toggle the enabled state of the metric
+                                  prevMetrics[metric].enabled =
+                                    !prevMetrics[metric].enabled;
+
+                                  // set the updated metrics state
+                                  setMetrics(prevMetrics);
+
+                                  // setMetrics((prevMetrics) => ({
+                                  //   ...prevMetrics,
+                                  //   [metric]: {
+                                  //     ...prevMetrics[metric],
+                                  //     enabled: !prevMetrics[metric].enabled,
+                                  //   },
+                                  // }));
+                                }
+                              }}
+                            >
+                              <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px] ">
+                                <div className="w-full flex items-start justify-center">
+                                  Enabled
+                                </div>
+                                <div
+                                  className={`w-full text-center ${
+                                    metrics[metric].enabled && "opacity-50"
+                                  }`}
+                                >
+                                  Disabled
+                                </div>
+                              </div>
+                              <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
+                                <div
+                                  className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
+                                  style={{
+                                    transform: metrics[metric].enabled
+                                      ? "translateX(0%)"
+                                      : "translateX(100%)",
+                                  }}
+                                >
+                                  {metrics[metric].enabled
+                                    ? "Enabled"
+                                    : "Disabled"}
+                                </div>
+                              </div>
+                            </div>
+                            {/* </div> */}
+                          </div>
+                        );
+                      })}
                 </div>
               </div>
             </div>

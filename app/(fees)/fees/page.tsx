@@ -99,19 +99,24 @@ export default function FeesPage() {
 
   const [selectedBarIndex, setSelectedBarIndex] = useState<number>(0);
 
-  const [metrics, setMetrics] = useState({
+  // const [enabledMetrics, setEnabledMetrics] = useState<string[]>([]);
+  // const MetricWidths
+
+  const [metrics, setMetrics] = useState<{
+    [key: string]: {
+      width: string;
+      enabled: boolean;
+    };
+  }>({
     txcosts_median: {
-      title: "Median Fee",
-      width: "80px",
+      width: "90px",
       enabled: true,
     },
     txcosts_native_median: {
-      title: "Transfer ETH",
       width: "90px",
       enabled: true,
     },
     txcosts_swap: {
-      title: "Swap Token",
       width: "80px",
       enabled: false,
     },
@@ -134,15 +139,37 @@ export default function FeesPage() {
       setMetrics((prevMetrics: any) => {
         return {
           ...prevMetrics,
+          throughput: {
+            title: "Throughput",
+            width: "80px",
+            enabled: false,
+          },
+          txcosts_avg: {
+            title: "Average Fee",
+            width: "80px",
+            enabled: false,
+          },
           tps: {
             title: "TPS",
-            width: "60px",
+            width: "50px",
             enabled: true,
           },
         };
       });
     } else {
       // remove tps from metrics if not available
+      if ("throughput" in metrics) {
+        setMetrics((prevMetrics: any) => {
+          delete prevMetrics.throughput;
+          return prevMetrics;
+        });
+      }
+      if ("txcosts_avg" in metrics) {
+        setMetrics((prevMetrics: any) => {
+          delete prevMetrics.txcosts_avg;
+          return prevMetrics;
+        });
+      }
       if ("tps" in metrics) {
         setMetrics((prevMetrics: any) => {
           delete prevMetrics.tps;
@@ -201,11 +228,14 @@ export default function FeesPage() {
   const [isChartOpen, setIsChartOpen] = useState(false);
 
   const quantitativeValueIndex = useMemo(() => {
-    if (selectedQuantitative === "tps") {
-      return 1;
+    if (!master) return 1;
+
+    if (master.fee_metrics[selectedQuantitative].currency === true) {
+      return showUsd ? 2 : 1;
     }
-    return showUsd ? 2 : 1;
-  }, [selectedQuantitative, showUsd]);
+
+    return 1;
+  }, [master, selectedQuantitative, showUsd]);
 
   const toggleMetric = (metricKey) => {
     setMetrics((prevMetrics) => ({
@@ -222,6 +252,41 @@ export default function FeesPage() {
       return acc + (curr.enabled ? 1 : 0);
     }, 0);
   }, [metrics]);
+
+  // useEffect(() => {
+  //   if (!master) return;
+
+  //   if (enabledMetricsCount > 4) {
+  //     // disable the metrics with lowest priority so we're only showing 4 metrics
+  //     const enabledMetrics = Object.entries(metrics).filter(
+  //       ([key, value]) => value.enabled,
+  //     );
+
+  //     // sort by priority
+  //     enabledMetrics.sort(([aKey, aValue], [bKey, bValue]) => {
+  //       // priority is in master
+  //       return (
+  //         master.fee_metrics[aKey].priority - master.fee_metrics[bKey].priority
+  //       );
+  //     });
+
+  //     // disable the metrics with lowest priority
+  //     const metricsToDisable = enabledMetrics.slice(4);
+
+  //     setMetrics((prevMetrics) => {
+  //       const updatedMetrics = { ...prevMetrics };
+
+  //       metricsToDisable.forEach(([key, value]) => {
+  //         updatedMetrics[key] = {
+  //           ...value,
+  //           enabled: false,
+  //         };
+  //       });
+
+  //       return updatedMetrics;
+  //     });
+  //   }
+  // }, [enabledMetricsCount, master, metrics]);
 
   const timescales = useMemo(() => {
     return {
@@ -578,8 +643,6 @@ export default function FeesPage() {
         }),
       );
 
-      console.log("chainsData: ", chainsData);
-
       const sortedChains = chainsData
         .filter(({ metric }) => metric !== null)
         .sort((a, b) => {
@@ -601,7 +664,6 @@ export default function FeesPage() {
         return acc;
       }, {});
 
-      console.log("result: ", result);
       return result;
     });
 
@@ -723,11 +785,70 @@ export default function FeesPage() {
     [showCents, showUsd],
   );
 
+  const getCircleColor = useCallback(
+    (chain: string, index: number) => {
+      const indexSortArray =
+        chain === "ethereum" ? feeIndexSortWithEthereum : feeIndexSort;
+
+      let result = "";
+
+      if (
+        !master ||
+        !feeData ||
+        !indexSortArray[NUM_HOURS - 1 - index][chain]
+      ) {
+        result = "gray";
+        return result;
+      }
+
+      let normalizedIndex =
+        feeData.chain_data[chain].hourly[selectedQuantitative]?.types.indexOf(
+          "normalized",
+        ) || 3;
+
+      console.log(
+        "indexSortArray[NUM_HOURS - 1 - index][chain]",
+        indexSortArray[NUM_HOURS - 1 - index][chain],
+      );
+      if (
+        master.fee_metrics[selectedQuantitative].invert_normalization === true
+      ) {
+        // this should be in reverse order
+
+        result = getGradientColor(
+          Math.floor(
+            indexSortArray[NUM_HOURS - 1 - index][chain][normalizedIndex] * 100,
+          ),
+        );
+      }
+      result = getGradientColor(
+        Math.floor(
+          indexSortArray[NUM_HOURS - 1 - index][chain][normalizedIndex] * 100,
+        ),
+      );
+
+      // console.log(`getCircleColor(${chain}, ${index}) = ${result}`);
+
+      return result;
+    },
+    [
+      feeIndexSortWithEthereum,
+      feeIndexSort,
+      master,
+      feeData,
+      NUM_HOURS,
+      selectedQuantitative,
+      getGradientColor,
+    ],
+  );
+
   const getValueColor = useCallback(
     (chain: string) => {
       if (!feeIndexSort[optIndex]) return "gray";
 
-      if (selectedQuantitative === "tps") {
+      if (
+        master?.fee_metrics[selectedQuantitative].invert_normalization === true
+      ) {
         // this should be in reverse order
         return getGradientColor(
           100 -
@@ -759,6 +880,7 @@ export default function FeesPage() {
     [
       feeIndexSort,
       optIndex,
+      master?.fee_metrics,
       selectedQuantitative,
       getGradientColor,
       quantitativeValueIndex,
@@ -776,37 +898,41 @@ export default function FeesPage() {
       )
         return null;
 
+      let valueIndex = 1;
+
+      if (master.fee_metrics[metric].currency === true) {
+        valueIndex = showUsd ? 2 : 1;
+      }
+
       const value = feeData.chain_data[chain]["hourly"][metric].data[optIndex]
-        ? feeData.chain_data[chain]["hourly"][metric].data[optIndex][
-            quantitativeValueIndex
-          ]
+        ? feeData.chain_data[chain]["hourly"][metric].data[optIndex][valueIndex]
         : null;
 
-      const units = Object.keys(master.fee_metrics[metric].units);
-      const unitKey =
-        units.find((unit) => unit !== "usd" && unit !== "eth") ||
-        (showUsd ? "usd" : "eth");
+      const typeString =
+        feeData.chain_data[chain]["hourly"][metric].types[valueIndex];
+      const unitKey = typeString.replace("value_", "");
 
-      const usdClasses = " w-[60px] md:w-[65px] -mr-1.5";
-      const gweiClasses = "w-[75px] md:w-[85px] -mr-1.5";
-      const centsClasses = " w-[70px] md:w-[77px] -mr-1.5";
-      const tpsClasses = " w-[50px] md:w-[50px] -mr-1.5";
+      const usdClasses = " w-[63px] md:w-[63px] -mr-1.5 pr-2";
+      const gweiClasses = "w-[80px] md:w-[85px] -mr-1.5";
+      const centsClasses = " w-[80px] md:w-[90px] -mr-1.5";
+      const tpsClasses = " w-[50px] md:w-[52px] pr-2.5 -mr-2.5";
 
-      let classes = usdClasses;
-      // if (showGwei && !showUsd) classes = gweiClasses;
-      // if (showCents && showUsd) classes = centsClasses;
+      // default to gwei classes
+      let classes = gweiClasses;
 
-      if (showUsd) {
-        if (showCents) {
-          classes = centsClasses;
+      if (master.fee_metrics[metric].currency === true) {
+        if (showUsd) {
+          if (showCents) {
+            classes = centsClasses;
+          } else {
+            classes = usdClasses;
+          }
         } else {
-          classes = usdClasses;
-        }
-      } else {
-        if (showGwei) {
-          classes = gweiClasses;
-        } else {
-          classes = centsClasses;
+          if (showGwei) {
+            classes = gweiClasses;
+          } else {
+            classes = centsClasses;
+          }
         }
       }
 
@@ -830,28 +956,49 @@ export default function FeesPage() {
 
       // multiply value by 1000000000 if showGwei is true
       let multiplier = 1;
-      if (master.fee_metrics[metric].currency && showGwei && !showUsd) {
-        multiplier = 1000000000;
-      }
-      if (master.fee_metrics[metric].currency && showCents && showUsd) {
-        multiplier = 100;
-      }
-      const multipliedValue = value * multiplier;
-      const fractionDigits = getNumFractionDigits(multipliedValue);
+      if (master.fee_metrics[metric].currency === true) {
+        if (showGwei && !showUsd) {
+          multiplier = 1000000000;
+        }
 
-      // console.log(multipliedValue + " - " + chain);
+        if (showCents && showUsd) {
+          multiplier = 100;
+        }
+      }
+
+      const multipliedValue = value * multiplier;
+
+      let lessThanOverride = false;
+      let lessThanValue = 0.1;
+
+      if (master.fee_metrics[metric].currency === true && showUsd) {
+        if (showCents && multipliedValue < 0.1) {
+          lessThanOverride = true;
+        } else if (!showCents && multipliedValue < 0.001) {
+          lessThanOverride = true;
+          lessThanValue = 0.001;
+        }
+      }
 
       // ethereum chain as a special case
       if (chain === "ethereum" && metric === selectedQuantitative) {
         return (
           <div
-            className={`font-semibold flex items-center ${classes} h-[24px] transition-colors duration-100 border rounded-full justify-end pr-1.5`}
+            className={`font-semibold flex items-center ${classes} h-[24px] transition-colors duration-100 border rounded-full justify-end`}
             style={{
               background: "#FE5468",
               borderColor: "#FF3838",
               color: "#1F2726",
             }}
           >
+            {lessThanOverride && (
+              <div className="h-[12px] w-[12px]">
+                <Icon
+                  icon="feather:chevron-left"
+                  className="h-[12px] w-[12px]"
+                />
+              </div>
+            )}
             {master.fee_metrics[metric].currency && showUsd && !showCents && (
               <div className="text-[10px]">$</div>
             )}
@@ -863,19 +1010,27 @@ export default function FeesPage() {
               </div>
             )}
             <div
-              className="flex items-center"
+              className="flex items-center self-center text-[12px] md:text-[12px]"
               style={{
                 fontFeatureSettings: "'pnum' on, 'lnum' on",
               }}
             >
-              {Intl.NumberFormat("en-GB", {
-                notation: "compact",
-                maximumFractionDigits: fractionDigits,
-                minimumFractionDigits: fractionDigits,
-              }).format(multipliedValue)}
+              {lessThanOverride
+                ? lessThanValue
+                : Intl.NumberFormat(undefined, {
+                    notation: "compact",
+                    maximumFractionDigits:
+                      unitKey === "eth" && showGwei
+                        ? 2
+                        : master.fee_metrics[metric].units[unitKey].decimals,
+                    minimumFractionDigits:
+                      unitKey === "eth" && showGwei
+                        ? 2
+                        : master.fee_metrics[metric].units[unitKey].decimals,
+                  }).format(multipliedValue)}
             </div>
             {master.fee_metrics[metric].currency && showUsd && showCents && (
-              <div className="pl-0.5 text-[8px] pr-[5px] text-forest-900">
+              <div className="pl-0.5 text-[8px] pr-[7px] text-forest-900">
                 {" cents"}
               </div>
             )}
@@ -890,7 +1045,20 @@ export default function FeesPage() {
                 className={`text-[8px] text-forest-900 ${
                   master.fee_metrics[metric].units[unitKey].suffix
                     ? "pr-[5px] pl-0.5"
-                    : "pr-[0px] pl-0 "
+                    : "pr-[0px] pl-0"
+                }`}
+              >
+                {master.fee_metrics[metric].units[unitKey].suffix
+                  ? master.fee_metrics[metric].units[unitKey].suffix
+                  : ""}
+              </div>
+            )}
+            {master.fee_metrics[metric].suffix && (
+              <div
+                className={`text-[8px] text-forest-900 ${
+                  master.fee_metrics[metric].units[unitKey].suffix
+                    ? "pr-[5px] pl-0.5"
+                    : "pr-[0px] pl-0"
                 }`}
               >
                 {master.fee_metrics[metric].units[unitKey].suffix
@@ -902,19 +1070,9 @@ export default function FeesPage() {
         );
       }
 
-      let lessThanOverride = false;
-      let lessThanValue = 0.1;
-
-      if (showCents && multipliedValue < 0.1) {
-        lessThanOverride = true;
-      } else if (!showCents && multipliedValue < 0.001) {
-        lessThanOverride = true;
-        lessThanValue = 0.001;
-      }
-
       return (
         <div
-          className={`flex items-center ${classes}  h-[24px] transition-colors duration-100 border rounded-full justify-end  pr-1.5  `}
+          className={`flex items-center ${classes}  h-[24px] transition-colors duration-100 border rounded-full justify-end`}
           style={{
             borderColor:
               selectedQuantitative === metric && selectedQualitative !== "chain"
@@ -922,7 +1080,11 @@ export default function FeesPage() {
                 : "transparent",
           }}
         >
-          {lessThanOverride && <div className="text-[12px] pr-0.5">{"< "}</div>}
+          {lessThanOverride && (
+            <div className="h-[12px] w-[12px]">
+              <Icon icon="feather:chevron-left" className="h-[12px] w-[12px]" />
+            </div>
+          )}
           {master.fee_metrics[metric].currency && showUsd && !showCents && (
             <div className="text-[9px] text-center mt-[1px] pr-[2px] text-forest-400">
               $
@@ -936,22 +1098,12 @@ export default function FeesPage() {
                 : ""}
             </div>
           )}
-          <div className="self-center ">
-            {/* {showCents && multipliedValue < 0.1
-              ? "< 0.1"
-              : !showCents && multipliedValue < 0.001
-              ? "< 0.001"
-              : Intl.NumberFormat(undefined, {
-                  notation: "compact",
-                  maximumFractionDigits:
-                    unitKey === "eth" && showGwei
-                      ? 2
-                      : master.fee_metrics[metric].units[unitKey].decimals,
-                  minimumFractionDigits:
-                    unitKey === "eth" && showGwei
-                      ? 2
-                      : master.fee_metrics[metric].units[unitKey].decimals,
-                }).format(multipliedValue)} */}
+          <div
+            className="flex items-center self-center text-[12px] md:text-[12px]"
+            style={{
+              fontFeatureSettings: "'pnum' on, 'lnum' on",
+            }}
+          >
             {lessThanOverride
               ? lessThanValue
               : Intl.NumberFormat(undefined, {
@@ -967,19 +1119,21 @@ export default function FeesPage() {
                 }).format(multipliedValue)}
           </div>
           {master.fee_metrics[metric].currency && showUsd && showCents && (
-            <div className="pl-0.5 text-[8px] text-forest-400">{" cents"}</div>
+            <div className="pl-0.5 text-[8px] pr-[7px] text-forest-400">
+              {" cents"}
+            </div>
           )}
           {master.fee_metrics[metric].currency && !showUsd && showGwei && (
-            <div className="pl-0.5 text-[8px]  pr-[5px] text-forest-400">
+            <div className="pl-0.5 text-[8px] pr-[5px] text-forest-400">
               {" gwei"}
             </div>
           )}
           {!master.fee_metrics[metric].currency && (
             <div
-              className={` text-[8px]  text-forest-900 ${
+              className={`text-[8px] text-forest-400 ${
                 master.fee_metrics[metric].units[unitKey].suffix
                   ? "pr-[5px] pl-0.5"
-                  : "pr-[0px] pl-0 "
+                  : "pr-[0px] pl-0"
               }`}
             >
               {master.fee_metrics[metric].units[unitKey].suffix
@@ -987,15 +1141,24 @@ export default function FeesPage() {
                 : ""}
             </div>
           )}
-          {/* <div className="pl-0.5 text-[0.5rem] pr-[5px] text-forest-400">
-              {showUsd ? " ¢" : showGwei ? " gwei" : ""}
-            </div> */}
+          {master.fee_metrics[metric].suffix && (
+            <div
+              className={`text-[8px] text-forest-400 ${
+                master.fee_metrics[metric].units[unitKey].suffix
+                  ? "pr-[5px] pl-0.5"
+                  : "pr-[0px] pl-0"
+              }`}
+            >
+              {master.fee_metrics[metric].units[unitKey].suffix
+                ? master.fee_metrics[metric].units[unitKey].suffix
+                : ""}
+            </div>
+          )}
         </div>
       );
     },
     [
       feeData,
-      getNumFractionDigits,
       getValueColor,
       master,
       optIndex,
@@ -1004,7 +1167,6 @@ export default function FeesPage() {
       showCents,
       showGwei,
       showUsd,
-      quantitativeValueIndex,
     ],
   );
 
@@ -1096,11 +1258,17 @@ export default function FeesPage() {
             </div>
 
             <div
-              className={`absolute top-6 min-h-0 bg-[#151A19] right-[5px] rounded-b-2xl z-20 transition-all duration-[290ms] overflow-hidden px-2 ${
+              className={`absolute top-6 min-h-0 bg-[#151A19] right-[5px] rounded-b-2xl z-20 transition-all duration-300 overflow-hidden ${
                 hoverSettings
-                  ? "w-[308px] h-[208px] shadow-[0px_4px_46.2px_0px_#000000] "
-                  : "w-[0px] h-[10px] shadow-transparent"
+                  ? `shadow-[0px_4px_46.2px_0px_#000000]`
+                  : "shadow-transparent"
               }`}
+              style={{
+                width: hoverSettings ? "308px" : 0,
+                height: hoverSettings
+                  ? `calc(100px + 28px * (1 + ${Object.keys(metrics).length}))`
+                  : 0,
+              }}
               onMouseEnter={() => {
                 setHoverSettings(true);
               }}
@@ -1108,128 +1276,197 @@ export default function FeesPage() {
                 setHoverSettings(false);
               }}
             >
-              <div className={`mt-[42px] flex flex-col relative h-fit`}>
-                <div className="flex flex-col w-full absolute min-w-[280px]">
-                  <div className="flex items-center mx-2 w-full gap-x-[10px]">
-                    <Icon
-                      icon="gtp:gtp-dollar"
-                      className={`h-[15px] w-[15px] mt-1 font-[900] text-[#CDD8D3] relative -top-[3px] ${
-                        hoverSettings ? "text-sm" : ""
-                      }`}
-                    />
-                    <div className="text-[10px] text-white">Denominates in</div>
-                    <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
-                    <div
-                      className="relative w-[143px] h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
-                      onClick={() => {
-                        setShowCents(!showCents);
-                      }}
-                    >
-                      <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px] ">
-                        <div className="w-full flex items-start justify-center">
-                          Full Dollar
-                        </div>
-                        <div
-                          className={`w-full text-center ${
-                            !showCents && "opacity-50"
-                          }`}
-                        >
-                          USD cents
-                        </div>
+              <div
+                className={`pt-[30px] pb-[20px] flex flex-col h-[calc(100px + 28px * (1 + ${
+                  Object.keys(metrics).length
+                }))] w-[308px]`}
+              >
+                <div className="flex flex-col w-full">
+                  <div className="flex items-center w-full">
+                    <div className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full pl-[8px] pr-[15px]">
+                      <div className="font-normal text-forest-500/50 text-right">
+                        Units
                       </div>
-                      <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
+                      <div className="grid grid-cols-[100px,6px,auto] gap-x-[10px] items-center w-full  place-items-center whitespace-nowrap">
+                        <div className="flex flex-1 items-center place-self-end">
+                          <Icon
+                            icon="gtp:gtp-dollar"
+                            className={`h-[15px] w-[15px] font-[900] text-[#CDD8D3] relative ${
+                              hoverSettings ? "text-sm" : ""
+                            }`}
+                          />
+                          <div className="font-semibold text-right pl-[8px]">
+                            USD Display
+                          </div>
+                        </div>
+                        {/* <div className="flex gap-x-[10px] items-center"> */}
+                        <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
                         <div
-                          className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
-                          style={{
-                            transform: !showCents
-                              ? "translateX(0%)"
-                              : "translateX(100%)",
+                          className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
+                          onClick={() => {
+                            setShowCents(!showCents);
                           }}
                         >
-                          {!showCents ? "Full Dollar" : "USD cents"}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center mx-2 w-full gap-x-[10px] relative min-w-[280px]">
-                    <div className="relative top-2  left-1 z-20 flex flex-col gap-y-2 text-[12px]">
-                      <div className="font-semibold">Metrics:</div>
-                      {Object.keys(metrics).map((metric) => {
-                        return (
-                          <div
-                            className="flex w-full justify-between min-w-[260px]"
-                            key={metric + "_settings"}
-                          >
-                            <div className="font-semibold">
-                              {metrics[metric].title}
+                          <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px]">
+                            <div className="w-full flex items-start justify-center">
+                              Full Dollar
                             </div>
                             <div
-                              className="relative w-[143px] h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
-                              onClick={() => {
-                                if (
-                                  enabledMetricsCount > 1 ||
-                                  !metrics[metric].enabled
-                                ) {
-                                  if (
-                                    metrics[metric].enabled &&
-                                    selectedQuantitative === metric
-                                  ) {
-                                    for (const metricKey of Object.keys(
-                                      metrics,
-                                    )) {
-                                      if (
-                                        metrics[metricKey].enabled &&
-                                        metricKey !== metric
-                                      ) {
-                                        setSelectedQuantitative(metricKey);
-                                        break; // Exit loop once the first enabled metric is found
-                                      }
-                                    }
-                                  }
-                                  if (!metrics[metric].enabled) {
-                                    setSelectedQuantitative(metric);
-                                  }
-
-                                  setMetrics((prevMetrics) => ({
-                                    ...prevMetrics,
-                                    [metric]: {
-                                      ...prevMetrics[metric],
-                                      enabled: !prevMetrics[metric].enabled,
-                                    },
-                                  }));
-                                }
-                              }}
+                              className={`w-full text-center ${
+                                !showCents && "opacity-50"
+                              }`}
                             >
-                              <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px] ">
-                                <div className="w-full flex items-start justify-center">
-                                  Enabled
-                                </div>
-                                <div
-                                  className={`w-full text-center ${
-                                    metrics[metric].enabled && "opacity-50"
-                                  }`}
-                                >
-                                  Disabled
-                                </div>
-                              </div>
-                              <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
-                                <div
-                                  className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
-                                  style={{
-                                    transform: metrics[metric].enabled
-                                      ? "translateX(0%)"
-                                      : "translateX(100%)",
-                                  }}
-                                >
-                                  {metrics[metric].enabled
-                                    ? "Enabled"
-                                    : "Disabled"}
-                                </div>
-                              </div>
+                              US Cents
                             </div>
                           </div>
-                        );
-                      })}
+                          <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
+                            <div
+                              className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
+                              style={{
+                                transform: !showCents
+                                  ? "translateX(0%)"
+                                  : "translateX(100%)",
+                              }}
+                            >
+                              {!showCents ? "Full Dollar" : "US cents"}
+                            </div>
+                          </div>
+                        </div>
+                        {/* </div> */}
+                      </div>
+                      <div className="font-normal text-forest-500/50 text-right">
+                        Metrics
+                      </div>
+                      {master &&
+                        Object.keys(master.fee_metrics)
+                          .filter((metricKey) => metrics[metricKey])
+                          .sort(
+                            (a, b) =>
+                              master.fee_metrics[a].priority -
+                              master.fee_metrics[b].priority,
+                          )
+                          .map((metric) => {
+                            const enabledMetricKeysByPriority = Object.keys(
+                              metrics,
+                            )
+                              .filter((metricKey) => metrics[metricKey].enabled)
+                              .sort(
+                                (a, b) =>
+                                  master.fee_metrics[b].priority -
+                                  master.fee_metrics[a].priority,
+                              );
+
+                            return (
+                              <div
+                                className="grid grid-cols-[100px,6px,auto] gap-x-[10px] items-center w-full place-items-center whitespace-nowrap"
+                                key={metric + "_settings"}
+                              >
+                                <div className="flex flex-1 items-center place-self-end">
+                                  <Icon
+                                    icon=""
+                                    className={`h-[15px] w-[15px] font-[900] text-[#CDD8D3] relative self-center justify-self-center ${
+                                      hoverSettings ? "text-sm" : ""
+                                    }`}
+                                  />
+                                  <div className="flex-1 font-semibold">
+                                    {master.fee_metrics[metric].name}
+                                  </div>
+                                </div>
+                                {/* <div className="flex gap-x-[10px] items-center"> */}
+                                <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
+                                <div
+                                  className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
+                                  onClick={() => {
+                                    if (
+                                      enabledMetricsCount > 1 ||
+                                      !metrics[metric].enabled
+                                    ) {
+                                      if (
+                                        metrics[metric].enabled &&
+                                        selectedQuantitative === metric
+                                      ) {
+                                        for (const metricKey of Object.keys(
+                                          metrics,
+                                        )) {
+                                          if (
+                                            metrics[metricKey].enabled &&
+                                            metricKey !== metric
+                                          ) {
+                                            setSelectedQuantitative(metricKey);
+                                            break; // Exit loop once the first enabled metric is found
+                                          }
+                                        }
+                                      }
+                                      if (!metrics[metric].enabled) {
+                                        setSelectedQuantitative(metric);
+                                      }
+
+                                      const prevMetrics = { ...metrics };
+
+                                      const isEnabling =
+                                        !prevMetrics[metric].enabled;
+
+                                      // if enabling another metric will exceed the limit of 4 enabled metrics, disable the previously enabled metric with the lowest priority
+                                      if (
+                                        isEnabling &&
+                                        enabledMetricsCount === 4
+                                      ) {
+                                        const lowestPriorityMetricKey =
+                                          enabledMetricKeysByPriority[0];
+
+                                        prevMetrics[
+                                          lowestPriorityMetricKey
+                                        ].enabled = false;
+                                      }
+
+                                      // toggle the enabled state of the metric
+                                      prevMetrics[metric].enabled =
+                                        !prevMetrics[metric].enabled;
+
+                                      // set the updated metrics state
+                                      setMetrics(prevMetrics);
+
+                                      // setMetrics((prevMetrics) => ({
+                                      //   ...prevMetrics,
+                                      //   [metric]: {
+                                      //     ...prevMetrics[metric],
+                                      //     enabled: !prevMetrics[metric].enabled,
+                                      //   },
+                                      // }));
+                                    }
+                                  }}
+                                >
+                                  <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px] ">
+                                    <div className="w-full flex items-start justify-center">
+                                      Enabled
+                                    </div>
+                                    <div
+                                      className={`w-full text-center ${
+                                        metrics[metric].enabled && "opacity-50"
+                                      }`}
+                                    >
+                                      Disabled
+                                    </div>
+                                  </div>
+                                  <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
+                                    <div
+                                      className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
+                                      style={{
+                                        transform: metrics[metric].enabled
+                                          ? "translateX(0%)"
+                                          : "translateX(100%)",
+                                      }}
+                                    >
+                                      {metrics[metric].enabled
+                                        ? "Enabled"
+                                        : "Disabled"}
+                                    </div>
+                                  </div>
+                                </div>
+                                {/* </div> */}
+                              </div>
+                            );
+                          })}
                     </div>
                   </div>
                 </div>
@@ -1250,11 +1487,11 @@ export default function FeesPage() {
 
         <FeesHorizontalScrollContainer className="pt-[20px]">
           {feeData && master && (
-            <div className="relative w-[670px] md:w-auto md:pr-[40px] lg:pr-[0px] overflow-x-hidden lg:overflow-x-visible">
+            <div className="relative w-auto md:pr-[0px] lg:pr-[0px] overflow-x-hidden lg:overflow-x-visible">
               <div
-                className={`relative w-[808px] flex justify-start pt-[10px] pb-[8px] text-[10px] md:text-[12px] font-bold leading-[1]`}
+                className={`relative w-[750px] md:w-[887px] flex justify-start pt-[10px] pb-[8px] text-[10px] md:text-[12px] font-bold leading-[1]`}
               >
-                <div className="pl-[10px] pr-[20px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[180px,auto,180px]">
+                <div className="pl-[10px] pr-[30px] md:pr-[20px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[180px,auto,180px]">
                   <div className={`flex items-center gap-x-[5px]`}>
                     <div
                       className={`flex items-center h-[0px] w-[18px] md:h-[0px] md:w-[24px]`}
@@ -1323,62 +1560,71 @@ export default function FeesPage() {
                         .join(" "),
                     }}
                   >
-                    {Object.keys(metrics).map((metric, i) => {
-                      if (!metrics[metric].enabled) return null;
+                    {Object.keys(metrics)
+                      .sort(
+                        // master has the priority of each metric
+                        (a, b) =>
+                          master.fee_metrics[a].priority -
+                          master.fee_metrics[b].priority,
+                      )
+                      .map((metric, i) => {
+                        if (!metrics[metric].enabled) return null;
 
-                      return (
-                        <div
-                          className="flex items-center justify-center"
-                          key={metric + "_header"}
-                        >
+                        return (
                           <div
-                            className="flex items-center justify-end"
-                            style={{ width: metrics[metric].width }}
+                            className="flex items-center justify-center"
+                            key={metric + "_header"}
                           >
                             <div
-                              className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px]  z-10"
-                              onClick={() => {
-                                if (selectedQuantitative === metric) {
-                                  if (selectedQualitative) {
-                                    setSelectedQualitative(null);
-                                  } else {
-                                    setSortOrder(!sortOrder);
-                                  }
-                                } else {
-                                  setSelectedQualitative(null);
-                                  setSelectedQuantitative(metric);
-                                }
-                              }}
+                              className="flex items-center justify-end"
+                              style={{ width: metrics[metric].width }}
                             >
-                              <div className="">{metrics[metric].title}</div>
-                              <Icon
-                                icon={
-                                  !selectedQualitative &&
-                                  selectedQuantitative === metric
-                                    ? sortOrder
-                                      ? "formkit:arrowdown"
-                                      : "formkit:arrowup"
-                                    : "formkit:arrowdown"
-                                }
-                                className={`dark:text-white text-black w-[10px] h-[10px] ${
-                                  !selectedQualitative &&
-                                  selectedQuantitative === metric
-                                    ? "opacity-100"
-                                    : "opacity-20"
-                                }`}
-                              />
+                              <div
+                                className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px]  z-10"
+                                onClick={() => {
+                                  if (selectedQuantitative === metric) {
+                                    if (selectedQualitative) {
+                                      setSelectedQualitative(null);
+                                    } else {
+                                      setSortOrder(!sortOrder);
+                                    }
+                                  } else {
+                                    setSelectedQualitative(null);
+                                    setSelectedQuantitative(metric);
+                                  }
+                                }}
+                              >
+                                <div className="">
+                                  {master.fee_metrics[metric].name}
+                                </div>
+                                <Icon
+                                  icon={
+                                    !selectedQualitative &&
+                                    selectedQuantitative === metric
+                                      ? sortOrder
+                                        ? "formkit:arrowdown"
+                                        : "formkit:arrowup"
+                                      : "formkit:arrowdown"
+                                  }
+                                  className={`dark:text-white text-black w-[10px] h-[10px] ${
+                                    !selectedQualitative &&
+                                    selectedQuantitative === metric
+                                      ? "opacity-100"
+                                      : "opacity-20"
+                                  }`}
+                                />
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
                   </div>
                   <div
                     className={`relative pl-[14px] flex flex-col justify-end items-end space-x-[1px] font-normal overflow-y-visible`}
                   >
                     <div className="relative flex space-x-[1px] items-end -bottom-2">
                       <div
-                        className={`absolute right-[35px] md:right-[5px] w-[29px] h-[12px] text-[8px] transition-all duration-100 ${
+                        className={`absolute right-[5px] w-[29px] h-[12px] text-[8px] transition-all duration-100 ${
                           selectedBarIndex >= 18 && selectedBarIndex <= 22
                             ? "-top-[22px]"
                             : "-top-2"
@@ -1422,7 +1668,7 @@ export default function FeesPage() {
                     </div>
                   </div>
                 </div>
-                <div className="w-[160px] block md:hidden"></div>
+                {/* <div className="w-[160px] block md:hidden"></div> */}
               </div>
               <div
                 className={`gap-y-1 relative`}
@@ -1439,8 +1685,8 @@ export default function FeesPage() {
                       className={`border-forest-700 border-[1px] mb-1 absolute rounded-full border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] pr-[20px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[180px,auto,180px] items-center
                       ${
                         isMobile
-                          ? "text-[12px] w-[650px]"
-                          : "text-[14px] w-[808px]"
+                          ? "text-[12px] w-[740px]"
+                          : "text-[14px] w-[888px]"
                       } ${
                         selectedChains[item.chain[1]]
                           ? "opacity-100"
@@ -1596,7 +1842,12 @@ export default function FeesPage() {
                         }}
                       >
                         {Object.keys(metrics)
-                          // .filter((metricKey) => metrics[metricKey].enabled)
+                          .sort(
+                            // master has the priority of each metric
+                            (a, b) =>
+                              master.fee_metrics[a].priority -
+                              master.fee_metrics[b].priority,
+                          )
                           .map((metric, i) => {
                             if (!metrics[metric].enabled) return null;
 
@@ -1641,17 +1892,10 @@ export default function FeesPage() {
                                   : "scale-100 opacity-50"
                               }`}
                               style={{
-                                backgroundColor: !feeIndexSort[
-                                  NUM_HOURS - 1 - index
-                                ][item.chain[1]]
-                                  ? "gray"
-                                  : getGradientColor(
-                                      Math.floor(
-                                        feeIndexSort[NUM_HOURS - 1 - index][
-                                          item.chain[1]
-                                        ][3] * 100,
-                                      ),
-                                    ),
+                                backgroundColor: getCircleColor(
+                                  item.chain[1],
+                                  index,
+                                ),
                               }}
                             ></div>
                           </div>
@@ -1847,23 +2091,30 @@ export default function FeesPage() {
                           .join(" "),
                       }}
                     >
-                      {Object.keys(metrics).map((metric) => {
-                        if (!metrics[metric].enabled) return null;
+                      {Object.keys(metrics)
+                        .sort(
+                          (a, b) =>
+                            // master has the priority of each metric
+                            master.fee_metrics[a].priority -
+                            master.fee_metrics[b].priority,
+                        )
+                        .map((metric) => {
+                          if (!metrics[metric].enabled) return null;
 
-                        return (
-                          <div
-                            className="flex items-center justify-center"
-                            key={metric + "_ethbar"}
-                          >
+                          return (
                             <div
-                              className="flex items-center justify-end"
-                              style={{ width: metrics[metric].width }}
+                              className="flex items-center justify-center"
+                              key={metric + "_ethbar"}
                             >
-                              {getFormattedLastValue("ethereum", metric)}
+                              <div
+                                className="flex items-center justify-end"
+                                style={{ width: metrics[metric].width }}
+                              >
+                                {getFormattedLastValue("ethereum", metric)}
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
                     </div>
                     <div
                       className={`pl-[15px] relative flex items-center h-full space-x-[1px] justify-end`}
@@ -1891,22 +2142,15 @@ export default function FeesPage() {
                                 : "scale-100 opacity-50"
                             }`}
                             style={{
-                              backgroundColor: !feeIndexSortWithEthereum[
-                                NUM_HOURS - 1 - index
-                              ]["ethereum"][3]
-                                ? "gray"
-                                : getGradientColor(
-                                    Math.floor(
-                                      feeIndexSortWithEthereum[
-                                        NUM_HOURS - 1 - index
-                                      ]["ethereum"][3] * 100,
-                                    ),
-                                  ),
+                              backgroundColor: getCircleColor(
+                                "ethereum",
+                                index,
+                              ),
                             }}
                           ></div>
                         </div>
                       ))}
-                      <div className="absolute -right-[2px] top-[34px] w-[147px] h-[10px] border-forest-600 border-x-[1px] flex justify-between text-[10px]">
+                      <div className="absolute -right-[3px] top-[34px] w-[147px] h-[10px] border-forest-600 border-x-[1px] flex justify-between text-[10px]">
                         <div className="relative top-2">
                           {NUM_HOURS} Hours Ago
                         </div>
@@ -1947,6 +2191,7 @@ export default function FeesPage() {
           metrics={metrics}
           setMetrics={setMetrics}
           enabledMetricsCount={enabledMetricsCount}
+          master={master}
         />
       </div>
     </>
