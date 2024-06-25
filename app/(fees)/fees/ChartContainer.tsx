@@ -211,9 +211,7 @@ export default function ChartContainer({
           >
             {isOpen
               ? `Close Chart`
-              : `Open Chart for “${metricLabels[selectedMetric]} ${
-                  master.fee_metrics[selectedMetric].currency ? "fees " : ""
-                }over time”`}
+              : `Open Chart for “${master.fee_metrics[selectedMetric].name} over time”`}
           </div>
         </div>
       </div>
@@ -230,10 +228,10 @@ export default function ChartContainer({
           >
             <div className="w-full flex flex-col md:flex-row gap-y-[10px] md:gap-y-0 justify-between px-[15px]">
               <div className="flex gap-x-1 text-[20px] leading-[120%]">
-                <div className="font-bold">{metricLabels[selectedMetric]}</div>
-                <div>{` ${
-                  master.fee_metrics[selectedMetric].currency ? "fees " : " "
-                }over time`}</div>
+                <div className="font-bold">
+                  {master.fee_metrics[selectedMetric].name}
+                </div>
+                <div>{` over time`}</div>
               </div>
               <div className="w-full md:w-[165px] bg-[#344240] rounded-full px-[2px] py-[2px] flex items-center gap-x-[2px] justify-between">
                 <div
