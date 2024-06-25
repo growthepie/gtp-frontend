@@ -119,7 +119,7 @@ export default function FeesPage() {
     },
     txcosts_swap: {
       title: "Swap Token",
-      enabled: true,
+      enabled: false,
     },
   });
 
@@ -438,6 +438,8 @@ export default function FeesPage() {
     availabilityFilter,
     dataAvailByChain,
   ]);
+
+  console.log(feeData ? feeData : "");
 
   const sortByMetric = useMemo(() => {
     if (!feeData) return [];
@@ -926,8 +928,6 @@ export default function FeesPage() {
 
   // returns which chain has the lowest median fee in the selected time period
 
-  console.log(feeData ? feeData : "");
-  console.log(master ? master : "");
   const lowestMedianFee = useMemo(() => {
     if (!feeData) return null;
 
@@ -1099,7 +1099,6 @@ export default function FeesPage() {
         }
       }
 
-      console.log(classes + " " + metric);
       // return N/A if value is null
       if (value === null)
         return (
@@ -1131,7 +1130,7 @@ export default function FeesPage() {
       if (chain === "ethereum" && metric === selectedQuantitative) {
         return (
           <div
-            className={`font-semibold flex items-center ${classes} h-[24px] transition-colors duration-100 border rounded-full justify-end pr-2 `}
+            className={`font-semibold flex items-center ${classes} h-[24px] transition-colors duration-100 border rounded-full justify-end pr-1.5 `}
             style={{
               background: "#FE5468",
               borderColor: "#FF3838",
@@ -1185,7 +1184,7 @@ export default function FeesPage() {
 
       return (
         <div
-          className={`flex items-center ${classes}  h-[24px] transition-colors duration-100 border rounded-full justify-end  pr-2  `}
+          className={`flex items-center ${classes}  h-[24px] transition-colors duration-100 border rounded-full justify-end  pr-1.5  `}
           style={{
             borderColor:
               selectedQuantitative === metric && selectedQualitative !== "chain"
@@ -1613,17 +1612,7 @@ export default function FeesPage() {
                     {Object.keys(metrics).map((metric, i) => {
                       if (!metrics[metric].enabled)
                         return <div key={metric + "_header"}></div>;
-                      const colors = [
-                        "bg-red-500",
-                        "bg-green-500",
-                        "bg-blue-500",
-                        "bg-yellow-500",
-                        "bg-purple-500",
-                        "bg-pink-500",
-                        "bg-indigo-500",
-                        "bg-teal-500",
-                        "bg-orange-500",
-                      ];
+
                       return (
                         <div
                           className={`pr-[20px]  flex items-center min-w-[95px] justify-end `}
@@ -2396,6 +2385,7 @@ export default function FeesPage() {
               )}
               showGwei={showGwei}
               showCents={showCents}
+              master={master}
             />
           )}
         </OffScreenSlider>

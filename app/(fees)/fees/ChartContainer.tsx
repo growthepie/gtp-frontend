@@ -10,6 +10,7 @@ import ChartWatermark from "@/components/layout/ChartWatermark";
 import { FeesLineChart } from "@/types/api/Fees/LineChart";
 import { useResizeObserver, useMediaQuery } from "usehooks-ts";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import { MasterResponse } from "@/types/api/MasterResponse";
 
 type SlidingFooterContainerProps = {
   // children: React.ReactNode;
@@ -20,6 +21,7 @@ type SlidingFooterContainerProps = {
   selectedChains: string[];
   showGwei: boolean;
   showCents: boolean;
+  master: MasterResponse;
 };
 
 const metricLabels = {
@@ -27,6 +29,7 @@ const metricLabels = {
   txcosts_median: "Median",
   txcosts_native_median: "Transfer ETH",
   txcosts_swap: "Swap Token",
+  tps: "Throughput Per Second",
 };
 
 export default function ChartContainer({
@@ -38,6 +41,7 @@ export default function ChartContainer({
   selectedChains,
   showGwei,
   showCents,
+  master,
 }: SlidingFooterContainerProps) {
   const { data, error, isLoading, isValidating } = useSWR<FeesLineChart>(
     "https://api.growthepie.xyz/v1/fees/linechart.json",
@@ -166,13 +170,15 @@ export default function ChartContainer({
 
   return (
     <div
-      className={`relative w-full bg-[#1F2726] rounded-t-[30px] pt-[15px] ${isMobile ? "pb-[55px]" : "pb-[30px]"
-        }`}
+      className={`relative w-full bg-[#1F2726] rounded-t-[30px] pt-[15px] ${
+        isMobile ? "pb-[55px]" : "pb-[30px]"
+      }`}
     >
       <div className="absolute -top-[12px] left-0 right-0 flex justify-center z-50">
         <div
-          className={`flex items-center gap-x-[10px] text-[10px] pl-[15px] pr-[20px] py-[3px] leading-[150%] rounded-full bg-[#1F2726] shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000] cursor-pointer border-[1.5px] border-forest-500 dark:border-[#344240] ${isOpen ? "" : "hard-shine-2"
-            }`}
+          className={`flex items-center gap-x-[10px] text-[10px] pl-[15px] pr-[20px] py-[3px] leading-[150%] rounded-full bg-[#1F2726] shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000] cursor-pointer border-[1.5px] border-forest-500 dark:border-[#344240] ${
+            isOpen ? "" : "hard-shine-2"
+          }`}
           onClick={() => {
             const wasOpen = isOpen;
 
@@ -194,8 +200,9 @@ export default function ChartContainer({
           <div className="w-[16px] h-[16px]">
             <Icon
               icon="feather:chevron-up"
-              className={`w-[16px] h-[16px] transition-transform duration-300 ${isOpen ? "-rotate-180" : "rotate-0"
-                }`}
+              className={`w-[16px] h-[16px] transition-transform duration-300 ${
+                isOpen ? "-rotate-180" : "rotate-0"
+              }`}
             />
           </div>
           <div
@@ -206,23 +213,29 @@ export default function ChartContainer({
           >
             {isOpen
               ? `Close Chart`
-              : `Open Chart for “${metricLabels[selectedMetric]} fees over time”`}
+              : `Open Chart for “${metricLabels[selectedMetric]} ${
+                  master.fee_metrics[selectedMetric].currency ? "fees " : ""
+                }over time”`}
           </div>
         </div>
       </div>
       {metrics.length > 0 && timeFrames.length > 0 && (
         <div
-          className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[400px] pb-[55px]" : "max-h-[51px]"
-            }`}
+          className={`overflow-hidden transition-all duration-300 ${
+            isOpen ? "max-h-[400px] pb-[55px]" : "max-h-[51px]"
+          }`}
         >
           <div
-            className={`w-full  flex flex-col gap-y-[10px] md:gap-y-[5px] transition-all duration-200 ${isOpen ? "delay-0 opacity-100" : "delay-100 opacity-0"
-              }`}
+            className={`w-full  flex flex-col gap-y-[10px] md:gap-y-[5px] transition-all duration-200 ${
+              isOpen ? "delay-0 opacity-100" : "delay-100 opacity-0"
+            }`}
           >
             <div className="w-full flex flex-col md:flex-row gap-y-[10px] md:gap-y-0 justify-between px-[15px]">
               <div className="flex gap-x-1 text-[20px] leading-[120%]">
                 <div className="font-bold">{metricLabels[selectedMetric]}</div>
-                <div>fees over time</div>
+                <div>{` ${
+                  master.fee_metrics[selectedMetric].currency ? "fees " : " "
+                }over time`}</div>
               </div>
               <div className="w-full md:w-[165px] bg-[#344240] rounded-full px-[2px] py-[2px] flex items-center gap-x-[2px] justify-between">
                 <div
