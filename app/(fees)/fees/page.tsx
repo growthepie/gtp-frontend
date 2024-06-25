@@ -5,12 +5,7 @@ import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import useSWR from "swr";
-import {
-  useEventListener,
-  useIsMounted,
-  useLocalStorage,
-  useMediaQuery,
-} from "usehooks-ts";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { FeesURLs, MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import Header from "./Header";
@@ -19,11 +14,7 @@ import OffScreenSlider from "./OffScreenSlider";
 import ChartContainer from "./ChartContainer";
 import Footer from "./Footer";
 import FeesHorizontalScrollContainer from "@/components/FeesHorizontalScrollContainer";
-import {
-  useResizeObserver,
-  useWindowSize,
-  useDebounceCallback,
-} from "usehooks-ts";
+import { useWindowSize } from "usehooks-ts";
 import Link from "next/link";
 import { FeesTableResponse } from "@/types/api/Fees/Table";
 import ShowLoading from "@/components/layout/ShowLoading";
@@ -111,14 +102,17 @@ export default function FeesPage() {
   const [metrics, setMetrics] = useState({
     txcosts_median: {
       title: "Median Fee",
+      width: "80px",
       enabled: true,
     },
     txcosts_native_median: {
       title: "Transfer ETH",
+      width: "90px",
       enabled: true,
     },
     txcosts_swap: {
       title: "Swap Token",
+      width: "80px",
       enabled: false,
     },
   });
@@ -127,7 +121,10 @@ export default function FeesPage() {
     if (!feeData) return 0;
 
     const length =
-      feeData.chain_data["ethereum"]["hourly"]["txcosts_median"].data.length;
+      Math.min(
+        feeData.chain_data["ethereum"]["hourly"]["txcosts_median"].data.length,
+        24,
+      ) || 0;
 
     setSelectedBarIndex(length - 1);
 
@@ -139,6 +136,7 @@ export default function FeesPage() {
           ...prevMetrics,
           tps: {
             title: "TPS",
+            width: "60px",
             enabled: true,
           },
         };
@@ -201,6 +199,13 @@ export default function FeesPage() {
 
   // start Bottom Chart state
   const [isChartOpen, setIsChartOpen] = useState(false);
+
+  const quantitativeValueIndex = useMemo(() => {
+    if (selectedQuantitative === "tps") {
+      return 1;
+    }
+    return showUsd ? 2 : 1;
+  }, [selectedQuantitative, showUsd]);
 
   const toggleMetric = (metricKey) => {
     setMetrics((prevMetrics) => ({
@@ -439,8 +444,6 @@ export default function FeesPage() {
     dataAvailByChain,
   ]);
 
-  console.log(feeData ? feeData : "");
-
   const sortByMetric = useMemo(() => {
     if (!feeData) return [];
 
@@ -476,10 +479,10 @@ export default function FeesPage() {
 
         // If both chains are selected or unselected, sort by median cost
         const aTxCost = aData[NUM_HOURS - 1 - selectedBarIndex]
-          ? aData[NUM_HOURS - 1 - selectedBarIndex][showUsd ? 2 : 1]
+          ? aData[NUM_HOURS - 1 - selectedBarIndex][quantitativeValueIndex]
           : null;
         const bTxCost = bData[NUM_HOURS - 1 - selectedBarIndex]
-          ? bData[NUM_HOURS - 1 - selectedBarIndex][showUsd ? 2 : 1]
+          ? bData[NUM_HOURS - 1 - selectedBarIndex][quantitativeValueIndex]
           : null;
 
         if (aTxCost === null && bTxCost === null) return 0;
@@ -494,10 +497,10 @@ export default function FeesPage() {
     feeData,
     selectedChains,
     selectedQuantitative,
-    showUsd,
     selectedBarIndex,
     sortOrder,
     NUM_HOURS,
+    quantitativeValueIndex,
   ]);
 
   const finalSort = useMemo(() => {
@@ -515,30 +518,24 @@ export default function FeesPage() {
 
     const indices = Array.from({ length: NUM_HOURS }, (_, i) => i); // Create an array from 0 to 23
 
-    let valueIndex = showUsd ? 2 : 1;
-
-    if (selectedQuantitative === "tps") {
-      valueIndex = 1;
-    }
-
     const sortedCosts = indices.map((index) => {
       const chainsData = Object.entries(feeData.chain_data).map(
         ([chain, data]) => ({
           chain,
-          txCost: (data as any)["hourly"][selectedQuantitative]?.data[index]
+          metric: (data as any)["hourly"][selectedQuantitative]?.data[index]
             ? (data as any)["hourly"][selectedQuantitative]?.data[index][
-                valueIndex
+                quantitativeValueIndex
               ]
             : null,
         }),
       );
 
       const filteredChainsData = chainsData.filter(
-        ({ txCost }) => txCost !== null,
+        ({ metric }) => metric !== null,
       );
 
       const sortedChains = filteredChainsData.sort((a, b) => {
-        return a.txCost - b.txCost;
+        return a.metric - b.metric;
       });
 
       return sortedChains.reduce((acc, { chain }) => {
@@ -562,7 +559,7 @@ export default function FeesPage() {
     });
 
     return filteredSortedCosts;
-  }, [feeData, selectedQuantitative, showUsd, NUM_HOURS]);
+  }, [feeData, selectedQuantitative, NUM_HOURS, quantitativeValueIndex]);
 
   const feeIndexSort = useMemo(() => {
     if (!feeData) return [];
@@ -573,23 +570,24 @@ export default function FeesPage() {
       const chainsData = Object.entries(feeData.chain_data).map(
         ([chain, data]) => ({
           chain,
-          txCost: (data as any)["hourly"][selectedQuantitative]?.data[index]
-            ? (data as any)["hourly"][selectedQuantitative]?.data[index][
-                showUsd ? 2 : 1
+          metric: data["hourly"][selectedQuantitative]?.data[index]
+            ? data["hourly"][selectedQuantitative]?.data[index][
+                quantitativeValueIndex
               ]
             : null,
         }),
       );
 
-      const filteredChainsData = chainsData.filter(
-        ({ txCost }) => txCost !== null,
-      );
+      console.log("chainsData: ", chainsData);
 
-      const sortedChains = filteredChainsData.sort((a, b) => {
-        return a.txCost - b.txCost;
-      });
+      const sortedChains = chainsData
+        .filter(({ metric }) => metric !== null)
+        .sort((a, b) => {
+          //@ts-ignore
+          return a.metric - b.metric;
+        });
 
-      return sortedChains.reduce((acc, { chain }) => {
+      const result = sortedChains.reduce((acc, { chain }) => {
         if (
           feeData.chain_data[chain]?.["hourly"]?.[selectedQuantitative]?.data?.[
             index
@@ -602,6 +600,9 @@ export default function FeesPage() {
         }
         return acc;
       }, {});
+
+      console.log("result: ", result);
+      return result;
     });
 
     // Filter out the "ethereum" chain
@@ -611,7 +612,7 @@ export default function FeesPage() {
     });
 
     return filteredSortedCosts;
-  }, [feeData, showUsd, selectedQuantitative, NUM_HOURS]);
+  }, [feeData, quantitativeValueIndex, selectedQuantitative, NUM_HOURS]);
 
   const optIndex = useMemo(() => {
     let pickIndex = hoverBarIndex ? hoverBarIndex : selectedBarIndex;
@@ -708,316 +709,6 @@ export default function FeesPage() {
     },
   );
 
-  // const bottomPaddingRef = useRef<HTMLDivElement>(null);
-  // const { width: bottomPaddingWidth, height: bottomPaddingHeight } =
-  //   useResizeObserver<HTMLDivElement>({
-  //     ref: bottomPaddingRef,
-  //     box: "content-box",
-  //   });
-  // const bottomSliderRef = useRef<HTMLDivElement>(null);
-  // const { width: bottomSliderWidth, height: bottomSliderHeight } =
-  //   useResizeObserver<HTMLDivElement>({
-  //     ref: bottomSliderRef,
-  //     box: "content-box",
-  //   });
-  // const pageRef = useRef<HTMLDivElement>(null);
-  // const { width: pageWidth, height: pageHeight } =
-  //   useResizeObserver<HTMLDivElement>({
-  //     ref: pageRef,
-  //     box: "content-box",
-  //   });
-  // const tableRef = useRef<HTMLDivElement>(null);
-  // const { width: tableWidth, height: tableHeight } =
-  //   useResizeObserver<HTMLDivElement>({
-  //     ref: tableRef,
-  //     box: "content-box",
-  //   });
-  // const ethereumRowPlaceHolderRef = useRef<HTMLDivElement>(null);
-  // const { width: ethereumRowPlaceHolderWidth, height: ethereumRowPlaceHolderHeight } =
-  //   useResizeObserver<HTMLDivElement>({
-  //     ref: ethereumRowPlaceHolderRef,
-  //     box: "content-box",
-  //   });
-
-  // const ethereumRowRef = useRef<HTMLDivElement>(null);
-
-  // const [tableHorizontalScrollAmount, setTableHorizontalScrollAmount] =
-  //   useState(0);
-
-  // const [ethereumRowYRelativeToPlaceholder, setEthereumRowYRelativeToPlaceholder] =
-  //   useState(0);
-  // const [lastRowYRelativeToPage, setLastRowYRelativeToWindow] = useState(0);
-
-  // // const [isBottomOfPageVisible, setIsBottomOfPageVisible] = useState(false);
-  // const [isVerticalScrollbarVisible, setIsVerticalScrollbarVisible] =
-  //   useState<boolean>(false);
-
-  // const hasVerticalScrollbar = () => {
-  //   if (window.innerHeight) {
-  //     return Math.abs(document.body.offsetHeight - window.innerHeight) > 1;
-  //   } else {
-  //     return (
-  //       document.documentElement.scrollHeight >
-  //         document.documentElement.offsetHeight ||
-  //       document.body.scrollHeight > document.body.offsetHeight
-  //     );
-  //   }
-  // };
-
-  // const handleResize = useCallback(() => {
-  //   if (!ethereumRowPlaceHolderRef.current) return;
-
-  //   const placeholderRect = ethereumRowPlaceHolderRef.current.getBoundingClientRect();
-  //   // tableRect.bottom is the distance from the top of the viewport to the bottom of the table
-  //   // to get the distance from the top of the page to the bottom of the table, we add the current scroll position
-  //   const placeHolderTop = placeholderRect.top + window.scrollY;
-  //   if(isMobile) setLastRowYRelativeToWindow(placeHolderTop);
-  //   setLastRowYRelativeToWindow(placeHolderTop);
-
-  //   if (!ethereumRowRef.current) return;
-
-  //   const ethereumRowRect = ethereumRowRef.current.getBoundingClientRect();
-  //   if(isMobile) setEthereumRowYRelativeToPlaceholder(ethereumRowRect.top - placeholderRect.top +34);
-  //   else setEthereumRowYRelativeToPlaceholder(ethereumRowRect.top - placeholderRect.top);
-
-  //   const isWindowScrollable = hasVerticalScrollbar();
-
-  //   setIsVerticalScrollbarVisible(isWindowScrollable);
-
-  //   // // check if no scroll or scroll full
-  //   // const noScrollOrScrollFullCheck =
-  //   //   Math.abs(
-  //   //     window.scrollY + window.innerHeight - document.body.scrollHeight,
-  //   //   ) < 5
-  //   //     ? true
-  //   //     : false;
-  //   // setIsBottomOfPageVisible(noScrollOrScrollFullCheck);
-  // }, []);
-
-  // const [scrollYPixels, setScrollYPixels] = useState(0);
-
-  // const handleScroll = useCallback(() => {
-  //   setScrollYPixels(window.scrollY);
-
-  //   handleResize();
-  // }, [handleResize]);
-
-  // useEventListener("scroll", handleScroll);
-  // useEventListener("resize", handleResize);
-
-  // useEffect(() => {
-  //   handleResize();
-  // }, [feeData, handleResize, master]);
-
-  // useEffect(() => {
-  //   if(isChartOpen) {
-  //     setBottomPaddingStyle({
-  //       height: isMobile ? "300px" : "400px",
-  //     });
-
-  //   }else{
-  //     setBottomPaddingStyle({
-  //       height: "0px",
-  //     });
-  //   }
-  //   const chartToggleTimeout = setTimeout(() => {
-  //     handleResize();
-  //   }, 300);
-
-  //   return () => {
-  //     clearTimeout(chartToggleTimeout);
-  //   };
-  // }, [handleResize, isChartOpen, isMobile, isVerticalScrollbarVisible]);
-
-  // const [bottomPaddingStyle, setBottomPaddingStyle] =
-  //   useState<React.CSSProperties>({
-  //     height: "0px",
-  //   });
-
-  // const [lastRowSliderSpacing, setLastRowSliderSpacing] = useState(0);
-  // const [lastRowEthereumSpacing, setLastRowEthereumSpacing] = useState(0);
-
-  // const ethereumRowStyle = useMemo<React.CSSProperties>(() => {
-  //   let style = {};
-
-  //   if (!pageHeight || !lastRowYRelativeToPage || !bottomSliderHeight)
-  //     return {};
-
-  //   let settledTop = lastRowYRelativeToPage;
-  //   let sliderTop = pageHeight - bottomSliderHeight;
-  //   let settledPositionToSlider = lastRowYRelativeToPage - sliderTop;
-  //   let lastRowSliderTopDiff = sliderTop - lastRowYRelativeToPage;
-  //   let lastRowWindowHeightDiff = window.innerHeight - lastRowYRelativeToPage;
-  //   let bottomPadding = 0;
-
-  //   let lastRowToBottomOfWindow = window.innerHeight - lastRowYRelativeToPage;
-
-  //   let finalPositionY = settledTop;
-  //   if (isMobile) finalPositionY = settledTop - 59;
-
-  //   if (isChartOpen) {
-  //     const initialPositionY = sliderTop - lastRowSliderSpacing;
-  //     finalPositionY = sliderTop - lastRowSliderSpacing + scrollYPixels;
-
-  //     if (isMobile)
-  //       finalPositionY = sliderTop - lastRowSliderSpacing + scrollYPixels;
-
-  //     let diff = lastRowYRelativeToPage - initialPositionY;
-
-  //     bottomPadding = diff;
-
-  //     if (isMobile) bottomPadding = diff - 59;
-
-  //     if (lastRowSliderSpacing < 120) {
-  //       finalPositionY = sliderTop - 120 + scrollYPixels + lastRowSliderSpacing;
-  //       if (isMobile) finalPositionY = sliderTop - 120 + scrollYPixels - 59;
-
-  //       bottomPadding = 120 - lastRowSliderTopDiff;
-  //     }
-  //   } else {
-  //     if (lastRowSliderSpacing < 120) {
-  //       finalPositionY = sliderTop - 120 + scrollYPixels + lastRowSliderSpacing;
-  //       if (isMobile) finalPositionY = sliderTop - 120 - 59 + scrollYPixels;
-
-  //       bottomPadding = 120 - lastRowSliderTopDiff;
-  //     }
-  //     setLastRowSliderSpacing(lastRowSliderTopDiff);
-  //     setBottomPaddingStyle({
-  //       height: "0px",
-  //     });
-  //   }
-
-  //   // console.log({
-  //   //   settledTop,
-  //   //   sliderTop,
-  //   //   settledPositionToSlider,
-  //   //   lastRowSliderTopDiff,
-  //   //   bottomPadding,
-  //   //   finalPositionY,
-  //   //   lastRowToBottomOfWindow,
-  //   //   lastRowWindowHeightDiff,
-  //   //   lastRowSliderSpacing,
-  //   //   lastRowEthereumSpacing,
-  //   // });
-
-  //   setBottomPaddingStyle({
-  //     height: `${bottomPadding}px`,
-  //   });
-
-  //   style = {
-  //     position: "absolute",
-  //     top: finalPositionY,
-  //     left:
-  //       tableHorizontalScrollAmount > 0
-  //         ? `${-tableHorizontalScrollAmount}px`
-  //         : undefined,
-  //   };
-
-  //   return style;
-  // }, [
-  //   bottomSliderHeight,
-  //   isChartOpen,
-  //   isMobile,
-  //   lastRowEthereumSpacing,
-  //   lastRowSliderSpacing,
-  //   lastRowYRelativeToPage,
-  //   pageHeight,
-  //   scrollYPixels,
-  //   tableHorizontalScrollAmount,
-  // ]);
-
-  // returns which chain has the lowest median fee in the selected time period
-
-  const lowestMedianFee = useMemo(() => {
-    if (!feeData) return null;
-
-    const chains = Object.keys(feeData.chain_data).filter(
-      (chain) => chain !== "ethereum",
-    );
-
-    const chainData = chains.map((chain) => {
-      const chainData =
-        feeData.chain_data[chain].hourly[selectedQuantitative].data;
-      const medianFee = chainData[optIndex]
-        ? chainData[optIndex][showUsd ? 2 : 1]
-        : null;
-
-      return {
-        chain,
-        medianFee,
-      };
-    });
-
-    const sortedChainData = chainData
-      .filter(({ medianFee }) => medianFee !== null)
-      .sort((a, b) => a.medianFee - b.medianFee);
-
-    return sortedChainData[0];
-  }, [feeData, selectedQuantitative, showUsd, optIndex]);
-
-  const lowestSwapFee = useMemo(() => {
-    if (!feeData) return null;
-
-    const chains = Object.keys(feeData.chain_data).filter(
-      (chain) => chain !== "ethereum",
-    );
-
-    const chainData = chains.map((chain) => {
-      const chainData = feeData.chain_data[chain].hourly["txcosts_swap"].data;
-      const medianFee = chainData[optIndex]
-        ? chainData[optIndex][showUsd ? 2 : 1]
-        : null;
-
-      return {
-        chain,
-        medianFee,
-      };
-    });
-
-    const sortedChainData = chainData
-      .filter(({ medianFee }) => medianFee !== null)
-      .sort((a, b) => {
-        if (a.medianFee === null) return 1;
-        if (b.medianFee === null) return -1;
-
-        return a.medianFee - b.medianFee;
-      });
-
-    return sortedChainData[0];
-  }, [feeData, showUsd, optIndex]);
-
-  const lowestTransferFee = useMemo(() => {
-    if (!feeData) return null;
-
-    const chains = Object.keys(feeData.chain_data).filter(
-      (chain) => chain !== "ethereum",
-    );
-
-    const chainData = chains.map((chain) => {
-      const chainData =
-        feeData.chain_data[chain].hourly["txcosts_native_median"].data;
-      const medianFee = chainData[optIndex]
-        ? chainData[optIndex][showUsd ? 2 : 1]
-        : null;
-
-      return {
-        chain,
-        medianFee,
-      };
-    });
-
-    const sortedChainData = chainData
-      .filter(({ medianFee }) => medianFee !== null)
-      .sort((a, b) => {
-        if (a.medianFee === null) return 1;
-        if (b.medianFee === null) return -1;
-
-        return a.medianFee - b.medianFee;
-      });
-
-    return sortedChainData[0];
-  }, [feeData, showUsd, optIndex]);
-
   const getNumFractionDigits = useCallback(
     (x) => {
       if (showUsd) {
@@ -1034,22 +725,44 @@ export default function FeesPage() {
 
   const getValueColor = useCallback(
     (chain: string) => {
-      return !feeIndexSort[optIndex][chain]
-        ? "gray"
-        : getGradientColor(
+      if (!feeIndexSort[optIndex]) return "gray";
+
+      if (selectedQuantitative === "tps") {
+        // this should be in reverse order
+        return getGradientColor(
+          100 -
             Math.floor(
-              (feeIndexSort[optIndex][chain][showUsd ? 2 : 1] /
+              (feeIndexSort[optIndex][chain][quantitativeValueIndex] /
                 feeIndexSort[optIndex][
                   Object.keys(feeIndexSort[optIndex])[
                     Object.keys(feeIndexSort[optIndex]).length - 1
                   ]
-                ][showUsd ? 2 : 1]) *
+                ][quantitativeValueIndex]) *
                 100,
             ),
-            true,
-          );
+          true,
+        );
+      }
+      return getGradientColor(
+        Math.floor(
+          (feeIndexSort[optIndex][chain][quantitativeValueIndex] /
+            feeIndexSort[optIndex][
+              Object.keys(feeIndexSort[optIndex])[
+                Object.keys(feeIndexSort[optIndex]).length - 1
+              ]
+            ][quantitativeValueIndex]) *
+            100,
+        ),
+        true,
+      );
     },
-    [feeIndexSort, optIndex, getGradientColor, showUsd],
+    [
+      feeIndexSort,
+      optIndex,
+      selectedQuantitative,
+      getGradientColor,
+      quantitativeValueIndex,
+    ],
   );
 
   const getFormattedLastValue = useCallback(
@@ -1063,13 +776,10 @@ export default function FeesPage() {
       )
         return null;
 
-      let valueIndex = showUsd ? 2 : 1;
-      if (metric === "tps") {
-        valueIndex = 1;
-      }
-
       const value = feeData.chain_data[chain]["hourly"][metric].data[optIndex]
-        ? feeData.chain_data[chain]["hourly"][metric].data[optIndex][valueIndex]
+        ? feeData.chain_data[chain]["hourly"][metric].data[optIndex][
+            quantitativeValueIndex
+          ]
         : null;
 
       const units = Object.keys(master.fee_metrics[metric].units);
@@ -1079,7 +789,8 @@ export default function FeesPage() {
 
       const usdClasses = " w-[60px] md:w-[65px] -mr-1.5";
       const gweiClasses = "w-[75px] md:w-[85px] -mr-1.5";
-      const centsClasses = " w-[65px] md:w-[75px] -mr-1.5";
+      const centsClasses = " w-[70px] md:w-[77px] -mr-1.5";
+      const tpsClasses = " w-[50px] md:w-[50px] -mr-1.5";
 
       let classes = usdClasses;
       // if (showGwei && !showUsd) classes = gweiClasses;
@@ -1097,6 +808,10 @@ export default function FeesPage() {
         } else {
           classes = centsClasses;
         }
+      }
+
+      if (metric === "tps") {
+        classes = tpsClasses;
       }
 
       // return N/A if value is null
@@ -1130,7 +845,7 @@ export default function FeesPage() {
       if (chain === "ethereum" && metric === selectedQuantitative) {
         return (
           <div
-            className={`font-semibold flex items-center ${classes} h-[24px] transition-colors duration-100 border rounded-full justify-end pr-1.5 `}
+            className={`font-semibold flex items-center ${classes} h-[24px] transition-colors duration-100 border rounded-full justify-end pr-1.5`}
             style={{
               background: "#FE5468",
               borderColor: "#FF3838",
@@ -1147,7 +862,12 @@ export default function FeesPage() {
                   : ""}
               </div>
             )}
-            <div className="flex items-center">
+            <div
+              className="flex items-center"
+              style={{
+                fontFeatureSettings: "'pnum' on, 'lnum' on",
+              }}
+            >
               {Intl.NumberFormat("en-GB", {
                 notation: "compact",
                 maximumFractionDigits: fractionDigits,
@@ -1182,6 +902,16 @@ export default function FeesPage() {
         );
       }
 
+      let lessThanOverride = false;
+      let lessThanValue = 0.1;
+
+      if (showCents && multipliedValue < 0.1) {
+        lessThanOverride = true;
+      } else if (!showCents && multipliedValue < 0.001) {
+        lessThanOverride = true;
+        lessThanValue = 0.001;
+      }
+
       return (
         <div
           className={`flex items-center ${classes}  h-[24px] transition-colors duration-100 border rounded-full justify-end  pr-1.5  `}
@@ -1192,11 +922,13 @@ export default function FeesPage() {
                 : "transparent",
           }}
         >
+          {lessThanOverride && <div className="text-[12px] pr-0.5">{"< "}</div>}
           {master.fee_metrics[metric].currency && showUsd && !showCents && (
             <div className="text-[9px] text-center mt-[1px] pr-[2px] text-forest-400">
               $
             </div>
           )}
+
           {!master.fee_metrics[metric].currency && (
             <div className="text-[10px]">
               {master.fee_metrics[metric].prefix
@@ -1205,10 +937,23 @@ export default function FeesPage() {
             </div>
           )}
           <div className="self-center ">
-            {showCents && multipliedValue < 0.1
+            {/* {showCents && multipliedValue < 0.1
               ? "< 0.1"
               : !showCents && multipliedValue < 0.001
               ? "< 0.001"
+              : Intl.NumberFormat(undefined, {
+                  notation: "compact",
+                  maximumFractionDigits:
+                    unitKey === "eth" && showGwei
+                      ? 2
+                      : master.fee_metrics[metric].units[unitKey].decimals,
+                  minimumFractionDigits:
+                    unitKey === "eth" && showGwei
+                      ? 2
+                      : master.fee_metrics[metric].units[unitKey].decimals,
+                }).format(multipliedValue)} */}
+            {lessThanOverride
+              ? lessThanValue
               : Intl.NumberFormat(undefined, {
                   notation: "compact",
                   maximumFractionDigits:
@@ -1252,12 +997,14 @@ export default function FeesPage() {
       feeData,
       getNumFractionDigits,
       getValueColor,
+      master,
       optIndex,
       selectedQualitative,
       selectedQuantitative,
       showCents,
       showGwei,
       showUsd,
+      quantitativeValueIndex,
     ],
   );
 
@@ -1490,7 +1237,6 @@ export default function FeesPage() {
             </div>
           </div>
         </FeesContainer>
-        {/* <div className="w-full h-[70px]" /> */}
         <FeesContainer className="w-full mt-[30px] flex items-end sm:items-center justify-between md:justify-start  gap-x-[10px]">
           <h1 className="text-[20px] md:text-[30px] leading-[120%] font-bold ">
             {`How much a typical user paid on Layer 2s`}
@@ -1502,53 +1248,13 @@ export default function FeesPage() {
           </div>
         </FeesContainer>
 
-        <FeesHorizontalScrollContainer
-          // ref={tableRef}
-          className="w-[900px] pt-[20px]"
-          // setHorizontalScrollAmount={(amount) =>
-          //   setTableHorizontalScrollAmount(amount)
-          // }
-          style={{
-            // fade out the bottom of the div into the background with a mask
-            // maskImage:
-            //   ethereumRowYRelativeToPlaceholder > 0
-            //     ? `linear-gradient(to bottom, black 0, black ${
-            //         ethereumRowYRelativeToPlaceholder - 50
-            //       }px, transparent ${ethereumRowYRelativeToPlaceholder - 0}px)`
-            //     : "none",
-            // maskImage: ethereumRowYRelativeToPlaceholder < -5
-            //     ? isChartOpen ? `linear-gradient(to top, transparent 0, transparent ${Math.abs(ethereumRowYRelativeToPlaceholder)+160+bottomSliderHeight-60}px, white ${Math.abs(ethereumRowYRelativeToPlaceholder)+250+bottomSliderHeight-60}px)`
-            //     :`linear-gradient(to top, transparent 0, transparent ${Math.abs(ethereumRowYRelativeToPlaceholder)+160}px, white ${Math.abs(ethereumRowYRelativeToPlaceholder)+250}px)`
-            //     : "none",
-            transition: "0.3s ease",
-            overflowX: "visible",
-            // paddingBottom: isChartOpen ? `${(bottomSliderHeight??0) + 60}px`: `${(bottomSliderHeight??0)+60}px`,
-          }}
-        >
+        <FeesHorizontalScrollContainer className="pt-[20px]">
           {feeData && master && (
-            <div
-              className="relative w-[670px] md:w-auto md:pr-[40px] lg:pr-[0px] overflow-x-hidden md:overflow-x-visble"
-              style={{
-                // fade out the bottom of the div into the background with a mask
-                // maskImage:
-                //   ethereumRowYRelativeToPlaceholder > 0
-                //     ? `linear-gradient(to bottom, black 0, black ${
-                //         ethereumRowYRelativeToPlaceholder - 50
-                //       }px, transparent ${ethereumRowYRelativeToPlaceholder - 0}px)`
-                //     : "none",
-                // maskImage: ethereumRowYRelativeToPlaceholder < -5
-                //     ? isChartOpen ? `linear-gradient(to top, transparent 0, transparent ${Math.abs(ethereumRowYRelativeToPlaceholder)}px, white ${Math.abs(ethereumRowYRelativeToPlaceholder)+50}px)`
-                //     :`linear-gradient(to top, transparent 0, transparent ${Math.abs(ethereumRowYRelativeToPlaceholder)}px, white ${Math.abs(ethereumRowYRelativeToPlaceholder)+50}px)`
-                //     : "none",
-                transition: "0.3s ease",
-                // overflowX: "visible",
-                // paddingBottom: isChartOpen ? `${bottomSliderHeight + 60}px`: `${bottomSliderHeight+60}px`,
-              }}
-            >
+            <div className="relative w-[670px] md:w-auto md:pr-[40px] lg:pr-[0px] overflow-x-hidden lg:overflow-x-visible">
               <div
                 className={`relative w-[808px] flex justify-start pt-[10px] pb-[8px] text-[10px] md:text-[12px] font-bold leading-[1]`}
               >
-                <div className="pl-[10px] pr-[20px] flex-1 grid grid-cols-[180px,auto,180px]">
+                <div className="pl-[10px] pr-[20px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[180px,auto,180px]">
                   <div className={`flex items-center gap-x-[5px]`}>
                     <div
                       className={`flex items-center h-[0px] w-[18px] md:h-[0px] md:w-[24px]`}
@@ -1608,59 +1314,71 @@ export default function FeesPage() {
                       />{" "}
                     </div>
                   </div>
-                  <div className="grid grid-flow-col w-full ">
+                  <div
+                    className="grid grid-flow-col items-center justify-between pr-[10px]"
+                    style={{
+                      gridTemplateColumns: Object.values(metrics)
+                        .filter((metric) => metric.enabled)
+                        .map((metric) => `minmax(${metric.width}, 100%)`)
+                        .join(" "),
+                    }}
+                  >
                     {Object.keys(metrics).map((metric, i) => {
-                      if (!metrics[metric].enabled)
-                        return <div key={metric + "_header"}></div>;
+                      if (!metrics[metric].enabled) return null;
 
                       return (
                         <div
-                          className={`pr-[20px]  flex items-center min-w-[95px] justify-end `}
+                          className="flex items-center justify-center"
                           key={metric + "_header"}
                         >
                           <div
-                            className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px]  z-10"
-                            onClick={() => {
-                              if (selectedQuantitative === metric) {
-                                if (selectedQualitative) {
-                                  setSelectedQualitative(null);
-                                } else {
-                                  setSortOrder(!sortOrder);
-                                }
-                              } else {
-                                setSelectedQualitative(null);
-                                setSelectedQuantitative(metric);
-                              }
-                            }}
+                            className="flex items-center justify-end"
+                            style={{ width: metrics[metric].width }}
                           >
-                            <div className="">{metrics[metric].title}</div>
-                            <Icon
-                              icon={
-                                !selectedQualitative &&
-                                selectedQuantitative === metric
-                                  ? sortOrder
-                                    ? "formkit:arrowdown"
-                                    : "formkit:arrowup"
-                                  : "formkit:arrowdown"
-                              }
-                              className={`dark:text-white text-black w-[10px] h-[10px] ${
-                                !selectedQualitative &&
-                                selectedQuantitative === metric
-                                  ? "opacity-100"
-                                  : "opacity-20"
-                              }`}
-                            />
+                            <div
+                              className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px]  z-10"
+                              onClick={() => {
+                                if (selectedQuantitative === metric) {
+                                  if (selectedQualitative) {
+                                    setSelectedQualitative(null);
+                                  } else {
+                                    setSortOrder(!sortOrder);
+                                  }
+                                } else {
+                                  setSelectedQualitative(null);
+                                  setSelectedQuantitative(metric);
+                                }
+                              }}
+                            >
+                              <div className="">{metrics[metric].title}</div>
+                              <Icon
+                                icon={
+                                  !selectedQualitative &&
+                                  selectedQuantitative === metric
+                                    ? sortOrder
+                                      ? "formkit:arrowdown"
+                                      : "formkit:arrowup"
+                                    : "formkit:arrowdown"
+                                }
+                                className={`dark:text-white text-black w-[10px] h-[10px] ${
+                                  !selectedQualitative &&
+                                  selectedQuantitative === metric
+                                    ? "opacity-100"
+                                    : "opacity-20"
+                                }`}
+                              />
+                            </div>
                           </div>
                         </div>
                       );
                     })}
                   </div>
                   <div
-                    className={`relative pl-[14px] flex flex-col justify-end items-end space-x-[1px] font-normal `}
+                    className={`relative pl-[14px] flex flex-col justify-end items-end space-x-[1px] font-normal overflow-y-visible`}
                   >
                     <div className="relative flex space-x-[1px] items-end -bottom-2">
                       <div
-                        className={`absolute right-[35px] md:right-[25px] w-[29px] h-[12px] text-[8px] transition-all duration-100 ${
+                        className={`absolute right-[35px] md:right-[5px] w-[29px] h-[12px] text-[8px] transition-all duration-100 ${
                           selectedBarIndex >= 18 && selectedBarIndex <= 22
                             ? "-top-[22px]"
                             : "-top-2"
@@ -1715,28 +1433,10 @@ export default function FeesPage() {
                 }}
               >
                 {transitions((style, item) => {
-                  let passMedian =
-                    feeData.chain_data[item.chain[1]]?.hourly?.txcosts_median
-                      ?.data[optIndex] &&
-                    feeData.chain_data[item.chain[1]]?.hourly?.txcosts_median
-                      ?.data[optIndex][showUsd ? 2 : 1];
-
-                  let passTransfer =
-                    feeData.chain_data[item.chain[1]]?.hourly
-                      ?.txcosts_native_median?.data[optIndex] &&
-                    feeData.chain_data[item.chain[1]]?.hourly
-                      ?.txcosts_native_median?.data[optIndex][showUsd ? 2 : 1];
-
-                  let passSwap =
-                    feeData.chain_data[item.chain[1]]?.hourly?.txcosts_swap
-                      .data[optIndex] &&
-                    feeData.chain_data[item.chain[1]]?.hourly?.txcosts_swap
-                      ?.data[optIndex][showUsd ? 2 : 1];
-
                   return (
                     <animated.div
                       key={item.chain[0]}
-                      className={`border-forest-700 border-[1px] mb-1 absolute rounded-full border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] pr-[20px] flex-1 grid grid-cols-[180px,auto,180px] items-center
+                      className={`border-forest-700 border-[1px] mb-1 absolute rounded-full border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] pr-[20px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[180px,auto,180px] items-center
                       ${
                         isMobile
                           ? "text-[12px] w-[650px]"
@@ -1886,61 +1586,35 @@ export default function FeesPage() {
                       {/* <div
                         className={`flex justify-between pl-[40px] pr-[22.5px]`}
                       > */}
-                      <div className="grid grid-flow-col">
+                      <div
+                        className="grid grid-flow-col items-center justify-between pr-[10px]"
+                        style={{
+                          gridTemplateColumns: Object.values(metrics)
+                            .filter((metric) => metric.enabled)
+                            .map((metric) => `minmax(${metric.width}, 100%)`)
+                            .join(" "),
+                        }}
+                      >
                         {Object.keys(metrics)
                           // .filter((metricKey) => metrics[metricKey].enabled)
                           .map((metric, i) => {
-                            if (!metrics[metric].enabled)
-                              return (
-                                <div
-                                  key={metric + "_barcontent"}
-                                  className=" flex items-center justify-end "
-                                ></div>
-                              );
+                            if (!metrics[metric].enabled) return null;
 
-                            const colors = [
-                              "bg-red-500",
-                              "bg-green-500",
-                              "bg-blue-500",
-                              "bg-yellow-500",
-                              "bg-purple-500",
-                              "bg-pink-500",
-                              "bg-indigo-500",
-                              "bg-teal-500",
-                              "bg-orange-500",
-                            ];
                             return (
                               <div
-                                className={`flex items-center justify-end pr-[15px] min-w-[95px] `}
+                                className="flex items-center justify-center"
                                 key={metric + "_barcontent"}
                               >
-                                {getFormattedLastValue(item.chain[1], metric)}
+                                <div
+                                  className="flex items-center justify-end"
+                                  style={{ width: metrics[metric].width }}
+                                >
+                                  {getFormattedLastValue(item.chain[1], metric)}
+                                </div>
                               </div>
                             );
                           })}
                       </div>
-                      {/* </div> */}
-                      {/* 
-                      <div className="h-full w-[15%] flex justify-end items-center">
-                        {getFormattedLastValue(item.chain[1], "txcosts_median")}
-                      </div>
-                      <div
-                        className={`relative h-full flex justify-end items-center  ${
-                          isMobile ? "w-[16%]" : "w-[16%]"
-                        }`}
-                      >
-                        {getFormattedLastValue(
-                          item.chain[1],
-                          "txcosts_native_median",
-                        )}
-                      </div>
-                      <div
-                        className={`pr-[20px] h-full flex justify-end items-center ${
-                          isMobile ? "w-[16.5%]" : "w-[19.5%]"
-                        }`}
-                      >
-                        {getFormattedLastValue(item.chain[1], "txcosts_swap")}
-                      </div> */}
                       <div
                         className={`pl-[15px] relative flex justify-end items-center h-full space-x-[1px]`}
                       >
@@ -2132,11 +1806,10 @@ export default function FeesPage() {
                 })}
                 {master && (
                   <div
-                    // ref={ethereumRowRef}
-                    className={`w-full aboslute bottom-[28px] border-forest-700 border-[1px] absolute rounded-full bg-[#1F2726] border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] pr-[32px] flex-1 grid grid-cols-[180px,auto,180px] items-center
-              ${isMobile ? "text-[12px]" : "text-[14px]"}`}
+                    className={`w-full aboslute bottom-[28px] border-forest-700 border-[1px] absolute rounded-full bg-[#1F2726] border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] pr-[42px] md:pr-[20px] lg:pr-[32px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[180px,auto,180px] items-center ${
+                      isMobile ? "text-[12px]" : "text-[14px]"
+                    }`}
                   >
-                    {/* <div className="w-[638px] md:w-[796px] flex items-center"> */}
                     <div
                       className={`flex justify-start items-center h-full gap-x-[5px] `}
                     >
@@ -2165,22 +1838,29 @@ export default function FeesPage() {
                       </Link>
                     </div>
 
-                    <div className={`grid grid-flow-col`}>
+                    <div
+                      className="grid grid-flow-col items-center justify-between pr-[10px]"
+                      style={{
+                        gridTemplateColumns: Object.values(metrics)
+                          .filter((metric) => metric.enabled)
+                          .map((metric) => `minmax(${metric.width}, 100%)`)
+                          .join(" "),
+                      }}
+                    >
                       {Object.keys(metrics).map((metric) => {
-                        if (!metrics[metric].enabled)
-                          return (
-                            <div
-                              key={metric + "_barcontent"}
-                              className="flex items-center justify-end"
-                            ></div>
-                          );
+                        if (!metrics[metric].enabled) return null;
 
                         return (
                           <div
-                            className="flex items-center justify-end pr-[15px] min-w-[95px] "
+                            className="flex items-center justify-center"
                             key={metric + "_ethbar"}
                           >
-                            {getFormattedLastValue("ethereum", metric)}
+                            <div
+                              className="flex items-center justify-end"
+                              style={{ width: metrics[metric].width }}
+                            >
+                              {getFormattedLastValue("ethereum", metric)}
+                            </div>
                           </div>
                         );
                       })}
@@ -2233,147 +1913,14 @@ export default function FeesPage() {
                         <div className="relative top-2">Now</div>
                       </div>
                     </div>
-                    {/* </div> */}
                   </div>
                 )}
               </div>
             </div>
           )}
-
-          {/* <div ref={ethereumRowPlaceHolderRef} className="h-[34px] w-full"></div> */}
         </FeesHorizontalScrollContainer>
-        {/* {feeData && master && (
-          <div className="block fixed right-0 top-0 text-[0.6rem] gap-0.5 p-0.5 font-inter z-[99999] bg-black text-white">
-            <div>scroll: {isVerticalScrollbarVisible ? "visible" : "not visible"}</div>
-            <div>table: {tableWidth?.toFixed(2)} x {tableHeight?.toFixed(2)}</div>
-            <div>page: {pageWidth?.toFixed(2)} x {pageHeight?.toFixed(2)}</div>
-            <div>window: {windowWidth} x {windowHeight.toFixed(2)}</div>
-            <div>lastRow: {lastRowYRelativeToPage.toFixed(2)}</div>
-            <div>horizontalScrollAmount: {tableHorizontalScrollAmount}</div>
-            <div>ethereumRowYRelativeToTable: {ethereumRowYRelativeToTable.toFixed(2)}</div>
-            <div>isBottomOfPageVisible: {isBottomOfPageVisible ? "true" : "false"}</div>
-            <div>bottomSliderHeight: {bottomSliderHeight}</div>
 
-            <div>placeholder: {ethereumRowYRelativeToPlaceholder}</div>
-          </div>
-        )} */}
-        {/* <FeesContainer ref={ethereumRowRef} style={ethereumRowStyle}>
-          {feeData && master && (
-            
-          )}
-        </FeesContainer> */}
-        <OffScreenSlider
-        // ref={bottomSliderRef}
-        // floatingChildren={ master &&
-        //   <FeesContainer
-        //     className="w-[900px]"
-        //     style={{
-        //       position: isVerticalScrollbarVisible || isChartOpen ? "relative" : "absolute",
-        //       bottom: isVerticalScrollbarVisible || isChartOpen ? (isMobile ? `${34 + 60}px` : `${34 + 60}px`) : windowHeight - (ethereumRowPlaceHolderRef.current ? ethereumRowPlaceHolderRef.current?.getBoundingClientRect().top: 0) + (isMobile ? 16 : 0),
-        //       left: tableHorizontalScrollAmount > 0 ? -tableHorizontalScrollAmount : undefined,
-        //       // top: isVerticalScrollbarVisible ? undefined : - (ethereumRowPlaceHolderRef.current ? ethereumRowPlaceHolderRef.current?.getBoundingClientRect().top : 0),
-        //     }}
-        //   >
-        //   <div
-
-        //     ref={ethereumRowRef}
-        //     className={`border-forest-700 border-[1px] absolute rounded-full bg-[#1F2726] border-black/[16%] dark:border-[#5A6462] shadow-[0px_0px_20px_0px_#000000] min-h-[34px] pl-[10px] flex items-center
-        //     ${isMobile ? "text-[12px] w-[663px]" : "text-[14px] w-[820px]"}`}
-        //   >
-        //     <div className="w-[638px] md:w-[798px] flex items-center">
-        //       <div
-        //         className={`flex justify-start items-center h-full gap-x-[5px] ${
-        //           isMobile ? "w-[23%]" : "w-[27%]"
-        //         }`}
-        //       >
-        //         <div
-        //           className={`flex items-center h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
-        //         >
-        //           <Icon
-        //             icon={`gtp:${AllChainsByKeys["ethereum"].urlKey}-logo-monochrome`}
-        //             className={`${
-        //               isMobile ? "h-[18px] w-[18px]" : "h-[24px] w-[24px]"
-        //             }`}
-        //             style={{
-        //               color: AllChainsByKeys["ethereum"].colors["light"][1],
-        //             }}
-        //           />
-        //         </div>
-        //         <div className="">
-        //           {isMobile
-        //             ? master.chains["ethereum"].name_short
-        //             : AllChainsByKeys["ethereum"].label}
-        //         </div>
-        //       </div>
-
-        //       <div className="h-full w-[15%] flex justify-end items-center">
-        //         {getFormattedLastValue("ethereum", "txcosts_median")}
-        //       </div>
-        //       <div
-        //         className={`h-full  flex justify-end items-center ${
-        //           isMobile ? "w-[16%]" : "w-[16%]"
-        //         }`}
-        //       >
-        //         {getFormattedLastValue("ethereum", "txcosts_native_median")}
-        //       </div>
-        //       <div
-        //         className={`pr-[20px] h-full flex justify-end items-center ${
-        //           isMobile ? "w-[16.5%]" : "w-[19.5%]"
-        //         }`}
-        //       >
-        //         {getFormattedLastValue("ethereum", "txcosts_swap")}
-        //       </div>
-        //       <div
-        //         className={`pl-[15px] relative flex items-center h-full space-x-[1px] ${
-        //           isMobile ? "w-[29.5%]" : "w-[22.5%]"
-        //         }`}
-        //       >
-        //         {Array.from({ length: 24 }, (_, index) => (
-        //           <div
-        //             key={index.toString() + "circles"}
-        //             className="h-[32px] flex items-center justify-end cursor-pointer"
-        //             onMouseEnter={() => {
-        //               setHoverBarIndex(index);
-        //             }}
-        //             onMouseLeave={() => {
-        //               setHoverBarIndex(null);
-        //             }}
-        //             onClick={() => {
-        //               setSelectedBarIndex(index);
-        //             }}
-        //           >
-        //             <div
-        //               className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${
-        //                 selectedBarIndex === index
-        //                   ? "scale-[160%]"
-        //                   : hoverBarIndex === index
-        //                   ? "scale-[120%] opacity-90"
-        //                   : "scale-100 opacity-50"
-        //               }`}
-        //               style={{
-        //                 backgroundColor: !feeIndexSort[23 - index]
-        //                   ? "gray"
-        //                   : getGradientColor(
-        //                       Math.floor(
-        //                         feeIndexSortWithEthereum[23 - index][
-        //                           "ethereum"
-        //                         ][3] * 100,
-        //                       ),
-        //                     ),
-        //               }}
-        //             ></div>
-        //           </div>
-        //         ))}
-        //         <div className="absolute left-[12px] top-[34px] w-[148px] h-[10px] border-forest-600 border-x-[1px] flex justify-between text-[10px]">
-        //           <div className="relative top-2">24 Hours Ago</div>
-        //           <div className="relative top-2">Now</div>
-        //         </div>
-        //       </div>
-        //     </div>
-        //   </div>
-        //   </FeesContainer>
-        // }
-        >
+        <OffScreenSlider>
           {feeData && master && (
             <ChartContainer
               isOpen={isChartOpen}
@@ -2395,15 +1942,13 @@ export default function FeesPage() {
           setShowCents={setShowCents}
           hoverSettings={hoverSettings}
           setHoverSettings={setHoverSettings}
+          selectedQuantitative={selectedQuantitative}
+          setSelectedQuantitative={setSelectedQuantitative}
+          metrics={metrics}
+          setMetrics={setMetrics}
+          enabledMetricsCount={enabledMetricsCount}
         />
       </div>
-      {/* <div
-        className={`transition-all duration-0 w-full`}
-        ref={bottomPaddingRef}
-        // style={{
-        //   height: isChartOpen ? `${60+96}px` : "0px",
-        // }}
-      ></div> */}
     </>
   );
 }

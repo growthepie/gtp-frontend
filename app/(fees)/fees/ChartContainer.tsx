@@ -29,7 +29,7 @@ const metricLabels = {
   txcosts_median: "Median",
   txcosts_native_median: "Transfer ETH",
   txcosts_swap: "Swap Token",
-  tps: "Throughput Per Second",
+  tps: "Transactions Per Second",
 };
 
 export default function ChartContainer({
@@ -300,6 +300,7 @@ export default function ChartContainer({
                   showGwei={showGwei}
                   chartWidth={chartContainerWidth}
                   showCents={showCents}
+                  master={master}
                 />
                 {/* </div> */}
                 <div className="absolute bottom-[calc(50%-15px)] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">

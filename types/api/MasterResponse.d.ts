@@ -2,6 +2,7 @@
   current_version: string;
   chains: Chains;
   metrics: Metrics;
+  fee_metrics: FeeMetrics;
   default_chain_selection: string[];
   blockspace_categories: BlockspaceCategories;
 }
@@ -65,6 +66,35 @@ export interface MetricInfo {
   units: string[];
   avg: boolean;
   all_l2s_aggregate: string;
+}
+
+export interface FeeMetrics {
+  txcosts_native_median: Txcosts;
+  txcosts_median: Txcosts;
+  txcosts_swap: Txcosts;
+  txcosts_avg: Txcosts;
+}
+
+export interface Txcosts {
+  name: string;
+  units: { [key: string]: Unit };
+  currency: boolean;
+  priority: number;
+}
+
+export enum Prefix {
+  Empty = "$",
+  Ξ = "Ξ",
+}
+
+export interface Unit {
+  currency: boolean;
+  prefix: Prefix | null;
+  suffix: null | string;
+  decimals: number;
+  decimals_tooltip: number;
+  agg: boolean;
+  agg_tooltip: boolean;
 }
 
 export interface BlockspaceCategories {

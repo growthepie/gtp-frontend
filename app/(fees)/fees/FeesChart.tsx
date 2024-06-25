@@ -97,7 +97,10 @@ export default function FeesChart({
     "https://api.growthepie.xyz/v1/fees/linechart.json",
   );
 
-  const reversePerformer = true;
+  const reversePerformer = useMemo(() => {
+    if (selectedMetric === "tps") return false;
+    return true;
+  }, [selectedMetric]);
 
   const valuePrefix = useMemo(() => {
     if (showUsd) return "$";
@@ -150,6 +153,12 @@ export default function FeesChart({
         }
       }
 
+      if (selectedMetric === "tps") {
+        multiplier = 1;
+        suffix = "";
+        prefix = "";
+      }
+
       let val = parseFloat(value as string) * multiplier;
 
       let number = d3.format(`.2~s`)(val).replace(/G/, "B");
@@ -179,7 +188,7 @@ export default function FeesChart({
 
       return number;
     },
-    [valuePrefix, showUsd, showGwei, showCents],
+    [valuePrefix, showUsd, selectedMetric, showGwei, showCents],
   );
 
   const tooltipFormatter = useCallback(
@@ -242,14 +251,16 @@ export default function FeesChart({
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-              }"></div>
-                <div class="tooltip-point-name">${AllChainsByKeys[name].label
-              }</div>
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                  AllChainsByKeys[name].colors[theme ?? "dark"][0]
+                }"></div>
+                <div class="tooltip-point-name">${
+                  AllChainsByKeys[name].label
+                }</div>
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                percentage,
-                2,
-              )}%</div>
+                  percentage,
+                  2,
+                )}%</div>
               </div>
               
               <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -258,8 +269,9 @@ export default function FeesChart({
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                 style="
                   width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-              };
+                  background-color: ${
+                    AllChainsByKeys[name].colors[theme ?? "dark"][0]
+                  };
                 "></div>
               </div>`;
 
@@ -268,48 +280,59 @@ export default function FeesChart({
           let value = y;
           let displayValue = y;
 
-          if (!showUsd) {
-            if (showGwei) {
-              prefix = "";
-              suffix = " gwei";
-              displayValue = y * 1e9;
+          if (selectedMetric !== "tps") {
+            if (!showUsd) {
+              if (showGwei) {
+                prefix = "";
+                suffix = " gwei";
+                displayValue = y * 1e9;
+              }
+            } else {
+              if (showCents) {
+                prefix = "";
+                suffix = " cents";
+                displayValue = y * 100;
+              }
             }
           } else {
-            if (showCents) {
-              prefix = "";
-              suffix = " cents";
-              displayValue = y * 100;
-            }
+            prefix = "";
+            suffix = "";
+            displayValue = y;
           }
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+              AllChainsByKeys[name].colors[theme ?? "dark"][0]
             }"></div>
-            <div class="tooltip-point-name text-md">${AllChainsByKeys[name].label
+            <div class="tooltip-point-name text-md">${
+              AllChainsByKeys[name].label
             }</div>
             <div class="flex-1 text-right justify-end font-inter flex">
-                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-            }">${prefix}</div>
-                ${selectedMetric === "fdv" || selectedMetric === "market_cap"
-              ? shortenNumber(displayValue).toString()
-              : parseFloat(displayValue).toLocaleString(undefined, {
-                minimumFractionDigits: valuePrefix
-                  ? showCents
-                    ? 2
-                    : 3
-                  : 0,
-                maximumFractionDigits: valuePrefix
-                  ? showCents
-                    ? selectedMetric === "txcosts"
-                      ? 3
-                      : 2
-                    : 3
-                  : 0,
-              })
-            }
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
+                <div class="opacity-70 mr-0.5 ${
+                  !prefix && "hidden"
+                }">${prefix}</div>
+                ${
+                  selectedMetric === "fdv" || selectedMetric === "market_cap"
+                    ? shortenNumber(displayValue).toString()
+                    : parseFloat(displayValue).toLocaleString(undefined, {
+                        minimumFractionDigits: valuePrefix
+                          ? showCents
+                            ? 2
+                            : 3
+                          : 0,
+                        maximumFractionDigits: valuePrefix
+                          ? showCents
+                            ? selectedMetric === "txcosts"
+                              ? 3
+                              : 2
+                            : 3
+                          : 0,
+                      })
+                }
+                <div class="opacity-70 ml-0.5 ${
+                  !suffix && "hidden"
+                }">${suffix}</div>
             </div>
           </div>
           <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -318,8 +341,9 @@ export default function FeesChart({
             <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
             style="
               width: ${(Math.max(0, value) / maxPoint) * 100}%;
-              background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-            };
+              background-color: ${
+                AllChainsByKeys[name].colors[theme ?? "dark"][0]
+              };
             "></div>
           </div>`;
         })
@@ -337,14 +361,16 @@ export default function FeesChart({
           <div class="tooltip-point-name text-md">Total</div>
           <div class="flex-1 text-right justify-end font-inter flex">
 
-              <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-          }">${prefix}</div>
+              <div class="opacity-70 mr-0.5 ${
+                !prefix && "hidden"
+              }">${prefix}</div>
               ${parseFloat(value).toLocaleString(undefined, {
-            minimumFractionDigits: valuePrefix ? 2 : 0,
-            maximumFractionDigits: valuePrefix ? 2 : 0,
-          })}
-              <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-          }">${suffix}</div>
+                minimumFractionDigits: valuePrefix ? 2 : 0,
+                maximumFractionDigits: valuePrefix ? 2 : 0,
+              })}
+              <div class="opacity-70 ml-0.5 ${
+                !suffix && "hidden"
+              }">${suffix}</div>
           </div>
         </div>
         <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -506,9 +532,9 @@ export default function FeesChart({
           marginLeft={0}
           marginRight={0}
           marginTop={0}
-        // paddingTop={0}
-        // paddingBottom={0}
-        // spacing={[0, 0, 0, 0]}
+          // paddingTop={0}
+          // paddingBottom={0}
+          // spacing={[0, 0, 0, 0]}
         />
         <Tooltip
           useHTML={true}
@@ -633,7 +659,7 @@ export default function FeesChart({
                       shadow={{
                         color:
                           AllChainsByKeys[chainKey]?.colors[
-                          theme ?? "dark"
+                            theme ?? "dark"
                           ][1] + "66",
                         width: 6,
                       }}
@@ -646,11 +672,11 @@ export default function FeesChart({
                             attributes: {
                               fill:
                                 AllChainsByKeys[chainKey]?.colors[
-                                theme ?? "dark"
+                                  theme ?? "dark"
                                 ][0] + "99",
                               stroke:
                                 AllChainsByKeys[chainKey]?.colors[
-                                theme ?? "dark"
+                                  theme ?? "dark"
                                 ][0] + "66",
                               strokeWidth: 0,
                             },
@@ -662,11 +688,11 @@ export default function FeesChart({
                           opacity: 0.6,
                         },
                       }}
-                    // marker={{
-                    //   lineColor: "white",
-                    //   radius: 0,
-                    //   symbol: "circle",
-                    // }}
+                      // marker={{
+                      //   lineColor: "white",
+                      //   radius: 0,
+                      //   symbol: "circle",
+                      // }}
                     />
                   );
               })}
