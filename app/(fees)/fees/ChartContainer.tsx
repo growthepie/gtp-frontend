@@ -206,7 +206,7 @@ export default function ChartContainer({
           <div
             className="transition-all duration-300 overflow-hidden whitespace-nowrap"
             style={{
-              maxWidth: isOpen ? "58px" : `600px`,
+              maxWidth: isOpen ? "58px" : `650px`,
             }}
           >
             {isOpen

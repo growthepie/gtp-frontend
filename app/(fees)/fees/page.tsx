@@ -1487,7 +1487,7 @@ export default function FeesPage() {
 
         <FeesHorizontalScrollContainer className="">
           {feeData && master && (
-            <div className="relative w-auto md:pr-[0px] lg:pr-[0px] overflow-x-hidden lg:overflow-x-visible">
+            <div className="relative w-auto md:pr-[0px] lg:pr-[0px] overflow-x-visible">
               <div
                 className={`relative w-[750px] md:w-[887px] flex justify-start pt-[30px] pb-[8px] text-[10px] md:text-[12px] font-bold leading-[1]`}
               >
@@ -2050,7 +2050,7 @@ export default function FeesPage() {
                 })}
                 {master && (
                   <div
-                    className={`w-full aboslute bottom-[28px] border-forest-700 border-[1px] absolute rounded-full bg-[#1F2726] border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] pr-[42px] md:pr-[20px] lg:pr-[32px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[180px,auto,180px] items-center ${
+                    className={`w-full aboslute bottom-[28px] border-forest-700 border-[1px] absolute rounded-full bg-[#1F2726] border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] pr-[32px] md:pr-[20px] lg:pr-[32px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[180px,auto,180px] items-center ${
                       isMobile ? "text-[12px]" : "text-[14px]"
                     }`}
                   >
