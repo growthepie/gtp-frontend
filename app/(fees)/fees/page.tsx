@@ -1472,7 +1472,7 @@ export default function FeesPage() {
                           />
                         </div>
                         <Link
-                          className="pr-[5px] hover:underline"
+                          className="pr-[5px] hover:underline whitespace-nowrap"
                           href={`https://www.growthepie.xyz/chains/${
                             AllChainsByKeys[item.chain[1]].urlKey
                           }`}
