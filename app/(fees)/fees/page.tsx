@@ -1906,7 +1906,7 @@ export default function FeesPage() {
                           ></div>
                         </div>
                       ))}
-                      <div className="absolute left-[12px] top-[34px] w-[148px] h-[10px] border-forest-600 border-x-[1px] flex justify-between text-[10px]">
+                      <div className="absolute -right-[2px] top-[34px] w-[147px] h-[10px] border-forest-600 border-x-[1px] flex justify-between text-[10px]">
                         <div className="relative top-2">
                           {NUM_HOURS} Hours Ago
                         </div>
