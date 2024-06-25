@@ -1485,11 +1485,11 @@ export default function FeesPage() {
           </div>
         </FeesContainer>
 
-        <FeesHorizontalScrollContainer className="pt-[20px]">
+        <FeesHorizontalScrollContainer className="">
           {feeData && master && (
             <div className="relative w-auto md:pr-[0px] lg:pr-[0px] overflow-x-hidden lg:overflow-x-visible">
               <div
-                className={`relative w-[750px] md:w-[887px] flex justify-start pt-[10px] pb-[8px] text-[10px] md:text-[12px] font-bold leading-[1]`}
+                className={`relative w-[750px] md:w-[887px] flex justify-start pt-[30px] pb-[8px] text-[10px] md:text-[12px] font-bold leading-[1]`}
               >
                 <div className="pl-[10px] pr-[30px] md:pr-[20px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[180px,auto,180px]">
                   <div className={`flex items-center gap-x-[5px]`}>
