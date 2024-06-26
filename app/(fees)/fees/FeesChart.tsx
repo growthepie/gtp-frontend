@@ -138,28 +138,35 @@ export default function FeesChart({
 
   const formatNumber = useCallback(
     (value: number | string, isAxis = false) => {
-      let prefix = valuePrefix;
-      let suffix = "";
-      let multiplier = 1;
-
-      if (!showUsd) {
-        if (showGwei) {
-          prefix = "";
-          suffix = " gwei";
-          multiplier = 1e9;
-        }
+      let unitKey = "";
+      if (master.fee_metrics[selectedMetric].currency) {
+        unitKey = showUsd ? "usd" : "eth";
       } else {
-        if (showCents) {
-          prefix = "";
-          suffix = " cents";
-          multiplier = 100;
-        }
+        unitKey = "value";
       }
 
-      if (selectedMetric === "tps") {
-        multiplier = 1;
-        suffix = "";
-        prefix = "";
+      let prefix = master.fee_metrics[selectedMetric].units[unitKey].prefix
+        ? " " + master.fee_metrics[selectedMetric].units[unitKey].prefix
+        : "";
+      let suffix = master.fee_metrics[selectedMetric].units[unitKey].suffix
+        ? " " + master.fee_metrics[selectedMetric].units[unitKey].suffix
+        : "";
+      let multiplier = 1;
+
+      if (master.fee_metrics[selectedMetric].currency) {
+        if (!showUsd) {
+          if (showGwei) {
+            prefix = "";
+            suffix = " gwei";
+            multiplier = 1e9;
+          }
+        } else {
+          if (showCents) {
+            prefix = "";
+            suffix = " cents";
+            multiplier = 100;
+          }
+        }
       }
 
       let val = parseFloat(value as string) * multiplier;
@@ -280,18 +287,10 @@ export default function FeesChart({
                   };
                 "></div>
               </div>`;
-
-          let prefix = valuePrefix;
-          let suffix = "";
-          let value = y;
-          let displayValue = y;
-
           let valueIndex = 1;
-
           if (master.fee_metrics[selectedMetric].currency === true) {
             valueIndex = showUsd ? 2 : 1;
           }
-
           const typeString =
             data.chain_data[name][selectedMetric][selectedTimeframe].types[
               valueIndex
@@ -304,7 +303,12 @@ export default function FeesChart({
               : master.fee_metrics[selectedMetric].units[unitKey].decimals
             : master.fee_metrics[selectedMetric].units[unitKey].decimals;
 
-          if (selectedMetric !== "tps") {
+          let prefix = master.fee_metrics[selectedMetric].units[unitKey].prefix;
+          let suffix = master.fee_metrics[selectedMetric].units[unitKey].suffix;
+          let value = y;
+          let displayValue = y;
+
+          if (master.fee_metrics[selectedMetric].currency) {
             if (!showUsd) {
               if (showGwei) {
                 prefix = "";
@@ -319,11 +323,9 @@ export default function FeesChart({
               }
             }
           } else {
-            prefix = "";
-            suffix = "";
             displayValue = y;
           }
-
+          console.log(suffix);
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${

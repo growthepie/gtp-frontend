@@ -98,6 +98,7 @@ export default function FeesPage() {
   } = useSWR<FeesTableResponse>(FeesURLs.table);
 
   const [selectedBarIndex, setSelectedBarIndex] = useState<number>(0);
+  const [DAIndex, setDAIndex] = useState(0);
 
   // const [enabledMetrics, setEnabledMetrics] = useState<string[]>([]);
   // const MetricWidths
@@ -184,6 +185,39 @@ export default function FeesPage() {
   const isMobile = useMediaQuery("(max-width: 767px)");
 
   const showGwei = true;
+
+  const metricCategories = useMemo(() => {
+    if (!master) return [];
+
+    let retValue: string[] = [];
+    Object.keys(master.fee_metrics).forEach((key) => {
+      const category = master.fee_metrics[key].category;
+      if (!retValue.includes(category)) {
+        retValue.push(category);
+      }
+    });
+
+    return retValue;
+  }, [master]);
+
+  const allChainsDA = useMemo(() => {
+    if (!feeData || !master) return [];
+    let retArray: string[] = [];
+
+    Object.keys(feeData.chain_data).forEach((key) => {
+      let keyDA = dataAvailToArray(master.chains[key].da_layer);
+      keyDA.forEach((element) => {
+        if (!retArray.includes(element.label)) {
+          retArray.push(element.label);
+        }
+      });
+    });
+
+    retArray = retArray.filter((key) => key !== "N/A");
+    retArray.sort();
+
+    return retArray;
+  }, [feeData, master]);
 
   const { width: windowWidth = 0, height: windowHeight = 0 } = useWindowSize();
   const [selectedTimescale, setSelectedTimescale] = useState("hourly");
@@ -1190,6 +1224,8 @@ export default function FeesPage() {
     return allPass;
   }, [dataAvailByChain, finalSort, selectedAvailability, selectedChains]);
 
+  console.log(master ? master : "");
+
   return (
     <>
       <ShowLoading
@@ -1223,7 +1259,7 @@ export default function FeesPage() {
             <div
               className={`flex items-center relative h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-[15px] py-[10px] gap transition-all z-40 duration-300 hover:cursor-pointer ${
                 hoverSettings
-                  ? "w-[308px] justify-start"
+                  ? "w-[336px] justify-start"
                   : "w-[128px] justify-start"
               }`}
               onMouseEnter={() => {
@@ -1263,9 +1299,11 @@ export default function FeesPage() {
                   : "shadow-transparent"
               }`}
               style={{
-                width: hoverSettings ? "308px" : 0,
+                width: hoverSettings ? "336px" : 0,
                 height: hoverSettings
-                  ? `calc(100px + 28px * (1 + ${Object.keys(metrics).length}))`
+                  ? `calc(100px + 28px + 30px * (1 + ${
+                      Object.keys(metrics).length
+                    }))`
                   : 0,
               }}
               onMouseEnter={() => {
@@ -1278,7 +1316,7 @@ export default function FeesPage() {
               <div
                 className={`pt-[30px] pb-[20px] flex flex-col h-[calc(100px + 28px * (1 + ${
                   Object.keys(metrics).length
-                }))] w-[308px]`}
+                }))] w-[336px]`}
               >
                 <div className="flex flex-col w-full">
                   <div className="flex items-center w-full">
@@ -1286,7 +1324,7 @@ export default function FeesPage() {
                       <div className="font-normal text-forest-500/50 text-right">
                         Units
                       </div>
-                      <div className="grid grid-cols-[100px,6px,auto] gap-x-[10px] items-center w-full  place-items-center whitespace-nowrap">
+                      <div className="grid grid-cols-[140px,6px,auto] gap-x-[10px] items-center w-full  place-items-center whitespace-nowrap">
                         <div className="flex flex-1 items-center place-self-end">
                           <Icon
                             icon="gtp:gtp-dollar"
@@ -1333,139 +1371,159 @@ export default function FeesPage() {
                         </div>
                         {/* </div> */}
                       </div>
-                      <div className="font-normal text-forest-500/50 text-right">
-                        Metrics
-                      </div>
-                      {master &&
-                        Object.keys(master.fee_metrics)
-                          .filter((metricKey) => metrics[metricKey])
-                          .sort(
-                            (a, b) =>
-                              master.fee_metrics[a].priority -
-                              master.fee_metrics[b].priority,
-                          )
-                          .map((metric) => {
-                            const enabledMetricKeysByPriority = Object.keys(
-                              metrics,
-                            )
-                              .filter((metricKey) => metrics[metricKey].enabled)
-                              .sort(
-                                (a, b) =>
-                                  master.fee_metrics[b].priority -
-                                  master.fee_metrics[a].priority,
-                              );
-
-                            return (
-                              <div
-                                className="grid grid-cols-[100px,6px,auto] gap-x-[10px] items-center w-full place-items-center whitespace-nowrap"
-                                key={metric + "_settings"}
-                              >
-                                <div className="flex flex-1 items-center place-self-end">
-                                  <Icon
-                                    icon=""
-                                    className={`h-[15px] w-[15px] font-[900] text-[#CDD8D3] relative self-center justify-self-center ${
-                                      hoverSettings ? "text-sm" : ""
-                                    }`}
-                                  />
-                                  <div className="flex-1 font-semibold">
-                                    {master.fee_metrics[metric].name}
-                                  </div>
-                                </div>
-                                {/* <div className="flex gap-x-[10px] items-center"> */}
-                                <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
-                                <div
-                                  className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
-                                  onClick={() => {
-                                    if (
-                                      enabledMetricsCount > 1 ||
-                                      !metrics[metric].enabled
-                                    ) {
-                                      if (
-                                        metrics[metric].enabled &&
-                                        selectedQuantitative === metric
-                                      ) {
-                                        for (const metricKey of Object.keys(
-                                          metrics,
-                                        )) {
-                                          if (
-                                            metrics[metricKey].enabled &&
-                                            metricKey !== metric
-                                          ) {
-                                            setSelectedQuantitative(metricKey);
-                                            break; // Exit loop once the first enabled metric is found
-                                          }
-                                        }
-                                      }
-                                      if (!metrics[metric].enabled) {
-                                        setSelectedQuantitative(metric);
-                                      }
-
-                                      const prevMetrics = { ...metrics };
-
-                                      const isEnabling =
-                                        !prevMetrics[metric].enabled;
-
-                                      // if enabling another metric will exceed the limit of 4 enabled metrics, disable the previously enabled metric with the lowest priority
-                                      if (
-                                        isEnabling &&
-                                        enabledMetricsCount === 4
-                                      ) {
-                                        const lowestPriorityMetricKey =
-                                          enabledMetricKeysByPriority[0];
-
-                                        prevMetrics[
-                                          lowestPriorityMetricKey
-                                        ].enabled = false;
-                                      }
-
-                                      // toggle the enabled state of the metric
-                                      prevMetrics[metric].enabled =
-                                        !prevMetrics[metric].enabled;
-
-                                      // set the updated metrics state
-                                      setMetrics(prevMetrics);
-
-                                      // setMetrics((prevMetrics) => ({
-                                      //   ...prevMetrics,
-                                      //   [metric]: {
-                                      //     ...prevMetrics[metric],
-                                      //     enabled: !prevMetrics[metric].enabled,
-                                      //   },
-                                      // }));
-                                    }
-                                  }}
-                                >
-                                  <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px] ">
-                                    <div className="w-full flex items-start justify-center">
-                                      Enabled
-                                    </div>
-                                    <div
-                                      className={`w-full text-center ${
-                                        metrics[metric].enabled && "opacity-50"
-                                      }`}
-                                    >
-                                      Disabled
-                                    </div>
-                                  </div>
-                                  <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
-                                    <div
-                                      className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
-                                      style={{
-                                        transform: metrics[metric].enabled
-                                          ? "translateX(0%)"
-                                          : "translateX(100%)",
-                                      }}
-                                    >
-                                      {metrics[metric].enabled
-                                        ? "Enabled"
-                                        : "Disabled"}
-                                    </div>
-                                  </div>
-                                </div>
-                                {/* </div> */}
+                      {metricCategories &&
+                        master &&
+                        metricCategories.map((categoryKey) => {
+                          return (
+                            <div
+                              key={categoryKey + "_categories"}
+                              className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full pl-[8px]"
+                            >
+                              <div className="font-normal text-forest-500/50 text-right">
+                                {categoryKey + " Metrics"}
                               </div>
-                            );
-                          })}
+                              {Object.keys(master.fee_metrics)
+                                .filter(
+                                  (metricKey) =>
+                                    metrics[metricKey] &&
+                                    master.fee_metrics[metricKey].category ==
+                                      categoryKey,
+                                )
+                                .sort(
+                                  (a, b) =>
+                                    master.fee_metrics[a].priority -
+                                    master.fee_metrics[b].priority,
+                                )
+                                .map((metric) => {
+                                  const enabledMetricKeysByPriority =
+                                    Object.keys(metrics)
+                                      .filter(
+                                        (metricKey) =>
+                                          metrics[metricKey].enabled,
+                                      )
+                                      .sort(
+                                        (a, b) =>
+                                          master.fee_metrics[b].priority -
+                                          master.fee_metrics[a].priority,
+                                      );
+
+                                  return (
+                                    <div
+                                      className="grid grid-cols-[140px,6px,auto] gap-x-[10px] items-center w-full place-items-center whitespace-nowrap"
+                                      key={metric + "_settings"}
+                                    >
+                                      <div className="flex flex-1 items-center place-self-end">
+                                        <Icon
+                                          icon=""
+                                          className={`h-[15px] w-[15px] font-[900] text-[#CDD8D3] relative self-center justify-self-center ${
+                                            hoverSettings ? "text-sm" : ""
+                                          }`}
+                                        />
+                                        <div className="flex-1 font-semibold">
+                                          {master.fee_metrics[metric].name}
+                                        </div>
+                                      </div>
+                                      {/* <div className="flex gap-x-[10px] items-center"> */}
+                                      <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
+                                      <div
+                                        className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
+                                        onClick={() => {
+                                          if (
+                                            enabledMetricsCount > 1 ||
+                                            !metrics[metric].enabled
+                                          ) {
+                                            if (
+                                              metrics[metric].enabled &&
+                                              selectedQuantitative === metric
+                                            ) {
+                                              for (const metricKey of Object.keys(
+                                                metrics,
+                                              )) {
+                                                if (
+                                                  metrics[metricKey].enabled &&
+                                                  metricKey !== metric
+                                                ) {
+                                                  setSelectedQuantitative(
+                                                    metricKey,
+                                                  );
+                                                  break; // Exit loop once the first enabled metric is found
+                                                }
+                                              }
+                                            }
+                                            if (!metrics[metric].enabled) {
+                                              setSelectedQuantitative(metric);
+                                            }
+
+                                            const prevMetrics = { ...metrics };
+
+                                            const isEnabling =
+                                              !prevMetrics[metric].enabled;
+
+                                            // if enabling another metric will exceed the limit of 4 enabled metrics, disable the previously enabled metric with the lowest priority
+                                            if (
+                                              isEnabling &&
+                                              enabledMetricsCount === 4
+                                            ) {
+                                              const lowestPriorityMetricKey =
+                                                enabledMetricKeysByPriority[0];
+
+                                              prevMetrics[
+                                                lowestPriorityMetricKey
+                                              ].enabled = false;
+                                            }
+
+                                            // toggle the enabled state of the metric
+                                            prevMetrics[metric].enabled =
+                                              !prevMetrics[metric].enabled;
+
+                                            // set the updated metrics state
+                                            setMetrics(prevMetrics);
+
+                                            // setMetrics((prevMetrics) => ({
+                                            //   ...prevMetrics,
+                                            //   [metric]: {
+                                            //     ...prevMetrics[metric],
+                                            //     enabled: !prevMetrics[metric].enabled,
+                                            //   },
+                                            // }));
+                                          }
+                                        }}
+                                      >
+                                        <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px] ">
+                                          <div className="w-full flex items-start justify-center">
+                                            Enabled
+                                          </div>
+                                          <div
+                                            className={`w-full text-center ${
+                                              metrics[metric].enabled &&
+                                              "opacity-50"
+                                            }`}
+                                          >
+                                            Disabled
+                                          </div>
+                                        </div>
+                                        <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
+                                          <div
+                                            className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
+                                            style={{
+                                              transform: metrics[metric].enabled
+                                                ? "translateX(0%)"
+                                                : "translateX(100%)",
+                                            }}
+                                          >
+                                            {metrics[metric].enabled
+                                              ? "Enabled"
+                                              : "Disabled"}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      {/* </div> */}
+                                    </div>
+                                  );
+                                })}
+                            </div>
+                          );
+                        })}
                     </div>
                   </div>
                 </div>
@@ -1529,11 +1587,17 @@ export default function FeesPage() {
                     </div>
                     <div
                       className="bg-[#344240] text-[8px] flex rounded-full font-normal items-center px-[5px] py-[4px] gap-x-[2px] cursor-pointer whitespace-nowrap"
-                      onClick={
-                        !availabilityFilter
-                          ? () => setAvailabilityFilter(!availabilityFilter)
-                          : undefined
-                      }
+                      onClick={() => {
+                        setAvailabilityFilter(true);
+                        if (DAIndex === allChainsDA.length - 1) {
+                          setAvailabilityFilter(false);
+                          setDAIndex(0);
+                          setSelectedAvailability(allChainsDA[DAIndex]);
+                        } else {
+                          setDAIndex(DAIndex + 1);
+                          setSelectedAvailability(allChainsDA[DAIndex]);
+                        }
+                      }}
                     >
                       Data Availability
                       {availabilityFilter && dataAvailByFilter
