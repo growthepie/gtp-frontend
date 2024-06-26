@@ -29,6 +29,7 @@ import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { useUIContext } from "@/contexts/UIContext";
 import d3 from "d3";
 import { FeesLineChart } from "@/types/api/Fees/LineChart";
+import { MasterResponse } from "@/types/api/MasterResponse";
 import "../../highcharts.axis.css";
 
 const COLORS = {
@@ -76,6 +77,7 @@ type FeesChartProps = {
   showGwei: boolean;
   showCents: boolean;
   chartWidth: number;
+  master: MasterResponse;
 };
 
 export default function FeesChart({
@@ -85,6 +87,7 @@ export default function FeesChart({
   showGwei,
   showCents,
   chartWidth,
+  master,
 }: FeesChartProps) {
   const { theme } = useTheme();
   const { isMobile } = useUIContext();
@@ -214,7 +217,8 @@ export default function FeesChart({
       }
 
       const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
-        <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
+        <div class="w-full font-bold text-[13px] md:text-[16px] ml-6 mb-1">${master.fee_metrics[selectedMetric].name}</div>
+        <div class="w-full font-semibold text-[9px] md:text-[12px] ml-6 mb-2">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
       // let pointsSum = 0;
@@ -248,6 +252,8 @@ export default function FeesChart({
         .map((point: any) => {
           const { series, y, percentage } = point;
           const { name } = series;
+          if (!data) return;
+
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
@@ -279,6 +285,24 @@ export default function FeesChart({
           let suffix = "";
           let value = y;
           let displayValue = y;
+
+          let valueIndex = 1;
+
+          if (master.fee_metrics[selectedMetric].currency === true) {
+            valueIndex = showUsd ? 2 : 1;
+          }
+
+          const typeString =
+            data.chain_data[name][selectedMetric][selectedTimeframe].types[
+              valueIndex
+            ];
+          const unitKey = typeString.replace("value_", "");
+
+          const decimals = master.fee_metrics[selectedMetric].currency
+            ? showGwei && !showUsd
+              ? 2
+              : master.fee_metrics[selectedMetric].units[unitKey].decimals
+            : master.fee_metrics[selectedMetric].units[unitKey].decimals;
 
           if (selectedMetric !== "tps") {
             if (!showUsd) {
@@ -316,18 +340,8 @@ export default function FeesChart({
                   selectedMetric === "fdv" || selectedMetric === "market_cap"
                     ? shortenNumber(displayValue).toString()
                     : parseFloat(displayValue).toLocaleString("en-GB", {
-                        minimumFractionDigits: valuePrefix
-                          ? showCents
-                            ? 2
-                            : 3
-                          : 0,
-                        maximumFractionDigits: valuePrefix
-                          ? showCents
-                            ? selectedMetric === "txcosts"
-                              ? 3
-                              : 2
-                            : 3
-                          : 0,
+                        minimumFractionDigits: decimals,
+                        maximumFractionDigits: decimals,
                       })
                 }
                 <div class="opacity-70 ml-0.5 ${

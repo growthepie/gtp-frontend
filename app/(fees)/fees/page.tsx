@@ -510,7 +510,7 @@ export default function FeesPage() {
   ]);
 
   const sortByMetric = useMemo(() => {
-    if (!feeData) return [];
+    if (!feeData || !master) return [];
 
     const sortedChains = Object.keys(feeData.chain_data)
       .filter((chain) => chain !== "ethereum") // Exclude "ethereum"
@@ -519,8 +519,11 @@ export default function FeesPage() {
         const isSelectedB = selectedChains[b];
 
         // If sortOrder is false, reverse the comparison
-        const comparison = sortOrder ? 1 : -1;
+        let comparison = sortOrder ? 1 : -1;
 
+        if (master.fee_metrics[selectedQuantitative].invert_normalization) {
+          comparison = comparison * -1;
+        }
         // Handle cases where one or both chains are not selected
         if (isSelectedA && !isSelectedB) return -1;
         if (!isSelectedA && isSelectedB) return 1;
@@ -806,10 +809,6 @@ export default function FeesPage() {
           "normalized",
         ) || 3;
 
-      console.log(
-        "indexSortArray[NUM_HOURS - 1 - index][chain]",
-        indexSortArray[NUM_HOURS - 1 - index][chain],
-      );
       if (
         master.fee_metrics[selectedQuantitative].invert_normalization === true
       ) {
