@@ -1516,7 +1516,7 @@ export default function FeesPage() {
           </div>
         </FeesContainer>
         <FeesContainer className="w-full mt-[30px] flex items-end sm:items-center justify-between md:justify-start gap-x-[10px]">
-          <h1 className="text-[20px] md:text-[30px] leading-[120%] font-bold pl-[15px]">
+          <h1 className="text-[20px] md:text-[30px] leading-[120%] font-bold md:pl-[15px]">
             How much a typical user paid on L2s
           </h1>
           <div className="min-w-[92px] h-[26px] py-[6px] pl-[10px] pr-[5px] items-center justify-center border-[#344240] border bg-[#1F2726] text-[12px] rounded-r-full leading-[1] font-bold">
