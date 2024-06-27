@@ -2251,6 +2251,7 @@ export default function FeesPage() {
           setHoverSettings={setHoverSettings}
           selectedQuantitative={selectedQuantitative}
           setSelectedQuantitative={setSelectedQuantitative}
+          metricCategories={metricCategories}
           metrics={metrics}
           setMetrics={setMetrics}
           enabledMetricsCount={enabledMetricsCount}
