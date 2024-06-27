@@ -13,12 +13,14 @@ export default React.forwardRef(function OffScreenSlider(
   return (
     <div
       className={
-        "fixed w-full max-w-[750px] md:max-w-[1680px] mx-auto bottom-0"
+        "fixed bottom-[80px] md:bottom-0 left-0 right-0 flex justify-center"
       }
       ref={ref}
     >
       {floatingChildren}
-      <FeesContainer>{children}</FeesContainer>
+      <FeesContainer className="max-w-full md:min-w-[650px] md:max-w-[950px]">
+        {children}
+      </FeesContainer>
     </div>
   );
 });

@@ -168,9 +168,7 @@ export default function ChartContainer({
 
   return (
     <div
-      className={`relative w-full bg-[#1F2726] rounded-t-[30px] pt-[15px] ${
-        isMobile ? "pb-[55px]" : "pb-[30px]"
-      }`}
+      className={`relative w-full bg-[#1F2726] rounded-t-[30px] pt-[15px] pb-[10px] md:pb-[25px]`}
     >
       <div className="absolute -top-[12px] left-0 right-0 flex justify-center z-50">
         <div

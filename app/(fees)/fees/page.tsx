@@ -105,20 +105,20 @@ export default function FeesPage() {
 
   const [metrics, setMetrics] = useState<{
     [key: string]: {
-      width: string;
+      width: number;
       enabled: boolean;
     };
   }>({
     txcosts_median: {
-      width: "75px",
+      width: 125,
       enabled: true,
     },
     txcosts_native_median: {
-      width: "115px",
+      width: 125,
       enabled: true,
     },
     txcosts_swap: {
-      width: "100px",
+      width: 125,
       enabled: true,
     },
   });
@@ -145,7 +145,7 @@ export default function FeesPage() {
     // add tps to metrics if available
     if (feeData.chain_data["ethereum"]["hourly"]["tps"]) {
       newMetrics["tps"] = {
-        width: "85px",
+        width: 125,
         enabled: true,
       };
     } else {
@@ -158,7 +158,7 @@ export default function FeesPage() {
     // add throughput to metrics if available
     if (feeData.chain_data["ethereum"]["hourly"]["throughput"]) {
       newMetrics["throughput"] = {
-        width: "125px",
+        width: 125,
         enabled: true,
       };
     } else {
@@ -171,7 +171,7 @@ export default function FeesPage() {
     // add average fee to metrics if available
     if (feeData.chain_data["ethereum"]["hourly"]["txcosts_avg"]) {
       newMetrics["txcosts_avg"] = {
-        width: "115px",
+        width: 125,
         enabled: true,
       };
     } else {
@@ -1212,7 +1212,7 @@ export default function FeesPage() {
         fullScreen={true}
       />
       <div
-        className="relative min-h-screen w-full flex flex-col transition-all duration-300"
+        className="min-h-screen transition-all duration-300"
         style={{
           paddingBottom: isChartOpen
             ? `${isMobile ? 313 + 60 : 413 + 60}px`
@@ -1222,7 +1222,7 @@ export default function FeesPage() {
       >
         <Header />
 
-        <FeesContainer className={`w-full hidden md:block`}>
+        <FeesContainer className={`hidden md:block`}>
           <div className="relative flex p-[5px] items-center w-full justify-between rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000]">
             <a
               className="flex items-center w-[162px] bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
@@ -1292,9 +1292,12 @@ export default function FeesPage() {
               }}
             >
               <div
-                className={`pt-[30px] pb-[20px] flex flex-col h-[calc(100px + 28px * (1 + ${
-                  Object.keys(metrics).length
-                }))] w-[336px]`}
+                className={`pt-[30px] pb-[20px] flex flex-col`}
+                style={{
+                  height: `calc(100px + 28px * (1 + ${
+                    Object.keys(metrics).length
+                  }))`,
+                }}
               >
                 <div className="flex flex-col w-full">
                   <div className="flex items-center w-full">
@@ -1611,24 +1614,45 @@ export default function FeesPage() {
                           key={category}
                           className="relative grid grid-flow-col items-center justify-between"
                           style={{
-                            gridTemplateColumns: Object.keys(metrics)
-                              .filter(
-                                (metric) =>
-                                  metrics[metric].enabled &&
-                                  master.fee_metrics[metric].category ===
-                                    category,
-                              )
-                              .map(
-                                (metric) =>
-                                  `minmax(${metrics[metric].width}, 100%)`,
-                              )
-                              .join(" "),
+                            width:
+                              Object.keys(metrics).filter(
+                                (metric) => metrics[metric].enabled,
+                              ).length === 1
+                                ? "100%"
+                                : "auto",
+                            gridTemplateColumns:
+                              Object.keys(metrics).filter(
+                                (metric) => metrics[metric].enabled,
+                              ).length === 1
+                                ? undefined
+                                : Object.keys(metrics)
+                                    .filter(
+                                      (metric) =>
+                                        metrics[metric].enabled &&
+                                        master.fee_metrics[metric].category ===
+                                          category,
+                                    )
+                                    .map(
+                                      (metric, i) =>
+                                        `minmax(${
+                                          i === 0
+                                            ? metrics[metric].width - 40
+                                            : metrics[metric].width
+                                        }px, 100%)`,
+                                    )
+                                    .join(" "),
                           }}
                         >
-                          <div className="absolute left-[62px] -right-[0px] -bottom-[12px] -top-[22px] flex items-start justify-end text-[10px] font-normal text-forest-500/30 whitespace-nowrap">
-                            {category} Metrics
-                          </div>
-                          <div className="absolute left-8 right-0 bottom-[20px] h-[1px] bg-gradient-to-r from-transparent to-forest-500/15" />
+                          {Object.keys(metrics).filter(
+                            (metric) => metrics[metric].enabled,
+                          ).length > 1 && (
+                            <>
+                              <div className="absolute left-[62px] -right-[0px] -bottom-[12px] -top-[22px] flex items-start justify-end text-[10px] font-normal text-forest-500/30 whitespace-nowrap">
+                                {category} Metrics
+                              </div>
+                              <div className="absolute left-8 right-0 bottom-[20px] h-[1px] bg-gradient-to-r from-transparent to-forest-500/15" />
+                            </>
+                          )}
 
                           {Object.keys(metrics)
                             .filter(
@@ -1646,15 +1670,26 @@ export default function FeesPage() {
 
                               return (
                                 <div
-                                  className="flex items-center justify-end"
                                   key={metric + "_header"}
+                                  className="flex items-center"
+                                  style={{
+                                    justifyContent:
+                                      Object.keys(metrics).filter(
+                                        (metric) =>
+                                          metrics[metric].enabled &&
+                                          master.fee_metrics[metric]
+                                            .category === category,
+                                      ).length === 1
+                                        ? "center"
+                                        : "end",
+                                  }}
                                 >
                                   <div
                                     className="flex items-center justify-end"
                                     style={{ width: metrics[metric].width }}
                                   >
                                     <div
-                                      className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px]  z-10"
+                                      className="flex flex-col justify-end"
                                       onClick={() => {
                                         if (selectedQuantitative === metric) {
                                           if (selectedQualitative) {
@@ -1668,26 +1703,41 @@ export default function FeesPage() {
                                         }
                                       }}
                                     >
-                                      <div className="">
-                                        {master.fee_metrics[metric].name_short}
-                                      </div>
+                                      {Object.keys(metrics).filter(
+                                        (metric) => metrics[metric].enabled,
+                                      ).length === 1 && (
+                                        <div className="absolute -top-[22px] flex flex-col items-end place-self-end">
+                                          <div className="flex items-start justify-end text-[10px] font-normal text-forest-500/30 whitespace-nowrap">
+                                            {category} Metrics
+                                          </div>
+                                          <div className="w-[125px] h-[1px] bg-gradient-to-r from-transparent to-forest-500/15" />
+                                        </div>
+                                      )}
+                                      <div className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px] z-10">
+                                        <div className="">
+                                          {
+                                            master.fee_metrics[metric]
+                                              .name_short
+                                          }
+                                        </div>
 
-                                      <Icon
-                                        icon={
-                                          !selectedQualitative &&
-                                          selectedQuantitative === metric
-                                            ? sortOrder
-                                              ? "formkit:arrowdown"
-                                              : "formkit:arrowup"
-                                            : "formkit:arrowdown"
-                                        }
-                                        className={`dark:text-white text-black w-[10px] h-[10px] ${
-                                          !selectedQualitative &&
-                                          selectedQuantitative === metric
-                                            ? "opacity-100"
-                                            : "opacity-20"
-                                        }`}
-                                      />
+                                        <Icon
+                                          icon={
+                                            !selectedQualitative &&
+                                            selectedQuantitative === metric
+                                              ? sortOrder
+                                                ? "formkit:arrowdown"
+                                                : "formkit:arrowup"
+                                              : "formkit:arrowdown"
+                                          }
+                                          className={`dark:text-white text-black w-[10px] h-[10px] ${
+                                            !selectedQualitative &&
+                                            selectedQuantitative === metric
+                                              ? "opacity-100"
+                                              : "opacity-20"
+                                          }`}
+                                        />
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
@@ -1905,20 +1955,35 @@ export default function FeesPage() {
                             .map((category) => (
                               <div
                                 key={category}
-                                className="grid grid-flow-col items-center justify-between"
+                                className={`grid grid-flow-col items-center justify-between`}
                                 style={{
-                                  gridTemplateColumns: Object.keys(metrics)
-                                    .filter(
-                                      (metric) =>
-                                        metrics[metric].enabled &&
-                                        master.fee_metrics[metric].category ===
-                                          category,
-                                    )
-                                    .map(
-                                      (metric) =>
-                                        `minmax(${metrics[metric].width}, 100%)`,
-                                    )
-                                    .join(" "),
+                                  width:
+                                    Object.keys(metrics).filter(
+                                      (metric) => metrics[metric].enabled,
+                                    ).length === 1
+                                      ? "100%"
+                                      : "auto",
+                                  gridTemplateColumns:
+                                    Object.keys(metrics).filter(
+                                      (metric) => metrics[metric].enabled,
+                                    ).length === 1
+                                      ? undefined
+                                      : Object.keys(metrics)
+                                          .filter(
+                                            (metric) =>
+                                              metrics[metric].enabled &&
+                                              master.fee_metrics[metric]
+                                                .category === category,
+                                          )
+                                          .map(
+                                            (metric, i) =>
+                                              `minmax(${
+                                                i === 0
+                                                  ? metrics[metric].width - 40
+                                                  : metrics[metric].width
+                                              }px, 100%)`,
+                                          )
+                                          .join(" "),
                                 }}
                               >
                                 {Object.keys(metrics)
@@ -1937,8 +2002,19 @@ export default function FeesPage() {
 
                                     return (
                                       <div
-                                        className="flex items-center justify-end"
                                         key={metric + "_barcontent"}
+                                        className="flex items-center"
+                                        style={{
+                                          justifyContent:
+                                            Object.keys(metrics).filter(
+                                              (metric) =>
+                                                metrics[metric].enabled &&
+                                                master.fee_metrics[metric]
+                                                  .category === category,
+                                            ).length === 1
+                                              ? "center"
+                                              : "end",
+                                        }}
                                       >
                                         <div
                                           className="flex items-center justify-end"
@@ -2202,18 +2278,33 @@ export default function FeesPage() {
                             key={category}
                             className="grid grid-flow-col items-center justify-between"
                             style={{
-                              gridTemplateColumns: Object.keys(metrics)
-                                .filter(
-                                  (metric) =>
-                                    metrics[metric].enabled &&
-                                    master.fee_metrics[metric].category ===
-                                      category,
-                                )
-                                .map(
-                                  (metric) =>
-                                    `minmax(${metrics[metric].width}, 100%)`,
-                                )
-                                .join(" "),
+                              width:
+                                Object.keys(metrics).filter(
+                                  (metric) => metrics[metric].enabled,
+                                ).length === 1
+                                  ? "100%"
+                                  : "auto",
+                              gridTemplateColumns:
+                                Object.keys(metrics).filter(
+                                  (metric) => metrics[metric].enabled,
+                                ).length === 1
+                                  ? undefined
+                                  : Object.keys(metrics)
+                                      .filter(
+                                        (metric) =>
+                                          metrics[metric].enabled &&
+                                          master.fee_metrics[metric]
+                                            .category === category,
+                                      )
+                                      .map(
+                                        (metric, i) =>
+                                          `minmax(${
+                                            i === 0
+                                              ? metrics[metric].width - 40
+                                              : metrics[metric].width
+                                          }px, 100%)`,
+                                      )
+                                      .join(" "),
                             }}
                           >
                             {Object.keys(metrics)
@@ -2232,8 +2323,19 @@ export default function FeesPage() {
 
                                 return (
                                   <div
-                                    className="flex items-center justify-end"
                                     key={metric + "_barcontent"}
+                                    className="flex items-center"
+                                    style={{
+                                      justifyContent:
+                                        Object.keys(metrics).filter(
+                                          (metric) =>
+                                            metrics[metric].enabled &&
+                                            master.fee_metrics[metric]
+                                              .category === category,
+                                        ).length === 1
+                                          ? "center"
+                                          : "end",
+                                    }}
                                   >
                                     <div
                                       className="flex items-center justify-end"

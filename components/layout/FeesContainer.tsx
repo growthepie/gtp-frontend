@@ -14,7 +14,7 @@ export default React.forwardRef(function Container(
 ) {
   return (
     <div
-      className={`px-[20px] md:px-[103px] ${className}`}
+      className={`w-full mx-auto px-[20px] md:px-[103px] ${className}`}
       ref={ref}
       style={style}
     >

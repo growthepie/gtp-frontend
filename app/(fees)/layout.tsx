@@ -185,7 +185,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <Head />
-      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden overflow-y-scroll min-h-screen relative">
+      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden min-h-screen relative">
         <div className="background-container">
           <div className="background-gradient-group">
             <div className="background-gradient-yellow"></div>
@@ -197,39 +197,18 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Providers forcedTheme="dark">
-          <div className="flex w-full justify-center">
-            <div className="flex w-full max-w-[750px] md:max-w-[1680px] ">
-              <div className="flex flex-col flex-1 overflow-y-hidden z-10 overflow-x-hidden  bg-white dark:bg-inherit">
-                <div className="w-full mx-auto relative min-h-full">
-                  {/* <Header /> */}
-                  <main className="relative flex-1 w-full mx-auto z-10 select-none">
-                    {children}
-                  </main>
+          <main className="relative z-10 select-none min-w-0 max-w-fit mx-auto">
+            {children}
+          </main>
+          <div className="z-50 flex fixed inset-0 w-full justify-center pointer-events-none select-none">
+            <div className="flex flex-col items-center justify-end min-h-screen w-full">
+              <FeesContainer className="hidden md:flex max-w-[650px] md:min-w-[650px] md:max-w-[950px] pb-[20px] justify-end">
+                <div className="pointer-events-auto">
+                  <div className="hidden sm:flex relative gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#344240] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
+                    <Share />
+                  </div>
                 </div>
-              </div>
-              <div className="z-50 flex fixed inset-0 w-full justify-end pointer-events-none select-none">
-                <div className="flex flex-col justify-between w-full max-w-[650px] md:max-w-[1680px] mx-auto min-h-screen">
-                  <FeesContainer className="invisible pt-[102px] pointer-events-auto">
-                    <div className="flex px-[5px] items-center w-full h-[54px] rounded-full bg-[#344240] shadow-[0px_0px_50px_0px_#000000]">
-                      <a
-                        className="flex items-center w-[162px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-2 gap"
-                        href="https://www.growthepie.xyz/"
-                        target="_blank"
-                      >
-                        <Icon icon="gtp:house" className="h-6 w-6" />
-                        <div className="font-bold">Main platform</div>
-                      </a>
-                    </div>
-                  </FeesContainer>
-                  <FeesContainer className="hidden md:flex w-full justify-end pb-[20px]">
-                    <div className="pointer-events-auto">
-                      <div className="relative gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#344240] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000] sm:flex hidden ">
-                        <Share />
-                      </div>
-                    </div>
-                  </FeesContainer>
-                </div>
-              </div>
+              </FeesContainer>
             </div>
           </div>
           {process.env.NEXT_PUBLIC_VERCEL_ENV === "development" && (
