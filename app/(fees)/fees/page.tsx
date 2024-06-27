@@ -546,6 +546,9 @@ export default function FeesPage() {
         const bData =
           feeData.chain_data[b]["hourly"][selectedQuantitative].data;
 
+        if (aData.length > 0 && bData.length === 0) return -1;
+        if (aData.length === 0 && bData.length > 0) return 1;
+
         // Handle empty array case
         if (aData.length === 0 && bData.length === 0) {
           // Both arrays are empty, prioritize based on selection
