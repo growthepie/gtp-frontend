@@ -245,9 +245,7 @@ export default function FeesHorizontalScrollContainer(
   }, [showLeftGradient, showRightGradient]);
 
   return (
-    <div
-      className={`group relative w-full px-0 overflow-x-visible ${className}`}
-    >
+    <div className={`relative w-full px-0 overflow-x-visible ${className}`}>
       <div
         className={`transition-all duration-300 ${
           showScroller && showLeftGradient ? "opacity-100" : "opacity-0"

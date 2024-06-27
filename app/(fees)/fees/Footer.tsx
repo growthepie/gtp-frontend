@@ -52,10 +52,24 @@ export default function Footer({
         "fixed bottom-[20px] md:bottom-0 left-0 right-0 flex flex-col-reverse md:flex-col justify-center px-[20px]"
       }
     >
-      <FeesContainer className="max-w-[650px] md:min-w-[650px] md:max-w-[950px] flex justify-center md:justify-start">
-        <div className="w-full flex flex-col md:flex-row justify-center items-center md:justify-start gap-y-[10px] md:gap-x-[15px] px-[15px] pb-[2px] md:pb-[28px]">
+      <div className="relative pointer-events-none">
+        <div
+          className="bg-[#151a19] z-10 md:hidden fixed inset-0 pointer-events-none"
+          style={{
+            backgroundPosition: "bottom",
+            maskImage: `linear-gradient(to top, white 0, white 80px, transparent 120px`,
+          }}
+        >
+          <div className="background-gradient-group">
+            <div className="background-gradient-yellow"></div>
+            <div className="background-gradient-green"></div>
+          </div>
+        </div>
+      </div>
+      <FeesContainer className="max-w-[650px] md:min-w-[650px] md:max-w-[750px] flex justify-center md:justify-start z-20">
+        <div className="w-full flex flex-col md:flex-row justify-center items-center md:justify-start gap-y-[10px] md:gap-x-[15px] px-[15px] pb-[2px] md:pb-[20px]">
           <div
-            className={`flex items-center text-[12px] text-[#CDD8D3] dark:text-[#CDD8D3] gap-x-[5px] md:gap-x-[15px]`}
+            className={`flex items-center md:h-[50px] text-[12px] text-[#CDD8D3] dark:text-[#CDD8D3] gap-x-[5px] md:gap-x-[15px]`}
           >
             <Link
               href="/privacy-policy"
@@ -103,14 +117,14 @@ export default function Footer({
         </div>
       </FeesContainer>
       {isMobile && (
-        <div className={`w-[100%] mb-2 z-10 hover:cursor-pointer`}>
+        <div className={`w-[100%] mb-2 z-10`}>
           <div className="relative flex p-[5px] items-center w-[100%] justify-between rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000]">
             <a
               className="flex items-center w-[44px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
               href="https://www.growthepie.xyz/"
               target="_blank"
             >
-              <div className="w-6 h-6">
+              <div className="w-6 h-6 z-[100]">
                 <Icon icon="gtp:house" className="h-6 w-6" />
               </div>
             </a>

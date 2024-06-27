@@ -18,7 +18,7 @@ export default React.forwardRef(function OffScreenSlider(
       ref={ref}
     >
       {floatingChildren}
-      <FeesContainer className="max-w-full md:min-w-[650px] md:max-w-[950px]">
+      <FeesContainer className="max-w-full md:min-w-[650px] md:max-w-[750px]">
         {children}
       </FeesContainer>
     </div>

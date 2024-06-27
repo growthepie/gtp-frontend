@@ -240,9 +240,7 @@ export default function HorizontalScrollContainer({
   }, [showLeftGradient, showRightGradient]);
 
   return (
-    <div
-      className={`group relative w-full px-0 overflow-x-hidden ${className}`}
-    >
+    <div className={`relative w-full px-0 overflow-x-hidden ${className}`}>
       <div
         className={`transition-all duration-300 ${
           showScroller && showLeftGradient ? "opacity-100" : "opacity-0"

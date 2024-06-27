@@ -88,7 +88,7 @@ export default function Header() {
           </div>
         </div>
       </div>
-      <div className="items-center z-10 hidden md:flex md:space-x-[34px] h-full mt-[7px]">
+      <div className="items-center z-0 hidden md:flex md:space-x-[34px] h-full mt-[7px]">
         <EthUsdSwitch />
 
         <div className="flex space-x-[22px] pr-2.5 items-center">
