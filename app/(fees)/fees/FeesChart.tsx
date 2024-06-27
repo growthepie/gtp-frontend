@@ -101,7 +101,7 @@ export default function FeesChart({
   );
 
   const reversePerformer = useMemo(() => {
-    if (selectedMetric === "tps") return false;
+    if (master.fee_metrics[selectedMetric].invert_normalization) return false;
     return true;
   }, [selectedMetric]);
 
