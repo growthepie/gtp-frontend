@@ -996,6 +996,17 @@ export default function FeesPage() {
         }
       }
 
+      let decimals =
+        unitKey === "eth" && showGwei
+          ? 2
+          : master.fee_metrics[metric].units[unitKey]
+          ? master.fee_metrics[metric].units[unitKey].decimals
+          : 2;
+
+      if (master.fee_metrics[metric].currency && showUsd && showCents) {
+        decimals = master.fee_metrics[metric].units["usd"].decimals - 2;
+      }
+
       // ethereum chain as a special case
       if (chain === "ethereum" && metric === selectedQuantitative) {
         return (
@@ -1035,14 +1046,8 @@ export default function FeesPage() {
                 ? lessThanValue
                 : Intl.NumberFormat(undefined, {
                     notation: "compact",
-                    maximumFractionDigits:
-                      unitKey === "eth" && showGwei
-                        ? 2
-                        : master.fee_metrics[metric].units[unitKey].decimals,
-                    minimumFractionDigits:
-                      unitKey === "eth" && showGwei
-                        ? 2
-                        : master.fee_metrics[metric].units[unitKey].decimals,
+                    maximumFractionDigits: decimals,
+                    minimumFractionDigits: decimals,
                   }).format(multipliedValue)}
             </div>
             {master.fee_metrics[metric].currency && showUsd && showCents && (
@@ -1124,14 +1129,8 @@ export default function FeesPage() {
               ? lessThanValue
               : Intl.NumberFormat(undefined, {
                   notation: "compact",
-                  maximumFractionDigits:
-                    unitKey === "eth" && showGwei
-                      ? 2
-                      : master.fee_metrics[metric].units[unitKey].decimals,
-                  minimumFractionDigits:
-                    unitKey === "eth" && showGwei
-                      ? 2
-                      : master.fee_metrics[metric].units[unitKey].decimals,
+                  maximumFractionDigits: decimals,
+                  minimumFractionDigits: decimals,
                 }).format(multipliedValue)}
           </div>
           {master.fee_metrics[metric].currency && showUsd && showCents && (

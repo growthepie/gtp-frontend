@@ -153,6 +153,17 @@ export default function FeesChart({
         : "";
       let multiplier = 1;
 
+      let decimals =
+        unitKey === "eth" && showGwei
+          ? 2
+          : master.fee_metrics[selectedMetric].units[unitKey]
+          ? master.fee_metrics[selectedMetric].units[unitKey].decimals
+          : 2;
+
+      if (master.fee_metrics[selectedMetric].currency && showUsd && showCents) {
+        decimals = master.fee_metrics[selectedMetric].units["usd"].decimals - 2;
+      }
+
       if (master.fee_metrics[selectedMetric].currency) {
         if (!showUsd) {
           if (showGwei) {
@@ -198,7 +209,7 @@ export default function FeesChart({
 
       return number;
     },
-    [valuePrefix, showUsd, selectedMetric, showGwei, showCents],
+    [master.fee_metrics, selectedMetric, showUsd, showGwei, showCents],
   );
 
   const tooltipFormatter = useCallback(
@@ -297,11 +308,20 @@ export default function FeesChart({
             ];
           const unitKey = typeString.replace("value_", "");
 
-          const decimals = master.fee_metrics[selectedMetric].currency
+          let decimals = master.fee_metrics[selectedMetric].currency
             ? showGwei && !showUsd
               ? 2
               : master.fee_metrics[selectedMetric].units[unitKey].decimals
             : master.fee_metrics[selectedMetric].units[unitKey].decimals;
+
+          if (
+            master.fee_metrics[selectedMetric].currency &&
+            showUsd &&
+            showCents
+          ) {
+            decimals =
+              master.fee_metrics[selectedMetric].units["usd"].decimals - 2;
+          }
 
           let prefix = master.fee_metrics[selectedMetric].units[unitKey].prefix;
           let suffix = master.fee_metrics[selectedMetric].units[unitKey].suffix;
@@ -320,6 +340,13 @@ export default function FeesChart({
                 prefix = "";
                 suffix = " cents";
                 displayValue = y * 100;
+                if (displayValue < 0.1) {
+                  displayValue = 0.1;
+                  prefix = "< " + prefix;
+                }
+              } else if (displayValue < 0.001) {
+                displayValue = 0.001;
+                prefix = "< " + prefix;
               }
             }
           } else {

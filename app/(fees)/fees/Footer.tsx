@@ -49,7 +49,7 @@ export default function Footer({
   return (
     <div
       className={
-        "fixed bottom-[20px] md:bottom-0 left-0 right-0 flex flex-col-reverse md:flex-col justify-center px-[20px]"
+        "fixed bottom-[20px] md:bottom-0 left-0 right-0 flex flex-col-reverse md:flex-col justify-center px-[20px] z-20"
       }
     >
       <div className="relative pointer-events-none">
@@ -119,7 +119,7 @@ export default function Footer({
       {isMobile && (
         <div className={`w-[100%] mb-2 z-10`}>
           <div className="relative flex p-[5px] items-center w-[100%] justify-between rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000]">
-            <a
+            <Link
               className="flex items-center w-[44px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
               href="https://www.growthepie.xyz/"
               target="_blank"
@@ -127,10 +127,10 @@ export default function Footer({
               <div className="w-6 h-6 z-[100]">
                 <Icon icon="gtp:house" className="h-6 w-6" />
               </div>
-            </a>
-            <div className="flex items-center  gap-x-[10px]">
+            </Link>
+            <div className="flex items-center gap-x-[10px]">
               <div
-                className={`flex items-center relative w-[44px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-[10px] py-[10px] gap transition-all z-20 duration-300 ${
+                className={`flex items-center relative w-[44px] h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-[10px] py-[10px] gap transition-all z-20 duration-300 cursor-pointer ${
                   hoverSettings
                     ? "w-[308px] justify-start"
                     : "w-[128px] justify-start"
