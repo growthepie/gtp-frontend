@@ -223,7 +223,7 @@ export default function FeesHorizontalScrollContainer(
   }, [currentScrollPercentage]);
 
   const showRightGradient = useMemo(() => {
-    return currentScrollPercentage < 100;
+    return currentScrollPercentage < 99;
   }, [currentScrollPercentage]);
 
   useEffect(() => {
@@ -245,20 +245,32 @@ export default function FeesHorizontalScrollContainer(
   }, [showLeftGradient, showRightGradient]);
 
   return (
-    <div className={`w-full px-0 overflow-x-visible ${className}`}>
+    <div
+      className={`group relative w-full px-0 overflow-x-visible ${className}`}
+    >
+      <div
+        className={`transition-all duration-300 ${
+          showScroller && showLeftGradient ? "opacity-100" : "opacity-0"
+        } z-10 absolute top-0 bottom-0 -left-[58px] w-[125px] bg-[linear-gradient(-90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none`}
+      ></div>
+      <div
+        className={`transition-all duration-300 ${
+          showScroller && showRightGradient ? "opacity-100" : "opacity-0"
+        } z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none`}
+      ></div>
       <div className="overflow-x-visible">
         <div
           className={`${
-            includeMargin && "pl-[20px] md:pl-[103px]"
+            includeMargin && "pl-[20px] md:pl-[50px]"
           } relative overflow-x-scroll scrollbar-none max-w-full`}
           ref={contentSrollAreaRef}
           style={{
-            maskClip: "padding-box",
-            WebkitMaskClip: "padding-box",
-            WebkitMaskImage: maskGradient,
-            maskImage: maskGradient,
-            WebkitMaskSize: "100% 100%",
-            maskSize: "100% 100%",
+            // maskClip: "padding-box",
+            // WebkitMaskClip: "padding-box",
+            // WebkitMaskImage: maskGradient,
+            // maskImage: maskGradient,
+            // WebkitMaskSize: "100% 100%",
+            // maskSize: "100% 100%",
             paddingRight: paddingRight ? `${paddingRight}px` : undefined,
             paddingLeft: paddingLeft ? `${paddingLeft}px` : undefined,
             paddingTop: paddingTop ? `${paddingTop}px` : undefined,
@@ -267,12 +279,12 @@ export default function FeesHorizontalScrollContainer(
         >
           <div
             className={
-              showScroller && includeMargin ? "mr-[20px] md:mr-[103px]" : ""
+              showScroller && includeMargin ? "mr-[20px] md:mr-[50px]" : ""
             }
           >
             <div
               className={`w-full max-w-full ${
-                includeMargin && "pr-[20px] md:pr-[103px]"
+                includeMargin && "pr-[20px] md:pr-[50px]"
               }`}
               ref={contentRef}
               style={{
@@ -287,7 +299,7 @@ export default function FeesHorizontalScrollContainer(
         </div>
       </div>
       <div
-        className={`pt-[10px] px-[20px] md:px-[103px] w-full flex justify-center ${
+        className={`pt-[10px] px-[20px] md:px-[50px] w-full flex justify-center ${
           showScroller ? "block" : "hidden"
         }`}
       >
