@@ -47,12 +47,12 @@ export default function Footer({
 }) {
   const isMobile = useMediaQuery("(max-width: 767px)");
   return (
-    <Container
+    <FeesContainer
       className={`fixed flex w-[calc(100vw-0px)] md:w-full mx-auto  ${
         isMobile ? "flex-col-reverse bottom-1" : "flex-col bottom-0"
       }`}
     >
-      <Container
+      <FeesContainer
         className={`!px-0 flex items-center justify-start w-full z-[10] ${
           isMobile ? "pb-[2px]" : "pb-[37px]"
         }`}
@@ -105,7 +105,7 @@ export default function Footer({
             <div className="">© {new Date().getFullYear()} growthepie 🥧📏</div>
           </div>
         </div>
-      </Container>
+      </FeesContainer>
       {isMobile && (
         <div className={`w-[100%] px-1 mb-2 z-10 hover:cursor-pointer`}>
           <div className="relative flex p-[5px] items-center w-[100%] justify-between rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000]">
@@ -378,6 +378,6 @@ export default function Footer({
           </div>
         </div>
       )}
-    </Container>
+    </FeesContainer>
   );
 }

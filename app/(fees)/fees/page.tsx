@@ -103,12 +103,12 @@ export default function FeesPage() {
   // const [enabledMetrics, setEnabledMetrics] = useState<string[]>([]);
   // const MetricWidths
 
-  const [metrics, setMetrics] = useSessionStorage<{
+  const [metrics, setMetrics] = useState<{
     [key: string]: {
       width: string;
       enabled: boolean;
     };
-  }>("feesMetrics", {
+  }>({
     txcosts_median: {
       width: "75px",
       enabled: true,
@@ -124,7 +124,7 @@ export default function FeesPage() {
   });
 
   const NUM_HOURS = useMemo(() => {
-    if (!feeData || !master) return 0;
+    if (!feeData) return 0;
 
     const length =
       Math.min(
@@ -134,7 +134,11 @@ export default function FeesPage() {
 
     setSelectedBarIndex(length - 1);
 
-    // check if tps data is available
+    return length;
+  }, [feeData]);
+
+  useEffect(() => {
+    if (!feeData || !master) return;
 
     const newMetrics = { ...metrics };
 
@@ -147,10 +151,7 @@ export default function FeesPage() {
     } else {
       // remove tps from metrics if not available
       if ("tps" in metrics) {
-        setMetrics((prevMetrics: any) => {
-          delete prevMetrics.tps;
-          return prevMetrics;
-        });
+        delete newMetrics["tps"];
       }
     }
 
@@ -163,10 +164,7 @@ export default function FeesPage() {
     } else {
       // remove throughput from metrics if not available
       if ("throughput" in metrics) {
-        setMetrics((prevMetrics: any) => {
-          delete prevMetrics.throughput;
-          return prevMetrics;
-        });
+        delete newMetrics["throughput"];
       }
     }
 
@@ -179,24 +177,22 @@ export default function FeesPage() {
     } else {
       // remove tps from metrics if not available
       if ("txcosts_avg" in metrics) {
-        setMetrics((prevMetrics: any) => {
-          delete prevMetrics.txcosts_avg;
-          return prevMetrics;
-        });
+        delete newMetrics["txcosts_avg"];
       }
     }
 
-    // set enabled to false for metrics that have a priority value higher than 3
-    Object.keys(newMetrics).forEach((key) => {
-      const metric = master.fee_metrics[key];
-      if (metric.priority > 4) {
-        newMetrics[key].enabled = false;
-      }
-    });
+    // enabled should only be true for the 4 lowest priority metrics
+    Object.keys(newMetrics)
+      .filter((key) => feeData.chain_data["ethereum"]["hourly"][key])
+      .sort((a, b) => {
+        return master.fee_metrics[a].priority - master.fee_metrics[b].priority;
+      })
+
+      .forEach((key, index) => {
+        newMetrics[key].enabled = index < 4;
+      });
 
     setMetrics(newMetrics);
-
-    return length;
   }, [feeData, master]);
 
   const isMobile = useMediaQuery("(max-width: 767px)");
