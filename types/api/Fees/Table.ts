@@ -7,11 +7,12 @@ export interface ChainDatum {
 }
 
 export interface Hourly {
-  txcosts_avg: CostsBody;
+  txcosts_avg?: CostsBody;
   txcosts_native_median: CostsBody;
   txcosts_median: CostsBody;
   txcosts_swap: CostsBody;
-  tps?: TPSBody;
+  tps?: ThroughputBody;
+  throughput?: ThroughputBody;
 }
 
 export interface CostsBody {
@@ -19,8 +20,8 @@ export interface CostsBody {
   data: [number, number, number, number][];
 }
 
-export interface TPSBody {
-  types: [TPSType, TPSType, TPSType];
+export interface ThroughputBody {
+  types: [TroughputType, TroughputType, TroughputType];
   data: [number, number, number][];
 }
 
@@ -31,7 +32,7 @@ export enum CostType {
   ValueUsd = "value_usd",
 }
 
-export enum TPSType {
+export enum TroughputType {
   Normalized = "normalized",
   Unix = "unix",
   Value = "value",

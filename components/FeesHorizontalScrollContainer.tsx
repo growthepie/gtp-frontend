@@ -249,7 +249,7 @@ export default function FeesHorizontalScrollContainer(
       <div className="overflow-x-visible">
         <div
           className={`${
-            includeMargin && "pl-[20px] md:pl-[40px]"
+            includeMargin && "pl-[20px] md:pl-[103px]"
           } relative overflow-x-scroll scrollbar-none max-w-full`}
           ref={contentSrollAreaRef}
           style={{
@@ -267,12 +267,12 @@ export default function FeesHorizontalScrollContainer(
         >
           <div
             className={
-              showScroller && includeMargin ? "mr-[20px] md:mr-[40px]" : ""
+              showScroller && includeMargin ? "mr-[20px] md:mr-[103px]" : ""
             }
           >
             <div
               className={`w-full max-w-full ${
-                includeMargin && "pr-[20px] md:pr-[40px]"
+                includeMargin && "pr-[20px] md:pr-[103px]"
               }`}
               ref={contentRef}
               style={{
@@ -287,7 +287,7 @@ export default function FeesHorizontalScrollContainer(
         </div>
       </div>
       <div
-        className={`pt-[10px] px-[20px] md:px-[40px] w-full flex justify-center ${
+        className={`pt-[10px] px-[20px] md:px-[103px] w-full flex justify-center ${
           showScroller ? "block" : "hidden"
         }`}
       >

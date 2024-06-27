@@ -76,7 +76,9 @@ export interface UnitSchema {
 
 export interface FeeSchema {
   name: string;
+  name_short: string;
   units: { [key: string]: UnitSchema };
+  category: string;
   currency: boolean;
   priority: number;
   invert_normalization: boolean;

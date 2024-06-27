@@ -48,7 +48,7 @@ export default function Footer({
   const isMobile = useMediaQuery("(max-width: 767px)");
   return (
     <Container
-      className={`fixed flex w-[calc(100vw-0px)] md:w-[945px] mx-auto  ${
+      className={`fixed flex w-[calc(100vw-0px)] md:w-full mx-auto  ${
         isMobile ? "flex-col-reverse bottom-1" : "flex-col bottom-0"
       }`}
     >
@@ -168,7 +168,7 @@ export default function Footer({
           >
             <div className="flex flex-col w-full">
               <div className="flex items-center w-full">
-                <div className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full pl-[0px] pr-[15px]">
+                <div className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full pl-[15px] pr-[15px]">
                   <div className="font-normal text-forest-500/50 text-right">
                     Units
                   </div>
@@ -310,7 +310,7 @@ export default function Footer({
                                           // if enabling another metric will exceed the limit of 4 enabled metrics, disable the previously enabled metric with the lowest priority
                                           if (
                                             isEnabling &&
-                                            enabledMetricsCount === 4
+                                            enabledMetricsCount === 6
                                           ) {
                                             const lowestPriorityMetricKey =
                                               enabledMetricKeysByPriority[0];

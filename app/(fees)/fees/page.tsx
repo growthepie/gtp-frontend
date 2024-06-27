@@ -5,7 +5,7 @@ import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import useSWR from "swr";
-import { useLocalStorage, useMediaQuery } from "usehooks-ts";
+import { useSessionStorage, useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { FeesURLs, MasterURL } from "@/lib/urls";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import Header from "./Header";
@@ -103,28 +103,28 @@ export default function FeesPage() {
   // const [enabledMetrics, setEnabledMetrics] = useState<string[]>([]);
   // const MetricWidths
 
-  const [metrics, setMetrics] = useState<{
+  const [metrics, setMetrics] = useSessionStorage<{
     [key: string]: {
       width: string;
       enabled: boolean;
     };
-  }>({
+  }>("feesMetrics", {
     txcosts_median: {
-      width: "90px",
+      width: "75px",
       enabled: true,
     },
     txcosts_native_median: {
-      width: "90px",
+      width: "115px",
       enabled: true,
     },
     txcosts_swap: {
-      width: "80px",
-      enabled: false,
+      width: "100px",
+      enabled: true,
     },
   });
 
   const NUM_HOURS = useMemo(() => {
-    if (!feeData) return 0;
+    if (!feeData || !master) return 0;
 
     const length =
       Math.min(
@@ -135,42 +135,17 @@ export default function FeesPage() {
     setSelectedBarIndex(length - 1);
 
     // check if tps data is available
+
+    const newMetrics = { ...metrics };
+
+    // add tps to metrics if available
     if (feeData.chain_data["ethereum"]["hourly"]["tps"]) {
-      // add tps to metrics if available
-      setMetrics((prevMetrics: any) => {
-        return {
-          ...prevMetrics,
-          throughput: {
-            title: "Throughput",
-            width: "80px",
-            enabled: false,
-          },
-          txcosts_avg: {
-            title: "Average Fee",
-            width: "80px",
-            enabled: false,
-          },
-          tps: {
-            title: "TPS",
-            width: "50px",
-            enabled: true,
-          },
-        };
-      });
+      newMetrics["tps"] = {
+        width: "85px",
+        enabled: true,
+      };
     } else {
       // remove tps from metrics if not available
-      if ("throughput" in metrics) {
-        setMetrics((prevMetrics: any) => {
-          delete prevMetrics.throughput;
-          return prevMetrics;
-        });
-      }
-      if ("txcosts_avg" in metrics) {
-        setMetrics((prevMetrics: any) => {
-          delete prevMetrics.txcosts_avg;
-          return prevMetrics;
-        });
-      }
       if ("tps" in metrics) {
         setMetrics((prevMetrics: any) => {
           delete prevMetrics.tps;
@@ -179,8 +154,50 @@ export default function FeesPage() {
       }
     }
 
+    // add throughput to metrics if available
+    if (feeData.chain_data["ethereum"]["hourly"]["throughput"]) {
+      newMetrics["throughput"] = {
+        width: "125px",
+        enabled: true,
+      };
+    } else {
+      // remove throughput from metrics if not available
+      if ("throughput" in metrics) {
+        setMetrics((prevMetrics: any) => {
+          delete prevMetrics.throughput;
+          return prevMetrics;
+        });
+      }
+    }
+
+    // add average fee to metrics if available
+    if (feeData.chain_data["ethereum"]["hourly"]["txcosts_avg"]) {
+      newMetrics["txcosts_avg"] = {
+        width: "115px",
+        enabled: true,
+      };
+    } else {
+      // remove tps from metrics if not available
+      if ("txcosts_avg" in metrics) {
+        setMetrics((prevMetrics: any) => {
+          delete prevMetrics.txcosts_avg;
+          return prevMetrics;
+        });
+      }
+    }
+
+    // set enabled to false for metrics that have a priority value higher than 3
+    Object.keys(newMetrics).forEach((key) => {
+      const metric = master.fee_metrics[key];
+      if (metric.priority > 4) {
+        newMetrics[key].enabled = false;
+      }
+    });
+
+    setMetrics(newMetrics);
+
     return length;
-  }, [feeData]);
+  }, [feeData, master]);
 
   const isMobile = useMediaQuery("(max-width: 767px)");
 
@@ -245,9 +262,10 @@ export default function FeesPage() {
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const { theme } = useTheme();
 
-  const [selectedChains, setSelectedChains] = useState<{
+  const [selectedChains, setSelectedChains] = useLocalStorage<{
     [key: string]: boolean;
   }>(
+    "feesSelectedChains",
     Object.entries(AllChainsByKeys).reduce((acc, [key, chain]) => {
       if (AllChainsByKeys[key].chainType === "L2") acc[key] = true;
       return acc;
@@ -286,41 +304,6 @@ export default function FeesPage() {
       return acc + (curr.enabled ? 1 : 0);
     }, 0);
   }, [metrics]);
-
-  // useEffect(() => {
-  //   if (!master) return;
-
-  //   if (enabledMetricsCount > 4) {
-  //     // disable the metrics with lowest priority so we're only showing 4 metrics
-  //     const enabledMetrics = Object.entries(metrics).filter(
-  //       ([key, value]) => value.enabled,
-  //     );
-
-  //     // sort by priority
-  //     enabledMetrics.sort(([aKey, aValue], [bKey, bValue]) => {
-  //       // priority is in master
-  //       return (
-  //         master.fee_metrics[aKey].priority - master.fee_metrics[bKey].priority
-  //       );
-  //     });
-
-  //     // disable the metrics with lowest priority
-  //     const metricsToDisable = enabledMetrics.slice(4);
-
-  //     setMetrics((prevMetrics) => {
-  //       const updatedMetrics = { ...prevMetrics };
-
-  //       metricsToDisable.forEach(([key, value]) => {
-  //         updatedMetrics[key] = {
-  //           ...value,
-  //           enabled: false,
-  //         };
-  //       });
-
-  //       return updatedMetrics;
-  //     });
-  //   }
-  // }, [enabledMetricsCount, master, metrics]);
 
   const timescales = useMemo(() => {
     return {
@@ -597,11 +580,12 @@ export default function FeesPage() {
     return sortedChains;
   }, [
     feeData,
+    master,
     selectedChains,
-    selectedQuantitative,
-    selectedBarIndex,
     sortOrder,
+    selectedQuantitative,
     NUM_HOURS,
+    selectedBarIndex,
     quantitativeValueIndex,
   ]);
 
@@ -799,12 +783,12 @@ export default function FeesPage() {
     }),
     {
       key: (d) => d.chain[1],
-      from: { height: 0 },
-      leave: { height: 0 },
-      enter: ({ y, height }) => ({ y, height }),
+      from: { opacity: 0, height: 0 },
+      leave: { opacity: 0, height: 0 },
+      enter: ({ y, height }) => ({ opacity: 1, y, height }),
       update: ({ y, height }) => ({ y, height }), // Ensure height change is animated
-      config: { mass: 5, tension: 500, friction: 100 },
-      trail: 25,
+      // config: { mass: 1, tension: 500, friction: 10 },
+      // trail: 25,
     },
   );
 
@@ -1224,8 +1208,6 @@ export default function FeesPage() {
     return allPass;
   }, [dataAvailByChain, finalSort, selectedAvailability, selectedChains]);
 
-  console.log(master ? master : "");
-
   return (
     <>
       <ShowLoading
@@ -1380,7 +1362,7 @@ export default function FeesPage() {
                               className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full pl-[8px]"
                             >
                               <div className="font-normal text-forest-500/50 text-right">
-                                {categoryKey + " Metrics"}
+                                {categoryKey} Metrics
                               </div>
                               {Object.keys(master.fee_metrics)
                                 .filter(
@@ -1389,11 +1371,13 @@ export default function FeesPage() {
                                     master.fee_metrics[metricKey].category ==
                                       categoryKey,
                                 )
-                                .sort(
-                                  (a, b) =>
+                                .sort((a, b) => {
+                                  // sort by priority
+                                  return (
                                     master.fee_metrics[a].priority -
-                                    master.fee_metrics[b].priority,
-                                )
+                                    master.fee_metrics[b].priority
+                                  );
+                                })
                                 .map((metric) => {
                                   const enabledMetricKeysByPriority =
                                     Object.keys(metrics)
@@ -1462,7 +1446,7 @@ export default function FeesPage() {
                                             // if enabling another metric will exceed the limit of 4 enabled metrics, disable the previously enabled metric with the lowest priority
                                             if (
                                               isEnabling &&
-                                              enabledMetricsCount === 4
+                                              enabledMetricsCount === 6
                                             ) {
                                               const lowestPriorityMetricKey =
                                                 enabledMetricKeysByPriority[0];
@@ -1531,9 +1515,9 @@ export default function FeesPage() {
             </div>
           </div>
         </FeesContainer>
-        <FeesContainer className="w-full mt-[30px] flex items-end sm:items-center justify-between md:justify-start  gap-x-[10px]">
-          <h1 className="text-[20px] md:text-[30px] leading-[120%] font-bold ">
-            {`How much a typical user paid on Layer 2s`}
+        <FeesContainer className="w-full mt-[30px] flex items-end sm:items-center justify-between md:justify-start gap-x-[10px]">
+          <h1 className="text-[20px] md:text-[30px] leading-[120%] font-bold pl-[15px]">
+            How much a typical user paid on L2s
           </h1>
           <div className="min-w-[92px] h-[26px] py-[6px] pl-[10px] pr-[5px] items-center justify-center border-[#344240] border bg-[#1F2726] text-[12px] rounded-r-full leading-[1] font-bold">
             {NUM_HOURS - selectedBarIndex === 1
@@ -1544,20 +1528,14 @@ export default function FeesPage() {
 
         <FeesHorizontalScrollContainer className="">
           {feeData && master && (
-            <div className="relative w-auto md:pr-[0px] lg:pr-[0px] overflow-x-visible">
+            <div className="relative w-auto overflow-x-visible">
               <div
-                className={`relative w-[750px] md:w-[887px] flex justify-start pt-[30px] pb-[8px] text-[10px] md:text-[12px] font-bold leading-[1]`}
+                className={`relative w-full flex justify-start pt-[40px] pb-[8px] pr-[10px] text-[10px] md:text-[12px] font-bold leading-[1]`}
               >
-                <div className="pl-[10px] pr-[30px] md:pr-[20px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[180px,auto,180px]">
-                  <div className={`flex items-center gap-x-[5px]`}>
-                    <div
-                      className={`flex items-center h-[0px] w-[18px] md:h-[0px] md:w-[24px]`}
-                    >
-                      <div
-                        className={`${
-                          isMobile ? "h-[0px] w-[18px]" : "h-[0px] w-[24px]"
-                        }`}
-                      />
+                <div className="pl-[15px] pr-[20px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[200px,auto,180px] gap-x-[20px]">
+                  <div className={`flex items-center gap-x-[10px]`}>
+                    <div className={`h-[0px] w-[18px] md:h-[0px] md:w-[24px]`}>
+                      <div className="h-[0px] w-[18px] md:w-[24px]" />
                     </div>
                     <div
                       className="flex items-center gap-x-0.5 cursor-pointer"
@@ -1614,76 +1592,116 @@ export default function FeesPage() {
                       />{" "}
                     </div>
                   </div>
-                  <div
-                    className="grid grid-flow-col items-center justify-between pr-[10px]"
-                    style={{
-                      gridTemplateColumns: Object.values(metrics)
-                        .filter((metric) => metric.enabled)
-                        .map((metric) => `minmax(${metric.width}, 100%)`)
-                        .join(" "),
-                    }}
-                  >
-                    {Object.keys(metrics)
-                      .sort(
-                        // master has the priority of each metric
-                        (a, b) =>
-                          master.fee_metrics[a].priority -
-                          master.fee_metrics[b].priority,
+                  <div className="grid grid-flow-col items-center gap-x-[10px]">
+                    {[
+                      ...new Set(
+                        Object.values(master.fee_metrics).map(
+                          (metric) => metric.category,
+                        ),
+                      ),
+                    ]
+                      .filter(
+                        // remove categories that have no enabled metrics
+                        (category) => {
+                          return Object.keys(metrics).some(
+                            (metric) =>
+                              metrics[metric].enabled &&
+                              master.fee_metrics[metric].category === category,
+                          );
+                        },
                       )
-                      .map((metric, i) => {
-                        if (!metrics[metric].enabled) return null;
-
-                        return (
-                          <div
-                            className="flex items-center justify-center"
-                            key={metric + "_header"}
-                          >
-                            <div
-                              className="flex items-center justify-end"
-                              style={{ width: metrics[metric].width }}
-                            >
-                              <div
-                                className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px]  z-10"
-                                onClick={() => {
-                                  if (selectedQuantitative === metric) {
-                                    if (selectedQualitative) {
-                                      setSelectedQualitative(null);
-                                    } else {
-                                      setSortOrder(!sortOrder);
-                                    }
-                                  } else {
-                                    setSelectedQualitative(null);
-                                    setSelectedQuantitative(metric);
-                                  }
-                                }}
-                              >
-                                <div className="">
-                                  {master.fee_metrics[metric].name}
-                                </div>
-                                <Icon
-                                  icon={
-                                    !selectedQualitative &&
-                                    selectedQuantitative === metric
-                                      ? sortOrder
-                                        ? "formkit:arrowdown"
-                                        : "formkit:arrowup"
-                                      : "formkit:arrowdown"
-                                  }
-                                  className={`dark:text-white text-black w-[10px] h-[10px] ${
-                                    !selectedQualitative &&
-                                    selectedQuantitative === metric
-                                      ? "opacity-100"
-                                      : "opacity-20"
-                                  }`}
-                                />
-                              </div>
-                            </div>
+                      .map((category) => (
+                        <div
+                          key={category}
+                          className="relative grid grid-flow-col items-center justify-between"
+                          style={{
+                            gridTemplateColumns: Object.keys(metrics)
+                              .filter(
+                                (metric) =>
+                                  metrics[metric].enabled &&
+                                  master.fee_metrics[metric].category ===
+                                    category,
+                              )
+                              .map(
+                                (metric) =>
+                                  `minmax(${metrics[metric].width}, 100%)`,
+                              )
+                              .join(" "),
+                          }}
+                        >
+                          <div className="absolute left-[62px] -right-[0px] -bottom-[12px] -top-[22px] flex items-start justify-end text-[10px] font-normal text-forest-500/30 whitespace-nowrap">
+                            {category} Metrics
                           </div>
-                        );
-                      })}
+                          <div className="absolute left-8 right-0 bottom-[20px] h-[1px] bg-gradient-to-r from-transparent to-forest-500/15" />
+
+                          {Object.keys(metrics)
+                            .filter(
+                              (metric) =>
+                                master.fee_metrics[metric].category ===
+                                category,
+                            )
+                            .sort(
+                              (a, b) =>
+                                master.fee_metrics[a].priority -
+                                master.fee_metrics[b].priority,
+                            )
+                            .map((metric, i) => {
+                              if (!metrics[metric].enabled) return null;
+
+                              return (
+                                <div
+                                  className="flex items-center justify-end"
+                                  key={metric + "_header"}
+                                >
+                                  <div
+                                    className="flex items-center justify-end"
+                                    style={{ width: metrics[metric].width }}
+                                  >
+                                    <div
+                                      className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px]  z-10"
+                                      onClick={() => {
+                                        if (selectedQuantitative === metric) {
+                                          if (selectedQualitative) {
+                                            setSelectedQualitative(null);
+                                          } else {
+                                            setSortOrder(!sortOrder);
+                                          }
+                                        } else {
+                                          setSelectedQualitative(null);
+                                          setSelectedQuantitative(metric);
+                                        }
+                                      }}
+                                    >
+                                      <div className="">
+                                        {master.fee_metrics[metric].name_short}
+                                      </div>
+
+                                      <Icon
+                                        icon={
+                                          !selectedQualitative &&
+                                          selectedQuantitative === metric
+                                            ? sortOrder
+                                              ? "formkit:arrowdown"
+                                              : "formkit:arrowup"
+                                            : "formkit:arrowdown"
+                                        }
+                                        className={`dark:text-white text-black w-[10px] h-[10px] ${
+                                          !selectedQualitative &&
+                                          selectedQuantitative === metric
+                                            ? "opacity-100"
+                                            : "opacity-20"
+                                        }`}
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      ))}
                   </div>
                   <div
-                    className={`relative pl-[14px] flex flex-col justify-end items-end space-x-[1px] font-normal overflow-y-visible`}
+                    className={`relative -right-[1px] md:-left-[1px] flex flex-col justify-end items-end space-x-[1px] font-normal overflow-y-visible`}
                   >
                     <div className="relative flex space-x-[1px] items-end -bottom-2">
                       <div
@@ -1734,7 +1752,7 @@ export default function FeesPage() {
                 {/* <div className="w-[160px] block md:hidden"></div> */}
               </div>
               <div
-                className={`gap-y-1 relative`}
+                className={`relative`}
                 // extra row if mobile for Ethereum rows
                 style={{
                   minHeight:
@@ -1745,281 +1763,312 @@ export default function FeesPage() {
                   return (
                     <animated.div
                       key={item.chain[0]}
-                      className={`border-forest-700 border-[1px] mb-1 absolute rounded-full border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] pr-[20px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[180px,auto,180px] items-center
-                      ${
-                        isMobile
-                          ? "text-[12px] w-[740px]"
-                          : "text-[14px] w-[888px]"
-                      } ${
-                        selectedChains[item.chain[1]]
-                          ? "opacity-100"
-                          : "opacity-50"
-                      }`}
+                      className={`w-full absolute pr-[10px] h-[34px]`}
                       style={{ ...style }}
                     >
                       <div
-                        className={`flex justify-start items-center h-full gap-x-[5px] `}
+                        className={`w-full border-forest-700 border-[1px] rounded-full border-black/[16%] dark:border-[#5A6462] h-full pl-[15px] pr-[20px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[200px,auto,180px] items-center gap-x-[20px] 
+                      ${isMobile ? "text-[12px]" : "text-[14px]"} ${
+                          selectedChains[item.chain[1]]
+                            ? "opacity-100"
+                            : "opacity-50"
+                        }`}
                       >
-                        <div
-                          className={`flex items-center h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
-                        >
-                          <Icon
-                            icon={`gtp:${
+                        <div className={`flex items-center gap-x-[10px]`}>
+                          <div
+                            className={`h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
+                          >
+                            <Icon
+                              icon={`gtp:${
+                                AllChainsByKeys[item.chain[1]].urlKey
+                              }-logo-monochrome`}
+                              className={`h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
+                              style={{
+                                color:
+                                  AllChainsByKeys[item.chain[1]].colors[
+                                    "dark"
+                                  ][0],
+                              }}
+                            />
+                          </div>
+                          <Link
+                            className="hover:underline whitespace-nowrap"
+                            href={`https://www.growthepie.xyz/chains/${
                               AllChainsByKeys[item.chain[1]].urlKey
-                            }-logo-monochrome`}
-                            className={`${
-                              isMobile
-                                ? "h-[18px] w-[18px]"
-                                : "h-[24px] w-[24px]"
                             }`}
-                            style={{
-                              color:
-                                AllChainsByKeys[item.chain[1]].colors[
-                                  theme ?? "dark"
-                                ][0],
+                            target="_blank"
+                          >
+                            {isMobile
+                              ? master.chains[item.chain[1]].name_short
+                              : AllChainsByKeys[item.chain[1]].label}
+                          </Link>
+                          <div
+                            className={`group bg-[#344240] flex rounded-full items-center transition-width overflow-hidden duration-300 px-[5px] h-[18px] gap-x-[2px]`}
+                            onMouseEnter={() => {
+                              setHoveredItems({
+                                hoveredChain: item.chain[1],
+                                hoveredDA: hoveredItems.hoveredDA,
+                              });
                             }}
-                          />
-                        </div>
-                        <Link
-                          className="pr-[5px] hover:underline whitespace-nowrap"
-                          href={`https://www.growthepie.xyz/chains/${
-                            AllChainsByKeys[item.chain[1]].urlKey
-                          }`}
-                          target="_blank"
-                        >
-                          {isMobile
-                            ? master.chains[item.chain[1]].name_short
-                            : AllChainsByKeys[item.chain[1]].label}
-                        </Link>
-                        <div
-                          className={`bg-[#344240] flex rounded-full  items-center  transition-width overflow-hidden duration-300 ${
-                            isMobile
-                              ? "px-[4px] py-[2px] gap-x-[1px]"
-                              : "px-[5px] py-[3px] gap-x-[2px]"
-                          }`}
-                          onMouseEnter={() => {
-                            setHoveredItems({
-                              hoveredChain: item.chain[1],
-                              hoveredDA: hoveredItems.hoveredDA,
-                            });
-                          }}
-                          onMouseLeave={() => {
-                            setHoveredItems({
-                              hoveredChain: null,
-                              hoveredDA: hoveredItems.hoveredDA,
-                            });
-                          }}
-                        >
-                          {dataAvailByChain[item.chain[1]].map(
-                            (avail, index, array) => [
-                              <div
-                                key={avail.icon}
-                                className={`flex relative items-center gap-x-0.5 hover:cursor-pointer`}
-                                onMouseEnter={() => {
-                                  setHoveredItems({
-                                    hoveredChain: hoveredItems.hoveredChain,
-                                    hoveredDA: avail.label,
-                                  });
-                                }}
-                                onMouseLeave={() => {
-                                  setHoveredItems({
-                                    hoveredChain: hoveredItems.hoveredChain,
-                                    hoveredDA: null,
-                                  });
-                                }}
-                                onClick={() => {
-                                  if (!availabilityFilter) {
-                                    setAvailabilityFilter(true);
-                                  }
-                                  setSelectedAvailability(avail.label);
-                                  setManualSelectedChains({});
-                                }}
-                              >
-                                <Icon
-                                  icon={`gtp:${avail.icon}`}
-                                  className={`${
-                                    dataAvailByFilter &&
-                                    selectedAvailability === avail.label &&
-                                    selectedChains[item.chain[1]]
-                                      ? "text-forest-200"
-                                      : "text-[#5A6462] "
-                                  }
-                                  ${
-                                    isMobile
-                                      ? "h-[10px] w-[10px] "
-                                      : "h-[12px] w-[12px] "
-                                  }`}
-                                />
+                            onMouseLeave={() => {
+                              setHoveredItems({
+                                hoveredChain: null,
+                                hoveredDA: hoveredItems.hoveredDA,
+                              });
+                            }}
+                          >
+                            {dataAvailByChain[item.chain[1]].map(
+                              (avail, index, array) => [
                                 <div
-                                  className={`text-[8px] text-center font-semibold overflow-hidden ${
-                                    selectedAvailability === avail.label &&
-                                    selectedQualitative === "availability"
-                                      ? "text-forest-200"
-                                      : "text-[#5A6462] "
-                                  } ${
-                                    hoveredItems.hoveredDA === avail.label &&
-                                    hoveredItems.hoveredChain === item.chain[1]
-                                      ? ""
-                                      : "-mr-[2px]"
-                                  }`}
-                                  style={{
-                                    maxWidth:
+                                  key={avail.icon}
+                                  className={`flex relative items-center gap-x-0.5 h-full cursor-pointer`}
+                                  onMouseEnter={() => {
+                                    setHoveredItems({
+                                      hoveredChain: hoveredItems.hoveredChain,
+                                      hoveredDA: avail.label,
+                                    });
+                                  }}
+                                  onMouseLeave={() => {
+                                    setHoveredItems({
+                                      hoveredChain: hoveredItems.hoveredChain,
+                                      hoveredDA: null,
+                                    });
+                                  }}
+                                  onClick={() => {
+                                    if (!availabilityFilter) {
+                                      setAvailabilityFilter(true);
+                                    }
+                                    setSelectedAvailability(avail.label);
+                                    setManualSelectedChains({});
+                                  }}
+                                >
+                                  <Icon
+                                    icon={`gtp:${avail.icon}`}
+                                    className={`h-[10px] w-[10px] md:h-[12px] md:w-[12px] ${
+                                      dataAvailByFilter &&
+                                      selectedAvailability === avail.label &&
+                                      selectedChains[item.chain[1]]
+                                        ? "text-forest-200"
+                                        : "text-[#CDD8D3]/60"
+                                    }
+                                  `}
+                                  />
+                                  <div
+                                    className={`text-[8px] text-center font-semibold overflow-hidden max-w-0 group-hover:max-w-[50px] transition-all duration-300 ${
+                                      selectedAvailability === avail.label &&
+                                      selectedQualitative === "availability"
+                                        ? "text-forest-200"
+                                        : "text-[#CDD8D3]/60"
+                                    } ${
                                       hoveredItems.hoveredDA === avail.label &&
                                       hoveredItems.hoveredChain ===
                                         item.chain[1]
-                                        ? "50px"
-                                        : "0px",
-
-                                    transition: "max-width 0.3s ease", // Adjust duration and timing function as needed
-                                  }}
-                                >
-                                  {avail.label}
-                                </div>
-                              </div>,
-                              index !== array.length - 1 && (
-                                /* Content to render when index is not the last element */
-                                <div
-                                  key={avail.label}
-                                  className="w-[12px] h-[12px] flex items-center justify-center"
-                                  style={{
-                                    color: "#5A6462",
-                                  }}
-                                >
-                                  +
-                                </div>
-                              ),
-                            ],
-                          )}
-                        </div>
-                      </div>
-                      {/* <div
-                        className={`flex justify-between pl-[40px] pr-[22.5px]`}
-                      > */}
-                      <div
-                        className="grid grid-flow-col items-center justify-between pr-[10px]"
-                        style={{
-                          gridTemplateColumns: Object.values(metrics)
-                            .filter((metric) => metric.enabled)
-                            .map((metric) => `minmax(${metric.width}, 100%)`)
-                            .join(" "),
-                        }}
-                      >
-                        {Object.keys(metrics)
-                          .sort(
-                            // master has the priority of each metric
-                            (a, b) =>
-                              master.fee_metrics[a].priority -
-                              master.fee_metrics[b].priority,
-                          )
-                          .map((metric, i) => {
-                            if (!metrics[metric].enabled) return null;
-
-                            return (
-                              <div
-                                className="flex items-center justify-center"
-                                key={metric + "_barcontent"}
-                              >
-                                <div
-                                  className="flex items-center justify-end"
-                                  style={{ width: metrics[metric].width }}
-                                >
-                                  {getFormattedLastValue(item.chain[1], metric)}
-                                </div>
-                              </div>
-                            );
-                          })}
-                      </div>
-                      <div
-                        className={`pl-[15px] relative flex justify-end items-center h-full space-x-[1px]`}
-                      >
-                        {Array.from({ length: NUM_HOURS }, (_, index) => (
-                          <div
-                            key={index.toString() + "circles"}
-                            className="h-[34px] flex items-center justify-end cursor-pointer"
-                            onMouseEnter={() => {
-                              setHoverBarIndex(index);
-                            }}
-                            onMouseLeave={() => {
-                              setHoverBarIndex(null);
-                            }}
-                            onClick={() => {
-                              setSelectedBarIndex(index);
-                            }}
-                          >
-                            <div
-                              className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${
-                                selectedBarIndex === index
-                                  ? "scale-[160%]"
-                                  : hoverBarIndex === index
-                                  ? "scale-[120%] opacity-90"
-                                  : "scale-100 opacity-50"
-                              }`}
-                              style={{
-                                backgroundColor: getCircleColor(
-                                  item.chain[1],
-                                  index,
+                                        ? ""
+                                        : "-mr-[2px]"
+                                    }`}
+                                  >
+                                    {avail.label}
+                                  </div>
+                                </div>,
+                                index !== array.length - 1 && (
+                                  /* Content to render when index is not the last element */
+                                  <div
+                                    key={avail.label}
+                                    className="w-[12px] h-[12px] flex items-center justify-center"
+                                    style={{
+                                      color: "#5A6462",
+                                    }}
+                                  >
+                                    +
+                                  </div>
                                 ),
-                              }}
-                            ></div>
+                              ],
+                            )}
                           </div>
-                        ))}
-                      </div>
-                      <div className="absolute left-[99%]">
+                        </div>
+
+                        <div className="grid grid-flow-col items-center gap-x-[10px]">
+                          {[
+                            ...new Set(
+                              Object.values(master.fee_metrics).map(
+                                (metric) => metric.category,
+                              ),
+                            ),
+                          ]
+                            .filter(
+                              // remove categories that have no enabled metrics
+                              (category) => {
+                                return Object.keys(metrics).some(
+                                  (metric) =>
+                                    metrics[metric].enabled &&
+                                    master.fee_metrics[metric].category ===
+                                      category,
+                                );
+                              },
+                            )
+                            .map((category) => (
+                              <div
+                                key={category}
+                                className="grid grid-flow-col items-center justify-between"
+                                style={{
+                                  gridTemplateColumns: Object.keys(metrics)
+                                    .filter(
+                                      (metric) =>
+                                        metrics[metric].enabled &&
+                                        master.fee_metrics[metric].category ===
+                                          category,
+                                    )
+                                    .map(
+                                      (metric) =>
+                                        `minmax(${metrics[metric].width}, 100%)`,
+                                    )
+                                    .join(" "),
+                                }}
+                              >
+                                {Object.keys(metrics)
+                                  .filter(
+                                    (metric) =>
+                                      master.fee_metrics[metric].category ===
+                                      category,
+                                  )
+                                  .sort(
+                                    (a, b) =>
+                                      master.fee_metrics[a].priority -
+                                      master.fee_metrics[b].priority,
+                                  )
+                                  .map((metric, i) => {
+                                    if (!metrics[metric].enabled) return null;
+
+                                    return (
+                                      <div
+                                        className="flex items-center justify-end"
+                                        key={metric + "_barcontent"}
+                                      >
+                                        <div
+                                          className="flex items-center justify-end"
+                                          style={{
+                                            width: metrics[metric].width,
+                                          }}
+                                        >
+                                          {getFormattedLastValue(
+                                            item.chain[1],
+                                            metric,
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                              </div>
+                            ))}
+                        </div>
+
                         <div
-                          className={`relative flex items-center justify-end w-[22px] h-[22px] rounded-full cursor-pointer ${
-                            selectedChains[item.chain[1]]
-                              ? " bg-white dark:bg-forest-1000 dark:hover:forest-800"
-                              : " bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
-                          }`}
-                          onClick={() => {
-                            if (selectedQualitative === "availability") {
-                              if (
-                                Object.keys(manualSelectedChains).includes(
-                                  item.chain[1],
-                                )
-                              ) {
+                          className={`pl-[15px] relative flex justify-end items-center h-full space-x-[1px]`}
+                        >
+                          {Array.from({ length: NUM_HOURS }, (_, index) => (
+                            <div
+                              key={index.toString() + "circles"}
+                              className="h-[34px] flex items-center justify-end cursor-pointer"
+                              onMouseEnter={() => {
+                                setHoverBarIndex(index);
+                              }}
+                              onMouseLeave={() => {
+                                setHoverBarIndex(null);
+                              }}
+                              onClick={() => {
+                                setSelectedBarIndex(index);
+                              }}
+                            >
+                              <div
+                                className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${
+                                  selectedBarIndex === index
+                                    ? "scale-[160%]"
+                                    : hoverBarIndex === index
+                                    ? "scale-[120%] opacity-90"
+                                    : "scale-100 opacity-50"
+                                }`}
+                                style={{
+                                  backgroundColor: getCircleColor(
+                                    item.chain[1],
+                                    index,
+                                  ),
+                                }}
+                              ></div>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="absolute right-[0px]">
+                          <div
+                            className={`relative flex items-center justify-end w-[22px] h-[22px] rounded-full cursor-pointer ${
+                              selectedChains[item.chain[1]]
+                                ? " bg-white dark:bg-forest-1000 dark:hover:forest-800"
+                                : " bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
+                            }`}
+                            onClick={() => {
+                              if (selectedQualitative === "availability") {
                                 if (
-                                  dataAvailByChain[item.chain[1]][0].label ===
-                                    selectedAvailability &&
-                                  !manualSelectedChains[item.chain[1]]
+                                  Object.keys(manualSelectedChains).includes(
+                                    item.chain[1],
+                                  )
                                 ) {
-                                  setManualSelectedChains(
-                                    (prevManualSelectedChains) => {
-                                      // Create a new object by filtering out the key to remove
-                                      const updatedManualSelectedChains =
-                                        Object.fromEntries(
-                                          Object.entries(
-                                            prevManualSelectedChains,
-                                          ).filter(
-                                            ([key, _]) => key !== item.chain[1],
-                                          ),
-                                        );
+                                  if (
+                                    dataAvailByChain[item.chain[1]][0].label ===
+                                      selectedAvailability &&
+                                    !manualSelectedChains[item.chain[1]]
+                                  ) {
+                                    setManualSelectedChains(
+                                      (prevManualSelectedChains) => {
+                                        // Create a new object by filtering out the key to remove
+                                        const updatedManualSelectedChains =
+                                          Object.fromEntries(
+                                            Object.entries(
+                                              prevManualSelectedChains,
+                                            ).filter(
+                                              ([key, _]) =>
+                                                key !== item.chain[1],
+                                            ),
+                                          );
 
-                                      // Return the updated object
-                                      return updatedManualSelectedChains;
-                                    },
-                                  );
-                                } else if (
-                                  dataAvailByChain[item.chain[1]][0].label !==
-                                    selectedAvailability &&
-                                  manualSelectedChains[item.chain[1]]
-                                ) {
-                                  setManualSelectedChains(
-                                    (prevManualSelectedChains) => {
-                                      // Create a new object by filtering out the key to remove
-                                      const updatedManualSelectedChains =
-                                        Object.fromEntries(
-                                          Object.entries(
-                                            prevManualSelectedChains,
-                                          ).filter(
-                                            ([key, _]) => key !== item.chain[1],
-                                          ),
-                                        );
+                                        // Return the updated object
+                                        return updatedManualSelectedChains;
+                                      },
+                                    );
+                                  } else if (
+                                    dataAvailByChain[item.chain[1]][0].label !==
+                                      selectedAvailability &&
+                                    manualSelectedChains[item.chain[1]]
+                                  ) {
+                                    setManualSelectedChains(
+                                      (prevManualSelectedChains) => {
+                                        // Create a new object by filtering out the key to remove
+                                        const updatedManualSelectedChains =
+                                          Object.fromEntries(
+                                            Object.entries(
+                                              prevManualSelectedChains,
+                                            ).filter(
+                                              ([key, _]) =>
+                                                key !== item.chain[1],
+                                            ),
+                                          );
 
-                                      // Return the updated object
-                                      return updatedManualSelectedChains;
-                                    },
-                                  );
+                                        // Return the updated object
+                                        return updatedManualSelectedChains;
+                                      },
+                                    );
+                                  } else {
+                                    setManualSelectedChains(
+                                      (prevManualSelectedChains) => {
+                                        // Create a new object by spreading the previous state and adding the new object
+                                        return {
+                                          ...prevManualSelectedChains,
+                                          [item.chain[1]]:
+                                            !manualSelectedChains[
+                                              item.chain[1]
+                                            ], // Replace newKey and newValue with the key-value pair you want to add
+                                        };
+                                      },
+                                    );
+                                  }
                                 } else {
                                   setManualSelectedChains(
                                     (prevManualSelectedChains) => {
@@ -2027,84 +2076,73 @@ export default function FeesPage() {
                                       return {
                                         ...prevManualSelectedChains,
                                         [item.chain[1]]:
-                                          !manualSelectedChains[item.chain[1]], // Replace newKey and newValue with the key-value pair you want to add
+                                          !selectedChains[item.chain[1]], // Replace newKey and newValue with the key-value pair you want to add
                                       };
                                     },
                                   );
                                 }
-                              } else {
-                                setManualSelectedChains(
-                                  (prevManualSelectedChains) => {
-                                    // Create a new object by spreading the previous state and adding the new object
-                                    return {
-                                      ...prevManualSelectedChains,
-                                      [item.chain[1]]:
-                                        !selectedChains[item.chain[1]], // Replace newKey and newValue with the key-value pair you want to add
-                                    };
-                                  },
-                                );
                               }
-                            }
-                            setSelectedChains((prevState) => {
-                              return {
-                                ...prevState,
-                                [item.chain[1]]: !prevState[item.chain[1]],
-                              };
-                            });
-                          }}
-                        >
-                          <div
-                            className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-                            style={{
-                              color: !selectedChains[item.chain[1]]
-                                ? undefined
-                                : "#EAECEB",
+                              setSelectedChains((prevState) => {
+                                return {
+                                  ...prevState,
+                                  [item.chain[1]]: !prevState[item.chain[1]],
+                                };
+                              });
                             }}
                           >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="22"
-                              height="22"
-                              viewBox="0 0 22 22"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className={`w-[22px] h-[22px]  ${
-                                !selectedChains[item.chain[1]]
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              }`}
-                            >
-                              <circle
-                                xmlns="http://www.w3.org/2000/svg"
-                                cx="11"
-                                cy="11"
-                                r="7.6"
-                              />
-                            </svg>
-                          </div>
-                          <div
-                            className={`p-0.5 rounded-full ${
-                              !selectedChains[item.chain[1]]
-                                ? "bg-forest-50 dark:bg-[#1F2726]"
-                                : "bg-white dark:bg-[#1F2726]"
-                            }`}
-                          >
-                            <Icon
-                              icon="feather:check-circle"
-                              className={`w-[17.6px] h-[17.6px] ${
-                                !selectedChains[item.chain[1]]
-                                  ? "opacity-0"
-                                  : "opacity-100"
-                              }`}
+                            <div
+                              className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
                               style={{
-                                color: selectedChains[item.chain[1]]
+                                color: !selectedChains[item.chain[1]]
                                   ? undefined
                                   : "#EAECEB",
                               }}
-                            />
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="22"
+                                height="22"
+                                viewBox="0 0 22 22"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className={`w-[22px] h-[22px]  ${
+                                  !selectedChains[item.chain[1]]
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                }`}
+                              >
+                                <circle
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  cx="11"
+                                  cy="11"
+                                  r="7.6"
+                                />
+                              </svg>
+                            </div>
+                            <div
+                              className={`p-0.5 rounded-full ${
+                                !selectedChains[item.chain[1]]
+                                  ? "bg-forest-50 dark:bg-[#1F2726]"
+                                  : "bg-white dark:bg-[#1F2726]"
+                              }`}
+                            >
+                              <Icon
+                                icon="feather:check-circle"
+                                className={`w-[17.6px] h-[17.6px] ${
+                                  !selectedChains[item.chain[1]]
+                                    ? "opacity-0"
+                                    : "opacity-100"
+                                }`}
+                                style={{
+                                  color: selectedChains[item.chain[1]]
+                                    ? undefined
+                                    : "#EAECEB",
+                                }}
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -2113,12 +2151,12 @@ export default function FeesPage() {
                 })}
                 {master && (
                   <div
-                    className={`w-full aboslute bottom-[28px] border-forest-700 border-[1px] absolute rounded-full bg-[#1F2726] border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[10px] pr-[32px] md:pr-[20px] lg:pr-[32px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[180px,auto,180px] items-center ${
+                    className={`absolute bottom-[28px] w-full border-forest-700 border-[1px] rounded-full bg-[#1F2726] border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[15px] pr-[32px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[200px,auto,180px] items-center  gap-x-[20px] ${
                       isMobile ? "text-[12px]" : "text-[14px]"
                     }`}
                   >
                     <div
-                      className={`flex justify-start items-center h-full gap-x-[5px] `}
+                      className={`flex justify-start items-center h-full gap-x-[10px]`}
                     >
                       <div
                         className={`flex items-center h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
@@ -2144,40 +2182,79 @@ export default function FeesPage() {
                           : AllChainsByKeys["ethereum"].label}
                       </Link>
                     </div>
-
-                    <div
-                      className="grid grid-flow-col items-center justify-between pr-[10px]"
-                      style={{
-                        gridTemplateColumns: Object.values(metrics)
-                          .filter((metric) => metric.enabled)
-                          .map((metric) => `minmax(${metric.width}, 100%)`)
-                          .join(" "),
-                      }}
-                    >
-                      {Object.keys(metrics)
-                        .sort(
-                          (a, b) =>
-                            // master has the priority of each metric
-                            master.fee_metrics[a].priority -
-                            master.fee_metrics[b].priority,
+                    <div className="grid grid-flow-col items-center gap-x-[10px]">
+                      {[
+                        ...new Set(
+                          Object.values(master.fee_metrics).map(
+                            (metric) => metric.category,
+                          ),
+                        ),
+                      ]
+                        .filter(
+                          // remove categories that have no enabled metrics
+                          (category) => {
+                            return Object.keys(metrics).some(
+                              (metric) =>
+                                metrics[metric].enabled &&
+                                master.fee_metrics[metric].category ===
+                                  category,
+                            );
+                          },
                         )
-                        .map((metric) => {
-                          if (!metrics[metric].enabled) return null;
+                        .map((category) => (
+                          <div
+                            key={category}
+                            className="grid grid-flow-col items-center justify-between"
+                            style={{
+                              gridTemplateColumns: Object.keys(metrics)
+                                .filter(
+                                  (metric) =>
+                                    metrics[metric].enabled &&
+                                    master.fee_metrics[metric].category ===
+                                      category,
+                                )
+                                .map(
+                                  (metric) =>
+                                    `minmax(${metrics[metric].width}, 100%)`,
+                                )
+                                .join(" "),
+                            }}
+                          >
+                            {Object.keys(metrics)
+                              .filter(
+                                (metric) =>
+                                  master.fee_metrics[metric].category ===
+                                  category,
+                              )
+                              .sort(
+                                (a, b) =>
+                                  master.fee_metrics[a].priority -
+                                  master.fee_metrics[b].priority,
+                              )
+                              .map((metric, i) => {
+                                if (!metrics[metric].enabled) return null;
 
-                          return (
-                            <div
-                              className="flex items-center justify-center"
-                              key={metric + "_ethbar"}
-                            >
-                              <div
-                                className="flex items-center justify-end"
-                                style={{ width: metrics[metric].width }}
-                              >
-                                {getFormattedLastValue("ethereum", metric)}
-                              </div>
-                            </div>
-                          );
-                        })}
+                                return (
+                                  <div
+                                    className="flex items-center justify-end"
+                                    key={metric + "_barcontent"}
+                                  >
+                                    <div
+                                      className="flex items-center justify-end"
+                                      style={{
+                                        width: metrics[metric].width,
+                                      }}
+                                    >
+                                      {getFormattedLastValue(
+                                        "ethereum",
+                                        metric,
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        ))}
                     </div>
                     <div
                       className={`pl-[15px] relative flex items-center h-full space-x-[1px] justify-end`}
