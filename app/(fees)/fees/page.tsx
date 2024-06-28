@@ -1214,7 +1214,7 @@ export default function FeesPage() {
         fullScreen={true}
       />
       <div
-        className="min-h-screen transition-all duration-300"
+        className="transition-all duration-300 overflow-x-hidden"
         style={{
           paddingBottom: isChartOpen
             ? `${isMobile ? 313 + 60 : 413 + 60}px`

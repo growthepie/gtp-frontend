@@ -11,7 +11,7 @@ import { track } from "@vercel/analytics";
 
 export default function Header() {
   return (
-    <header className="w-full flex justify-between space-x-0 xl:space-x-6 items-end mx-auto px-[20px] pt-[20px] md:px-[103px] md:pt-[50px] ">
+    <header className="flex justify-between space-x-0 xl:space-x-6 items-end mx-auto px-[20px] pt-[20px] md:px-[50px] md:pt-[50px] ">
       <div className="flex justify-start items-center w-full  ">
         <div className="flex space-x-0 xl:space-x-6 w-full h-full ">
           {/*Banner/Notification Area */}
