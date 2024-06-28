@@ -2277,176 +2277,187 @@ export default function FeesPage() {
                     </animated.div>
                   );
                 })}
-              </div>
-            </div>
-          )}
-          {master && (
-            <div
-              className={`absolute bottom-[28px] border-forest-700 border-[1px] rounded-full bg-[#1F2726] border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[15px] pr-[32px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[200px,auto,180px] items-center  gap-x-[20px] ${
-                isMobile ? "text-[12px]" : "text-[14px]"
-              }`}
-            >
-              <div
-                className={`flex justify-start items-center h-full gap-x-[10px]`}
-              >
-                <div
-                  className={`flex items-center h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
-                >
-                  <Icon
-                    icon={`gtp:${AllChainsByKeys["ethereum"].urlKey}-logo-monochrome`}
-                    className={`${
-                      isMobile ? "h-[18px] w-[18px]" : "h-[24px] w-[24px]"
-                    }`}
-                    style={{
-                      color: AllChainsByKeys["ethereum"].colors["light"][1],
-                    }}
-                  />
-                </div>
-                <Link
-                  className="hover:underline"
-                  href={`https://www.growthepie.xyz/chains/${AllChainsByKeys["ethereum"].urlKey}`}
-                  target="_blank"
-                >
-                  {isMobile
-                    ? master.chains["ethereum"].name_short
-                    : AllChainsByKeys["ethereum"].label}
-                </Link>
-              </div>
-              <div className="grid grid-flow-col items-center gap-x-[10px]">
-                {[
-                  ...new Set(
-                    Object.values(master.fee_metrics).map(
-                      (metric) => metric.category,
-                    ),
-                  ),
-                ]
-                  .filter(
-                    // remove categories that have no enabled metrics
-                    (category) => {
-                      return Object.keys(metrics).some(
-                        (metric) =>
-                          metrics[metric].enabled &&
-                          master.fee_metrics[metric].category === category,
-                      );
-                    },
-                  )
-                  .map((category) => (
-                    <div
-                      key={category}
-                      className="grid grid-flow-col items-center justify-between"
-                      style={{
-                        width:
-                          Object.keys(metrics).filter(
-                            (metric) => metrics[metric].enabled,
-                          ).length === 1
-                            ? "100%"
-                            : "auto",
-                        gridTemplateColumns:
-                          Object.keys(metrics).filter(
-                            (metric) => metrics[metric].enabled,
-                          ).length === 1
-                            ? undefined
-                            : Object.keys(metrics)
-                                .filter(
-                                  (metric) =>
-                                    metrics[metric].enabled &&
-                                    master.fee_metrics[metric].category ===
-                                      category,
-                                )
-                                .map(
-                                  (metric, i) =>
-                                    // `minmax(${
-                                    //   i === 0
-                                    //     ? metrics[metric].width - 40
-                                    //     : metrics[metric].width
-                                    // }px, 100%)`,
-                                    `minmax(${
-                                      i === 0
-                                        ? metrics[metric].width - 60
-                                        : metrics[metric].width
-                                    }px`,
-                                )
-                                .join(" "),
-                      }}
-                    >
-                      {Object.keys(metrics)
-                        .filter(
-                          (metric) =>
-                            master.fee_metrics[metric].category === category,
-                        )
-                        .sort(
-                          (a, b) =>
-                            master.fee_metrics[a].priority -
-                            master.fee_metrics[b].priority,
-                        )
-                        .map((metric, i) => {
-                          if (!metrics[metric].enabled) return null;
-
-                          return (
-                            <div
-                              key={metric + "_barcontent"}
-                              className="flex items-center"
-                              style={{
-                                justifyContent:
-                                  Object.keys(metrics).filter(
-                                    (metric) =>
-                                      metrics[metric].enabled &&
-                                      master.fee_metrics[metric].category ===
-                                        category,
-                                  ).length === 1
-                                    ? "center"
-                                    : "end",
-                              }}
-                            >
-                              <div
-                                className="flex items-center justify-end"
-                                style={{
-                                  width: metrics[metric].width,
-                                }}
-                              >
-                                {getFormattedLastValue("ethereum", metric)}
-                              </div>
-                            </div>
-                          );
-                        })}
-                    </div>
-                  ))}
-              </div>
-              <div
-                className={`pl-[15px] relative flex items-center h-full space-x-[1px] justify-end`}
-              >
-                {Array.from({ length: NUM_HOURS }, (_, index) => (
+                {master && (
                   <div
-                    key={index.toString() + "circles"}
-                    className="h-[32px] flex items-center justify-end cursor-pointer"
-                    onMouseEnter={() => {
-                      setHoverBarIndex(index);
-                    }}
-                    onMouseLeave={() => {
-                      setHoverBarIndex(null);
-                    }}
-                    onClick={() => {
-                      setSelectedBarIndex(index);
-                    }}
+                    className={`absolute bottom-[28px] w-full border-forest-700 border-[1px] rounded-full bg-[#1F2726] border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[15px] pr-[32px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[200px,auto,180px] items-center  gap-x-[20px] ${
+                      isMobile ? "text-[12px]" : "text-[14px]"
+                    }`}
                   >
                     <div
-                      className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${
-                        selectedBarIndex === index
-                          ? "scale-[160%]"
-                          : hoverBarIndex === index
-                          ? "scale-[120%] opacity-90"
-                          : "scale-100 opacity-50"
-                      }`}
-                      style={{
-                        backgroundColor: getCircleColor("ethereum", index),
-                      }}
-                    ></div>
+                      className={`flex justify-start items-center h-full gap-x-[10px]`}
+                    >
+                      <div
+                        className={`flex items-center h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
+                      >
+                        <Icon
+                          icon={`gtp:${AllChainsByKeys["ethereum"].urlKey}-logo-monochrome`}
+                          className={`${
+                            isMobile ? "h-[18px] w-[18px]" : "h-[24px] w-[24px]"
+                          }`}
+                          style={{
+                            color:
+                              AllChainsByKeys["ethereum"].colors["light"][1],
+                          }}
+                        />
+                      </div>
+                      <Link
+                        className="hover:underline"
+                        href={`https://www.growthepie.xyz/chains/${AllChainsByKeys["ethereum"].urlKey}`}
+                        target="_blank"
+                      >
+                        {isMobile
+                          ? master.chains["ethereum"].name_short
+                          : AllChainsByKeys["ethereum"].label}
+                      </Link>
+                    </div>
+                    <div className="grid grid-flow-col items-center gap-x-[10px]">
+                      {[
+                        ...new Set(
+                          Object.values(master.fee_metrics).map(
+                            (metric) => metric.category,
+                          ),
+                        ),
+                      ]
+                        .filter(
+                          // remove categories that have no enabled metrics
+                          (category) => {
+                            return Object.keys(metrics).some(
+                              (metric) =>
+                                metrics[metric].enabled &&
+                                master.fee_metrics[metric].category ===
+                                  category,
+                            );
+                          },
+                        )
+                        .map((category) => (
+                          <div
+                            key={category}
+                            className="grid grid-flow-col items-center justify-between"
+                            style={{
+                              width:
+                                Object.keys(metrics).filter(
+                                  (metric) => metrics[metric].enabled,
+                                ).length === 1
+                                  ? "100%"
+                                  : "auto",
+                              gridTemplateColumns:
+                                Object.keys(metrics).filter(
+                                  (metric) => metrics[metric].enabled,
+                                ).length === 1
+                                  ? undefined
+                                  : Object.keys(metrics)
+                                      .filter(
+                                        (metric) =>
+                                          metrics[metric].enabled &&
+                                          master.fee_metrics[metric]
+                                            .category === category,
+                                      )
+                                      .map(
+                                        (metric, i) =>
+                                          // `minmax(${
+                                          //   i === 0
+                                          //     ? metrics[metric].width - 40
+                                          //     : metrics[metric].width
+                                          // }px, 100%)`,
+                                          `minmax(${
+                                            i === 0
+                                              ? metrics[metric].width - 60
+                                              : metrics[metric].width
+                                          }px`,
+                                      )
+                                      .join(" "),
+                            }}
+                          >
+                            {Object.keys(metrics)
+                              .filter(
+                                (metric) =>
+                                  master.fee_metrics[metric].category ===
+                                  category,
+                              )
+                              .sort(
+                                (a, b) =>
+                                  master.fee_metrics[a].priority -
+                                  master.fee_metrics[b].priority,
+                              )
+                              .map((metric, i) => {
+                                if (!metrics[metric].enabled) return null;
+
+                                return (
+                                  <div
+                                    key={metric + "_barcontent"}
+                                    className="flex items-center"
+                                    style={{
+                                      justifyContent:
+                                        Object.keys(metrics).filter(
+                                          (metric) =>
+                                            metrics[metric].enabled &&
+                                            master.fee_metrics[metric]
+                                              .category === category,
+                                        ).length === 1
+                                          ? "center"
+                                          : "end",
+                                    }}
+                                  >
+                                    <div
+                                      className="flex items-center justify-end"
+                                      style={{
+                                        width: metrics[metric].width,
+                                      }}
+                                    >
+                                      {getFormattedLastValue(
+                                        "ethereum",
+                                        metric,
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        ))}
+                    </div>
+                    <div
+                      className={`pl-[15px] relative flex items-center h-full space-x-[1px] justify-end`}
+                    >
+                      {Array.from({ length: NUM_HOURS }, (_, index) => (
+                        <div
+                          key={index.toString() + "circles"}
+                          className="h-[32px] flex items-center justify-end cursor-pointer"
+                          onMouseEnter={() => {
+                            setHoverBarIndex(index);
+                          }}
+                          onMouseLeave={() => {
+                            setHoverBarIndex(null);
+                          }}
+                          onClick={() => {
+                            setSelectedBarIndex(index);
+                          }}
+                        >
+                          <div
+                            className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${
+                              selectedBarIndex === index
+                                ? "scale-[160%]"
+                                : hoverBarIndex === index
+                                ? "scale-[120%] opacity-90"
+                                : "scale-100 opacity-50"
+                            }`}
+                            style={{
+                              backgroundColor: getCircleColor(
+                                "ethereum",
+                                index,
+                              ),
+                            }}
+                          ></div>
+                        </div>
+                      ))}
+                      <div className="absolute -right-[3px] top-[34px] w-[147px] h-[10px] border-forest-600 border-x-[1px] flex justify-between text-[10px]">
+                        <div className="relative top-2">
+                          {NUM_HOURS} Hours Ago
+                        </div>
+                        <div className="relative top-2">Now</div>
+                      </div>
+                    </div>
                   </div>
-                ))}
-                <div className="absolute -right-[3px] top-[34px] w-[147px] h-[10px] border-forest-600 border-x-[1px] flex justify-between text-[10px]">
-                  <div className="relative top-2">{NUM_HOURS} Hours Ago</div>
-                  <div className="relative top-2">Now</div>
-                </div>
+                )}
               </div>
             </div>
           )}
