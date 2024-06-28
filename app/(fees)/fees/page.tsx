@@ -782,12 +782,12 @@ export default function FeesPage() {
     }),
     {
       key: (d) => d.chain[1],
-      from: { opacity: 0, height: 0 },
-      leave: { opacity: 0, height: 0 },
-      enter: ({ y, height }) => ({ opacity: 1, y, height }),
-      update: ({ y, height }) => ({ y, height }), // Ensure height change is animated
-      // config: { mass: 1, tension: 500, friction: 10 },
-      // trail: 25,
+      from: { y: -40, height: 0, opacity: 0 },
+      enter: ({ y, height }) => ({ y, height, opacity: 1 }),
+      update: ({ y, height }) => ({ y, height }),
+      leave: { y: 40, height: 0, opacity: 0 },
+      config: { mass: 1, tension: 300, friction: 50 },
+      // trail: 50,
     },
   );
 
@@ -1856,12 +1856,12 @@ export default function FeesPage() {
                     (finalSort.length + 1) * (rowHeight + rowGapY) + 25,
                 }}
               >
-                {transitions((style, item) => {
+                {transitions((style, item, t, index) => {
                   return (
                     <animated.div
                       key={item.chain[0]}
                       className={`w-full absolute pr-[10px] h-[34px]`}
-                      style={{ ...style }}
+                      style={{ zIndex: finalSort.length - index, ...style }}
                     >
                       <div
                         className={`w-full border-forest-700 border-[1px] rounded-full border-black/[16%] dark:border-[#5A6462] h-full pl-[15px] pr-[20px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[200px,auto,180px] items-center gap-x-[20px] 
