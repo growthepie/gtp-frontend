@@ -352,7 +352,7 @@ export default function FeesChart({
           } else {
             displayValue = y;
           }
-          console.log(suffix);
+
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${

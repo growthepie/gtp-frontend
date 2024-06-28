@@ -284,7 +284,7 @@ export default function Share() {
                 }}
               />
               <div
-                className={`absolute -right-[5px] -bottom-[5px] bg-forest-50 dark:bg-[#1F2726] z-[110] rounded-[40px] shadow-lg py-[30px] px-[20px] 
+                className={`absolute -right-[5px] -bottom-[5px] bg-forest-50 dark:bg-[#1F2726] z-[10] rounded-[40px] shadow-[0px_0px_30px_0px_#000000BF] py-[30px] px-[20px] 
                   border-[5px] border-forest-500 dark:border-[#5A6462] transition-all duration-300 select-none ${
                     topSelection === "social"
                       ? "w-[calc(100vw-30px)] xs:w-[calc(100vw-46px)] md:w-[453px]"

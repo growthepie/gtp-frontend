@@ -168,11 +168,17 @@ export default function ChartContainer({
 
   return (
     <div
-      className={`relative w-full bg-[#1F2726] rounded-t-[30px] pt-[15px] pb-[10px] md:pb-[25px]`}
+      className={`relative w-full bg-[#1F2726] rounded-t-[30px] pt-[15px] pb-[10px] md:pb-[25px] ${
+        isOpen
+          ? "shadow-[0px_0px_30px_0px_#000000BF]"
+          : "shadow-[0px_0px_50px_0px_#00000066]"
+      }  transition-shadow duration-300`}
     >
       <div className="absolute -top-[12px] left-0 right-0 flex justify-center z-40">
         <div
-          className={`flex items-center gap-x-[10px] text-[10px] pl-[15px] pr-[20px] py-[3px] leading-[150%] rounded-full bg-[#1F2726] shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000] cursor-pointer border-[1.5px] border-forest-500 dark:border-[#344240] ${
+          className={`flex items-center gap-x-[10px] text-[10px] pl-[15px] pr-[20px] py-[3px] leading-[150%] rounded-full bg-[#1F2726] ${
+            isOpen ? "shadow-[0px_0px_30px_0px_#000000BF]" : "shadow-none"
+          }  transition-shadow duration-300 cursor-pointer border-[1.5px] border-forest-500 dark:border-[#344240] ${
             isOpen ? "" : "hard-shine-2"
           }`}
           onClick={() => {
