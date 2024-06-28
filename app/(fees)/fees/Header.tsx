@@ -20,7 +20,7 @@ export default function Header() {
             <Notification />
           </div> */}
 
-          <div className="flex justify-between items-start h-full relative w-full left-1 ">
+          <div className="flex justify-between items-start h-full relative w-full">
             <Link href="/" className="flex gap-x-1">
               {/* <div className="h-[45px] w-[206px]"> */}
               <Image
@@ -91,7 +91,7 @@ export default function Header() {
       <div className="items-center z-0 hidden md:flex md:space-x-[34px] h-full mt-[7px]">
         <EthUsdSwitch />
 
-        <div className="flex space-x-[22px] pr-2.5 items-center">
+        <div className="flex space-x-[22px] pr-0 items-center">
           <HeaderLinks />
         </div>
       </div>
