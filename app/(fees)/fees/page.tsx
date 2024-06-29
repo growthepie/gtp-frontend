@@ -1221,7 +1221,7 @@ export default function FeesPage() {
         <Header />
 
         <FeesContainer className={`hidden md:block`}>
-          <div className="relative flex p-[5px] items-center w-full justify-between rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000]">
+          <div className="relative flex p-[5px] items-center w-full justify-between rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000] z-10">
             <a
               className="flex items-center w-[162px] bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
               href="https://www.growthepie.xyz/"
@@ -1277,7 +1277,7 @@ export default function FeesPage() {
               <div className="font-semibold">Main platform</div>
             </a>
             <div
-              className={`flex items-center relative h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-[15px] py-[10px] gap transition-all z-40 duration-300 hover:cursor-pointer ${hoverSettings
+              className={`flex items-center relative h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-[15px] py-[10px] gap transition-all z-[11] duration-300 hover:cursor-pointer ${hoverSettings
                 ? "w-[336px] justify-start"
                 : "w-[128px] justify-start"
                 }`}
@@ -1310,7 +1310,7 @@ export default function FeesPage() {
             </div>
 
             <div
-              className={`absolute top-6 min-h-0 bg-[#151A19] right-[5px] rounded-b-2xl z-20 transition-all duration-300 overflow-hidden ${hoverSettings
+              className={`absolute top-6 min-h-0 bg-[#151A19] right-[5px] rounded-b-2xl z-[10] transition-all duration-300 overflow-hidden ${hoverSettings
                 ? `shadow-[0px_4px_46.2px_0px_#000000]`
                 : "shadow-transparent"
                 }`}
@@ -1612,7 +1612,7 @@ export default function FeesPage() {
                         :{" "}
 
                         <div className="pl-[3px] flex items-center gap-x-[3px]">
-                          <div className="flex items-center">
+                          <div className="flex items-center font-semibold">
                             {selectedAvailability}
                           </div>
                           <Icon
@@ -1756,7 +1756,7 @@ export default function FeesPage() {
                                             <div className="w-[125px] h-[1px] bg-gradient-to-r from-transparent to-forest-500/15" />
                                           </div>
                                         )}
-                                      <div className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px] z-10">
+                                      <div className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px]">
                                         <div className="">
                                           {
                                             master.fee_metrics[metric]
@@ -1885,7 +1885,7 @@ export default function FeesPage() {
                               : AllChainsByKeys[item.chain[1]].label}
                           </Link>
                           <div
-                            className={`group bg-[#344240] flex rounded-full transition-width duration-300 px-[5px] py-[3px] h-[18px] gap-x-[2px] whitespace-nowrap`}
+                            className={`group bg-[#344240] flex rounded-full transition-width duration-300 pl-[5px] pr-[5px] h-[18px] gap-x-[3px] whitespace-nowrap`}
                             onMouseEnter={() => {
                               setHoveredItems({
                                 hoveredChain: item.chain[1],
@@ -1903,7 +1903,7 @@ export default function FeesPage() {
                               (avail, index, array) => [
                                 <div
                                   key={avail.icon}
-                                  className={`flex relative items-center gap-x-[4px] h-full cursor-pointer`}
+                                  className={`flex relative items-center gap-x-[3px] cursor-pointer`}
                                   onMouseEnter={() => {
                                     setHoveredItems({
                                       hoveredChain: hoveredItems.hoveredChain,
@@ -1935,8 +1935,9 @@ export default function FeesPage() {
                                   `}
                                   />
                                   <div
-                                    className={`text-[8px] text-center font-semibold overflow-hidden max-w-[52px] transition-all duration-300 ${selectedAvailability === avail.label &&
-                                      selectedQualitative === "availability"
+                                    className={`flex items-center text-[8px] font-semibold leading-tight ${dataAvailByFilter &&
+                                      selectedAvailability === avail.label &&
+                                      selectedChains[item.chain[1]]
                                       ? "text-forest-200"
                                       : "text-[#CDD8D3]/60"
                                       }`}
