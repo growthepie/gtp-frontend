@@ -1631,8 +1631,11 @@ export default function FeesPage() {
                         className={` dark:text-white text-black w-[10px] h-[10px] relative bottom-[0.5px] ${
                           availabilityFilter ? "block" : "hidden"
                         }`}
-                        onClick={() => {
+                        onClick={(e) => {
                           setAvailabilityFilter(false);
+                          setDAIndex(0);
+
+                          e.stopPropagation();
                         }}
                       />{" "}
                     </div>
@@ -1951,7 +1954,7 @@ export default function FeesPage() {
                                   `}
                                   />
                                   <div
-                                    className={`text-[8px] text-center font-semibold overflow-hidden max-w-0 group-hover:max-w-[50px] transition-all duration-300 ${
+                                    className={`text-[8px] text-center font-semibold overflow-hidden max-w-[52px] transition-all duration-300 ${
                                       selectedAvailability === avail.label &&
                                       selectedQualitative === "availability"
                                         ? "text-forest-200"
