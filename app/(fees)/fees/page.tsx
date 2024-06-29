@@ -1594,7 +1594,7 @@ export default function FeesPage() {
                       />{" "}
                     </div>
                     <div
-                      className="bg-[#344240] text-[#CDD8D3] text-[8px] flex rounded-full font-normal items-center px-[5px] h-[18px] cursor-pointer whitespace-nowrap"
+                      className="bg-[#344240] text-[#CDD8D3] text-[8px] flex rounded-full font-normal items-center px-[5px] h-[16px] cursor-pointer whitespace-nowrap"
                       onClick={() => {
                         setAvailabilityFilter(true);
                         if (DAIndex === allChainsDA.length - 1) {
@@ -1611,8 +1611,8 @@ export default function FeesPage() {
                       <div className={`flex items-center ${(availabilityFilter && dataAvailByFilter) ? "max-w-[200px]" : "max-w-0"} overflow-hidden transition-all duration-500`}>
                         :{" "}
 
-                        <div className="ml-[3px] flex items-center gap-x-[3px]">
-                          <div>
+                        <div className="pl-[3px] flex items-center gap-x-[3px]">
+                          <div className="flex items-center">
                             {selectedAvailability}
                           </div>
                           <Icon
