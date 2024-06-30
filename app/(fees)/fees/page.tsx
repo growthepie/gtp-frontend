@@ -1596,14 +1596,16 @@ export default function FeesPage() {
                     <div
                       className="bg-[#344240] text-[#CDD8D3] text-[8px] flex rounded-full font-normal items-center px-[5px] h-[16px] cursor-pointer whitespace-nowrap"
                       onClick={() => {
-                        setAvailabilityFilter(true);
-                        if (DAIndex === allChainsDA.length - 1) {
-                          setAvailabilityFilter(false);
-                          setDAIndex(0);
-                          setSelectedAvailability(allChainsDA[DAIndex]);
+                        if (!availabilityFilter && DAIndex === 0) {
+                          setAvailabilityFilter(true);
                         } else {
-                          setDAIndex(DAIndex + 1);
-                          setSelectedAvailability(allChainsDA[DAIndex]);
+                          if (DAIndex === allChainsDA.length - 1) {
+                            setDAIndex(0);
+                            setSelectedAvailability(allChainsDA[DAIndex]);
+                          } else {
+                            setDAIndex(DAIndex + 1);
+                            setSelectedAvailability(allChainsDA[DAIndex]);
+                          }
                         }
                       }}
                     >
