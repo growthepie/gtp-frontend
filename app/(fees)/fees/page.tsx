@@ -1796,7 +1796,7 @@ export default function FeesPage() {
                                     style={{ width: metrics[metric].width }}
                                   >
                                     <div
-                                      className="flex flex-col justify-end"
+                                      className="flex flex-col justify-end z-10"
                                       onClick={() => {
                                         if (selectedQuantitative === metric) {
                                           if (selectedQualitative) {
