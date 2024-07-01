@@ -256,6 +256,7 @@ export default function FeesPage() {
   const [hoverSettings, setHoverSettings] = useState<boolean>(false);
   const [showCents, setShowCents] = useLocalStorage("showCents", true);
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const [allChainsSelect, setAllChainsSelect] = useState(false);
   const { theme } = useTheme();
 
   const [selectedChains, setSelectedChains] = useLocalStorage<{
@@ -903,6 +904,8 @@ export default function FeesPage() {
     ],
   );
 
+  console.log(selectedChains);
+
   const getFormattedLastValue = useCallback(
     (chain, metric) => {
       // feeData.chain_data[item.chain[1]]?.hourly?.txcosts_native_median?.data[optIndex]
@@ -1205,6 +1208,19 @@ export default function FeesPage() {
 
     return allPass;
   }, [dataAvailByChain, finalSort, selectedAvailability, selectedChains]);
+
+  function toggleAllChains() {
+    Object.keys(selectedChains).map((key) => {
+      setSelectedChains((prevState) => {
+        return {
+          ...prevState,
+          [key]: allChainsSelect,
+        };
+      });
+    });
+
+    setAllChainsSelect(!allChainsSelect);
+  }
 
   return (
     <>
@@ -1846,6 +1862,15 @@ export default function FeesPage() {
                           ></div>
                         </div>
                       ))}
+                      <Icon
+                        icon={"feather:check-circle"}
+                        className={` dark:text-white text-black w-[13px] h-[13px] absolute bottom-[0.5px] -right-[27px] cursor-pointer `}
+                        onClick={(e) => {
+                          toggleAllChains();
+
+                          e.stopPropagation();
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
