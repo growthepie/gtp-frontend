@@ -305,16 +305,16 @@ export default function EconHeadCharts({
               perPage: 2,
             },
             1250: {
-              perPage: isSidebarOpen ? 2 : 3,
+              perPage: 2,
             },
             1450: {
-              perPage: 3,
+              perPage: 2,
             },
             1600: {
-              perPage: 3,
+              perPage: 2,
             },
             6000: {
-              perPage: 3,
+              perPage: 2,
             },
           },
         }}
@@ -336,10 +336,10 @@ export default function EconHeadCharts({
             return (
               <SplideSlide key={key + i + "Splide"}>
                 <div
-                  className="relative w-full overflow-hidden h-[170px] pt-[10px] bg-[#1F2726] rounded-2xl "
+                  className="relative w-full overflow-hidden h-[170px] bg-[#1F2726] rounded-2xl "
                   key={key}
                 >
-                  <div className="absolute top-[11px] w-full flex justify-between pl-[15px] pr-[24px] text-[16px] font-[650] ">
+                  <div className="absolute top-[5px] w-[calc(100% - 38px)] left-[19px] right-[21px] flex justify-between pl-[15px] pr-[2px] text-[16px] font-[650] ">
                     <div className="flex items-center gap-x-2 justify-center">
                       <div>{da_fees[key].metric_name}</div>
                       <div className="rounded-full w-[15px] h-[15px] bg-[#344240] flex items-center justify-center text-[10px] z-10">
@@ -349,20 +349,59 @@ export default function EconHeadCharts({
                         />
                       </div>
                     </div>
-                    <div className="flex ">
-                      <span>{valuePrefix}</span>
-                      {formatNumber(
-                        da_fees[key].daily.data[
-                          da_fees[key].daily.data.length - 1
-                        ][dataIndex],
-                      )}
+                    <div className="flex justify-between gap-x-[15px] items-center h-[36px] bg-[#344240CC]  rounded-[10px] pl-[15px] pr-[20px]  ">
+                      <div className="text-[16px] font-normal ">EX / GB</div>
+                      <div className="text-[10px] font-normal flex flex-col gap-y-[1px]">
+                        <div>Num</div>
+                        <div>Num</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    className="absolute  w-[18px] left-0 h-full flex items-center justify-center "
+                    style={{
+                      background:
+                        "linear-gradient(to bottom, #10808C 0%, #1DF7EF 100%)",
+                    }}
+                  >
+                    <div
+                      className="text-[10px] font-semibold w-full text-black rotate-180"
+                      style={{
+                        writingMode: "vertical-lr",
+                        textOrientation: "sideways",
+                      }}
+                    >
+                      Chart Desciption Value 1
+                    </div>
+                  </div>
+                  <div
+                    className="absolute w-[18px] right-0 h-full flex items-center justify-center px-[2px]"
+                    style={{
+                      background:
+                        "linear-gradient(to bottom, #FE5468 0%, #FFDF27 100%)",
+                    }}
+                  >
+                    <div
+                      className="text-[10px] font-semibold w-full text-black rotate-180"
+                      style={{
+                        writingMode: "vertical-lr",
+                        textOrientation: "sideways",
+                      }}
+                    >
+                      Chart Desciption Value 2
                     </div>
                   </div>
 
                   <HighchartsProvider Highcharts={Highcharts}>
                     <HighchartsChart
                       containerProps={{
-                        style: { height: "100%", width: "100%" },
+                        style: {
+                          paddingTop: "10px",
+                          height: "100%",
+                          width: "calc(100% - 38px)",
+                          marginLeft: "auto",
+                          marginRight: "auto",
+                        },
                       }}
                       plotOptions={{
                         line: {
@@ -442,7 +481,7 @@ export default function EconHeadCharts({
                         style={{ borderRadius: 15 }}
                         animation={{ duration: 50 }}
                         // margin={[0, 15, 0, 0]} // Use the array form for margin
-                        margin={[0, 15, 0, 0]}
+                        margin={[0, 10, 0, 0]}
                         spacingBottom={0}
                         spacingTop={40}
                         spacingLeft={0}
@@ -466,7 +505,7 @@ export default function EconHeadCharts({
                                 x1: "0%",
                                 y1: "0%",
                                 x2: "0%",
-                                y2: "100%",
+                                y2: "95%",
                               },
                               children: [
                                 {
@@ -529,7 +568,7 @@ export default function EconHeadCharts({
                           }
 
                           // calculate the fraction that 15px is in relation to the pixel width of the chart
-                          const fraction = 15 / chart.chartWidth;
+                          const fraction = 10 / chart.chartWidth;
 
                           // create a bordered line from the last point to the top of the chart's container
                           lastPointLines[key][lastPointLines[key].length] =
@@ -541,7 +580,7 @@ export default function EconHeadCharts({
                                   ? lastPoint.plotY + chart.plotTop
                                   : 0,
                                 x2: chart.chartWidth * (1 - fraction) - 0.00005,
-                                y2: chart.plotTop + 15,
+                                y2: chart.plotTop + 10,
                                 stroke: isSafariBrowser
                                   ? AllChainsByKeys["all_l2s"].colors["dark"][1]
                                   : "url('#gradient0')",
@@ -571,7 +610,7 @@ export default function EconHeadCharts({
                             chart.renderer
                               .circle(
                                 chart.chartWidth * (1 - fraction),
-                                chart.plotTop / 3 + 12,
+                                chart.plotTop / 3 + 5,
                                 3,
                               )
                               .attr({
@@ -662,15 +701,18 @@ export default function EconHeadCharts({
                       >
                         <XAxis.Title>X Axis</XAxis.Title>
                       </XAxis>
+
                       <YAxis
                         opposite={false}
                         // showFirstLabel={true}
                         // showLastLabel={true}
                         type="linear"
                         gridLineWidth={1}
+                        minPadding={50}
                         gridLineColor={"#5A64624F"}
                         showFirstLabel={false}
                         showLastLabel={false}
+                        tickAmount={5}
                         labels={{
                           align: "left",
                           y: 11,
@@ -682,7 +724,6 @@ export default function EconHeadCharts({
                         }}
                         min={0}
                       >
-                        <YAxis.Title>Y Axis</YAxis.Title>
                         <AreaSeries
                           name={""}
                           showInLegend={false}
@@ -718,7 +759,7 @@ export default function EconHeadCharts({
                       </YAxis>
                     </HighchartsChart>
                   </HighchartsProvider>
-                  <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute left-[7px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
+                  <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute left-[19px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
                     <div className="w-[5px] h-[5px] bg-[#CDD8D3] rounded-full"></div>
 
                     <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
@@ -732,7 +773,7 @@ export default function EconHeadCharts({
                       })}
                     </div>
                   </div>
-                  <div className="opacity-100 transition-opacity duration-[900ms] group-hover/chart:opacity-0 absolute right-[9px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
+                  <div className="opacity-100 transition-opacity duration-[900ms]  group-hover/chart:opacity-0 absolute right-[19px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
                     <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
                       {new Date(
                         da_fees[key].daily.data[
