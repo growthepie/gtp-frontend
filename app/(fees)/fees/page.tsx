@@ -1674,16 +1674,21 @@ export default function FeesPage() {
                           <div className="flex items-center font-semibold">
                             {selectedAvailability}
                           </div>
-                          <Icon
-                            icon={"feather:x-circle"}
-                            className={`w-[10px] h-[10px]`}
-                            onClick={(e) => {
-                              setAvailabilityFilter(false);
-                              setDAIndex(0);
+                          <div className="w-[10px] h-[10px] relative">
+                            <div
+                              className="absolute -left-[3px] -right-[8px] -top-[4px] -bottom-[4px] z-10 cursor-pointer"
+                              onClick={(e) => {
+                                setAvailabilityFilter(false);
+                                setDAIndex(0);
 
-                              e.stopPropagation();
-                            }}
-                          />
+                                e.stopPropagation();
+                              }}
+                            />
+                            <Icon
+                              icon={"feather:x-circle"}
+                              className={`w-[10px] h-[10px]`}
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
