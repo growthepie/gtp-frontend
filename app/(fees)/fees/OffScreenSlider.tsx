@@ -13,7 +13,7 @@ export default React.forwardRef(function OffScreenSlider(
   return (
     <div
       className={
-        "fixed bottom-[80px] md:bottom-0 left-0 right-0 flex justify-center"
+        "fixed bottom-[80px] md:bottom-0 left-0 right-0 flex justify-center z-20"
       }
       ref={ref}
     >
