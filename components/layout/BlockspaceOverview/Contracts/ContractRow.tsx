@@ -486,15 +486,15 @@ export default function ContractRow({
                           sortedContracts[rowKey].gas_fees_absolute_usd.toFixed(
                             0,
                           ),
-                        ).toLocaleString("en-US")
+                        ).toLocaleString("en-GB")
                       : Number(
                           sortedContracts[rowKey].gas_fees_absolute_eth.toFixed(
                             2,
                           ),
-                        ).toLocaleString("en-US")
+                        ).toLocaleString("en-GB")
                     : Number(
                         sortedContracts[rowKey].txcount_absolute.toFixed(0),
-                      ).toLocaleString("en-US")}
+                      ).toLocaleString("en-GB")}
                 </div>
               </div>
 

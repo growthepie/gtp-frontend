@@ -6,7 +6,7 @@ import {
   useCallback,
   CSSProperties,
 } from "react";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { Chart } from "../../charts/chart";
 import { color } from "highcharts";
 import { Icon } from "@iconify/react";
@@ -54,7 +54,7 @@ export default function OverviewChart({
   chartComponent: React.MutableRefObject<Highcharts.Chart | null | undefined>;
 }) {
   const standardChainKey = forceSelectedChain ? forceSelectedChain : "all_l2s";
-  const [chainEcosystemFilter, setChainEcosystemFilter] = useLocalStorage(
+  const [chainEcosystemFilter, setChainEcosystemFilter] = useSessionStorage(
     "chainEcosystemFilter",
     "all-chains",
   );
@@ -356,18 +356,23 @@ export default function OverviewChart({
       //   data: data[selectedChain].daily[selectedCategory].data.length,
       // });
       if (allCats) {
-        return categoriesList.map((category) => ({
-          id: [selectedChain, category, selectedMode].join("::"),
-          name: selectedChain,
-          unixKey: "unix",
-          dataKey: dataKey,
-          data: data[selectedChain]?.daily[category]?.data || [],
-          fillOpacity: categoryKeyToFillOpacity[category],
-          lineWidth: 0,
-          custom: {
-            tooltipLabel: categories[category],
-          },
-        }));
+        return categoriesList
+          .filter((categoryCheck) => {
+            let dataRet = data[selectedChain]?.daily[categoryCheck]?.data || [];
+            return dataRet.length > 0;
+          })
+          .map((categoryCheck) => ({
+            id: [selectedChain, categoryCheck, selectedMode].join("::"),
+            name: selectedChain,
+            unixKey: "unix",
+            dataKey: dataKey,
+            data: data[selectedChain]?.daily[categoryCheck]?.data || [],
+            fillOpacity: categoryKeyToFillOpacity[categoryCheck],
+            lineWidth: 0,
+            custom: {
+              tooltipLabel: categories[categoryCheck],
+            },
+          }));
       } else {
         return [
           {

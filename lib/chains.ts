@@ -100,7 +100,7 @@ export const AllChains: Chain[] = [
     key: "gitcoin_pgn",
     urlKey: "public-goods-network",
     chainType: "L2",
-    ecosystem: ["op-stack", "op-super", "all-chains"],
+    ecosystem: ["all-chains"],
     description:
       "Public Goods Network is a fully EVM compatible optimistic rollup built on the OP Stack. Public launch was in July 2023.",
     border: {
@@ -187,14 +187,14 @@ export const AllChains: Chain[] = [
     darkTextOnBackground: false,
   },
   {
-    label: "zkSync Era",
+    label: "ZKsync Era",
     icon: "/icons/zksync-era.png",
     key: "zksync_era",
     urlKey: "zksync-era",
     chainType: "L2",
     ecosystem: ["all-chains", "Hyperchain", "zk-rollup"],
     description:
-      "zkSync Era is a Layer 2 protocol that scales Ethereum with cutting-edge ZK tech. Their mission isn't to merely increase Ethereum's throughput, but to fully preserve its foundational values – freedom, self-sovereignty, decentralization – at scale.",
+      "ZKsync Era is a Layer 2 protocol that scales Ethereum with cutting-edge ZK tech. Their mission isn't to merely increase Ethereum's throughput, but to fully preserve its foundational values – freedom, self-sovereignty, decentralization – at scale.",
     border: {
       light: ["border-[#390094]", "border-[#390094]"],
       dark: ["border-[#7C32F4]", "border-[#7C32F4]"],
@@ -459,7 +459,7 @@ export const AllChains: Chain[] = [
     key: "mode",
     urlKey: "mode",
     chainType: "L2",
-    ecosystem: ["all-chains"], // add ecosystems when unhiding from the UI
+    ecosystem: ["op-stack", "op-super", "all-chains"], // add ecosystems when unhiding from the UI
     description: "",
     border: {
       light: ["border-[#C4DF00]", "border-[#C4DF00]"],
@@ -562,21 +562,32 @@ export const EnabledChainsByKeys: { [key: string]: Chain } = AllChains.reduce(
   {},
 );
 
-export const Get_SupportedChainKeys = (data?: MasterResponse) => {
+export const Get_SupportedChainKeys = (
+  data?: MasterResponse,
+  additionalKeys?: string[],
+) => {
   if (!data) return [];
   if (IS_DEVELOPMENT || IS_PREVIEW) {
-    return Object.keys(data.chains)
-      .filter(
-        (key) =>
-          (data.chains[key].deployment === "DEV" && IS_DEVELOPMENT) ||
-          data.chains[key].deployment === "PROD",
-      )
+    let keys = Object.keys(data.chains)
+      .filter((key) => ["DEV", "PROD"].includes(data.chains[key].deployment))
       .map((key) => key);
+
+    if (additionalKeys) {
+      keys = keys.concat(additionalKeys);
+    }
+
+    return keys;
   }
 
-  return Object.keys(data.chains)
-    .filter((key) => data.chains[key].deployment === "PROD")
+  let keys = Object.keys(data.chains)
+    .filter((key) => ["PROD"].includes(data.chains[key].deployment))
     .map((key) => key);
+
+  if (additionalKeys) {
+    keys = keys.concat(additionalKeys);
+  }
+
+  return keys;
 };
 
 export const Get_DefaultChainSelectionKeys = (master: MasterResponse) => {

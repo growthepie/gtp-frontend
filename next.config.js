@@ -2,6 +2,9 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    missingSuspenseWithCSRBailout: false,
+  },
   async rewrites() {
     return {
       beforeFiles: [
@@ -38,6 +41,7 @@ const nextConfig = {
   //   ];
   // },
   images: {
+    dangerouslyAllowSVG: true,
     // domains: ["ipfs.io", "content.optimism.io"],
     remotePatterns: [
       {

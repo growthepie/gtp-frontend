@@ -19,7 +19,7 @@ const CategoryComparison = () => {
     error: usageError,
     isLoading: usageLoading,
     isValidating: usageValidating,
-  } = useSWR<CategoryComparisonResponse>(BlockspaceURLs["chain-comparison"]);
+  } = useSWR<CategoryComparisonResponse>(BlockspaceURLs["category-comparison"]);
 
   const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(
     "blockspaceShowEthereumMainnet",
@@ -36,7 +36,7 @@ const CategoryComparison = () => {
         dataLoading={[usageLoading]}
         dataValidating={[usageValidating]}
       />
-      <Container className="flex flex-col w-full mt-[65px] md:mt-[45px]">
+      <Container className="flex flex-col w-full pt-[65px] md:pt-[30px]" isPageRoot>
         <div className="flex items-center w-[99.8%] justify-between md:text-[36px] mb-[15px] relative">
           <div className="flex items-center gap-x-[8px]">
             <Image

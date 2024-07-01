@@ -10,6 +10,7 @@ import ChartWatermark from "@/components/layout/ChartWatermark";
 import { FeesLineChart } from "@/types/api/Fees/LineChart";
 import { useResizeObserver, useMediaQuery } from "usehooks-ts";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
+import { MasterResponse } from "@/types/api/MasterResponse";
 
 type SlidingFooterContainerProps = {
   // children: React.ReactNode;
@@ -20,6 +21,7 @@ type SlidingFooterContainerProps = {
   selectedChains: string[];
   showGwei: boolean;
   showCents: boolean;
+  master: MasterResponse;
 };
 
 const metricLabels = {
@@ -27,6 +29,7 @@ const metricLabels = {
   txcosts_median: "Median",
   txcosts_native_median: "Transfer ETH",
   txcosts_swap: "Swap Token",
+  tps: "Transactions Per Second",
 };
 
 export default function ChartContainer({
@@ -38,6 +41,7 @@ export default function ChartContainer({
   selectedChains,
   showGwei,
   showCents,
+  master,
 }: SlidingFooterContainerProps) {
   const { data, error, isLoading, isValidating } = useSWR<FeesLineChart>(
     "https://api.growthepie.xyz/v1/fees/linechart.json",
@@ -133,12 +137,11 @@ export default function ChartContainer({
 
     if (timeFrames[timeFrameIndex] === "24hrs") {
       return [
-        new Date(min).toLocaleTimeString(undefined, {
+        new Date(min).toLocaleTimeString("en-GB", {
           hour: "2-digit",
           minute: "2-digit",
         }),
-        // new Date(middle).toLocaleTimeString(undefined, {hour: '2-digit'}),
-        new Date(max).toLocaleTimeString(undefined, {
+        new Date(max).toLocaleTimeString("en-GB", {
           hour: "2-digit",
           minute: "2-digit",
         }),
@@ -146,13 +149,12 @@ export default function ChartContainer({
     }
 
     return [
-      new Date(min).toLocaleDateString(undefined, {
+      new Date(min).toLocaleDateString("en-GB", {
         month: "short",
         day: "numeric",
         year: "numeric",
       }),
-      // new Date(middle).toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'}),
-      new Date(max).toLocaleDateString(undefined, {
+      new Date(max).toLocaleDateString("en-GB", {
         month: "short",
         day: "numeric",
         year: "numeric",
@@ -166,13 +168,17 @@ export default function ChartContainer({
 
   return (
     <div
-      className={`relative w-full bg-[#1F2726] rounded-t-[30px] pt-[15px] ${
-        isMobile ? "pb-[55px]" : "pb-[30px]"
-      }`}
+      className={`relative w-full bg-[#1F2726] rounded-t-[30px] pt-[15px] pb-[10px] md:pb-[25px] ${
+        isOpen
+          ? "shadow-[0px_0px_30px_0px_#000000BF]"
+          : "shadow-[0px_0px_50px_0px_#00000066]"
+      }  transition-shadow duration-300`}
     >
-      <div className="absolute -top-[12px] left-0 right-0 flex justify-center z-50">
+      <div className="absolute -top-[12px] left-0 right-0 flex justify-center z-40">
         <div
-          className={`flex items-center gap-x-[10px] text-[10px] pl-[15px] pr-[20px] py-[3px] leading-[150%] rounded-full bg-[#1F2726] shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000] cursor-pointer border-[1.5px] border-forest-500 dark:border-[#344240] ${
+          className={`flex items-center gap-x-[10px] text-[10px] pl-[15px] pr-[20px] py-[3px] leading-[150%] rounded-full bg-[#1F2726] ${
+            isOpen ? "shadow-[0px_0px_30px_0px_#000000BF]" : "shadow-none"
+          }  transition-shadow duration-300 cursor-pointer border-[1.5px] border-forest-500 dark:border-[#344240] ${
             isOpen ? "" : "hard-shine-2"
           }`}
           onClick={() => {
@@ -204,12 +210,12 @@ export default function ChartContainer({
           <div
             className="transition-all duration-300 overflow-hidden whitespace-nowrap"
             style={{
-              maxWidth: isOpen ? "58px" : `600px`,
+              maxWidth: isOpen ? "58px" : `650px`,
             }}
           >
             {isOpen
               ? `Close Chart`
-              : `Open Chart for “${metricLabels[selectedMetric]} fees over time”`}
+              : `Open Chart for “${master.fee_metrics[selectedMetric].name} over time”`}
           </div>
         </div>
       </div>
@@ -226,8 +232,10 @@ export default function ChartContainer({
           >
             <div className="w-full flex flex-col md:flex-row gap-y-[10px] md:gap-y-0 justify-between px-[15px]">
               <div className="flex gap-x-1 text-[20px] leading-[120%]">
-                <div className="font-bold">{metricLabels[selectedMetric]}</div>
-                <div>fees over time</div>
+                <div className="font-bold">
+                  {master.fee_metrics[selectedMetric].name}
+                </div>
+                <div>{` over time`}</div>
               </div>
               <div className="w-full md:w-[165px] bg-[#344240] rounded-full px-[2px] py-[2px] flex items-center gap-x-[2px] justify-between">
                 <div
@@ -292,6 +300,7 @@ export default function ChartContainer({
                   showGwei={showGwei}
                   chartWidth={chartContainerWidth}
                   showCents={showCents}
+                  master={master}
                 />
                 {/* </div> */}
                 <div className="absolute bottom-[calc(50%-15px)] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-50">

@@ -133,14 +133,14 @@ export default function FeesChart({
           return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
         } else {
           if (dailyTicks && isDayStart) {
-            return `<span style="">${date.toLocaleDateString(undefined, {
+            return `<span style="">${date.toLocaleDateString("en-GB", {
               timeZone: "UTC",
               month: "short",
               day: "numeric",
             })}</span>`;
           }
 
-          return `<span style="">${date.toLocaleDateString(undefined, {
+          return `<span style="">${date.toLocaleDateString("en-GB", {
             timeZone: "UTC",
             month: "short",
             day: "numeric",
@@ -168,7 +168,7 @@ export default function FeesChart({
       // Check if the value should be displayed as dollars with only decimals
       if (showUsd) {
         // Format the value with only decimals using Intl.NumberFormat
-        return `${prefix}${Intl.NumberFormat(undefined, {
+        return `${prefix}${Intl.NumberFormat("en-GB", {
           notation: "compact",
           maximumFractionDigits: 5,
           minimumFractionDigits: 1,
@@ -700,8 +700,8 @@ export default function FeesChart({
       >
         <ChartWatermark
           className={`h-[30.67px] md:h-[46px] ${parseInt(chartHeight, 10) > 200
-              ? "w-[128px] md:w-[163px]"
-              : "w-[128.67px] md:w-[193px] "
+            ? "w-[128px] md:w-[163px]"
+            : "w-[128.67px] md:w-[193px] "
             } text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten`}
         />
       </div>

@@ -9,6 +9,13 @@ export interface ChainsData {
   website: string;
   explorer: string;
   metrics: Metrics;
+  ranking: {
+    [metric: string]: { color_scale: number; rank: number; out_of: number };
+  };
+  hottest_contract: {
+    data: any[][];
+    types: any[];
+  };
 }
 export interface Metrics {
   [key: string]: MetricData;

@@ -15,7 +15,7 @@ export default function SidebarContainer() {
     <div className="pr-[2px] bg-white dark:bg-forest-1000">
       <div className="pt-[34px] pl-0 bg-forest-50 dark:bg-[#1F2726] min-h-screen max-h-screen sticky top-0 left-0 hidden md:flex flex-col overflow-y-hidden overflow-x-visible space-y-6 border-r-0 border-forest-500 dark:border-black/50">
         {isSidebarOpen ? (
-          <div className="h-[45.07px] mb-[18px]">
+          <div className="select-none h-[45.07px] mb-[18px]">
             <div className="flex items-center mx-5 justify-between h-[45.07px]">
               <Link
                 href="/"
@@ -43,9 +43,8 @@ export default function SidebarContainer() {
               <div>
                 <Icon
                   icon="feather:log-out"
-                  className={`w-[13px] h-[13px]  cursor-pointer mt-4 transition-transform ${
-                    isSidebarOpen ? "rotate-180" : ""
-                  }`}
+                  className={`w-[13px] h-[13px]  cursor-pointer mt-4 transition-transform ${isSidebarOpen ? "rotate-180" : ""
+                    }`}
                   onClick={() => {
                     track("clicked Sidebar Close", {
                       location: "desktop sidebar",
@@ -58,7 +57,7 @@ export default function SidebarContainer() {
             </div>
           </div>
         ) : (
-          <div className="h-[45.07px] mt-1 mb-[14px]">
+          <div className="select-none h-[45.07px] mt-1 mb-[14px]">
             <div className="flex items-center ml-8 mr-2 justify-between h-[45.07px]">
               <Link href="/" className="relative h-[24px] w-[22.29px] block">
                 <div className="h-[24px] w-[22.29px] absolute left-3">
@@ -69,6 +68,7 @@ export default function SidebarContainer() {
                     width={102.704}
                     height={24}
                     quality={100}
+                    sizes="33vw"
                   />
                 </div>
               </Link>

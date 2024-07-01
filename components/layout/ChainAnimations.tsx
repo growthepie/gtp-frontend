@@ -4,6 +4,7 @@ import { AllChainsByKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import { useLocalStorage } from "usehooks-ts";
 import { useMemo, useState, useEffect, useRef } from "react";
+import { MasterResponse } from "@/types/api/MasterResponse";
 
 export default function ChainAnimations({
   chain,
@@ -15,6 +16,7 @@ export default function ChainAnimations({
   selectedChains,
   setSelectedChains,
   selectedCategory,
+  master,
 }: {
   chain: string;
   value: number;
@@ -25,6 +27,7 @@ export default function ChainAnimations({
   selectedChains: Object;
   setSelectedChains: (show: Object) => void;
   selectedCategory: string;
+  master: MasterResponse;
 }) {
   const { theme } = useTheme();
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
@@ -141,13 +144,15 @@ export default function ChainAnimations({
     return (
       <div
         key={chain}
-        className={`relative flex flex-row items-center rounded-full text-xs font-medium hover:cursor-pointer z-0 ${AllChainsByKeys[chain].darkTextOnBackground === true
+        className={`relative flex flex-row items-center rounded-full text-xs font-medium hover:cursor-pointer z-0 ${
+          AllChainsByKeys[chain].darkTextOnBackground === true
             ? "text-white dark:text-black"
             : "text-white"
-          } ${selectedChains[chain]
+        } ${
+          selectedChains[chain]
             ? AllChainsByKeys[chain].backgrounds[theme ?? "dark"][1]
             : `${AllChainsByKeys[chain].backgrounds[theme ?? "dark"][1]} `
-          }
+        }
         ${isShaking ? "animate-shake " : ""}`}
         style={{
           width: width,
@@ -189,9 +194,14 @@ export default function ChainAnimations({
                 className="w-[15px] h-[15px]"
               />
             </div>
-            <div className="-mb-0.5 overflow-hidden text-ellipsis min-w-0 max-w-fit">
-              {AllChainsByKeys[chain].label}
-            </div>
+            {width !== null && (
+              <div className="-mb-0.5 overflow-hidden text-ellipsis min-w-0 max-w-fit">
+                {width &&
+                230 > parseFloat(width.match(/(\d+(\.\d+)?)(?=px)/)?.[0] || "0")
+                  ? master.chains[chain].name_short
+                  : AllChainsByKeys[chain]?.label}
+              </div>
+            )}
           </div>
 
           <div
@@ -211,32 +221,34 @@ export default function ChainAnimations({
                   <div>
                     {showUsd
                       ? (Math.round(value * 100) / 100).toLocaleString(
-                        undefined,
-                        {
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 0,
-                        },
-                      )
+                          "en-GB",
+                          {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0,
+                          },
+                        )
                       : (Math.round(value * 100) / 100).toLocaleString(
-                        undefined,
-                        {
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 2,
-                        },
-                      )}
+                          "en-GB",
+                          {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 2,
+                          },
+                        )}
                   </div>
                 </div>
               )}
             </div>
             <div
               key={chain + "select"}
-              className={`relative flex left-[10px] w-[24px] h-[24px] bg-forest-700 rounded-full self-center items-center justify-center z-10 ${!selectedChains[chain] ? "opacity-100" : ""
-                }`}
+              className={`relative flex left-[10px] w-[24px] h-[24px] bg-forest-700 rounded-full self-center items-center justify-center z-10 ${
+                !selectedChains[chain] ? "opacity-100" : ""
+              }`}
             >
               <Icon
                 icon="feather:check-circle"
-                className={`w-[24px] h-[24px] text-white ${!selectedChains[chain] ? "opacity-0" : "opacity-100"
-                  }`}
+                className={`w-[24px] h-[24px] text-white ${
+                  !selectedChains[chain] ? "opacity-0" : "opacity-100"
+                }`}
               />
             </div>
           </div>

@@ -36,6 +36,14 @@ import { useWindowSize } from "usehooks-ts";
 import EmbedContainer from "@/app/(embeds)/embed/EmbedContainer";
 import { useElementSizeObserver } from "@/hooks/useElementSizeObserver";
 import "../../app/highcharts.axis.css";
+import {
+  TopRowContainer,
+  TopRowChild,
+  TopRowParent,
+} from "@/components/layout/TopRow";
+import { MasterURL } from "@/lib/urls";
+import useSWR from "swr";
+import { MasterResponse } from "@/types/api/MasterResponse";
 
 const monthly_agg_labels = {
   avg: "Average",
@@ -95,7 +103,7 @@ const baseOptions: Highcharts.Options = {
     //     if (isYearStart) {
     //       return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
     //     } else {
-    //       return `<span style="">${date.toLocaleDateString(undefined, {
+    //       return `<span style="">${date.toLocaleDateString("en-GB", {
     //         timeZone: "UTC",
     //         month: "short",
     //       })}</span>`;
@@ -199,14 +207,11 @@ export default function ComparisonChart({
 }) {
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
-
-
   // const [darkMode, setDarkMode] = useLocalStorage("darkMode", true);
   const { theme } = useTheme();
   const { isSidebarOpen, setEmbedData, embedData } = useUIContext();
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-
 
   const navItem = useMemo(() => {
     return navigationItems[1].options.find((item) => item.key === metric_id);
@@ -224,7 +229,7 @@ export default function ComparisonChart({
     return [navItem.page?.showGwei, navItem.page?.reversePerformer];
   }, [navItem]);
 
-
+  const { data: master, error: masterError } = useSWR<MasterResponse>(MasterURL);
 
   // const [selectedTimespan, setSelectedTimespan] = useState("365d");
 
@@ -233,7 +238,6 @@ export default function ComparisonChart({
   // );
 
   // const [selectedTimeInterval, setSelectedTimeInterval] = useState("daily");
-  console.log(metric_id);
 
   const [zoomed, setZoomed] = useState(false);
   const [zoomMin, setZoomMin] = useState(0);
@@ -308,7 +312,13 @@ export default function ComparisonChart({
 
   const getSeriesType = useCallback(
     (name: string) => {
-      if (name === "ethereum") return "area";
+      if (name === "ethereum") {
+        // show column chart for ethereum if monthly and stacked
+        if (selectedTimeInterval === "monthly" && selectedScale === "stacked")
+          return "column";
+        // else show area
+        return "area";
+      }
       if (selectedScale === "percentage") return "area";
       if (selectedScale === "stacked")
         return selectedTimeInterval === "daily" ? "area" : "column";
@@ -431,7 +441,7 @@ export default function ComparisonChart({
     function (this: any) {
       const { x, points } = this;
       const date = new Date(x);
-      const dateString = date.toLocaleDateString(undefined, {
+      const dateString = date.toLocaleDateString("en-GB", {
         timeZone: "UTC",
         month: "short",
         day: selectedTimeInterval === "daily" ? "numeric" : undefined,
@@ -492,7 +502,8 @@ export default function ComparisonChart({
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                 style="
                   width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]};
+                  background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+              };
                 "></div>
               </div>`;
 
@@ -507,6 +518,10 @@ export default function ComparisonChart({
             }
           }
 
+          if (metric_id === "throughput") {
+            suffix = " Mgas/s";
+          }
+
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
@@ -518,13 +533,15 @@ export default function ComparisonChart({
             }">${prefix}</div>
                 ${metric_id === "fdv" || metric_id === "market_cap"
               ? shortenNumber(value).toString()
-              : parseFloat(value).toLocaleString(undefined, {
+              : parseFloat(value).toLocaleString("en-GB", {
                 minimumFractionDigits: valuePrefix ? 2 : 0,
                 maximumFractionDigits: valuePrefix
                   ? metric_id === "txcosts"
                     ? 3
                     : 2
-                  : 0,
+                  : metric_id === "throughput"
+                    ? 2
+                    : 0,
               })
             }
                 <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
@@ -537,7 +554,8 @@ export default function ComparisonChart({
             <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
             style="
               width: ${(Math.max(0, value) / maxPoint) * 100}%;
-              background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]};
+              background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+            };
             "></div>
           </div>`;
         })
@@ -546,6 +564,9 @@ export default function ComparisonChart({
       let prefix = valuePrefix;
       let suffix = "";
       let value = pointsSum;
+      if (metric_id === "throughput") {
+        suffix = " Mgas/s";
+      }
 
       const sumRow =
         selectedScale === "stacked"
@@ -555,10 +576,15 @@ export default function ComparisonChart({
           <div class="tooltip-point-name text-md">Total</div>
           <div class="flex-1 text-right justify-end font-inter flex">
 
-              <div class="opacity-70 mr-0.5 ${!prefix && "hidden"}">${prefix}</div>
-              ${parseFloat(value).toLocaleString(undefined, {
+              <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+          }">${prefix}</div>
+              ${parseFloat(value).toLocaleString("en-GB", {
             minimumFractionDigits: valuePrefix ? 2 : 0,
-            maximumFractionDigits: valuePrefix ? 2 : 0,
+            maximumFractionDigits: valuePrefix
+              ? 2
+              : metric_id === "throughput"
+                ? 2
+                : 0,
           })}
               <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
           }">${suffix}</div>
@@ -571,7 +597,17 @@ export default function ComparisonChart({
 
       return tooltip + tooltipPoints + sumRow + tooltipEnd;
     },
-    [selectedTimeInterval, valuePrefix, selectedScale, reversePerformer, theme, showUsd, filteredData, metric_id, showGwei],
+    [
+      selectedTimeInterval,
+      valuePrefix,
+      selectedScale,
+      reversePerformer,
+      theme,
+      showUsd,
+      filteredData,
+      metric_id,
+      showGwei,
+    ],
   );
 
   const tooltipPositioner =
@@ -627,7 +663,6 @@ export default function ComparisonChart({
     return maxDate;
   }, [embed_end_timestamp, filteredData]);
 
-
   const timespans = useMemo(() => {
     // let maxDate = new Date();
     // if (filteredData && filteredData[0].name !== "") {
@@ -658,21 +693,21 @@ export default function ComparisonChart({
       // },
       "90d": {
         label: "90 days",
-        shortLabel: "90D",
+        shortLabel: "90d",
         value: 90,
         xMin: maxPlusBuffer - (90 + 1) * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "180d": {
         label: "180 days",
-        shortLabel: "180D",
+        shortLabel: "180d",
         value: 180,
         xMin: maxPlusBuffer - (180 + 1) * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "365d": {
         label: "1 year",
-        shortLabel: "365D",
+        shortLabel: "365d",
         value: 365,
         xMin: maxPlusBuffer - (365 + 1) * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
@@ -681,14 +716,14 @@ export default function ComparisonChart({
         label: "6 months",
         shortLabel: "6M",
         value: 6,
-        xMin: maxPlusBuffer - (6.5 * 31) * 24 * 60 * 60 * 1000,
+        xMin: maxPlusBuffer - 6.5 * 31 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "12m": {
         label: "1 year",
         shortLabel: "1Y",
         value: 12,
-        xMin: maxPlusBuffer - (12.5 * 31) * 24 * 60 * 60 * 1000,
+        xMin: maxPlusBuffer - 12.5 * 31 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       maxM: {
@@ -722,7 +757,6 @@ export default function ComparisonChart({
     };
   }, [filteredData, maxDate]);
 
-
   // useEffect(() => {
   //   if (embedData.title !== navItem?.label + " - growthepie")
   //     setEmbedData(prevEmbedData => ({
@@ -750,24 +784,44 @@ export default function ComparisonChart({
       zoomed: zoomed ? "true" : "false",
       startTimestamp: startTimestamp ? startTimestamp.toString() : "",
       endTimestamp: endTimestamp ? endTimestamp.toString() : "",
-    }
+    };
 
-    let src = BASE_URL + "/embed/fundamentals/" + navItem?.urlKey + "?" + new URLSearchParams(vars).toString()
+    let src =
+      BASE_URL +
+      "/embed/fundamentals/" +
+      navItem?.urlKey +
+      "?" +
+      new URLSearchParams(vars).toString();
     if (embedData.timeframe === "absolute") {
-      src += "&" + new URLSearchParams(absoluteVars).toString()
+      src += "&" + new URLSearchParams(absoluteVars).toString();
     }
 
-    setEmbedData(prevEmbedData => ({
+    setEmbedData((prevEmbedData) => ({
       ...prevEmbedData,
       title: navItem?.label + " - growthepie",
       src: src,
       zoomed: zoomed,
       timeframe: zoomed ? "absolute" : embedData.timeframe,
     }));
-  }, [embedData.timeframe, maxDate, navItem?.label, navItem?.urlKey, selectedScale, selectedTimeInterval, selectedTimespan, showEthereumMainnet, showGwei, showUsd, theme, timespans, zoomMax, zoomMin, zoomed]);
+  }, [
+    embedData.timeframe,
+    maxDate,
+    navItem?.label,
+    navItem?.urlKey,
+    selectedScale,
+    selectedTimeInterval,
+    selectedTimespan,
+    showEthereumMainnet,
+    showGwei,
+    showUsd,
+    theme,
+    timespans,
+    zoomMax,
+    zoomMin,
+    zoomed,
+  ]);
 
   useEffect(() => {
-
     Highcharts.setOptions({
       lang: {
         numericSymbols: ["K", " M", "B", "T", "P", "E"],
@@ -778,27 +832,35 @@ export default function ComparisonChart({
     highchartsPatternFill(Highcharts);
 
     // update x-axis label sizes if it is a 4 digit number
-    Highcharts.wrap(Highcharts.Axis.prototype, "renderTick", function (proceed) {
-      proceed.apply(this, Array.prototype.slice.call(arguments, 1));
+    Highcharts.wrap(
+      Highcharts.Axis.prototype,
+      "renderTick",
+      function (proceed) {
+        proceed.apply(this, Array.prototype.slice.call(arguments, 1));
 
-      const axis: Highcharts.Axis = this;
-      const ticks: Highcharts.Dictionary<Highcharts.Tick> = axis.ticks;
-      if (axis.isXAxis && axis.options.labels && axis.options.labels.enabled) {
-        Object.keys(ticks).forEach((tick) => {
-          const tickLabel = ticks[tick].label;
-          if (!tickLabel) return;
-          const tickValue = tickLabel.element.textContent;
-          if (tickValue) {
-            if (tickValue.length === 4) {
-              tickLabel.css({
-                transform: "scale(1.4)",
-                fontWeight: "600",
-              });
+        const axis: Highcharts.Axis = this;
+        const ticks: Highcharts.Dictionary<Highcharts.Tick> = axis.ticks;
+        if (
+          axis.isXAxis &&
+          axis.options.labels &&
+          axis.options.labels.enabled
+        ) {
+          Object.keys(ticks).forEach((tick) => {
+            const tickLabel = ticks[tick].label;
+            if (!tickLabel) return;
+            const tickValue = tickLabel.element.textContent;
+            if (tickValue) {
+              if (tickValue.length === 4) {
+                tickLabel.css({
+                  transform: "scale(1.4)",
+                  fontWeight: "600",
+                });
+              }
             }
-          }
-        });
-      }
-    });
+          });
+        }
+      },
+    );
 
     setHighchartsLoaded(true);
   }, []);
@@ -809,7 +871,6 @@ export default function ComparisonChart({
         chartComponent.current.xAxis[0].setExtremes(
           timespans[selectedTimespan].xMin,
           timespans[selectedTimespan].xMax,
-
         );
     }
   }, [selectedTimespan, timespans, zoomed]);
@@ -1159,8 +1220,7 @@ export default function ComparisonChart({
           },
         },
       },
-      events: {
-      },
+      events: {},
       plotOptions: scaleToPlotOptions,
       legend: {
         enabled: false,
@@ -1237,15 +1297,15 @@ export default function ComparisonChart({
           formatter: function (this: AxisLabelsFormatterContextObject) {
             // if Jan 1st, show year
             if (new Date(this.value).getUTCMonth() === 0) {
-              return new Date(this.value).toLocaleDateString(undefined, {
+              return new Date(this.value).toLocaleDateString("en-GB", {
                 timeZone: "UTC",
                 year: "numeric",
               });
             }
-            return new Date(this.value).toLocaleDateString(undefined, {
+            return new Date(this.value).toLocaleDateString("en-GB", {
               timeZone: "UTC",
               month: isMobile ? "short" : "short",
-              year: "numeric"
+              year: "numeric",
             });
           },
           y: 40,
@@ -1533,7 +1593,7 @@ export default function ComparisonChart({
     getSeriesData,
     getChartHeight,
     selectedTimeInterval,
-    is_embed
+    is_embed,
   ]);
 
   // useEffect(() => {
@@ -1554,8 +1614,6 @@ export default function ComparisonChart({
   //     resituateChart.cancel();
   //   };
   // }, [chartComponent, selectedTimespan, timespans, resituateChart]);
-
-
 
   // useEffect(() => {
   //   setTimeout(() => {
@@ -1584,8 +1642,9 @@ export default function ComparisonChart({
 
   // const { width, height } = useWindowSize();
 
-  useLayoutEffect(() => {
+  // console.log(data.filter((d) => d.name === "ethereum").length > 0);
 
+  useLayoutEffect(() => {
     if (chartComponent.current) {
       chartComponent.current.setSize(width, height, true);
     }
@@ -1593,14 +1652,19 @@ export default function ComparisonChart({
 
   const embedAggregation = useMemo(() => {
     const rolling_avg = avg && ["365d", "max"].includes(selectedTimespan);
-    const aggregation = monthly_agg && selectedTimeInterval === "monthly" ? monthly_agg : rolling_avg ? "average" : "sum";
+    const aggregation =
+      monthly_agg && selectedTimeInterval === "monthly"
+        ? monthly_agg
+        : rolling_avg
+          ? "average"
+          : "sum";
 
     if (selectedTimeInterval === "monthly") {
-      return `Monthly ${monthly_agg_labels[aggregation]}`
+      return `Monthly ${monthly_agg_labels[aggregation]}`;
     }
 
     if (avg && ["365d", "max"].includes(selectedTimespan)) {
-      return `7-day Rolling ${aggregation}`
+      return `7-day Rolling ${aggregation}`;
     }
 
     return "Daily";
@@ -1608,7 +1672,14 @@ export default function ComparisonChart({
 
   if (is_embed)
     return (
-      <EmbedContainer title={navItem?.label || ""} icon="gtp:gtp-pie" url="https://www.growthepie.xyz" time_frame={timespans[selectedTimespan].label} chart_type={selectedScale} aggregation={embedAggregation}>
+      <EmbedContainer
+        title={navItem?.label || ""}
+        icon="gtp:gtp-pie"
+        url="https://www.growthepie.xyz"
+        time_frame={timespans[selectedTimespan].label}
+        chart_type={selectedScale}
+        aggregation={embedAggregation}
+      >
         <div className="relative h-full w-full rounded-xl" ref={containerRef}>
           {highchartsLoaded ? (
             <HighchartsReact
@@ -1645,28 +1716,25 @@ export default function ComparisonChart({
   return (
     <div className="w-full flex-col relative">
       <Container className={`${is_embed ? "!p-0 !m-0" : ""}`}>
-        <div className="flex w-full justify-between items-center text-xs rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 relative">
+        <TopRowContainer className="relative">
           {is_embed ? (
             <div className="hidden md:flex justify-center items-center">
               <div className="w-5 h-5 md:w-7 md:h-7 relative ml-[21px] mr-3">
                 <Icon
                   icon={
-                    navigationCategories[
-                      navItem?.category ?? "convenience"
-                    ].icon
+                    navigationCategories[navItem?.category ?? "convenience"]
+                      .icon
                   }
                   className="w-5 h-5 md:w-7 md:h-7"
                 />
               </div>
               {/* <Icon icon="gtp:chain" className="w-7 h-7 lg:w-9 lg:h-9" /> */}
               <h2 className="text-[24px] xl:text-[30px] leading-snug font-bold hidden md:block my-[10px]">
-                {
-                  navItem?.label
-                }
+                {navItem?.label}
               </h2>
             </div>
           ) : (
-            <div className="flex justify-center items-center">
+            <TopRowParent>
               {/* <div className="w-7 h-7 md:w-9 md:h-9 relative ml-[21px] mr-1.5">
                 <Image
                   src="/GTP-Chain.png"
@@ -1679,7 +1747,7 @@ export default function ComparisonChart({
                 Selected Chains
               </h2> */}
               <div
-                className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 left-0 pl-[40px] w-[90px] md:pl-[85px] md:w-[151px] lg:pl-[89px] lg:w-[149px] xl:w-[170px] xl:pl-[110px] ${monthly_agg && selectedTimeInterval === "monthly"
+                className={`absolute transition-[transform] hidden md:block duration-300 ease-in-out -z-10 top-0 left-[190px] sm:left-[300px] lg:left-0.5 pl-[40px] w-[200px] md:pl-[85px] md:w-[220px] lg:pl-[89px] lg:w-[149px] xl:w-[180px] xl:pl-[110px] ${monthly_agg && selectedTimeInterval === "monthly"
                   ? "translate-y-[calc(-100%+3px)]"
                   : "translate-y-0 "
                   }`}
@@ -1689,12 +1757,10 @@ export default function ComparisonChart({
                 </div>
               </div>
               {["daily", "monthly"].map((interval) => (
-                <button
+                <TopRowChild
                   key={interval}
-                  className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium capitalize ${selectedTimeInterval === interval
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
-                    }`}
+                  className={"capitalize"}
+                  isSelected={selectedTimeInterval === interval}
                   onClick={() => {
                     if (selectedTimeInterval === interval) return;
 
@@ -1717,12 +1783,26 @@ export default function ComparisonChart({
                 >
                   <span className="hidden md:block">{interval}</span>
                   <span className="block md:hidden">{interval[0]}</span>
-                </button>
+                </TopRowChild>
               ))}
-            </div>
+            </TopRowParent>
           )}
-
-          <div className="flex md:w-auto justify-between md:justify-center items-stretch md:items-center space-x-[4px] md:space-x-1">
+          {/* dashed line */}
+          <div className="flex lg:hidden justify-center py-[10px] w-[75%]">
+            <div
+              className="border-forest-400 h-[1px] w-full stroke-forest-400 dark:stroke-forest-700"
+              style={{
+                backgroundImage:
+                  theme == "dark"
+                    ? `linear-gradient(to right, #CDD8D3 25%, rgba(255,255,255,0) 0%)`
+                    : `linear-gradient(to right, #88A09D 25%, rgba(255,255,255,0) 0%)`,
+                backgroundPosition: "top",
+                backgroundSize: "4px 1px",
+                backgroundRepeat: "repeat-x",
+              }}
+            />
+          </div>
+          <TopRowParent>
             {!zoomed ? (
               Object.keys(timespans)
                 .filter((timespan) =>
@@ -1731,12 +1811,9 @@ export default function ComparisonChart({
                     : ["6m", "12m", "maxM"].includes(timespan),
                 )
                 .map((timespan) => (
-                  <button
+                  <TopRowChild
                     key={timespan}
-                    className={`rounded-full px-[16px] py-[8px] grow text-sm md:text-base lg:px-4 lg:py-3 xl:px-6 xl:py-4 font-medium ${selectedTimespan === timespan
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
-                      }`}
+                    isSelected={selectedTimespan === timespan}
                     onClick={() => {
                       setSelectedTimespan(timespan);
                       // setXAxis();
@@ -1752,13 +1829,13 @@ export default function ComparisonChart({
                       setZoomed(false);
                     }}
                   >
-                    <span className="hidden sm:block">
+                    <span className="hidden md:block">
                       {timespans[timespan].label}
                     </span>
-                    <span className="block sm:hidden">
+                    <span className="block md:hidden">
                       {timespans[timespan].shortLabel}
                     </span>
-                  </button>
+                  </TopRowChild>
                 ))
             ) : (
               <>
@@ -1786,7 +1863,7 @@ export default function ComparisonChart({
                 </button>
               </>
             )}
-          </div>
+          </TopRowParent>
           <div
             className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[117px] sm:w-[162px] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${avg && ["365d", "max"].includes(selectedTimespan)
               ? "translate-y-[calc(-100%+3px)]"
@@ -1798,7 +1875,7 @@ export default function ComparisonChart({
               <span className="block md:hidden">7-day average</span>
             </div>
           </div>
-        </div>
+        </TopRowContainer>
 
         <div className="w-full flex flex-col-reverse lg:flex-row pt-8 pb-4 md:py-0">
           {!is_embed && (
@@ -1826,9 +1903,9 @@ export default function ComparisonChart({
                         ? "w-full relative h-[calc(100vh-160px)] md:h-[calc(100vh-100px)]"
                         : "w-full h-[17rem] md:h-[28rem] relative rounded-xl pt-0 pb-0 md:pt-8 md:pb-2"
                     }
-
                   >
                     <div
+                      id="content-container"
                       className={
                         is_embed
                           ? "relative block w-full top-0 md:top-8"
@@ -1842,11 +1919,11 @@ export default function ComparisonChart({
                         ref={(chart) => {
                           chartComponent.current = chart?.chart;
                         }}
-                        constructorType={"stockChart"}
                       />
                     </div>
-                    <div className="absolute bottom-[53.5%] left-0 right-0 flex items-center justify-center pointer-events-none z-0 opacity-40">
+                    <div className="absolute bottom-[53.5%] left-0 right-0 flex flex-col gap-y-[3px] items-center justify-center pointer-events-none z-0 opacity-40">
                       <ChartWatermark className="w-[128.67px] h-[30.67px] text-forest-300 dark:text-[#EAECEB] mix-blend-darken dark:mix-blend-lighten" />
+                      <div className="font-medium text-[10px] uppercase">{master && master.metrics[metric_id].name}</div>
                     </div>
                   </div>
                 </div>

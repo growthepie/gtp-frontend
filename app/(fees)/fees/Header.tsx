@@ -3,7 +3,7 @@ import Link from "next/link";
 import Sidebar from "@/components/layout/Sidebar";
 import Icon from "@/components/layout/Icon";
 import EthUsdSwitch from "@/components/layout/EthUsdSwitch";
-import DarkModeSwitch from "@/components/layout/DarkModeSwitch";
+
 import Banner from "@/components/Banner";
 import Notification from "@/components/Notification";
 import HeaderLinks from "@/components/layout/HeaderLinks";
@@ -11,7 +11,7 @@ import { track } from "@vercel/analytics";
 
 export default function Header() {
   return (
-    <header className="flex justify-between space-x-0 xl:space-x-6 items-end max-w-[1600px] w-full mx-auto px-[20px] pt-[20px] md:px-[40px] md:pt-[50px] ">
+    <header className="flex justify-between space-x-0 xl:space-x-6 items-end mx-auto px-[20px] pt-[20px] md:px-[50px] md:pt-[50px] ">
       <div className="flex justify-start items-center w-full  ">
         <div className="flex space-x-0 xl:space-x-6 w-full h-full ">
           {/*Banner/Notification Area */}
@@ -20,7 +20,7 @@ export default function Header() {
             <Notification />
           </div> */}
 
-          <div className="flex justify-between items-start h-full relative w-full left-1 ">
+          <div className="flex justify-between items-start h-full relative w-full">
             <Link href="/" className="flex gap-x-1">
               {/* <div className="h-[45px] w-[206px]"> */}
               <Image
@@ -88,17 +88,17 @@ export default function Header() {
           </div>
         </div>
       </div>
-      <div className="items-center z-10 hidden md:flex md:space-x-[34px] h-full mt-[7px]">
+      <div className="items-center z-0 hidden md:flex md:space-x-[34px] h-full mt-[7px]">
         <EthUsdSwitch />
 
-        <div className="flex space-x-[22px] pr-2.5 items-center">
+        <div className="flex space-x-[22px] pr-0 items-center">
           <HeaderLinks />
         </div>
       </div>
       {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
-        ["development", "preview"].includes(
-          process.env.NEXT_PUBLIC_VERCEL_ENV,
-        ) ? (
+      ["development", "preview"].includes(
+        process.env.NEXT_PUBLIC_VERCEL_ENV,
+      ) ? (
         <> </>
       ) : (
         <>{/* <SupportUsBanner /> */}</>

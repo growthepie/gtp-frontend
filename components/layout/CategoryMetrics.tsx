@@ -9,7 +9,7 @@ import {
   useCallback,
 } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip";
-import { useLocalStorage, useMediaQuery } from "usehooks-ts";
+import { useLocalStorage, useSessionStorage, useMediaQuery } from "usehooks-ts";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Icon } from "@iconify/react";
@@ -19,7 +19,7 @@ import Container from "./Container";
 import { CategoryComparisonResponseData } from "@/types/api/CategoryComparisonResponse";
 import { animated, useSpring, useTransition } from "@react-spring/web";
 import { Chart } from "../charts/chart";
-import { AllChainsByKeys } from "@/lib/chains";
+import { AllChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
 import { useTheme } from "next-themes";
 import { LandingURL, MasterURL } from "@/lib/urls";
 import useSWR from "swr";
@@ -27,6 +27,15 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import ChainAnimations from "./ChainAnimations";
 import { useUIContext } from "@/contexts/UIContext";
 import ContractLabelModal from "./ContractLabelModal";
+import CategoryBar from "@/components/layout/CategoryBar";
+
+import {
+  TopRowContainer,
+  TopRowChild,
+  TopRowParent,
+} from "@/components/layout/TopRow";
+import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
+import HorizontalScrollContainer from "../HorizontalScrollContainer";
 
 export default function CategoryMetrics({
   data,
@@ -101,7 +110,7 @@ export default function CategoryMetrics({
   const [showMore, setShowMore] = useState(false);
   const [copyContract, setCopyContract] = useState(false);
   const isMobile = useMediaQuery("(max-width: 1023px)");
-  const [chainEcosystemFilter, setChainEcosystemFilter] = useLocalStorage(
+  const [chainEcosystemFilter, setChainEcosystemFilter] = useSessionStorage(
     "chainEcosystemFilter",
     "all-chains",
   );
@@ -239,10 +248,20 @@ export default function CategoryMetrics({
 
     return chainValues
       .filter(([item]) => {
-        const filterChains =
-          AllChainsByKeys[item].ecosystem.includes(chainEcosystemFilter);
+        const supportedChainKeys = Get_SupportedChainKeys(master);
+        const isSupported =
+          item === "all_l2s" ? true : supportedChainKeys.includes(item);
+        const isMaster = master?.chains[item] ? true : false;
+        const passEcosystem =
+          item === "all_l2s"
+            ? true
+            : isMaster
+              ? chainEcosystemFilter === "all-chains"
+                ? true
+                : master?.chains[item].bucket.includes(chainEcosystemFilter)
+              : false;
 
-        return item !== "types" && filterChains;
+        return item !== "types" && isSupported && passEcosystem;
       })
       .sort((a, b) => b[1] - a[1])
       .sort(([itemA], [itemB]) =>
@@ -258,12 +277,14 @@ export default function CategoryMetrics({
     return {
       "7d": {
         label: "7 days",
+        shortLabel: "7d",
         value: 7,
         xMin: Date.now() - 7 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
       },
       "30d": {
         label: "30 days",
+        shortLabel: "30d",
         value: 30,
         xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
@@ -274,6 +295,7 @@ export default function CategoryMetrics({
       // },
       "180d": {
         label: "180 days",
+        shortLabel: "180d",
         value: 180,
       },
       // "365d": {
@@ -282,6 +304,7 @@ export default function CategoryMetrics({
       // },
       max: {
         label: "All Time",
+        shortLabel: "Max",
         value: 0,
       },
     };
@@ -386,8 +409,21 @@ export default function CategoryMetrics({
     const selectedSubcategoriesList = selectedSubcategories[selectedCategory];
 
     for (const currChain in selectedChains) {
+      const supportedChainKeys = Get_SupportedChainKeys(master);
+      const isSupported =
+        currChain === "all_l2s" ? true : supportedChainKeys.includes(currChain);
+      const isMaster = master?.chains[currChain] ? true : false;
+      const passEcosystem =
+        currChain === "all_l2s"
+          ? true
+          : isMaster
+            ? chainEcosystemFilter === "all-chains"
+              ? true
+              : master?.chains[currChain].bucket.includes(chainEcosystemFilter)
+            : false;
       if (
-        AllChainsByKeys[currChain].ecosystem.includes(chainEcosystemFilter) &&
+        isSupported &&
+        passEcosystem &&
         selectedChains[currChain] === true &&
         data[selectedCategory][dailyKey][String(currChain)]
       ) {
@@ -937,43 +973,33 @@ export default function CategoryMetrics({
       {selectedSubcategories && (
         <div className="w-full flex-col relative">
           <Container>
-            <div className="flex flex-col rounded-[15px] py-[2px] px-[2px] text-xs lg:text-base lg:flex lg:flex-row w-full justify-between items-center static -top-[8rem] left-0 right-0 lg:rounded-full dark:bg-[#1F2726] bg-forest-50 md:py-[2px]">
-              <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
-                <button
-                  className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${"gas_fees_" === selectedMode
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
-                    }`}
+            <TopRowContainer>
+              <TopRowParent>
+                <TopRowChild
+                  isSelected={"gas_fees_" === selectedMode}
                   onClick={() => {
                     setSelectedMode("gas_fees_");
                   }}
                 >
                   Gas Fees
-                </button>
-                <button
-                  className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${"txcount_" === selectedMode
-                      ? "bg-forest-500 dark:bg-forest-1000"
-                      : "hover:bg-forest-500/10"
-                    }`}
+                </TopRowChild>
+                <TopRowChild
+                  isSelected={"txcount_" === selectedMode}
                   onClick={() => {
                     setSelectedMode("txcount_");
                   }}
                 >
                   Transaction Count
-                </button>
-              </div>
+                </TopRowChild>
+              </TopRowParent>
               <div className="block lg:hidden w-[70%] mx-auto my-[10px]">
                 <hr className="border-dotted border-top-[1px] h-[0.5px] border-forest-400" />
               </div>
-              <div className="flex w-full lg:w-auto justify-between lg:justify-center items-stretch lg:items-center mx-4 lg:mx-0 space-x-[4px] lg:space-x-1">
+              <TopRowParent>
                 {Object.keys(timespans).map((timespan) => (
-                  <button
+                  <TopRowChild
                     key={timespan}
-                    //rounded-full sm:w-full px-4 py-1.5 xl:py-4 font-medium
-                    className={`rounded-full grow px-4 py-1.5 lg:py-4 font-medium ${selectedTimespan === timespan
-                        ? "bg-forest-500 dark:bg-forest-1000"
-                        : "hover:bg-forest-500/10"
-                      }`}
+                    isSelected={selectedTimespan === timespan}
                     onClick={() => {
                       setSelectedTimespan(timespan);
 
@@ -989,626 +1015,155 @@ export default function CategoryMetrics({
                       // });
                     }}
                   >
-                    {timespans[timespan].label}
-                  </button>
+                    <span className="hidden md:block">
+                      {timespans[timespan].label}
+                    </span>
+                    <span className="block md:hidden">
+                      {timespans[timespan].shortLabel}
+                    </span>
+                  </TopRowChild>
                 ))}
                 <div
-                  className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[50px] right-[20px] md:right-[45px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${!isMobile
-                      ? ["max", "180d"].includes(selectedTimespan)
-                        ? "translate-y-[calc(-100%+3px)]"
-                        : "translate-y-0 "
-                      : ["max", "180d"].includes(selectedTimespan)
-                        ? "translate-y-[calc(100%+3px)]"
-                        : "translate-y-0"
+                  className={`absolute transition-[transform] text-xs  duration-300 ease-in-out -z-10 top-[63px] right-[22px] md:right-[65px] md:top-[68px] lg:top-0 lg:right-[65px] pr-[15px] w-[calc(50%-34px)] md:w-[calc(50%-56px)] lg:pr-[23px] lg:w-[168px] xl:w-[158px] xl:pr-[23px] ${!isMobile
+                    ? ["max", "180d"].includes(selectedTimespan)
+                      ? "translate-y-[calc(-100%+3px)]"
+                      : "translate-y-0 "
+                    : ["max", "180d"].includes(selectedTimespan)
+                      ? "translate-y-[calc(40%+3px)]"
+                      : "-translate-y-[calc(40%+3px)]"
                     }`}
                 >
                   <div className="font-medium bg-forest-100 dark:bg-forest-1000 rounded-b-2xl rounded-t-none lg:rounded-b-none lg:rounded-t-2xl border border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
                     7-day rolling average
                   </div>
                 </div>
-              </div>
-            </div>
+              </TopRowParent>
+            </TopRowContainer>
           </Container>
-          {/* <Container className="block w-full !pr-0 lg:!px-[50px] lg:mt-0 mt-6">
-        <div className="flex min-w-[1150px] md:min-w-[1200px] w-[95%] m-auto min-h-[67px] items-center rounded-[15px] bg-white border dark:text-forest-50  text-forest-1000 border-forest-400 dark:border-forest-800  dark:bg-forest-1000 mt-6">
-          <div
-            className={
-              "relative flex flex-col min-w-[140px] max-w-[140px] w-[140px] min-h-[67px] justify-start pl-[16px] pt-2"
-            }
-          >
-            <div className="">
-              <div className="text-sm font-bold pb-[10px]">Categories</div>
-              <div className="text-xs font-medium">Subcategories</div>
-            </div>
-          </div>
-          <div className="flex flex-1">
-            {Object.keys(categories)
-              .filter((c) => c != "categories")
-              .map((category, i) => {
-                const subcategoryCount = Object.keys(categories).filter(
-                  (c) => c != "categories",
-                );
 
-                return (
-                  <div
-                    key={i}
-                    className={`relative text-sm min-h-[67px] flex flex-col items-center justify-center transition-all duration-300 ease-in-out overflow-clip border-l border-dotted border-white whitespace-nowrap ${
-                      selectedCategory === category && openSub
-                        ? "basis-[50%] font-bold"
-                        : !openSub
-                        ? "basis-full"
-                        : "basis-[calc(50%/8)]"
-                    }
-                    ${selectedCategory === category ? "bg-[#5A6462]" : ``}
-                    ${
-                      i ===
-                      Object.keys(categories).filter((c) => c != "categories")
-                        .length -
-                        1
-                        ? "rounded-r-[13px]"
-                        : ""
-                    }`}
-                  >
-                    <div
-                      className={`absolute z-10 inset-0 flex items-center justify-center shadow-[inset_35px_0px_13px_-25px_rgba(0,0,0,0.85),inset_-35px_0px_13px_-25px_rgba(0,0,0,0.85)] transition-opacity duration-300 pointer-events-none
-                      ${
-                        openSub &&
-                        selectedCategory &&
-                        selectedCategory !== category
-                          ? "opacity-100"
-                          : "opacity-0"
-                      }
-                      ${i === subcategoryCount - 1 ? "rounded-r-[13px]" : ""}`}
-                    />
-                    <div
-                      className="flex flex-1 w-full justify-center items-center pt-1.5 text-sm cursor-pointer transition-all duration-300 hover:bg-gradient-to-b hover:from-forest-500/10 hover:to-forest-500/0"
-                      onClick={() => {
-                        setSelectedCategory(category);
-                      }}
-                    >
-                      {categories[category]}
-                    </div>
-                    <div
-                      className={`transition-[height] duration-300 ${
-                        selectedCategory === category && openSub
-                          ? "h-[50px]"
-                          : "h-0 delay-300"
-                      }`}
-                    ></div>
-                    <div
-                      className="flex w-full justify-center items-center pb-1 text-xs font-medium cursor-pointer transition-all duration-300 hover:bg-gradient-to-t hover:from-forest-500/10 hover:to-forest-500/0"
-                      onClick={() => {
-                        if (selectedCategory !== category) {
-                          setSelectedCategory(category);
-                        }
-
-                        if (selectedCategory === category || !openSub)
-                          setOpenSub(!openSub);
-                      }}
-                    >
-                      {openSub ? (
-                        <Icon
-                          icon="icon-park-outline:up"
-                          className={`w-6 h-6 transition-opacity duration-300 ${
-                            selectedCategory === category
-                              ? "opacity-100"
-                              : "opacity-0"
-                          }`}
-                        />
-                      ) : (
-                        <Icon
-                          icon="icon-park-outline:down"
-                          className="w-6 h-6"
-                        />
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-        </div>
-      </Container> */}
-          <Container className="block w-full !pr-0 lg:!px-[40px] px-[100px] lg:mt-0 mt-6 lg:w-[100%] lg:mx-auto ">
-            <div
-              className={`w-[100%] mx-auto  overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-2 ${isSidebarOpen ? "exl:overflow-hidden" : "cxl:overflow-hidden"
-                }`}
+          <div id="content-container" className="w-full">
+            <HorizontalScrollContainer
+              forcedMinWidth={isMobile ? 990 : 1050}
+              paddingBottom={8}
             >
-              <animated.div
-                className="relative min-w-[950px] md:min-w-[900px] w-[20%] md:w-[97.5%] h-[67px] m-auto border-x-[1px] border-y-[1px] rounded-[15px] dark:text-forest-50  text-forest-1000 border-forest-400 dark:border-forest-800  dark:bg-forest-1000 mt-8 overflow-hidden"
-                style={{ ...categoryAnimation }}
-              >
-                {!openSub ? (
-                  <div className="flex w-full h-full text-[12px]">
-                    {Object.keys(categories).map((category, i) =>
-                      categories[category] !== "Categories" ? (
-                        <div
-                          key={category}
-                          className={`relative flex w-full h-full justify-between items-center ${selectedCategory === category
-                              ? "borden-hidden rounded-[0px] text-white"
-                              : "h-full"
-                            }
-                    ${isCategoryHovered[category] ? "" : ""}`}
-                          onMouseEnter={() => {
-                            setIsCategoryHovered((prev) => ({
-                              ...prev,
-                              [category]: true,
-                            }));
-                          }}
-                          onMouseLeave={() => {
-                            setIsCategoryHovered((prev) => ({
-                              ...prev,
-                              [category]: false,
-                            }));
-                          }}
-                          style={{
-                            borderLeft:
-                              "0.5px dotted var(--dark-active-text, #CDD8D3)",
-                            background:
-                              selectedCategory === category
-                                ? "#5A6462"
-                                : theme === "light"
-                                  ? "#FFFFFF"
-                                  : `linear-gradient(
-                                90deg,
-                                rgba(16, 20, 19, ${0.3 -
-                                  (i / (Object.keys(categories).length - 1)) *
-                                  0.2
-                                  }) 0%,
-                                #101413 15.10%,
-                                rgba(16, 20, 19, ${0.06 +
-                                  (i / Object.keys(categories).length) * 0.94
-                                  }) 48.96%,
-                                #101413 86.98%,
-                                rgba(16, 20, 19, ${0.3 -
-                                  (i / (Object.keys(categories).length - 1)) *
-                                  0.2
-                                  }) 100%
-                              )`,
-                          }}
-                        >
-                          <div
-                            key={category}
-                            className={`w-full h-full flex flex-col text-center items-center first-letter justify-between hover:cursor-pointer  ${selectedCategory === category
-                                ? ""
-                                : "hover:bg-forest-500 dark:hover:bg-white/5"
-                              }`}
-                            onClick={() => {
-                              if (selectedCategory === category) {
-                                handleOpen(category);
-                              }
+              <CategoryBar
+                data={data}
+                master={master}
+                categories={categories}
+                querySubcategories={querySubcategories}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                checkSubcategory={checkSubcategory}
+                formatSubcategories={formatSubcategories}
+                checkAllSelected={checkAllSelected}
+                handleSelectAllSubcategories={handleSelectAllSubcategories}
+                handleToggleSubcategory={handleToggleSubcategory}
+              />
+            </HorizontalScrollContainer>
 
-                              setSelectedCategory(category);
-                            }}
-                          >
-                            <div
-                              className={`flex items-center h-[25px]  mt-1 ${selectedCategory === category
-                                  ? "text-sm font-bold"
-                                  : "text-xs font-medium"
-                                }`}
-                            >
-                              <h1>{categories[category]}</h1>
-                            </div>
-
-                            <div
-                              key={i}
-                              className="relative flex items-center mb-2.5 top-[8px] h-[24px] w-full"
-                              onClick={() => {
-                                handleOpen(category);
-                              }}
-                            >
-                              <Icon
-                                icon="icon-park-outline:down"
-                                className="w-full h-full"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        // Different response for "Chains" category
-                        <div
-                          key={category}
-                          className={
-                            "relative flex flex-col min-w-[140px] w-full h-full justify-start mt-2 ml-0.5 pl-[14px] dark:text-white bg-white dark:bg-inherit"
-                          }
-                        >
-                          <div className="text-sm font-bold pb-[10px]">
-                            {categories[category]}
-                          </div>
-                          <div className="text-xs font-medium">
-                            Subcategories
-                          </div>
-                        </div>
-                      ),
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex w-full h-full text-[12px]">
-                    {categoryTransitions((style, item) =>
-                      categories[item.category] !== "Categories" ? (
+            <Container>
+              <div className="flex flex-col justify-between lg:flex-row w-[98.5%] gap-y-8 mx-auto mt-[20px] lg:mt-[30px] mb-[20px] lg:mb-0">
+                <div className="w-full lg:w-[44%] flex flex-col justify-between ">
+                  <div
+                    className="mt-4 relative"
+                    style={{
+                      height: height,
+                      minHeight: isMobile ? undefined : "500px",
+                    }}
+                  >
+                    {sortedChainValues &&
+                      master &&
+                      transitions((style, item) => (
                         <animated.div
-                          key={item.category}
-                          className={`relative flex w-full h-full ${selectedCategory === item.category
-                              ? `border-hidden rounded-[0px] dark:text-inherit text-white ${Object.keys(data[item.category].subcategories)
-                                .length > 8
-                                ? "w-[650px]"
-                                : Object.keys(
-                                  data[item.category].subcategories,
-                                ).length > 5
-                                  ? "w-[500px]"
-                                  : "w-[400px]"
-                              }`
-                              : "h-full w-full min-w-[40px] hover:max-w-[180px]"
-                            }
-
-
-
-                      ${isCategoryHovered[item.category] ? "bg-white/5" : ""}
-                      `}
-                          onMouseEnter={() => {
-                            setIsCategoryHovered((prev) => ({
-                              ...prev,
-                              [item.category]: true,
-                            }));
-                          }}
-                          onMouseLeave={() => {
-                            setIsCategoryHovered((prev) => ({
-                              ...prev,
-                              [item.category]: false,
-                            }));
-                          }}
+                          className="absolute w-full"
+                          key={item.item}
                           style={{
-                            borderLeft:
-                              "0.5px dotted var(--dark-active-text, #CDD8D3)",
-                            background:
-                              selectedCategory === item.category
-                                ? "#5A6462"
-                                : theme === "light"
-                                  ? "#FFFFFF"
-                                  : `linear-gradient(
-                                90deg,
-                                rgba(16, 20, 19, ${0.3 -
-                                  (item.i /
-                                    (Object.keys(categories).length - 1)) *
-                                  0.2
-                                  }) 0%,
-                                #101413 15.10%,
-                                rgba(16, 20, 19, ${0.06 +
-                                  (item.i / Object.keys(categories).length) *
-                                  0.94
-                                  }) 48.96%,
-                                #101413 86.98%,
-                                rgba(16, 20, 19, ${0.3 -
-                                  (item.i /
-                                    (Object.keys(categories).length - 1)) *
-                                  0.2
-                                  }) 100%
-                              )`,
                             ...style,
                           }}
                         >
-                          <div
-                            key={item.category}
-                            className={`h-full flex flex-col first-letter justify-between  hover:cursor-pointer overflow-hidden ${selectedCategory === item.category
-                                ? `border-hidden rounded-[0px] ${Object.keys(
-                                  data[item.category].subcategories,
-                                ).length > 8
-                                  ? "w-[650px]"
-                                  : Object.keys(
-                                    data[item.category].subcategories,
-                                  ).length > 4
-                                    ? "w-[500px]"
-                                    : "w-[400px]"
-                                }`
-                                : "hover:bg-white/5 w-full min-w-[40px] hover:max-w-[180px] "
-                              }`}
-                            onClick={() => {
-                              if (selectedCategory === item.category) {
-                                handleOpen(item.category);
-                                return;
-                              }
-
-                              setSelectedCategory(item.category);
-                            }}
-                          >
-                            <div
-                              key={"label" + item.category}
-                              className={`flex self-center justify-center mx-auto pb-8 pt-2 h-[30px]  ${selectedCategory === item.category
-                                  ? "text-base font-bold "
-                                  : `text-base font-medium truncate hover:text-ellipsis ${isCategoryHovered[item.category]
-                                    ? item.category ===
-                                      "native_transfers" ||
-                                      item.category === "token_transfers"
-                                      ? "pl-[0px] w-full"
-                                      : "w-full pl-0"
-                                    : item.category ===
-                                      "native_transfers" ||
-                                      item.category === "token_transfers"
-                                      ? "w-full "
-                                      : "w-full pl-0"
-                                  }`
-                                }`}
-                              style={{
-                                background:
-                                  selectedCategory === item.category
-                                    ? "#5A6462"
-                                    : "none",
-                                backgroundClip:
-                                  selectedCategory === item.category
-                                    ? "initial"
-                                    : "text",
-                                WebkitBackgroundClip:
-                                  selectedCategory === item.category
-                                    ? "initial"
-                                    : "text",
-                                WebkitTextFillColor:
-                                  selectedCategory === item.category
-                                    ? "inherit"
-                                    : theme === "light"
-                                      ? "initial"
-                                      : "transparent",
-                                backgroundImage:
-                                  selectedCategory === item.category
-                                    ? "none"
-                                    : theme === "light"
-                                      ? "none"
-                                      : `radial-gradient(ellipse at center, rgba(255, 255, 255, 1) 0%, rgba(0, 0, 0, 1) 100%), linear-gradient(90deg, rgba(16, 20, 19, ${0.4 +
-                                      (item.i /
-                                        (Object.keys(categories).length -
-                                          1)) *
-                                      0.4
-                                      }) 0%, #101413 15.10%, rgba(16, 20, 19, 0.00) 48.96%, #101413 86.98%, rgba(16, 20, 19, ${0.4 +
-                                      (item.i /
-                                        (Object.keys(categories).length -
-                                          1)) *
-                                      0.4
-                                      }) 100%)`,
-                              }}
-                            >
-                              {categories[item.category]}
-                            </div>
-
-                            <div
-                              className="flex flex-col gap-x-1 overflow-hidden h-full 
-                                    mx-4 items-center"
-                            >
-                              {selectedCategory === item.category ? (
-                                <div
-                                  className={`flex h-full ${Object.keys(
-                                    data[item.category].subcategories,
-                                  ).length > 8
-                                      ? "w-[600px]"
-                                      : Object.keys(
-                                        data[item.category].subcategories,
-                                      ).length > 4
-                                        ? "w-[450px]"
-                                        : "w-[350px]"
-                                    }`}
-                                >
-                                  <div
-                                    key={data[item.category].subcategories}
-                                    className="flex flex-wrap w-full gap-x-2 gap-y-2 justify-center self-center items-center  "
-                                  >
-                                    {item.category !== "unlabeled" &&
-                                      item.category !== "native_transfers" ? (
-                                      <div
-                                        key={categories[item.category]}
-                                        className={`flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[35px] min-w-[90px] hover:bg-white/5 z-10    ${checkAllSelected(item.category)
-                                            ? "opacity-100"
-                                            : "opacity-30"
-                                          }`}
-                                        onClick={(e) => {
-                                          handleSelectAllSubcategories(
-                                            item.category,
-                                          );
-                                          e.stopPropagation();
-                                        }}
-                                      >
-                                        <div className="mr-2">
-                                          Select All Subcategories
-                                        </div>
-                                        <div className="rounded-full bg-forest-900 mr-[1px]">
-                                          <Icon
-                                            icon="feather:check-circle"
-                                            className={`w-[14px] h-[14px] ${checkAllSelected(item.category)
-                                                ? "opacity-100"
-                                                : "opacity-0"
-                                              }`}
-                                          />
-                                        </div>
-                                      </div>
-                                    ) : null}
-                                    {item.category !== "unlabeled" &&
-                                      item.category !== "native_transfers" ? (
-                                      data[
-                                        item.category
-                                      ].subcategories.list.map(
-                                        (subcategory) => (
-                                          <button
-                                            key={subcategory}
-                                            className={`flex border-forest-500 rounded-[15px] border-[1.5px] p-[5px] justify-between items-center max-h-[35px] min-w-[90px] hover:bg-white/5 z-10 ${checkSubcategory(
-                                              item.category,
-                                              subcategory,
-                                            )
-                                                ? "opacity-100"
-                                                : "opacity-30"
-                                              }`}
-                                            onClick={(e) => {
-                                              handleToggleSubcategory(
-                                                item.category,
-                                                subcategory,
-                                              );
-                                              e.stopPropagation();
-                                            }}
-                                          >
-                                            <div className="mr-2">
-                                              {formatSubcategories(subcategory)}
-                                            </div>
-                                            <div className="rounded-full bg-forest-900">
-                                              <Icon
-                                                icon="feather:check-circle"
-                                                className={`w-[14px] h-[14px]  ${checkSubcategory(
-                                                  item.category,
-                                                  subcategory,
-                                                )
-                                                    ? "opacity-100"
-                                                    : "opacity-0"
-                                                  }  `}
-                                              />
-                                            </div>
-                                          </button>
-                                        ),
-                                      )
-                                    ) : (
-                                      <div className="flex items-center gap-x-1 ">
-                                        <Icon
-                                          icon="feather:info"
-                                          className="w-6 h-6"
-                                        />
-                                        <h1>
-                                          {" "}
-                                          There are currently no subcategories
-                                          for the given category.{" "}
-                                        </h1>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              ) : null}
-                            </div>
-
-                            <button
-                              className="relative bottom-[4px] h-[24px] w-full"
-                              onClick={() => {
-                                if (selectedCategory === item.category) {
-                                  handleOpen(item.category);
-                                }
-                              }}
-                            >
-                              <Icon
-                                icon="icon-park-outline:up"
-                                className="w-full h-full"
-                              />
-                            </button>
-                          </div>
+                          <ChainAnimations
+                            chain={item.item}
+                            value={item.value}
+                            index={item.index}
+                            sortedValues={sortedChainValues}
+                            selectedValue={selectedValue}
+                            selectedMode={selectedMode}
+                            selectedChains={selectedChains}
+                            setSelectedChains={setSelectedChains}
+                            selectedCategory={selectedCategory}
+                            master={master}
+                          />
                         </animated.div>
-                      ) : (
-                        // Different response for "Chains" category
+                      ))}
+                  </div>
+                </div>
+                <div className="w-full lg:w-[56%] relative bottom-2 mt-6 mb-[30px] h-[320px] lg:mt-0 lg:h-auto">
+                  {chartSeries && (
+                    <Chart
+                      chartType={
+                        selectedChartType === "absolute" ? "line" : "area"
+                      }
+                      stack={selectedChartType !== "absolute"}
+                      types={
+                        selectedCategory === null ||
+                          selectedCategory === "Chains"
+                          ? data.native_transfers[dailyKey].types
+                          : data[selectedCategory][dailyKey].types
+                      }
+                      timespan={selectedTimespan}
+                      series={chartSeries}
+                      yScale={
+                        selectedChartType === "percentage"
+                          ? "percentage"
+                          : "linear"
+                      }
+                      // yScale="linear"
+                      chartHeight={isMobile ? "400" : "560"}
+                      chartWidth="100%"
+                      decimals={selectedMode === "txcount_" ? 0 : 2}
+                    />
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center w-[100%] gap-y-2 lg:hidden mt-8 ">
+                  <div className="font-bold text-sm pr-2 pl-2">
+                    {formatSubcategories(selectedCategory)}:{" "}
+                  </div>
+
+                  {selectedSubcategories[selectedCategory] &&
+                    selectedSubcategories[selectedCategory].map(
+                      (subcategory) => (
                         <div
-                          key={item.category}
-                          className={
-                            "relative flex flex-col min-w-[140px] max-w-[140px] w-full h-full justify-start pl-[16px] pt-2"
-                          }
+                          key={subcategory}
+                          className="  text-xs px-[2px] py-[5px] mx-[5px]"
                         >
-                          <div className="text-sm font-bold pb-[10px]">
-                            {categories[item.category]}
-                          </div>
-                          <div className="text-xs font-medium">
-                            Subcategories
-                          </div>
+                          {formatSubcategories(subcategory)}
                         </div>
                       ),
                     )}
+                </div>
+              </div>
+              <div>
+                {" "}
+                <div className="flex flex-wrap items-center w-[98%] mx-auto gap-y-2 invisible lg:visible ">
+                  <div className="font-bold text-sm pr-2 pl-2">
+                    {formatSubcategories(selectedCategory)}:{" "}
                   </div>
-                )}
-              </animated.div>
-            </div>
-          </Container>
 
-          <Container>
-            <div className="flex flex-col justify-between lg:flex-row w-[98.5%] gap-y-8 mx-auto mt-[20px] lg:mt-[30px] mb-[20px] lg:mb-0">
-              <div className="w-full lg:w-[44%] flex flex-col justify-between ">
-                <div
-                  className="mt-4 relative"
-                  style={{
-                    height: height,
-                    minHeight: isMobile ? undefined : "500px",
-                  }}
-                >
-                  {sortedChainValues &&
-                    transitions((style, item) => (
-                      <animated.div
-                        className="absolute w-full"
-                        key={item.item}
-                        style={{
-                          ...style,
-                        }}
-                      >
-                        <ChainAnimations
-                          chain={item.item}
-                          value={item.value}
-                          index={item.index}
-                          sortedValues={sortedChainValues}
-                          selectedValue={selectedValue}
-                          selectedMode={selectedMode}
-                          selectedChains={selectedChains}
-                          setSelectedChains={setSelectedChains}
-                          selectedCategory={selectedCategory}
-                        />
-                      </animated.div>
-                    ))}
-                </div>
+                  {selectedSubcategories[selectedCategory] &&
+                    selectedSubcategories[selectedCategory].map(
+                      (subcategory) => (
+                        <div
+                          key={subcategory}
+                          className="  text-xs px-[4px] py-[5px] mx-[5px]"
+                        >
+                          {formatSubcategories(subcategory)}
+                        </div>
+                      ),
+                    )}
+                </div>{" "}
               </div>
-              <div className="w-full lg:w-[56%] relative bottom-2 mt-6 mb-[30px] h-[320px] lg:mt-0 lg:h-auto">
-                {chartSeries && (
-                  <Chart
-                    chartType={
-                      selectedChartType === "absolute" ? "line" : "area"
-                    }
-                    stack={selectedChartType !== "absolute"}
-                    types={
-                      selectedCategory === null || selectedCategory === "Chains"
-                        ? data.native_transfers[dailyKey].types
-                        : data[selectedCategory][dailyKey].types
-                    }
-                    timespan={selectedTimespan}
-                    series={chartSeries}
-                    yScale={
-                      selectedChartType === "percentage"
-                        ? "percentage"
-                        : "linear"
-                    }
-                    // yScale="linear"
-                    chartHeight={isMobile ? "400" : "560"}
-                    chartWidth="100%"
-                    decimals={selectedMode === "txcount_" ? 0 : 2}
-                  />
-                )}
-              </div>
-              <div className="flex flex-wrap items-center w-[100%] gap-y-2 lg:hidden mt-8 ">
-                <div className="font-bold text-sm pr-2 pl-2">
-                  {formatSubcategories(selectedCategory)}:{" "}
-                </div>
-
-                {selectedSubcategories[selectedCategory] &&
-                  selectedSubcategories[selectedCategory].map((subcategory) => (
-                    <div
-                      key={subcategory}
-                      className="  text-xs px-[2px] py-[5px] mx-[5px]"
-                    >
-                      {formatSubcategories(subcategory)}
-                    </div>
-                  ))}
-              </div>
-            </div>
-            <div>
-              {" "}
-              <div className="flex flex-wrap items-center w-[98%] mx-auto gap-y-2 invisible lg:visible ">
-                <div className="font-bold text-sm pr-2 pl-2">
-                  {formatSubcategories(selectedCategory)}:{" "}
-                </div>
-
-                {selectedSubcategories[selectedCategory] &&
-                  selectedSubcategories[selectedCategory].map((subcategory) => (
-                    <div
-                      key={subcategory}
-                      className="  text-xs px-[4px] py-[5px] mx-[5px]"
-                    >
-                      {formatSubcategories(subcategory)}
-                    </div>
-                  ))}
-              </div>{" "}
-            </div>
-          </Container>
+            </Container>
+          </div>
           <Container>
             {" "}
             <div className="flex flex-row w-[100%] mx-auto justify-center md:items-center items-end md:justify-end rounded-full  text-sm md:text-base  md:rounded-full bg-forest-50 dark:bg-[#1F2726] p-0.5 px-0.5 md:px-1 mt-8 gap-x-1 text-md py-[4px]">
@@ -1617,8 +1172,8 @@ export default function CategoryMetrics({
               {/* toggle ETH */}
               <button
                 className={`px-[16px] py-[4px]  rounded-full ${selectedChartType === "absolute"
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
                   }`}
                 onClick={() => {
                   setSelectedChartType("absolute");
@@ -1628,8 +1183,8 @@ export default function CategoryMetrics({
               </button>
               <button
                 className={`px-[16px] py-[4px]  rounded-full ${selectedChartType === "stacked"
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
                   }`}
                 onClick={() => {
                   setSelectedChartType("stacked");
@@ -1639,8 +1194,8 @@ export default function CategoryMetrics({
               </button>
               <button
                 className={`px-[16px] py-[4px]  rounded-full ${selectedChartType === "percentage"
-                    ? "bg-forest-500 dark:bg-forest-1000"
-                    : "hover:bg-forest-500/10"
+                  ? "bg-forest-500 dark:bg-forest-1000"
+                  : "hover:bg-forest-500/10"
                   }`}
                 onClick={() => {
                   setSelectedChartType("percentage");
@@ -1660,11 +1215,11 @@ export default function CategoryMetrics({
               </p>
             </div>
           </Container>
-          <Container className="xl:overflow-hidden overflow-x-scroll scrollbar-thin scrollbar-thumb-forest-900 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller pb-4">
+          <HorizontalScrollContainer paddingBottom={16}>
             <div
               className={`fixed inset-0 z-[90] flex items-center justify-center transition-opacity duration-200  ${selectedContract
-                  ? "opacity-80"
-                  : "opacity-0 pointer-events-none"
+                ? "opacity-80"
+                : "opacity-0 pointer-events-none"
                 }`}
             >
               <div
@@ -1696,8 +1251,8 @@ export default function CategoryMetrics({
                           : "formkit:arrowdown"
                       }
                       className={` dark:text-white text-black ${contractCategory === "chain"
-                          ? "opacity-100"
-                          : "opacity-20"
+                        ? "opacity-100"
+                        : "opacity-20"
                         }`}
                     />
                   </button>
@@ -1723,8 +1278,8 @@ export default function CategoryMetrics({
                           : "formkit:arrowdown"
                       }
                       className={` dark:text-white text-black ${contractCategory === "contract"
-                          ? "opacity-100"
-                          : "opacity-20"
+                        ? "opacity-100"
+                        : "opacity-20"
                         }`}
                     />
                   </button>
@@ -1752,8 +1307,8 @@ export default function CategoryMetrics({
                           : "formkit:arrowdown"
                       }
                       className={` dark:text-white text-black ${contractCategory === "subcategory"
-                          ? "opacity-100"
-                          : "opacity-20"
+                        ? "opacity-100"
+                        : "opacity-20"
                         }`}
                     />
                   </button>
@@ -1785,8 +1340,8 @@ export default function CategoryMetrics({
                           : "formkit:arrowdown"
                       }
                       className={` dark:text-white text-black ${contractCategory === "value"
-                          ? "opacity-100"
-                          : "opacity-20"
+                        ? "opacity-100"
+                        : "opacity-20"
                         }`}
                     />
                   </button>
@@ -2128,8 +1683,8 @@ export default function CategoryMetrics({
                                     )}
                                   <div
                                     className={`rounded-full p-2 ${copyContract
-                                        ? "bg-forest-50/60 dark:bg-forest-1000/60"
-                                        : "bg-forest-50 dark:bg-forest-1000"
+                                      ? "bg-forest-50/60 dark:bg-forest-1000/60"
+                                      : "bg-forest-50 dark:bg-forest-1000"
                                       } text-white cursor-pointer`}
                                     onClick={() => {
                                       navigator.clipboard.writeText(
@@ -2163,8 +1718,8 @@ export default function CategoryMetrics({
                                     <>
                                       <div
                                         className={`min-w-full max-w-full text-base ${sortedContracts[key].project_name
-                                            ? "font-bold"
-                                            : "opacity-30 italic"
+                                          ? "font-bold"
+                                          : "opacity-30 italic"
                                           }`}
                                       >
                                         {sortedContracts[key].project_name
@@ -2174,8 +1729,8 @@ export default function CategoryMetrics({
 
                                       <div
                                         className={`min-w-full max-w-full text-sm ${sortedContracts[key].name
-                                            ? ""
-                                            : "opacity-30 italic"
+                                          ? ""
+                                          : "opacity-30 italic"
                                           }`}
                                       >
                                         {sortedContracts[key].name
@@ -2235,17 +1790,17 @@ export default function CategoryMetrics({
                                         sortedContracts[
                                           key
                                         ].gas_fees_absolute_usd.toFixed(0),
-                                      ).toLocaleString("en-US")
+                                      ).toLocaleString("en-GB")
                                       : Number(
                                         sortedContracts[
                                           key
                                         ].gas_fees_absolute_eth.toFixed(2),
-                                      ).toLocaleString("en-US")
+                                      ).toLocaleString("en-GB")
                                     : Number(
                                       sortedContracts[
                                         key
                                       ].txcount_absolute.toFixed(0),
-                                    ).toLocaleString("en-US")}
+                                    ).toLocaleString("en-GB")}
                                 </div>
 
                                 {/* <div className="h-[3px] w-[110px] bg-forest-100 dark:bg-forest-900 flex justify-end">
@@ -2285,8 +1840,8 @@ export default function CategoryMetrics({
                 <div className="w-full flex justify-center mb-2">
                   <button
                     className={`relative mx-auto top-[21px] w-[125px] h-[40px] border-forest-50 border-[1px] rounded-full  hover:bg-forest-700 p-[6px 16px] ${Object.keys(sortedContracts).length <= 10
-                        ? "hidden"
-                        : "visible"
+                      ? "hidden"
+                      : "visible"
                       } ${Object.keys(sortedContracts).length <=
                         maxDisplayedContracts || maxDisplayedContracts >= 50
                         ? "hidden"
@@ -2309,7 +1864,7 @@ export default function CategoryMetrics({
                 </div>
               </div>
             </div>
-          </Container>
+          </HorizontalScrollContainer>
         </div>
       )}
     </>

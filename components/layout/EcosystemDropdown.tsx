@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import Image from "next/image";
 import { animated, useSpring, easings } from "@react-spring/web";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { useUIContext } from "@/contexts/UIContext";
 import { useMediaQuery } from "usehooks-ts";
 
@@ -17,7 +17,7 @@ const ChainsList: { [key: string]: Chains } = {
     name: "All Chains",
     icon: "/all-chains.svg",
   },
-  "op-stack": {
+  "OP Chains": {
     name: "OP Chains",
     icon: "/Optimism-logo.svg",
   },
@@ -42,7 +42,7 @@ export default function EcosystemDropdown({}: // optOpen,
   const [optOpen, setOptOpen] = useState(false);
   const [selectedStack, setSelectedStack] = useState<string | null>(null);
 
-  const [chainEcosystemFilter, setChainEcosystemFilter] = useLocalStorage(
+  const [chainEcosystemFilter, setChainEcosystemFilter] = useSessionStorage(
     "chainEcosystemFilter",
     "all-chains",
   );

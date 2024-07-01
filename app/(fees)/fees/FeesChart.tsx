@@ -29,6 +29,7 @@ import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { useUIContext } from "@/contexts/UIContext";
 import d3 from "d3";
 import { FeesLineChart } from "@/types/api/Fees/LineChart";
+import { MasterResponse } from "@/types/api/MasterResponse";
 import "../../highcharts.axis.css";
 
 const COLORS = {
@@ -76,6 +77,7 @@ type FeesChartProps = {
   showGwei: boolean;
   showCents: boolean;
   chartWidth: number;
+  master: MasterResponse;
 };
 
 export default function FeesChart({
@@ -85,6 +87,7 @@ export default function FeesChart({
   showGwei,
   showCents,
   chartWidth,
+  master,
 }: FeesChartProps) {
   const { theme } = useTheme();
   const { isMobile } = useUIContext();
@@ -97,7 +100,10 @@ export default function FeesChart({
     "https://api.growthepie.xyz/v1/fees/linechart.json",
   );
 
-  const reversePerformer = true;
+  const reversePerformer = useMemo(() => {
+    if (master.fee_metrics[selectedMetric].invert_normalization) return false;
+    return true;
+  }, [selectedMetric]);
 
   const valuePrefix = useMemo(() => {
     if (showUsd) return "$";
@@ -132,21 +138,45 @@ export default function FeesChart({
 
   const formatNumber = useCallback(
     (value: number | string, isAxis = false) => {
-      let prefix = valuePrefix;
-      let suffix = "";
+      let unitKey = "";
+      if (master.fee_metrics[selectedMetric].currency) {
+        unitKey = showUsd ? "usd" : "eth";
+      } else {
+        unitKey = "value";
+      }
+
+      let prefix = master.fee_metrics[selectedMetric].units[unitKey].prefix
+        ? " " + master.fee_metrics[selectedMetric].units[unitKey].prefix
+        : "";
+      let suffix = master.fee_metrics[selectedMetric].units[unitKey].suffix
+        ? " " + master.fee_metrics[selectedMetric].units[unitKey].suffix
+        : "";
       let multiplier = 1;
 
-      if (!showUsd) {
-        if (showGwei) {
-          prefix = "";
-          suffix = " gwei";
-          multiplier = 1e9;
-        }
-      } else {
-        if (showCents) {
-          prefix = "";
-          suffix = " cents";
-          multiplier = 100;
+      let decimals =
+        unitKey === "eth" && showGwei
+          ? 2
+          : master.fee_metrics[selectedMetric].units[unitKey]
+          ? master.fee_metrics[selectedMetric].units[unitKey].decimals
+          : 2;
+
+      if (master.fee_metrics[selectedMetric].currency && showUsd && showCents) {
+        decimals = master.fee_metrics[selectedMetric].units["usd"].decimals - 2;
+      }
+
+      if (master.fee_metrics[selectedMetric].currency) {
+        if (!showUsd) {
+          if (showGwei) {
+            prefix = "";
+            suffix = " gwei";
+            multiplier = 1e9;
+          }
+        } else {
+          if (showCents) {
+            prefix = "";
+            suffix = " cents";
+            multiplier = 100;
+          }
         }
       }
 
@@ -172,21 +202,21 @@ export default function FeesChart({
                 prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
           } else {
             number = prefix + d3.format(".2s")(val).replace(/G/, "B") + suffix;
-            if(val < 1) number = prefix + val.toFixed(2) + suffix;
+            if (val < 1) number = prefix + val.toFixed(2) + suffix;
           }
         }
       }
 
       return number;
     },
-    [valuePrefix, showUsd, showGwei, showCents],
+    [master.fee_metrics, selectedMetric, showUsd, showGwei, showCents],
   );
 
   const tooltipFormatter = useCallback(
     function (this: any) {
       const { x, points } = this;
       const date = new Date(x);
-      let dateString = date.toLocaleDateString(undefined, {
+      let dateString = date.toLocaleDateString("en-GB", {
         month: "short",
         day: "numeric",
         year: "numeric",
@@ -198,14 +228,15 @@ export default function FeesChart({
       if (timeDiff < 1000 * 60 * 60 * 24) {
         dateString +=
           " " +
-          date.toLocaleTimeString(undefined, {
+          date.toLocaleTimeString("en-GB", {
             hour: "numeric",
             minute: "2-digit",
           });
       }
 
       const tooltip = `<div class="mt-3 mr-3 mb-3 w-52 md:w-60 text-xs font-raleway">
-        <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2">${dateString}</div>`;
+        <div class="w-full font-bold text-[13px] md:text-[16px] ml-6 mb-1">${master.fee_metrics[selectedMetric].name}</div>
+        <div class="w-full font-semibold text-[9px] md:text-[12px] ml-6 mb-2">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
       // let pointsSum = 0;
@@ -239,6 +270,8 @@ export default function FeesChart({
         .map((point: any) => {
           const { series, y, percentage } = point;
           const { name } = series;
+          if (!data) return;
+
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
@@ -265,24 +298,59 @@ export default function FeesChart({
                   };
                 "></div>
               </div>`;
+          let valueIndex = 1;
+          if (master.fee_metrics[selectedMetric].currency === true) {
+            valueIndex = showUsd ? 2 : 1;
+          }
+          const typeString =
+            data.chain_data[name][selectedMetric][selectedTimeframe].types[
+              valueIndex
+            ];
+          const unitKey = typeString.replace("value_", "");
 
-          let prefix = valuePrefix;
-          let suffix = "";
+          let decimals = master.fee_metrics[selectedMetric].currency
+            ? showGwei && !showUsd
+              ? 2
+              : master.fee_metrics[selectedMetric].units[unitKey].decimals
+            : master.fee_metrics[selectedMetric].units[unitKey].decimals;
+
+          if (
+            master.fee_metrics[selectedMetric].currency &&
+            showUsd &&
+            showCents
+          ) {
+            decimals =
+              master.fee_metrics[selectedMetric].units["usd"].decimals - 2;
+          }
+
+          let prefix = master.fee_metrics[selectedMetric].units[unitKey].prefix;
+          let suffix = master.fee_metrics[selectedMetric].units[unitKey].suffix;
           let value = y;
           let displayValue = y;
 
-          if (!showUsd) {
-            if (showGwei) {
-              prefix = "";
-              suffix = " gwei";
-              displayValue = y * 1e9;
+          if (master.fee_metrics[selectedMetric].currency) {
+            if (!showUsd) {
+              if (showGwei) {
+                prefix = "";
+                suffix = " gwei";
+                displayValue = y * 1e9;
+              }
+            } else {
+              if (showCents) {
+                prefix = "";
+                suffix = " cents";
+                displayValue = y * 100;
+                if (displayValue < 0.1) {
+                  displayValue = 0.1;
+                  prefix = "< " + prefix;
+                }
+              } else if (displayValue < 0.001) {
+                displayValue = 0.001;
+                prefix = "< " + prefix;
+              }
             }
           } else {
-            if (showCents) {
-              prefix = "";
-              suffix = " cents";
-              displayValue = y * 100;
-            }
+            displayValue = y;
           }
 
           return `
@@ -300,19 +368,9 @@ export default function FeesChart({
                 ${
                   selectedMetric === "fdv" || selectedMetric === "market_cap"
                     ? shortenNumber(displayValue).toString()
-                    : parseFloat(displayValue).toLocaleString(undefined, {
-                        minimumFractionDigits: valuePrefix
-                          ? showCents
-                            ? 2
-                            : 3
-                          : 0,
-                        maximumFractionDigits: valuePrefix
-                          ? showCents
-                            ? selectedMetric === "txcosts"
-                              ? 3
-                              : 2
-                            : 3
-                          : 0,
+                    : parseFloat(displayValue).toLocaleString("en-GB", {
+                        minimumFractionDigits: decimals,
+                        maximumFractionDigits: decimals,
                       })
                 }
                 <div class="opacity-70 ml-0.5 ${
@@ -349,7 +407,7 @@ export default function FeesChart({
               <div class="opacity-70 mr-0.5 ${
                 !prefix && "hidden"
               }">${prefix}</div>
-              ${parseFloat(value).toLocaleString(undefined, {
+              ${parseFloat(value).toLocaleString("en-GB", {
                 minimumFractionDigits: valuePrefix ? 2 : 0,
                 maximumFractionDigits: valuePrefix ? 2 : 0,
               })}
@@ -571,7 +629,7 @@ export default function FeesChart({
             //   if (isYearStart) {
             //     return `<span style="font-size:14px;">${date.getFullYear()}</span>`;
             //   } else {
-            //     return `<span style="">${date.toLocaleDateString(undefined, {
+            //     return `<span style="">${date.toLocaleDateString("en-GB", {
             //       month: "short",
             //     })}</span>`;
             //   }

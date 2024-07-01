@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import { headers } from "next/headers";
 import { useEffect, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
 import Icon from "@/components/layout/Icon";
