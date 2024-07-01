@@ -1676,7 +1676,7 @@ export default function FeesPage() {
                           </div>
                           <div className="w-[10px] h-[10px] relative">
                             <div
-                              className="absolute -left-[3px] -right-[8px] -top-[4px] -bottom-[4px] z-10 cursor-pointer"
+                              className="absolute -left-[3px] -right-[8px] -top-[4px] -bottom-[4px] z-[5] cursor-pointer"
                               onClick={(e) => {
                                 setAvailabilityFilter(false);
                                 setDAIndex(0);
@@ -1796,7 +1796,7 @@ export default function FeesPage() {
                                     style={{ width: metrics[metric].width }}
                                   >
                                     <div
-                                      className="flex flex-col justify-end z-10"
+                                      className="flex flex-col justify-end z-[1]"
                                       onClick={() => {
                                         if (selectedQuantitative === metric) {
                                           if (selectedQualitative) {
