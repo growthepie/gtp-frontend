@@ -604,6 +604,17 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "chainsMode",
         urlKey: "mode",
       },
+      {
+        label: "Taika",
+        page: {
+          description: "",
+        },
+        icon: "gtp:taika-logo-monochrome",
+        key: "taika",
+        rootKey: "chainsTaika",
+        urlKey: "taika",
+        hide: true,
+      },
     ],
   },
 

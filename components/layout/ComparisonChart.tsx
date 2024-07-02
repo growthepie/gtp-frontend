@@ -1767,11 +1767,11 @@ export default function ComparisonChart({
               <div
                 className={`absolute transition-[transform] hidden md:block duration-300 ease-in-out -z-10 top-0 left-[190px] sm:left-[300px] lg:left-0.5 pl-[40px] w-[200px] md:pl-[85px] md:w-[220px] lg:pl-[89px] lg:w-[149px] xl:w-[180px] xl:pl-[110px] ${
                   monthly_agg && selectedTimeInterval === "monthly"
-                    ? "translate-y-[calc(-100%+3px)]"
+                    ? "translate-y-[calc(-70%)]"
                     : "translate-y-0 "
                 }`}
               >
-                <div className="text-[0.65rem] md:text-xs font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-2xl border-t border-l border-r border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0">
+                <div className="text-[0.65rem] md:text-xs font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-2xl border-t border-l border-r border-forest-700 dark:border-forest-400 text-center w-full pb-1 z-0">
                   {monthly_agg_labels[monthly_agg]}
                 </div>
               </div>
@@ -1886,11 +1886,11 @@ export default function ComparisonChart({
           <div
             className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[117px] sm:w-[162px] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${
               avg && ["365d", "max"].includes(selectedTimespan)
-                ? "translate-y-[calc(-100%+3px)]"
+                ? "translate-y-[calc(-80%)]"
                 : "translate-y-0 "
             }`}
           >
-            <div className="text-[0.65rem] md:text-xs font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-2xl border-t border-l border-r border-forest-700 dark:border-forest-400 text-center w-full py-1 z-0 ">
+            <div className="text-[0.65rem] md:text-xs font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-2xl border-t border-l border-r border-forest-700 dark:border-forest-400 text-center w-full pb-1 z-0 ">
               <span className="hidden md:block">7-day rolling average</span>
               <span className="block md:hidden">7-day average</span>
             </div>

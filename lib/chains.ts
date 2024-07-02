@@ -476,6 +476,28 @@ export const AllChains: Chain[] = [
     darkTextOnBackground: true,
   },
   {
+    label: "Taika",
+    icon: "/icons/taika.png",
+    key: "taika",
+    urlKey: "taika",
+    chainType: "L2",
+    ecosystem: ["all-chains"], // add ecosystems when unhiding from the UI
+    description: "",
+    border: {
+      light: ["border-[#E81899]", "border-[#E81899]"],
+      dark: ["border-[#E81899]", "border-[#E81899]"],
+    },
+    colors: {
+      light: ["#E81899", "#E81899"], // dark greenish
+      dark: ["#E81899", "#E81899"], // dark greenish
+    },
+    backgrounds: {
+      light: ["bg-[#E81899]", "bg-[#E81899]"],
+      dark: ["bg-[#E81899]", "bg-[#E81899]"],
+    },
+    darkTextOnBackground: true,
+  },
+  {
     label: "Multiple Chains",
     icon: null,
     key: "multiple",
