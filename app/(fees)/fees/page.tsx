@@ -1250,626 +1250,642 @@ export default function FeesPage() {
         dataValidating={[feeValidating, masterValidating]}
         fullScreen={true}
       />
-      <div
-        className="transition-all duration-300 overflow-x-hidden"
-        style={{
-          paddingBottom: isChartOpen
-            ? `${isMobile ? 313 + 60 : 413 + 60}px`
-            : `${96 + 60}px`,
-        }}
-        // ref={pageRef}
-      >
-        <Header />
+      {maste4r && feeData && (
+        <>
+          <div
+            className="transition-all duration-300 overflow-x-hidden"
+            style={{
+              paddingBottom: isChartOpen
+                ? `${isMobile ? 313 + 60 : 413 + 60}px`
+                : `${96 + 60}px`,
+            }}
+            // ref={pageRef}
+          >
+            <Header />
 
-        <FeesContainer className={`hidden md:block`}>
-          <div className="relative flex p-[5px] items-center w-full justify-between rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000] z-10">
-            <a
-              className="flex items-center w-[162px] bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
-              href="https://www.growthepie.xyz/"
-              target="_blank"
-            >
-              <div className="w-6 h-6">
-                {/* <Icon icon="gtp:house" className="h-6 w-6" /> */}
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
+            <FeesContainer className={`hidden md:block`}>
+              <div className="relative flex p-[5px] items-center w-full justify-between rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000] z-10">
+                <a
+                  className="flex items-center w-[162px] bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
+                  href="https://www.growthepie.xyz/"
+                  target="_blank"
                 >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M11.3247 0.229798C11.7219 -0.0765992 12.2781 -0.0765992 12.6753 0.229798L22.5753 7.86616C22.8433 8.07284 23 8.39063 23 8.72727V20.7273C23 21.5953 22.6523 22.4277 22.0335 23.0414C21.4146 23.6552 20.5752 24 19.7 24H4.3C3.42479 24 2.58542 23.6552 1.96655 23.0414C1.34768 22.4277 1 21.5953 1 20.7273V8.72727C1 8.39063 1.15672 8.07284 1.42467 7.86616L11.3247 0.229798ZM3.2 9.26082V20.7273C3.2 21.0166 3.31589 21.2941 3.52218 21.4987C3.72847 21.7032 4.00826 21.8182 4.3 21.8182H19.7C19.9917 21.8182 20.2715 21.7032 20.4778 21.4987C20.6841 21.2941 20.8 21.0166 20.8 20.7273V9.26082L12 2.47294L3.2 9.26082Z"
-                    fill="url(#paint0_linear_5844_24843)"
-                  />
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M8 12.0833C8 11.485 8.44772 11 9 11H15C15.5523 11 16 11.485 16 12.0833V22.9167C16 23.515 15.5523 24 15 24C14.4477 24 14 23.515 14 22.9167V13.1667H10V22.9167C10 23.515 9.55228 24 9 24C8.44772 24 8 23.515 8 22.9167V12.0833Z"
-                    fill="url(#paint1_linear_5844_24843)"
-                  />
-                  <defs>
-                    <linearGradient
-                      id="paint0_linear_5844_24843"
-                      x1="12"
-                      y1="0"
-                      x2="28.5901"
-                      y2="21.3803"
-                      gradientUnits="userSpaceOnUse"
+                  <div className="w-6 h-6">
+                    {/* <Icon icon="gtp:house" className="h-6 w-6" /> */}
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
                     >
-                      <stop stopColor="#FE5468" />
-                      <stop offset="1" stopColor="#FFDF27" />
-                    </linearGradient>
-                    <linearGradient
-                      id="paint1_linear_5844_24843"
-                      x1="12"
-                      y1="11"
-                      x2="12"
-                      y2="24"
-                      gradientUnits="userSpaceOnUse"
-                    >
-                      <stop stopColor="#10808C" />
-                      <stop offset="1" stopColor="#1DF7EF" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </div>
-              <div className="font-semibold">Main platform</div>
-            </a>
-            <div
-              className={`flex items-center relative h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-[15px] py-[10px] gap transition-all z-[11] duration-300 hover:cursor-pointer ${
-                hoverSettings
-                  ? "w-[336px] justify-start"
-                  : "w-[128px] justify-start"
-              }`}
-              onMouseEnter={() => {
-                setHoverSettings(true);
-              }}
-              onMouseLeave={() => {
-                setHoverSettings(false);
-              }}
-            >
-              <div
-                className={`transition-all ${
-                  hoverSettings ? "hidden" : "block"
-                }`}
-              >
-                <Icon
-                  icon="gtp:gtp-settings"
-                  className={`h-6 w-6 ${hoverSettings ? "text-sm" : ""}`}
-                />
-              </div>
-              <div
-                className={`transition-all ${
-                  hoverSettings ? "block" : "hidden"
-                }`}
-              >
-                <Icon
-                  icon="feather:chevron-down"
-                  className={`h-5 w-5 mt-1 ${hoverSettings ? "text-sm" : ""}`}
-                />
-              </div>
-              <div className="font-semibold transition-all">Settings</div>
-            </div>
-
-            <div
-              className={`absolute top-6 min-h-0 bg-[#151A19] right-[5px] rounded-b-2xl z-[10] transition-all duration-300 overflow-hidden ${
-                hoverSettings
-                  ? `shadow-[0px_4px_46.2px_0px_#000000]`
-                  : "shadow-transparent"
-              }`}
-              style={{
-                width: hoverSettings ? "336px" : 0,
-                height: hoverSettings
-                  ? `calc(100px + 28px + 30px * (1 + ${
-                      Object.keys(metrics).length
-                    }))`
-                  : 0,
-              }}
-              onMouseEnter={() => {
-                setHoverSettings(true);
-              }}
-              onMouseLeave={() => {
-                setHoverSettings(false);
-              }}
-            >
-              <div
-                className={`pt-[30px] pb-[20px] flex flex-col`}
-                style={{
-                  height: `calc(100px + 28px * (1 + ${
-                    Object.keys(metrics).length
-                  }))`,
-                }}
-              >
-                <div className="flex flex-col w-full">
-                  <div className="flex items-center w-full">
-                    <div className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full pl-[8px] pr-[15px]">
-                      <div className="font-normal text-forest-500/50 text-right">
-                        Units
-                      </div>
-                      <div className="grid grid-cols-[140px,6px,auto] gap-x-[10px] items-center w-full  place-items-center whitespace-nowrap">
-                        <div className="flex flex-1 items-center place-self-end">
-                          <Icon
-                            icon="gtp:gtp-dollar"
-                            className={`h-[15px] w-[15px] font-[900] text-[#CDD8D3] relative ${
-                              hoverSettings ? "text-sm" : ""
-                            }`}
-                          />
-                          <div className="font-semibold text-right pl-[8px]">
-                            USD Display
-                          </div>
-                        </div>
-                        {/* <div className="flex gap-x-[10px] items-center"> */}
-                        <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
-                        <div
-                          className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
-                          onClick={() => {
-                            setShowCents(!showCents);
-                          }}
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M11.3247 0.229798C11.7219 -0.0765992 12.2781 -0.0765992 12.6753 0.229798L22.5753 7.86616C22.8433 8.07284 23 8.39063 23 8.72727V20.7273C23 21.5953 22.6523 22.4277 22.0335 23.0414C21.4146 23.6552 20.5752 24 19.7 24H4.3C3.42479 24 2.58542 23.6552 1.96655 23.0414C1.34768 22.4277 1 21.5953 1 20.7273V8.72727C1 8.39063 1.15672 8.07284 1.42467 7.86616L11.3247 0.229798ZM3.2 9.26082V20.7273C3.2 21.0166 3.31589 21.2941 3.52218 21.4987C3.72847 21.7032 4.00826 21.8182 4.3 21.8182H19.7C19.9917 21.8182 20.2715 21.7032 20.4778 21.4987C20.6841 21.2941 20.8 21.0166 20.8 20.7273V9.26082L12 2.47294L3.2 9.26082Z"
+                        fill="url(#paint0_linear_5844_24843)"
+                      />
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M8 12.0833C8 11.485 8.44772 11 9 11H15C15.5523 11 16 11.485 16 12.0833V22.9167C16 23.515 15.5523 24 15 24C14.4477 24 14 23.515 14 22.9167V13.1667H10V22.9167C10 23.515 9.55228 24 9 24C8.44772 24 8 23.515 8 22.9167V12.0833Z"
+                        fill="url(#paint1_linear_5844_24843)"
+                      />
+                      <defs>
+                        <linearGradient
+                          id="paint0_linear_5844_24843"
+                          x1="12"
+                          y1="0"
+                          x2="28.5901"
+                          y2="21.3803"
+                          gradientUnits="userSpaceOnUse"
                         >
-                          <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px]">
-                            <div className="w-full flex items-start justify-center">
-                              Full Dollar
-                            </div>
-                            <div
-                              className={`w-full text-center ${
-                                !showCents && "opacity-50"
-                              }`}
-                            >
-                              US Cents
-                            </div>
-                          </div>
-                          <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
-                            <div
-                              className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
-                              style={{
-                                transform: !showCents
-                                  ? "translateX(0%)"
-                                  : "translateX(100%)",
-                              }}
-                            >
-                              {!showCents ? "Full Dollar" : "US cents"}
-                            </div>
-                          </div>
-                        </div>
-                        {/* </div> */}
-                      </div>
-                      {metricCategories &&
-                        master &&
-                        metricCategories.map((categoryKey) => {
-                          return (
-                            <div
-                              key={categoryKey + "_categories"}
-                              className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full pl-[8px]"
-                            >
-                              <div className="font-normal text-forest-500/50 text-right">
-                                {categoryKey} Metrics
-                              </div>
-                              {Object.keys(master.fee_metrics)
-                                .filter(
-                                  (metricKey) =>
-                                    metrics[metricKey] &&
-                                    master.fee_metrics[metricKey].category ==
-                                      categoryKey,
-                                )
-                                .sort((a, b) => {
-                                  // sort by priority
-                                  return (
-                                    master.fee_metrics[a].priority -
-                                    master.fee_metrics[b].priority
-                                  );
-                                })
-                                .map((metric) => {
-                                  const enabledMetricKeysByPriority =
-                                    Object.keys(metrics)
-                                      .filter(
-                                        (metricKey) =>
-                                          metrics[metricKey].enabled,
-                                      )
-                                      .sort(
-                                        (a, b) =>
-                                          master.fee_metrics[b].priority -
-                                          master.fee_metrics[a].priority,
-                                      );
-
-                                  return (
-                                    <div
-                                      className="grid grid-cols-[140px,6px,auto] gap-x-[10px] items-center w-full place-items-center whitespace-nowrap"
-                                      key={metric + "_settings"}
-                                    >
-                                      <div className="flex flex-1 items-center place-self-end">
-                                        <Icon
-                                          icon=""
-                                          className={`h-[15px] w-[15px] font-[900] text-[#CDD8D3] relative self-center justify-self-center ${
-                                            hoverSettings ? "text-sm" : ""
-                                          }`}
-                                        />
-                                        <div className="flex-1 font-semibold">
-                                          {master.fee_metrics[metric].name}
-                                        </div>
-                                      </div>
-                                      {/* <div className="flex gap-x-[10px] items-center"> */}
-                                      <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
-                                      <div
-                                        className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
-                                        onClick={() => {
-                                          if (
-                                            enabledMetricsCount > 1 ||
-                                            !metrics[metric].enabled
-                                          ) {
-                                            if (
-                                              metrics[metric].enabled &&
-                                              selectedQuantitative === metric
-                                            ) {
-                                              for (const metricKey of Object.keys(
-                                                metrics,
-                                              )) {
-                                                if (
-                                                  metrics[metricKey].enabled &&
-                                                  metricKey !== metric
-                                                ) {
-                                                  setSelectedQuantitative(
-                                                    metricKey,
-                                                  );
-                                                  break; // Exit loop once the first enabled metric is found
-                                                }
-                                              }
-                                            }
-                                            if (!metrics[metric].enabled) {
-                                              setSelectedQuantitative(metric);
-                                            }
-
-                                            const prevMetrics = { ...metrics };
-
-                                            const isEnabling =
-                                              !prevMetrics[metric].enabled;
-
-                                            // if enabling another metric will exceed the limit of 4 enabled metrics, disable the previously enabled metric with the lowest priority
-                                            if (
-                                              isEnabling &&
-                                              enabledMetricsCount === 6
-                                            ) {
-                                              const lowestPriorityMetricKey =
-                                                enabledMetricKeysByPriority[0];
-
-                                              prevMetrics[
-                                                lowestPriorityMetricKey
-                                              ].enabled = false;
-                                            }
-
-                                            // toggle the enabled state of the metric
-                                            prevMetrics[metric].enabled =
-                                              !prevMetrics[metric].enabled;
-
-                                            // set the updated metrics state
-                                            setMetrics(prevMetrics);
-
-                                            // setMetrics((prevMetrics) => ({
-                                            //   ...prevMetrics,
-                                            //   [metric]: {
-                                            //     ...prevMetrics[metric],
-                                            //     enabled: !prevMetrics[metric].enabled,
-                                            //   },
-                                            // }));
-                                          }
-                                        }}
-                                      >
-                                        <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px] ">
-                                          <div className="w-full flex items-start justify-center">
-                                            Enabled
-                                          </div>
-                                          <div
-                                            className={`w-full text-center ${
-                                              metrics[metric].enabled &&
-                                              "opacity-50"
-                                            }`}
-                                          >
-                                            Disabled
-                                          </div>
-                                        </div>
-                                        <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
-                                          <div
-                                            className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
-                                            style={{
-                                              transform: metrics[metric].enabled
-                                                ? "translateX(0%)"
-                                                : "translateX(100%)",
-                                            }}
-                                          >
-                                            {metrics[metric].enabled
-                                              ? "Enabled"
-                                              : "Disabled"}
-                                          </div>
-                                        </div>
-                                      </div>
-                                      {/* </div> */}
-                                    </div>
-                                  );
-                                })}
-                            </div>
-                          );
-                        })}
-                    </div>
+                          <stop stopColor="#FE5468" />
+                          <stop offset="1" stopColor="#FFDF27" />
+                        </linearGradient>
+                        <linearGradient
+                          id="paint1_linear_5844_24843"
+                          x1="12"
+                          y1="11"
+                          x2="12"
+                          y2="24"
+                          gradientUnits="userSpaceOnUse"
+                        >
+                          <stop stopColor="#10808C" />
+                          <stop offset="1" stopColor="#1DF7EF" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
                   </div>
+                  <div className="font-semibold">Main platform</div>
+                </a>
+                <div
+                  className={`flex items-center relative h-[44px] bg-[#1F2726] gap-x-[10px] rounded-full px-[15px] py-[10px] gap transition-all z-[11] duration-300 hover:cursor-pointer ${
+                    hoverSettings
+                      ? "w-[336px] justify-start"
+                      : "w-[128px] justify-start"
+                  }`}
+                  onMouseEnter={() => {
+                    setHoverSettings(true);
+                  }}
+                  onMouseLeave={() => {
+                    setHoverSettings(false);
+                  }}
+                >
+                  <div
+                    className={`transition-all ${
+                      hoverSettings ? "hidden" : "block"
+                    }`}
+                  >
+                    <Icon
+                      icon="gtp:gtp-settings"
+                      className={`h-6 w-6 ${hoverSettings ? "text-sm" : ""}`}
+                    />
+                  </div>
+                  <div
+                    className={`transition-all ${
+                      hoverSettings ? "block" : "hidden"
+                    }`}
+                  >
+                    <Icon
+                      icon="feather:chevron-down"
+                      className={`h-5 w-5 mt-1 ${
+                        hoverSettings ? "text-sm" : ""
+                      }`}
+                    />
+                  </div>
+                  <div className="font-semibold transition-all">Settings</div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </FeesContainer>
-        <FeesContainer className="w-full mt-[30px] flex items-end sm:items-center justify-between md:justify-start gap-x-[10px]">
-          <h1 className="text-[20px] md:text-[30px] leading-[120%] font-bold md:pl-[15px]">
-            How much a typical user paid on L2s
-          </h1>
-          <div className="min-w-[92px] h-[26px] py-[6px] pl-[10px] pr-[5px] items-center justify-center border-[#344240] border bg-[#1F2726] text-[12px] rounded-r-full leading-[1] font-bold">
-            {NUM_HOURS - selectedBarIndex === 1
-              ? "1 hour Ago"
-              : `${NUM_HOURS - selectedBarIndex} hours ago`}
-          </div>
-        </FeesContainer>
 
-        <FeesHorizontalScrollContainer className="">
-          {feeData && master && (
-            <div className="relative w-auto overflow-x-visible">
-              <div
-                className={`relative w-full flex justify-start pt-[40px] pb-[8px] pr-[10px] text-[10px] md:text-[12px] font-bold leading-[1]`}
-              >
-                <div className="pl-[15px] pr-[20px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[200px,auto,180px] gap-x-[20px]">
-                  <div className={`flex items-center gap-x-[10px]`}>
-                    <div className={`h-[0px] w-[18px] md:h-[0px] md:w-[24px]`}>
-                      <div className="h-[0px] w-[18px] md:w-[24px]" />
-                    </div>
-                    <div
-                      className="flex items-center gap-x-0.5 cursor-pointer"
-                      onClick={() => {
-                        if (selectedQualitative === "chain") {
-                          setSortOrder(!sortOrder);
-                        } else {
-                          setSelectedQualitative("chain");
-                        }
-                      }}
-                    >
-                      <div>Chain</div>
-                      <Icon
-                        icon={
-                          selectedQualitative === "chain"
-                            ? sortOrder
-                              ? "formkit:arrowdown"
-                              : "formkit:arrowup"
-                            : "formkit:arrowdown"
-                        }
-                        className={` dark:text-white text-black w-[10px] h-[10px] ${
-                          selectedQualitative === "chain"
-                            ? "opacity-100"
-                            : "opacity-20"
-                        }`}
-                      />{" "}
-                    </div>
-                    <div
-                      className="bg-[#344240] text-[#CDD8D3] text-[8px] flex rounded-full font-normal items-center px-[5px] h-[16px] cursor-pointer whitespace-nowrap"
-                      onClick={() => {
-                        if (!availabilityFilter && DAIndex === 0) {
-                          setAvailabilityFilter(true);
-                        } else {
-                          if (DAIndex === allChainsDA.length - 1) {
-                            setDAIndex(0);
-                            setSelectedAvailability(allChainsDA[DAIndex]);
-                          } else {
-                            setDAIndex(DAIndex + 1);
-                            setSelectedAvailability(allChainsDA[DAIndex]);
-                          }
-                        }
-                      }}
-                    >
-                      Data Availability
-                      <div
-                        className={`flex items-center ${
-                          availabilityFilter && dataAvailByFilter
-                            ? "max-w-[200px]"
-                            : "max-w-0"
-                        } overflow-hidden transition-all duration-500`}
-                      >
-                        :{" "}
-                        <div className="pl-[3px] flex items-center gap-x-[3px]">
-                          <div className="flex items-center font-semibold">
-                            {selectedAvailability}
+                <div
+                  className={`absolute top-6 min-h-0 bg-[#151A19] right-[5px] rounded-b-2xl z-[10] transition-all duration-300 overflow-hidden ${
+                    hoverSettings
+                      ? `shadow-[0px_4px_46.2px_0px_#000000]`
+                      : "shadow-transparent"
+                  }`}
+                  style={{
+                    width: hoverSettings ? "336px" : 0,
+                    height: hoverSettings
+                      ? `calc(100px + 28px + 30px * (1 + ${
+                          Object.keys(metrics).length
+                        }))`
+                      : 0,
+                  }}
+                  onMouseEnter={() => {
+                    setHoverSettings(true);
+                  }}
+                  onMouseLeave={() => {
+                    setHoverSettings(false);
+                  }}
+                >
+                  <div
+                    className={`pt-[30px] pb-[20px] flex flex-col`}
+                    style={{
+                      height: `calc(100px + 28px * (1 + ${
+                        Object.keys(metrics).length
+                      }))`,
+                    }}
+                  >
+                    <div className="flex flex-col w-full">
+                      <div className="flex items-center w-full">
+                        <div className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full pl-[8px] pr-[15px]">
+                          <div className="font-normal text-forest-500/50 text-right">
+                            Units
                           </div>
-                          <div className="w-[10px] h-[10px] relative">
-                            <div
-                              className="absolute -left-[3px] -right-[8px] -top-[4px] -bottom-[4px] z-[5] cursor-pointer"
-                              onClick={(e) => {
-                                setAvailabilityFilter(false);
-                                setDAIndex(0);
-
-                                e.stopPropagation();
-                              }}
-                            />
-                            <Icon
-                              icon={"feather:x-circle"}
-                              className={`w-[10px] h-[10px]`}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="grid grid-flow-col items-center gap-x-[10px]">
-                    {[
-                      ...new Set(
-                        Object.values(master.fee_metrics).map(
-                          (metric) => metric.category,
-                        ),
-                      ),
-                    ]
-                      .filter(
-                        // remove categories that have no enabled metrics
-                        (category) => {
-                          return Object.keys(metrics).some(
-                            (metric) =>
-                              metrics[metric].enabled &&
-                              master.fee_metrics[metric].category === category,
-                          );
-                        },
-                      )
-                      .map((category) => (
-                        <div
-                          key={category}
-                          className="relative grid grid-flow-col items-center justify-between"
-                          style={{
-                            width:
-                              Object.keys(metrics).filter(
-                                (metric) => metrics[metric].enabled,
-                              ).length === 1
-                                ? "100%"
-                                : "auto",
-                            gridTemplateColumns:
-                              Object.keys(metrics).filter(
-                                (metric) => metrics[metric].enabled,
-                              ).length === 1
-                                ? undefined
-                                : Object.keys(metrics)
-                                    .filter(
-                                      (metric) =>
-                                        metrics[metric].enabled &&
-                                        master.fee_metrics[metric].category ===
-                                          category,
-                                    )
-                                    .map(
-                                      (metric, i) =>
-                                        // `minmax(${
-                                        //   i === 0
-                                        //     ? metrics[metric].width - 40
-                                        //     : metrics[metric].width
-                                        // }px, 100%)`,
-                                        `minmax(${
-                                          i === 0
-                                            ? metrics[metric].width - 60
-                                            : metrics[metric].width
-                                        }px`,
-                                    )
-                                    .join(" "),
-                          }}
-                        >
-                          {Object.keys(metrics).filter(
-                            (metric) => metrics[metric].enabled,
-                          ).length > 1 && (
-                            <>
-                              <div className="absolute left-[62px] -right-[0px] -bottom-[12px] -top-[22px] flex items-start justify-end text-[10px] font-normal text-forest-500/30 whitespace-nowrap">
-                                {category} Metrics
+                          <div className="grid grid-cols-[140px,6px,auto] gap-x-[10px] items-center w-full  place-items-center whitespace-nowrap">
+                            <div className="flex flex-1 items-center place-self-end">
+                              <Icon
+                                icon="gtp:gtp-dollar"
+                                className={`h-[15px] w-[15px] font-[900] text-[#CDD8D3] relative ${
+                                  hoverSettings ? "text-sm" : ""
+                                }`}
+                              />
+                              <div className="font-semibold text-right pl-[8px]">
+                                USD Display
                               </div>
-                              <div className="absolute left-8 right-0 bottom-[20px] h-[1px] bg-gradient-to-r from-transparent to-forest-500/15" />
-                            </>
-                          )}
-
-                          {Object.keys(metrics)
-                            .filter(
-                              (metric) =>
-                                master.fee_metrics[metric].category ===
-                                category,
-                            )
-                            .sort(
-                              (a, b) =>
-                                master.fee_metrics[a].priority -
-                                master.fee_metrics[b].priority,
-                            )
-                            .map((metric, i) => {
-                              if (!metrics[metric].enabled) return null;
-
-                              return (
+                            </div>
+                            {/* <div className="flex gap-x-[10px] items-center"> */}
+                            <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
+                            <div
+                              className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
+                              onClick={() => {
+                                setShowCents(!showCents);
+                              }}
+                            >
+                              <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px]">
+                                <div className="w-full flex items-start justify-center">
+                                  Full Dollar
+                                </div>
                                 <div
-                                  key={metric + "_header"}
-                                  className="flex items-center"
+                                  className={`w-full text-center ${
+                                    !showCents && "opacity-50"
+                                  }`}
+                                >
+                                  US Cents
+                                </div>
+                              </div>
+                              <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
+                                <div
+                                  className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
                                   style={{
-                                    justifyContent:
-                                      Object.keys(metrics).filter(
-                                        (metric) =>
-                                          metrics[metric].enabled &&
-                                          master.fee_metrics[metric]
-                                            .category === category,
-                                      ).length === 1
-                                        ? "center"
-                                        : "end",
+                                    transform: !showCents
+                                      ? "translateX(0%)"
+                                      : "translateX(100%)",
                                   }}
                                 >
-                                  <div
-                                    className="flex items-center justify-end"
-                                    style={{ width: metrics[metric].width }}
-                                  >
-                                    <div
-                                      className="flex flex-col justify-end z-[1]"
-                                      onClick={() => {
-                                        if (selectedQuantitative === metric) {
-                                          if (selectedQualitative) {
-                                            setSelectedQualitative(null);
-                                          } else {
-                                            setSortOrder(!sortOrder);
-                                          }
-                                        } else {
-                                          setSelectedQualitative(null);
-                                          setSelectedQuantitative(metric);
-                                        }
-                                      }}
-                                    >
-                                      {Object.keys(metrics).filter(
-                                        (metric) => metrics[metric].enabled,
-                                      ).length === 1 && (
-                                        <div className="absolute -top-[22px] flex flex-col items-end place-self-end">
-                                          <div className="flex items-start justify-end text-[10px] font-normal text-forest-500/30 whitespace-nowrap">
-                                            {category} Metrics
-                                          </div>
-                                          <div className="w-[125px] h-[1px] bg-gradient-to-r from-transparent to-forest-500/15" />
-                                        </div>
-                                      )}
-                                      <div className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px]">
-                                        <div className="">
-                                          {
-                                            master.fee_metrics[metric]
-                                              .name_short
-                                          }
-                                        </div>
-
-                                        <Icon
-                                          icon={
-                                            !selectedQualitative &&
-                                            selectedQuantitative === metric
-                                              ? sortOrder
-                                                ? "formkit:arrowdown"
-                                                : "formkit:arrowup"
-                                              : "formkit:arrowdown"
-                                          }
-                                          className={`dark:text-white text-black w-[10px] h-[10px] ${
-                                            !selectedQualitative &&
-                                            selectedQuantitative === metric
-                                              ? "opacity-100"
-                                              : "opacity-20"
-                                          }`}
-                                        />
-                                      </div>
-                                    </div>
+                                  {!showCents ? "Full Dollar" : "US cents"}
+                                </div>
+                              </div>
+                            </div>
+                            {/* </div> */}
+                          </div>
+                          {metricCategories &&
+                            master &&
+                            metricCategories.map((categoryKey) => {
+                              return (
+                                <div
+                                  key={categoryKey + "_categories"}
+                                  className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full pl-[8px]"
+                                >
+                                  <div className="font-normal text-forest-500/50 text-right">
+                                    {categoryKey} Metrics
                                   </div>
+                                  {Object.keys(master.fee_metrics)
+                                    .filter(
+                                      (metricKey) =>
+                                        metrics[metricKey] &&
+                                        master.fee_metrics[metricKey]
+                                          .category == categoryKey,
+                                    )
+                                    .sort((a, b) => {
+                                      // sort by priority
+                                      return (
+                                        master.fee_metrics[a].priority -
+                                        master.fee_metrics[b].priority
+                                      );
+                                    })
+                                    .map((metric) => {
+                                      const enabledMetricKeysByPriority =
+                                        Object.keys(metrics)
+                                          .filter(
+                                            (metricKey) =>
+                                              metrics[metricKey].enabled,
+                                          )
+                                          .sort(
+                                            (a, b) =>
+                                              master.fee_metrics[b].priority -
+                                              master.fee_metrics[a].priority,
+                                          );
+
+                                      return (
+                                        <div
+                                          className="grid grid-cols-[140px,6px,auto] gap-x-[10px] items-center w-full place-items-center whitespace-nowrap"
+                                          key={metric + "_settings"}
+                                        >
+                                          <div className="flex flex-1 items-center place-self-end">
+                                            <Icon
+                                              icon=""
+                                              className={`h-[15px] w-[15px] font-[900] text-[#CDD8D3] relative self-center justify-self-center ${
+                                                hoverSettings ? "text-sm" : ""
+                                              }`}
+                                            />
+                                            <div className="flex-1 font-semibold">
+                                              {master.fee_metrics[metric].name}
+                                            </div>
+                                          </div>
+                                          {/* <div className="flex gap-x-[10px] items-center"> */}
+                                          <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
+                                          <div
+                                            className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
+                                            onClick={() => {
+                                              if (
+                                                enabledMetricsCount > 1 ||
+                                                !metrics[metric].enabled
+                                              ) {
+                                                if (
+                                                  metrics[metric].enabled &&
+                                                  selectedQuantitative ===
+                                                    metric
+                                                ) {
+                                                  for (const metricKey of Object.keys(
+                                                    metrics,
+                                                  )) {
+                                                    if (
+                                                      metrics[metricKey]
+                                                        .enabled &&
+                                                      metricKey !== metric
+                                                    ) {
+                                                      setSelectedQuantitative(
+                                                        metricKey,
+                                                      );
+                                                      break; // Exit loop once the first enabled metric is found
+                                                    }
+                                                  }
+                                                }
+                                                if (!metrics[metric].enabled) {
+                                                  setSelectedQuantitative(
+                                                    metric,
+                                                  );
+                                                }
+
+                                                const prevMetrics = {
+                                                  ...metrics,
+                                                };
+
+                                                const isEnabling =
+                                                  !prevMetrics[metric].enabled;
+
+                                                // if enabling another metric will exceed the limit of 4 enabled metrics, disable the previously enabled metric with the lowest priority
+                                                if (
+                                                  isEnabling &&
+                                                  enabledMetricsCount === 6
+                                                ) {
+                                                  const lowestPriorityMetricKey =
+                                                    enabledMetricKeysByPriority[0];
+
+                                                  prevMetrics[
+                                                    lowestPriorityMetricKey
+                                                  ].enabled = false;
+                                                }
+
+                                                // toggle the enabled state of the metric
+                                                prevMetrics[metric].enabled =
+                                                  !prevMetrics[metric].enabled;
+
+                                                // set the updated metrics state
+                                                setMetrics(prevMetrics);
+
+                                                // setMetrics((prevMetrics) => ({
+                                                //   ...prevMetrics,
+                                                //   [metric]: {
+                                                //     ...prevMetrics[metric],
+                                                //     enabled: !prevMetrics[metric].enabled,
+                                                //   },
+                                                // }));
+                                              }
+                                            }}
+                                          >
+                                            <div className="w-full flex justify-between text-[#2D3748] relative bottom-[1px] ">
+                                              <div className="w-full flex items-start justify-center">
+                                                Enabled
+                                              </div>
+                                              <div
+                                                className={`w-full text-center ${
+                                                  metrics[metric].enabled &&
+                                                  "opacity-50"
+                                                }`}
+                                              >
+                                                Disabled
+                                              </div>
+                                            </div>
+                                            <div className="absolute inset-0 w-full p-[1.36px] rounded-full text-center">
+                                              <div
+                                                className="w-1/2 h-full bg-forest-50 dark:bg-forest-900 rounded-full flex items-center justify-center transition-transform duration-300"
+                                                style={{
+                                                  transform: metrics[metric]
+                                                    .enabled
+                                                    ? "translateX(0%)"
+                                                    : "translateX(100%)",
+                                                }}
+                                              >
+                                                {metrics[metric].enabled
+                                                  ? "Enabled"
+                                                  : "Disabled"}
+                                              </div>
+                                            </div>
+                                          </div>
+                                          {/* </div> */}
+                                        </div>
+                                      );
+                                    })}
                                 </div>
                               );
                             })}
                         </div>
-                      ))}
-                  </div>
-                  <div
-                    className={`relative -right-[1px] md:-left-[1px] flex flex-col justify-end items-end space-x-[1px] font-normal overflow-y-visible`}
-                  >
-                    <div className="relative flex space-x-[1px] items-end -bottom-2">
-                      <div
-                        className={`absolute right-[5px] w-[29px] h-[12px] text-[8px] transition-all duration-100 ${
-                          selectedBarIndex >= 18 && selectedBarIndex <= 22
-                            ? "-top-[22px]"
-                            : "-top-2"
-                        }`}
-                      >
-                        hourly
                       </div>
-                      {Array.from({ length: NUM_HOURS }, (_, index) => (
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </FeesContainer>
+            <FeesContainer className="w-full mt-[30px] flex items-end sm:items-center justify-between md:justify-start gap-x-[10px]">
+              <h1 className="text-[20px] md:text-[30px] leading-[120%] font-bold md:pl-[15px]">
+                How much a typical user paid on L2s
+              </h1>
+              <div className="min-w-[92px] h-[26px] py-[6px] pl-[10px] pr-[5px] items-center justify-center border-[#344240] border bg-[#1F2726] text-[12px] rounded-r-full leading-[1] font-bold">
+                {NUM_HOURS - selectedBarIndex === 1
+                  ? "1 hour Ago"
+                  : `${NUM_HOURS - selectedBarIndex} hours ago`}
+              </div>
+            </FeesContainer>
+
+            <FeesHorizontalScrollContainer className="">
+              {feeData && master && (
+                <div className="relative w-auto overflow-x-visible">
+                  <div
+                    className={`relative w-full flex justify-start pt-[40px] pb-[8px] pr-[10px] text-[10px] md:text-[12px] font-bold leading-[1]`}
+                  >
+                    <div className="pl-[15px] pr-[20px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[200px,auto,180px] gap-x-[20px]">
+                      <div className={`flex items-center gap-x-[10px]`}>
                         <div
-                          key={index.toString() + "columns"}
-                          className={`flex items-end w-[5px] origin-bottom  border-t border-x border-[#344240] bg-[#344240] hover:cursor-pointer rounded-t-full transition-transform duration-100 
+                          className={`h-[0px] w-[18px] md:h-[0px] md:w-[24px]`}
+                        >
+                          <div className="h-[0px] w-[18px] md:w-[24px]" />
+                        </div>
+                        <div
+                          className="flex items-center gap-x-0.5 cursor-pointer"
+                          onClick={() => {
+                            if (selectedQualitative === "chain") {
+                              setSortOrder(!sortOrder);
+                            } else {
+                              setSelectedQualitative("chain");
+                            }
+                          }}
+                        >
+                          <div>Chain</div>
+                          <Icon
+                            icon={
+                              selectedQualitative === "chain"
+                                ? sortOrder
+                                  ? "formkit:arrowdown"
+                                  : "formkit:arrowup"
+                                : "formkit:arrowdown"
+                            }
+                            className={` dark:text-white text-black w-[10px] h-[10px] ${
+                              selectedQualitative === "chain"
+                                ? "opacity-100"
+                                : "opacity-20"
+                            }`}
+                          />{" "}
+                        </div>
+                        <div
+                          className="bg-[#344240] text-[#CDD8D3] text-[8px] flex rounded-full font-normal items-center px-[5px] h-[16px] cursor-pointer whitespace-nowrap"
+                          onClick={() => {
+                            if (!availabilityFilter && DAIndex === 0) {
+                              setAvailabilityFilter(true);
+                            } else {
+                              if (DAIndex === allChainsDA.length - 1) {
+                                setDAIndex(0);
+                                setSelectedAvailability(allChainsDA[DAIndex]);
+                              } else {
+                                setDAIndex(DAIndex + 1);
+                                setSelectedAvailability(allChainsDA[DAIndex]);
+                              }
+                            }
+                          }}
+                        >
+                          Data Availability
+                          <div
+                            className={`flex items-center ${
+                              availabilityFilter && dataAvailByFilter
+                                ? "max-w-[200px]"
+                                : "max-w-0"
+                            } overflow-hidden transition-all duration-500`}
+                          >
+                            :{" "}
+                            <div className="pl-[3px] flex items-center gap-x-[3px]">
+                              <div className="flex items-center font-semibold">
+                                {selectedAvailability}
+                              </div>
+                              <div className="w-[10px] h-[10px] relative">
+                                <div
+                                  className="absolute -left-[3px] -right-[8px] -top-[4px] -bottom-[4px] z-[5] cursor-pointer"
+                                  onClick={(e) => {
+                                    setAvailabilityFilter(false);
+                                    setDAIndex(0);
+
+                                    e.stopPropagation();
+                                  }}
+                                />
+                                <Icon
+                                  icon={"feather:x-circle"}
+                                  className={`w-[10px] h-[10px]`}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-flow-col items-center gap-x-[10px]">
+                        {[
+                          ...new Set(
+                            Object.values(master.fee_metrics).map(
+                              (metric) => metric.category,
+                            ),
+                          ),
+                        ]
+                          .filter(
+                            // remove categories that have no enabled metrics
+                            (category) => {
+                              return Object.keys(metrics).some(
+                                (metric) =>
+                                  metrics[metric].enabled &&
+                                  master.fee_metrics[metric].category ===
+                                    category,
+                              );
+                            },
+                          )
+                          .map((category) => (
+                            <div
+                              key={category}
+                              className="relative grid grid-flow-col items-center justify-between"
+                              style={{
+                                width:
+                                  Object.keys(metrics).filter(
+                                    (metric) => metrics[metric].enabled,
+                                  ).length === 1
+                                    ? "100%"
+                                    : "auto",
+                                gridTemplateColumns:
+                                  Object.keys(metrics).filter(
+                                    (metric) => metrics[metric].enabled,
+                                  ).length === 1
+                                    ? undefined
+                                    : Object.keys(metrics)
+                                        .filter(
+                                          (metric) =>
+                                            metrics[metric].enabled &&
+                                            master.fee_metrics[metric]
+                                              .category === category,
+                                        )
+                                        .map(
+                                          (metric, i) =>
+                                            // `minmax(${
+                                            //   i === 0
+                                            //     ? metrics[metric].width - 40
+                                            //     : metrics[metric].width
+                                            // }px, 100%)`,
+                                            `minmax(${
+                                              i === 0
+                                                ? metrics[metric].width - 60
+                                                : metrics[metric].width
+                                            }px`,
+                                        )
+                                        .join(" "),
+                              }}
+                            >
+                              {Object.keys(metrics).filter(
+                                (metric) => metrics[metric].enabled,
+                              ).length > 1 && (
+                                <>
+                                  <div className="absolute left-[62px] -right-[0px] -bottom-[12px] -top-[22px] flex items-start justify-end text-[10px] font-normal text-forest-500/30 whitespace-nowrap">
+                                    {category} Metrics
+                                  </div>
+                                  <div className="absolute left-8 right-0 bottom-[20px] h-[1px] bg-gradient-to-r from-transparent to-forest-500/15" />
+                                </>
+                              )}
+
+                              {Object.keys(metrics)
+                                .filter(
+                                  (metric) =>
+                                    master.fee_metrics[metric].category ===
+                                    category,
+                                )
+                                .sort(
+                                  (a, b) =>
+                                    master.fee_metrics[a].priority -
+                                    master.fee_metrics[b].priority,
+                                )
+                                .map((metric, i) => {
+                                  if (!metrics[metric].enabled) return null;
+
+                                  return (
+                                    <div
+                                      key={metric + "_header"}
+                                      className="flex items-center"
+                                      style={{
+                                        justifyContent:
+                                          Object.keys(metrics).filter(
+                                            (metric) =>
+                                              metrics[metric].enabled &&
+                                              master.fee_metrics[metric]
+                                                .category === category,
+                                          ).length === 1
+                                            ? "center"
+                                            : "end",
+                                      }}
+                                    >
+                                      <div
+                                        className="flex items-center justify-end"
+                                        style={{ width: metrics[metric].width }}
+                                      >
+                                        <div
+                                          className="flex flex-col justify-end z-[1]"
+                                          onClick={() => {
+                                            if (
+                                              selectedQuantitative === metric
+                                            ) {
+                                              if (selectedQualitative) {
+                                                setSelectedQualitative(null);
+                                              } else {
+                                                setSortOrder(!sortOrder);
+                                              }
+                                            } else {
+                                              setSelectedQualitative(null);
+                                              setSelectedQuantitative(metric);
+                                            }
+                                          }}
+                                        >
+                                          {Object.keys(metrics).filter(
+                                            (metric) => metrics[metric].enabled,
+                                          ).length === 1 && (
+                                            <div className="absolute -top-[22px] flex flex-col items-end place-self-end">
+                                              <div className="flex items-start justify-end text-[10px] font-normal text-forest-500/30 whitespace-nowrap">
+                                                {category} Metrics
+                                              </div>
+                                              <div className="w-[125px] h-[1px] bg-gradient-to-r from-transparent to-forest-500/15" />
+                                            </div>
+                                          )}
+                                          <div className="flex items-center gap-x-0.5 cursor-pointer -mr-[12px]">
+                                            <div className="">
+                                              {
+                                                master.fee_metrics[metric]
+                                                  .name_short
+                                              }
+                                            </div>
+
+                                            <Icon
+                                              icon={
+                                                !selectedQualitative &&
+                                                selectedQuantitative === metric
+                                                  ? sortOrder
+                                                    ? "formkit:arrowdown"
+                                                    : "formkit:arrowup"
+                                                  : "formkit:arrowdown"
+                                              }
+                                              className={`dark:text-white text-black w-[10px] h-[10px] ${
+                                                !selectedQualitative &&
+                                                selectedQuantitative === metric
+                                                  ? "opacity-100"
+                                                  : "opacity-20"
+                                              }`}
+                                            />
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                            </div>
+                          ))}
+                      </div>
+                      <div
+                        className={`relative -right-[1px] md:-left-[1px] flex flex-col justify-end items-end space-x-[1px] font-normal overflow-y-visible`}
+                      >
+                        <div className="relative flex space-x-[1px] items-end -bottom-2">
+                          <div
+                            className={`absolute right-[5px] w-[29px] h-[12px] text-[8px] transition-all duration-100 ${
+                              selectedBarIndex >= 18 && selectedBarIndex <= 22
+                                ? "-top-[22px]"
+                                : "-top-2"
+                            }`}
+                          >
+                            hourly
+                          </div>
+                          {Array.from({ length: NUM_HOURS }, (_, index) => (
+                            <div
+                              key={index.toString() + "columns"}
+                              className={`flex items-end w-[5px] origin-bottom  border-t border-x border-[#344240] bg-[#344240] hover:cursor-pointer rounded-t-full transition-transform duration-100 
                           ${
                             selectedBarIndex === index
                               ? "scale-[1.5] bg-transparent"
@@ -1878,214 +1894,551 @@ export default function FeesPage() {
                               : "scale-x-[100%]"
                           }
                           `}
-                          onMouseEnter={() => {
-                            setHoverBarIndex(index);
-                          }}
-                          onMouseLeave={() => {
-                            setHoverBarIndex(null);
-                          }}
-                          onClick={() => {
-                            setSelectedBarIndex(index);
-                          }}
-                        >
+                              onMouseEnter={() => {
+                                setHoverBarIndex(index);
+                              }}
+                              onMouseLeave={() => {
+                                setHoverBarIndex(null);
+                              }}
+                              onClick={() => {
+                                setSelectedBarIndex(index);
+                              }}
+                            >
+                              <div
+                                className={`w-[5px] transition-all duration-0  ${
+                                  selectedBarIndex === index
+                                    ? "h-[16px]"
+                                    : hoverBarIndex === index
+                                    ? "h-[14px]"
+                                    : "h-[8px]"
+                                }`}
+                              ></div>
+                            </div>
+                          ))}
                           <div
-                            className={`w-[5px] transition-all duration-0  ${
-                              selectedBarIndex === index
-                                ? "h-[16px]"
-                                : hoverBarIndex === index
-                                ? "h-[14px]"
-                                : "h-[8px]"
-                            }`}
-                          ></div>
-                        </div>
-                      ))}
-                      <div
-                        className={`flex w-[17px] h-[17px] items-center justify-center p-0.5 rounded-full absolute bottom-[0.5px] -right-[29px] bg-[#1F2726] cursor-pointer`}
-                        onClick={(e) => {
-                          toggleAllChains();
+                            className={`flex w-[17px] h-[17px] items-center justify-center p-0.5 rounded-full absolute bottom-[0.5px] -right-[29px] bg-[#1F2726] cursor-pointer`}
+                            onClick={(e) => {
+                              toggleAllChains();
 
-                          e.stopPropagation();
-                        }}
-                      >
-                        <div
-                          className="absolute rounded-full transform -right-[11px] top-2.5 -translate-x-1/2 -translate-y-1/2"
-                          style={{
-                            color: "#EAECEB",
-                          }}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="18"
-                            height="18"
-                            viewBox="0 0 27 27"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className={`w-[18px] h-[18px] ${
-                              selectedChainOutcomes === 0
-                                ? "opacity-0"
-                                : selectedChainOutcomes === 1
-                                ? "opacity-40"
-                                : "opacity-0"
-                            }`}
+                              e.stopPropagation();
+                            }}
                           >
-                            <circle
-                              xmlns="http://www.w3.org/2000/svg"
-                              cx="11"
-                              cy="11"
-                              r="7.6"
+                            <div
+                              className="absolute rounded-full transform -right-[11px] top-2.5 -translate-x-1/2 -translate-y-1/2"
+                              style={{
+                                color: "#EAECEB",
+                              }}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="18"
+                                height="18"
+                                viewBox="0 0 27 27"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className={`w-[18px] h-[18px] ${
+                                  selectedChainOutcomes === 0
+                                    ? "opacity-0"
+                                    : selectedChainOutcomes === 1
+                                    ? "opacity-40"
+                                    : "opacity-0"
+                                }`}
+                              >
+                                <circle
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  cx="11"
+                                  cy="11"
+                                  r="7.6"
+                                />
+                              </svg>
+                            </div>
+                            <Icon
+                              icon={"feather:check-circle"}
+                              className={` dark:text-white text-black w-[13px] h-[13px]  cursor-pointer ${
+                                selectedChainOutcomes === 0
+                                  ? "opacity-100"
+                                  : selectedChainOutcomes === 2
+                                  ? "opacity-40"
+                                  : "opacity-0"
+                              }`}
                             />
-                          </svg>
+                          </div>
                         </div>
-                        <Icon
-                          icon={"feather:check-circle"}
-                          className={` dark:text-white text-black w-[13px] h-[13px]  cursor-pointer ${
-                            selectedChainOutcomes === 0
-                              ? "opacity-100"
-                              : selectedChainOutcomes === 2
-                              ? "opacity-40"
-                              : "opacity-0"
-                          }`}
-                        />
                       </div>
                     </div>
+                    {/* <div className="w-[160px] block md:hidden"></div> */}
                   </div>
-                </div>
-                {/* <div className="w-[160px] block md:hidden"></div> */}
-              </div>
-              <div
-                className={`relative`}
-                // extra row if mobile for Ethereum rows
-                style={{
-                  minHeight:
-                    (finalSort.length + 1) * (rowHeight + rowGapY) + 25,
-                }}
-              >
-                {transitions((style, item, t, index) => {
-                  return (
-                    <animated.div
-                      key={item.chain[0]}
-                      className={`w-full absolute pr-[10px] h-[34px]`}
-                      style={{ ...style }}
-                    >
-                      <div
-                        className={`w-full border-forest-700 border-[1px] rounded-full border-black/[16%] dark:border-[#5A6462] h-full pl-[15px] pr-[20px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[200px,auto,180px] items-center gap-x-[20px] 
+                  <div
+                    className={`relative`}
+                    // extra row if mobile for Ethereum rows
+                    style={{
+                      minHeight:
+                        (finalSort.length + 1) * (rowHeight + rowGapY) + 25,
+                    }}
+                  >
+                    {transitions((style, item, t, index) => {
+                      return (
+                        <animated.div
+                          key={item.chain[0]}
+                          className={`w-full absolute pr-[10px] h-[34px]`}
+                          style={{ ...style }}
+                        >
+                          <div
+                            className={`w-full border-forest-700 border-[1px] rounded-full border-black/[16%] dark:border-[#5A6462] h-full pl-[15px] pr-[20px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[200px,auto,180px] items-center gap-x-[20px] 
                       ${isMobile ? "text-[12px]" : "text-[14px]"} ${
-                          selectedChains[item.chain[1]]
-                            ? "opacity-100"
-                            : "opacity-50"
+                              selectedChains[item.chain[1]]
+                                ? "opacity-100"
+                                : "opacity-50"
+                            }`}
+                          >
+                            <div className={`flex items-center gap-x-[10px]`}>
+                              <div
+                                className={`h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
+                              >
+                                <Icon
+                                  icon={`gtp:${
+                                    AllChainsByKeys[item.chain[1]].urlKey
+                                  }-logo-monochrome`}
+                                  className={`h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
+                                  style={{
+                                    color:
+                                      AllChainsByKeys[item.chain[1]].colors[
+                                        "dark"
+                                      ][0],
+                                  }}
+                                />
+                              </div>
+                              <Link
+                                className="hover:underline whitespace-nowrap"
+                                href={`https://www.growthepie.xyz/chains/${
+                                  AllChainsByKeys[item.chain[1]].urlKey
+                                }`}
+                                target="_blank"
+                              >
+                                {isMobile
+                                  ? master.chains[item.chain[1]].name_short
+                                  : AllChainsByKeys[item.chain[1]].label}
+                              </Link>
+                              <div
+                                className={`group bg-[#344240] flex rounded-full transition-width duration-300 pl-[5px] pr-[5px] h-[18px] gap-x-[3px] whitespace-nowrap`}
+                                onMouseEnter={() => {
+                                  setHoveredItems({
+                                    hoveredChain: item.chain[1],
+                                    hoveredDA: hoveredItems.hoveredDA,
+                                  });
+                                }}
+                                onMouseLeave={() => {
+                                  setHoveredItems({
+                                    hoveredChain: null,
+                                    hoveredDA: hoveredItems.hoveredDA,
+                                  });
+                                }}
+                              >
+                                {dataAvailByChain[item.chain[1]].map(
+                                  (avail, index, array) => [
+                                    <div
+                                      key={avail.icon}
+                                      className={`flex relative items-center gap-x-[3px] cursor-pointer`}
+                                      onMouseEnter={() => {
+                                        setHoveredItems({
+                                          hoveredChain:
+                                            hoveredItems.hoveredChain,
+                                          hoveredDA: avail.label,
+                                        });
+                                      }}
+                                      onMouseLeave={() => {
+                                        setHoveredItems({
+                                          hoveredChain:
+                                            hoveredItems.hoveredChain,
+                                          hoveredDA: null,
+                                        });
+                                      }}
+                                      onClick={() => {
+                                        if (!availabilityFilter) {
+                                          setAvailabilityFilter(true);
+                                        }
+                                        setSelectedAvailability(avail.label);
+                                        setManualSelectedChains({});
+                                      }}
+                                    >
+                                      <Icon
+                                        icon={`gtp:${avail.icon}`}
+                                        className={`h-[12px] md:w-[12px] ${
+                                          dataAvailByFilter &&
+                                          selectedAvailability ===
+                                            avail.label &&
+                                          selectedChains[item.chain[1]]
+                                            ? "text-forest-200"
+                                            : "text-[#CDD8D3]/60"
+                                        }
+                                  `}
+                                      />
+                                      <div
+                                        className={`flex items-center text-[8px] font-semibold leading-tight ${
+                                          dataAvailByFilter &&
+                                          selectedAvailability ===
+                                            avail.label &&
+                                          selectedChains[item.chain[1]]
+                                            ? "text-forest-200"
+                                            : "text-[#CDD8D3]/60"
+                                        }`}
+                                      >
+                                        {avail.label}
+                                      </div>
+                                    </div>,
+                                    index !== array.length - 1 && (
+                                      /* Content to render when index is not the last element */
+                                      <div
+                                        key={avail.label}
+                                        className="w-[12px] h-[12px] flex items-center justify-center"
+                                        style={{
+                                          color: "#5A6462",
+                                        }}
+                                      >
+                                        +
+                                      </div>
+                                    ),
+                                  ],
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="grid grid-flow-col items-center gap-x-[10px]">
+                              {[
+                                ...new Set(
+                                  Object.values(master.fee_metrics).map(
+                                    (metric) => metric.category,
+                                  ),
+                                ),
+                              ]
+                                .filter(
+                                  // remove categories that have no enabled metrics
+                                  (category) => {
+                                    return Object.keys(metrics).some(
+                                      (metric) =>
+                                        metrics[metric].enabled &&
+                                        master.fee_metrics[metric].category ===
+                                          category,
+                                    );
+                                  },
+                                )
+                                .map((category) => (
+                                  <div
+                                    key={category}
+                                    className={`grid grid-flow-col items-center justify-between`}
+                                    style={{
+                                      width:
+                                        Object.keys(metrics).filter(
+                                          (metric) => metrics[metric].enabled,
+                                        ).length === 1
+                                          ? "100%"
+                                          : "auto",
+                                      gridTemplateColumns:
+                                        Object.keys(metrics).filter(
+                                          (metric) => metrics[metric].enabled,
+                                        ).length === 1
+                                          ? undefined
+                                          : Object.keys(metrics)
+                                              .filter(
+                                                (metric) =>
+                                                  metrics[metric].enabled &&
+                                                  master.fee_metrics[metric]
+                                                    .category === category,
+                                              )
+                                              .map(
+                                                (metric, i) =>
+                                                  // `minmax(${
+                                                  //   i === 0
+                                                  //     ? metrics[metric].width - 40
+                                                  //     : metrics[metric].width
+                                                  // }px, 100%)`,
+                                                  `minmax(${
+                                                    i === 0
+                                                      ? metrics[metric].width -
+                                                        60
+                                                      : metrics[metric].width
+                                                  }px`,
+                                              )
+                                              .join(" "),
+                                    }}
+                                  >
+                                    {Object.keys(metrics)
+                                      .filter(
+                                        (metric) =>
+                                          master.fee_metrics[metric]
+                                            .category === category,
+                                      )
+                                      .sort(
+                                        (a, b) =>
+                                          master.fee_metrics[a].priority -
+                                          master.fee_metrics[b].priority,
+                                      )
+                                      .map((metric, i) => {
+                                        if (!metrics[metric].enabled)
+                                          return null;
+
+                                        return (
+                                          <div
+                                            key={metric + "_barcontent"}
+                                            className="flex items-center"
+                                            style={{
+                                              justifyContent:
+                                                Object.keys(metrics).filter(
+                                                  (metric) =>
+                                                    metrics[metric].enabled &&
+                                                    master.fee_metrics[metric]
+                                                      .category === category,
+                                                ).length === 1
+                                                  ? "center"
+                                                  : "end",
+                                            }}
+                                          >
+                                            <div
+                                              className="flex items-center justify-end"
+                                              style={{
+                                                width: metrics[metric].width,
+                                              }}
+                                            >
+                                              {getFormattedLastValue(
+                                                item.chain[1],
+                                                metric,
+                                              )}
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                  </div>
+                                ))}
+                            </div>
+
+                            <div
+                              className={`pl-[15px] relative flex justify-end items-center h-full space-x-[1px]`}
+                            >
+                              {Array.from({ length: NUM_HOURS }, (_, index) => (
+                                <div
+                                  key={index.toString() + "circles"}
+                                  className="h-[34px] flex items-center justify-end cursor-pointer"
+                                  onMouseEnter={() => {
+                                    setHoverBarIndex(index);
+                                  }}
+                                  onMouseLeave={() => {
+                                    setHoverBarIndex(null);
+                                  }}
+                                  onClick={() => {
+                                    setSelectedBarIndex(index);
+                                  }}
+                                >
+                                  <div
+                                    className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${
+                                      selectedBarIndex === index
+                                        ? "scale-[160%]"
+                                        : hoverBarIndex === index
+                                        ? "scale-[120%] opacity-90"
+                                        : "scale-100 opacity-50"
+                                    }`}
+                                    style={{
+                                      backgroundColor: getCircleColor(
+                                        item.chain[1],
+                                        index,
+                                      ),
+                                    }}
+                                  ></div>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="absolute right-[0px]">
+                              <div
+                                className={`relative flex items-center justify-end w-[22px] h-[22px] rounded-full cursor-pointer ${
+                                  selectedChains[item.chain[1]]
+                                    ? " bg-white dark:bg-forest-1000 dark:hover:forest-800"
+                                    : " bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
+                                }`}
+                                onClick={() => {
+                                  if (selectedQualitative === "availability") {
+                                    if (
+                                      Object.keys(
+                                        manualSelectedChains,
+                                      ).includes(item.chain[1])
+                                    ) {
+                                      if (
+                                        dataAvailByChain[item.chain[1]][0]
+                                          .label === selectedAvailability &&
+                                        !manualSelectedChains[item.chain[1]]
+                                      ) {
+                                        setManualSelectedChains(
+                                          (prevManualSelectedChains) => {
+                                            // Create a new object by filtering out the key to remove
+                                            const updatedManualSelectedChains =
+                                              Object.fromEntries(
+                                                Object.entries(
+                                                  prevManualSelectedChains,
+                                                ).filter(
+                                                  ([key, _]) =>
+                                                    key !== item.chain[1],
+                                                ),
+                                              );
+
+                                            // Return the updated object
+                                            return updatedManualSelectedChains;
+                                          },
+                                        );
+                                      } else if (
+                                        dataAvailByChain[item.chain[1]][0]
+                                          .label !== selectedAvailability &&
+                                        manualSelectedChains[item.chain[1]]
+                                      ) {
+                                        setManualSelectedChains(
+                                          (prevManualSelectedChains) => {
+                                            // Create a new object by filtering out the key to remove
+                                            const updatedManualSelectedChains =
+                                              Object.fromEntries(
+                                                Object.entries(
+                                                  prevManualSelectedChains,
+                                                ).filter(
+                                                  ([key, _]) =>
+                                                    key !== item.chain[1],
+                                                ),
+                                              );
+
+                                            // Return the updated object
+                                            return updatedManualSelectedChains;
+                                          },
+                                        );
+                                      } else {
+                                        setManualSelectedChains(
+                                          (prevManualSelectedChains) => {
+                                            // Create a new object by spreading the previous state and adding the new object
+                                            return {
+                                              ...prevManualSelectedChains,
+                                              [item.chain[1]]:
+                                                !manualSelectedChains[
+                                                  item.chain[1]
+                                                ], // Replace newKey and newValue with the key-value pair you want to add
+                                            };
+                                          },
+                                        );
+                                      }
+                                    } else {
+                                      setManualSelectedChains(
+                                        (prevManualSelectedChains) => {
+                                          // Create a new object by spreading the previous state and adding the new object
+                                          return {
+                                            ...prevManualSelectedChains,
+                                            [item.chain[1]]:
+                                              !selectedChains[item.chain[1]], // Replace newKey and newValue with the key-value pair you want to add
+                                          };
+                                        },
+                                      );
+                                    }
+                                  }
+                                  setSelectedChains((prevState) => {
+                                    return {
+                                      ...prevState,
+                                      [item.chain[1]]:
+                                        !prevState[item.chain[1]],
+                                    };
+                                  });
+                                }}
+                              >
+                                <div
+                                  className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                                  style={{
+                                    color: !selectedChains[item.chain[1]]
+                                      ? undefined
+                                      : "#EAECEB",
+                                  }}
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="22"
+                                    height="22"
+                                    viewBox="0 0 22 22"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className={`w-[22px] h-[22px]  ${
+                                      !selectedChains[item.chain[1]]
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    }`}
+                                  >
+                                    <circle
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      cx="11"
+                                      cy="11"
+                                      r="7.6"
+                                    />
+                                  </svg>
+                                </div>
+                                <div
+                                  className={`p-0.5 rounded-full ${
+                                    !selectedChains[item.chain[1]]
+                                      ? "bg-forest-50 dark:bg-[#1F2726]"
+                                      : "bg-white dark:bg-[#1F2726]"
+                                  }`}
+                                >
+                                  <Icon
+                                    icon="feather:check-circle"
+                                    className={`w-[17.6px] h-[17.6px] ${
+                                      !selectedChains[item.chain[1]]
+                                        ? "opacity-0"
+                                        : "opacity-100"
+                                    }`}
+                                    style={{
+                                      color: selectedChains[item.chain[1]]
+                                        ? undefined
+                                        : "#EAECEB",
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </animated.div>
+                      );
+                    })}
+                    {master && (
+                      <div
+                        className={`absolute bottom-[28px] w-full border-forest-700 border-[1px] rounded-full bg-[#1F2726] border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[15px] pr-[32px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[200px,auto,180px] items-center  gap-x-[20px] ${
+                          isMobile ? "text-[12px]" : "text-[14px]"
                         }`}
                       >
-                        <div className={`flex items-center gap-x-[10px]`}>
+                        <div
+                          className={`flex justify-start items-center h-full gap-x-[10px]`}
+                        >
                           <div
-                            className={`h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
+                            className={`flex items-center h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
                           >
                             <Icon
-                              icon={`gtp:${
-                                AllChainsByKeys[item.chain[1]].urlKey
-                              }-logo-monochrome`}
-                              className={`h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
+                              icon={`gtp:${AllChainsByKeys["ethereum"].urlKey}-logo-monochrome`}
+                              className={`${
+                                isMobile
+                                  ? "h-[18px] w-[18px]"
+                                  : "h-[24px] w-[24px]"
+                              }`}
                               style={{
                                 color:
-                                  AllChainsByKeys[item.chain[1]].colors[
-                                    "dark"
-                                  ][0],
+                                  AllChainsByKeys["ethereum"].colors[
+                                    "light"
+                                  ][1],
                               }}
                             />
                           </div>
                           <Link
-                            className="hover:underline whitespace-nowrap"
-                            href={`https://www.growthepie.xyz/chains/${
-                              AllChainsByKeys[item.chain[1]].urlKey
-                            }`}
+                            className="hover:underline"
+                            href={`https://www.growthepie.xyz/chains/${AllChainsByKeys["ethereum"].urlKey}`}
                             target="_blank"
                           >
                             {isMobile
-                              ? master.chains[item.chain[1]].name_short
-                              : AllChainsByKeys[item.chain[1]].label}
+                              ? master.chains["ethereum"].name_short
+                              : AllChainsByKeys["ethereum"].label}
                           </Link>
-                          <div
-                            className={`group bg-[#344240] flex rounded-full transition-width duration-300 pl-[5px] pr-[5px] h-[18px] gap-x-[3px] whitespace-nowrap`}
-                            onMouseEnter={() => {
-                              setHoveredItems({
-                                hoveredChain: item.chain[1],
-                                hoveredDA: hoveredItems.hoveredDA,
-                              });
-                            }}
-                            onMouseLeave={() => {
-                              setHoveredItems({
-                                hoveredChain: null,
-                                hoveredDA: hoveredItems.hoveredDA,
-                              });
-                            }}
-                          >
-                            {dataAvailByChain[item.chain[1]].map(
-                              (avail, index, array) => [
-                                <div
-                                  key={avail.icon}
-                                  className={`flex relative items-center gap-x-[3px] cursor-pointer`}
-                                  onMouseEnter={() => {
-                                    setHoveredItems({
-                                      hoveredChain: hoveredItems.hoveredChain,
-                                      hoveredDA: avail.label,
-                                    });
-                                  }}
-                                  onMouseLeave={() => {
-                                    setHoveredItems({
-                                      hoveredChain: hoveredItems.hoveredChain,
-                                      hoveredDA: null,
-                                    });
-                                  }}
-                                  onClick={() => {
-                                    if (!availabilityFilter) {
-                                      setAvailabilityFilter(true);
-                                    }
-                                    setSelectedAvailability(avail.label);
-                                    setManualSelectedChains({});
-                                  }}
-                                >
-                                  <Icon
-                                    icon={`gtp:${avail.icon}`}
-                                    className={`h-[12px] md:w-[12px] ${
-                                      dataAvailByFilter &&
-                                      selectedAvailability === avail.label &&
-                                      selectedChains[item.chain[1]]
-                                        ? "text-forest-200"
-                                        : "text-[#CDD8D3]/60"
-                                    }
-                                  `}
-                                  />
-                                  <div
-                                    className={`flex items-center text-[8px] font-semibold leading-tight ${
-                                      dataAvailByFilter &&
-                                      selectedAvailability === avail.label &&
-                                      selectedChains[item.chain[1]]
-                                        ? "text-forest-200"
-                                        : "text-[#CDD8D3]/60"
-                                    }`}
-                                  >
-                                    {avail.label}
-                                  </div>
-                                </div>,
-                                index !== array.length - 1 && (
-                                  /* Content to render when index is not the last element */
-                                  <div
-                                    key={avail.label}
-                                    className="w-[12px] h-[12px] flex items-center justify-center"
-                                    style={{
-                                      color: "#5A6462",
-                                    }}
-                                  >
-                                    +
-                                  </div>
-                                ),
-                              ],
-                            )}
-                          </div>
                         </div>
-
                         <div className="grid grid-flow-col items-center gap-x-[10px]">
                           {[
                             ...new Set(
@@ -2108,7 +2461,7 @@ export default function FeesPage() {
                             .map((category) => (
                               <div
                                 key={category}
-                                className={`grid grid-flow-col items-center justify-between`}
+                                className="grid grid-flow-col items-center justify-between"
                                 style={{
                                   width:
                                     Object.keys(metrics).filter(
@@ -2181,7 +2534,7 @@ export default function FeesPage() {
                                           }}
                                         >
                                           {getFormattedLastValue(
-                                            item.chain[1],
+                                            "ethereum",
                                             metric,
                                           )}
                                         </div>
@@ -2191,14 +2544,13 @@ export default function FeesPage() {
                               </div>
                             ))}
                         </div>
-
                         <div
-                          className={`pl-[15px] relative flex justify-end items-center h-full space-x-[1px]`}
+                          className={`pl-[15px] relative flex items-center h-full space-x-[1px] justify-end`}
                         >
                           {Array.from({ length: NUM_HOURS }, (_, index) => (
                             <div
                               key={index.toString() + "circles"}
-                              className="h-[34px] flex items-center justify-end cursor-pointer"
+                              className="h-[32px] flex items-center justify-end cursor-pointer"
                               onMouseEnter={() => {
                                 setHoverBarIndex(index);
                               }}
@@ -2219,352 +2571,27 @@ export default function FeesPage() {
                                 }`}
                                 style={{
                                   backgroundColor: getCircleColor(
-                                    item.chain[1],
+                                    "ethereum",
                                     index,
                                   ),
                                 }}
                               ></div>
                             </div>
                           ))}
-                        </div>
-                        <div className="absolute right-[0px]">
-                          <div
-                            className={`relative flex items-center justify-end w-[22px] h-[22px] rounded-full cursor-pointer ${
-                              selectedChains[item.chain[1]]
-                                ? " bg-white dark:bg-forest-1000 dark:hover:forest-800"
-                                : " bg-forest-50 dark:bg-[#1F2726] hover:bg-forest-50"
-                            }`}
-                            onClick={() => {
-                              if (selectedQualitative === "availability") {
-                                if (
-                                  Object.keys(manualSelectedChains).includes(
-                                    item.chain[1],
-                                  )
-                                ) {
-                                  if (
-                                    dataAvailByChain[item.chain[1]][0].label ===
-                                      selectedAvailability &&
-                                    !manualSelectedChains[item.chain[1]]
-                                  ) {
-                                    setManualSelectedChains(
-                                      (prevManualSelectedChains) => {
-                                        // Create a new object by filtering out the key to remove
-                                        const updatedManualSelectedChains =
-                                          Object.fromEntries(
-                                            Object.entries(
-                                              prevManualSelectedChains,
-                                            ).filter(
-                                              ([key, _]) =>
-                                                key !== item.chain[1],
-                                            ),
-                                          );
-
-                                        // Return the updated object
-                                        return updatedManualSelectedChains;
-                                      },
-                                    );
-                                  } else if (
-                                    dataAvailByChain[item.chain[1]][0].label !==
-                                      selectedAvailability &&
-                                    manualSelectedChains[item.chain[1]]
-                                  ) {
-                                    setManualSelectedChains(
-                                      (prevManualSelectedChains) => {
-                                        // Create a new object by filtering out the key to remove
-                                        const updatedManualSelectedChains =
-                                          Object.fromEntries(
-                                            Object.entries(
-                                              prevManualSelectedChains,
-                                            ).filter(
-                                              ([key, _]) =>
-                                                key !== item.chain[1],
-                                            ),
-                                          );
-
-                                        // Return the updated object
-                                        return updatedManualSelectedChains;
-                                      },
-                                    );
-                                  } else {
-                                    setManualSelectedChains(
-                                      (prevManualSelectedChains) => {
-                                        // Create a new object by spreading the previous state and adding the new object
-                                        return {
-                                          ...prevManualSelectedChains,
-                                          [item.chain[1]]:
-                                            !manualSelectedChains[
-                                              item.chain[1]
-                                            ], // Replace newKey and newValue with the key-value pair you want to add
-                                        };
-                                      },
-                                    );
-                                  }
-                                } else {
-                                  setManualSelectedChains(
-                                    (prevManualSelectedChains) => {
-                                      // Create a new object by spreading the previous state and adding the new object
-                                      return {
-                                        ...prevManualSelectedChains,
-                                        [item.chain[1]]:
-                                          !selectedChains[item.chain[1]], // Replace newKey and newValue with the key-value pair you want to add
-                                      };
-                                    },
-                                  );
-                                }
-                              }
-                              setSelectedChains((prevState) => {
-                                return {
-                                  ...prevState,
-                                  [item.chain[1]]: !prevState[item.chain[1]],
-                                };
-                              });
-                            }}
-                          >
-                            <div
-                              className="absolute rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-                              style={{
-                                color: !selectedChains[item.chain[1]]
-                                  ? undefined
-                                  : "#EAECEB",
-                              }}
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="22"
-                                height="22"
-                                viewBox="0 0 22 22"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className={`w-[22px] h-[22px]  ${
-                                  !selectedChains[item.chain[1]]
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                }`}
-                              >
-                                <circle
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  cx="11"
-                                  cy="11"
-                                  r="7.6"
-                                />
-                              </svg>
+                          <div className="absolute -right-[3px] top-[34px] w-[147px] h-[10px] border-forest-600 border-x-[1px] flex justify-between text-[10px]">
+                            <div className="relative top-2">
+                              {NUM_HOURS} Hours Ago
                             </div>
-                            <div
-                              className={`p-0.5 rounded-full ${
-                                !selectedChains[item.chain[1]]
-                                  ? "bg-forest-50 dark:bg-[#1F2726]"
-                                  : "bg-white dark:bg-[#1F2726]"
-                              }`}
-                            >
-                              <Icon
-                                icon="feather:check-circle"
-                                className={`w-[17.6px] h-[17.6px] ${
-                                  !selectedChains[item.chain[1]]
-                                    ? "opacity-0"
-                                    : "opacity-100"
-                                }`}
-                                style={{
-                                  color: selectedChains[item.chain[1]]
-                                    ? undefined
-                                    : "#EAECEB",
-                                }}
-                              />
-                            </div>
+                            <div className="relative top-2">Now</div>
                           </div>
                         </div>
                       </div>
-                    </animated.div>
-                  );
-                })}
-                {master && (
-                  <div
-                    className={`absolute bottom-[28px] w-full border-forest-700 border-[1px] rounded-full bg-[#1F2726] border-black/[16%] dark:border-[#5A6462] min-h-[34px] pl-[15px] pr-[32px] flex-1 grid grid-cols-[150px,auto,150px] md:grid-cols-[200px,auto,180px] items-center  gap-x-[20px] ${
-                      isMobile ? "text-[12px]" : "text-[14px]"
-                    }`}
-                  >
-                    <div
-                      className={`flex justify-start items-center h-full gap-x-[10px]`}
-                    >
-                      <div
-                        className={`flex items-center h-[18px] w-[18px] md:h-[24px] md:w-[24px]`}
-                      >
-                        <Icon
-                          icon={`gtp:${AllChainsByKeys["ethereum"].urlKey}-logo-monochrome`}
-                          className={`${
-                            isMobile ? "h-[18px] w-[18px]" : "h-[24px] w-[24px]"
-                          }`}
-                          style={{
-                            color:
-                              AllChainsByKeys["ethereum"].colors["light"][1],
-                          }}
-                        />
-                      </div>
-                      <Link
-                        className="hover:underline"
-                        href={`https://www.growthepie.xyz/chains/${AllChainsByKeys["ethereum"].urlKey}`}
-                        target="_blank"
-                      >
-                        {isMobile
-                          ? master.chains["ethereum"].name_short
-                          : AllChainsByKeys["ethereum"].label}
-                      </Link>
-                    </div>
-                    <div className="grid grid-flow-col items-center gap-x-[10px]">
-                      {[
-                        ...new Set(
-                          Object.values(master.fee_metrics).map(
-                            (metric) => metric.category,
-                          ),
-                        ),
-                      ]
-                        .filter(
-                          // remove categories that have no enabled metrics
-                          (category) => {
-                            return Object.keys(metrics).some(
-                              (metric) =>
-                                metrics[metric].enabled &&
-                                master.fee_metrics[metric].category ===
-                                  category,
-                            );
-                          },
-                        )
-                        .map((category) => (
-                          <div
-                            key={category}
-                            className="grid grid-flow-col items-center justify-between"
-                            style={{
-                              width:
-                                Object.keys(metrics).filter(
-                                  (metric) => metrics[metric].enabled,
-                                ).length === 1
-                                  ? "100%"
-                                  : "auto",
-                              gridTemplateColumns:
-                                Object.keys(metrics).filter(
-                                  (metric) => metrics[metric].enabled,
-                                ).length === 1
-                                  ? undefined
-                                  : Object.keys(metrics)
-                                      .filter(
-                                        (metric) =>
-                                          metrics[metric].enabled &&
-                                          master.fee_metrics[metric]
-                                            .category === category,
-                                      )
-                                      .map(
-                                        (metric, i) =>
-                                          // `minmax(${
-                                          //   i === 0
-                                          //     ? metrics[metric].width - 40
-                                          //     : metrics[metric].width
-                                          // }px, 100%)`,
-                                          `minmax(${
-                                            i === 0
-                                              ? metrics[metric].width - 60
-                                              : metrics[metric].width
-                                          }px`,
-                                      )
-                                      .join(" "),
-                            }}
-                          >
-                            {Object.keys(metrics)
-                              .filter(
-                                (metric) =>
-                                  master.fee_metrics[metric].category ===
-                                  category,
-                              )
-                              .sort(
-                                (a, b) =>
-                                  master.fee_metrics[a].priority -
-                                  master.fee_metrics[b].priority,
-                              )
-                              .map((metric, i) => {
-                                if (!metrics[metric].enabled) return null;
-
-                                return (
-                                  <div
-                                    key={metric + "_barcontent"}
-                                    className="flex items-center"
-                                    style={{
-                                      justifyContent:
-                                        Object.keys(metrics).filter(
-                                          (metric) =>
-                                            metrics[metric].enabled &&
-                                            master.fee_metrics[metric]
-                                              .category === category,
-                                        ).length === 1
-                                          ? "center"
-                                          : "end",
-                                    }}
-                                  >
-                                    <div
-                                      className="flex items-center justify-end"
-                                      style={{
-                                        width: metrics[metric].width,
-                                      }}
-                                    >
-                                      {getFormattedLastValue(
-                                        "ethereum",
-                                        metric,
-                                      )}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                          </div>
-                        ))}
-                    </div>
-                    <div
-                      className={`pl-[15px] relative flex items-center h-full space-x-[1px] justify-end`}
-                    >
-                      {Array.from({ length: NUM_HOURS }, (_, index) => (
-                        <div
-                          key={index.toString() + "circles"}
-                          className="h-[32px] flex items-center justify-end cursor-pointer"
-                          onMouseEnter={() => {
-                            setHoverBarIndex(index);
-                          }}
-                          onMouseLeave={() => {
-                            setHoverBarIndex(null);
-                          }}
-                          onClick={() => {
-                            setSelectedBarIndex(index);
-                          }}
-                        >
-                          <div
-                            className={`w-[5px] h-[5px] rounded-full transition-all duration-300 ${
-                              selectedBarIndex === index
-                                ? "scale-[160%]"
-                                : hoverBarIndex === index
-                                ? "scale-[120%] opacity-90"
-                                : "scale-100 opacity-50"
-                            }`}
-                            style={{
-                              backgroundColor: getCircleColor(
-                                "ethereum",
-                                index,
-                              ),
-                            }}
-                          ></div>
-                        </div>
-                      ))}
-                      <div className="absolute -right-[3px] top-[34px] w-[147px] h-[10px] border-forest-600 border-x-[1px] flex justify-between text-[10px]">
-                        <div className="relative top-2">
-                          {NUM_HOURS} Hours Ago
-                        </div>
-                        <div className="relative top-2">Now</div>
-                      </div>
-                    </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
-          )}
-        </FeesHorizontalScrollContainer>
-        {/* {master && (
+                </div>
+              )}
+            </FeesHorizontalScrollContainer>
+            {/* {master && (
           <div
             className="z-40 sticky transition-all duration-300 px-[20px] md:px-[50px]"
             style={{
@@ -2748,37 +2775,39 @@ export default function FeesPage() {
           </div>
         )} */}
 
-        <OffScreenSlider>
-          {feeData && master && (
-            <ChartContainer
-              isOpen={isChartOpen}
-              setIsOpen={setIsChartOpen}
-              selectedMetric={selectedQuantitative}
-              selectedTimeframe={"24hrs"}
-              selectedChains={Object.keys(selectedChains).filter(
-                (c) => selectedChains[c] === true,
+            <OffScreenSlider>
+              {feeData && master && (
+                <ChartContainer
+                  isOpen={isChartOpen}
+                  setIsOpen={setIsChartOpen}
+                  selectedMetric={selectedQuantitative}
+                  selectedTimeframe={"24hrs"}
+                  selectedChains={Object.keys(selectedChains).filter(
+                    (c) => selectedChains[c] === true,
+                  )}
+                  showGwei={showGwei}
+                  showCents={showCents}
+                  master={master}
+                />
               )}
-              showGwei={showGwei}
+            </OffScreenSlider>
+
+            <Footer
               showCents={showCents}
+              setShowCents={setShowCents}
+              hoverSettings={hoverSettings}
+              setHoverSettings={setHoverSettings}
+              selectedQuantitative={selectedQuantitative}
+              setSelectedQuantitative={setSelectedQuantitative}
+              metricCategories={metricCategories}
+              metrics={metrics}
+              setMetrics={setMetrics}
+              enabledMetricsCount={enabledMetricsCount}
               master={master}
             />
-          )}
-        </OffScreenSlider>
-
-        <Footer
-          showCents={showCents}
-          setShowCents={setShowCents}
-          hoverSettings={hoverSettings}
-          setHoverSettings={setHoverSettings}
-          selectedQuantitative={selectedQuantitative}
-          setSelectedQuantitative={setSelectedQuantitative}
-          metricCategories={metricCategories}
-          metrics={metrics}
-          setMetrics={setMetrics}
-          enabledMetricsCount={enabledMetricsCount}
-          master={master}
-        />
-      </div>
+          </div>
+        </>
+      )}
     </>
   );
 }
