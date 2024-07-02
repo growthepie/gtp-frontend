@@ -85,6 +85,8 @@ export default function ChainChart({
   // Keep track of the mounted state
   const isMounted = useIsMounted();
 
+  const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
+
   const [data, setData] = useState<ChainsData[]>([chainData]);
 
   const [error, setError] = useState(null);
@@ -181,7 +183,9 @@ export default function ChainChart({
         }
 
         // if not, fetch the data
-        const response = await fetch(ChainURLs[key]);
+        const response = await fetch(
+          ChainURLs[key].replace("/v1/", `/${apiRoot}/`),
+        );
         const responseData = await response.json();
 
         // store the data in the cache
@@ -204,7 +208,7 @@ export default function ChainChart({
       setValidating(false);
       setLoading(false);
     }
-  }, [chainKey, cache, mutate]);
+  }, [chainKey, cache, apiRoot, mutate]);
 
   useEffect(() => {
     if (data.length === 0) {

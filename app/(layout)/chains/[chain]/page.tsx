@@ -47,6 +47,8 @@ import {
 const Chain = ({ params }: { params: any }) => {
   const { chain } = params;
 
+  const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
+
   const { theme } = useTheme();
 
   const [chainKey, setChainKey] = useState<string>(
@@ -119,7 +121,9 @@ const Chain = ({ params }: { params: any }) => {
 
     try {
       // Fetch the data
-      const response = await fetch(ChainURLs[chainKey]);
+      const response = await fetch(
+        ChainURLs[chainKey].replace("/v1/", `/${apiRoot}/`),
+      );
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
@@ -140,7 +144,7 @@ const Chain = ({ params }: { params: any }) => {
       setChainLoading(false);
       setChainValidating(false);
     }
-  }, [chainKey]);
+  }, [apiRoot, chainKey]);
 
   useEffect(() => {
     fetchChainData();
