@@ -222,7 +222,7 @@ export default function RootLayout({
               <div className="hidden 2xl:block">{"2xl"}</div>
             </div>
           )} */}
-          <DeveloperTools />
+          {/* <DeveloperTools /> */}
           <CookieConsent />
         </Providers>
       </body>
