@@ -476,7 +476,7 @@ export const AllChains: Chain[] = [
     darkTextOnBackground: true,
   },
   {
-    label: "taiko",
+    label: "Taiko",
     icon: "/icons/taiko.png",
     key: "taiko",
     urlKey: "taiko",

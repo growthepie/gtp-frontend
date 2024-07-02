@@ -607,13 +607,12 @@ export const navigationItems: NavigationItem[] = [
       {
         label: "Taiko",
         page: {
-          description: "",
+          description: "Taiko is",
         },
         icon: "gtp:taiko-logo-monochrome",
         key: "taiko",
         rootKey: "chainsTaiko",
         urlKey: "taiko",
-        hide: true,
       },
     ],
   },

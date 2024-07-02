@@ -33,6 +33,7 @@ export const ChainURLs = {
   manta: "https://api.growthepie.xyz/v1/chains/manta.json",
   blast: "https://api.growthepie.xyz/v1/chains/blast.json",
   mode: "https://api.growthepie.xyz/v1/chains/mode.json",
+  taiko: "https://api.growthepie.xyz/v1/chains/taiko.json",
 };
 
 export const BlockspaceURLs = {
