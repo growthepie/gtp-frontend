@@ -476,10 +476,10 @@ export const AllChains: Chain[] = [
     darkTextOnBackground: true,
   },
   {
-    label: "Taika",
-    icon: "/icons/taika.png",
-    key: "taika",
-    urlKey: "taika",
+    label: "taiko",
+    icon: "/icons/taiko.png",
+    key: "taiko",
+    urlKey: "taiko",
     chainType: "L2",
     ecosystem: ["all-chains"], // add ecosystems when unhiding from the UI
     description: "",
