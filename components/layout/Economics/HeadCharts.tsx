@@ -637,7 +637,6 @@ export default function EconHeadCharts({
                                 .add();
                             });
                           }}
-                          style={{ overflow: "visible" }}
                         />
                         <Tooltip
                           useHTML={true}
@@ -733,7 +732,6 @@ export default function EconHeadCharts({
                             y: -1,
                             x: -19,
                             overflow: "allow",
-                            crop: false,
 
                             style: {
                               fontSize: "8px",
@@ -784,7 +782,6 @@ export default function EconHeadCharts({
                             y: -1,
                             x: chartWidth ? chartWidth + 19 : 10,
                             overflow: "allow",
-                            crop: false,
 
                             style: {
                               fontSize: "8px",
