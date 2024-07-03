@@ -550,12 +550,14 @@ export default function ChainChart({
         let prefix = master.metrics[key].units[unitKey].prefix;
         let suffix = master.metrics[key].units[unitKey].suffix;
         let valueIndex = showUsd ? 1 : 2;
-        let valueMultiplier = showGwei(key) ? 1000000000 : 1;
+        let valueMultiplier = showGwei(key) && !showUsd ? 1000000000 : 1;
 
         let valueFormat = Intl.NumberFormat("en-GB", {
           notation: "compact",
-          maximumFractionDigits: 2,
-          minimumFractionDigits: 2,
+          maximumFractionDigits:
+            key === "txcosts" ? master.metrics[key].units[unitKey].decimals : 2,
+          minimumFractionDigits:
+            key === "txcosts" ? master.metrics[key].units[unitKey].decimals : 2,
         });
 
         let navItem = navigationItems[1].options.find((ni) => ni.key === key);
@@ -654,12 +656,10 @@ export default function ChainChart({
                         !prefix && "hidden"
                       }">${prefix}</div>
                       ${parseFloat(value).toLocaleString("en-GB", {
-                        minimumFractionDigits: showGwei(metricKey)
-                          ? 2
-                          : decimals,
-                        maximumFractionDigits: showGwei(metricKey)
-                          ? 2
-                          : decimals,
+                        minimumFractionDigits:
+                          showGwei(metricKey) && !showUsd ? 2 : decimals,
+                        maximumFractionDigits:
+                          showGwei(metricKey) && !showUsd ? 2 : decimals,
                       })}
                       <div class="opacity-70 ml-0.5 ${
                         !suffix && "hidden"
