@@ -555,9 +555,13 @@ export default function ChainChart({
         let valueFormat = Intl.NumberFormat("en-GB", {
           notation: "compact",
           maximumFractionDigits:
-            key === "txcosts" ? master.metrics[key].units[unitKey].decimals : 2,
+            key === "txcosts" && showUsd
+              ? master.metrics[key].units[unitKey].decimals
+              : 2,
           minimumFractionDigits:
-            key === "txcosts" ? master.metrics[key].units[unitKey].decimals : 2,
+            key === "txcosts" && showUsd
+              ? master.metrics[key].units[unitKey].decimals
+              : 2,
         });
 
         let navItem = navigationItems[1].options.find((ni) => ni.key === key);
