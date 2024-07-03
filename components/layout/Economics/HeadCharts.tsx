@@ -288,6 +288,18 @@ export default function EconHeadCharts({
     );
   }
 
+  function formatBytes(bytes: number, decimals = 2) {
+    if (!+bytes) return "0 Bytes";
+
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+  }
+
   console.log(da_charts);
 
   return (
@@ -335,6 +347,8 @@ export default function EconHeadCharts({
             let dataIndex = da_charts[key].blob_fees.daily.types.indexOf(
               showUsd ? "usd" : "eth",
             );
+            const sizeLength = da_charts[key].blob_size.daily.data.length;
+            const feesLength = da_charts[key].blob_fees.daily.data.length;
 
             return (
               <SplideSlide key={key + i + "Splide"}>
@@ -356,11 +370,26 @@ export default function EconHeadCharts({
                         />
                       </div>
                     </div>
-                    <div className="flex justify-between gap-x-[15px] items-center h-[36px] bg-[#344240CC]  rounded-[10px] pl-[15px] pr-[15px] mr-[10px]  ">
+                    <div className="flex justify-between gap-x-[15px] items-center h-[36px] bg-[#344240CC]  rounded-[10px] pl-[15px] pr-[15px] mr-[8px]  ">
                       <div className="text-[16px] font-normal ">EX / GB</div>
-                      <div className="text-[10px] font-normal flex flex-col gap-y-[1px]">
-                        <div>Num</div>
-                        <div>Num</div>
+                      <div className="text-[10px] font-normal flex flex-col gap-y-[1px] text-right">
+                        <div>
+                          {formatBytes(
+                            da_charts[key].blob_size.daily.data[
+                              sizeLength - 1
+                            ][1],
+                          )}
+                        </div>
+                        <div className="flex">
+                          <span>{valuePrefix}</span>
+                          <span>
+                            {formatNumber(
+                              da_charts[key].blob_fees.daily.data[
+                                feesLength - 1
+                              ][dataIndex],
+                            )}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -396,9 +425,9 @@ export default function EconHeadCharts({
                       {da_charts[key].blob_fees.metric_name}
                     </div>
                   </div>
-                  <hr className="absolute left-[18px] w-[calc(100%-36px)] border-t-[1.5px] top-[59px] border-[#5A64624F] my-4" />
-                  <hr className="absolute left-[18px] w-[calc(100%-36px)] border-t-[1.5px] top-[91px] border-[#5A64624F] my-4" />
-                  <hr className="absolute left-[18px] w-[calc(100%-36px)] border-t-[1.5px] top-[122px] border-[#5A64624F] my-4" />
+                  <hr className="absolute left-[18px] w-[calc(100%-36px)] border-t-[1.5px] top-[50px] border-[#5A64624F] my-4" />
+                  <hr className="absolute left-[18px] w-[calc(100%-36px)] border-t-[1.5px] top-[85px] border-[#5A64624F] my-4" />
+                  <hr className="absolute left-[18px] w-[calc(100%-36px)] border-t-[1.5px] top-[119px] border-[#5A64624F] my-4" />
                   <div className="relative w-full h-full flex justify-center items-end overflow-visible">
                     <HighchartsProvider Highcharts={Highcharts}>
                       <HighchartsChart
