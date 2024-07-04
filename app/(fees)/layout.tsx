@@ -102,6 +102,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(`https://${host}`),
   title,
   description,
+  icons: {
+    icon: "/feesfavi.ico", // /public path
+  },
   openGraph: {
     title: "growthepie",
     description: "Growing Ethereum’s Ecosystem Together",
@@ -184,7 +187,9 @@ export default function RootLayout({
       className={`${raleway.variable} ${inter.variable} ${robotoMono.variable} scroll-smooth`}
       suppressHydrationWarning
     >
-      <Head />
+      <Head>
+        <link rel="icon" href={"/feesfavi.ico"} sizes="any" />
+      </Head>
       <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden min-h-screen relative">
         <div className="background-container !fixed">
           <div className="background-gradient-group">
