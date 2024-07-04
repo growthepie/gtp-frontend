@@ -30,6 +30,7 @@ import {
   ReactNode,
   useCallback,
 } from "react";
+import d3 from "d3";
 import {
   navigationItems,
   navigationCategories,
@@ -105,7 +106,7 @@ export default function EconHeadCharts({
       }
 
       const tooltip = `<div class="mt-3 mr-3 mb-3 w-36 md:w-40 text-xs font-raleway">
-        <div class="w-full font-bold text-[13px] md:text-[1rem] ml-8 mb-2 ">${dateString}</div>`;
+        <div class="w-full font-bold text-[13px] md:text-[1rem] ml-6 mb-2 ">${dateString}</div>`;
       const tooltipEnd = `</div>`;
 
       // let pointsSum = 0;
@@ -139,50 +140,35 @@ export default function EconHeadCharts({
         .map((point: any) => {
           const { series, y, percentage } = point;
           const { name } = series;
-          if (selectedScale === "percentage")
-            return `
-              <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-                  AllChainsByKeys["all_l2s"].colors["dark"][0]
-                }"></div>
-                <div class="tooltip-point-name">${name}</div>
-                <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                  percentage,
-                  2,
-                )}%</div>
-              </div>
-              
-              <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] w-full bg-white/0"></div>
-    
-                <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
-                style="
-                  width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${
-                    AllChainsByKeys["all_l2s"].colors["dark"][0]
-                  };
-                "></div>
-              </div>`;
+          console.log(series);
+          const isFees = name.includes("Fees");
+          const nameString = isFees ? "Fees" : "Blob Size";
+          const color = series.color.stops[0][1];
 
-          let prefix = valuePrefix;
+          let prefix = isFees ? valuePrefix : "";
           let suffix = "";
           let value = y;
           let displayValue = y;
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-              AllChainsByKeys["all_l2s"].colors["dark"][0]
-            }"></div>
-            <div class="tooltip-point-name text-md">${name}</div>
-            <div class="flex-1 text-right font-inter flex">
-                <div class="opacity-70 mr-0.5 ${
-                  !prefix && "hidden"
-                }">${prefix}</div>
-                ${parseFloat(displayValue).toLocaleString("en-GB", {
-                  minimumFractionDigits: valuePrefix ? 2 : 0,
-                  maximumFractionDigits: valuePrefix ? 2 : 0,
-                })}
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${color}"></div>
+            <div class="tooltip-point-name text-md">${nameString}</div>
+            <div class="flex-1 text-right font-inter w-full flex">
+              <div class="flex justify-end text-right w-full">
+                  <div class="opacity-70 mr-0.5 ${
+                    !prefix && "hidden"
+                  }">${prefix}</div>
+                  <div>${
+                    isFees
+                      ? parseFloat(displayValue).toLocaleString("en-GB", {
+                          minimumFractionDigits: !showUsd ? 2 : 0,
+                          maximumFractionDigits: !showUsd ? 2 : 0,
+                        })
+                      : formatBytes(displayValue)
+                  }
+                  </div>
+                </div>
                 <div class="opacity-70 ml-0.5 ${
                   !suffix && "hidden"
                 }">${suffix}</div>
@@ -192,39 +178,22 @@ export default function EconHeadCharts({
         })
         .join("");
 
-      let prefix = valuePrefix;
-      let suffix = "";
-      let value = pointsSum;
-
-      const sumRow =
-        selectedScale === "stacked"
-          ? `
-        <div class="flex w-full space-x-2 items-center font-medium mt-1.5 mb-0.5 opacity-70">
-          <div class="w-4 h-1.5 rounded-r-full" style=""></div>
-          <div class="tooltip-point-name text-md">Total</div>
-          <div class="flex-1 text-right justify-end font-inter flex">
-
-              <div class="opacity-70 mr-0.5 ${
-                !prefix && "hidden"
-              }">${prefix}</div>
-              ${parseFloat(value).toLocaleString("en-GB", {
-                minimumFractionDigits: valuePrefix ? 2 : 0,
-                maximumFractionDigits: valuePrefix ? 2 : 0,
-              })}
-              <div class="opacity-70 ml-0.5 ${
-                !suffix && "hidden"
-              }">${suffix}</div>
-          </div>
-        </div>
-        <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
-          <div class="h-[2px] rounded-none absolute right-0 -top-[3px] w-full bg-white/0"></div>
-        </div>`
-          : "";
-
-      return tooltip + tooltipPoints + sumRow + tooltipEnd;
+      return tooltip + tooltipPoints + tooltipEnd;
     },
     [valuePrefix, reversePerformer, showUsd],
   );
+
+  function formatBytes(bytes: number, decimals = 2) {
+    if (!+bytes) return "0 Bytes";
+
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+  }
 
   const tooltipPositioner =
     useCallback<Highcharts.TooltipPositionerCallbackFunction>(
@@ -274,31 +243,40 @@ export default function EconHeadCharts({
       [isMobile],
     );
 
-  function formatNumber(x: number) {
-    return (
-      <div className="flex gap-x-0.5 ">
-        <span>
-          {Intl.NumberFormat("en-GB", {
-            notation: "standard",
-            maximumFractionDigits: showUsd ? 0 : 2,
-            minimumFractionDigits: 0,
-          }).format(x)}
-        </span>
-      </div>
-    );
-  }
+  const formatNumber = useCallback(
+    (key: string, value: number | string) => {
+      let val = parseFloat(value as string);
 
-  function formatBytes(bytes: number, decimals = 2) {
-    if (!+bytes) return "0 Bytes";
+      // Function to format large numbers with at least 2 decimals
+      const formatLargeNumber = (num) => {
+        let formatted = d3.format(".2s")(num).replace(/G/, "B");
+        if (/(\.\dK|\.\dM|\.\dB)$/.test(formatted)) {
+          formatted = d3.format(".3s")(num).replace(/G/, "B");
+        } else if (/(\.\d\dK|\.\d\dM|\.\d\dB)$/.test(formatted)) {
+          formatted = d3.format(".4s")(num).replace(/G/, "B");
+        } else {
+          formatted = d3.format(".2s")(num).replace(/G/, "B");
+        }
+        return formatted;
+      };
 
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+      let number = formatLargeNumber(val);
+      console.log(number);
 
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
+      if (showUsd) {
+        if (val < 1) {
+          number = valuePrefix + val.toFixed(2);
+        } else {
+          number = valuePrefix + formatLargeNumber(val);
+        }
+      } else {
+        number = valuePrefix + formatLargeNumber(val);
+      }
 
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
-  }
+      return number;
+    },
+    [da_charts, showUsd],
+  );
 
   console.log(da_charts);
 
@@ -380,15 +358,13 @@ export default function EconHeadCharts({
                             ][1],
                           )}
                         </div>
-                        <div className="flex">
-                          <span>{valuePrefix}</span>
-                          <span>
-                            {formatNumber(
-                              da_charts[key].blob_fees.daily.data[
-                                feesLength - 1
-                              ][dataIndex],
-                            )}
-                          </span>
+                        <div className="text-right">
+                          {formatNumber(
+                            key,
+                            da_charts[key].blob_fees.daily.data[feesLength - 1][
+                              dataIndex
+                            ],
+                          )}
                         </div>
                       </div>
                     </div>
@@ -766,6 +742,11 @@ export default function EconHeadCharts({
                               fontSize: "8px",
                               color: "#CDD8D3BB",
                             },
+                            formatter: function (
+                              t: Highcharts.AxisLabelsFormatterContextObject,
+                            ) {
+                              return formatBytes(t.value);
+                            },
                           }}
                           min={0}
                         >
@@ -815,6 +796,11 @@ export default function EconHeadCharts({
                             style: {
                               fontSize: "8px",
                               color: "#CDD8D3BB",
+                            },
+                            formatter: function (
+                              t: Highcharts.AxisLabelsFormatterContextObject,
+                            ) {
+                              return formatNumber(key, t.value);
                             },
                           }}
                           min={0}
