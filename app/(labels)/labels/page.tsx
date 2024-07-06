@@ -461,10 +461,6 @@ export default function LabelsPage() {
 
       {master && <Header />}
 
-      <div className="fixed top-0 z-50 bg-[#151a19] bg-opacity-90 backdrop-blur-sm pointer-events-none">
-        {JSON.stringify(labelsFilters)}
-      </div>
-
       {/* <div className="relative pb-[114px] pt-[140px]"> */}
       <LabelsContainer className="pt-[175px] w-full flex items-end sm:items-center justify-between md:justify-start gap-x-[10px] z-[21]">
         <h1 className="text-[20px] md:text-[30px] pl-[15px] leading-[120%] font-bold z-[19]">
