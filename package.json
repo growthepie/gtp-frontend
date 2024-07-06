@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@download/blockies": "^1.0.3",
+    "@dsnp/parquetjs": "^1.7.0",
     "@duckdb/duckdb-wasm": "^1.28.1-dev106.0",
     "@floating-ui/react": "^0.22.3",
     "@react-hook/media-query": "^1.1.1",
@@ -23,6 +24,7 @@
     "concurrently": "^8.2.1",
     "cookies-next": "^2.1.1",
     "crossoriginworker": "^1.1.0",
+    "duckdb-async": "^1.0.0",
     "framer-motion": "^10.3.2",
     "graphql": "^16.7.1",
     "graphql-request": "^6.1.0",

@@ -28,6 +28,26 @@ const nextConfig = {
           ],
           destination: "/fees",
         },
+        {
+          source: "/",
+          has: [
+            {
+              type: "host",
+              value: "labels.growthepie.xyz",
+            },
+          ],
+          destination: "/labels",
+        },
+        {
+          source: "/",
+          has: [
+            {
+              type: "host",
+              value: "dev.fees.growthepie.xyz",
+            },
+          ],
+          destination: "/labels",
+        },
       ],
     };
   },

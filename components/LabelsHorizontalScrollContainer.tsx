@@ -343,28 +343,6 @@ export default function LabelsHorizontalScrollContainer(
           </div>
         </div>
       </div>
-      {/* <div
-        className={`pt-[10px] px-[20px] md:px-[60px] w-full flex justify-center ${
-          showScroller ? "block" : "hidden"
-        }`}
-      >
-        <div
-          className="w-full pr-[22px] p-0.5 bg-black/30 rounded-full"
-          onMouseDown={handleBarClick}
-        >
-          <div className="w-full" ref={scrollerRef}>
-            <div
-              className="w-5 h-2 bg-forest-400/30 rounded-full"
-              style={{
-                transform: `translateX(${scrollerX})`,
-                cursor: "grab",
-              }}
-              onMouseDown={handleMouseDown}
-              ref={grabberRef}
-            ></div>
-          </div>
-        </div>
-      </div> */}
     </div>
   );
 }

@@ -69,18 +69,20 @@ export default function Search() {
 
   const handleFilter = useCallback(
     (key: string, value: string | number) => {
-      // setLabelsFilters({
-      //   ...labelsFilters,
-      //   [key]: labelsFilters[key].includes(value) ? labelsFilters[key].filter(f => f !== value) : [...labelsFilters[key], value]
-      // });
-      updateFilters((prevFilters) => ({
-        ...prevFilters,
-        [key]: filters[key].includes(value)
-          ? filters[key].filter((f) => f !== value)
-          : [...filters[key], value],
-      }));
+      setLabelsFilters({
+        ...labelsFilters,
+        [key]: labelsFilters[key].includes(value)
+          ? labelsFilters[key].filter((f) => f !== value)
+          : [...labelsFilters[key], value],
+      });
+      // updateFilters((prevFilters) => ({
+      //   ...prevFilters,
+      //   [key]: filters[key].includes(value)
+      //     ? filters[key].filter((f) => f !== value)
+      //     : [...filters[key], value],
+      // }));
     },
-    [filters, updateFilters],
+    [labelsFilters, setLabelsFilters],
   );
 
   const [search, setSearch] = useState<string>("");
@@ -131,7 +133,20 @@ export default function Search() {
 
     // const allSubcategoryFilters = [...labelsFilters.subcategory, ...categorySubcategoryFilters];
 
-    const chainFilters = filters.origin_key.map((chainKey) => (
+    const addressFilters = labelsFilters.address.map((address) => (
+      <Badge
+        key={address}
+        onClick={() => handleFilter("address", address)}
+        label={address}
+        leftIcon="feather:tag"
+        leftIconColor="#CDD8D3"
+        rightIcon="heroicons-solid:x-circle"
+        rightIconColor="#FE5468"
+        showLabel={true}
+      />
+    ));
+
+    const chainFilters = labelsFilters.origin_key.map((chainKey) => (
       <Badge
         key={chainKey}
         onClick={() => handleFilter("origin_key", chainKey)}
@@ -153,15 +168,15 @@ export default function Search() {
         leftIconColor="#CDD8D3"
         rightIcon="heroicons-solid:x-circle"
         rightIconColor="#FE5468"
-        showLabel={isOpen}
+        showLabel={true}
       />
     ));
 
-    const subcategoryFilters = filters.usage_category.map((usage_category) => (
+    const subcategoryFilters = labelsFilters.subcategory.map((subcategory) => (
       <Badge
-        key={usage_category}
-        onClick={() => handleFilter("usage_category", usage_category)}
-        label={master.blockspace_categories.sub_categories[usage_category]}
+        key={subcategory}
+        onClick={() => handleFilter("subcategory", subcategory)}
+        label={master.blockspace_categories.sub_categories[subcategory]}
         leftIcon="feather:tag"
         leftIconColor="#CDD8D3"
         rightIcon="heroicons-solid:x-circle"
@@ -170,18 +185,20 @@ export default function Search() {
       />
     ));
 
-    const ownerProjectFilters = filters.owner_project.map((ownerProject) => (
-      <Badge
-        key={ownerProject}
-        onClick={() => handleFilter("owner_project", ownerProject)}
-        label={ownerProject}
-        leftIcon="feather:tag"
-        leftIconColor="#CDD8D3"
-        rightIcon="heroicons-solid:x-circle"
-        rightIconColor="#FE5468"
-        showLabel={true}
-      />
-    ));
+    const ownerProjectFilters = labelsFilters.owner_project.map(
+      (ownerProject) => (
+        <Badge
+          key={ownerProject}
+          onClick={() => handleFilter("owner_project", ownerProject)}
+          label={ownerProject}
+          leftIcon="feather:tag"
+          leftIconColor="#CDD8D3"
+          rightIcon="heroicons-solid:x-circle"
+          rightIconColor="#FE5468"
+          showLabel={true}
+        />
+      ),
+    );
 
     const nameFilters = labelsFilters.name.map((name) => (
       <Badge
@@ -197,6 +214,7 @@ export default function Search() {
     ));
 
     return [
+      ...addressFilters,
       ...chainFilters,
       ...categoryFilters,
       ...subcategoryFilters,
@@ -204,11 +222,12 @@ export default function Search() {
       ...nameFilters,
     ];
   }, [
-    filters.origin_key,
     handleFilter,
     isOpen,
+    labelsFilters.address,
     labelsFilters.category,
     labelsFilters.name,
+    labelsFilters.origin_key,
     labelsFilters.owner_project,
     labelsFilters.subcategory,
     master,
@@ -326,7 +345,7 @@ export default function Search() {
                 )}
               </div>
             )}
-            <div className="flex gap-x-[10px] flex-1 grow-1 shrink-1">
+            <div className="flex items-center gap-x-[10px] flex-1 grow-1 shrink-1">
               <input
                 ref={inputRef}
                 className="px-[11px] h-full flex-1 bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none"
@@ -334,7 +353,7 @@ export default function Search() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
-              <div className="flex gap-x-[10px] shrink-0 ">
+              <div className="flex items-center gap-x-[10px] shrink-0 ">
                 {labelsNumberFiltered && (
                   <div className="flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full">
                     <div className="text-[8px] text-[#CDD8D3] font-medium">
@@ -388,12 +407,18 @@ export default function Search() {
                 </div>
                 <div className="text-white leading-[150%]">Address</div>
                 <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
-                <div className="flex items-center bg-[#344240] rounded-full pl-[2px] pr-[5px] gap-x-[5px]">
+                <div
+                  className="flex items-center bg-[#344240] rounded-full pl-[2px] pr-[5px] gap-x-[5px] cursor-pointer"
+                  onClick={() => handleFilter("address", search)}
+                >
                   <div className="flex items-center justify-center w-[25px] h-[25px]">
                     <Icon
                       icon="feather:search"
                       className="text-[#CDD8D3] w-[15px] h-[15px]"
                     />
+                  </div>
+                  <div className="text-[#CDD8D3] leading-[120%] text-[10px] truncate">
+                    {search}
                   </div>
                   <div className="flex items-center justify-center w-[15px] h-[15px]">
                     <Icon
@@ -418,7 +443,7 @@ export default function Search() {
                     {Object.keys(master.chains)
                       .filter(
                         (chainKey) =>
-                          !filters.origin_key.includes(chainKey) &&
+                          !labelsFilters.origin_key.includes(chainKey) &&
                           master.chains[chainKey].enable_contracts === true,
                       )
                       .sort((a, b) =>
@@ -576,10 +601,7 @@ export default function Search() {
                                     key={subcategory}
                                     size="sm"
                                     onClick={(e) => {
-                                      handleFilter(
-                                        "usage_category",
-                                        subcategory,
-                                      );
+                                      handleFilter("subcategory", subcategory);
                                       e.stopPropagation();
                                     }}
                                     label={
@@ -593,14 +615,14 @@ export default function Search() {
                                     }
                                     leftIcon={undefined}
                                     rightIconColor={
-                                      filters.usage_category.includes(
+                                      labelsFilters.subcategory.includes(
                                         subcategory,
                                       )
                                         ? "#FE5468"
                                         : "#5A6462"
                                     }
                                     rightIcon={
-                                      filters.usage_category.includes(
+                                      labelsFilters.subcategory.includes(
                                         subcategory,
                                       )
                                         ? "heroicons-solid:x-circle"
@@ -635,23 +657,27 @@ export default function Search() {
                 </div>
                 <div className="w-[6px] h-[6px] bg-[#344240] rounded-full mt-2.5" />
                 <FilterSelectionContainer className="flex-1">
-                  {labelsAutocomplete.owner_project.length > 0
+                  {search.length > 0
                     ? labelsAutocomplete.owner_project.map((ownerProject) => (
                         <Badge
                           key={ownerProject}
                           onClick={() =>
                             handleFilter("owner_project", ownerProject)
                           }
-                          label={ownerProject}
+                          label={
+                            labelsAutocomplete.owner_project.length > 0
+                              ? boldSearch(ownerProject)
+                              : ownerProject
+                          }
                           leftIcon="feather:tag"
                           leftIconColor="#CDD8D3"
                           rightIcon={
-                            filters.owner_project.includes(ownerProject)
+                            labelsFilters.owner_project.includes(ownerProject)
                               ? "heroicons-solid:x-circle"
                               : "heroicons-solid:plus-circle"
                           }
                           rightIconColor={
-                            filters.owner_project.includes(ownerProject)
+                            labelsFilters.owner_project.includes(ownerProject)
                               ? "#FE5468"
                               : "#5A6462"
                           }

@@ -109,20 +109,42 @@ export const DuckDBProvider: React.FC<DuckDBProviderProps> = ({
             p.display_name, 
             p.description,
             p.main_github,
-            (
-              SELECT json_group_array(json_object('date', s.date, 'txcount', s.txcount, 'gas_fees_usd', s.gas_fees_usd, 'daa', s.daa, 'unix', s.unix))
-              FROM (
-                SELECT date, unix, SUM(txcount) as txcount, SUM(gas_fees_usd) as gas_fees_usd, SUM(daa) as daa
-                FROM 'sparkline.parquet' s
-                WHERE s.address = f.address AND s.origin_key = f.origin_key
-                GROUP BY date, unix
-                ORDER BY date DESC
-                LIMIT 30
-              ) s
-            ) as sparkline
           FROM 'full.parquet' f
           JOIN 'projects.parquet' p ON f.owner_project = p.owner_project
         `;
+
+        await conn.query(`CREATE TABLE 'labels' AS (${joinedQuery})`);
+
+        // let joinedQuery = `
+        //   SELECT
+        //     f.origin_key,
+        //     f.address,
+        //     f.owner_project,
+        //     f.owner_project_clear,
+        //     f.usage_category,
+        //     f.txcount,
+        //     f.txcount_change,
+        //     f.gas_fees_usd,
+        //     f.gas_fees_usd_change,
+        //     f.daa,
+        //     f.daa_change,
+        //     p.display_name,
+        //     p.description,
+        //     p.main_github,
+        //     (
+        //       SELECT json_group_array(json_object('date', s.date, 'txcount', s.txcount, 'gas_fees_usd', s.gas_fees_usd, 'daa', s.daa, 'unix', s.unix))
+        //       FROM (
+        //         SELECT date, unix, SUM(txcount) as txcount, SUM(gas_fees_usd) as gas_fees_usd, SUM(daa) as daa
+        //         FROM 'sparkline.parquet' s
+        //         WHERE s.address = f.address AND s.origin_key = f.origin_key
+        //         GROUP BY date, unix
+        //         ORDER BY date DESC
+        //         LIMIT 30
+        //       ) s
+        //     ) as sparkline
+        //   FROM 'full.parquet' f
+        //   JOIN 'projects.parquet' p ON f.owner_project = p.owner_project
+        // `;
 
         await conn.query(`CREATE TABLE 'labels' AS (${joinedQuery})`);
 
