@@ -70,6 +70,7 @@ export const DuckDBProvider: React.FC<DuckDBProviderProps> = ({
           duckdb.DuckDBDataProtocol.HTTP,
           false,
         );
+        
 
         const result = await conn.query(`
           SELECT 
