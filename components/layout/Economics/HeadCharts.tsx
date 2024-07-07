@@ -745,7 +745,11 @@ export default function EconHeadCharts({
                             formatter: function (
                               t: Highcharts.AxisLabelsFormatterContextObject,
                             ) {
-                              return formatBytes(t.value);
+                              const value =
+                                typeof t.value === "string"
+                                  ? parseFloat(t.value)
+                                  : t.value;
+                              return formatBytes(value);
                             },
                           }}
                           min={0}
