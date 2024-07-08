@@ -356,7 +356,10 @@ const MetricsTable = ({
       let suffix = master.metrics[metric_id].units[unitKey].suffix
         ? master.metrics[metric_id].units[unitKey].suffix
         : "";
-      const decimals = master.metrics[metric_id].units[unitKey].decimals;
+      const decimals =
+        showGwei && !showUsd
+          ? 2
+          : master.metrics[metric_id].units[unitKey].decimals;
 
       let types = item.data[lastValueTimeIntervalKey].types;
       let values =
