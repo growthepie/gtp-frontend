@@ -547,8 +547,8 @@ export default function ChainChart({
           units.find((unit) => unit !== "usd" && unit !== "eth") ||
           (showUsd ? "usd" : "eth");
 
-        let prefix = master.metrics[key].units[unitKey].prefix;
-        let suffix = master.metrics[key].units[unitKey].suffix;
+        let prefix = showGwei(key) && !showUsd ? "" : master.metrics[key].units[unitKey].prefix;
+        let suffix = showGwei(key) && !showUsd ? "Gwei" : master.metrics[key].units[unitKey].suffix;
         let valueIndex = showUsd ? 1 : 2;
         let valueMultiplier = showGwei(key) && !showUsd ? 1000000000 : 1;
 
@@ -642,8 +642,8 @@ export default function ChainChart({
             units.find((unit) => unit !== "usd" && unit !== "eth") ||
             (showUsd ? "usd" : "eth");
 
-          const prefix = master.metrics[metricKey].units[unitKey].prefix;
-          const suffix = master.metrics[metricKey].units[unitKey].suffix;
+          const prefix = showGwei(metricKey) && !showUsd ? "" : master.metrics[metricKey].units[unitKey].prefix;
+          const suffix = showGwei(metricKey) && !showUsd ? "Gwei" : master.metrics[metricKey].units[unitKey].suffix;
           let value = y;
 
           const decimals =
