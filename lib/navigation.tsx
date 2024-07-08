@@ -613,6 +613,7 @@ export const navigationItems: NavigationItem[] = [
         key: "taiko",
         rootKey: "chainsTaiko",
         urlKey: "taiko",
+        showNew: true,
       },
     ],
   },
