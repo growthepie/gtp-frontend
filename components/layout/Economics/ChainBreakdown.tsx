@@ -289,8 +289,8 @@ export default function ChainBreakdown({
         });
       }
       return {
-        y: index * 39 + prevOpenCharts * 249,
-        height: 39 + (openChain[key] ? 249 : 0),
+        y: index * 39 + prevOpenCharts * 357,
+        height: 39 + (openChain[key] ? 357 : 0),
         key: key, // Assuming `chain` is used as a key
         i: index,
       };
@@ -357,7 +357,9 @@ export default function ChainBreakdown({
           </div>
           <div
             className="grid gap-x-[5px] pr-0.5"
-            style={{ gridTemplateColumns: "auto 170px 185px 110px 140px" }}
+            style={{
+              gridTemplateColumns: "auto 200px 200px 145px 145px 120px",
+            }}
           >
             <div className="pl-[44px] flex grow gap-x-[5px] items-center justify-start  ">
               <div
@@ -419,10 +421,10 @@ export default function ChainBreakdown({
                 />
               </div>
             </div>
-            <div className="flex items-center justify-end ">
+            <div className="flex items-center justify-start ">
               {" "}
               <div
-                className="flex items-center group "
+                className="flex items-center group gap-x-[1px]"
                 onClick={() => {
                   if (metricSort !== "revenue") {
                     setSortOrder(true);
@@ -435,6 +437,7 @@ export default function ChainBreakdown({
                 <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
                   Revenue
                 </div>
+
                 <div>
                   <Icon
                     icon={
@@ -451,11 +454,12 @@ export default function ChainBreakdown({
                     } `}
                   />
                 </div>
+                <Icon icon="feather:info" className="w-[15px] h-[15px]" />
               </div>
             </div>
             <div className="flex items-center justify-center gap-x-[5px] ">
               {" "}
-              <div className="flex items-center group ">
+              <div className="flex items-center group gap-x-[1px]">
                 <div
                   className="text-[12px] group-hover:text-forest-50/80 font-bold"
                   onClick={() => {
@@ -485,9 +489,10 @@ export default function ChainBreakdown({
                     } `}
                   />
                 </div>
+                <Icon icon="feather:info" className="w-[15px] h-[15px]" />
               </div>
-              <div className="flex items-center  gap-x-[1.5px] text-[8px] w-[110px] cursor-pointer">
-                <div className="flex justify-center group items-center rounded-l-full bg-[#344240] w-[54px] px-[5px] py-[2px] ">
+              <div className="flex items-center  gap-x-[1.5px] text-[8px] w-[114px] h-[16px] cursor-pointer">
+                <div className="flex justify-center group items-center rounded-l-full border-[2px] border-r-[0px] border-[#D03434] w-[57px] px-[5px]  ">
                   <div
                     className=" group-hover:text-forest-50/80 "
                     onClick={() => {
@@ -519,7 +524,7 @@ export default function ChainBreakdown({
                   </div>
                 </div>
                 <div
-                  className="flex justify-center group items-center rounded-r-full bg-[#344240] w-[54px] px-[5px] py-[2px] "
+                  className="flex justify-center group items-center rounded-r-full border-[2px] border-l-[0px] border-[#FE5468] w-[57px] px-[5px] "
                   onClick={() => {
                     if (metricSort !== "da_costs") {
                       setSortOrder(true);
@@ -549,7 +554,7 @@ export default function ChainBreakdown({
                 </div>
               </div>
             </div>
-            <div className="flex items-center justify-end gap-x-[5px] pr-[2px]">
+            <div className="flex items-center justify-start gap-x-[5px] pl-[2px]">
               {" "}
               <div
                 className="flex items-center group "
@@ -563,7 +568,7 @@ export default function ChainBreakdown({
                 }}
               >
                 <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
-                  Profit
+                  Loss | Profit
                 </div>
                 <div>
                   <Icon
@@ -581,37 +586,11 @@ export default function ChainBreakdown({
                     } `}
                   />
                 </div>
-              </div>
-              <div
-                className="flex items-center bg-[#344240] gap-x-1 text-[8px] rounded-full px-[5px] py-[2px]"
-                onClick={() => {
-                  if (metricSort !== "profit_margin") {
-                    setSortOrder(true);
-                    setMetricSort("profit_margin");
-                  } else {
-                    setSortOrder(!sortOrder);
-                  }
-                }}
-              >
-                <div>Margin </div>
-                <Icon
-                  icon={
-                    metricSort !== "profit_margin"
-                      ? "formkit:arrowdown"
-                      : sortOrder
-                      ? "formkit:arrowdown"
-                      : "formkit:arrowup"
-                  }
-                  className={` w-[10px] h-[10px] ${
-                    metricSort === "profit_margin"
-                      ? "text-forest-50 opacity-100"
-                      : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
-                  } `}
-                />
+                <Icon icon="feather:info" className="w-[15px] h-[15px]" />
               </div>
             </div>
             <div
-              className="flex items-center justify-end pr-[30px] gap-x-[5px] "
+              className="flex items-center justify-start gap-x-[5px] pl-[2px] "
               onClick={() => {
                 if (metricSort !== "size") {
                   setSortOrder(true);
@@ -622,9 +601,9 @@ export default function ChainBreakdown({
               }}
             >
               {" "}
-              <div className="flex items-center group ">
+              <div className="flex items-center group gap-x-[1px] ">
                 <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
-                  {"Blob Sizes(Max)"}
+                  Margin
                 </div>
                 <div>
                   <Icon
@@ -642,7 +621,30 @@ export default function ChainBreakdown({
                     } `}
                   />
                 </div>
+                <Icon icon="feather:info" className="w-[15px] h-[15px]" />
               </div>
+            </div>
+            <div className="flex items-center group gap-x-[1px] justify-end ">
+              <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
+                {"Blob Sizes (Max)"}
+              </div>
+              <div>
+                <Icon
+                  icon={
+                    metricSort !== "size"
+                      ? "formkit:arrowdown"
+                      : sortOrder
+                      ? "formkit:arrowdown"
+                      : "formkit:arrowup"
+                  }
+                  className={` w-[10px] h-[10px] ${
+                    metricSort === "size"
+                      ? "text-forest-50 opacity-100"
+                      : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                  } `}
+                />
+              </div>
+              <Icon icon="feather:info" className="w-[15px] h-[15px]" />
             </div>
             {/*END TOP ROW */}
             {/*END TOP ROW */}
@@ -662,7 +664,7 @@ export default function ChainBreakdown({
 
               return (
                 <animated.div
-                  className={`absolute w-full flex flex-col pr-0.5 ${
+                  className={`absolute w-full flex flex-col pr-0.5  ${
                     enableDASort
                       ? allChainsDA[DAIndex] === localDataAvail.label
                         ? "opacity-100"
@@ -673,21 +675,39 @@ export default function ChainBreakdown({
                   style={{ ...style }}
                 >
                   <div
-                    className="grid gap-x-[5px] relative rounded-full w-full border-[#CDD8D3] border-[1px] min-h-[34px] text-[14px] items-center"
+                    className="grid gap-x-[5px] relative rounded-full w-full bg-forest-950 border-[#CDD8D3] border-[1px] min-h-[34px] text-[14px] items-center z-20"
                     style={{
-                      gridTemplateColumns: "auto 170px 185px 110px 140px",
+                      gridTemplateColumns: "auto 200px 200px 145px 145px 120px",
                     }}
                   >
                     <div className="flex items-center gap-x-[5px] pl-[10px] ">
-                      <Icon
-                        icon={`gtp:${
-                          AllChainsByKeys[item.key].urlKey
-                        }-logo-monochrome`}
-                        className={`w-[22px] h-[24px] flex items-center justify-center text-[10px] mr-[5px]`}
-                        style={{
-                          color: AllChainsByKeys[item.key].colors["dark"][0],
+                      <div
+                        className="relative flex items-center justify-center rounded-full w-[26px] h-[26px] bg-[#151A19] cursor-pointer"
+                        onClick={() => {
+                          toggleOpenChain(item.key);
                         }}
-                      />
+                      >
+                        <Icon
+                          icon={`gtp:${
+                            AllChainsByKeys[item.key].urlKey
+                          }-logo-monochrome`}
+                          className={`w-[15px] h-[15px] flex items-center justify-center text-[10px]`}
+                          style={{
+                            color: AllChainsByKeys[item.key].colors["dark"][0],
+                          }}
+                        />
+                        <Icon
+                          icon={"gtp:circle-arrow"}
+                          className={`w-[4px] h-[9px] absolute top-[9px] right-0 `}
+                          style={{
+                            transform: `rotate(${
+                              openChain[item.key] ? "90deg" : "0deg"
+                            })`,
+                            transformOrigin: "-9px 4px",
+                            transition: "transform 0.5s",
+                          }}
+                        />
+                      </div>
 
                       <div>{AllChainsByKeys[item.key].label}</div>
 
@@ -704,19 +724,19 @@ export default function ChainBreakdown({
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center justify-end gap-x-[5px] ">
-                      <div className="">
-                        {formatNumber(
-                          data[item.key][selectedTimespan].revenue.total[
-                            dataIndex
-                          ],
-                        )}
+                    <div className="flex items-end pb-[6px] justify-start gap-x-[5px] h-full px-[5px] bg-[#34424044]">
+                      <div className="w-[65px] flex justify-end">
+                        <div className="text-[14px] font-semibold ">
+                          {formatNumber(
+                            data[item.key][selectedTimespan].revenue.total[
+                              dataIndex
+                            ],
+                          )}
+                        </div>
                       </div>
-                      <div className="min-w-[22px] flex justify-center items-center ">
+                      <div className="w-[120px] flex justify-start items-end h-full">
                         <div
-                          className={`w-[96px] flex items-center justify-center rounded-full bg-[${
-                            AllChainsByKeys[item.key].colors["dark"][0]
-                          }]`}
+                          className={`w-[96px] flex items-end justify-center rounded-full h-[4px] bg-[#1DF7EF]`}
                           style={{
                             width:
                               data[item.key][selectedTimespan].revenue.total[
@@ -742,93 +762,175 @@ export default function ChainBreakdown({
                               0.01
                                 ? "22px"
                                 : `6px`,
-                            height:
-                              data[item.key][selectedTimespan].revenue.total[
-                                dataIndex
-                              ] /
-                                totalRevenue >
-                              0.01
-                                ? "full"
-                                : `${
-                                    (2200 *
-                                      data[item.key][selectedTimespan].revenue
-                                        .total[dataIndex]) /
-                                    totalRevenue
-                                  }px`,
-                            minHeight:
-                              data[item.key][selectedTimespan].revenue.total[
-                                dataIndex
-                              ] /
-                                totalRevenue >
-                              0.01
-                                ? "22px"
-                                : `6px`,
                           }}
                         >
                           &nbsp;
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center justify-center gap-x-[5px]">
-                      <div className="min-w-[55px] flex justify-end">
+                    <div className="flex items-end justify-center gap-x-[5px] pb-[6px] h-full ">
+                      <div className="w-[65px] flex justify-end items-end h-full font-semibold text-[14px]">
                         {formatNumber(
                           data[item.key][selectedTimespan].costs.total[
                             dataIndex
                           ],
                         )}
                       </div>
-                      <div className="flex justify-start w-[98px] gap-x-[1px] items-center text-[8px]">
-                        <div
-                          className="bg-[#FD0F2C] flex items-center justify-start font-bold rounded-l-full pl-[5px] py-[2px]"
-                          style={{
-                            width: `${
-                              97 *
-                              (data[item.key][selectedTimespan].costs
-                                .proof_costs[dataIndex] /
-                                data[item.key][selectedTimespan].costs.total[
-                                  dataIndex
-                                ])
-                            }px`,
-                          }}
-                        >
-                          L1 Proof
-                        </div>
-                        <div
-                          className="bg-[#FE5468]  rounded-r-full flex items-center font-bold  justify-end  pr-[5px] py-[2px]"
-                          style={{
-                            width: `${
-                              97 *
+                      <div className="flex flex-col justify-end w-[120px] h-full">
+                        <div className="flex w-full justify-between h-[15px]">
+                          <div className="text-[10px] flex gap-x-[0.5px] ">
+                            <span>
+                              {Intl.NumberFormat("en-GB", {
+                                notation: "compact",
+                                maximumFractionDigits: 2,
+                                minimumFractionDigits: 2,
+                              }).format(
+                                (data[item.key][selectedTimespan].costs
+                                  .proof_costs[dataIndex] /
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) *
+                                  100,
+                              )}
+                            </span>
+                            <span>{"%"}</span>
+                          </div>
+                          <div className="text-[10px]">
+                            {Intl.NumberFormat("en-GB", {
+                              notation: "compact",
+                              maximumFractionDigits: 2,
+                              minimumFractionDigits: 2,
+                            }).format(
                               (data[item.key][selectedTimespan].costs.da_costs[
                                 dataIndex
                               ] /
                                 data[item.key][selectedTimespan].costs.total[
                                   dataIndex
-                                ])
-                            }px`,
-                          }}
-                        >
-                          DA
+                                ]) *
+                                100,
+                            )}
+                            {"%"}
+                          </div>
+                        </div>
+                        <div className="flex justify-start w-full items-end text-[8px] ">
+                          <div
+                            className="bg-[#FD0F2C] flex items-center justify-start font-bold rounded-l-full pl-[5px] h-[4px]"
+                            style={{
+                              width: `${
+                                120 *
+                                (data[item.key][selectedTimespan].costs
+                                  .proof_costs[dataIndex] /
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ])
+                              }px`,
+                            }}
+                          ></div>
+                          <div
+                            className="bg-[#FE5468]  rounded-r-full flex items-center font-bold  justify-end  pr-[5px] h-[4px]"
+                            style={{
+                              width: `${
+                                120 *
+                                (data[item.key][selectedTimespan].costs
+                                  .da_costs[dataIndex] /
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ])
+                              }px`,
+                            }}
+                          ></div>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center justify-end gap-x-[5px]">
-                      <div>
-                        {formatNumber(
+                    <div className="flex items-center py-[6px] justify-center gap-x-[5px] px-[5px] bg-[#34424044] h-full">
+                      <div className="min-w-[65px] ">
+                        <div className="text-[14px] font-semibold">
+                          {formatNumber(
+                            data[item.key][selectedTimespan].profit.total[
+                              dataIndex
+                            ],
+                          )}
+                        </div>
+                      </div>
+                      <div
+                        className={`relative flex items-center px-[3px]  h-full w-[65px]  border-dashed border-forest-50  ${
                           data[item.key][selectedTimespan].profit.total[
                             dataIndex
-                          ],
+                          ] > 0
+                            ? "border-l-[1px] justify-start"
+                            : "border-r-[1px] justify-end"
+                        }`}
+                      >
+                        <div
+                          className="h-[4px] bg-[#EEFF97]"
+                          style={{
+                            width: `${
+                              65 *
+                              (data[item.key][selectedTimespan].profit.total[
+                                dataIndex
+                              ] /
+                                data[item.key][selectedTimespan].profit.total[
+                                  dataIndex
+                                ])
+                            }px`,
+                            minWidth: "1px",
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                    <div className="flex w-full h-full items-center justify-start px-[5px] py-[6px] gap-x-[5px]">
+                      <div className="text-[14px] w-[50px] font-semibold">
+                        <span>
+                          {Intl.NumberFormat("en-GB", {
+                            notation: "standard",
+                            maximumFractionDigits: 2,
+                            minimumFractionDigits: 2,
+                          }).format(
+                            ((data[item.key][selectedTimespan].revenue.total[
+                              dataIndex
+                            ] -
+                              data[item.key][selectedTimespan].costs.total[
+                                dataIndex
+                              ]) /
+                              data[item.key][selectedTimespan].revenue.total[
+                                dataIndex
+                              ]) *
+                              100,
+                          )}
+                        </span>
+                        <span>{"%"}</span>
+                      </div>
+                      <div
+                        className={`relative flex items-center pl-[3px] border-l-[1px]  h-full w-[80px] border-dashed border-forest-50 `}
+                      >
+                        <div className="w-full bg-[#5A6462] rounded-r-full ">
+                          <div
+                            className="h-[4px] bg-[#45AA6F] rounded-r-2xl "
+                            style={{
+                              width: `${
+                                80 *
+                                ((data[item.key][selectedTimespan].revenue
+                                  .total[dataIndex] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex])
+                              }px`,
+                              minWidth: "1px",
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="w-full flex items-center justify-end pr-[15px] gap-x-[5px] bg-[#34424044] h-full rounded-r-full">
+                      <div className="text-[14px] font-semibold">
+                        {formatBytes(
+                          data[item.key][selectedTimespan].size.total[0],
                         )}
                       </div>
-                      <div className="w-[82px] rounded-full bg-cyan-600 flex justify-end items-center px-[5px] ">
-                        {"%"}
-                      </div>
                     </div>
-                    <div className="flex items-center justify-end pr-[35px] gap-x-[5px]">
-                      {formatBytes(
-                        data[item.key][selectedTimespan].size.total[0],
-                      )}
-                    </div>
-                    <div
+                    {/* <div
                       className="absolute -right-2 hover:cursor-pointer"
                       onClick={() => {
                         toggleOpenChain(item.key);
@@ -851,24 +953,26 @@ export default function ChainBreakdown({
                           }`}
                         />
                       </div>
-                    </div>
+                    </div> */}
                   </div>
 
                   {/*Chart Area \/ */}
                   <div
-                    className={`w-full transition-height duration-300 overflow-hidden ${
+                    className={`flex bottom-2 z-0 relative justify-center w-full transition-height duration-300 overflow-hidden ${
                       openChain[item.key] && selectedTimespan !== "1d"
-                        ? "h-[249px]"
+                        ? "h-[357px]"
                         : "h-[0px]"
                     }`}
                   >
-                    <BreakdownCharts
-                      data={data[item.key][selectedTimespan]}
-                      dailyData={data[item.key]["daily"]}
-                      chain={item.key}
-                      timespans={timespans}
-                      selectedTimespan={selectedTimespan}
-                    />
+                    <div className="w-[97.5%] bg-forest-950 rounded-b-2xl border-dotted border-[1.25px] border-forest-50">
+                      <BreakdownCharts
+                        data={data[item.key][selectedTimespan]}
+                        dailyData={data[item.key]["daily"]}
+                        chain={item.key}
+                        timespans={timespans}
+                        selectedTimespan={selectedTimespan}
+                      />
+                    </div>
                   </div>
                 </animated.div>
               );

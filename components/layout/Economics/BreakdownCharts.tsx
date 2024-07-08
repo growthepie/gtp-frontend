@@ -1,5 +1,5 @@
 import { DurationData, DailyData } from "@/types/api/EconomicsResponse";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Highcharts from "highcharts/highstock";
 import addHighchartsMore from "highcharts/highcharts-more";
 import { useLocalStorage } from "usehooks-ts";
@@ -38,7 +38,7 @@ type AreaData = {
   profitData: any[][]; // Replace 'any' with the specific type if known
 };
 
-export default function BreakdownCharts({
+function BreakdownCharts({
   data,
   dailyData,
   chain,
@@ -131,9 +131,9 @@ export default function BreakdownCharts({
                     <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#24E5DF"}"></div>
                     <div class="tooltip-point-name">${name}</div>
                     <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-              percentage,
-              2,
-            )}%</div>
+                      percentage,
+                      2,
+                    )}%</div>
                   </div>
                   
                   <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -142,8 +142,9 @@ export default function BreakdownCharts({
                     <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                     style="
                       width: ${(percentage / maxPercentage) * 100}%;
-                      background-color: ${AllChainsByKeys["all_l2s"].colors["dark"][0]
-              };
+                      background-color: ${
+                        AllChainsByKeys["all_l2s"].colors["dark"][0]
+                      };
                     "></div>
                   </div>`;
 
@@ -155,19 +156,22 @@ export default function BreakdownCharts({
           return `
               <div class="flex w-full justify-between space-x-2 items-center font-medium mb-0.5">
                 <div class="flex gap-x-1 items-center">
-                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${series.color
-            }"></div>
+                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                    series.color
+                  }"></div>
                   <div class="tooltip-point-name text-md">${name}</div>
                 </div>
                 <div class="flex-1 justify-end text-right font-inter flex">
-                    <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-            }">${prefix}</div>
+                    <div class="opacity-70 mr-0.5 ${
+                      !prefix && "hidden"
+                    }">${prefix}</div>
                     ${parseFloat(displayValue).toLocaleString("en-GB", {
-              minimumFractionDigits: valuePrefix ? 2 : 0,
-              maximumFractionDigits: valuePrefix ? 2 : 0,
-            })}
-                    <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
+                      minimumFractionDigits: valuePrefix ? 2 : 0,
+                      maximumFractionDigits: valuePrefix ? 2 : 0,
+                    })}
+                    <div class="opacity-70 ml-0.5 ${
+                      !suffix && "hidden"
+                    }">${suffix}</div>
                 </div>
               </div>
               `;
@@ -186,14 +190,16 @@ export default function BreakdownCharts({
               <div class="tooltip-point-name text-md">Total</div>
               <div class="flex-1 text-right justify-end font-inter flex">
     
-                  <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-          }">${prefix}</div>
+                  <div class="opacity-70 mr-0.5 ${
+                    !prefix && "hidden"
+                  }">${prefix}</div>
                   ${parseFloat(value).toLocaleString("en-GB", {
-            minimumFractionDigits: valuePrefix ? 2 : 0,
-            maximumFractionDigits: valuePrefix ? 2 : 0,
-          })}
-                  <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-          }">${suffix}</div>
+                    minimumFractionDigits: valuePrefix ? 2 : 0,
+                    maximumFractionDigits: valuePrefix ? 2 : 0,
+                  })}
+                  <div class="opacity-70 ml-0.5 ${
+                    !suffix && "hidden"
+                  }">${suffix}</div>
               </div>
             </div>
             <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -300,38 +306,38 @@ export default function BreakdownCharts({
             dailyData[largerData].data[i][
               dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
             ] >
-              dailyData[smallerData].data[lesserIndex][
+            dailyData[smallerData].data[lesserIndex][
               dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-              ]
+            ]
               ? dailyData[smallerData].data[lesserIndex][
-              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-              ]
+                  dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
+                ]
               : dailyData[largerData].data[i][
-              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-              ];
+                  dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
+                ];
 
           const largerValue =
             dailyData[largerData].data[i][
               dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
             ] >
-              dailyData[smallerData].data[lesserIndex][
+            dailyData[smallerData].data[lesserIndex][
               dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-              ]
+            ]
               ? dailyData[largerData].data[i][
-              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-              ]
+                  dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
+                ]
               : dailyData[smallerData].data[lesserIndex][
-              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-              ];
+                  dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
+                ];
 
           retArray.push([timestamp, smallerValue, largerValue]);
 
           const profitable =
             largerData === "revenue"
               ? dailyData[largerData].data[i][1] >
-              dailyData[smallerData].data[lesserIndex][1]
+                dailyData[smallerData].data[lesserIndex][1]
               : dailyData[largerData].data[i][1] <
-              dailyData[smallerData].data[lesserIndex][1];
+                dailyData[smallerData].data[lesserIndex][1];
 
           isProfitableArray.push([timestamp, profitable]);
         }
@@ -461,6 +467,11 @@ export default function BreakdownCharts({
             marginLeft={0}
             marginRight={0}
             marginTop={0}
+            onRender={(chartData) => {
+              const chart = chartData.target as any; // Cast chartData.target to any
+
+              if (!chart || !chart.series || chart.series.length === 0) return;
+            }}
           />
           <Tooltip
             useHTML={true}
@@ -535,6 +546,7 @@ export default function BreakdownCharts({
             gridLineColor={"#5A64624F"}
             showFirstLabel={false}
             showLastLabel={false}
+            tickAmount={5}
             labels={{
               align: "left",
               y: 11,
@@ -589,16 +601,16 @@ export default function BreakdownCharts({
               data={ProfitArea.seriesData}
               fillOpacity={0.5}
               zones={zones}
-            // zones={[
-            //   {
-            //     value: 1693094400000,
-            //     fillColor: "#0000FF",
-            //   },
-            //   {
-            //     value: 1701043200000,
-            //     fillColor: "#FF0000",
-            //   },
-            // ]}
+              // zones={[
+              //   {
+              //     value: 1693094400000,
+              //     fillColor: "#0000FF",
+              //   },
+              //   {
+              //     value: 1701043200000,
+              //     fillColor: "#FF0000",
+              //   },
+              // ]}
             />
           </YAxis>
         </HighchartsChart>
@@ -606,3 +618,14 @@ export default function BreakdownCharts({
     </div>
   );
 }
+
+export default React.memo(BreakdownCharts, (prevProps, nextProps) => {
+  // Custom comparison function to prevent unnecessary re-renders
+  return (
+    prevProps.data === nextProps.data &&
+    prevProps.dailyData === nextProps.dailyData &&
+    prevProps.chain === nextProps.chain &&
+    prevProps.timespans === nextProps.timespans &&
+    prevProps.selectedTimespan === nextProps.selectedTimespan
+  );
+});

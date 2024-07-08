@@ -140,7 +140,7 @@ export default function EconHeadCharts({
         .map((point: any) => {
           const { series, y, percentage } = point;
           const { name } = series;
-          console.log(series);
+
           const isFees = name.includes("Fees");
           const nameString = isFees ? "Fees" : "Blob Size";
           const color = series.color.stops[0][1];
@@ -261,24 +261,21 @@ export default function EconHeadCharts({
       };
 
       let number = formatLargeNumber(val);
-      console.log(number);
 
       if (showUsd) {
         if (val < 1) {
-          number = valuePrefix + val.toFixed(2);
+          number = valuePrefix + " " + val.toFixed(2);
         } else {
-          number = valuePrefix + formatLargeNumber(val);
+          number = valuePrefix + " " + formatLargeNumber(val);
         }
       } else {
-        number = valuePrefix + formatLargeNumber(val);
+        number = valuePrefix + " " + formatLargeNumber(val);
       }
 
       return number;
     },
     [da_charts, showUsd],
   );
-
-  console.log(da_charts);
 
   return (
     <div className="wrapper h-[145px] md:h-[183px] w-full">
