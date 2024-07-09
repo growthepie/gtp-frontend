@@ -73,15 +73,19 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function ChainChart({
   chainData,
+  master,
   chain,
   defaultChainKey,
 }: {
   chainData: ChainsData;
+  master: MasterResponse;
   chain: string;
   defaultChainKey: string;
 }) {
   // Keep track of the mounted state
   const isMounted = useIsMounted();
+
+  const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
 
   const [data, setData] = useState<ChainsData[]>([chainData]);
 
@@ -119,13 +123,6 @@ export default function ChainChart({
 
   const zoomedMargin = [49, 15, 0, 0];
   const defaultMargin = [49, 15, 0, 0];
-
-  const {
-    data: master,
-    error: masterError,
-    isLoading: masterLoading,
-    isValidating: masterValidating,
-  } = useSWR<MasterResponse>(MasterURL);
 
   const CompChains = useMemo(() => {
     if (!master) return [];
@@ -186,7 +183,9 @@ export default function ChainChart({
         }
 
         // if not, fetch the data
-        const response = await fetch(ChainURLs[key]);
+        const response = await fetch(
+          ChainURLs[key].replace("/v1/", `/${apiRoot}/`),
+        );
         const responseData = await response.json();
 
         // store the data in the cache
@@ -209,7 +208,7 @@ export default function ChainChart({
       setValidating(false);
       setLoading(false);
     }
-  }, [chainKey, cache, mutate]);
+  }, [chainKey, cache, apiRoot, mutate]);
 
   useEffect(() => {
     if (data.length === 0) {
@@ -293,7 +292,7 @@ export default function ChainChart({
       Object.keys(item.metrics).forEach((key) => {
         maxUnixtimes.push(
           item.metrics[key].daily.data[
-          item.metrics[key].daily.data.length - 1
+            item.metrics[key].daily.data.length - 1
           ][0],
         );
       });
@@ -358,20 +357,22 @@ export default function ChainChart({
 
   const formatNumber = useCallback(
     (key: string, value: number | string, isAxis = false) => {
-      let prefix = prefixes[key];
-      let suffix = "";
-      let val = parseFloat(value as string);
+      const units = Object.keys(master.metrics[key].units);
+      const unitKey =
+        units.find((unit) => unit !== "usd" && unit !== "eth") ||
+        (showUsd ? "usd" : "eth");
+      const prefix = master.metrics[key].units[unitKey].prefix
+        ? master.metrics[key].units[unitKey].prefix
+        : "";
+      let suffix = master.metrics[key].units[unitKey].suffix
+        ? master.metrics[key].units[unitKey].suffix
+        : "";
 
-      if (
-        !showUsd &&
-        data[0].metrics[key].daily.types.includes("eth") &&
-        selectedScale !== "percentage"
-      ) {
-        if (showGwei(key)) {
-          prefix = "";
-          suffix = " Gwei";
-        }
+      if (showGwei(key) && !showUsd) {
+        suffix = " Gwei";
       }
+
+      let val = parseFloat(value as string);
 
       let number = d3.format(`.2~s`)(val).replace(/G/, "B");
 
@@ -538,41 +539,38 @@ export default function ChainChart({
         suffix: string;
       };
     }[] = [];
+
     data.forEach((item, chainIndex) => {
       Object.keys(item.metrics).forEach((key) => {
-        let prefix = "";
-        let suffix = "";
-        let valueIndex = 1;
-        let valueMultiplier = 1;
-        // console.log(key);
+        const units = Object.keys(master.metrics[key].units);
+        const unitKey =
+          units.find((unit) => unit !== "usd" && unit !== "eth") ||
+          (showUsd ? "usd" : "eth");
+
+        let prefix =
+          showGwei(key) && !showUsd
+            ? ""
+            : master.metrics[key].units[unitKey].prefix;
+        let suffix =
+          showGwei(key) && !showUsd
+            ? "Gwei"
+            : master.metrics[key].units[unitKey].suffix;
+        let valueIndex = showUsd ? 1 : 2;
+        let valueMultiplier = showGwei(key) && !showUsd ? 1000000000 : 1;
 
         let valueFormat = Intl.NumberFormat("en-GB", {
           notation: "compact",
-          maximumFractionDigits: key === "txcosts" ? 4 : 2,
-          minimumFractionDigits: 2,
+          maximumFractionDigits:
+            key === "txcosts" && showUsd
+              ? master.metrics[key].units[unitKey].decimals
+              : 2,
+          minimumFractionDigits:
+            key === "txcosts" && showUsd
+              ? master.metrics[key].units[unitKey].decimals
+              : 2,
         });
 
         let navItem = navigationItems[1].options.find((ni) => ni.key === key);
-
-        if (item.metrics[key].daily.types.includes("eth")) {
-          if (!showUsd) {
-            prefix = "Ξ";
-            valueIndex = item.metrics[key].daily.types.indexOf("eth");
-            if (navItem && navItem.page?.showGwei) {
-              prefix = "";
-              suffix = " Gwei";
-              valueMultiplier = 1000000000;
-            }
-          } else {
-            prefix = "$";
-
-            valueIndex = item.metrics[key].daily.types.indexOf("usd");
-          }
-        } else {
-          if (key === "throughput") {
-            suffix = "Mgas/s";
-          }
-        }
 
         let dateIndex = item.metrics[key].daily.data.length - 1;
 
@@ -587,7 +585,9 @@ export default function ChainChart({
         }
 
         let value = valueFormat.format(
-          item.metrics[key].daily.data[dateIndex][valueIndex] * valueMultiplier,
+          item.metrics[key].daily.data[dateIndex][
+            master.metrics[key].units[unitKey].currency ? valueIndex : 1
+          ] * valueMultiplier,
         );
 
         if (p.length < chainIndex + 1) p[chainIndex] = {};
@@ -600,10 +600,11 @@ export default function ChainChart({
       });
     });
     return p;
-  }, [data, showUsd, intervalShown]);
+  }, [data, master, showUsd, intervalShown]);
 
   const tooltipFormatter = useCallback(
     function (this: Highcharts.TooltipFormatterContextObject) {
+      if (!master) return;
       const { x, points } = this;
 
       if (!points || !x) return;
@@ -642,47 +643,43 @@ export default function ChainChart({
 
           const dataTypes = series.options.custom.types;
           const metricKey = series.options.custom.metric;
+          const units = Object.keys(master.metrics[metricKey].units);
+          const unitKey =
+            units.find((unit) => unit !== "usd" && unit !== "eth") ||
+            (showUsd ? "usd" : "eth");
 
-          let prefix = displayValues[0][metricKey].prefix;
-          let suffix = displayValues[0][metricKey].suffix;
+          const prefix =
+            showGwei(metricKey) && !showUsd
+              ? ""
+              : master.metrics[metricKey].units[unitKey].prefix;
+          const suffix =
+            showGwei(metricKey) && !showUsd
+              ? "Gwei"
+              : master.metrics[metricKey].units[unitKey].suffix;
           let value = y;
 
-          let decimals = 0;
-
-          if (!showUsd && dataTypes?.includes("eth")) {
-            if (showGwei(name)) {
-              prefix = "";
-              suffix = " Gwei";
-            }
-          }
-
-          if (prefix) {
-            decimals = 2;
-          }
-
-          if (metricKey === "throughput") {
-            suffix = "Mgas/s";
-            decimals = 2;
-          }
-
-          if (metricKey === "txcosts" && showUsd) {
-            decimals = 4;
-          }
+          const decimals =
+            master.metrics[metricKey].units[unitKey].decimals_tooltip;
 
           // if (series.name === item.chain_name) {
           return `
                 <div class="flex w-full space-x-2 items-center font-medium mb-1">
-                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
-            }"></div>
+                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                    AllChainsByKeys[name].colors[theme ?? "dark"][0]
+                  }"></div>
                   <div class="flex-1 text-left justify-start font-inter flex">
-                      <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-            }">${prefix}</div>
+                      <div class="opacity-70 mr-0.5 ${
+                        !prefix && "hidden"
+                      }">${prefix}</div>
                       ${parseFloat(value).toLocaleString("en-GB", {
-              minimumFractionDigits: decimals,
-              maximumFractionDigits: decimals,
-            })}
-                      <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
+                        minimumFractionDigits:
+                          showGwei(metricKey) && !showUsd ? 2 : decimals,
+                        maximumFractionDigits:
+                          showGwei(metricKey) && !showUsd ? 2 : decimals,
+                      })}
+                      <div class="opacity-70 ml-0.5 ${
+                        !suffix && "hidden"
+                      }">${suffix}</div>
                   </div>
                 </div>`;
           // } else {
@@ -1055,12 +1052,12 @@ export default function ChainChart({
             [
               0,
               AllChainsByKeys[data[0].chain_id].colors[theme ?? "dark"][0] +
-              "33",
+                "33",
             ],
             [
               1,
               AllChainsByKeys[data[0].chain_id].colors[theme ?? "dark"][1] +
-              "33",
+                "33",
             ],
           ],
         },
@@ -1260,16 +1257,16 @@ export default function ChainChart({
             const seriesData = item.metrics[key]?.daily.types.includes("eth")
               ? showUsd
                 ? item.metrics[key].daily.data.map((d) => [
-                  d[0],
-                  d[item.metrics[key].daily.types.indexOf("usd")],
-                ])
+                    d[0],
+                    d[item.metrics[key].daily.types.indexOf("usd")],
+                  ])
                 : item.metrics[key].daily.data.map((d) => [
-                  d[0],
-                  showGwei(key)
-                    ? d[item.metrics[key].daily.types.indexOf("eth")] *
-                    1000000000
-                    : d[item.metrics[key].daily.types.indexOf("eth")],
-                ])
+                    d[0],
+                    showGwei(key)
+                      ? d[item.metrics[key].daily.types.indexOf("eth")] *
+                        1000000000
+                      : d[item.metrics[key].daily.types.indexOf("eth")],
+                  ])
               : item.metrics[key]?.daily.data.map((d) => [d[0], d[1]]);
 
             const seriesTypes = item.metrics[key]?.daily.types;
@@ -1292,16 +1289,16 @@ export default function ChainChart({
                 data: item.metrics[key]?.daily.types.includes("eth")
                   ? showUsd
                     ? item.metrics[key].daily.data.map((d) => [
-                      d[0],
-                      d[item.metrics[key].daily.types.indexOf("usd")],
-                    ])
+                        d[0],
+                        d[item.metrics[key].daily.types.indexOf("usd")],
+                      ])
                     : item.metrics[key].daily.data.map((d) => [
-                      d[0],
-                      showGwei(key)
-                        ? d[item.metrics[key].daily.types.indexOf("eth")] *
-                        1000000000
-                        : d[item.metrics[key].daily.types.indexOf("eth")],
-                    ])
+                        d[0],
+                        showGwei(key)
+                          ? d[item.metrics[key].daily.types.indexOf("eth")] *
+                            1000000000
+                          : d[item.metrics[key].daily.types.indexOf("eth")],
+                      ])
                   : item.metrics[key]?.daily.data.map((d) => [d[0], d[1]]),
                 showInLegend: false,
                 marker: {
@@ -1327,13 +1324,13 @@ export default function ChainChart({
                     [
                       0,
                       AllChainsByKeys[item.chain_id].colors[
-                      theme ?? "dark"
+                        theme ?? "dark"
                       ][0] + "33",
                     ],
                     [
                       1,
                       AllChainsByKeys[item.chain_id].colors[
-                      theme ?? "dark"
+                        theme ?? "dark"
                       ][1] + "33",
                     ],
                   ],
@@ -1470,6 +1467,7 @@ export default function ChainChart({
     );
   }
 
+  console.log(master ? master : "");
   return (
     <div className="w-full flex-col relative " id="chains-content-container">
       <style>
@@ -1482,16 +1480,18 @@ export default function ChainChart({
         `}
       </style>
       <TopRowContainer
-        className={`mb-[15px] flex w-full justify-between gap-y-3 lg:gap-y-0 items-center text-xs bg-forest-50 dark:bg-[#1F2726] lg:z-30 flex-col-reverse rounded-t-[15px] md:rounded-t-[20px] rounded-b-[30px] p-[3px] lg:p-0 lg:flex-row lg:rounded-full transition-shadow duration-300  ${compareTo &&
+        className={`mb-[15px] flex w-full justify-between gap-y-3 lg:gap-y-0 items-center text-xs bg-forest-50 dark:bg-[#1F2726] lg:z-30 flex-col-reverse rounded-t-[15px] md:rounded-t-[20px] rounded-b-[30px] p-[3px] lg:p-0 lg:flex-row lg:rounded-full transition-shadow duration-300  ${
+          compareTo &&
           "shadow-[0px_4px_4px_#00000033] dark:shadow-[0px_4px_4px_#0000003F] lg:shadow-none lg:dark:shadow-none"
-          } `}
+        } `}
       >
         <div className="flex flex-col relative h-full lg:h-[54px] w-full lg:w-[271px] -my-[1px]">
           <div
-            className={`relative flex rounded-full h-full w-full lg:z-30 p-[5px] cursor-pointer ${compChain
+            className={`relative flex rounded-full h-full w-full lg:z-30 p-[5px] cursor-pointer ${
+              compChain
                 ? AllChainsByKeys[compChain].backgrounds[theme ?? "dark"][0]
                 : "bg-white dark:bg-[#151A19]"
-              } ${isMobile ? "w-full" : "w-[271px]"} `}
+            } ${isMobile ? "w-full" : "w-[271px]"} `}
           >
             <div
               className="rounded-[40px] w-[54px] h-[44px] bg-forest-50 dark:bg-[#1F2726] flex items-center justify-center z-[15] hover:cursor-pointer"
@@ -1509,26 +1509,28 @@ export default function ChainChart({
               }}
             >
               <div
-                className={` font-[500] leading-[150%] text-[12px] ${compChain
+                className={` font-[500] leading-[150%] text-[12px] ${
+                  compChain
                     ? !AllChainsByKeys[compChain].darkTextOnBackground ||
                       (theme === "light" &&
                         (compChain === "ethereum" || compChain === "imx"))
                       ? "text-forest-50"
                       : "text-[#1F2726]"
                     : "text-forest-400 dark:text-[#5A6462]"
-                  }`}
+                }`}
               >
                 Compare to
               </div>
               <div
-                className={`flex font-[550] ${compChain
+                className={`flex font-[550] ${
+                  compChain
                     ? !AllChainsByKeys[compChain].darkTextOnBackground ||
                       (theme === "light" &&
                         (compChain === "ethereum" || compChain === "imx"))
                       ? "text-forest-50"
                       : "text-[#1F2726]"
                     : ""
-                  } gap-x-[5px] justify-center items-center w-32`}
+                } gap-x-[5px] justify-center items-center w-32`}
               >
                 {compChain && (
                   <Icon
@@ -1552,10 +1554,11 @@ export default function ChainChart({
             </div>
           </div>
           <div
-            className={`flex flex-col relative lg:absolute lg:top-[27px] bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${compareTo
+            className={`flex flex-col relative lg:absolute lg:top-[27px] bottom-auto lg:left-0 lg:right-0 bg-forest-50 dark:bg-[#1F2726] rounded-t-none border-0 lg:border-b lg:border-l lg:border-r transition-all ease-in-out duration-300 ${
+              compareTo
                 ? `max-h-[640px] lg:z-[25] border-transparent rounded-b-[30px] lg:border-forest-200 lg:dark:border-forest-500 lg:rounded-b-2xl lg:shadow-[0px_4px_46.2px_#00000066] lg:dark:shadow-[0px_4px_46.2px_#000000]`
                 : "max-h-0 z-20 overflow-hidden border-transparent rounded-b-[22px]"
-              } `}
+            } `}
           >
             <div className="pb-[20px] lg:pb-[10px]">
               <div className="h-[10px] lg:h-[28px]"></div>
@@ -1574,10 +1577,11 @@ export default function ChainChart({
                 <div className="flex w-[22px] h-[22px] items-center justify-center">
                   <Icon
                     icon="feather:x"
-                    className={`transition-all duration-300 ${compChain === null
+                    className={`transition-all duration-300 ${
+                      compChain === null
                         ? "w-[22px] h-[22px]"
                         : "w-[15px] h-[15px]"
-                      }`}
+                    }`}
                     style={{
                       color: compChain === null ? "" : "#5A6462",
                     }}
@@ -1618,16 +1622,17 @@ export default function ChainChart({
                   <div className="flex w-[22px] h-[22px] items-center justify-center">
                     <Icon
                       icon={`gtp:${chain.urlKey}-logo-monochrome`}
-                      className={`transition-all duration-300 ${compChain === chain.key
+                      className={`transition-all duration-300 ${
+                        compChain === chain.key
                           ? "w-[22px] h-[22px]"
                           : "w-[15px] h-[15px]"
-                        }`}
+                      }`}
                       style={{
                         color:
                           compChain === chain.key
                             ? AllChainsByKeys[chain.key].colors[
-                            theme ?? "dark"
-                            ][0]
+                                theme ?? "dark"
+                              ][0]
                             : "#5A6462",
                       }}
                     />
@@ -1762,8 +1767,8 @@ export default function ChainChart({
                     .map((key, i) => {
                       const isAllZeroValues = data[0].metrics[key]
                         ? data[0].metrics[key].daily.data.every(
-                          (d) => d[1] === 0,
-                        )
+                            (d) => d[1] === 0,
+                          )
                         : false;
 
                       if (!Object.keys(data[0].metrics).includes(key))
@@ -1802,54 +1807,56 @@ export default function ChainChart({
                                     {Object.keys(data[0].metrics).includes(
                                       key,
                                     ) && (
-                                        <Icon
-                                          icon={getNavIcon(key)}
-                                          className="absolute h-[40px] w-[40px] top-[116px] left-[24px] dark:text-[#CDD8D3] opacity-20 pointer-events-none"
-                                        />
-                                      )}
+                                      <Icon
+                                        icon={getNavIcon(key)}
+                                        className="absolute h-[40px] w-[40px] top-[116px] left-[24px] dark:text-[#CDD8D3] opacity-20 pointer-events-none"
+                                      />
+                                    )}
                                   </div>
                                 </div>
 
                                 {!zoomed
                                   ? (key === "market_cap" ||
-                                    key === "txcosts") && (
-                                    <div
-                                      className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${key === "txcosts"
-                                          ? "hidden lg:block"
-                                          : ""
+                                      key === "txcosts") && (
+                                      <div
+                                        className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                                          key === "txcosts"
+                                            ? "hidden lg:block"
+                                            : ""
                                         }`}
-                                    ></div>
-                                  )
+                                      ></div>
+                                    )
                                   : (key === "profit" || key === "txcosts") &&
-                                  intervalShown && (
-                                    <div
-                                      className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${key === "txcosts"
-                                          ? "hidden lg:block"
-                                          : ""
+                                    intervalShown && (
+                                      <div
+                                        className={`w-full h-[15px] absolute -bottom-[15px] text-[10px] text-forest-600/80 dark:text-forest-500/80 ${
+                                          key === "txcosts"
+                                            ? "hidden lg:block"
+                                            : ""
                                         }`}
-                                    >
-                                      <div className="absolute left-[15px] align-bottom flex items-end z-10">
-                                        {new Date(
-                                          intervalShown.min,
-                                        ).toLocaleDateString("en-GB", {
-                                          timeZone: "UTC",
-                                          month: "short",
-                                          day: "numeric",
-                                          year: "numeric",
-                                        })}
+                                      >
+                                        <div className="absolute left-[15px] align-bottom flex items-end z-10">
+                                          {new Date(
+                                            intervalShown.min,
+                                          ).toLocaleDateString("en-GB", {
+                                            timeZone: "UTC",
+                                            month: "short",
+                                            day: "numeric",
+                                            year: "numeric",
+                                          })}
+                                        </div>
+                                        <div className="absolute right-[15px] align-bottom flex items-end z-10">
+                                          {new Date(
+                                            intervalShown.max,
+                                          ).toLocaleDateString("en-GB", {
+                                            timeZone: "UTC",
+                                            month: "short",
+                                            day: "numeric",
+                                            year: "numeric",
+                                          })}
+                                        </div>
                                       </div>
-                                      <div className="absolute right-[15px] align-bottom flex items-end z-10">
-                                        {new Date(
-                                          intervalShown.max,
-                                        ).toLocaleDateString("en-GB", {
-                                          timeZone: "UTC",
-                                          month: "short",
-                                          day: "numeric",
-                                          year: "numeric",
-                                        })}
-                                      </div>
-                                    </div>
-                                  )}
+                                    )}
                               </div>
                             ) : (
                               <div className="absolute left-[15px] top-[15px] flex items-center justify-between w-full">
@@ -1867,12 +1874,7 @@ export default function ChainChart({
                                 </Link>
                                 <div className="relative text-[18px] leading-snug font-medium flex space-x-[2px] right-[40px]">
                                   <div>{displayValues[0][key].prefix}</div>
-                                  <div>
-                                    {Number(displayValues[0][key].value) <
-                                      0.0001
-                                      ? "<0.0001"
-                                      : displayValues[0][key].value}
-                                  </div>
+                                  <div>{displayValues[0][key].value}</div>
                                   <div className="text-base pl-0.5">
                                     {displayValues[0][key].suffix}
                                   </div>
@@ -1907,10 +1909,10 @@ export default function ChainChart({
                                   ...options.chart,
                                   animation: isAnimate
                                     ? {
-                                      duration: 500,
-                                      delay: 0,
-                                      easing: "easeOutQuint",
-                                    }
+                                        duration: 500,
+                                        delay: 0,
+                                        easing: "easeOutQuint",
+                                      }
                                     : false,
                                   index: enabledFundamentalsKeys.indexOf(key),
                                   margin: zoomed ? zoomedMargin : defaultMargin,
@@ -1968,7 +1970,7 @@ export default function ChainChart({
                                       if (chart.series.length > 0) {
                                         const lastPoint =
                                           chart.series[0].points[
-                                          chart.series[0].points.length - 1
+                                            chart.series[0].points.length - 1
                                           ];
                                         if (lastPoint && lastPoint.plotY) {
                                           primaryLineEndPos =
@@ -1978,7 +1980,7 @@ export default function ChainChart({
                                         if (chart.series.length > 1) {
                                           const lastPoint =
                                             chart.series[1].points[
-                                            chart.series[1].points.length - 1
+                                              chart.series[1].points.length - 1
                                             ];
                                           if (
                                             lastPoint &&
@@ -2000,7 +2002,7 @@ export default function ChainChart({
                                         (series, seriesIndex) => {
                                           const lastPoint =
                                             series.points[
-                                            series.points.length - 1
+                                              series.points.length - 1
                                             ];
 
                                           if (!lastPoint || !lastPoint.plotY)
@@ -2135,7 +2137,7 @@ export default function ChainChart({
                                                   stroke:
                                                     AllChainsByKeys[series.name]
                                                       .colors[
-                                                    theme ?? "dark"
+                                                      theme ?? "dark"
                                                     ][0],
                                                   "stroke-width": 1,
                                                   "stroke-dasharray": 2,
@@ -2203,7 +2205,7 @@ export default function ChainChart({
                                             .circle(
                                               linesXPos,
                                               chart.plotTop -
-                                              (seriesIndex === 0 ? 24 : 0),
+                                                (seriesIndex === 0 ? 24 : 0),
                                               3,
                                             )
                                             .attr({

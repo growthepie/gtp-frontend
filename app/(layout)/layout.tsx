@@ -148,18 +148,21 @@ const raleway = Raleway({
   subsets: ["latin"],
   variable: "--font-raleway",
   display: "swap",
+  adjustFontFallback: false
 });
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
+  adjustFontFallback: false
 });
 
 const robotoMono = Roboto_Mono({
   subsets: ["latin"],
   variable: "--font-roboto-mono",
   display: "swap",
+  adjustFontFallback: false
 });
 
 export default function RootLayout({

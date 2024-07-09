@@ -12,6 +12,10 @@ import { navigationItems } from "@/lib/navigation";
 
 import "@splidejs/splide/css";
 import { track } from "@vercel/analytics/react";
+import { MasterURL } from "@/lib/urls";
+import useSWR from "swr";
+import { MasterResponse } from "@/types/api/MasterResponse";
+
 // import ShowLoading from "./ShowLoading";
 
 export default function SwiperItem({
@@ -36,16 +40,22 @@ export default function SwiperItem({
     (item) => item.key === metric_id,
   )?.urlKey;
 
+  const { data: master, error: masterError } =
+    useSWR<MasterResponse>(MasterURL);
+
   return (
     <>
-      <ChainComponent
-        data={landing.data.all_l2s}
-        chain={"all_l2s"}
-        category={metric_id}
-        selectedTimespan={"max"}
-        selectedScale="linear"
-        xMin={landing.data.all_l2s.metrics[metric_id].daily.data[0][0]}
-      />
+      {master && (
+        <ChainComponent
+          data={landing.data.all_l2s}
+          chain={"all_l2s"}
+          category={metric_id}
+          selectedTimespan={"max"}
+          selectedScale="linear"
+          master={master}
+          xMin={landing.data.all_l2s.metrics[metric_id].daily.data[0][0]}
+        />
+      )}
       <Link
         className="flex space-x-2 items-center opacity-0 py-1.5 pl-[20px] text-xs md:text-base transition-all duration-300 -translate-y-10 group-hover:translate-y-0 group-hover:opacity-100 delay-[1000ms] group-hover:delay-[0ms] -z-10"
         href={`/fundamentals/${urlKey}`}

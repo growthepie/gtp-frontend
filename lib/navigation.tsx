@@ -569,6 +569,7 @@ export const navigationItems: NavigationItem[] = [
         key: "metis",
         rootKey: "chainsMetis",
         urlKey: "metis",
+        showNew: true,
       },
       {
         label: "Manta Pacific",
@@ -603,6 +604,17 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "chainsMode",
         urlKey: "mode",
       },
+      {
+        label: "Taiko",
+        page: {
+          description: "Taiko is",
+        },
+        icon: "gtp:taiko-logo-monochrome",
+        key: "taiko",
+        rootKey: "chainsTaiko",
+        urlKey: "taiko",
+        showNew: true,
+      },
     ],
   },
 
@@ -626,7 +638,6 @@ export const navigationItems: NavigationItem[] = [
         rootKey: "feesxyz",
         urlKey: "feesxyz",
         excludeFromSitemap: true,
-
       },
       {
         label: "OP RetroPGF 3",

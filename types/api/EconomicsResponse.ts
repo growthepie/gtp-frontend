@@ -1,7 +1,7 @@
 export interface EconomicsResponse {
   data: {
     chain_breakdown: ChainBreakdownResponse;
-    da_fees: FeesBreakdown;
+    da_charts: FeesBreakdown;
     // Other properties if exist
   };
 }
@@ -47,7 +47,7 @@ export interface Profit {
 }
 
 export interface FeesBreakdown {
-  [key: string]: FeesData;
+  [key: string]: { blob_size: FeesData; blob_fees: FeesData };
 }
 
 export interface FeesData {
