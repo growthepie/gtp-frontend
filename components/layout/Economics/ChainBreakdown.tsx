@@ -782,8 +782,8 @@ export default function ChainBreakdown({
                             <span>
                               {Intl.NumberFormat("en-GB", {
                                 notation: "compact",
-                                maximumFractionDigits: 2,
-                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 1,
+                                minimumFractionDigits: 1,
                               }).format(
                                 (data[item.key][selectedTimespan].costs
                                   .proof_costs[dataIndex] /
@@ -798,8 +798,8 @@ export default function ChainBreakdown({
                           <div className="text-[10px]">
                             {Intl.NumberFormat("en-GB", {
                               notation: "compact",
-                              maximumFractionDigits: 2,
-                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 1,
+                              minimumFractionDigits: 1,
                             }).format(
                               (data[item.key][selectedTimespan].costs.da_costs[
                                 dataIndex
@@ -883,8 +883,8 @@ export default function ChainBreakdown({
                         <span>
                           {Intl.NumberFormat("en-GB", {
                             notation: "standard",
-                            maximumFractionDigits: 2,
-                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 1,
+                            minimumFractionDigits: 1,
                           }).format(
                             ((data[item.key][selectedTimespan].revenue.total[
                               dataIndex

@@ -738,6 +738,7 @@ export default function EconHeadCharts({
                             style: {
                               fontSize: "8px",
                               color: "#CDD8D3BB",
+                              whiteSpace: "nowrap",
                             },
                             formatter: function (
                               t: Highcharts.AxisLabelsFormatterContextObject,
@@ -778,7 +779,7 @@ export default function EconHeadCharts({
                           ></AreaSeries>
                         </YAxis>
                         <YAxis
-                          opposite={false}
+                          opposite={true}
                           // showFirstLabel={true}
                           // showLastLabel={true}
                           type="linear"
@@ -791,12 +792,13 @@ export default function EconHeadCharts({
                           labels={{
                             align: "right",
                             y: -1,
-                            x: chartWidth ? chartWidth + 19 : 10,
+                            x: 19,
                             overflow: "allow",
 
                             style: {
                               fontSize: "8px",
                               color: "#CDD8D3BB",
+                              whiteSpace: "nowrap",
                             },
                             formatter: function (
                               t: Highcharts.AxisLabelsFormatterContextObject,
