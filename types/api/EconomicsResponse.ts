@@ -35,8 +35,8 @@ export interface DailyData {
 }
 
 export interface Costs {
-  da_costs: number[];
-  proof_costs: number[];
+  blobs: number[];
+  l1_costs: number[];
   total: number[];
   types: string[];
 }
@@ -47,14 +47,13 @@ export interface Profit {
 }
 
 export interface FeesBreakdown {
-  [key: string]: { blob_size: FeesData; blob_fees: FeesData };
+  [key: string]: { total_blob_size: FeesData; total_blob_fees: FeesData };
 }
 
 export interface FeesData {
-  avg: string;
+  avg?: string;
   daily: Daily;
   metric_name: string;
-  source: string[];
 }
 
 export interface Daily {

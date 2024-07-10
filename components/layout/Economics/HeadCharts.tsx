@@ -83,6 +83,8 @@ export default function EconHeadCharts({
 
   const reversePerformer = true;
 
+  console.log(da_charts);
+
   const tooltipFormatter = useCallback(
     function (this: any) {
       const { x, points } = this;
@@ -143,12 +145,15 @@ export default function EconHeadCharts({
 
           const isFees = name.includes("Fees");
           const nameString = isFees ? "Fees" : "Blob Size";
+
           const color = series.color.stops[0][1];
 
           let prefix = isFees ? valuePrefix : "";
           let suffix = "";
           let value = y;
           let displayValue = y;
+          const decimals =
+            displayValue < 0.001 ? (displayValue < 0.00001 ? 6 : 5) : 2;
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
@@ -162,8 +167,8 @@ export default function EconHeadCharts({
                   <div>${
                     isFees
                       ? parseFloat(displayValue).toLocaleString("en-GB", {
-                          minimumFractionDigits: !showUsd ? 2 : 0,
-                          maximumFractionDigits: !showUsd ? 2 : 0,
+                          minimumFractionDigits: decimals,
+                          maximumFractionDigits: decimals,
                         })
                       : formatBytes(displayValue)
                   }
@@ -319,11 +324,11 @@ export default function EconHeadCharts({
       >
         <SplideTrack>
           {Object.keys(da_charts).map((key, i) => {
-            let dataIndex = da_charts[key].blob_fees.daily.types.indexOf(
+            let dataIndex = da_charts[key].total_blob_fees.daily.types.indexOf(
               showUsd ? "usd" : "eth",
             );
-            const sizeLength = da_charts[key].blob_size.daily.data.length;
-            const feesLength = da_charts[key].blob_fees.daily.data.length;
+            const sizeLength = da_charts[key].total_blob_size.daily.data.length;
+            const feesLength = da_charts[key].total_blob_fees.daily.data.length;
 
             return (
               <SplideSlide key={key + i + "Splide"}>
@@ -350,7 +355,7 @@ export default function EconHeadCharts({
                       <div className="text-[10px] font-normal flex flex-col gap-y-[1px] text-right">
                         <div>
                           {formatBytes(
-                            da_charts[key].blob_size.daily.data[
+                            da_charts[key].total_blob_size.daily.data[
                               sizeLength - 1
                             ][1],
                           )}
@@ -358,9 +363,9 @@ export default function EconHeadCharts({
                         <div className="text-right">
                           {formatNumber(
                             key,
-                            da_charts[key].blob_fees.daily.data[feesLength - 1][
-                              dataIndex
-                            ],
+                            da_charts[key].total_blob_fees.daily.data[
+                              feesLength - 1
+                            ][dataIndex],
                           )}
                         </div>
                       </div>
@@ -379,7 +384,7 @@ export default function EconHeadCharts({
                         textOrientation: "sideways",
                       }}
                     >
-                      {da_charts[key].blob_size.metric_name}
+                      {da_charts[key].total_blob_size.metric_name}
                     </div>
                   </div>
                   <div
@@ -395,7 +400,7 @@ export default function EconHeadCharts({
                         textOrientation: "sideways",
                       }}
                     >
-                      {da_charts[key].blob_fees.metric_name}
+                      {da_charts[key].total_blob_fees.metric_name}
                     </div>
                   </div>
                   <hr className="absolute left-[18px] w-[calc(100%-36px)] border-t-[1.5px] top-[50px] border-[#5A64624F] my-4" />
@@ -708,10 +713,11 @@ export default function EconHeadCharts({
                           minorTickWidth={2}
                           minorGridLineWidth={0}
                           minorTickInterval={1000 * 60 * 60 * 24 * 1}
-                          min={da_charts[key].blob_size.daily.data[0][0]}
+                          min={da_charts[key].total_blob_size.daily.data[0][0]}
                           max={
-                            da_charts[key].blob_size.daily.data[
-                              da_charts[key].blob_size.daily.data.length - 1
+                            da_charts[key].total_blob_size.daily.data[
+                              da_charts[key].total_blob_size.daily.data.length -
+                                1
                             ][0]
                           }
                         >
@@ -753,9 +759,9 @@ export default function EconHeadCharts({
                           min={0}
                         >
                           <AreaSeries
-                            name={da_charts[key].blob_size.metric_name}
+                            name={da_charts[key].total_blob_size.metric_name}
                             showInLegend={false}
-                            data={da_charts[key].blob_size.daily.data.map(
+                            data={da_charts[key].total_blob_size.daily.data.map(
                               (d: any) => [d[0], d[1]],
                             )}
                             states={{
@@ -809,9 +815,9 @@ export default function EconHeadCharts({
                           min={0}
                         >
                           <LineSeries
-                            name={da_charts[key].blob_fees.metric_name}
+                            name={da_charts[key].total_blob_fees.metric_name}
                             showInLegend={false}
-                            data={da_charts[key].blob_fees.daily.data.map(
+                            data={da_charts[key].total_blob_fees.daily.data.map(
                               (d: any) => [d[0], d[dataIndex]],
                             )}
                             states={{
@@ -843,7 +849,7 @@ export default function EconHeadCharts({
 
                     <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
                       {new Date(
-                        da_charts[key].blob_fees.daily.data[0][0],
+                        da_charts[key].total_blob_fees.daily.data[0][0],
                       ).toLocaleDateString("en-GB", {
                         timeZone: "UTC",
                         month: "short",
@@ -855,8 +861,8 @@ export default function EconHeadCharts({
                   <div className="opacity-100 transition-opacity duration-[900ms]  group-hover/chart:opacity-0 absolute right-[34px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
                     <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
                       {new Date(
-                        da_charts[key].blob_fees.daily.data[
-                          da_charts[key].blob_fees.daily.data.length - 1
+                        da_charts[key].total_blob_fees.daily.data[
+                          da_charts[key].total_blob_fees.daily.data.length - 1
                         ][0],
                       ).toLocaleDateString("en-GB", {
                         timeZone: "UTC",

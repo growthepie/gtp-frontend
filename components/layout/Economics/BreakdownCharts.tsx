@@ -275,7 +275,6 @@ function BreakdownCharts({
     );
   }
 
-  console.log(dailyData);
   const ProfitArea = useMemo(() => {
     const largerData =
       dailyData.revenue.data.length > dailyData.costs.data.length
@@ -373,8 +372,6 @@ function BreakdownCharts({
 
     return zonesArray;
   }, [ProfitArea]);
-
-  console.log(ProfitArea);
 
   return (
     <div className="h-full">
