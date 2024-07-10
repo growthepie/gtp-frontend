@@ -55,7 +55,8 @@ function BreakdownCharts({
   addHighchartsMore(Highcharts);
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
-  const reversePerformer = true;
+  const [profitChart, setProfitChart] = useState<any>(null);
+  const reversePerformer = false;
   const selectedScale: string = "absolute";
   const { isMobile } = useUIContext();
 
@@ -71,6 +72,7 @@ function BreakdownCharts({
   const tooltipFormatter = useCallback(
     function (this: any) {
       const { x, points } = this;
+
       const date = new Date(x);
       let dateString = date.toLocaleDateString("en-GB", {
         month: "short",
@@ -122,9 +124,10 @@ function BreakdownCharts({
 
           return b.y - a.y;
         })
-        .map((point: any) => {
+        .map((point: any, index) => {
           const { series, y, percentage } = point;
           const { name } = series;
+          const lastIndex = index === 1 && name !== "Profit";
 
           if (selectedScale === "percentage")
             return `
@@ -175,6 +178,7 @@ function BreakdownCharts({
                     }">${suffix}</div>
                 </div>
               </div>
+              
               `;
         })
         .join("");
@@ -275,112 +279,15 @@ function BreakdownCharts({
     );
   }
 
-  const ProfitArea = useMemo(() => {
-    const largerData =
-      dailyData.revenue.data.length > dailyData.costs.data.length
-        ? "revenue"
-        : "costs";
-    const smallerData = largerData === "revenue" ? "costs" : "revenue";
-
-    let lesserIndex = 0;
-    let retArray: Array<[string | number, number, number]> = [];
-    let isProfitableArray: Array<[string | number, boolean]> = [];
-
-    dailyData[largerData].data.forEach((data, i) => {
-      if (lesserIndex < dailyData[smallerData].data.length - 1) {
-        if (
-          dailyData[largerData].data[i][0] ===
-          dailyData[smallerData].data[lesserIndex][0]
-        ) {
-          const timestamp = dailyData[largerData].data[i][0];
-          const smallerValue =
-            dailyData[largerData].data[i][
-              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-            ] >
-            dailyData[smallerData].data[lesserIndex][
-              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-            ]
-              ? dailyData[smallerData].data[lesserIndex][
-                  dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-                ]
-              : dailyData[largerData].data[i][
-                  dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-                ];
-
-          const largerValue =
-            dailyData[largerData].data[i][
-              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-            ] >
-            dailyData[smallerData].data[lesserIndex][
-              dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-            ]
-              ? dailyData[largerData].data[i][
-                  dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-                ]
-              : dailyData[smallerData].data[lesserIndex][
-                  dailyData.revenue.types.indexOf(showUsd ? "usd" : "eth")
-                ];
-
-          retArray.push([timestamp, smallerValue, largerValue]);
-
-          const profitable =
-            largerData === "revenue"
-              ? dailyData[largerData].data[i][1] >
-                dailyData[smallerData].data[lesserIndex][1]
-              : dailyData[largerData].data[i][1] <
-                dailyData[smallerData].data[lesserIndex][1];
-
-          isProfitableArray.push([timestamp, profitable]);
-        }
-        lesserIndex++;
-      }
-    });
-
-    return { seriesData: retArray, profitData: isProfitableArray } as AreaData;
-  }, [dailyData, data]);
-
-  const zones = useMemo(() => {
-    if (!ProfitArea) return;
-    const zonesArray: { value: number; fillColor: string }[] = [];
-
-    if (ProfitArea.profitData.length > 0) {
-      let startTimestamp = ProfitArea.profitData[0][0];
-      let startColor = ProfitArea.profitData[0][1] ? "#0000FF" : "#FF0000"; // Blue if true, red if false
-
-      for (let i = 1; i < ProfitArea.profitData.length; i++) {
-        const [timestamp, isProfitable] = ProfitArea.profitData[i];
-
-        if (isProfitable !== ProfitArea.profitData[i - 1][1]) {
-          // End of streak, push current zone
-          zonesArray.push({
-            value: startTimestamp,
-            fillColor: startColor,
-          });
-
-          // Start new streak
-          startTimestamp = timestamp;
-          startColor = isProfitable ? "#0000FF" : "#FF0000";
-        }
-      }
-
-      // Push the last streak
-      zonesArray.push({
-        value: startTimestamp,
-        fillColor: startColor,
-      });
-    }
-
-    return zonesArray;
-  }, [ProfitArea]);
-
   return (
     <div className="h-full">
-      <div className="w-full h-full min-h-[209px] max-h-[209px] relative">
+      <div className="w-full h-full min-h-[209px] max-h-[209px] ">
         <HighchartsProvider Highcharts={Highcharts}>
           <HighchartsChart
             containerProps={{
               style: { height: "100%", width: "100%" },
             }}
+            syncId="shareTooltip"
             plotOptions={{
               line: {
                 lineWidth: 1.5,
@@ -434,11 +341,16 @@ function BreakdownCharts({
               marginLeft={45}
               marginRight={45}
               marginTop={5}
+              height={209}
               onRender={(chartData) => {
                 const chart = chartData.target as any; // Cast chartData.target to any
 
                 if (!chart || !chart.series || chart.series.length === 0)
                   return;
+
+                console.log(chart);
+                chart.plotHeight = 349;
+                chart.plotBox.plotHeight = 349;
               }}
             />
             <Tooltip
@@ -514,6 +426,7 @@ function BreakdownCharts({
               gridLineColor={"#CDD8D3AA"}
               gridLineDashStyle={"Dot"}
               gridZIndex={10}
+              min={0}
               showFirstLabel={true}
               showLastLabel={false}
               tickAmount={5}
@@ -591,12 +504,14 @@ function BreakdownCharts({
           </HighchartsChart>
         </HighchartsProvider>
       </div>
-      <div className="h-[140px] flex justify-center items-center relative ">
+      <div className="h-[140px] w-full flex justify-center items-center">
         <HighchartsProvider Highcharts={Highcharts}>
+          {" "}
           <HighchartsChart
             containerProps={{
               style: { height: "100%", width: "100%" },
             }}
+            syncId="shareTooltip"
             plotOptions={{
               line: {
                 lineWidth: 1.5,
@@ -646,6 +561,8 @@ function BreakdownCharts({
 
                 if (!chart || !chart.series || chart.series.length === 0)
                   return;
+
+                setProfitChart(chart);
               }}
             />
             <Tooltip
@@ -723,7 +640,7 @@ function BreakdownCharts({
               showFirstLabel={true}
               showLastLabel={false}
               tickAmount={4}
-              softMin={-10000}
+              softMin={-100}
               labels={{
                 align: "right",
                 y: 2,

@@ -32,7 +32,7 @@ export default function ChainBreakdown({
   data: ChainBreakdownResponse;
   master: MasterResponse;
 }) {
-  const [selectedTimespan, setSelectedTimespan] = useState("max");
+  const [selectedTimespan, setSelectedTimespan] = useState("90d");
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [DAIndex, setDAIndex] = useState(0);
   const [metricSort, setMetricSort] = useState<MetricSort>("revenue");
@@ -219,6 +219,7 @@ export default function ChainBreakdown({
                   showUsd ? "usd" : "eth",
                 );
           const aComp = data[a][selectedTimespan][metricSort].total[dataIndex];
+
           const bComp = data[b][selectedTimespan][metricSort].total[dataIndex];
 
           if (aComp > bComp) return -1;
@@ -233,8 +234,12 @@ export default function ChainBreakdown({
             showUsd ? "usd" : "eth",
           );
 
-          const aComp = data[a][selectedTimespan].costs[metricSort][dataIndex];
-          const bComp = data[b][selectedTimespan].costs[metricSort][dataIndex];
+          const aComp =
+            data[a][selectedTimespan].costs[metricSort][dataIndex] /
+            data[a][selectedTimespan].costs.total[dataIndex];
+          const bComp =
+            data[b][selectedTimespan].costs[metricSort][dataIndex] /
+            data[b][selectedTimespan].costs.total[dataIndex];
 
           if (aComp > bComp) return -1;
           if (aComp < bComp) return 1;
@@ -592,9 +597,9 @@ export default function ChainBreakdown({
             <div
               className="flex items-center justify-start gap-x-[5px] pl-[2px] "
               onClick={() => {
-                if (metricSort !== "size") {
+                if (metricSort !== "profit_margin") {
                   setSortOrder(true);
-                  setMetricSort("size");
+                  setMetricSort("profit_margin");
                 } else {
                   setSortOrder(!sortOrder);
                 }
@@ -608,14 +613,14 @@ export default function ChainBreakdown({
                 <div>
                   <Icon
                     icon={
-                      metricSort !== "size"
+                      metricSort !== "profit_margin"
                         ? "formkit:arrowdown"
                         : sortOrder
                         ? "formkit:arrowdown"
                         : "formkit:arrowup"
                     }
                     className={` w-[10px] h-[10px] ${
-                      metricSort === "size"
+                      metricSort === "profit_margin"
                         ? "text-forest-50 opacity-100"
                         : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
                     } `}
@@ -624,7 +629,17 @@ export default function ChainBreakdown({
                 <Icon icon="feather:info" className="w-[15px] h-[15px]" />
               </div>
             </div>
-            <div className="flex items-center group gap-x-[1px] justify-end ">
+            <div
+              className="flex items-center group gap-x-[1px] justify-end "
+              onClick={() => {
+                if (metricSort !== "size") {
+                  setSortOrder(true);
+                  setMetricSort("size");
+                } else {
+                  setSortOrder(!sortOrder);
+                }
+              }}
+            >
               <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
                 {"Blob Sizes (Max)"}
               </div>

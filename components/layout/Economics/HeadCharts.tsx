@@ -83,8 +83,6 @@ export default function EconHeadCharts({
 
   const reversePerformer = true;
 
-  console.log(da_charts);
-
   const tooltipFormatter = useCallback(
     function (this: any) {
       const { x, points } = this;
@@ -134,11 +132,7 @@ export default function EconHeadCharts({
       }, 0);
 
       const tooltipPoints = points
-        .sort((a: any, b: any) => {
-          if (reversePerformer) return a.y - b.y;
 
-          return b.y - a.y;
-        })
         .map((point: any) => {
           const { series, y, percentage } = point;
           const { name } = series;
