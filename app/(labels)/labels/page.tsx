@@ -889,8 +889,8 @@ export default function LabelsPage() {
                             </TooltipTrigger>
                             {ownerProjectToProjectData[
                               filteredLabelsData[item.index].owner_project
-                            ] && (
-                              ownerProjectToProjectData[
+                            ] &&
+                              (ownerProjectToProjectData[
                                 filteredLabelsData[item.index].owner_project
                               ][2] ||
                                 ownerProjectToProjectData[
@@ -898,68 +898,37 @@ export default function LabelsPage() {
                                 ][4] ||
                                 ownerProjectToProjectData[
                                   filteredLabelsData[item.index].owner_project
-                                ][5],
-                            ) && (
-                              <TooltipContent className="relativeflex flex-col items-start justify-center gap-y-[5px] rounded-[10px] p-2.5 bg-[#151a19] border border-[#5A6462] z-50 max-w-[300px]">
-                                {/* arrow pointing to the left */}
-                                <div className="absolute top-[calc(50%-4px)] -left-1 w-2 h-2 bg-[#151a19]  border-[#5A6462] border border-r-0 border-t-0 transform rotate-45"></div>
-                                {ownerProjectToProjectData[
-                                  filteredLabelsData[item.index].owner_project
-                                ][2] && (
-                                  <div className="flex items-center text-xs pb-1">{`${
-                                    ownerProjectToProjectData[
-                                      filteredLabelsData[item.index]
-                                        .owner_project
-                                    ][2]
-                                  }`}</div>
-                                )}
-
-                                {ownerProjectToProjectData[
-                                  filteredLabelsData[item.index].owner_project
-                                ][5] && (
-                                  <a
-                                    href={
+                                ][5]) && (
+                                <TooltipContent className="relativeflex flex-col items-start justify-center gap-y-[5px] rounded-[10px] p-2.5 bg-[#151a19] border border-[#5A6462] z-50 max-w-[300px]">
+                                  {/* arrow pointing to the left */}
+                                  <div className="absolute top-[calc(50%-4px)] -left-1 w-2 h-2 bg-[#151a19]  border-[#5A6462] border border-r-0 border-t-0 transform rotate-45"></div>
+                                  {ownerProjectToProjectData[
+                                    filteredLabelsData[item.index].owner_project
+                                  ][2] && (
+                                    <div className="flex items-center text-xs pb-1">{`${
                                       ownerProjectToProjectData[
                                         filteredLabelsData[item.index]
                                           .owner_project
-                                      ][5]
-                                    }
-                                    target="_blank"
-                                    className="group flex items-center gap-x-[5px] text-xs"
-                                  >
-                                    <div className="w-[12px] h-[12px]">
-                                      <Icon
-                                        icon="feather:globe"
-                                        className="w-[12px] h-[12px]"
-                                      />
-                                    </div>
-                                    <div className="group-hover:underline">
-                                      {
-                                        ownerProjectToProjectData[
-                                          filteredLabelsData[item.index]
-                                            .owner_project
-                                        ][5]
-                                      }
-                                    </div>
-                                  </a>
-                                )}
-                                {ownerProjectToProjectData[
-                                  filteredLabelsData[item.index].owner_project
-                                ][4] && (
-                                  <div className="flex items-center">
+                                      ][2]
+                                    }`}</div>
+                                  )}
+
+                                  {ownerProjectToProjectData[
+                                    filteredLabelsData[item.index].owner_project
+                                  ][5] && (
                                     <a
                                       href={
                                         ownerProjectToProjectData[
                                           filteredLabelsData[item.index]
                                             .owner_project
-                                        ][4]
+                                        ][5]
                                       }
                                       target="_blank"
                                       className="group flex items-center gap-x-[5px] text-xs"
                                     >
                                       <div className="w-[12px] h-[12px]">
                                         <Icon
-                                          icon="prime:twitter"
+                                          icon="feather:globe"
                                           className="w-[12px] h-[12px]"
                                         />
                                       </div>
@@ -968,14 +937,44 @@ export default function LabelsPage() {
                                           ownerProjectToProjectData[
                                             filteredLabelsData[item.index]
                                               .owner_project
-                                          ][4]
+                                          ][5]
                                         }
                                       </div>
                                     </a>
-                                  </div>
-                                )}
-                              </TooltipContent>
-                            )}
+                                  )}
+                                  {ownerProjectToProjectData[
+                                    filteredLabelsData[item.index].owner_project
+                                  ][4] && (
+                                    <div className="flex items-center">
+                                      <a
+                                        href={
+                                          ownerProjectToProjectData[
+                                            filteredLabelsData[item.index]
+                                              .owner_project
+                                          ][4]
+                                        }
+                                        target="_blank"
+                                        className="group flex items-center gap-x-[5px] text-xs"
+                                      >
+                                        <div className="w-[12px] h-[12px]">
+                                          <Icon
+                                            icon="prime:twitter"
+                                            className="w-[12px] h-[12px]"
+                                          />
+                                        </div>
+                                        <div className="group-hover:underline">
+                                          {
+                                            ownerProjectToProjectData[
+                                              filteredLabelsData[item.index]
+                                                .owner_project
+                                            ][4]
+                                          }
+                                        </div>
+                                      </a>
+                                    </div>
+                                  )}
+                                </TooltipContent>
+                              )}
                           </Tooltip>
                         </div>
                       ) : (
