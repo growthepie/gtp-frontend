@@ -167,7 +167,24 @@ export default function ChainBreakdown({
 
     return retValue;
   }, [selectedTimespan, data, showUsd]);
+
   //Calculate total revenue for referencing in relative revenue bars
+
+  const totalProfit = useMemo(() => {
+    let retValue = 0;
+    //Loop through for each chain
+    Object.keys(data).forEach((key) => {
+      const dataIndex = data[key][selectedTimespan].profit.types.indexOf(
+        showUsd ? "usd" : "eth",
+      );
+
+      retValue += data[key][selectedTimespan].profit.total[dataIndex];
+    });
+
+    return retValue;
+  }, [selectedTimespan, data, showUsd]);
+
+  //Total profit
 
   const allChainsDA = useMemo(() => {
     let retArray = [""];
@@ -368,7 +385,7 @@ export default function ChainBreakdown({
           >
             <div className="pl-[44px] flex grow gap-x-[5px] items-center justify-start  ">
               <div
-                className="flex items-center group "
+                className="flex items-center group cursor-pointer "
                 onClick={() => {
                   if (metricSort !== "chain") {
                     setSortOrder(true);
@@ -399,7 +416,7 @@ export default function ChainBreakdown({
                 </div>
               </div>
               <div
-                className="flex items-center bg-[#344240] gap-x-1 text-[8px] rounded-full px-[5px] py-[2px] "
+                className="flex items-center bg-[#344240] gap-x-1 text-[8px] rounded-full px-[5px] py-[2px] cursor-pointer"
                 onClick={() => {
                   setEnableDASort(true);
                   if (DAIndex === allChainsDA.length - 1) {
@@ -429,7 +446,7 @@ export default function ChainBreakdown({
             <div className="flex items-center justify-start ">
               {" "}
               <div
-                className="flex items-center group gap-x-[1px]"
+                className="flex items-center group gap-x-[1px] cursor-pointer"
                 onClick={() => {
                   if (metricSort !== "revenue") {
                     setSortOrder(true);
@@ -466,7 +483,7 @@ export default function ChainBreakdown({
               {" "}
               <div className="flex items-center group gap-x-[1px]">
                 <div
-                  className="text-[12px] group-hover:text-forest-50/80 font-bold"
+                  className="text-[12px] group-hover:text-forest-50/80 font-bold cursor-pointer"
                   onClick={() => {
                     if (metricSort !== "costs") {
                       setSortOrder(true);
@@ -509,7 +526,7 @@ export default function ChainBreakdown({
                       }
                     }}
                   >
-                    L1 Fees
+                    L1 Costs
                   </div>
                   <div>
                     <Icon
@@ -529,7 +546,7 @@ export default function ChainBreakdown({
                   </div>
                 </div>
                 <div
-                  className="flex justify-center group items-center rounded-r-full border-[2px] border-l-[0px] border-[#FE5468] w-[57px] px-[5px] "
+                  className="flex justify-center group items-center rounded-r-full border-[2px] border-l-[0px] border-[#FE5468] w-[57px] px-[5px] cursor-pointer "
                   onClick={() => {
                     if (metricSort !== "blobs") {
                       setSortOrder(true);
@@ -539,7 +556,7 @@ export default function ChainBreakdown({
                     }
                   }}
                 >
-                  <div className=" group-hover:text-forest-50/80 ">DA Cost</div>
+                  <div className=" group-hover:text-forest-50/80 ">Blobs</div>
                   <div>
                     <Icon
                       icon={
@@ -562,7 +579,7 @@ export default function ChainBreakdown({
             <div className="flex items-center justify-start gap-x-[5px] pl-[2px]">
               {" "}
               <div
-                className="flex items-center group "
+                className="flex items-center group cursor-pointer"
                 onClick={() => {
                   if (metricSort !== "profit") {
                     setSortOrder(true);
@@ -595,7 +612,7 @@ export default function ChainBreakdown({
               </div>
             </div>
             <div
-              className="flex items-center justify-start gap-x-[5px] pl-[2px] "
+              className="flex items-center justify-start gap-x-[5px] pl-[2px] cursor-pointer"
               onClick={() => {
                 if (metricSort !== "profit_margin") {
                   setSortOrder(true);
@@ -630,7 +647,7 @@ export default function ChainBreakdown({
               </div>
             </div>
             <div
-              className="flex items-center group gap-x-[1px] justify-end "
+              className="flex items-center group gap-x-[1px] justify-end cursor-pointer"
               onClick={() => {
                 if (metricSort !== "size") {
                   setSortOrder(true);
@@ -641,7 +658,7 @@ export default function ChainBreakdown({
               }}
             >
               <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
-                {"Blob Sizes (Max)"}
+                {"Blob Sizes"}
               </div>
               <div>
                 <Icon
@@ -690,16 +707,21 @@ export default function ChainBreakdown({
                   style={{ ...style }}
                 >
                   <div
-                    className="grid gap-x-[5px] relative rounded-full w-full bg-forest-950 border-[#CDD8D3] border-[1px] min-h-[34px] text-[14px] items-center z-20"
+                    className="grid gap-x-[5px] relative rounded-full w-full bg-forest-950 border-[#CDD8D3] border-[1px] min-h-[34px] text-[14px] items-center z-20 cursor-pointer"
                     style={{
                       gridTemplateColumns: "auto 200px 200px 145px 145px 120px",
+                    }}
+                    onClick={(e) => {
+                      toggleOpenChain(item.key);
+                      e.stopPropagation();
                     }}
                   >
                     <div className="flex items-center gap-x-[5px] pl-[10px] ">
                       <div
                         className="relative flex items-center justify-center rounded-full w-[26px] h-[26px] bg-[#151A19] cursor-pointer"
-                        onClick={() => {
+                        onClick={(e) => {
                           toggleOpenChain(item.key);
+                          e.stopPropagation();
                         }}
                       >
                         <Icon
@@ -878,17 +900,26 @@ export default function ChainBreakdown({
                         }`}
                       >
                         <div
-                          className="h-[4px] bg-[#EEFF97]"
+                          className={`h-[4px] ${
+                            data[item.key][selectedTimespan].profit.total[
+                              dataIndex
+                            ] > 0
+                              ? "bg-[#EEFF97] "
+                              : "bg-[#FFDF27]"
+                          }`}
                           style={{
-                            width: `${
+                            width: `${(
                               65 *
                               (data[item.key][selectedTimespan].profit.total[
                                 dataIndex
+                              ] > 0
+                                ? 1
+                                : -1) *
+                              (data[item.key][selectedTimespan].profit.total[
+                                dataIndex
                               ] /
-                                data[item.key][selectedTimespan].profit.total[
-                                  dataIndex
-                                ])
-                            }px`,
+                                totalProfit)
+                            ).toFixed(2)}px`,
                             minWidth: "1px",
                           }}
                         ></div>
@@ -923,16 +954,26 @@ export default function ChainBreakdown({
                           <div
                             className="h-[4px] bg-[#45AA6F] rounded-r-2xl "
                             style={{
-                              width: `${
-                                80 *
-                                ((data[item.key][selectedTimespan].revenue
-                                  .total[dataIndex] -
+                              width:
+                                (data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] -
                                   data[item.key][selectedTimespan].costs.total[
                                     dataIndex
                                   ]) /
                                   data[item.key][selectedTimespan].revenue
-                                    .total[dataIndex])
-                              }px`,
+                                    .total[dataIndex] >
+                                0
+                                  ? `${
+                                      80 *
+                                      ((data[item.key][selectedTimespan].revenue
+                                        .total[dataIndex] -
+                                        data[item.key][selectedTimespan].costs
+                                          .total[dataIndex]) /
+                                        data[item.key][selectedTimespan].revenue
+                                          .total[dataIndex])
+                                    }px`
+                                  : "1px",
                               minWidth: "1px",
                             }}
                           ></div>

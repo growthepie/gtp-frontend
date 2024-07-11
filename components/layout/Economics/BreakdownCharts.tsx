@@ -347,10 +347,6 @@ function BreakdownCharts({
 
                 if (!chart || !chart.series || chart.series.length === 0)
                   return;
-
-                console.log(chart);
-                chart.plotHeight = 349;
-                chart.plotBox.plotHeight = 349;
               }}
             />
             <Tooltip

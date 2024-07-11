@@ -83,6 +83,32 @@ export default function EconHeadCharts({
 
   const reversePerformer = true;
 
+  function calculateDecimalPlaces(value: number): number {
+    if (value === 0) return 0;
+
+    let absValue = Math.abs(value);
+    let decimalPlaces = 0;
+
+    if (absValue >= 1) {
+      return 2; // Default to 2 decimal places for values >= 1
+    } else {
+      while (absValue < 1) {
+        absValue *= 10;
+        decimalPlaces++;
+      }
+      return decimalPlaces + 1; // Add 2 more decimal places for precision
+    }
+  }
+
+  function calculateCostPerGB(dollarAmount: number, bytes: number): string {
+    const gigabytes = bytes / (1024 * 1024 * 1024);
+    const costPerGB = dollarAmount / gigabytes;
+
+    const decimalPlaces = calculateDecimalPlaces(costPerGB);
+
+    return costPerGB.toFixed(decimalPlaces);
+  }
+
   const tooltipFormatter = useCallback(
     function (this: any) {
       const { x, points } = this;
@@ -161,8 +187,12 @@ export default function EconHeadCharts({
                   <div>${
                     isFees
                       ? parseFloat(displayValue).toLocaleString("en-GB", {
-                          minimumFractionDigits: decimals,
-                          maximumFractionDigits: decimals,
+                          minimumFractionDigits: calculateDecimalPlaces(
+                            Number(displayValue),
+                          ),
+                          maximumFractionDigits: calculateDecimalPlaces(
+                            Number(displayValue),
+                          ),
                         })
                       : formatBytes(displayValue)
                   }
@@ -323,6 +353,8 @@ export default function EconHeadCharts({
             );
             const sizeLength = da_charts[key].total_blob_size.daily.data.length;
             const feesLength = da_charts[key].total_blob_fees.daily.data.length;
+            const largerAxis =
+              sizeLength > feesLength ? "total_blob_size" : "total_blob_fees";
 
             return (
               <SplideSlide key={key + i + "Splide"}>
@@ -345,7 +377,18 @@ export default function EconHeadCharts({
                       </div>
                     </div>
                     <div className="flex justify-between gap-x-[15px] items-center h-[36px] bg-[#344240CC]  rounded-[10px] pl-[15px] pr-[15px] mr-[8px]  ">
-                      <div className="text-[16px] font-normal ">EX / GB</div>
+                      <div className="text-[20px] font-semibold ">
+                        {valuePrefix}
+                        {calculateCostPerGB(
+                          da_charts[key].total_blob_fees.daily.data[
+                            feesLength - 1
+                          ][dataIndex],
+                          da_charts[key].total_blob_size.daily.data[
+                            sizeLength - 1
+                          ][1],
+                        )}
+                        {" / GB "}
+                      </div>
                       <div className="text-[10px] font-normal flex flex-col gap-y-[1px] text-right">
                         <div>
                           {formatBytes(
@@ -843,7 +886,7 @@ export default function EconHeadCharts({
 
                     <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
                       {new Date(
-                        da_charts[key].total_blob_fees.daily.data[0][0],
+                        da_charts[key][largerAxis].daily.data[0][0],
                       ).toLocaleDateString("en-GB", {
                         timeZone: "UTC",
                         month: "short",
@@ -855,8 +898,8 @@ export default function EconHeadCharts({
                   <div className="opacity-100 transition-opacity duration-[900ms]  group-hover/chart:opacity-0 absolute right-[34px] bottom-[3px] flex items-center px-[4px] py-[1px] gap-x-[3px] rounded-full bg-forest-50/50 dark:bg-[#344240]/50 pointer-events-none">
                     <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
                       {new Date(
-                        da_charts[key].total_blob_fees.daily.data[
-                          da_charts[key].total_blob_fees.daily.data.length - 1
+                        da_charts[key][largerAxis].daily.data[
+                          da_charts[key][largerAxis].daily.data.length - 1
                         ][0],
                       ).toLocaleDateString("en-GB", {
                         timeZone: "UTC",
