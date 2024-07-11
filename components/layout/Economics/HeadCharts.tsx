@@ -306,6 +306,14 @@ export default function EconHeadCharts({
     [da_charts, showUsd],
   );
 
+  function simplerFormatter(value: number) {
+    return Intl.NumberFormat("en-GB", {
+      notation: "compact",
+      maximumFractionDigits: calculateDecimalPlaces(value),
+      minimumFractionDigits: calculateDecimalPlaces(value),
+    }).format(value);
+  }
+
   return (
     <div className="wrapper h-[145px] md:h-[183px] w-full">
       <Splide
@@ -398,8 +406,8 @@ export default function EconHeadCharts({
                           )}
                         </div>
                         <div className="text-right">
-                          {formatNumber(
-                            key,
+                          {valuePrefix}
+                          {simplerFormatter(
                             da_charts[key].total_blob_fees.daily.data[
                               feesLength - 1
                             ][dataIndex],

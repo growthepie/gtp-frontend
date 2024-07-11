@@ -707,7 +707,12 @@ export default function ChainBreakdown({
                   style={{ ...style }}
                 >
                   <div
-                    className="grid gap-x-[5px] relative rounded-full w-full bg-forest-950 border-[#CDD8D3] border-[1px] min-h-[34px] text-[14px] items-center z-20 cursor-pointer"
+                    className={`grid gap-x-[5px] relative rounded-full w-full  border-[1px] min-h-[34px] text-[14px] items-center z-20 cursor-pointer 
+                      ${
+                        openChain[item.key]
+                          ? "border-[#CDD8D3] bg-forest-950 "
+                          : "border-[#5A6462] bg-transparent"
+                      } `}
                     style={{
                       gridTemplateColumns: "auto 200px 200px 145px 145px 120px",
                     }}
@@ -904,8 +909,8 @@ export default function ChainBreakdown({
                             data[item.key][selectedTimespan].profit.total[
                               dataIndex
                             ] > 0
-                              ? "bg-[#EEFF97] "
-                              : "bg-[#FFDF27]"
+                              ? "bg-[#EEFF97] rounded-r-2xl "
+                              : "bg-[#FFDF27] rounded-l-2xl"
                           }`}
                           style={{
                             width: `${(
@@ -1015,7 +1020,7 @@ export default function ChainBreakdown({
 
                   {/*Chart Area \/ */}
                   <div
-                    className={`flex bottom-2 z-0 relative justify-center w-full transition-height duration-300 overflow-hidden ${
+                    className={`flex bottom-2 z-0 relative top-[0px] justify-center w-full transition-height duration-300 overflow-hidden ${
                       openChain[item.key] && selectedTimespan !== "1d"
                         ? "h-[357px]"
                         : "h-[0px]"
