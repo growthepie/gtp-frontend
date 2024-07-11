@@ -510,6 +510,18 @@ export default function LabelsPage() {
 
   const handleFilter = useCallback(
     (key: string, value: string | number) => {
+      if (key === "owner_project") {
+        setLabelsFilters({
+          ...labelsFilters,
+          [key]: labelsFilters[key].find(
+            (f) => f.owner_project === value.owner_project,
+          )
+            ? labelsFilters[key].filter(
+                (f) => f.owner_project !== value.owner_project,
+              )
+            : [...labelsFilters[key], value],
+        });
+      }
       setLabelsFilters({
         ...labelsFilters,
         [key]: labelsFilters[key].includes(value)
@@ -860,17 +872,21 @@ export default function LabelsPage() {
                                 leftIcon={null}
                                 leftIconColor="#FFFFFF"
                                 rightIcon={
-                                  labelsFilters.owner_project.includes(
-                                    filteredLabelsData[item.index]
-                                      .owner_project,
+                                  labelsFilters.owner_project.find(
+                                    (f) =>
+                                      f.owner_project ===
+                                      filteredLabelsData[item.index]
+                                        .owner_project,
                                   )
                                     ? "heroicons-solid:x-circle"
                                     : "heroicons-solid:plus-circle"
                                 }
                                 rightIconColor={
-                                  labelsFilters.owner_project.includes(
-                                    filteredLabelsData[item.index]
-                                      .owner_project,
+                                  labelsFilters.owner_project.find(
+                                    (f) =>
+                                      f.owner_project ===
+                                      filteredLabelsData[item.index]
+                                        .owner_project,
                                   )
                                     ? "#FE5468"
                                     : undefined
