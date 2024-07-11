@@ -173,27 +173,27 @@ export default function LabelsPage() {
     const currentIndex = metricKeys.indexOf(currentMetric);
     const newIndex =
       currentIndex === 0 ? metricKeys.length - 1 : currentIndex - 1;
-    if (sort.metric === currentMetric) {
-      setSort({
-        metric: metricKeys[newIndex],
-        sortOrder: sort.sortOrder,
-      });
-    }
+    // if (sort.metric === currentMetric) {
+    //   setSort({
+    //     metric: metricKeys[newIndex],
+    //     sortOrder: sort.sortOrder,
+    //   });
+    // }
     setCurrentMetric(metricKeys[newIndex]);
-  }, [currentMetric, sort.metric, sort.sortOrder]);
+  }, [currentMetric]);
 
   const handleNextMetric = useCallback(() => {
     const currentIndex = metricKeys.indexOf(currentMetric);
     const newIndex =
       currentIndex === metricKeys.length - 1 ? 0 : currentIndex + 1;
-    if (sort.metric === currentMetric) {
-      setSort({
-        metric: metricKeys[newIndex],
-        sortOrder: sort.sortOrder,
-      });
-    }
+    // if (sort.metric === currentMetric) {
+    //   setSort({
+    //     metric: metricKeys[newIndex],
+    //     sortOrder: sort.sortOrder,
+    //   });
+    // }
     setCurrentMetric(metricKeys[newIndex]);
-  }, [currentMetric, sort.metric, sort.sortOrder]);
+  }, [currentMetric]);
 
   // const [metricIndex, setMetricIndex] = useState(0);
   // const [metricChangeIndex, setMetricChangeIndex] = useState(0);
@@ -326,6 +326,28 @@ export default function LabelsPage() {
     }
 
     // sort
+    if (["deployment_date"].includes(sort.metric)) {
+      rows.sort((a, b) => {
+        let aVal = a[sort.metric];
+        let bVal = b[sort.metric];
+
+        if (!aVal && !bVal) return 0;
+
+        if (!aVal) return 1;
+
+        if (!bVal) return -1;
+
+        let aDate = new Date(aVal);
+        let bDate = new Date(bVal);
+
+        if (sort.sortOrder === "asc") {
+          return aDate - bDate;
+        } else {
+          return bDate - aDate;
+        }
+      });
+    }
+
     if (["txcount", "gas_fees_usd", "daa"].includes(sort.metric)) {
       rows.sort((a, b) => {
         let aMetric = a[sort.metric];
@@ -481,15 +503,24 @@ export default function LabelsPage() {
           </div>
         </div>
       </div>
+      <LabelsContainer className="fixed 2xl:hidden inset-0 flex flex-col items-center justify-center bg-[#151a19] z-[999]">
+        <div className="text-forest-400 text-center font-semibold text-[20px]">
+          This page is not currently supported on small screens
+        </div>
+        <div className="text-forest-400 text-center">
+          Please view on a larger device or make your browser window wider.
+        </div>
+      </LabelsContainer>
 
       <LabelsHorizontalScrollContainer
+        className="hidden 2xl:block"
         // className="w-full h-screen"
-        forcedMinWidth={1272 + 60 + 60}
+        // forcedMinWidth={1272 + 200}
         includeMargin={false}
         header={
           <>
             {filteredLabelsData && (
-              <GridTableHeader gridDefinitionColumns="pb-[4px] text-[12px] grid-cols-[15px,minmax(100px,1600px),150px,200px,105px,275px,182px] gap-x-[20px] z-[2]">
+              <GridTableHeader gridDefinitionColumns="pb-[4px] text-[12px] grid-cols-[15px,minmax(100px,1600px),150px,200px,105px,105px,275px,182px] gap-x-[20px] z-[2]">
                 <div className="flex items-center justify-center"></div>
                 <div
                   className="flex items-center justify-start cursor-pointer"
@@ -532,18 +563,22 @@ export default function LabelsPage() {
                     });
                   }}
                 >
-                  Owner Project
-                  <Icon
-                    icon={
+                  <Badge
+                    size="sm"
+                    label="Owner Project"
+                    leftIcon={null}
+                    leftIconColor="#FFFFFF"
+                    rightIconColor={
+                      sort.metric === "owner_project" ? "#FFFFFF" : undefined
+                    }
+                    rightIcon={
                       sort.metric === "owner_project" &&
                       sort.sortOrder === "asc"
                         ? "feather:arrow-up"
                         : "feather:arrow-down"
                     }
-                    className="w-[12px] h-[12px]"
-                    style={{
-                      opacity: sort.metric === "owner_project" ? 1 : 0.2,
-                    }}
+                    rightIconSize="sm"
+                    className="border border-[#5A6462]"
                   />
                 </div>
                 <div
@@ -636,9 +671,34 @@ export default function LabelsPage() {
                     className="border border-[#5A6462]"
                   />
                 </div>
-                {/* <div className="flex items-center justify-end">
+                <div
+                  className="flex items-center justify-end cursor-pointer -mr-[12px]"
+                  onClick={() => {
+                    setSort({
+                      metric: "deployment_date",
+                      sortOrder:
+                        sort.metric === "deployment_date"
+                          ? sort.sortOrder === "asc"
+                            ? "desc"
+                            : "asc"
+                          : "desc",
+                    });
+                  }}
+                >
                   Date Deployed
-                </div> */}
+                  <Icon
+                    icon={
+                      sort.metric === "deployment_date" &&
+                      sort.sortOrder === "asc"
+                        ? "feather:arrow-up"
+                        : "feather:arrow-down"
+                    }
+                    className="w-[12px] h-[12px]"
+                    style={{
+                      opacity: sort.metric === "deployment_date" ? 1 : 0.2,
+                    }}
+                  />
+                </div>
                 <div className="relative flex items-center justify-end -mr-[12px]">
                   <div
                     className=" flex items-center cursor-pointer"
@@ -716,7 +776,7 @@ export default function LabelsPage() {
                     }px)`,
                   }}
                 >
-                  <GridTableRow gridDefinitionColumns="group text-[12px] h-[34px] inline-grid grid-cols-[15px,minmax(100px,1600px),150px,200px,105px,275px,182px]  has-[span:hover]:grid-cols-[15px,minmax(310px,800px),150px,200px,105px,275px,182px] transition-all duration-300 gap-x-[20px] mb-[3px]">
+                  <GridTableRow gridDefinitionColumns="group text-[12px] h-[34px] inline-grid grid-cols-[15px,minmax(100px,1600px),150px,200px,105px,105px,275px,182px]  has-[span:hover]:grid-cols-[15px,minmax(310px,800px),150px,200px,105px,105px,275px,182px] transition-all duration-300 gap-x-[20px] mb-[3px]">
                     <div className="flex h-full items-center">
                       <Icon
                         icon={`gtp:${
@@ -913,33 +973,22 @@ export default function LabelsPage() {
                       </div>
                       {/* {filteredLabelsData[item.index].usage_category && <Badge size="sm" label={master?.blockspace_categories.sub_categories[filteredLabelsData[item.index].usage_category]} leftIcon={null} leftIconColor="#FFFFFF" rightIcon="heroicons-solid:plus-circle" />} */}
                     </div>
-                    {/* <div className="flex h-full items-center justify-end gap-x-[3px]">
-                      <div className="flex items-center gap-x-[3px]">
-                        <div>
-                          {new Date(
-                            Date.now() -
-                              Math.floor(
-                                parseFloat(
-                                  `0.${parseInt(
-                                    filteredLabelsData[item.index].address,
-                                  ).toString()}`,
-                                ) *
-                                  1000 *
-                                  60 *
-                                  60 *
-                                  24 *
-                                  365 *
-                                  2,
-                              ),
-                          ).toLocaleDateString("en-GB", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
+                    <div className="flex h-full items-center justify-end gap-x-[3px]">
+                      {filteredLabelsData[item.index].deployment_date && (
+                        <div className="flex items-center gap-x-[3px]">
+                          <div>
+                            {new Date(
+                              filteredLabelsData[item.index].deployment_date,
+                            ).toLocaleDateString("en-GB", {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </div>
+                          {/* <AddIcon /> */}
                         </div>
-                        <AddIcon />
-                      </div>
-                    </div> */}
+                      )}
+                    </div>
                     {/* <div className="flex items-center justify-end gap-x-[5px]">
                         {sparklineLabelsData && (
                           <div>
@@ -962,33 +1011,45 @@ export default function LabelsPage() {
                         <div className="min-w-[55px] text-right">{filteredLabelsData[item.index][currentMetric].toLocaleString("en-GB")}</div>
                         <div className={`text-[9px] text-right leading-[1] ${filteredLabelsData[item.index][`${currentMetric}_change`] > 0 ? "font-normal" : "text-[#FE5468] font-semibold "}`}>{filteredLabelsData[item.index][`${currentMetric}_change`] > 0 && "+"}{formatNumber(filteredLabelsData[item.index][`${currentMetric}_change`] * 100, true, false)}%</div>
                       </div> */}
-                      {parquetSparklineData &&
-                      parquetSparklineData[
-                        `${filteredLabelsData[item.index].origin_key}_${
-                          filteredLabelsData[item.index].address
-                        }`
-                      ] ? (
-                        <CanvasSparklineProvider
-                          data={parquetSparklineData[
+                      {isDBLoading ? (
+                        <div className="text-center w-full text-[#5A6462] text-[10px]">
+                          Loading
+                        </div>
+                      ) : (
+                        <>
+                          {parquetSparklineData &&
+                          parquetSparklineData[
                             `${filteredLabelsData[item.index].origin_key}_${
                               filteredLabelsData[item.index].address
                             }`
-                          ].map((d) => [d.unix, d[currentMetric]])}
-                          change={
-                            filteredLabelsData[item.index][
-                              `${currentMetric}_change`
-                            ]
-                          }
-                          value={filteredLabelsData[item.index][currentMetric]}
-                        >
-                          <LabelsSparkline
-                            chainKey={filteredLabelsData[item.index].origin_key}
-                          />
-                        </CanvasSparklineProvider>
-                      ) : (
-                        <div className="text-center w-full text-[#5A6462] text-[10px]">
-                          Unavailable
-                        </div>
+                          ] ? (
+                            <CanvasSparklineProvider
+                              data={parquetSparklineData[
+                                `${filteredLabelsData[item.index].origin_key}_${
+                                  filteredLabelsData[item.index].address
+                                }`
+                              ].map((d) => [d.unix, d[currentMetric]])}
+                              change={
+                                filteredLabelsData[item.index][
+                                  `${currentMetric}_change`
+                                ]
+                              }
+                              value={
+                                filteredLabelsData[item.index][currentMetric]
+                              }
+                            >
+                              <LabelsSparkline
+                                chainKey={
+                                  filteredLabelsData[item.index].origin_key
+                                }
+                              />
+                            </CanvasSparklineProvider>
+                          ) : (
+                            <div className="text-center w-full text-[#5A6462] text-[10px]">
+                              Unavailable
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   </GridTableRow>
@@ -1064,7 +1125,9 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
           </div>
           <div
             className={`text-[9px] text-right leading-[1] ${
-              change > 0 ? "font-normal" : "text-[#FE5468] font-semibold "
+              change > 0
+                ? "text-[#1DF7EF] font-normal"
+                : "text-[#FE5468] font-semibold "
             }`}
           >
             {change > 0 && "+"}

@@ -40,8 +40,8 @@ export default function Economics() {
 
   const {
     chain_breakdown,
-    da_fees,
-  }: { chain_breakdown: ChainBreakdownResponse; da_fees: FeesBreakdown } =
+    da_charts,
+  }: { chain_breakdown: ChainBreakdownResponse; da_charts: FeesBreakdown } =
     econData.data;
 
   return (
@@ -60,7 +60,7 @@ export default function Economics() {
             Data Availability Fee Markets
           </Heading>
         </div>
-        <EconHeadCharts da_fees={da_fees} />
+        <EconHeadCharts da_charts={da_charts} />
       </div>
       <ChainBreakdown data={chain_breakdown} master={master} />
     </div>

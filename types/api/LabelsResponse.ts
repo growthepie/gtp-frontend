@@ -18,7 +18,11 @@ export type Columns =
   | "origin_key"
   | "name"
   | "owner_project"
+  | "owner_project_clear"
   | "usage_category"
+  | "deployment_tx"
+  | "deployer_address"
+  | "deployment_date"
   | "txcount"
   | "txcount_change"
   | "gas_fees_usd"
@@ -33,7 +37,11 @@ export interface ParsedDatum {
   origin_key: string;
   name: string | null;
   owner_project: string | null;
+  owner_project_clear: string | null;
   usage_category: string | null;
+  deployment_tx: string | null;
+  deployer_address: string | null;
+  deployment_date: string | null;
   txcount: number;
   txcount_change: number;
   gas_fees_usd: number;
@@ -80,7 +88,11 @@ export class LabelsResponseHelper {
       origin_key,
       name,
       owner_project,
+      owner_project_clear,
       usage_category,
+      deployment_tx,
+      deployer_address,
+      deployment_date,
       txcount,
       txcount_change,
       gas_fees_usd,
@@ -92,7 +104,11 @@ export class LabelsResponseHelper {
       datum[this.typesIndexes.origin_key],
       datum[this.typesIndexes.name],
       datum[this.typesIndexes.owner_project],
+      datum[this.typesIndexes.owner_project_clear],
       datum[this.typesIndexes.usage_category],
+      datum[this.typesIndexes.deployment_tx],
+      datum[this.typesIndexes.deployer_address],
+      datum[this.typesIndexes.deployment_date],
       datum[this.typesIndexes.txcount],
       datum[this.typesIndexes.txcount_change],
       datum[this.typesIndexes.gas_fees_usd],
@@ -106,7 +122,11 @@ export class LabelsResponseHelper {
       origin_key: origin_key as string,
       name: name as string | null,
       owner_project: owner_project as string | null,
+      owner_project_clear: owner_project_clear as string | null,
       usage_category: usage_category as string | null,
+      deployment_tx: deployment_tx as string | null,
+      deployer_address: deployer_address as string | null,
+      deployment_date: deployment_date as string | null,
       txcount: txcount as number,
       txcount_change: txcount_change as number,
       gas_fees_usd: gas_fees_usd as number,

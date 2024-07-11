@@ -81,6 +81,7 @@ export default function Search() {
       //     ? filters[key].filter((f) => f !== value)
       //     : [...filters[key], value],
       // }));
+      setSearch("");
     },
     [labelsFilters, setLabelsFilters],
   );
