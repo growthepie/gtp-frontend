@@ -81,6 +81,7 @@ export const LabelsURLS = {
   quick: "https://api.growthepie.xyz/v1/labels/quick.json",
   full: "https://api.growthepie.xyz/v1/labels/full.json",
   sparkline: "https://api.growthepie.xyz/v1/labels/sparkline.json",
+  projects: "https://api.growthepie.xyz/v1/labels/projects.json",
 };
 export const LabelsParquetURLS = {
   quick: "https://api.growthepie.xyz/v1/labels/quick.parquet",

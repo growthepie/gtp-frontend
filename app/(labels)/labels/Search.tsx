@@ -43,7 +43,7 @@ export default function Search() {
     address: string[];
     origin_key: string[];
     name: string[];
-    owner_project: string[];
+    owner_project: { owner_project: string; owner_project_clear: string }[];
     category: string[];
     subcategory: string[];
     txcount: number[];
@@ -68,7 +68,13 @@ export default function Search() {
   });
 
   const handleFilter = useCallback(
-    (key: string, value: string | number) => {
+    (
+      key: string,
+      value:
+        | string
+        | number
+        | { owner_project: string; owner_project_clear: string },
+    ) => {
       setLabelsFilters({
         ...labelsFilters,
         [key]: labelsFilters[key].includes(value)
@@ -92,7 +98,7 @@ export default function Search() {
     address: string[];
     origin_key: string[];
     name: string[];
-    owner_project: string[];
+    owner_project: { owner_project: string; owner_project_clear: string }[];
     category: string[];
     subcategory: string[];
   }>("labelsAutocomplete", {
@@ -122,8 +128,11 @@ export default function Search() {
   };
 
   const [labelsOwnerProjects, setLabelsOwnerProjects] = useSessionStorage<
-    string[]
+    { owner_project: string; owner_project_clear: string }[]
   >("labelsOwnerProjects", []);
+
+  const [labelsOwnerProjectClears, setLabelsOwnerProjectClears] =
+    useSessionStorage<string[]>("labelsOwnerProjectClears", []);
 
   const Filters = useMemo(() => {
     if (!master) return [];
@@ -187,11 +196,11 @@ export default function Search() {
     ));
 
     const ownerProjectFilters = labelsFilters.owner_project.map(
-      (ownerProject) => (
+      (row, index) => (
         <Badge
-          key={ownerProject}
-          onClick={() => handleFilter("owner_project", ownerProject)}
-          label={ownerProject}
+          key={row.owner_project}
+          onClick={() => handleFilter("owner_project", row)}
+          label={row.owner_project_clear}
           leftIcon="feather:tag"
           leftIconColor="#CDD8D3"
           rightIcon="heroicons-solid:x-circle"
@@ -266,9 +275,8 @@ export default function Search() {
     const chainAutocomplete = Object.keys(master.chains).filter((chainKey) =>
       master.chains[chainKey].name.toLowerCase().includes(search.toLowerCase()),
     );
-    const ownerProjectAutocomplete = labelsOwnerProjects.filter(
-      (ownerProject) =>
-        ownerProject.toLowerCase().includes(search.toLowerCase()),
+    const ownerProjectAutocomplete = labelsOwnerProjects.filter((row) =>
+      row.owner_project.toLowerCase().includes(search.toLowerCase()),
     );
 
     setLabelsAutocomplete({
@@ -659,48 +667,60 @@ export default function Search() {
                 <div className="w-[6px] h-[6px] bg-[#344240] rounded-full mt-2.5" />
                 <FilterSelectionContainer className="flex-1">
                   {search.length > 0
-                    ? labelsAutocomplete.owner_project.map((ownerProject) => (
+                    ? labelsAutocomplete.owner_project.map(
+                        (ownerProjectRow) => (
+                          <Badge
+                            key={ownerProjectRow.owner_project}
+                            onClick={() =>
+                              handleFilter("owner_project", ownerProjectRow)
+                            }
+                            label={
+                              labelsAutocomplete.owner_project.length > 0
+                                ? boldSearch(
+                                    ownerProjectRow.owner_project_clear,
+                                  )
+                                : ownerProjectRow.owner_project_clear
+                            }
+                            leftIcon="feather:tag"
+                            leftIconColor="#CDD8D3"
+                            rightIcon={
+                              labelsFilters.owner_project.includes(
+                                ownerProjectRow,
+                              )
+                                ? "heroicons-solid:x-circle"
+                                : "heroicons-solid:plus-circle"
+                            }
+                            rightIconColor={
+                              labelsFilters.owner_project.includes(
+                                ownerProjectRow,
+                              )
+                                ? "#FE5468"
+                                : "#5A6462"
+                            }
+                            showLabel={true}
+                          />
+                        ),
+                      )
+                    : labelsOwnerProjects.map((ownerProjectRow) => (
                         <Badge
-                          key={ownerProject}
+                          key={ownerProjectRow.owner_project}
                           onClick={() =>
-                            handleFilter("owner_project", ownerProject)
+                            handleFilter("owner_project", ownerProjectRow)
                           }
-                          label={
-                            labelsAutocomplete.owner_project.length > 0
-                              ? boldSearch(ownerProject)
-                              : ownerProject
-                          }
+                          label={ownerProjectRow.owner_project_clear}
                           leftIcon="feather:tag"
                           leftIconColor="#CDD8D3"
                           rightIcon={
-                            labelsFilters.owner_project.includes(ownerProject)
+                            labelsFilters.owner_project.includes(
+                              ownerProjectRow,
+                            )
                               ? "heroicons-solid:x-circle"
                               : "heroicons-solid:plus-circle"
                           }
                           rightIconColor={
-                            labelsFilters.owner_project.includes(ownerProject)
-                              ? "#FE5468"
-                              : "#5A6462"
-                          }
-                          showLabel={true}
-                        />
-                      ))
-                    : labelsOwnerProjects.map((ownerProject) => (
-                        <Badge
-                          key={ownerProject}
-                          onClick={() =>
-                            handleFilter("owner_project", ownerProject)
-                          }
-                          label={ownerProject}
-                          leftIcon="feather:tag"
-                          leftIconColor="#CDD8D3"
-                          rightIcon={
-                            labelsFilters.owner_project.includes(ownerProject)
-                              ? "heroicons-solid:x-circle"
-                              : "heroicons-solid:plus-circle"
-                          }
-                          rightIconColor={
-                            labelsFilters.owner_project.includes(ownerProject)
+                            labelsFilters.owner_project.includes(
+                              ownerProjectRow,
+                            )
                               ? "#FE5468"
                               : "#5A6462"
                           }

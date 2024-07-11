@@ -36,6 +36,11 @@ import wasmInit, { wasmMemory, readParquet } from "parquet-wasm";
 import { parseTable } from "arrow-js-ffi";
 // import { useProjectData } from "../useProjectData";
 import { useDuckDB } from "../SparklineParquetContext";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/layout/Tooltip";
 
 const devMiddleware = (useSWRNext) => {
   return (key, fetcher, config) => {
@@ -128,6 +133,41 @@ export default function LabelsPage() {
   });
 
   const {
+    data: projectsData,
+    error: projectsError,
+    isLoading: projectsLoading,
+    isValidating: projectsValidating,
+  } = useSWR<any>(LabelsURLS.projects, fallbackFetcher, {
+    use: apiRoot === "dev" && !IS_PRODUCTION ? [devMiddleware] : [],
+  });
+
+  // const [ownerProjectToProjectData, setOwnerProjectToProjectData] = useState<{
+  //   [key]: any[];
+  // }>({});
+
+  const ownerProjectToProjectData = useMemo(() => {
+    if (!projectsData) return {};
+
+    let ownerProjectToProjectData = {};
+    projectsData.data.data.forEach((project) => {
+      ownerProjectToProjectData[project[0]] = project;
+    });
+
+    return ownerProjectToProjectData;
+  }, [projectsData]);
+
+  // useEffect(() => {
+  //   if (!projectsData) {
+
+  //     let ownerProjectToProjectData = {};
+  //     projectsData.data.data.forEach((project) => {
+  //       ownerProjectToProjectData[project[0]] = project;
+  //     });
+  //     setOwnerProjectToProjectData(ownerProjectToProjectData);
+  //   }
+  // }, [projectsData]);
+
+  const {
     data: fullLabelsData,
     error: fullLabelsError,
     isLoading: fullLabelsLoading,
@@ -156,11 +196,6 @@ export default function LabelsPage() {
     error: dbError,
     data: parquetSparklineData,
   } = useDuckDB();
-
-  console.log(
-    "parquetSparklineData",
-    parquetSparklineData && Object.entries(parquetSparklineData).slice(0, 5),
-  );
 
   const [currentMetric, setCurrentMetric] = useState(metricKeys[0]);
 
@@ -233,7 +268,7 @@ export default function LabelsPage() {
   const listRef = useRef<HTMLDivElement>();
 
   const [labelsOwnerProjects, setLabelsOwnerProjects] = useSessionStorage<
-    string[]
+    { owner_project: string; owner_project_clear: string }[]
   >("labelsOwnerProjects", []);
 
   const data = useMemo(() => {
@@ -318,9 +353,10 @@ export default function LabelsPage() {
       }
 
       if (labelsFilters.owner_project.length > 0) {
-        console.log("pre owner_project", rows);
         rows = rows.filter((label) =>
-          labelsFilters.owner_project.includes(label.owner_project),
+          labelsFilters.owner_project
+            .map((o) => o.owner_project)
+            .includes(label.owner_project),
         );
       }
     }
@@ -433,11 +469,21 @@ export default function LabelsPage() {
       ...new Set(
         data
           .filter((label) => label.owner_project)
-          .map((label) => label.owner_project)
-          .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())),
+          .map((label) => ({
+            owner_project: label.owner_project,
+            owner_project_clear:
+              label.owner_project_clear || label.owner_project,
+          }))
+          .sort((a, b) =>
+            a.owner_project_clear
+              .toLowerCase()
+              .localeCompare(b.owner_project_clear.toLowerCase()),
+          ),
       ),
     ];
     setLabelsOwnerProjects(uniqueOwnerProjects);
+
+    // setLabelsOwnerProjectClears(uniqueOwnerProjects.map((u) => u[1]));
   }, [data, setLabelsOwnerProjects]);
 
   // The virtualizer
@@ -803,32 +849,134 @@ export default function LabelsPage() {
                     <div className="flex h-full items-center">
                       {filteredLabelsData[item.index].owner_project ? (
                         <div className="flex h-full items-center gap-x-[3px] max-w-full">
-                          <Badge
-                            size="sm"
-                            label={filteredLabelsData[item.index].owner_project}
-                            leftIcon={null}
-                            leftIconColor="#FFFFFF"
-                            rightIcon={
-                              labelsFilters.owner_project.includes(
-                                filteredLabelsData[item.index].owner_project,
-                              )
-                                ? "heroicons-solid:x-circle"
-                                : "heroicons-solid:plus-circle"
-                            }
-                            rightIconColor={
-                              labelsFilters.owner_project.includes(
-                                filteredLabelsData[item.index].owner_project,
-                              )
-                                ? "#FE5468"
-                                : undefined
-                            }
-                            onClick={() =>
-                              handleFilter(
-                                "owner_project",
-                                filteredLabelsData[item.index].owner_project,
-                              )
-                            }
-                          />
+                          <Tooltip placement="right" allowInteract>
+                            <TooltipTrigger>
+                              <Badge
+                                size="sm"
+                                label={
+                                  filteredLabelsData[item.index]
+                                    .owner_project_clear
+                                }
+                                leftIcon={null}
+                                leftIconColor="#FFFFFF"
+                                rightIcon={
+                                  labelsFilters.owner_project.includes(
+                                    filteredLabelsData[item.index]
+                                      .owner_project,
+                                  )
+                                    ? "heroicons-solid:x-circle"
+                                    : "heroicons-solid:plus-circle"
+                                }
+                                rightIconColor={
+                                  labelsFilters.owner_project.includes(
+                                    filteredLabelsData[item.index]
+                                      .owner_project,
+                                  )
+                                    ? "#FE5468"
+                                    : undefined
+                                }
+                                onClick={() =>
+                                  handleFilter("owner_project", {
+                                    owner_project:
+                                      filteredLabelsData[item.index]
+                                        .owner_project,
+                                    owner_project_clear:
+                                      filteredLabelsData[item.index]
+                                        .owner_project_clear,
+                                  })
+                                }
+                              />
+                            </TooltipTrigger>
+                            {ownerProjectToProjectData[
+                              filteredLabelsData[item.index].owner_project
+                            ] && (
+                              ownerProjectToProjectData[
+                                filteredLabelsData[item.index].owner_project
+                              ][2] ||
+                                ownerProjectToProjectData[
+                                  filteredLabelsData[item.index].owner_project
+                                ][4] ||
+                                ownerProjectToProjectData[
+                                  filteredLabelsData[item.index].owner_project
+                                ][5],
+                            ) && (
+                              <TooltipContent className="relativeflex flex-col items-start justify-center gap-y-[5px] rounded-[10px] p-2.5 bg-[#151a19] border border-[#5A6462] z-50 max-w-[300px]">
+                                {/* arrow pointing to the left */}
+                                <div className="absolute top-[calc(50%-4px)] -left-1 w-2 h-2 bg-[#151a19]  border-[#5A6462] border border-r-0 border-t-0 transform rotate-45"></div>
+                                {ownerProjectToProjectData[
+                                  filteredLabelsData[item.index].owner_project
+                                ][2] && (
+                                  <div className="flex items-center text-xs pb-1">{`${
+                                    ownerProjectToProjectData[
+                                      filteredLabelsData[item.index]
+                                        .owner_project
+                                    ][2]
+                                  }`}</div>
+                                )}
+
+                                {ownerProjectToProjectData[
+                                  filteredLabelsData[item.index].owner_project
+                                ][5] && (
+                                  <a
+                                    href={
+                                      ownerProjectToProjectData[
+                                        filteredLabelsData[item.index]
+                                          .owner_project
+                                      ][5]
+                                    }
+                                    target="_blank"
+                                    className="group flex items-center gap-x-[5px] text-xs"
+                                  >
+                                    <div className="w-[12px] h-[12px]">
+                                      <Icon
+                                        icon="feather:globe"
+                                        className="w-[12px] h-[12px]"
+                                      />
+                                    </div>
+                                    <div className="group-hover:underline">
+                                      {
+                                        ownerProjectToProjectData[
+                                          filteredLabelsData[item.index]
+                                            .owner_project
+                                        ][5]
+                                      }
+                                    </div>
+                                  </a>
+                                )}
+                                {ownerProjectToProjectData[
+                                  filteredLabelsData[item.index].owner_project
+                                ][4] && (
+                                  <div className="flex items-center">
+                                    <a
+                                      href={
+                                        ownerProjectToProjectData[
+                                          filteredLabelsData[item.index]
+                                            .owner_project
+                                        ][4]
+                                      }
+                                      target="_blank"
+                                      className="group flex items-center gap-x-[5px] text-xs"
+                                    >
+                                      <div className="w-[12px] h-[12px]">
+                                        <Icon
+                                          icon="prime:twitter"
+                                          className="w-[12px] h-[12px]"
+                                        />
+                                      </div>
+                                      <div className="group-hover:underline">
+                                        {
+                                          ownerProjectToProjectData[
+                                            filteredLabelsData[item.index]
+                                              .owner_project
+                                          ][4]
+                                        }
+                                      </div>
+                                    </a>
+                                  </div>
+                                )}
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
                         </div>
                       ) : (
                         <div className="flex h-full items-center gap-x-[3px] text-[#5A6462] text-[10px]">
@@ -836,6 +984,7 @@ export default function LabelsPage() {
                         </div>
                       )}
                     </div>
+
                     <div>
                       {filteredLabelsData[item.index].name ? (
                         <div className="flex h-full items-center gap-x-[3px]">
@@ -1138,3 +1287,47 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
     </>
   );
 };
+
+const WorldIcon = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      fill-rule="evenodd"
+      clip-rule="evenodd"
+      d="M7.52757 1.86364C4.12609 1.86364 1.36865 4.61098 1.36865 8C1.36865 11.389 4.12609 14.1364 7.52757 14.1364C10.9291 14.1364 13.6865 11.389 13.6865 8C13.6865 4.61098 10.9291 1.86364 7.52757 1.86364ZM0 8C0 3.85786 3.37021 0.5 7.52757 0.5C11.6849 0.5 15.0551 3.85786 15.0551 8C15.0551 12.1421 11.6849 15.5 7.52757 15.5C3.37021 15.5 0 12.1421 0 8Z"
+      fill="#CDD8D3"
+    />
+    <path
+      fill-rule="evenodd"
+      clip-rule="evenodd"
+      d="M0 8C0 7.62344 0.306383 7.31818 0.684325 7.31818H14.3708C14.7488 7.31818 15.0551 7.62344 15.0551 8C15.0551 8.37656 14.7488 8.68182 14.3708 8.68182H0.684325C0.306383 8.68182 0 8.37656 0 8Z"
+      fill="#CDD8D3"
+    />
+    <path
+      fill-rule="evenodd"
+      clip-rule="evenodd"
+      d="M5.47476 8C5.52166 10.0965 6.24532 12.1149 7.52757 13.7608C8.80982 12.1149 9.53349 10.0965 9.58039 8C9.53349 5.90352 8.80982 3.88512 7.52757 2.23918C6.24532 3.88512 5.52166 5.90352 5.47476 8ZM7.52757 1.18182L7.02231 0.721984C5.19874 2.71107 4.16242 5.2924 4.1061 7.9858C4.1059 7.99527 4.1059 8.00473 4.1061 8.0142C4.16242 10.7076 5.19874 13.2889 7.02231 15.278C7.15196 15.4194 7.33533 15.5 7.52757 15.5C7.71981 15.5 7.90319 15.4194 8.03284 15.278C9.85641 13.2889 10.8927 10.7076 10.949 8.0142C10.9492 8.00473 10.9492 7.99527 10.949 7.9858C10.8927 5.2924 9.85641 2.71107 8.03284 0.721984L7.52757 1.18182Z"
+      fill="#CDD8D3"
+    />
+  </svg>
+);
+
+const XIcon = () => (
+  <svg
+    width="15"
+    height="16"
+    viewBox="0 0 15 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M8.51237 6.85148L13.8026 0.5H12.549L7.95548 6.0149L4.28669 0.5H0.0551758L5.60311 8.8395L0.0551758 15.5H1.30885L6.15968 9.67608L10.0342 15.5H14.2657L8.51237 6.85148ZM6.79529 8.91297L6.23317 8.08255L1.76057 1.47476H3.68614L7.29558 6.80746L7.8577 7.63788L12.5495 14.5696H10.624L6.79529 8.91297Z"
+      fill="#CDD8D3"
+    />
+  </svg>
+);
