@@ -479,9 +479,17 @@ function BreakdownCharts({
       }}
     >
       <div
-        className="w-full h-full min-h-[209px] max-h-[209px] "
+        className="w-full h-full min-h-[190px] max-h-[190px] relative "
         ref={chartRef}
       >
+        <div className="absolute bottom-2.5 left-[50px] w-[48px] h-[16px] bg-[#344240AA] bg-opacity-50 z-10 rounded-full flex items-center  gap-x-[2px] px-[3px]">
+          <div className="w-[5px] h-[5px] bg-[#1DF7EF] rounded-full"></div>
+          <div className="text-[8px]">Revenue</div>
+        </div>
+        <div className="absolute bottom-2.5 left-[102px] w-[32px] h-[16px] bg-[#344240AA] bg-opacity-50 z-10 rounded-full flex items-center  gap-x-[2px] px-[3px]">
+          <div className="w-[5px] h-[5px] bg-[#FE5468] rounded-full" />
+          <div className="text-[8px]">Cost</div>
+        </div>
         <HighchartsProvider Highcharts={Highcharts}>
           <HighchartsChart
             containerProps={{
@@ -540,7 +548,7 @@ function BreakdownCharts({
               marginBottom={5}
               marginLeft={45}
               marginRight={45}
-              marginTop={5}
+              marginTop={15}
               height={209}
               onRender={(chartData) => {
                 const chart = chartData.target as any; // Cast chartData.target to any
@@ -602,7 +610,7 @@ function BreakdownCharts({
               tickWidth={1}
               tickLength={20}
               ordinal={false}
-              minorTicks={true}
+              minorTicks={false}
               minorTickLength={2}
               minorTickWidth={2}
               minorGridLineWidth={0}
@@ -626,7 +634,7 @@ function BreakdownCharts({
               gridZIndex={10}
               min={0}
               showFirstLabel={true}
-              showLastLabel={false}
+              showLastLabel={true}
               tickAmount={5}
               labels={{
                 align: "right",
@@ -703,9 +711,17 @@ function BreakdownCharts({
         </HighchartsProvider>
       </div>
       <div
-        className="h-[140px] w-full flex justify-center items-center"
+        className="h-[165px] w-full flex justify-center items-center relative "
         ref={profitChartRef}
       >
+        <div className="absolute top-2.5 left-[50px] w-[36px] h-[16px] bg-[#344240AA] bg-opacity-50 z-10 rounded-full flex items-center  gap-x-[2px] px-[3px]">
+          <div className="w-[5px] h-[5px] bg-[#EEFF97] rounded-full"></div>
+          <div className="text-[8px]">Profit</div>
+        </div>
+        <div className="absolute bottom-[36px] left-[50px] w-[36px] h-[16px] bg-[#344240AA] bg-opacity-50 z-10 rounded-full flex items-center  gap-x-[2px] px-[3px]">
+          <div className="w-[5px] h-[5px] bg-[#FFDF27] rounded-full" />
+          <div className="text-[8px]">Loss</div>
+        </div>
         <HighchartsProvider Highcharts={Highcharts}>
           {" "}
           <HighchartsChart
@@ -753,7 +769,7 @@ function BreakdownCharts({
               animation={{
                 duration: 50,
               }}
-              marginBottom={5}
+              marginBottom={30}
               marginLeft={45}
               marginRight={45}
               marginTop={0}
@@ -829,7 +845,9 @@ function BreakdownCharts({
                   ? timespans[selectedTimespan].xMin
                   : undefined
               }
-            ></XAxis>
+            >
+              <XAxis.Title>Yooo</XAxis.Title>
+            </XAxis>
             <YAxis
               opposite={false}
               // showFirstLabel={true}
@@ -843,6 +861,7 @@ function BreakdownCharts({
               showLastLabel={false}
               tickAmount={4}
               softMin={-100}
+              softMax={100}
               labels={{
                 align: "right",
                 y: 2,
