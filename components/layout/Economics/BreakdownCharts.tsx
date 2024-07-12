@@ -474,7 +474,13 @@ function BreakdownCharts({
   }
 
   return (
-    <div className="h-full">
+    <div
+      className="h-full"
+      onMouseLeave={() => {
+        if (mainChart) mainChart.tooltip.hide();
+        if (profitChart) profitChart.tooltip.hide();
+      }}
+    >
       <div
         className="w-full h-full min-h-[209px] max-h-[209px] "
         ref={chartRef}
