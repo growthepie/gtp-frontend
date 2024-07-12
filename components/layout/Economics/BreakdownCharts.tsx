@@ -64,6 +64,7 @@ function BreakdownCharts({
   const [profitChart, setProfitChart] = useState<any>(null);
   const [mainChart, setMainChart] = useState<any>(null);
   const chartRef = useRef<HTMLDivElement>(null);
+  const profitChartRef = useRef<HTMLDivElement>(null);
   const reversePerformer = false;
   const selectedScale: string = "absolute";
   const { isMobile } = useUIContext();
@@ -97,7 +98,13 @@ function BreakdownCharts({
       // Retrieve the point using the closestIndex
       const point = series.points[closestIndex];
 
-      profitChart.tooltip.refresh(point);
+      if (mainChart.xAxis[0].crosshair) {
+        profitChart.xAxis[0].drawCrosshair(event, point);
+      }
+      if (point && point.graphic) {
+        point.setState("hover"); // Highlight the point
+      }
+      profitChart.tooltip.hide();
     };
 
     const handleMouseLeave = () => {
@@ -106,6 +113,79 @@ function BreakdownCharts({
     };
 
     const chartContainer = chartRef.current;
+    if (chartContainer && mainChart && profitChart) {
+      chartContainer.addEventListener("mouseenter", handleMouseEnter);
+      chartContainer.addEventListener("mousemove", handleMouseEnter);
+      chartContainer.addEventListener("mouseleave", handleMouseLeave);
+    }
+
+    // Clean up event listeners on component unmount
+    return () => {
+      if (chartContainer) {
+        chartContainer.removeEventListener("mouseenter", handleMouseEnter);
+        chartContainer.removeEventListener("mousemove", handleMouseEnter);
+        chartContainer.removeEventListener("mouseleave", handleMouseLeave);
+      }
+    };
+  }, [mainChart, profitChart]);
+
+  useEffect(() => {
+    const handleMouseEnter = (event) => {
+      const e = profitChart.pointer.normalize(event);
+      const xAxisValue = profitChart.xAxis[0].toValue(e.chartX);
+      const series1 = mainChart.series[0];
+      const series2 = mainChart.series[1]; // Assuming mainChart has two series
+
+      // Find the index of the closest point to the xAxisValue for series1
+      let closestIndex1 = -1;
+      let minDistance1 = Infinity;
+
+      series1.points.forEach((point, index) => {
+        const currentX = point.x;
+        const distance = Math.abs(currentX - xAxisValue);
+
+        if (distance < minDistance1) {
+          minDistance1 = distance;
+          closestIndex1 = index;
+        }
+      });
+
+      // Retrieve the point using the closestIndex for series1
+      const point1 = series1.points[closestIndex1];
+
+      // Find the index of the closest point to the xAxisValue for series2
+      let closestIndex2 = -1;
+      let minDistance2 = Infinity;
+
+      series2.points.forEach((point, index) => {
+        const currentX = point.x;
+        const distance = Math.abs(currentX - xAxisValue);
+
+        if (distance < minDistance2) {
+          minDistance2 = distance;
+          closestIndex2 = index;
+        }
+      });
+
+      // Retrieve the point using the closestIndex for series2
+      const point2 = series2.points[closestIndex2];
+
+      // Show crosshair for mainChart
+      if (mainChart.xAxis[0].crosshair) {
+        mainChart.xAxis[0].drawCrosshair(event, point1);
+        mainChart.xAxis[0].drawCrosshair(event, point2); // Draw crosshair for both series
+      }
+
+      // Refresh tooltips for both series
+      mainChart.tooltip.refresh([point1, point2]);
+    };
+
+    const handleMouseLeave = () => {
+      profitChart.tooltip.hide();
+      // Add your custom logic here
+    };
+
+    const chartContainer = profitChartRef.current;
     if (chartContainer && mainChart && profitChart) {
       chartContainer.addEventListener("mouseenter", handleMouseEnter);
       chartContainer.addEventListener("mousemove", handleMouseEnter);
@@ -181,6 +261,18 @@ function BreakdownCharts({
           const { series, y, percentage } = point;
           const { name } = series;
           const lastIndex = index === 1 && name !== "Profit";
+          let profitY = 0;
+          if (name === "Revenue" || name === "Costs") {
+            const profitObj = dailyData.profit.data.find(
+              (xValue) => xValue[0] === x,
+            );
+            if (profitObj) {
+              profitY =
+                profitObj[
+                  dailyData.profit.types.indexOf(showUsd ? "usd" : "eth")
+                ];
+            }
+          }
 
           if (selectedScale === "percentage")
             return `
@@ -210,7 +302,8 @@ function BreakdownCharts({
           let value = y;
           let displayValue = y;
 
-          return `
+          if (name === "Revenue" || name === "Costs") {
+            return `
               <div class="flex w-full justify-between space-x-2 items-center font-medium mb-0.5">
                 <div class="flex gap-x-1 items-center">
                   <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
@@ -231,8 +324,56 @@ function BreakdownCharts({
                     }">${suffix}</div>
                 </div>
               </div>
-              
+              ${
+                lastIndex
+                  ? `<div class="flex w-full justify-between space-x-2 items-center font-medium mb-0.5">
+                <div class="flex gap-x-1 items-center">
+                  <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                    profitY >= 0 ? "#EEFF97" : "#FFDF27"
+                  }"></div>
+                  <div class="tooltip-point-name text-md">${"Profit"}</div>
+                </div>
+                <div class="flex-1 justify-end text-right font-inter flex">
+                    <div class="opacity-70 mr-0.5 ${
+                      !prefix && "hidden"
+                    }">${prefix}</div>
+                    ${parseFloat(String(profitY)).toLocaleString("en-GB", {
+                      minimumFractionDigits: valuePrefix ? 2 : 0,
+                      maximumFractionDigits: valuePrefix ? 2 : 0,
+                    })}
+                    <div class="opacity-70 ml-0.5 ${
+                      !suffix && "hidden"
+                    }">${suffix}</div>
+                </div>
+              </div>`
+                  : ""
+              }
               `;
+          } else {
+            return `
+            <div class="flex w-full justify-between space-x-2 items-center font-medium mb-0.5">
+              <div class="flex gap-x-1 items-center">
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
+                  series.color
+                }"></div>
+                <div class="tooltip-point-name text-md">${name}</div>
+              </div>
+              <div class="flex-1 justify-end text-right font-inter flex">
+                  <div class="opacity-70 mr-0.5 ${
+                    !prefix && "hidden"
+                  }">${prefix}</div>
+                  ${parseFloat(displayValue).toLocaleString("en-GB", {
+                    minimumFractionDigits: valuePrefix ? 2 : 0,
+                    maximumFractionDigits: valuePrefix ? 2 : 0,
+                  })}
+                  <div class="opacity-70 ml-0.5 ${
+                    !suffix && "hidden"
+                  }">${suffix}</div>
+              </div>
+            </div>
+            
+            `;
+          }
         })
         .join("");
 
@@ -558,7 +699,10 @@ function BreakdownCharts({
           </HighchartsChart>
         </HighchartsProvider>
       </div>
-      <div className="h-[140px] w-full flex justify-center items-center">
+      <div
+        className="h-[140px] w-full flex justify-center items-center"
+        ref={profitChartRef}
+      >
         <HighchartsProvider Highcharts={Highcharts}>
           {" "}
           <HighchartsChart
@@ -621,6 +765,7 @@ function BreakdownCharts({
             />
             <Tooltip
               useHTML={true}
+              enabled={false}
               shared={true}
               split={false}
               followPointer={true}
