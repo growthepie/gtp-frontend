@@ -1,5 +1,11 @@
 import { DurationData, DailyData } from "@/types/api/EconomicsResponse";
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from "react";
 import Highcharts from "highcharts/highstock";
 import addHighchartsMore from "highcharts/highcharts-more";
 import { useLocalStorage } from "usehooks-ts";
@@ -56,6 +62,8 @@ function BreakdownCharts({
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
   const [profitChart, setProfitChart] = useState<any>(null);
+  const [mainChart, setMainChart] = useState<any>(null);
+  const chartRef = useRef<HTMLDivElement>(null);
   const reversePerformer = false;
   const selectedScale: string = "absolute";
   const { isMobile } = useUIContext();
@@ -66,8 +74,53 @@ function BreakdownCharts({
     return "Ξ";
   }, [showUsd]);
 
-  const data1 = [1, 2, 3, 4, 5];
-  const data2 = [2, 3, 2, 5, 6];
+  useEffect(() => {
+    const handleMouseEnter = (event) => {
+      const e = mainChart.pointer.normalize(event);
+      const xAxisValue = mainChart.xAxis[0].toValue(e.chartX);
+      const series = profitChart.series[0];
+
+      // Find the index of the closest point to the xAxisValue
+      let closestIndex = -1;
+      let minDistance = Infinity;
+
+      series.points.forEach((point, index) => {
+        const currentX = point.x;
+        const distance = Math.abs(currentX - xAxisValue);
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestIndex = index;
+        }
+      });
+
+      // Retrieve the point using the closestIndex
+      const point = series.points[closestIndex];
+
+      profitChart.tooltip.refresh(point);
+    };
+
+    const handleMouseLeave = () => {
+      profitChart.tooltip.hide();
+      // Add your custom logic here
+    };
+
+    const chartContainer = chartRef.current;
+    if (chartContainer && mainChart && profitChart) {
+      chartContainer.addEventListener("mouseenter", handleMouseEnter);
+      chartContainer.addEventListener("mousemove", handleMouseEnter);
+      chartContainer.addEventListener("mouseleave", handleMouseLeave);
+    }
+
+    // Clean up event listeners on component unmount
+    return () => {
+      if (chartContainer) {
+        chartContainer.removeEventListener("mouseenter", handleMouseEnter);
+        chartContainer.removeEventListener("mousemove", handleMouseEnter);
+        chartContainer.removeEventListener("mouseleave", handleMouseLeave);
+      }
+    };
+  }, [mainChart, profitChart]);
 
   const tooltipFormatter = useCallback(
     function (this: any) {
@@ -281,7 +334,10 @@ function BreakdownCharts({
 
   return (
     <div className="h-full">
-      <div className="w-full h-full min-h-[209px] max-h-[209px] ">
+      <div
+        className="w-full h-full min-h-[209px] max-h-[209px] "
+        ref={chartRef}
+      >
         <HighchartsProvider Highcharts={Highcharts}>
           <HighchartsChart
             containerProps={{
@@ -347,6 +403,8 @@ function BreakdownCharts({
 
                 if (!chart || !chart.series || chart.series.length === 0)
                   return;
+
+                setMainChart(chart);
               }}
             />
             <Tooltip
