@@ -9,6 +9,7 @@ import React, {
 import Highcharts from "highcharts/highstock";
 import addHighchartsMore from "highcharts/highcharts-more";
 import { useLocalStorage } from "usehooks-ts";
+import { AxisTickPositionerCallbackFunction } from "highcharts";
 import {
   HighchartsProvider,
   HighchartsChart,
@@ -252,11 +253,7 @@ function BreakdownCharts({
       }, 0);
 
       const tooltipPoints = points
-        .sort((a: any, b: any) => {
-          if (reversePerformer) return a.y - b.y;
 
-          return b.y - a.y;
-        })
         .map((point: any, index) => {
           const { series, y, percentage } = point;
           const { name } = series;

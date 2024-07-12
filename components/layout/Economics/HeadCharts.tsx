@@ -1,5 +1,5 @@
 "use client";
-import Highcharts from "highcharts/highstock";
+import Highcharts, { chart } from "highcharts/highstock";
 import {
   HighchartsProvider,
   HighchartsChart,
@@ -43,6 +43,7 @@ import {
   Get_DefaultChainSelectionKeys,
   Get_SupportedChainKeys,
 } from "@/lib/chains";
+import { B } from "million/dist/shared/million.485bbee4";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -118,6 +119,7 @@ export default function EconHeadCharts({
         day: "numeric",
         year: "numeric",
       });
+      const chartTitle = this.series.chart.title.textStr;
 
       // check if data steps are less than 1 day
       // if so, add the time to the tooltip
@@ -159,10 +161,18 @@ export default function EconHeadCharts({
 
       const tooltipPoints = points
 
-        .map((point: any) => {
+        .map((point: any, index: number) => {
           const { series, y, percentage } = point;
           const { name } = series;
-
+          let blob_value;
+          let blob_index;
+          if (index === 1) {
+            blob_index = da_charts[
+              chartTitle
+            ].total_blob_size.daily.data.findIndex((xVal) => xVal[0] === x);
+            blob_value =
+              da_charts[chartTitle].total_blob_size.daily.data[blob_index][1];
+          }
           const isFees = name.includes("Fees");
           const nameString = isFees ? "Fees" : "Blob Size";
 
@@ -203,7 +213,39 @@ export default function EconHeadCharts({
                 }">${suffix}</div>
             </div>
           </div>
-          `;
+          ${
+            index === 1
+              ? ` <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#344240"}"></div>
+            <div class="tooltip-point-name text-md">${"Cost / GB"}</div>
+            <div class="flex-1 text-right font-inter w-full flex">
+              <div class="flex justify-end text-right w-full">
+                  <div class="opacity-70 mr-0.5 ${
+                    !prefix && "hidden"
+                  }">${prefix}</div>
+                  <div>${
+                    isFees
+                      ? parseFloat(
+                          String(calculateCostPerGB(Number(y), blob_value)),
+                        ).toLocaleString("en-GB", {
+                          minimumFractionDigits: calculateDecimalPlaces(
+                            Number(displayValue),
+                          ),
+                          maximumFractionDigits: calculateDecimalPlaces(
+                            Number(displayValue),
+                          ),
+                        })
+                      : formatBytes(displayValue)
+                  }
+                  </div>
+                </div>
+                <div class="opacity-70 ml-0.5 ${
+                  !suffix && "hidden"
+                }">${suffix}</div>
+            </div>
+          </div>`
+              : ``
+          }`;
         })
         .join("");
 
@@ -533,9 +575,15 @@ export default function EconHeadCharts({
                           },
                         }}
                       >
+                        <Title
+                          style={{ display: "none" }} // This hides the title
+                        >
+                          {key}
+                        </Title>
                         <Chart
                           backgroundColor={"transparent"}
                           type="area"
+                          title={key}
                           panning={{ enabled: true }}
                           panKey="shift"
                           zooming={{ type: undefined }}
