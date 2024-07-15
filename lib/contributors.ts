@@ -94,13 +94,7 @@ export const Datasources = [
   //   height: 32,
   //   url: "https://chainbase.com/",
   // },
-  {
-    name: "DefiLlama",
-    image: "/contributors/defi-llama-logo.svg",
-    width: 184,
-    height: 60,
-    url: "https://defillama.com/",
-  },
+
   // {
   //   name: "Immutable",
   //   image: "/contributors/immutable-logo.svg",

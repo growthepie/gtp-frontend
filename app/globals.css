@@ -236,6 +236,29 @@
   }
 }
 
+@keyframes rl-bounce {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  80% {
+    transform: translateX(-20px);
+  }
+  60% {
+    transform: translateX(20px);
+  }
+  40% {
+    transform: translateX(-20px);
+  }
+  20% {
+    transform: translateX(20px);
+  }
+}
+
+.horizontal-bounce {
+  animation: rl-bounce 0.6s ease-in-out;
+}
+
 /* div.blog {
   h2 {
     @apply text-3xl pb-3 pt-6;

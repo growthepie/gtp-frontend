@@ -38,6 +38,7 @@ export default function ChainBreakdown({
   const [metricSort, setMetricSort] = useState<MetricSort>("revenue");
   const [enableDASort, setEnableDASort] = useState(false);
   const [sortOrder, setSortOrder] = useState(true);
+  const [isBouncing, setIsBouncing] = useState(false);
 
   const [openChain, setOpenChain] = useState(() => {
     const initialState = Object.keys(data).reduce((acc, key) => {
@@ -112,6 +113,15 @@ export default function ChainBreakdown({
       ...prevState,
       [key]: !prevState[key],
     }));
+  };
+
+  const handleClick = (e, chain) => {
+    if (selectedTimespan === "1d") {
+      setIsBouncing(true);
+      setTimeout(() => setIsBouncing(false), 1000); // Duration of the bounce animation
+    }
+    toggleOpenChain(chain);
+    e.stopPropagation();
   };
 
   //Handles opening of each chain section
@@ -311,8 +321,8 @@ export default function ChainBreakdown({
         });
       }
       return {
-        y: index * 39 + prevOpenCharts * 357,
-        height: 39 + (openChain[key] ? 357 : 0),
+        y: index * 39 + prevOpenCharts * 387,
+        height: 39 + (openChain[key] ? 387 : 0),
         key: key, // Assuming `chain` is used as a key
         i: index,
       };
@@ -332,14 +342,14 @@ export default function ChainBreakdown({
     let retHeight: number = 39;
     Object.keys(data).map((key) => {
       retHeight += 39;
-      retHeight += openChain[key] ? 249 : 0;
+      retHeight += openChain[key] && selectedTimespan !== "1d" ? 387 : 0;
     });
 
     return retHeight;
-  }, [openChain, data]);
+  }, [openChain, data, selectedTimespan]);
 
   return (
-    <div>
+    <div className="h-full">
       {sortedChainData && (
         <div className="flex flex-col gap-y-[15px] ">
           <div className="flex justify-between items-center">
@@ -712,12 +722,16 @@ export default function ChainBreakdown({
                         openChain[item.key]
                           ? "border-[#CDD8D3] bg-forest-950 "
                           : "border-[#5A6462] bg-transparent"
-                      } `}
+                      }  ${
+                      isBouncing && openChain[item.key]
+                        ? "horizontal-bounce"
+                        : ""
+                    }`}
                     style={{
                       gridTemplateColumns: "auto 200px 200px 145px 145px 120px",
                     }}
                     onClick={(e) => {
-                      toggleOpenChain(item.key);
+                      handleClick(e, item.key);
                       e.stopPropagation();
                     }}
                   >
@@ -725,7 +739,7 @@ export default function ChainBreakdown({
                       <div
                         className="relative flex items-center justify-center rounded-full w-[26px] h-[26px] bg-[#151A19] cursor-pointer"
                         onClick={(e) => {
-                          toggleOpenChain(item.key);
+                          handleClick(e, item.key);
                           e.stopPropagation();
                         }}
                       >
@@ -978,8 +992,19 @@ export default function ChainBreakdown({
                                         data[item.key][selectedTimespan].revenue
                                           .total[dataIndex])
                                     }px`
-                                  : "1px",
-                              minWidth: "1px",
+                                  : "0px",
+                              minWidth:
+                                (data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex] >
+                                0
+                                  ? "1px"
+                                  : "0px",
                             }}
                           ></div>
                         </div>
@@ -1022,7 +1047,7 @@ export default function ChainBreakdown({
                   <div
                     className={`flex bottom-2 z-0 relative top-[0px] justify-center w-full transition-height duration-300 overflow-hidden ${
                       openChain[item.key] && selectedTimespan !== "1d"
-                        ? "h-[357px]"
+                        ? "h-[387px]"
                         : "h-[0px]"
                     }`}
                   >
@@ -1033,6 +1058,7 @@ export default function ChainBreakdown({
                         chain={item.key}
                         timespans={timespans}
                         selectedTimespan={selectedTimespan}
+                        isOpen={openChain[item.key]}
                       />
                     </div>
                   </div>

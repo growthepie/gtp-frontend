@@ -52,12 +52,14 @@ function BreakdownCharts({
   chain,
   timespans,
   selectedTimespan,
+  isOpen,
 }: {
   data: DurationData;
   dailyData: DailyData;
   chain: string;
   timespans: Object;
   selectedTimespan: string;
+  isOpen?: boolean;
 }) {
   addHighchartsMore(Highcharts);
 
@@ -69,12 +71,23 @@ function BreakdownCharts({
   const reversePerformer = false;
   const selectedScale: string = "absolute";
   const { isMobile } = useUIContext();
-
+  const [isVisible, setIsVisible] = useState(isOpen);
   const valuePrefix = useMemo(() => {
     if (showUsd) return "$";
     // eth symbol
     return "Ξ";
   }, [showUsd]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsVisible(true);
+    } else {
+      const timeoutId = setTimeout(() => {
+        setIsVisible(false);
+      }, 300); // Match this duration with your CSS transition duration
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     const handleMouseEnter = (event) => {
@@ -408,6 +421,15 @@ function BreakdownCharts({
     [valuePrefix, reversePerformer],
   );
 
+  const tooltipManager = useMemo(() => {
+    if (!mainChart || !profitChart) return;
+    if (isOpen === false) {
+      mainChart.tooltip.hide();
+      profitChart.tooltip.hide();
+    }
+    return;
+  }, [isOpen]);
+
   const tooltipPositioner =
     useCallback<Highcharts.TooltipPositionerCallbackFunction>(
       function (this, width, height, point) {
@@ -472,14 +494,14 @@ function BreakdownCharts({
 
   return (
     <div
-      className="h-full"
+      className={`${isVisible ? "block" : "hidden"} `}
       onMouseLeave={() => {
         if (mainChart) mainChart.tooltip.hide();
         if (profitChart) profitChart.tooltip.hide();
       }}
     >
       <div
-        className="w-full h-full min-h-[190px] max-h-[190px] relative "
+        className="w-full h-full min-h-[210px] max-h-[210px] relative "
         ref={chartRef}
       >
         <div className="absolute bottom-2.5 left-[50px] w-[48px] h-[16px] bg-[#344240AA] bg-opacity-50 z-10 rounded-full flex items-center  gap-x-[2px] px-[3px]">
@@ -711,7 +733,7 @@ function BreakdownCharts({
         </HighchartsProvider>
       </div>
       <div
-        className="h-[165px] w-full flex justify-center items-center relative "
+        className="h-[175px] w-full flex justify-center items-center relative "
         ref={profitChartRef}
       >
         <div className="absolute top-2.5 left-[50px] w-[36px] h-[16px] bg-[#344240AA] bg-opacity-50 z-10 rounded-full flex items-center  gap-x-[2px] px-[3px]">
@@ -919,6 +941,7 @@ export default React.memo(BreakdownCharts, (prevProps, nextProps) => {
     prevProps.dailyData === nextProps.dailyData &&
     prevProps.chain === nextProps.chain &&
     prevProps.timespans === nextProps.timespans &&
-    prevProps.selectedTimespan === nextProps.selectedTimespan
+    prevProps.selectedTimespan === nextProps.selectedTimespan &&
+    prevProps.isOpen === nextProps.isOpen
   );
 });

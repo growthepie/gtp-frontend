@@ -45,7 +45,7 @@ export default function Economics() {
     econData.data;
 
   return (
-    <div className="mt-[60px] flex flex-col gap-y-[60px]">
+    <div className="mt-[60px] flex flex-col gap-y-[60px] h-full">
       {/*Data Availability Fee Markets */}
       <div className="flex flex-col gap-y-[15px]">
         <div className="flex items-center gap-x-[8px] ">
