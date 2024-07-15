@@ -17,6 +17,7 @@ import {
   TooltipContent,
 } from "@/components/layout/Tooltip";
 import Address from "@/components/layout/Address";
+import moment from "moment";
 
 type EpochsByProject = {
   [project: string]: EpochData[];
@@ -83,7 +84,7 @@ export default function Page() {
         .sort((a, b) =>
           a.decisionWindow && b.decisionWindow
             ? new Date(a.decisionWindow).getTime() -
-              new Date(b.decisionWindow).getTime()
+            new Date(b.decisionWindow).getTime()
             : 0,
         )
         .forEach((epoch) => {
@@ -279,6 +280,14 @@ export default function Page() {
     ],
   );
 
+  const TwentyPercentOfTotalMatched = useMemo(() => {
+    if (!data) return 0;
+
+    return (0.2 * Object.values(data.projects).map(p => p.rewardsMatched).reduce((acc, curr) => {
+      return acc + curr;
+    })) / 10 ** 18;
+  }, [data]);
+
   const sortedProjects = useMemo(() => {
     if (!epochsByProject) return [];
     return Object.keys(epochsByProject).sort(onRowSort);
@@ -323,13 +332,11 @@ export default function Page() {
             <div className="w-[10px] pt-0.5">
               <Icon
                 icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${
-                  sortKey !== "name" && "opacity-20"
-                } ${
-                  sortKey === "name" && sortDirection === "desc"
+                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "name" && "opacity-20"
+                  } ${sortKey === "name" && sortDirection === "asc"
                     ? "rotate-180"
                     : ""
-                }`}
+                  }`}
               />
             </div>
           </div>
@@ -347,13 +354,11 @@ export default function Page() {
             <div className="w-[10px] pt-0.5">
               <Icon
                 icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${
-                  sortKey !== "address" && "opacity-20"
-                } ${
-                  sortKey === "address" && sortDirection === "desc"
+                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "address" && "opacity-20"
+                  } ${sortKey === "address" && sortDirection === "asc"
                     ? "rotate-180"
                     : ""
-                }`}
+                  }`}
               />
             </div>
           </div>
@@ -371,13 +376,11 @@ export default function Page() {
             <div className="w-[10px] pt-0.5">
               <Icon
                 icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${
-                  sortKey !== "epochs" && "opacity-20"
-                } ${
-                  sortKey === "epochs" && sortDirection === "desc"
+                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "epochs" && "opacity-20"
+                  } ${sortKey === "epochs" && sortDirection === "asc"
                     ? "rotate-180"
                     : ""
-                }`}
+                  }`}
               />
             </div>
           </div>
@@ -396,13 +399,11 @@ export default function Page() {
             <div className="w-[10px] pt-0.5">
               <Icon
                 icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${
-                  sortKey !== "donors" && "opacity-20"
-                } ${
-                  sortKey === "donors" && sortDirection === "desc"
+                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "donors" && "opacity-20"
+                  } ${sortKey === "donors" && sortDirection === "asc"
                     ? "rotate-180"
                     : ""
-                }`}
+                  }`}
               />
             </div>
           </div>
@@ -421,13 +422,11 @@ export default function Page() {
             <div className="w-[10px] pt-0.5 leading-tight">
               <Icon
                 icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${
-                  sortKey !== "totalAllocated" && "opacity-20"
-                } ${
-                  sortKey === "totalAllocated" && sortDirection === "desc"
+                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "totalAllocated" && "opacity-20"
+                  } ${sortKey === "totalAllocated" && sortDirection === "desc"
                     ? "rotate-180"
                     : ""
-                }`}
+                  }`}
               />
             </div>
           </div>
@@ -437,17 +436,21 @@ export default function Page() {
       {
         key: "rewardsThreshold",
         cell: () => (
-          <div className="relative">
-            <div className="relative -left-[8px] -bottom-[6px] text-forest-900/50 dark:text-forest-500/50 font-normal text-[0.7rem] whitespace-nowrap overflow-visible">
-              {currentEpoch &&
-                Math.abs(currentEpoch.rewardsThreshold / 10 ** 18).toFixed(
-                  4,
-                )}{" "}
-              <span className="text-[0.6rem] text-forest-900/20 dark:text-forest-500/30">
-                ETH
-              </span>
-            </div>
-            <div className="absolute h-2 w-1 border-t border-l border-forest-900/20 dark:border-forest-500/20 -left-[15px] -bottom-[6px]"></div>
+          <div className={`relative ${currentEpoch && currentEpoch.epoch >= 4 && "hidden"}`}>
+            {currentEpoch && currentEpoch.epoch < 4 && (
+              <>
+                <div className="relative -left-[8px] -bottom-[6px] text-forest-900/50 dark:text-forest-500/50 font-normal text-[0.7rem] whitespace-nowrap overflow-visible">
+                  {currentEpoch &&
+                    (currentEpoch.epoch >= 4 ? TwentyPercentOfTotalMatched.toFixed(4) : Math.abs(currentEpoch.rewardsThreshold / 10 ** 18).toFixed(
+                      4,
+                    ))}{" "}
+                  <span className="text-[0.6rem] text-forest-900/20 dark:text-forest-500/30">
+                    ETH
+                  </span>
+                </div>
+                <div className="absolute h-2 w-1 border-t border-l border-forest-900/20 dark:border-forest-500/20 -left-[15px] -bottom-[6px]"></div>
+              </>
+            )}
           </div>
         ),
       },
@@ -463,19 +466,18 @@ export default function Page() {
             <div className="w-[10px] pt-0.5">
               <Icon
                 icon="formkit:arrowdown"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${
-                  sortKey !== "rewardsMatched" && "opacity-20"
-                } ${
-                  sortKey === "rewardsMatched" && sortDirection === "desc"
+                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "rewardsMatched" && "opacity-20"
+                  } ${sortKey === "rewardsMatched" && sortDirection === "asc"
                     ? "rotate-180"
                     : ""
-                }`}
+                  }`}
               />
             </div>
           </div>
         ),
         sortKey: "rewardsMatched",
       },
+
       {
         key: "rewardsTotal",
         containerClassName: "flex justify-end text-right",
@@ -487,14 +489,12 @@ export default function Page() {
             <div>Epoch {currentEpoch?.epoch} Total</div>
             <div className="w-[10px] pt-0.5">
               <Icon
-                icon="formkit:arrowup"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${
-                  sortKey !== "rewardsTotal" && "opacity-20"
-                } ${
-                  sortKey === "rewardsTotal" && sortDirection === "asc"
+                icon="formkit:arrowdown"
+                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "rewardsTotal" && "opacity-20"
+                  } ${sortKey === "rewardsTotal" && sortDirection === "asc"
                     ? "rotate-180"
                     : ""
-                }`}
+                  }`}
               />
             </div>
           </div>
@@ -512,22 +512,25 @@ export default function Page() {
             <div>All Time Total</div>
             <div className="w-[10px] pt-0.5">
               <Icon
-                icon="formkit:arrowup"
-                className={`w-[10px] h-[10px] transition duration-100 transform ${
-                  sortKey !== "allTimeTotal" && "opacity-20"
-                } ${
-                  sortKey === "allTimeTotal" && sortDirection === "asc"
+                icon="formkit:arrowdown"
+                className={`w-[10px] h-[10px] transition duration-100 transform ${sortKey !== "allTimeTotal" && "opacity-20"
+                  } ${sortKey === "allTimeTotal" && sortDirection === "asc"
                     ? "rotate-180"
                     : ""
-                }`}
+                  }`}
               />
             </div>
           </div>
         ),
         sortKey: "allTimeTotal",
       },
-    ];
-  }, [data, sortDirection, sortKey, currentEpoch]);
+    ].filter((header) => header !== undefined) as {
+      key: string;
+      containerClassName?: string;
+      cell: () => React.ReactNode;
+      sortKey?: string;
+    }[];
+  }, [data, currentEpoch, sortKey, sortDirection, TwentyPercentOfTotalMatched]);
 
   // Countdown Timer for Decision Window
   const createTmer = useMemo(() => {
@@ -553,15 +556,23 @@ export default function Page() {
       return () => clearInterval(interval);
     }, []);
 
+    // X days, X hours, X minutes, X seconds
+    const timerReadable = useMemo(() => {
+      return moment(timer).format("d [days], h [hours], m [minutes], s [seconds]");
+    }, [timer]);
+
     if (!currentEpoch || !currentEpoch.decisionWindow) return null;
 
     if (timer === Infinity) return null;
+
+
 
     return (
       <div className="flex flex-row gap-x-2 items-center justify-start text-xs">
         <div className="font-medium">Epoch {currentEpoch?.epoch}</div>
         <div>—</div>
         <div className="flex items-center gap-x-2">
+
           {timer > 0 ? (
             <div className="flex items-center gap-x-2">
               <div className="w-4 h-4">
@@ -571,7 +582,8 @@ export default function Page() {
                 />
               </div>
               <div>
-                {Math.floor(timer / (1000 * 60 * 60))
+                {timerReadable}
+                {/* {Math.floor(timer / (1000 * 60 * 60))
                   .toString()
                   .padStart(2, "0")}
                 :
@@ -581,7 +593,7 @@ export default function Page() {
                 :
                 {Math.floor((timer / 1000) % 60)
                   .toString()
-                  .padStart(2, "0")}
+                  .padStart(2, "0")} */}
               </div>
             </div>
           ) : (
@@ -647,7 +659,7 @@ export default function Page() {
         className="min-w-[900px] flex flex-col gap-y-[5px] transition-all duration-300"
         style={{ maxHeight: !data ? "calc(100vh - 550px)" : "5000px" }}
       >
-        <div className="select-none grid grid-cols-[32px,16px,minmax(240px,800px),0px,130px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,130px,80px,120px,40px,110px,105px,120px] gap-x-[15px] px-[6px] pt-[30px] text-[11px] items-center font-bold">
+        <div className={`select-none grid ${currentEpoch && (currentEpoch.epoch < 4 ? "grid-cols-[32px,16px,minmax(240px,800px),0px,130px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,130px,80px,120px,40px,110px,105px,120px]" : "grid-cols-[32px,16px,minmax(240px,800px),0px,130px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,130px,80px,120px,40px,110px,105px,120px]")} gap-x-[15px] px-[6px] pt-[30px] text-[11px] items-center font-bold`}>
           {headers.map((header) => (
             <div key={header.key} className={`${header.containerClassName}`}>
               {header.cell()}
@@ -718,15 +730,14 @@ const EpochTile = ({
 
       {["FINALIZED", "REWARD_ALLOCATION"].includes(epochState) && (
         <div
-          className={`flex items-center justify-center w-6 h-6 opacity-80 ${
-            currentEpoch.epoch === epoch.epoch
-              ? project && project.thresholdReached
-                ? "bg-green-500 text-green-50"
-                : "bg-red-500 text-red-50"
-              : project && project.thresholdReached
+          className={`flex items-center justify-center w-6 h-6 opacity-80 ${currentEpoch.epoch === epoch.epoch
+            ? project && project.thresholdReached
+              ? "bg-green-500 text-green-50"
+              : "bg-red-500 text-red-50"
+            : project && project.thresholdReached
               ? "bg-green-500/10 text-green-500/50"
               : "bg-red-500/10 text-red-500/50"
-          } rounded-sm cursor-pointer`}
+            } rounded-sm cursor-pointer`}
           onClick={() => setCurrentEpoch && setCurrentEpoch(epoch)}
         >
           <div>{epochNumber}</div>
@@ -785,7 +796,7 @@ const OctantTableRow = ({
   if (!project) return null;
 
   return (
-    <div className="grid grid-cols-[32px,16px,minmax(240px,800px),0px,130px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,130px,80px,120px,40px,110px,105px,120px] gap-x-[15px] rounded-full border border-forest-900/20 dark:border-forest-500/20 px-[6px] py-[5px] text-xs items-center">
+    <div className={`grid ${currentEpoch && (currentEpoch.epoch < 4 ? "grid-cols-[32px,16px,minmax(240px,800px),0px,130px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,130px,80px,120px,40px,110px,105px,120px]" : "grid-cols-[32px,16px,minmax(240px,800px),0px,130px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,130px,80px,120px,40px,110px,105px,120px]")} gap-x-[15px] rounded-full border border-forest-900/20 dark:border-forest-500/20 px-[6px] py-[5px] text-xs items-center`}>
       <div className="w-8 h-8 border border-forest-900/20 dark:border-forest-500/20 rounded-full overflow-hidden">
         <Image
           src={`https://ipfs.io/ipfs/${project.profileImageMedium}`}
@@ -942,25 +953,23 @@ const OctantTableRow = ({
             <div className="w-4 h-4">
               <Icon
                 icon="feather:check-square"
-                className={`w-4 h-4  fill-current ${
-                  project.thresholdReached
-                    ? "text-green-500 dark:text-green-500"
-                    : "text-forest-900/80 dark:text-forest-600/80"
-                }`}
+                className={`w-4 h-4  fill-current ${project.thresholdReached
+                  ? "text-green-500 dark:text-green-500"
+                  : "text-forest-900/80 dark:text-forest-600/80"
+                  }`}
               />
             </div>
-            <div className="z-10 absolute -bottom-[6px] left-0 right-0 text-xs font-normal text-right h-[2px]">
+            <div className={`z-10 absolute -bottom-[6px] left-0 right-0 text-xs font-normal text-right h-[2px] ${currentEpoch && currentEpoch.epoch >= 4 && "hidden"}`}>
               <div
-                className="z-10 absolute"
+                className={`z-10 absolute`}
                 style={{
                   height: "2px",
-                  width: `${
-                    project.totalAllocated / currentEpoch.rewardsThreshold < 1
-                      ? 100
-                      : (project.totalAllocated /
-                          currentEpoch.rewardsThreshold) *
-                        100
-                  }%`,
+                  width: `${project.totalAllocated / currentEpoch.rewardsThreshold < 1
+                    ? 100
+                    : (project.totalAllocated /
+                      currentEpoch.rewardsThreshold) *
+                    100
+                    }%`,
                 }}
               >
                 {project.totalAllocated / currentEpoch.rewardsThreshold > 1 ? (
@@ -969,9 +978,8 @@ const OctantTableRow = ({
                       className="bg-forest-900/80 dark:bg-[#b0bbb6]"
                       style={{
                         height: "2px",
-                        width: `${
-                          project.percentageThresholdOfTotalAllocated * 100.0
-                        }%`,
+                        width: `${project.percentageThresholdOfTotalAllocated * 100.0
+                          }%`,
                         // right with bases on bottom and right
                       }}
                     ></div>
@@ -992,9 +1000,8 @@ const OctantTableRow = ({
                     className=" bg-red-500 dark:bg-red-500"
                     style={{
                       height: "2px",
-                      width: `${
-                        (1 / project.percentageThresholdOfTotalAllocated) * 100
-                      }%`,
+                      width: `${(1 / project.percentageThresholdOfTotalAllocated) * 100
+                        }%`,
                     }}
                   ></div>
                 )}
@@ -1011,13 +1018,13 @@ const OctantTableRow = ({
         )}
       </div>
 
-      <div className="relative flex justify-start item-center gap-x-2">
+      <div className={`relative flex justify-start item-center gap-x-2`}>
         {currentEpochProject && (
           <>
-            <div className="relative -left-[12px] -bottom-[2px] flex items-center text-forest-900/80 dark:text-forest-500/80 font-medium text-[0.6rem]">
+            <div className={`relative -left-[12px] -bottom-[2px] flex items-center text-forest-900/80 dark:text-forest-500/80 font-medium text-[0.6rem] ${currentEpoch && currentEpoch.epoch >= 4 && "hidden"}`}>
               {(project.rewards.allocated / currentEpoch.rewardsThreshold) *
                 100 >
-              100 ? (
+                100 ? (
                 <div className="text-forest-500/60 dark:text-forest-500/60">
                   +
                   {(
@@ -1035,13 +1042,13 @@ const OctantTableRow = ({
                     ((project.rewards.allocated -
                       currentEpoch.rewardsThreshold) /
                       currentEpoch.rewardsThreshold) *
-                      100,
+                    100,
                   ).toFixed(0)}
                   %
                 </div>
               )}
             </div>
-            <div className="absolute h-[10px] w-1 border-l border-forest-900/20 dark:border-forest-500/20 -left-[15px] -bottom-[13px]"></div>
+            <div className={`absolute h-[10px] w-1 border-l border-forest-900/20 dark:border-forest-500/20 -left-[15px] -bottom-[13px] ${currentEpoch && currentEpoch.epoch >= 4 && "hidden"}`}></div>
           </>
         )}
       </div>
@@ -1049,9 +1056,8 @@ const OctantTableRow = ({
       <div className="flex justify-end pr-[25px]">
         {currentEpochProject && (
           <div
-            className={`text-[0.8rem] font-medium leading-[1.2] font-inter ${
-              currentEpochProject.rewards.matched <= 0 && "opacity-30"
-            }`}
+            className={`text-[0.8rem] font-medium leading-[1.2] font-inter ${currentEpochProject.rewards.matched <= 0 && "opacity-30"
+              }`}
           >
             {(currentEpochProject.rewards.matched / 10 ** 18).toFixed(4)}{" "}
             <span className="opacity-60 text-[0.55rem]">ETH</span>
@@ -1061,9 +1067,8 @@ const OctantTableRow = ({
       <div className="flex justify-end pr-[25px]">
         {currentEpochProject && (
           <div
-            className={`text-[0.8rem] font-medium leading-[1.2] font-inter ${
-              currentEpochProject.rewards.total <= 0 && "opacity-30"
-            }`}
+            className={`text-[0.8rem] font-medium leading-[1.2] font-inter ${currentEpochProject.rewards.total <= 0 && "opacity-30"
+              }`}
           >
             {(currentEpochProject.rewards.total / 10 ** 18).toFixed(4)}{" "}
             <span className="opacity-60 text-[0.55rem]">ETH</span>
@@ -1072,9 +1077,8 @@ const OctantTableRow = ({
       </div>
       <div className="flex justify-end pr-[25px]">
         <div
-          className={`text-[0.9rem] font-bold leading-[1.2] font-inter ${
-            allTimeTotalsByProject[projectAddress] <= 0 && "opacity-30"
-          }`}
+          className={`text-[0.9rem] font-bold leading-[1.2] font-inter ${allTimeTotalsByProject[projectAddress] <= 0 && "opacity-30"
+            }`}
         >
           {(allTimeTotalsByProject[projectAddress] / 10 ** 18).toFixed(4)}{" "}
           <span className="opacity-60 text-[0.55rem] font-semibold">ETH</span>

@@ -3,7 +3,7 @@ import {
   EpochBudgetItem,
   EpochStats,
   OctantClient,
-} from "@/lib/apis/octant";
+} from "@/lib/apis/api";
 import { request, gql } from "graphql-request";
 import { formatNumber } from "@/lib/chartUtils";
 
@@ -130,24 +130,46 @@ export type EpochData = {
   projects: EpochProject[];
 };
 const getAllEpochs = async () => {
+  console.log(
+    "get current epoch from: https://backend.mainnet.octant.app/epochs/current",
+  );
   // get current epoch from: https://backend.mainnet.octant.app/epochs/current
   const lastEpoch = await Client.epochs
     .getCurrentEpoch()
     .then((res) => res.data.currentEpoch);
 
+  console.log(
+    "get epoch start and end times from: https://graph.mainnet.octant.app/subgraphs/name/octant",
+  );
+
   const currentEpochStartEndTimes = await getEpochStartEndTimes(lastEpoch);
 
   const epochs: EpochData[] = [];
 
+  console.log(
+    "get epoch stats from: https://backend.mainnet.octant.app/epochs/{epoch}",
+  );
+
   for (let epochNum = 1; epochNum <= lastEpoch; epochNum++) {
+    console.log(`Fetching data for epoch ${epochNum}`);
+
+    console.log(
+      "get projects metadata from: https://backend.mainnet.octant.app/projects/metadata/{epoch}",
+    );
     // get epoch stats from: https://backend.mainnet.octant.app/epochs/{epoch}
     const epochStats = await Client.epochs.getEpochStats(epochNum);
 
+    console.log(
+      "get projects metadata from: https://backend.mainnet.octant.app/projects/metadata/{epoch}",
+    );
     // get projects
     const { projectsAddresses, projectsCid } = await Client.projects
       .getProjectsMetadata(epochNum)
       .then((res) => res.data);
 
+    console.log(
+      `get epoch budgets from: https://backend.mainnet.octant.app/rewards/budgets/epoch/${epochNum}/`,
+    );
     const epochBudgets = await Client.rewards
       .getEpochBudgets(epochNum)
       .then((res) => res.data.budgets)
@@ -155,7 +177,9 @@ const getAllEpochs = async () => {
         console.error(err);
         return null;
       });
-
+    console.log(
+      "get estimated rewards from: https://backend.mainnet.octant.app/rewards/project/estimated",
+    );
     const estimatedRewards: any = await Client.rewards
       .getEstimatedProjectRewards()
       .then((res) => res.data.rewards)
@@ -204,10 +228,10 @@ const getAllEpochs = async () => {
 
     const allocationsByProject = epochAllocations
       ? epochAllocations.reduce((acc, a) => {
-          if (!acc[a.proposal]) {
-            acc[a.proposal] = [];
+          if (!acc[a.project]) {
+            acc[a.project] = [];
           }
-          acc[a.proposal].push(a);
+          acc[a.project].push(a);
           return acc;
         }, {} as { [proposal: string]: EpochAllocation[] })
       : {};
@@ -215,10 +239,10 @@ const getAllEpochs = async () => {
     const totalAllocatedByProject: { [address: string]: number } = {};
     if (epochAllocations) {
       for (const allocation of epochAllocations) {
-        if (!totalAllocatedByProject[allocation.proposal]) {
-          totalAllocatedByProject[allocation.proposal] = 0;
+        if (!totalAllocatedByProject[allocation.project]) {
+          totalAllocatedByProject[allocation.project] = 0;
         }
-        totalAllocatedByProject[allocation.proposal] += parseFloat(
+        totalAllocatedByProject[allocation.project] += parseFloat(
           allocation.amount,
         );
       }
@@ -289,6 +313,15 @@ const getAllEpochs = async () => {
       }
     }
 
+    if (epochNum >= 4) {
+      // subtract total donated from estimated rewards total
+      for (const address in estimatedRewardsByProject) {
+        estimatedRewardsByProject[address].matched =
+          estimatedRewardsByProject[address].total -
+          (totalAllocatedByProject[address] || 0);
+      }
+    }
+
     const totalRewardsRankByProject = Object.entries(
       finalizedRewards ? finalizedRewardsByProject : estimatedRewardsByProject,
     ).sort((a, b) => b[1].total - a[1].total);
@@ -336,6 +369,14 @@ const getAllEpochs = async () => {
       highestProjectAllocation: highestProjectAllocation,
       projects: await Promise.all(
         projectsAddresses.map(async (address) => {
+          // console.log(
+          //   `finalizedRewardsByProject[${address}]:${epochNum}`,
+          //   finalizedRewardsByProject[address],
+          // );
+          // console.log(
+          //   `estimatedRewardsByProject[${address}]:${epochNum}`,
+          //   estimatedRewardsByProject[address],
+          // );
           const metadata = await getProjectMetadata(address, projectsCid);
           return {
             address,
@@ -382,7 +423,11 @@ const getAllEpochs = async () => {
                   total: 0,
                 },
             thresholdReached:
-              totalAllocatedByProject[address] >= rewardsThreshold,
+              epochNum >= 4
+                ? allocationsByProject[address] &&
+                  new Set(allocationsByProject[address].map((a) => a.donor))
+                    .size > 0
+                : totalAllocatedByProject[address] >= rewardsThreshold,
           };
         }),
       ),
@@ -392,46 +437,11 @@ const getAllEpochs = async () => {
   return epochs;
 };
 
-const totalEffectiveDeposits = async (epoch: number) => {
-  const estimatedTotalEffective = await Client.deposits
-    .getEstimatedTotalEffectiveDeposit()
-    .then((res) => res.data.totalEffective);
-
-  const totalEffective = await Client.deposits
-    .getTotalEffectiveDeposit(epoch)
-    .then((res) => res.data.totalEffective);
-
-  const locked_ratio = await Client.deposits
-    .getLockedRatio(epoch)
-    .then((res) => res.data.lockedRatio);
-
-  return [
-    {
-      label: "Estimated Total Effective Deposits",
-      value:
-        estimatedTotalEffective !== null
-          ? formatNumber(parseInt(estimatedTotalEffective) / 10 ** 18, true)
-          : "N/A",
-    },
-    {
-      label: "Total Effective Deposits",
-      value:
-        totalEffective !== null
-          ? formatNumber(parseInt(totalEffective) / 10 ** 18, true)
-          : "N/A",
-    },
-    {
-      label: "Locked Ratio",
-      value:
-        locked_ratio !== null
-          ? formatNumber(parseFloat(locked_ratio).toFixed(4), false, true)
-          : "N/A",
-    },
-  ];
-};
-
 const fetchData = async () => {
+  console.log("Fetching data from Octant API");
   const epochs = await getAllEpochs();
+
+  console.log("Fetched data from Octant API");
 
   return epochs;
 };
