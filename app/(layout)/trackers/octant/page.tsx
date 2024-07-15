@@ -883,7 +883,7 @@ const OctantTableRow = ({
         {currentEpochProject && (
           <Tooltip placement="left" allowInteract>
             <TooltipTrigger className="flex justify-end item-center gap-x-2">
-              <div className="flex items-center text-[0.9rem] font-medium leading-[1.2] font-inter">
+              <div className="flex h-[26px] items-center text-[0.9rem] font-medium leading-[1] font-inter">
                 {project.donors}
               </div>
               <div className="w-[26px] h-[26px] flex items-center justify-center">
