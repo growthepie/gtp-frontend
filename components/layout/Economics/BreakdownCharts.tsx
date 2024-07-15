@@ -852,9 +852,9 @@ function BreakdownCharts({
                 color: COLORS.PLOT_LINE,
                 snap: false,
               }}
-              tickmarkPlacement="on"
+              tickAmount={0}
               tickWidth={1}
-              tickLength={20}
+              tickLength={10}
               ordinal={false}
               gridLineWidth={0}
               minorTicks={false}
@@ -868,7 +868,7 @@ function BreakdownCharts({
                   : undefined
               }
             >
-              <XAxis.Title>Yooo</XAxis.Title>
+              <XAxis.Title></XAxis.Title>
             </XAxis>
             <YAxis
               opposite={false}

@@ -17,7 +17,8 @@ import { AllChainsByKeys } from "@/lib/chains";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { sortByDataAvailability } from "./SortHelpers";
 import { useTransition, animated } from "@react-spring/web";
-
+import { set } from "lodash";
+import { useUIContext } from "@/contexts/UIContext";
 interface DAvailability {
   icon: string;
   label: string;
@@ -39,6 +40,8 @@ export default function ChainBreakdown({
   const [enableDASort, setEnableDASort] = useState(false);
   const [sortOrder, setSortOrder] = useState(true);
   const [isBouncing, setIsBouncing] = useState(false);
+  const [bounceChain, setBounceChain] = useState("");
+  const { isSidebarOpen } = useUIContext();
 
   const [openChain, setOpenChain] = useState(() => {
     const initialState = Object.keys(data).reduce((acc, key) => {
@@ -118,10 +121,12 @@ export default function ChainBreakdown({
   const handleClick = (e, chain) => {
     if (selectedTimespan === "1d") {
       setIsBouncing(true);
+      setBounceChain(chain);
       setTimeout(() => setIsBouncing(false), 1000); // Duration of the bounce animation
+    } else {
+      toggleOpenChain(chain);
+      e.stopPropagation();
     }
-    toggleOpenChain(chain);
-    e.stopPropagation();
   };
 
   //Handles opening of each chain section
@@ -387,12 +392,8 @@ export default function ChainBreakdown({
               })}
             </div>
           </div>
-          <div
-            className="grid gap-x-[5px] pr-0.5"
-            style={{
-              gridTemplateColumns: "auto 200px 200px 145px 145px 120px",
-            }}
-          >
+
+          <div className="grid gap-x-[5px] pr-0.5 grid-cols-[auto_200px_200px_145px_145px_120px]">
             <div className="pl-[44px] flex grow gap-x-[5px] items-center justify-start  ">
               <div
                 className="flex items-center group cursor-pointer "
@@ -717,19 +718,16 @@ export default function ChainBreakdown({
                   style={{ ...style }}
                 >
                   <div
-                    className={`grid gap-x-[5px] relative rounded-full w-full  border-[1px] min-h-[34px] text-[14px] items-center z-20 cursor-pointer 
+                    className={`grid gap-x-[5px] relative rounded-full w-full  border-[1px] min-h-[34px] text-[14px] items-center z-20 cursor-pointer pr-0.5 grid-cols-[auto_200px_200px_145px_145px_120px] 
                       ${
                         openChain[item.key]
                           ? "border-[#CDD8D3] bg-forest-950 "
                           : "border-[#5A6462] bg-transparent"
                       }  ${
-                      isBouncing && openChain[item.key]
+                      isBouncing && bounceChain === item.key
                         ? "horizontal-bounce"
                         : ""
-                    }`}
-                    style={{
-                      gridTemplateColumns: "auto 200px 200px 145px 145px 120px",
-                    }}
+                    } ${isSidebarOpen ? "" : ""}`}
                     onClick={(e) => {
                       handleClick(e, item.key);
                       e.stopPropagation();
