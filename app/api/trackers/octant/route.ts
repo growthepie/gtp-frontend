@@ -447,7 +447,7 @@ const fetchData = async () => {
 };
 
 export async function GET() {
-  if (process.env.NODE_ENV === "production" && !process.browser) {
+  if (process.env.NODE_ENV === "production" && window === undefined) {
     // This is running during build time
     return new Response(JSON.stringify([]), {
       headers: { "content-type": "application/json" },
