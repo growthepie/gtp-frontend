@@ -6,6 +6,7 @@ import {
 } from "@/lib/apis/api";
 import { request, gql } from "graphql-request";
 import { formatNumber } from "@/lib/chartUtils";
+import { NextRequest } from "next/server";
 
 export const revalidate = 60 * 1; // 1 minutes
 
@@ -130,46 +131,24 @@ export type EpochData = {
   projects: EpochProject[];
 };
 const getAllEpochs = async () => {
-  console.log(
-    "get current epoch from: https://backend.mainnet.octant.app/epochs/current",
-  );
   // get current epoch from: https://backend.mainnet.octant.app/epochs/current
   const lastEpoch = await Client.epochs
     .getCurrentEpoch()
     .then((res) => res.data.currentEpoch);
 
-  console.log(
-    "get epoch start and end times from: https://graph.mainnet.octant.app/subgraphs/name/octant",
-  );
-
   const currentEpochStartEndTimes = await getEpochStartEndTimes(lastEpoch);
 
   const epochs: EpochData[] = [];
 
-  console.log(
-    "get epoch stats from: https://backend.mainnet.octant.app/epochs/{epoch}",
-  );
-
   for (let epochNum = 1; epochNum <= lastEpoch; epochNum++) {
-    console.log(`Fetching data for epoch ${epochNum}`);
-
-    console.log(
-      "get projects metadata from: https://backend.mainnet.octant.app/projects/metadata/{epoch}",
-    );
     // get epoch stats from: https://backend.mainnet.octant.app/epochs/{epoch}
     const epochStats = await Client.epochs.getEpochStats(epochNum);
 
-    console.log(
-      "get projects metadata from: https://backend.mainnet.octant.app/projects/metadata/{epoch}",
-    );
     // get projects
     const { projectsAddresses, projectsCid } = await Client.projects
       .getProjectsMetadata(epochNum)
       .then((res) => res.data);
 
-    console.log(
-      `get epoch budgets from: https://backend.mainnet.octant.app/rewards/budgets/epoch/${epochNum}/`,
-    );
     const epochBudgets = await Client.rewards
       .getEpochBudgets(epochNum)
       .then((res) => res.data.budgets)
@@ -177,9 +156,7 @@ const getAllEpochs = async () => {
         console.error(err);
         return null;
       });
-    console.log(
-      "get estimated rewards from: https://backend.mainnet.octant.app/rewards/project/estimated",
-    );
+
     const estimatedRewards: any = await Client.rewards
       .getEstimatedProjectRewards()
       .then((res) => res.data.rewards)
@@ -369,14 +346,6 @@ const getAllEpochs = async () => {
       highestProjectAllocation: highestProjectAllocation,
       projects: await Promise.all(
         projectsAddresses.map(async (address) => {
-          // console.log(
-          //   `finalizedRewardsByProject[${address}]:${epochNum}`,
-          //   finalizedRewardsByProject[address],
-          // );
-          // console.log(
-          //   `estimatedRewardsByProject[${address}]:${epochNum}`,
-          //   estimatedRewardsByProject[address],
-          // );
           const metadata = await getProjectMetadata(address, projectsCid);
           return {
             address,
@@ -438,16 +407,14 @@ const getAllEpochs = async () => {
 };
 
 const fetchData = async () => {
-  console.log("Fetching data from Octant API");
   const epochs = await getAllEpochs();
-
-  console.log("Fetched data from Octant API");
-
   return epochs;
 };
 
-export async function GET() {
-  if (process.env.NODE_ENV === "production" && typeof window === "undefined") {
+export async function GET(request: NextRequest) {
+  const params = request.nextUrl.searchParams;
+
+  if (process.env.NODE_ENV === "production" && !params.get("isBrowser")) {
     // This is running during build time
     return new Response(JSON.stringify([]), {
       headers: { "content-type": "application/json" },

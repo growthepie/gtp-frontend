@@ -35,7 +35,7 @@ export default function Page() {
 
   useEffect(() => {
     async function fetchData() {
-      const response = await fetch("/api/trackers/octant");
+      const response = await fetch("/api/trackers/octant?isBrowser=true");
       const data = await response.json();
       setEpochs(data);
 
@@ -283,7 +283,7 @@ export default function Page() {
   const TwentyPercentOfTotalMatched = useMemo(() => {
     if (!data) return 0;
 
-    return (0.2 * Object.values(data.projects).map(p => p.rewardsMatched).reduce((acc, curr) => {
+    return (0.2 * Object.values(data.projects).map((p: any) => p.rewardsMatched).reduce((acc, curr) => {
       return acc + curr;
     })) / 10 ** 18;
   }, [data]);

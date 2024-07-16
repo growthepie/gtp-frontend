@@ -1,5 +1,5 @@
 "use client";
-import { EpochData } from "@/app/api/trackers/octant/route";
+import { EpochData } from "@/app/api/trackers/octant/[isBrowser]/route";
 import Image from "next/image";
 import Link from "next/link";
 import Icon from "@/components/layout/Icon";
@@ -304,11 +304,10 @@ const OctantTableRow = ({ data, projectIndex }: TableRowProps) => {
           <div className="w-4 h-4">
             <Icon
               icon="feather:check-square"
-              className={`w-4 h-4  fill-current ${
-                project.thresholdReached
+              className={`w-4 h-4  fill-current ${project.thresholdReached
                   ? "text-green-500 dark:text-green-500"
                   : "text-forest-900/80 dark:text-forest-600/80"
-              }`}
+                }`}
             />
           </div>
           <div className="z-10 absolute -bottom-[6px] left-0 right-0 text-xs font-normal text-right h-[2px]">
@@ -316,11 +315,10 @@ const OctantTableRow = ({ data, projectIndex }: TableRowProps) => {
               className="z-10 absolute"
               style={{
                 height: "2px",
-                width: `${
-                  project.totalAllocated / data.rewardsThreshold < 1
+                width: `${project.totalAllocated / data.rewardsThreshold < 1
                     ? 100
                     : (project.totalAllocated / data.rewardsThreshold) * 100
-                }%`,
+                  }%`,
               }}
             >
               {project.totalAllocated / data.rewardsThreshold > 1 ? (
@@ -329,9 +327,8 @@ const OctantTableRow = ({ data, projectIndex }: TableRowProps) => {
                     className="bg-forest-900/80 dark:bg-[#b0bbb6]"
                     style={{
                       height: "2px",
-                      width: `${
-                        project.percentageThresholdOfTotalAllocated * 100.0
-                      }%`,
+                      width: `${project.percentageThresholdOfTotalAllocated * 100.0
+                        }%`,
                       // right with bases on bottom and right
                     }}
                   ></div>
@@ -352,9 +349,8 @@ const OctantTableRow = ({ data, projectIndex }: TableRowProps) => {
                   className=" bg-red-500 dark:bg-red-500"
                   style={{
                     height: "2px",
-                    width: `${
-                      (1 / project.percentageThresholdOfTotalAllocated) * 100
-                    }%`,
+                    width: `${(1 / project.percentageThresholdOfTotalAllocated) * 100
+                      }%`,
                   }}
                 ></div>
               )}
@@ -388,7 +384,7 @@ const OctantTableRow = ({ data, projectIndex }: TableRowProps) => {
               {Math.abs(
                 ((project.rewards.allocated - data.rewardsThreshold) /
                   data.rewardsThreshold) *
-                  100,
+                100,
               ).toFixed(0)}
               %
             </div>
