@@ -1,5 +1,5 @@
 "use client";
-import { EpochData } from "@/app/api/trackers/octant/[isBrowser]/route";
+import { EpochData } from "@/app/api/trackers/octant/route";
 import Image from "next/image";
 import Link from "next/link";
 import Icon from "@/components/layout/Icon";
@@ -305,8 +305,8 @@ const OctantTableRow = ({ data, projectIndex }: TableRowProps) => {
             <Icon
               icon="feather:check-square"
               className={`w-4 h-4  fill-current ${project.thresholdReached
-                  ? "text-green-500 dark:text-green-500"
-                  : "text-forest-900/80 dark:text-forest-600/80"
+                ? "text-green-500 dark:text-green-500"
+                : "text-forest-900/80 dark:text-forest-600/80"
                 }`}
             />
           </div>
@@ -316,8 +316,8 @@ const OctantTableRow = ({ data, projectIndex }: TableRowProps) => {
               style={{
                 height: "2px",
                 width: `${project.totalAllocated / data.rewardsThreshold < 1
-                    ? 100
-                    : (project.totalAllocated / data.rewardsThreshold) * 100
+                  ? 100
+                  : (project.totalAllocated / data.rewardsThreshold) * 100
                   }%`,
               }}
             >
