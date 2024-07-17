@@ -8,8 +8,10 @@ import { request, gql } from "graphql-request";
 import { formatNumber } from "@/lib/chartUtils";
 import { NextRequest } from "next/server";
 
-export const revalidate = 60 * 1; // 1 minutes
+// export const revalidate = 60 * 1; // 1 minutes
 export const maxDuration = 300;
+export const dynamic = "force-dynamic";
+
 const Client = new OctantClient({
   baseUrl: "https://backend.mainnet.octant.app",
 });
