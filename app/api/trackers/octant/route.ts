@@ -9,7 +9,7 @@ import { formatNumber } from "@/lib/chartUtils";
 import { NextRequest } from "next/server";
 
 export const revalidate = 60 * 1; // 1 minutes
-export const maxDuration = 600;
+export const maxDuration = 300;
 const Client = new OctantClient({
   baseUrl: "https://backend.mainnet.octant.app",
 });

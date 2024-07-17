@@ -3,7 +3,7 @@ import { Pool } from "pg";
 import { createHash } from "crypto";
 import { BASE_URL } from "@/lib/helpers";
 
-export const maxDuration = 600; // This function can run for a maximum of 5 minutes
+export const maxDuration = 300; // This function can run for a maximum of 5 minutes
 export const dynamic = "force-dynamic";
 
 const pool = new Pool({
