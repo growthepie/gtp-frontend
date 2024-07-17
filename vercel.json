@@ -4,8 +4,8 @@
   },
   "crons": [
     {
-      "path": "/api/optimism-retropgf-3/crons",
-      "schedule": "*/5 * * * *"
+      "path": "/api/trackers/octant/cron",
+      "schedule": "*/1 * * * *"
     }
   ]
 }
