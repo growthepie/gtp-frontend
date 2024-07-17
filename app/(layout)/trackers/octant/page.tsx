@@ -35,8 +35,8 @@ export default function Page() {
 
   useEffect(() => {
     async function fetchData() {
-      const response = await fetch("/api/trackers/octant?isBrowser=true");
-      const data = await response.json();
+      const response = await fetch("/api/trackers/octant/rounds");
+      const data: EpochData[] = await response.json();
       setEpochs(data);
 
       // const byProject: EpochsByProject = {};

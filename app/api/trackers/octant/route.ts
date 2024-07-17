@@ -9,7 +9,7 @@ import { formatNumber } from "@/lib/chartUtils";
 import { NextRequest } from "next/server";
 
 export const revalidate = 60 * 1; // 1 minutes
-export const maxDuration = 60;
+export const maxDuration = 600;
 const Client = new OctantClient({
   baseUrl: "https://backend.mainnet.octant.app",
 });
@@ -414,7 +414,7 @@ const fetchData = async () => {
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
 
-  if (process.env.NODE_ENV === "production" && !params.get("isBrowser")) {
+  if (!params.get("isCron")) {
     // This is running during build time
     return new Response(JSON.stringify([]), {
       headers: { "content-type": "application/json" },
