@@ -7,9 +7,12 @@ export default async function Layout({
 }: {
   children: React.ReactNode;
 }) {
+  // <Container className="flex flex-col w-full pt-[65px] md:pt-[45px]" isPageRoot>
+
+  // </Container>
   return (
-    <Container className="flex flex-col w-full pt-[65px] md:pt-[45px]" isPageRoot>
-      <div className="flex items-center mb-[5px]">
+    <>
+      <Container className="flex items-center mb-[5px] pt-[65px] md:pt-[45px]">
         <Image
           src="/GTP-Metrics-Economics.svg"
           alt="GTP Chain"
@@ -20,8 +23,8 @@ export default async function Layout({
         <Heading className="text-[36px] leading-snug " as="h1">
           {"Economics"}
         </Heading>
-      </div>
+      </Container>
       <div>{children}</div>
-    </Container>
+    </>
   );
 }

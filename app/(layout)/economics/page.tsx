@@ -13,6 +13,7 @@ import ChainBreakdown from "@/components/layout/Economics/ChainBreakdown";
 import ShowLoading from "@/components/layout/ShowLoading";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { MasterURL } from "@/lib/urls";
+import Container from "@/components/layout/Container";
 
 export default function Economics() {
   const {
@@ -47,7 +48,7 @@ export default function Economics() {
   return (
     <div className="mt-[60px] flex flex-col gap-y-[60px] h-full">
       {/*Data Availability Fee Markets */}
-      <div className="flex flex-col gap-y-[15px]">
+      <Container className="flex flex-col gap-y-[15px]">
         <div className="flex items-center gap-x-[8px] ">
           <Image
             src="/GTP-Data.svg"
@@ -61,7 +62,7 @@ export default function Economics() {
           </Heading>
         </div>
         <EconHeadCharts da_charts={da_charts} />
-      </div>
+      </Container>
       <ChainBreakdown data={chain_breakdown} master={master} />
     </div>
   );
