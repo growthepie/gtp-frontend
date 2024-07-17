@@ -19,6 +19,11 @@ import { sortByDataAvailability } from "./SortHelpers";
 import { useTransition, animated } from "@react-spring/web";
 import { set } from "lodash";
 import { useUIContext } from "@/contexts/UIContext";
+import {
+  TopRowContainer,
+  TopRowChild,
+  TopRowParent,
+} from "@/components/layout/TopRow";
 interface DAvailability {
   icon: string;
   label: string;
@@ -133,35 +138,41 @@ export default function ChainBreakdown({
   const timespans = useMemo(() => {
     return {
       "1d": {
-        label: "1d",
+        shortLabel: "1d",
+        label: "1 day",
         value: 1,
       },
       "7d": {
-        label: "7d",
+        shortLabel: "7d",
+        label: "7 days",
         value: 7,
         xMin: Date.now() - 7 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
       },
       "30d": {
-        label: "30d",
+        shortLabel: "30d",
+        label: "30 days",
         value: 30,
         xMin: Date.now() - 30 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
       },
       "90d": {
-        label: "90d",
+        shortLabel: "90d",
+        label: "90 days",
         value: 90,
         xMin: Date.now() - 90 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
       },
       "180d": {
-        label: "180d",
+        shortLabel: "180d",
+        label: "180 days",
         value: 180,
         xMin: Date.now() - 180 * 24 * 60 * 60 * 1000,
         xMax: Date.now(),
       },
 
       max: {
+        shortLabel: "Max",
         label: "Max",
         value: 0,
         xMax: Date.now(),
@@ -200,6 +211,25 @@ export default function ChainBreakdown({
   }, [selectedTimespan, data, showUsd]);
 
   //Total profit
+
+  const largestProfit = useMemo(() => {
+    let retValue = 0;
+    //Loop through for each chain
+    Object.keys(data).forEach((key) => {
+      const dataIndex = data[key][selectedTimespan].profit.types.indexOf(
+        showUsd ? "usd" : "eth",
+      );
+
+      retValue =
+        data[key][selectedTimespan].profit.total[dataIndex] > retValue
+          ? data[key][selectedTimespan].profit.total[dataIndex]
+          : retValue;
+    });
+
+    return retValue;
+  }, [selectedTimespan, data, showUsd]);
+
+  //Largest profit data point
 
   const allChainsDA = useMemo(() => {
     let retArray = [""];
@@ -360,7 +390,7 @@ export default function ChainBreakdown({
           <div className="flex justify-between items-center">
             <div className="flex items-center  gap-x-[8px]">
               <Image
-                src="/GTP-Fundamentals.svg"
+                src="/GTP-Metrics.svg"
                 alt="GTP Chain"
                 className="object-contain w-[32px] h-[32px] "
                 height={36}
@@ -370,33 +400,42 @@ export default function ChainBreakdown({
                 Chain Breakdown
               </Heading>
             </div>
-            <div className="bg-[#1F2726] flex text-[12px] w-[249px] rounded-2xl justify-between p-[2px]">
+          </div>
+          <TopRowContainer className="-py-[3px]">
+            <TopRowParent>
+              <div></div>
+            </TopRowParent>
+            <TopRowParent className="-py-[10px]">
               {Object.keys(timespans).map((key) => {
                 {
                   return (
-                    <div
-                      className={`px-[10px] py-[5px] flex items-center gap-x-[3px] justify-center min-w-[40px] rounded-full hover:cursor-pointer ${
-                        selectedTimespan === key
-                          ? "bg-[#151A19]"
-                          : "bg-transparent hover:bg-forest-500/10"
-                      }`}
+                    <TopRowChild
+                      className={`px-[10px]`}
                       onClick={() => {
                         setSelectedTimespan(key);
                       }}
                       key={key}
+                      style={{
+                        paddingTop: "10.5px",
+                        paddingBottom: "10.5px",
+                        paddingLeft: "16px",
+                        paddingRight: "16px",
+                      }}
+                      isSelected={selectedTimespan === key}
                     >
-                      {timespans[key].label}
-                    </div>
+                      {selectedTimespan === key
+                        ? timespans[key].label
+                        : timespans[key].shortLabel}
+                    </TopRowChild>
                   );
                 }
               })}
-            </div>
-          </div>
-
-          <div className="grid gap-x-[5px] pr-0.5 grid-cols-[auto_200px_200px_145px_145px_120px]">
-            <div className="pl-[44px] flex grow gap-x-[5px] items-center justify-start  ">
+            </TopRowParent>
+          </TopRowContainer>
+          <div className="grid gap-x-[5px] pr-0.5 grid-cols-[auto_200px_200px_155px_145px_110px] ">
+            <div className="pl-[44px] flex grow gap-x-[5px] items-center justify-start ">
               <div
-                className="flex items-center group cursor-pointer "
+                className="flex items-center group cursor-pointer  "
                 onClick={() => {
                   if (metricSort !== "chain") {
                     setSortOrder(true);
@@ -718,7 +757,7 @@ export default function ChainBreakdown({
                   style={{ ...style }}
                 >
                   <div
-                    className={`grid gap-x-[5px] relative rounded-full w-full  border-[1px] min-h-[34px] text-[14px] items-center z-20 cursor-pointer pr-0.5 grid-cols-[auto_200px_200px_145px_145px_120px] 
+                    className={`grid gap-x-[5px] relative rounded-full w-full  border-[1px] min-h-[34px] text-[14px] items-center z-20 cursor-pointer pr-0.5 grid-cols-[auto_200px_200px_155px_145px_110px] 
                       ${
                         openChain[item.key]
                           ? "border-[#CDD8D3] bg-forest-950 "
@@ -897,9 +936,25 @@ export default function ChainBreakdown({
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center py-[6px] justify-center gap-x-[5px] px-[5px] bg-[#34424044] h-full">
-                      <div className="min-w-[65px] ">
-                        <div className="text-[14px] font-semibold">
+                    <div
+                      className={`flex items-center py-[6px] justify-center gap-x-[5px] px-[5px] bg-[#34424044] h-full ${
+                        data[item.key][selectedTimespan].profit.total[
+                          dataIndex
+                        ] > 0
+                          ? "flex-row"
+                          : "flex-row-reverse"
+                      }`}
+                    >
+                      <div
+                        className={`min-w-[60px]  flex  ${
+                          data[item.key][selectedTimespan].profit.total[
+                            dataIndex
+                          ] > 0
+                            ? "justify-end"
+                            : "flex-start"
+                        }`}
+                      >
+                        <div className="text-[14px] font-semibold ">
                           {formatNumber(
                             data[item.key][selectedTimespan].profit.total[
                               dataIndex
@@ -912,7 +967,7 @@ export default function ChainBreakdown({
                           data[item.key][selectedTimespan].profit.total[
                             dataIndex
                           ] > 0
-                            ? "border-l-[1px] justify-start"
+                            ? "border-l-[1px] justify-start "
                             : "border-r-[1px] justify-end"
                         }`}
                       >
@@ -935,15 +990,15 @@ export default function ChainBreakdown({
                               (data[item.key][selectedTimespan].profit.total[
                                 dataIndex
                               ] /
-                                totalProfit)
+                                largestProfit)
                             ).toFixed(2)}px`,
                             minWidth: "1px",
                           }}
                         ></div>
                       </div>
                     </div>
-                    <div className="flex w-full h-full items-center justify-start px-[5px] py-[6px] gap-x-[5px]">
-                      <div className="text-[14px] w-[50px] font-semibold">
+                    <div className="flex w-full h-full items-center justify-center px-[5px] py-[6px] gap-x-[5px]">
+                      <div className="text-[14px] w-[50px] font-semibold flex justify-end ">
                         <span>
                           {Intl.NumberFormat("en-GB", {
                             notation: "standard",
@@ -965,9 +1020,9 @@ export default function ChainBreakdown({
                         <span>{"%"}</span>
                       </div>
                       <div
-                        className={`relative flex items-center pl-[3px] border-l-[1px]  h-full w-[80px] border-dashed border-forest-50 `}
+                        className={`relative flex items-center pl-[3px] border-l-[1px]  h-full w-[57.5px] border-dashed border-forest-50 `}
                       >
-                        <div className="w-full bg-[#5A6462] rounded-r-full ">
+                        <div className="w-[57.5] bg-[#5A6462] rounded-r-full ">
                           <div
                             className="h-[4px] bg-[#45AA6F] rounded-r-2xl "
                             style={{
@@ -982,7 +1037,7 @@ export default function ChainBreakdown({
                                     .total[dataIndex] >
                                 0
                                   ? `${
-                                      80 *
+                                      57.5 *
                                       ((data[item.key][selectedTimespan].revenue
                                         .total[dataIndex] -
                                         data[item.key][selectedTimespan].costs
