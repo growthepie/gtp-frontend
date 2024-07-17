@@ -26,6 +26,7 @@ import {
   TopRowParent,
 } from "@/components/layout/TopRow";
 import Container from "../Container";
+import QuestionAnswer from "../QuestionAnswer";
 interface DAvailability {
   icon: string;
   label: string;
@@ -1100,7 +1101,7 @@ export default function ChainBreakdown({
                         : "h-[0px]"
                         }`}
                     >
-                      <div className="w-[97.5%] bg-forest-950 rounded-b-2xl border-dotted border-[1.25px] border-forest-50">
+                      <div className="w-[97.5%] bg-forest-950 rounded-b-2xl border-dotted border-[1.25px] border-t-0 border-forest-50/30">
                         <BreakdownCharts
                           data={data[item.key][selectedTimespan]}
                           dailyData={data[item.key]["daily"]}
@@ -1116,6 +1117,16 @@ export default function ChainBreakdown({
               })}
             </div>
           </HorizontalScrollContainer>
+          <Container>
+            <QuestionAnswer className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
+              question="More about this page"
+              answer={
+                <>
+                  Our Economics section is focused on ......
+                </>
+              }
+            />
+          </Container>
         </div>
       )}
     </div>
