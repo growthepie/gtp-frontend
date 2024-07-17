@@ -390,18 +390,18 @@ export default function ChainBreakdown({
   return (
     <div className="h-full">
       {sortedChainData && (
-        <div className="flex flex-col gap-y-[15px] ">
-          <Container>
+        <div className="flex flex-col gap-y-[15px]">
+          <Container className="flex flex-col gap-y-[15px]">
             <div className="flex justify-between items-center">
-              <div className="flex items-center  gap-x-[8px]">
+              <div className="flex items-center gap-x-[8px]">
                 <Image
                   src="/GTP-Metrics.svg"
                   alt="GTP Chain"
-                  className="object-contain w-[32px] h-[32px] "
+                  className="object-contain w-[36px] h-[36px] "
                   height={36}
                   width={36}
                 />
-                <Heading className="text-[30px] leading-snug " as="h1">
+                <Heading className="text-[30px] leading-snug " as="h2">
                   Chain Breakdown
                 </Heading>
               </div>

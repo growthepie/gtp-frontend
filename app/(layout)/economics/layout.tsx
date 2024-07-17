@@ -12,17 +12,20 @@ export default async function Layout({
   // </Container>
   return (
     <>
-      <Container className="flex items-center mb-[5px] pt-[65px] md:pt-[45px]">
-        <Image
-          src="/GTP-Metrics-Economics.svg"
-          alt="GTP Chain"
-          className="object-contain w-[32px] h-[32px] mr-[8px]"
-          height={36}
-          width={36}
-        />
-        <Heading className="text-[36px] leading-snug " as="h1">
-          {"Economics"}
-        </Heading>
+      <Container className="flex flex-col justify-center mb-[5px] pt-[65px] md:pt-[45px] gap-y-[15px]">
+        <div className="flex items-center h-[43px] gap-x-[8px]">
+          <Image
+            src="/GTP-Metrics-Economics.svg"
+            alt="GTP Chain"
+            className="object-contain w-[36px] h-[36px]"
+            height={36}
+            width={36}
+          />
+          <Heading className="text-[36px] leading-snug " as="h1">
+            {"Economics"}
+          </Heading>
+        </div>
+        <div className="text-[14px]">The page is bla bla in lorem ipsum dolor ......</div>
       </Container>
       <div>{children}</div>
     </>
