@@ -8,6 +8,7 @@ import { Pool } from "pg";
 import { Project } from "@/types/api/RetroPGF3";
 import { RecoveredListData } from "@/app/(layout)/trackers/optimism-retropgf-3/recoveredListData";
 
+export const revalidate = 30; // 30 seconds
 export const dynamic = "force-dynamic";
 
 const pool = new Pool({

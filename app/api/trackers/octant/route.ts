@@ -8,7 +8,7 @@ import { request, gql } from "graphql-request";
 import { formatNumber } from "@/lib/chartUtils";
 import { NextRequest } from "next/server";
 
-// export const revalidate = 60 * 1; // 1 minutes
+export const revalidate = 5; // 5 seconds
 export const maxDuration = 300;
 export const dynamic = "force-dynamic";
 
