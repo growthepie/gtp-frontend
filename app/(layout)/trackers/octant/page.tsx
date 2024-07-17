@@ -168,7 +168,7 @@ export default function Page() {
     return totals;
   }, [epochsByProject, latestAllocationEpoch]);
 
-  const [sortKey, setSortKey] = useState<string | null>("totalAllocated");
+  const [sortKey, setSortKey] = useState<string | null>("rewardsMatched");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   const onRowSort = useCallback(
