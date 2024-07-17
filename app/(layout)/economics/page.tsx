@@ -50,7 +50,7 @@ export default function Economics() {
       <div className="flex flex-col gap-y-[15px]">
         <div className="flex items-center gap-x-[8px] ">
           <Image
-            src="/GTP-Fundamentals.svg"
+            src="/GTP-Data.svg"
             alt="GTP Chain"
             className="object-contain w-[32px] h-[32px] "
             height={36}
