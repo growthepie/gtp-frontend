@@ -18,6 +18,7 @@ import {
 } from "@/components/layout/Tooltip";
 import Address from "@/components/layout/Address";
 import moment from "moment";
+import Container from "@/components/layout/Container";
 
 type EpochsByProject = {
   [project: string]: EpochData[];
@@ -558,7 +559,13 @@ export default function Page() {
 
     // X days, X hours, X minutes, X seconds
     const timerReadable = useMemo(() => {
-      return moment(timer).format("d [days], h [hours], m [minutes], s [seconds]");
+      if (timer === Infinity) return "";
+      const days = Math.floor(timer / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((timer / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((timer / (1000 * 60)) % 60);
+      const seconds = Math.floor((timer / 1000) % 60);
+
+      return `${days}d ${hours}h ${minutes}m ${seconds}s`;
     }, [timer]);
 
     if (!currentEpoch || !currentEpoch.decisionWindow) return null;
@@ -610,10 +617,14 @@ export default function Page() {
   };
 
   return (
-    <HorizontalScrollContainer>
-      <CountdownTimer />
+    <>
+      <Container>
+        <CountdownTimer />
+      </Container>
+      <HorizontalScrollContainer>
 
-      {/* <div>sortedProjects: {sortedProjects.length}</div>
+
+        {/* <div>sortedProjects: {sortedProjects.length}</div>
       <div>
         epochsByProject:{" "}
         {epochsByProject && Object.keys(epochsByProject).length}
@@ -655,42 +666,43 @@ export default function Page() {
         </div>
       )} */}
 
-      <div
-        className="min-w-[900px] flex flex-col gap-y-[5px] transition-all duration-300"
-        style={{ maxHeight: !data ? "calc(100vh - 550px)" : "5000px" }}
-      >
-        <div className={`select-none grid ${currentEpoch && (currentEpoch.epoch < 4 ? "grid-cols-[32px,16px,minmax(240px,800px),0px,130px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,130px,80px,120px,40px,110px,105px,120px]" : "grid-cols-[32px,16px,minmax(240px,800px),0px,130px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,130px,80px,120px,40px,110px,105px,120px]")} gap-x-[15px] px-[6px] pt-[30px] text-[11px] items-center font-bold`}>
-          {headers.map((header) => (
-            <div key={header.key} className={`${header.containerClassName}`}>
-              {header.cell()}
-            </div>
-          ))}
-        </div>
-        {currentEpoch && epochsByProject && epochs && allTimeTotalsByProject ? (
-          sortedProjects.map((address, index) => (
-            <OctantTableRow
-              key={index}
-              currentEpoch={currentEpoch}
-              projectAddress={address}
-              projectIndex={index}
-              epochsByProject={epochsByProject}
-              allTimeTotalsByProject={allTimeTotalsByProject}
-              epochs={epochs}
-              setCurrentEpoch={setCurrentEpoch}
-            />
-          ))
-        ) : (
-          <div className="rounded-[30px] border border-forest-900/20 dark:border-forest-500/20  w-full max-w-[calc(100vw-100px)] h-[calc(100vh-450px)] flex items-center justify-center">
-            <ShowLoading
-              dataLoading={[true]}
-              dataValidating={[false]}
-              fullScreen={false}
-              section={true}
-            />
+        <div
+          className="min-w-[900px] flex flex-col gap-y-[5px] transition-all duration-300"
+          style={{ maxHeight: !data ? "calc(100vh - 550px)" : "5000px" }}
+        >
+          <div className={`select-none grid ${currentEpoch && (currentEpoch.epoch < 4 ? "grid-cols-[32px,16px,minmax(240px,800px),0px,130px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,130px,80px,120px,40px,110px,105px,120px]" : "grid-cols-[32px,16px,minmax(240px,800px),0px,130px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,130px,80px,120px,40px,110px,105px,120px]")} gap-x-[15px] px-[6px] pt-[30px] text-[11px] items-center font-bold`}>
+            {headers.map((header) => (
+              <div key={header.key} className={`${header.containerClassName}`}>
+                {header.cell()}
+              </div>
+            ))}
           </div>
-        )}
-      </div>
-    </HorizontalScrollContainer>
+          {currentEpoch && epochsByProject && epochs && allTimeTotalsByProject ? (
+            sortedProjects.map((address, index) => (
+              <OctantTableRow
+                key={index}
+                currentEpoch={currentEpoch}
+                projectAddress={address}
+                projectIndex={index}
+                epochsByProject={epochsByProject}
+                allTimeTotalsByProject={allTimeTotalsByProject}
+                epochs={epochs}
+                setCurrentEpoch={setCurrentEpoch}
+              />
+            ))
+          ) : (
+            <div className="rounded-[30px] border border-forest-900/20 dark:border-forest-500/20  w-full max-w-[calc(100vw-100px)] h-[calc(100vh-450px)] flex items-center justify-center">
+              <ShowLoading
+                dataLoading={[true]}
+                dataValidating={[false]}
+                fullScreen={false}
+                section={true}
+              />
+            </div>
+          )}
+        </div>
+      </HorizontalScrollContainer>
+    </>
   );
 }
 
