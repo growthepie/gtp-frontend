@@ -575,22 +575,102 @@ export default function Page() {
 
 
     return (
-      <div className="flex flex-row gap-x-2 items-center justify-start text-xs">
-        <div className="font-medium">Epoch {currentEpoch?.epoch}</div>
-        <div>—</div>
-        <div className="flex items-center gap-x-2">
-
-          {timer > 0 ? (
-            <div className="flex items-center gap-x-2">
-              <div className="w-4 h-4">
+      <>
+        {/* <div className="flex flex-col gap-2 pt-2 pb-5 text-xs font-medium">
+          <div className="flex flex-row rounded-lg border border-forest-900/20 dark:border-forest-500/20 px-2 py-1  items-center justify-between gap-x-[15px]">
+            <div className="flex gap-[5px] items-center whitespace-nowrap">
+              <div className="w-5 h-5">
                 <Icon
-                  icon="fluent:hourglass-one-quarter-24-regular"
-                  className="w-4 h-4"
+                  icon="ic:baseline-account-balance-wallet"
+                  className="w-5 h-5"
                 />
               </div>
-              <div>
-                {timerReadable}
-                {/* {Math.floor(timer / (1000 * 60 * 60))
+              <h3 className="text-sm font-semibold">Golem Staking</h3>
+            </div>
+            <p className="">100,000 ETH staked</p>
+          </div>
+
+          <div className="flex flex-row rounded-lg border border-forest-900/20 dark:border-forest-500/20 px-2 py-1 items-center justify-between gap-x-[15px]">
+            <div className="flex gap-[5px] items-center whitespace-nowrap">
+              <div className="w-5 h-5">
+                <Icon
+                  icon="ic:baseline-currency-exchange"
+                  className="w-5 h-5"
+                />
+              </div>
+              <h3 className="text-sm font-semibold">Reward Distribution</h3>
+            </div>
+            <div className="relative pl-8 flex flex-col items-center text-xs w-full gap-y-1 pt-1">
+              <div className="relative w-full h-4 border-0 border-forest-900/20 dark:border-forest-500/20 bg-forest-900/0 dark:bg-forest-1000/0 rounded-sm">
+                <div className="absolute w-[5%] h-full bg-forest-900/10 dark:bg-forest-500/10 rounded-l-sm"></div>
+                <div className="absolute inset-0 flex justify-between px-0.5 py-0 text-[11px] font-medium leading-4">
+                  <div className="absolute -left-[20px] font-medium font-inter text-[12px]">
+                    5%
+                  </div>
+                  <div className="absolute right-0 ">Community Fund</div>
+                </div>
+              </div>
+              <div className="relative w-full h-4 border-0 border-forest-900/20 dark:border-forest-500/20 bg-forest-900/0 dark:bg-forest-1000/0 rounded-sm">
+                <div className="absolute ml-[0%] w-[25%] h-full bg-forest-900/10 dark:bg-forest-500/10 rounded-none"></div>
+                <div className="absolute ml-[0%] -inset-0 flex justify-between px-0.5 py-0 text-[11px] font-medium leading-4">
+                  <div className="absolute -left-7 font-medium font-inter text-[12px]">
+                    25%
+                  </div>
+                  <div className="absolute right-0 ">Golem Operations</div>
+                </div>
+              </div>
+              <div className="relative w-full h-4 border-0 border-forest-900/20 dark:border-forest-500/20 bg-forest-900/0 dark:bg-forest-1000/0 rounded-sm">
+                <div className="absolute ml-[0%] w-[70%] h-full bg-forest-900/10 dark:bg-forest-500/10 rounded-r-sm"></div>
+                <div className="absolute ml-[0%] -inset-0 flex justify-between px-0.5 py-0 text-[11px] font-medium leading-4">
+                  <div className="absolute -left-7 font-medium font-inter text-[12px]">
+                    70%
+                  </div>
+                  <div className="absolute right-0 ">Users & Public Goods</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-row rounded-lg border border-forest-900/20 dark:border-forest-500/20 px-2 py-1 items-center justify-between gap-x-[15px]">
+            <div className="flex gap-[5px] items-center whitespace-nowrap">
+              <div className="w-5 h-5">
+                <Icon icon="ic:baseline-how-to-reg" className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-semibold">User Participation</h3>
+            </div>
+            <div className="">Lock GLM tokens</div>
+            <div className="">Claim or donate rewards</div>
+          </div>
+
+          <div className="flex flex-row rounded-lg border border-forest-900/20 dark:border-forest-500/20 px-2 py-1 items-center justify-between gap-x-[15px]">
+            <div className="flex gap-[5px] items-center whitespace-nowrap">
+              <div className="w-5 h-5">
+                <Icon icon="ic:baseline-calendar-today" className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-semibold text-forest-900 dark:text-forest-500">
+                Epochs & Governance
+              </h3>
+            </div>
+            <div className="">90-day epochs</div>
+            <div className="">Community-led funding</div>
+          </div>
+        </div> */}
+        <div className="flex flex-row gap-x-2 items-center justify-start text-xs">
+          <div className="font-medium">Epoch {currentEpoch?.epoch}</div>
+          <div>—</div>
+          <div className="flex items-center gap-x-2">
+
+            {timer > 0 ? (
+              <div className="flex items-center gap-x-2">
+                <div className="w-4 h-4">
+                  <Icon
+                    icon="fluent:hourglass-one-quarter-24-regular"
+                    className="w-4 h-4"
+                  />
+                </div>
+                <div>
+                  {timerReadable}
+                  {/* {Math.floor(timer / (1000 * 60 * 60))
                   .toString()
                   .padStart(2, "0")}
                 :
@@ -601,18 +681,19 @@ export default function Page() {
                 {Math.floor((timer / 1000) % 60)
                   .toString()
                   .padStart(2, "0")} */}
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex gap-x-2">
-              <div className="w-4 h-4">
-                <Icon icon="feather:check" className="w-4 h-4" />
+            ) : (
+              <div className="flex gap-x-2">
+                <div className="w-4 h-4">
+                  <Icon icon="feather:check" className="w-4 h-4" />
+                </div>
+                <div>Decision Window Closed</div>
               </div>
-              <div>Decision Window Closed</div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      </>
     );
   };
 
@@ -725,20 +806,21 @@ const EpochTile = ({
 
   if (!project) return <div className="w-2 h-2 bg-orange-500"></div>;
 
+  if (epochState === "PENDING" || epochState === "ACTIVE")
+    return null;
+
   return (
     <>
-      {epochState === "PENDING" && (
+      {/* {epochState === "PENDING" && (
         <div className="flex items-center justify-center w-6 h-6 border border-dashed border-gray-500 rounded-sm text-gray-500">
           <div>{epochNumber}</div>
-          {/* <Icon icon="fluent:hourglass-top" className="w-4 h-4" /> */}
         </div>
       )}
       {epochState === "ACTIVE" && (
         <div className="flex items-center justify-center w-6 h-6 bg-gray-500/40 rounded-sm text-gray-100">
           <div>{epochNumber}</div>
-          {/* <Icon icon="fluent:checkmark" className="w-4 h-4" /> */}
         </div>
-      )}
+      )} */}
 
       {["FINALIZED", "REWARD_ALLOCATION"].includes(epochState) && (
         <div
