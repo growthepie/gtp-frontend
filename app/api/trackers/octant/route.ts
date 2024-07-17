@@ -321,6 +321,8 @@ const getAllEpochs = async () => {
       }
     }
 
+    if (epochState === "PENDING" || epochState === "ACTIVE") continue;
+
     epochs.push({
       stats: epochStats.data,
       state: epochState,
