@@ -569,7 +569,6 @@ export const navigationItems: NavigationItem[] = [
         key: "metis",
         rootKey: "chainsMetis",
         urlKey: "metis",
-        showNew: true,
       },
       {
         label: "Manta Pacific",
@@ -613,7 +612,6 @@ export const navigationItems: NavigationItem[] = [
         key: "taiko",
         rootKey: "chainsTaiko",
         urlKey: "taiko",
-        showNew: true,
       },
     ],
   },
@@ -654,6 +652,7 @@ export const navigationItems: NavigationItem[] = [
         key: "octant",
         rootKey: "octant",
         urlKey: "octant",
+        showNew: true,
       },
       {
         label: "Glo Dollar",
@@ -662,7 +661,6 @@ export const navigationItems: NavigationItem[] = [
         key: "glodollar",
         rootKey: "glodollar",
         urlKey: "glodollar",
-        showNew: true,
       },
     ],
   },
