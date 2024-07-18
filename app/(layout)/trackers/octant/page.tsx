@@ -839,7 +839,7 @@ export default function Page() {
       <Container>
         <CountdownTimer />
       </Container>
-      <HorizontalScrollContainer>
+      <HorizontalScrollContainer className="min-h-[300px]">
 
 
         {/* <div>sortedProjects: {sortedProjects.length}</div>
@@ -885,7 +885,7 @@ export default function Page() {
       )} */}
 
         <div
-          className="min-w-[900px] flex flex-col gap-y-[5px] transition-all duration-300"
+          className="min-w-[900px] flex flex-col gap-y-[5px] transition-all duration-300 min-h-[570px]"
           style={{ maxHeight: !data ? "calc(100vh - 550px)" : "5000px" }}
         >
           <div className={`select-none grid ${currentEpoch && (currentEpoch.epoch < 4 ? "grid-cols-[32px,16px,minmax(240px,800px),0px,150px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,150px,80px,120px,40px,110px,105px,120px]" : "grid-cols-[32px,16px,minmax(240px,800px),0px,130px,80px,120px,40px,110px,105px,120px] lg:grid-cols-[32px,16px,minmax(240px,800px),150px,130px,80px,120px,40px,110px,105px,120px]")} gap-x-[15px] px-[6px] pt-[30px] text-[11px] items-center font-bold`}>
@@ -909,7 +909,7 @@ export default function Page() {
               />
             ))
           ) : (
-            <div className="rounded-[30px] border border-forest-900/20 dark:border-forest-500/20  w-full max-w-[calc(100vw-100px)] h-[calc(100vh-450px)] flex items-center justify-center">
+            <div className="rounded-[30px] border border-forest-900/20 dark:border-forest-500/20 w-full max-w-[calc(100vw-100px)] h-[calc(100vh-450px)] flex items-center justify-center min-h-[500px]">
               <ShowLoading
                 dataLoading={[true]}
                 dataValidating={[false]}
@@ -1115,7 +1115,7 @@ const OctantTableRow = ({
         </div>
       </div>
       <div className="flex justify-end item-center gap-x-2">
-        {currentEpochProject && (
+        {["REWARD_ALLOCATION", "FINALIZED"].includes(currentEpoch.state) && currentEpochProject && (
           <Tooltip placement="left" allowInteract>
             <TooltipTrigger className="flex justify-end item-center gap-x-2">
               <div className="flex h-[26px] items-center text-[0.9rem] font-medium leading-[1] font-inter">
@@ -1171,7 +1171,7 @@ const OctantTableRow = ({
         )}
       </div>
       <div className="flex justify-end">
-        {currentEpochProject && (
+        {["REWARD_ALLOCATION", "FINALIZED"].includes(currentEpoch.state) && currentEpochProject && (
           <div className="relative flex items-center gap-x-2 pr-0.5">
             <div className="text-[0.8rem] font-medium leading-[1.2] font-inter">
               {(project.totalAllocated / 10 ** 18).toFixed(4)}{" "}
@@ -1289,7 +1289,7 @@ const OctantTableRow = ({
       </div>
 
       <div className="flex justify-end pr-[25px]">
-        {currentEpochProject && (
+        {["REWARD_ALLOCATION", "FINALIZED"].includes(currentEpoch.state) && currentEpochProject && (
           <div
             className={`text-[0.8rem] font-medium leading-[1.2] font-inter ${currentEpochProject.rewards.matched <= 0 && "opacity-30"
               }`}
@@ -1300,7 +1300,7 @@ const OctantTableRow = ({
         )}
       </div>
       <div className="flex justify-end pr-[25px]">
-        {currentEpochProject && (
+        {["REWARD_ALLOCATION", "FINALIZED"].includes(currentEpoch.state) && currentEpochProject && (
           <div
             className={`text-[0.8rem] font-medium leading-[1.2] font-inter ${currentEpochProject.rewards.total <= 0 && "opacity-30"
               }`}

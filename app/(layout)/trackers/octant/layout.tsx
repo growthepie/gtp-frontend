@@ -18,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="pt-[45px] md:pt-[45px]">
+    <div className="pt-[45px] md:pt-[45px] min-h-[580px]">
       <Container className="pb-[15px]">
         <div className="flex items-start justify-between pb-[15px]">
           <div className="flex items-center gap-x-2">
