@@ -72,7 +72,7 @@ export default function LabelsTableContainer(
 
   return (
     <div
-      className={`px-0 w-fit ${className}`}
+      className={`px-0 pb-[150px] w-fit ${className}`}
       style={style}
     >
       <div

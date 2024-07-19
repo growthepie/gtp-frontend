@@ -75,18 +75,27 @@ export default function Search() {
         | number
         | { owner_project: string; owner_project_clear: string },
     ) => {
-      setLabelsFilters({
-        ...labelsFilters,
-        [key]: labelsFilters[key].includes(value)
-          ? labelsFilters[key].filter((f) => f !== value)
-          : [...labelsFilters[key], value],
-      });
-      // updateFilters((prevFilters) => ({
-      //   ...prevFilters,
-      //   [key]: filters[key].includes(value)
-      //     ? filters[key].filter((f) => f !== value)
-      //     : [...filters[key], value],
-      // }));
+      console.log(key, value);
+      if (key === "owner_project" && typeof value !== "string" && typeof value !== "number" && typeof key === "string") {
+        setLabelsFilters({
+          ...labelsFilters,
+          owner_project: labelsFilters[key].find(
+            (f) => f.owner_project === value['owner_project'],
+          )
+            ? labelsFilters[key].filter(
+              (f) => f.owner_project !== value['owner_project'],
+            )
+            : [...labelsFilters[key], value],
+        });
+      } else {
+        setLabelsFilters({
+          ...labelsFilters,
+          [key]: labelsFilters[key].includes(value)
+            ? labelsFilters[key].filter((f) => f !== value)
+            : [...labelsFilters[key], value],
+        });
+      }
+
       setSearch("");
     },
     [labelsFilters, setLabelsFilters],
@@ -306,21 +315,18 @@ export default function Search() {
         <div className="w-full max-w-full">
           <div className="relative w-full min-h-[44px] z-10 flex items-center bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px]">
             <div
-              className={`relative flex justify-center ${
-                isOpen ? "w-[24px] h-[24px]" : "w-[24px] h-[24px]"
-              }`}
+              className={`relative flex justify-center ${isOpen ? "w-[24px] h-[24px]" : "w-[24px] h-[24px]"
+                }`}
             >
               <div
-                className={`absolute top-0 left-[10px] ${
-                  isOpen ? "opacity-0" : "opacity-100 delay-0"
-                } transition-all duration-300`}
+                className={`absolute top-0 left-[10px] ${isOpen ? "opacity-0" : "opacity-100 delay-0"
+                  } transition-all duration-300`}
               >
                 <SearchIcon />
               </div>
               <div
-                className={`absolute top-[4px] left-[16px] ${
-                  isOpen ? "opacity-100 delay-0" : "opacity-0"
-                } transition-all duration-300`}
+                className={`absolute top-[4px] left-[16px] ${isOpen ? "opacity-100 delay-0" : "opacity-0"
+                  } transition-all duration-300`}
               >
                 <Icon
                   icon="feather:chevron-down"
@@ -330,9 +336,8 @@ export default function Search() {
             </div>
             {Filters.length > 0 && (
               <div
-                className={`flex flex-shrink gap-x-[10px] items-center pl-[15px] py-[10px] gap-y-[5px] max-w-[400px] ${
-                  isOpen ? "flex-wrap " : ""
-                }`}
+                className={`flex flex-shrink gap-x-[10px] items-center pl-[15px] py-[10px] gap-y-[5px] max-w-[400px] ${isOpen ? "flex-wrap " : ""
+                  }`}
               >
                 {isOpen ? (
                   Filters
@@ -402,9 +407,8 @@ export default function Search() {
             </div>
           </div>
           <div
-            className={`absolute rounded-b-[22px] bg-[#151A19] left-0 right-0 top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] transition-all duration-300 ${
-              isOpen ? "max-h-[500px]" : "max-h-0"
-            } overflow-hidden overflow-y-auto lg:overflow-y-hidden scrollbar-thin scrollbar-thumb-forest-700 scrollbar-track-transparent`}
+            className={`absolute rounded-b-[22px] bg-[#151A19] left-0 right-0 top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] transition-all duration-300 ${isOpen ? "max-h-[500px]" : "max-h-0"
+              } overflow-hidden overflow-y-auto lg:overflow-y-hidden scrollbar-thin scrollbar-thumb-forest-700 scrollbar-track-transparent`}
           >
             <div className="flex flex-col pl-[12px] pr-[25px] pb-[15px] pt-[29px] gap-y-[10px] text-[10px]">
               <div className="flex gap-x-[10px] items-center">
@@ -477,13 +481,12 @@ export default function Search() {
                             AllChainsByKeys[chainKey].colors["dark"][0]
                           }
                           rightIcon="heroicons-solid:plus-circle"
-                          className={`${
-                            search.length > 0
-                              ? labelsAutocomplete.origin_key.includes(chainKey)
-                                ? "opacity-100"
-                                : "opacity-30"
-                              : "opacity-100"
-                          } transition-all`}
+                          className={`${search.length > 0
+                            ? labelsAutocomplete.origin_key.includes(chainKey)
+                              ? "opacity-100"
+                              : "opacity-30"
+                            : "opacity-100"
+                            } transition-all`}
                         />
                       ))}
                   </div>
@@ -530,22 +533,22 @@ export default function Search() {
                         .filter((categoryKey) =>
                           search.length > 0
                             ? master.blockspace_categories.main_categories[
-                                categoryKey
+                              categoryKey
+                            ]
+                              .toLowerCase()
+                              .includes(search.toLowerCase()) ||
+                            master.blockspace_categories.mapping[
+                              categoryKey
+                            ].some((subcategoryKey) =>
+                              master.blockspace_categories.sub_categories[
+                                subcategoryKey
                               ]
                                 .toLowerCase()
-                                .includes(search.toLowerCase()) ||
-                              master.blockspace_categories.mapping[
-                                categoryKey
-                              ].some((subcategoryKey) =>
-                                master.blockspace_categories.sub_categories[
-                                  subcategoryKey
-                                ]
-                                  .toLowerCase()
-                                  .includes(search.toLowerCase()),
-                              )
+                                .includes(search.toLowerCase()),
+                            )
                             : master.blockspace_categories.main_categories[
-                                categoryKey
-                              ],
+                            categoryKey
+                            ],
                         )
                         .map((categoryKey) => (
                           <NestedSelection
@@ -561,11 +564,11 @@ export default function Search() {
                                 label={
                                   labelsAutocomplete.category.length > 0
                                     ? boldSearch(
-                                        master.blockspace_categories
-                                          .main_categories[categoryKey],
-                                      )
+                                      master.blockspace_categories
+                                        .main_categories[categoryKey],
+                                    )
                                     : master.blockspace_categories
-                                        .main_categories[categoryKey]
+                                      .main_categories[categoryKey]
                                 }
                                 leftIcon={undefined}
                                 rightIconColor={
@@ -578,15 +581,14 @@ export default function Search() {
                                     ? "heroicons-solid:x-circle"
                                     : "heroicons-solid:plus-circle"
                                 }
-                                className={`w-fit h-fit justify-between bg-transparent rounded-l-[15px] ${
-                                  search.length > 0
-                                    ? labelsAutocomplete.category.includes(
-                                        categoryKey,
-                                      )
-                                      ? "opacity-100"
-                                      : "opacity-30"
-                                    : "opacity-100"
-                                } transition-all duration-300`}
+                                className={`w-fit h-fit justify-between bg-transparent rounded-l-[15px] ${search.length > 0
+                                  ? labelsAutocomplete.category.includes(
+                                    categoryKey,
+                                  )
+                                    ? "opacity-100"
+                                    : "opacity-30"
+                                  : "opacity-100"
+                                  } transition-all duration-300`}
                               />
                             }
                           >
@@ -595,14 +597,14 @@ export default function Search() {
                               .filter((subcategoryKey) =>
                                 search.length > 0
                                   ? master.blockspace_categories.sub_categories[
-                                      subcategoryKey
-                                    ] &&
-                                    labelsAutocomplete.subcategory.includes(
-                                      subcategoryKey,
-                                    )
+                                  subcategoryKey
+                                  ] &&
+                                  labelsAutocomplete.subcategory.includes(
+                                    subcategoryKey,
+                                  )
                                   : master.blockspace_categories.sub_categories[
-                                      subcategoryKey
-                                    ],
+                                  subcategoryKey
+                                  ],
                               )
                               .map((subcategory, i) =>
                                 subcategory === "unlabeled" ? null : (
@@ -616,11 +618,11 @@ export default function Search() {
                                     label={
                                       labelsAutocomplete.subcategory.length > 0
                                         ? boldSearch(
-                                            master.blockspace_categories
-                                              .sub_categories[subcategory],
-                                          )
+                                          master.blockspace_categories
+                                            .sub_categories[subcategory],
+                                        )
                                         : master.blockspace_categories
-                                            .sub_categories[subcategory]
+                                          .sub_categories[subcategory]
                                     }
                                     leftIcon={undefined}
                                     rightIconColor={
@@ -637,15 +639,14 @@ export default function Search() {
                                         ? "heroicons-solid:x-circle"
                                         : "heroicons-solid:plus-circle"
                                     }
-                                    className={`w-fit h-fit ${
-                                      search.length > 0
-                                        ? labelsAutocomplete.subcategory.includes(
-                                            subcategory,
-                                          )
-                                          ? "opacity-100"
-                                          : "opacity-30"
-                                        : "opacity-100"
-                                    } transition-all`}
+                                    className={`w-fit h-fit ${search.length > 0
+                                      ? labelsAutocomplete.subcategory.includes(
+                                        subcategory,
+                                      )
+                                        ? "opacity-100"
+                                        : "opacity-30"
+                                      : "opacity-100"
+                                      } transition-all`}
                                   />
                                 ),
                               )}
@@ -668,65 +669,73 @@ export default function Search() {
                 <FilterSelectionContainer className="flex-1">
                   {search.length > 0
                     ? labelsAutocomplete.owner_project.map(
-                        (ownerProjectRow) => (
-                          <Badge
-                            key={ownerProjectRow.owner_project}
-                            onClick={() =>
-                              handleFilter("owner_project", ownerProjectRow)
-                            }
-                            label={
-                              labelsAutocomplete.owner_project.length > 0
-                                ? boldSearch(
-                                    ownerProjectRow.owner_project_clear,
-                                  )
-                                : ownerProjectRow.owner_project_clear
-                            }
-                            leftIcon="feather:tag"
-                            leftIconColor="#CDD8D3"
-                            rightIcon={
-                              labelsFilters.owner_project.includes(
-                                ownerProjectRow,
-                              )
-                                ? "heroicons-solid:x-circle"
-                                : "heroicons-solid:plus-circle"
-                            }
-                            rightIconColor={
-                              labelsFilters.owner_project.includes(
-                                ownerProjectRow,
-                              )
-                                ? "#FE5468"
-                                : "#5A6462"
-                            }
-                            showLabel={true}
-                          />
-                        ),
-                      )
-                    : labelsOwnerProjects.map((ownerProjectRow) => (
+                      (ownerProjectRow) => (
                         <Badge
                           key={ownerProjectRow.owner_project}
                           onClick={() =>
                             handleFilter("owner_project", ownerProjectRow)
                           }
-                          label={ownerProjectRow.owner_project_clear}
+                          label={
+                            labelsAutocomplete.owner_project.length > 0
+                              ? boldSearch(
+                                ownerProjectRow.owner_project_clear,
+                              )
+                              : ownerProjectRow.owner_project_clear
+                          }
                           leftIcon="feather:tag"
                           leftIconColor="#CDD8D3"
                           rightIcon={
-                            labelsFilters.owner_project.includes(
-                              ownerProjectRow,
+                            labelsFilters.owner_project.find(
+                              (f) =>
+                                f.owner_project ===
+                                ownerProjectRow.owner_project,
                             )
                               ? "heroicons-solid:x-circle"
                               : "heroicons-solid:plus-circle"
                           }
                           rightIconColor={
-                            labelsFilters.owner_project.includes(
-                              ownerProjectRow,
+                            labelsFilters.owner_project.find(
+                              (f) =>
+                                f.owner_project ===
+                                ownerProjectRow.owner_project,
                             )
                               ? "#FE5468"
                               : "#5A6462"
                           }
                           showLabel={true}
                         />
-                      ))}
+                      ),
+                    )
+                    : labelsOwnerProjects.map((ownerProjectRow) => (
+                      <Badge
+                        key={ownerProjectRow.owner_project}
+                        onClick={() =>
+                          handleFilter("owner_project", ownerProjectRow)
+                        }
+                        label={ownerProjectRow.owner_project_clear}
+                        leftIcon="feather:tag"
+                        leftIconColor="#CDD8D3"
+                        rightIcon={
+                          labelsFilters.owner_project.find(
+                            (f) =>
+                              f.owner_project ===
+                              ownerProjectRow.owner_project,
+                          )
+                            ? "heroicons-solid:x-circle"
+                            : "heroicons-solid:plus-circle"
+                        }
+                        rightIconColor={
+                          labelsFilters.owner_project.find(
+                            (f) =>
+                              f.owner_project ===
+                              ownerProjectRow.owner_project,
+                          )
+                            ? "#FE5468"
+                            : "#5A6462"
+                        }
+                        showLabel={true}
+                      />
+                    ))}
                 </FilterSelectionContainer>
               </div>
             </div>
@@ -846,9 +855,8 @@ export const Badge = ({
           {label}
         </div>
         <div
-          className={`flex items-center justify-center ${
-            rightIconSize == "sm" ? "pr-[3px]" : "w-[14px] h-[14px]"
-          }`}
+          className={`flex items-center justify-center ${rightIconSize == "sm" ? "pr-[3px]" : "w-[14px] h-[14px]"
+            }`}
         >
           <Icon
             icon={rightIcon}

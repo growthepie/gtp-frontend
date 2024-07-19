@@ -41,6 +41,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/layout/Tooltip";
+import { uniqBy } from "lodash";
 
 const devMiddleware = (useSWRNext) => {
   return (key, fetcher, config) => {
@@ -240,7 +241,7 @@ export default function LabelsPage() {
     address: string[];
     origin_key: string[];
     name: string[];
-    owner_project: string[];
+    owner_project: { owner_project: string; owner_project_clear: string }[];
     category: string[];
     subcategory: string[];
     txcount: number[];
@@ -465,8 +466,8 @@ export default function LabelsPage() {
   }, [filteredLabelsData, setLabelsNumberFiltered]);
 
   useEffect(() => {
-    const uniqueOwnerProjects = [
-      ...new Set(
+    const uniqueOwnerProjects =
+      uniqBy(
         data
           .filter((label) => label.owner_project)
           .map((label) => ({
@@ -476,11 +477,11 @@ export default function LabelsPage() {
           }))
           .sort((a, b) =>
             a.owner_project_clear
-              .toLowerCase()
-              .localeCompare(b.owner_project_clear.toLowerCase()),
+
+              .localeCompare(b.owner_project_clear),
           ),
-      ),
-    ];
+        "owner_project");
+
     setLabelsOwnerProjects(uniqueOwnerProjects);
 
     // setLabelsOwnerProjectClears(uniqueOwnerProjects.map((u) => u[1]));
@@ -510,24 +511,25 @@ export default function LabelsPage() {
 
   const handleFilter = useCallback(
     (key: string, value: string | number) => {
-      if (key === "owner_project") {
+      if (key === "owner_project" && typeof value !== "string" && typeof value !== "number" && typeof key === "string") {
         setLabelsFilters({
           ...labelsFilters,
-          [key]: labelsFilters[key].find(
-            (f) => f.owner_project === value.owner_project,
+          owner_project: labelsFilters[key].find(
+            (f) => f.owner_project === value['owner_project'],
           )
             ? labelsFilters[key].filter(
-              (f) => f.owner_project !== value.owner_project,
+              (f) => f.owner_project !== value['owner_project'],
             )
             : [...labelsFilters[key], value],
         });
+      } else {
+        setLabelsFilters({
+          ...labelsFilters,
+          [key]: labelsFilters[key].includes(value)
+            ? labelsFilters[key].filter((f) => f !== value)
+            : [...labelsFilters[key], value],
+        });
       }
-      setLabelsFilters({
-        ...labelsFilters,
-        [key]: labelsFilters[key].includes(value)
-          ? labelsFilters[key].filter((f) => f !== value)
-          : [...labelsFilters[key], value],
-      });
     },
     [labelsFilters, setLabelsFilters],
   );
