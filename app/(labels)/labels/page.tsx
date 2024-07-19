@@ -1268,19 +1268,25 @@ const GridTableRow = ({
 };
 
 const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
-  const { data, change, value, hoverValue } = useCanvasSparkline();
+  const { data, change, value, hoverDataPoint, setHoverDataPoint } = useCanvasSparkline();
   return (
     <>
       <CanvasSparkline chainKey={chainKey} />
-      {hoverValue ? (
-        <div className="flex flex-col justify-center items-end h-[24px]">
+      {hoverDataPoint ? (
+        <div className="flex flex-col justify-center items-end -mt-[4px]">
           <div className="min-w-[55px] text-right">
-            {hoverValue.toLocaleString("en-GB")}
+            {hoverDataPoint[1].toLocaleString("en-GB")}
           </div>
-          <div className={`text-[9px] text-right leading-[1]`}>&nbsp;</div>
+          <div className={`text-[9px] text-right leading-[1]`}>{new Date(hoverDataPoint[0]).toLocaleDateString("en-GB",
+            {
+              month: "short",
+              day: "numeric",
+              year: "numeric"
+            }
+          )}</div>
         </div>
       ) : (
-        <div className="flex flex-col justify-center items-end h-[24px]">
+        <div className="flex flex-col justify-center items-end -mt-[4px]">
           <div className="min-w-[55px] text-right">
             {value.toLocaleString("en-GB")}
           </div>

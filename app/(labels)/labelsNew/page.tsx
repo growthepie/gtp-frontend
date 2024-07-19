@@ -283,9 +283,9 @@ export default function LabelsPage() {
   const [paddingTop, paddingBottom] =
     items.length > 0
       ? [
-          Math.max(0, items[0].start - virtualizer.options.scrollMargin),
-          Math.max(0, virtualizer.getTotalSize() - items[items.length - 1].end),
-        ]
+        Math.max(0, items[0].start - virtualizer.options.scrollMargin),
+        Math.max(0, virtualizer.getTotalSize() - items[items.length - 1].end),
+      ]
       : [0, 0];
 
   const handleFilter = useCallback(
@@ -437,19 +437,17 @@ export default function LabelsPage() {
                     left: 0,
                     width: "100%",
                     height: `${item.size}px`,
-                    transform: `translateY(${
-                      item.start - virtualizer.options.scrollMargin
-                    }px)`,
+                    transform: `translateY(${item.start - virtualizer.options.scrollMargin
+                      }px)`,
                   }}
                 >
                   <GridTableRow gridDefinitionColumns="group text-[12px] h-[34px] inline-grid grid-cols-[15px,minmax(100px,1600px),150px,200px,105px,275px,100px,182px]  has-[span:hover]:grid-cols-[15px,minmax(310px,800px),150px,200px,105px,275px,100px,182px] transition-all duration-300 gap-x-[20px] mb-[3px]">
                     <div className="flex h-full items-center">
                       <Icon
-                        icon={`gtp:${
-                          AllChainsByKeys[
-                            filteredLabelsData[item.index].origin_key
-                          ].urlKey
-                        }-logo-monochrome`}
+                        icon={`gtp:${AllChainsByKeys[
+                          filteredLabelsData[item.index].origin_key
+                        ].urlKey
+                          }-logo-monochrome`}
                         className="w-[15px] h-[15px]"
                         style={{
                           color:
@@ -548,9 +546,9 @@ export default function LabelsPage() {
                           size="sm"
                           label={
                             master?.blockspace_categories.main_categories[
-                              subcategoryToCategoryMapping[
-                                filteredLabelsData[item.index].usage_category
-                              ]
+                            subcategoryToCategoryMapping[
+                            filteredLabelsData[item.index].usage_category
+                            ]
                             ]
                           }
                           leftIcon={
@@ -573,7 +571,7 @@ export default function LabelsPage() {
                           rightIcon={
                             labelsFilters.category.includes(
                               subcategoryToCategoryMapping[
-                                filteredLabelsData[item.index].usage_category
+                              filteredLabelsData[item.index].usage_category
                               ],
                             )
                               ? "heroicons-solid:x-circle"
@@ -582,7 +580,7 @@ export default function LabelsPage() {
                           rightIconColor={
                             labelsFilters.category.includes(
                               subcategoryToCategoryMapping[
-                                filteredLabelsData[item.index].usage_category
+                              filteredLabelsData[item.index].usage_category
                               ],
                             )
                               ? "#FE5468"
@@ -592,7 +590,7 @@ export default function LabelsPage() {
                             handleFilter(
                               "category",
                               subcategoryToCategoryMapping[
-                                filteredLabelsData[item.index].usage_category
+                              filteredLabelsData[item.index].usage_category
                               ],
                             )
                           }
@@ -609,7 +607,7 @@ export default function LabelsPage() {
                             size="sm"
                             label={
                               master?.blockspace_categories.sub_categories[
-                                filteredLabelsData[item.index].usage_category
+                              filteredLabelsData[item.index].usage_category
                               ]
                             }
                             leftIcon={null}
@@ -645,19 +643,19 @@ export default function LabelsPage() {
                         <div>
                           {new Date(
                             Date.now() -
-                              Math.floor(
-                                parseFloat(
-                                  `0.${parseInt(
-                                    filteredLabelsData[item.index].address,
-                                  ).toString()}`,
-                                ) *
-                                  1000 *
-                                  60 *
-                                  60 *
-                                  24 *
-                                  365 *
-                                  2,
-                              ),
+                            Math.floor(
+                              parseFloat(
+                                `0.${parseInt(
+                                  filteredLabelsData[item.index].address,
+                                ).toString()}`,
+                              ) *
+                              1000 *
+                              60 *
+                              60 *
+                              24 *
+                              365 *
+                              2,
+                            ),
                           ).toLocaleDateString("en-GB", {
                             year: "numeric",
                             month: "short",
@@ -722,7 +720,7 @@ export default function LabelsPage() {
                           )}
                           change={
                             filteredLabelsData[item.index][
-                              `${currentMetric}_change`
+                            `${currentMetric}_change`
                             ]
                           }
                           value={filteredLabelsData[item.index][currentMetric]}
@@ -792,14 +790,14 @@ const GridTableRow = ({
 };
 
 const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
-  const { data, change, value, hoverValue } = useCanvasSparkline();
+  const { data, change, value, hoverDataPoint } = useCanvasSparkline();
   return (
     <>
       <CanvasSparkline chainKey={chainKey} />
-      {hoverValue ? (
+      {hoverDataPoint ? (
         <div className="flex flex-col justify-center items-end h-[24px]">
           <div className="min-w-[55px] text-right">
-            {hoverValue.toLocaleString("en-GB")}
+            {hoverDataPoint[1].toLocaleString("en-GB")}
           </div>
           <div className={`text-[9px] text-right leading-[1]`}>&nbsp;</div>
         </div>
@@ -809,9 +807,8 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
             {value.toLocaleString("en-GB")}
           </div>
           <div
-            className={`text-[9px] text-right leading-[1] ${
-              change > 0 ? "font-normal" : "text-[#FE5468] font-semibold "
-            }`}
+            className={`text-[9px] text-right leading-[1] ${change > 0 ? "font-normal" : "text-[#FE5468] font-semibold "
+              }`}
           >
             {change > 0 && "+"}
             {formatNumber(change * 100, true, false)}%

@@ -23,10 +23,16 @@ const GradientStops = {
   positive: [3.33 * 23, 0, 100, 20],
 };
 
+const CANVAS_WIDTH = 110;
+const CANVAS_HEIGHT = 30;
+const PADDING = 5;
+const DRAW_WIDTH = 100;
+const DRAW_HEIGHT = 20;
+
 export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
   const todayUTCStart = new Date().setUTCHours(0, 0, 0, 0);
 
-  const { data, change, value, hoverValue, setHoverValue } =
+  const { data, change, value, hoverDataPoint, setHoverDataPoint } =
     useCanvasSparkline();
   // creates a canvas element and draws the sparkline on it
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -36,6 +42,10 @@ export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
 
   const dataMin = Math.min(...data.map(([, y]) => y));
   const dataMax = Math.max(...data.map(([, y]) => y));
+
+  const calculateYCoord = useCallback((y) => {
+    return 20 - ((y - dataMin) / (dataMax - dataMin)) * 20;
+  }, [dataMax, dataMin]);
 
   const drawSparkline = useCallback(
     (ctx: CanvasRenderingContext2D) => {
@@ -48,33 +58,27 @@ export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
       gradient.addColorStop(0, color1);
       gradient.addColorStop(1, color2);
 
-      ctx.clearRect(0, 0, 100, 20);
+      ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-      // reverse so we draw from right to left
+      ctx.save();
+      ctx.translate(PADDING, PADDING);
+
+      // Adjust the drawing logic
       const reversedData = data.slice().reverse();
       Array(30)
         .fill(undefined)
         .forEach((_, i) => {
           const y = reversedData[i]?.[1];
+          if (y === undefined) return;
 
-          if (y === null) return;
-
-          let xCoord = 100 - i * (100 / 30);
-          let yCoord = 20 - ((y - dataMin) / (dataMax - dataMin)) * 20;
-
-          // to the nearest 1/2 pixel
-          xCoord = Math.round(xCoord * 2) / 2;
-          yCoord = Math.round(yCoord * 2) / 2;
-
-          // if its out of bounds, bring it back in bounds
-          xCoord = Math.min(Math.max(xCoord, 0), 100);
-          yCoord = Math.min(Math.max(yCoord, 0), 20);
+          let xCoord = DRAW_WIDTH - i * (DRAW_WIDTH / 29);
+          let yCoord = DRAW_HEIGHT - ((y - dataMin) / (dataMax - dataMin)) * DRAW_HEIGHT;
 
           switch (i) {
             case 0:
               ctx.beginPath();
               ctx.strokeStyle = gradient;
-              ctx.lineWidth = 1;
+              ctx.lineWidth = 1.5;
               ctx.moveTo(xCoord, yCoord);
               break;
             // end path of first line segment and start path of second line segment
@@ -95,6 +99,8 @@ export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
               break;
           }
         });
+
+      ctx.restore(); // Reset the drawing context
     },
     [data, dataMax, dataMin, isNegative],
   );
@@ -120,92 +126,67 @@ export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
 
     canvas.addEventListener("mousemove", (e) => {
       const rect = canvas.getBoundingClientRect();
-      let x = e.clientX - rect.left;
-      let y = e.clientY - rect.top;
+      let x = e.clientX - rect.left - PADDING;
+      let y = e.clientY - rect.top - PADDING;
 
-      //find closest timestamp
-      const xTimestamp =
-        todayUTCStart - (30 - Math.floor((x / 100) * 30)) * 86400000;
+      // Ensure x is within the drawing area
+      x = Math.max(0, Math.min(x, DRAW_WIDTH));
 
-      // calculate the x and y coordinates of the hovered point based on the timestamp
-      let xCoord = 100 - (((todayUTCStart - xTimestamp) / 86400000) * 100) / 30;
-      let yCoord = data.find(([timestamp]) => timestamp === xTimestamp)?.[1];
+      // Calculate the index of the closest data point
+      const dataIndex = Math.round((x / DRAW_WIDTH) * (data.length - 1));
+      const closestPoint = data[dataIndex];
 
-      if (!yCoord) return;
+      if (!closestPoint) return;
 
-      // to the nearest 1/2 pixel
-      x = Math.round(x * 2) / 2;
-      yCoord = Math.round(yCoord * 2) / 2;
+      const [timestamp, value] = closestPoint;
 
-      // if its out of bounds, bring it back in bounds
-      x = Math.min(Math.max(x, 0), 100);
-      // yCoord = Math.min(Math.max(yCoord, 0), 20);
+      // Calculate the x-coordinate for the circle (snapped to the closest data point)
+      const pointX = (dataIndex / (data.length - 1)) * DRAW_WIDTH;
 
-      // setHoveredIndex(xCoord);
-      setHoverValue(
-        data.find(([timestamp]) => timestamp === xTimestamp)?.[1] ?? null,
-      );
+      // Calculate the y-coordinate for the circle
+      const pointY = DRAW_HEIGHT - ((value - dataMin) / (dataMax - dataMin)) * DRAW_HEIGHT;
 
-      ctx.clearRect(0, 0, 100, 20);
+      ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+      ctx.save();
+      ctx.translate(PADDING, PADDING);
+
+      // Draw hover line at mouse position
       ctx.beginPath();
-      // cursor line
       ctx.fillStyle = "#ffffff33";
-      ctx.fillRect(x, 0, 1, 20);
+      ctx.fillRect(x, 0, 1, DRAW_HEIGHT);
 
-      // place transparent circle on the sparkline to indicate the hovered point
+      // Draw hover circle at closest data point
       ctx.beginPath();
-
-      ctx.fillStyle =
-        x > (100 / 30) * 23
-          ? isNegative
-            ? GradientColors.negative[1] + "66"
-            : GradientColors.positive[1] + "66"
-          : "#CDD8D366";
-      ctx.arc(
-        x,
-        yCoord ? 20 - ((yCoord - dataMin) / (dataMax - dataMin)) * 20 : 0,
-        3,
-        0,
-        2 * Math.PI,
-      );
+      ctx.fillStyle = pointX > (DRAW_WIDTH / 30) * 23
+        ? (isNegative ? GradientColors.negative[1] + "66" : GradientColors.positive[1] + "66")
+        : "#CDD8D366";
+      ctx.arc(pointX, pointY, 3, 0, 2 * Math.PI);
       ctx.fill();
+
+      ctx.restore();
+
+      setHoverDataPoint(closestPoint);
     });
 
     canvas.addEventListener("mouseleave", () => {
       // setHoveredIndex(null);
-      setHoverValue(null);
-      ctx.clearRect(0, 0, 100, 20);
+      setHoverDataPoint(null);
+      ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     });
 
     return () => {
-      canvas.removeEventListener("mousemove", () => {});
-      canvas.removeEventListener("mouseleave", () => {});
+      canvas.removeEventListener("mousemove", () => { });
+      canvas.removeEventListener("mouseleave", () => { });
     };
-  }, [
-    hoverCanvasRef,
-    data,
-    dataMax,
-    dataMin,
-    isNegative,
-    setHoverValue,
-    todayUTCStart,
-  ]);
+  }, [hoverCanvasRef, data, dataMax, dataMin, isNegative, todayUTCStart, calculateYCoord, setHoverDataPoint]);
 
   return (
     <>
-      <div className="w-[100px] h-[20px] relative">
-        <canvas
-          ref={hoverCanvasRef}
-          width={100}
-          height={20}
-          className="absolute inset-0"
-        />
-        <canvas ref={canvasRef} width={100} height={20} />
+      <div className="relative" style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
+        <canvas ref={canvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} className="absolute -top-[4px]" />
+        <canvas ref={hoverCanvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} className="absolute -top-[4px]" />
       </div>
-      {/* <div className="flex justify-between">
-        <span>{hoveredIndex}</span>
-        <span>{data[hoveredIndex]?.[1]}</span>
-      </div> */}
     </>
   );
 }
@@ -214,8 +195,8 @@ type CanvasSparklineContextType = {
   data: [number, number][];
   change: number;
   value: number;
-  hoverValue: number | null;
-  setHoverValue: (value: number | null) => void;
+  hoverDataPoint: number[] | null;
+  setHoverDataPoint: (value: number[] | null) => void;
 };
 
 const CanvasSparklineContext = createContext<CanvasSparklineContextType | null>(
@@ -228,11 +209,11 @@ export const CanvasSparklineProvider = ({
   value,
   children,
 }: CanvasSparklineContextType & { children: React.ReactNode }) => {
-  const [hoverValue, setHoverValue] = useState<number | null>(null);
+  const [hoverDataPoint, setHoverDataPoint] = useState<number[] | null>(null);
 
   return (
     <CanvasSparklineContext.Provider
-      value={{ data, change, value, hoverValue, setHoverValue }}
+      value={{ data, change, value, hoverDataPoint, setHoverDataPoint }}
     >
       {children}
     </CanvasSparklineContext.Provider>
