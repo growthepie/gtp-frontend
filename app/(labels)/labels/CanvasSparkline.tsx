@@ -183,9 +183,9 @@ export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
 
   return (
     <>
-      <div className="relative" style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
-        <canvas ref={canvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} className="absolute -top-[4px]" />
-        <canvas ref={hoverCanvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} className="absolute -top-[4px]" />
+      <div className="relative -top-[4px]" style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
+        <canvas ref={canvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} className="absolute" />
+        <canvas ref={hoverCanvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} className="absolute" />
       </div>
     </>
   );

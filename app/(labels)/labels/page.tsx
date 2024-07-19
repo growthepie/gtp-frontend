@@ -1179,7 +1179,7 @@ export default function LabelsPage() {
                           Loading
                         </div>
                       ) : (
-                        <>
+                        <div className="relative flex h-[20px]">
                           {parquetSparklineData &&
                             parquetSparklineData[
                             `${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address
@@ -1210,7 +1210,7 @@ export default function LabelsPage() {
                               Unavailable
                             </div>
                           )}
-                        </>
+                        </div>
                       )}
                     </div>
                   </GridTableRow>
@@ -1273,7 +1273,7 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
     <>
       <CanvasSparkline chainKey={chainKey} />
       {hoverDataPoint ? (
-        <div className="flex flex-col justify-center items-end -mt-[4px]">
+        <div className="flex flex-col justify-center items-end">
           <div className="min-w-[55px] text-right">
             {hoverDataPoint[1].toLocaleString("en-GB")}
           </div>
@@ -1286,7 +1286,7 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
           )}</div>
         </div>
       ) : (
-        <div className="flex flex-col justify-center items-end -mt-[4px]">
+        <div className="flex flex-col justify-center items-end">
           <div className="min-w-[55px] text-right">
             {value.toLocaleString("en-GB")}
           </div>
