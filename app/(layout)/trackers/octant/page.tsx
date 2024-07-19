@@ -135,10 +135,11 @@ export default function Page() {
 
     epochs.forEach((epoch) => {
       epoch.projects.forEach((project) => {
-        if (!byProjectName[project.name]) {
-          byProjectName[project.name] = [];
+        const lowerProjectName = project.name.toLowerCase();
+        if (!byProjectName[lowerProjectName]) {
+          byProjectName[lowerProjectName] = [];
         }
-        byProjectName[project.name].push(epoch);
+        byProjectName[lowerProjectName].push(epoch);
       });
     });
 
@@ -178,7 +179,7 @@ export default function Page() {
           return acc;
 
         const project = epoch.projects.find(
-          (p) => p.name === projectName,
+          (p) => p.name.toLowerCase() === projectName,
         );
 
         if (!project) return acc;
@@ -231,18 +232,18 @@ export default function Page() {
       if (!data) return 0;
 
       const aCurrentEpochProject = currentEpoch.projects.find(
-        (p) => p.name === a,
+        (p) => p.name.toLowerCase() === a,
       );
       const aLastPresentEpochProject = epochsByProjectName[a][
         epochsByProjectName[a].length - 1
-      ].projects.find((p) => p.name === a);
+      ].projects.find((p) => p.name.toLowerCase() === a);
 
       const bCurrentEpochProject = currentEpoch.projects.find(
-        (p) => p.name === b,
+        (p) => p.name.toLowerCase() === b,
       );
       const bLastPresentEpochProject = epochsByProjectName[b][
         epochsByProjectName[b].length - 1
-      ].projects.find((p) => p.name === b);
+      ].projects.find((p) => p.name.toLowerCase() === b);
 
       if (["name", "address"].includes(sortKey)) {
         const aProject = aCurrentEpochProject
@@ -939,7 +940,7 @@ const EpochTile = ({
   currentEpoch: EpochData;
   setCurrentEpoch?: (epoch: EpochData) => void;
 }) => {
-  const project = epoch.projects.find((p) => p.name === name);
+  const project = epoch.projects.find((p) => p.name.toLowerCase() === name.toLowerCase());
 
   if (!project) return <div className="w-2 h-2 bg-orange-500"></div>;
 
@@ -1012,11 +1013,11 @@ const OctantTableRow = ({
 }: TableRowProps) => {
   // const project = data.projects[projectIndex];
   const currentEpochProject = currentEpoch.projects.find(
-    (p) => p.name === projectName,
+    (p) => p.name.toLowerCase() === projectName,
   );
   const lastPresentEpochProject = epochsByProjectName[projectName][
     epochsByProjectName[projectName].length - 1
-  ].projects.find((p) => p.name === projectName);
+  ].projects.find((p) => p.name.toLowerCase() === projectName);
 
   console.log("projectName:", projectName, "projectIndex:", projectIndex, "currentEpochProject:", currentEpochProject, " lastPresentEpochProject:", lastPresentEpochProject);
 
@@ -1092,9 +1093,9 @@ const OctantTableRow = ({
       </div>
       <div>
         <div className="flex gap-x-1.5 font-inter font-bold text-white/60 text-xs select-none">
-          {epochsByProjectName[project.name] &&
+          {epochsByProjectName[project.name.toLowerCase()] &&
             epochs.map((epoch, index) => {
-              const isInEpoch = epochsByProjectName[project.name].find(
+              const isInEpoch = epochsByProjectName[project.name.toLowerCase()].find(
                 (e) => e.epoch === epoch.epoch,
               );
 
