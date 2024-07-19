@@ -21,7 +21,7 @@ import {
 import Header from "../labels/Header";
 
 import Footer from "../labels/Footer";
-import LabelsHorizontalScrollContainer from "@/components/LabelsHorizontalScrollContainer";
+import LabelsTableContainer from "@/components/LabelsTableContainer";
 
 import { IS_PRODUCTION } from "@/lib/helpers";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
@@ -330,94 +330,94 @@ export default function LabelsPage() {
         </div>
       </div>
 
-      <LabelsHorizontalScrollContainer
+      <LabelsTableContainer
         className="w-full pt-[160px] transition-none"
-        includeMargin={false}
-        header={
-          <>
-            {filteredLabelsData && (
-              <GridTableHeader gridDefinitionColumns="pb-[4px] text-[12px] grid-cols-[15px,minmax(100px,1600px),150px,200px,105px,275px,100px,182px] gap-x-[20px] z-[2]">
-                <div className="flex items-center justify-center"></div>
-                <div
-                  className="flex items-center justify-start cursor-pointer"
-                  onClick={() =>
-                    updateSort({
-                      address: sort && sort.address === "asc" ? "desc" : "asc",
-                    })
-                  }
-                >
-                  Contract Address
-                </div>
-                <div
-                  className="flex items-center justify-start cursor-pointer"
-                  onClick={() =>
-                    updateSort({
-                      owner_project:
-                        sort && sort.owner_project === "asc" ? "desc" : "asc",
-                    })
-                  }
-                >
-                  Owner Project
-                </div>
-                <div
-                  className="flex items-center justify-start cursor-pointer"
-                  onClick={() => updateSort({ display_name: "desc" })}
-                >
-                  Contract Name
-                </div>
-                {/* <div className="flex items-center justify-start">Category</div> */}
-                <div className="flex items-center justify-start">
-                  <Badge
-                    size="sm"
-                    label="Category"
-                    leftIcon={null}
-                    leftIconColor="#FFFFFF"
-                    rightIcon="feather:arrow-down"
-                    rightIconSize="sm"
-                    className="border border-[#5A6462]"
-                  />
-                </div>
-                <div className="flex items-center justify-start">
-                  <Badge
-                    size="sm"
-                    label="Subcategory"
-                    leftIcon={null}
-                    leftIconColor="#FFFFFF"
-                    rightIcon="feather:arrow-down"
-                    rightIconSize="sm"
-                    className="border border-[#5A6462]"
-                  />
-                </div>
-                <div className="flex items-center justify-end">
-                  Date Deployed
-                </div>
-                <div className="relative flex items-center justify-end">
-                  <div className=" flex items-center">
-                    {metricKeysLabels[currentMetric]} (7 days)
-                    <div
-                      className="absolute left-[12px] cursor-pointer bg-white/30 opacity-60 rounded-full px-0.5 py-[2px]"
-                      onClick={handlePreviousMetric}
-                    >
-                      <Icon
-                        icon="feather:chevron-left"
-                        className="w-[12px] h-[12px]"
-                      />
-                    </div>
-                    <div
-                      className="absolute -right-[20px] cursor-pointer bg-white/30 opacity-60 rounded-full px-0.5 py-[2px]"
-                      onClick={handleNextMetric}
-                    >
-                      <Icon
-                        icon="feather:chevron-right"
-                        className="w-[12px] h-[12px]"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </GridTableHeader>
-            )}
-          </>
-        }
+      // includeMargin={false}
+      // header={
+      //   <>
+      //     {filteredLabelsData && (
+      //       <GridTableHeader gridDefinitionColumns="pb-[4px] text-[12px] grid-cols-[15px,minmax(100px,1600px),150px,200px,105px,275px,100px,182px] gap-x-[20px] z-[2]">
+      //         <div className="flex items-center justify-center"></div>
+      //         <div
+      //           className="flex items-center justify-start cursor-pointer"
+      //           onClick={() =>
+      //             updateSort({
+      //               address: sort && sort.address === "asc" ? "desc" : "asc",
+      //             })
+      //           }
+      //         >
+      //           Contract Address
+      //         </div>
+      //         <div
+      //           className="flex items-center justify-start cursor-pointer"
+      //           onClick={() =>
+      //             updateSort({
+      //               owner_project:
+      //                 sort && sort.owner_project === "asc" ? "desc" : "asc",
+      //             })
+      //           }
+      //         >
+      //           Owner Project
+      //         </div>
+      //         <div
+      //           className="flex items-center justify-start cursor-pointer"
+      //           onClick={() => updateSort({ display_name: "desc" })}
+      //         >
+      //           Contract Name
+      //         </div>
+      //         {/* <div className="flex items-center justify-start">Category</div> */}
+      //         <div className="flex items-center justify-start">
+      //           <Badge
+      //             size="sm"
+      //             label="Category"
+      //             leftIcon={null}
+      //             leftIconColor="#FFFFFF"
+      //             rightIcon="feather:arrow-down"
+      //             rightIconSize="sm"
+      //             className="border border-[#5A6462]"
+      //           />
+      //         </div>
+      //         <div className="flex items-center justify-start">
+      //           <Badge
+      //             size="sm"
+      //             label="Subcategory"
+      //             leftIcon={null}
+      //             leftIconColor="#FFFFFF"
+      //             rightIcon="feather:arrow-down"
+      //             rightIconSize="sm"
+      //             className="border border-[#5A6462]"
+      //           />
+      //         </div>
+      //         <div className="flex items-center justify-end">
+      //           Date Deployed
+      //         </div>
+      //         <div className="relative flex items-center justify-end">
+      //           <div className=" flex items-center">
+      //             {metricKeysLabels[currentMetric]} (7 days)
+      //             <div
+      //               className="absolute left-[12px] cursor-pointer bg-white/30 opacity-60 rounded-full px-0.5 py-[2px]"
+      //               onClick={handlePreviousMetric}
+      //             >
+      //               <Icon
+      //                 icon="feather:chevron-left"
+      //                 className="w-[12px] h-[12px]"
+      //               />
+      //             </div>
+      //             <div
+      //               className="absolute -right-[20px] cursor-pointer bg-white/30 opacity-60 rounded-full px-0.5 py-[2px]"
+      //               onClick={handleNextMetric}
+      //             >
+      //               <Icon
+      //                 icon="feather:chevron-right"
+      //                 className="w-[12px] h-[12px]"
+      //               />
+      //             </div>
+      //           </div>
+      //         </div>
+      //       </GridTableHeader>
+      //     )}
+      //   </>
+      // }
       >
         <div ref={listRef} className=" min-w-[1272px]">
           {filteredLabelsData && (
@@ -743,7 +743,7 @@ export default function LabelsPage() {
         </div>
 
         {/* </div> */}
-      </LabelsHorizontalScrollContainer>
+      </LabelsTableContainer>
       {/* </div> */}
 
       <Footer />
