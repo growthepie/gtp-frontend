@@ -377,7 +377,7 @@ export default function Search() {
                 )}
                 {Object.values(labelsFilters).flat().length > 0 && (
                   <div
-                    className="flex items-center justify-center bg-[linear-gradient(-9deg,#FE5468,#FFDF27)] rounded-full w-[24px] h-[24px] cursor-pointer"
+                    className="flex items-center justify-center cursor-pointer"
                     onClick={() =>
                       setLabelsFilters({
                         address: [],
@@ -395,12 +395,16 @@ export default function Search() {
                       })
                     }
                   >
-                    <div className="flex items-center justify-center bg-[#1F2726] rounded-full w-[22px] h-[22px]">
-                      <Icon
-                        icon="heroicons-solid:x-circle"
-                        className="w-[14px] h-[14px]"
-                      />
-                    </div>
+                    <svg width="27" height="26" viewBox="0 0 27 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="1" y="1" width="25" height="24" rx="12" stroke="url(#paint0_linear_8794_34411)" />
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M17.7435 17.2426C18.8688 16.1174 19.5009 14.5913 19.5009 13C19.5009 11.4087 18.8688 9.88258 17.7435 8.75736C16.6183 7.63214 15.0922 7 13.5009 7C11.9096 7 10.3835 7.63214 9.25827 8.75736C8.13305 9.88258 7.50091 11.4087 7.50091 13C7.50091 14.5913 8.13305 16.1174 9.25827 17.2426C10.3835 18.3679 11.9096 19 13.5009 19C15.0922 19 16.6183 18.3679 17.7435 17.2426V17.2426ZM12.4402 10.8787C12.2996 10.738 12.1088 10.659 11.9099 10.659C11.711 10.659 11.5202 10.738 11.3796 10.8787C11.2389 11.0193 11.1599 11.2101 11.1599 11.409C11.1599 11.6079 11.2389 11.7987 11.3796 11.9393L12.4402 13L11.3796 14.0607C11.2389 14.2013 11.1599 14.3921 11.1599 14.591C11.1599 14.7899 11.2389 14.9807 11.3796 15.1213C11.5202 15.262 11.711 15.341 11.9099 15.341C12.1088 15.341 12.2996 15.262 12.4402 15.1213L13.5009 14.0607L14.5616 15.1213C14.7022 15.262 14.893 15.341 15.0919 15.341C15.2908 15.341 15.4816 15.262 15.6222 15.1213C15.7629 14.9807 15.8419 14.7899 15.8419 14.591C15.8419 14.3921 15.7629 14.2013 15.6222 14.0607L14.5616 13L15.6222 11.9393C15.7629 11.7987 15.8419 11.6079 15.8419 11.409C15.8419 11.2101 15.7629 11.0193 15.6222 10.8787C15.4816 10.738 15.2908 10.659 15.0919 10.659C14.893 10.659 14.7022 10.738 14.5616 10.8787L13.5009 11.9393L12.4402 10.8787Z" fill="#CDD8D3" />
+                      <defs>
+                        <linearGradient id="paint0_linear_8794_34411" x1="13.5" y1="1" x2="29.4518" y2="24.361" gradientUnits="userSpaceOnUse">
+                          <stop stop-color="#FE5468" />
+                          <stop offset="1" stop-color="#FFDF27" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
                   </div>
                 )}
               </div>
