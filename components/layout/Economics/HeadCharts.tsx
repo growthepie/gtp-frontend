@@ -191,54 +191,61 @@ export default function EconHeadCharts({
             <div class="tooltip-point-name text-md">${nameString}</div>
             <div class="flex-1 text-right font-inter w-full flex">
               <div class="flex justify-end text-right w-full">
-                  <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-            }">${prefix}</div>
-                  <div>${isFees
-              ? parseFloat(displayValue).toLocaleString("en-GB", {
-                minimumFractionDigits: calculateDecimalPlaces(
-                  Number(displayValue),
-                ),
-                maximumFractionDigits: calculateDecimalPlaces(
-                  Number(displayValue),
-                ),
-              })
-              : formatBytes(displayValue)
-            }
+                  <div class="opacity-70 mr-0.5 ${
+                    !prefix && "hidden"
+                  }">${prefix}</div>
+                  <div>${
+                    isFees
+                      ? parseFloat(displayValue).toLocaleString("en-GB", {
+                          minimumFractionDigits: calculateDecimalPlaces(
+                            Number(displayValue),
+                          ),
+                          maximumFractionDigits: calculateDecimalPlaces(
+                            Number(displayValue),
+                          ),
+                        })
+                      : formatBytes(displayValue)
+                  }
                   </div>
                 </div>
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-            }">${suffix}</div>
+                <div class="opacity-70 ml-0.5 ${
+                  !suffix && "hidden"
+                }">${suffix}</div>
             </div>
           </div>
-          ${index === 1
+          ${
+            index === 1
               ? ` <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
             <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${"#344240"}"></div>
             <div class="tooltip-point-name text-md">${"Cost / GB"}</div>
             <div class="flex-1 text-right font-inter w-full flex">
               <div class="flex justify-end text-right w-full">
-                  <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
-              }">${prefix}</div>
-                  <div>${isFees
-                ? parseFloat(
-                  String(calculateCostPerGB(Number(y), blob_value)),
-                ).toLocaleString("en-GB", {
-                  minimumFractionDigits: calculateDecimalPlaces(
-                    Number(displayValue),
-                  ),
-                  maximumFractionDigits: calculateDecimalPlaces(
-                    Number(displayValue),
-                  ),
-                })
-                : formatBytes(displayValue)
-              }
+                  <div class="opacity-70 mr-0.5 ${
+                    !prefix && "hidden"
+                  }">${prefix}</div>
+                  <div>${
+                    isFees
+                      ? parseFloat(
+                          String(calculateCostPerGB(Number(y), blob_value)),
+                        ).toLocaleString("en-GB", {
+                          minimumFractionDigits: calculateDecimalPlaces(
+                            Number(displayValue),
+                          ),
+                          maximumFractionDigits: calculateDecimalPlaces(
+                            Number(displayValue),
+                          ),
+                        })
+                      : formatBytes(displayValue)
+                  }
                   </div>
                 </div>
-                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
-              }">${suffix}</div>
+                <div class="opacity-70 ml-0.5 ${
+                  !suffix && "hidden"
+                }">${suffix}</div>
             </div>
           </div>`
               : ``
-            }`;
+          }`;
         })
         .join("");
 
@@ -382,12 +389,12 @@ export default function EconHeadCharts({
         }}
         aria-labelledby={"economics-traction-title"}
         hasTrack={false}
-      // onDrag={(e) => {
-      //   setIsDragging(true);
-      // }}
-      // onDragged={(e) => {
-      //   setIsDragging(false);
-      // }}
+        // onDrag={(e) => {
+        //   setIsDragging(true);
+        // }}
+        // onDragged={(e) => {
+        //   setIsDragging(false);
+        // }}
       >
         <SplideTrack>
           {Object.keys(da_charts).map((key, i) => {
@@ -407,6 +414,14 @@ export default function EconHeadCharts({
                 >
                   <div className="absolute top-[5px] w-[calc(100% - 38px)] left-[19px] right-[21px] flex justify-between pl-[15px] pr-[2px] text-[16px] font-[650] ">
                     <div className="flex items-center gap-x-2 justify-center">
+                      <Icon
+                        icon={
+                          key.includes("ethereum")
+                            ? "gtp:blobs"
+                            : "gtp:celestiafp"
+                        }
+                        className="w-[15px] h-[15px]"
+                      />
                       <div>
                         {key.charAt(0).toUpperCase() +
                           key.slice(1) +
@@ -420,14 +435,14 @@ export default function EconHeadCharts({
                       </div>
                     </div>
                     <div className="flex justify-between gap-x-[15px] items-center h-[36px] bg-[#344240CC]  rounded-[10px] pl-[15px] pr-[15px] mr-[8px]  ">
-                      <div className="text-[20px] font-semibold ">
+                      <div className="text-[14px] font-semibold ">
                         {valuePrefix}
                         {calculateCostPerGB(
                           da_charts[key].total_blob_fees.daily.data[
-                          feesLength - 1
+                            feesLength - 1
                           ][dataIndex],
                           da_charts[key].total_blob_size.daily.data[
-                          sizeLength - 1
+                            sizeLength - 1
                           ][1],
                         )}
                         {" / GB "}
@@ -436,7 +451,7 @@ export default function EconHeadCharts({
                         <div>
                           {formatBytes(
                             da_charts[key].total_blob_size.daily.data[
-                            sizeLength - 1
+                              sizeLength - 1
                             ][1],
                           )}
                         </div>
@@ -444,7 +459,7 @@ export default function EconHeadCharts({
                           {valuePrefix}
                           {simplerFormatter(
                             da_charts[key].total_blob_fees.daily.data[
-                            feesLength - 1
+                              feesLength - 1
                             ][dataIndex],
                           )}
                         </div>
@@ -458,13 +473,13 @@ export default function EconHeadCharts({
                     }}
                   >
                     <div
-                      className="text-[10px] font-semibold w-full rotate-180"
+                      className="text-[12px] font-semibold w-full rotate-180"
                       style={{
                         writingMode: "vertical-lr",
                         textOrientation: "sideways",
                       }}
                     >
-                      {da_charts[key].total_blob_size.metric_name}
+                      {da_charts[key].total_blob_size.metric_name + " in GB"}
                     </div>
                   </div>
                   <div
@@ -474,7 +489,7 @@ export default function EconHeadCharts({
                     }}
                   >
                     <div
-                      className="text-[10px] font-semibold w-full  rotate-180"
+                      className="text-[12px] font-semibold w-full  rotate-0"
                       style={{
                         writingMode: "vertical-lr",
                         textOrientation: "sideways",
@@ -591,7 +606,6 @@ export default function EconHeadCharts({
                           onRender={(chartData) => {
                             const chart = chartData.target as any; // Cast chartData.target to any
 
-
                             if (
                               !chart ||
                               !chart.series ||
@@ -606,8 +620,6 @@ export default function EconHeadCharts({
                             ) {
                               setChartWidth(chart.plotWidth);
                             }
-
-
 
                             chart.series.forEach((object, index) => {
                               const dictionaryKey = `${chart.series[index].name}_${key}`;
@@ -665,7 +677,7 @@ export default function EconHeadCharts({
 
                               const lastPoint: Highcharts.Point =
                                 chart.series[index].points[
-                                chart.series[index].points.length - 1
+                                  chart.series[index].points.length - 1
                                 ];
 
                               // check if i exists as a key in lastPointLines
@@ -675,14 +687,13 @@ export default function EconHeadCharts({
 
                               if (
                                 lastPointLines[dictionaryKey] &&
-                                lastPointLines[dictionaryKey]
-                                  .length > 0
+                                lastPointLines[dictionaryKey].length > 0
                               ) {
-                                lastPointLines[
-                                  dictionaryKey
-                                ].forEach((line) => {
-                                  line.destroy();
-                                });
+                                lastPointLines[dictionaryKey].forEach(
+                                  (line) => {
+                                    line.destroy();
+                                  },
+                                );
                                 lastPointLines[dictionaryKey] = [];
                               }
 
@@ -707,8 +718,8 @@ export default function EconHeadCharts({
                                     : chart.plotTop - 5,
                                   stroke: isSafariBrowser
                                     ? AllChainsByKeys["all_l2s"].colors[
-                                    "dark"
-                                    ][1]
+                                        "dark"
+                                      ][1]
                                     : "url('#gradient0')",
                                   "stroke-dasharray": "2",
                                   "stroke-width": 1,
@@ -807,8 +818,8 @@ export default function EconHeadCharts({
                           min={da_charts[key].total_blob_size.daily.data[0][0]}
                           max={
                             da_charts[key].total_blob_size.daily.data[
-                            da_charts[key].total_blob_size.daily.data.length -
-                            1
+                              da_charts[key].total_blob_size.daily.data.length -
+                                1
                             ][0]
                           }
                         >
@@ -953,7 +964,7 @@ export default function EconHeadCharts({
                     <div className="text-[#CDD8D3] text-[8px] font-medium leading-[150%]">
                       {new Date(
                         da_charts[key][largerAxis].daily.data[
-                        da_charts[key][largerAxis].daily.data.length - 1
+                          da_charts[key][largerAxis].daily.data.length - 1
                         ][0],
                       ).toLocaleDateString("en-GB", {
                         timeZone: "UTC",
