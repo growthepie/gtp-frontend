@@ -1277,7 +1277,7 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
           <div className="min-w-[55px] text-right">
             {hoverDataPoint[1].toLocaleString("en-GB")}
           </div>
-          <div className={`text-[9px] text-right leading-[1]`}>{new Date(hoverDataPoint[0]).toLocaleDateString("en-GB",
+          <div className={`text-[9px] text-right leading-[1] text-forest-400`}>{new Date(hoverDataPoint[0]).toLocaleDateString("en-GB",
             {
               month: "short",
               day: "numeric",
