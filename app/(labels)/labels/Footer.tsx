@@ -5,9 +5,7 @@ import Container from "@/components/layout/Container";
 
 export default function Footer() {
   return (
-    <div className="fixed flex flex-col justify-end  left-0 right-0 bottom-0 h-[120px] overflow-hidden"
-
-    >
+    <div className="fixed z-10 flex flex-col justify-end  left-0 right-0 bottom-0 h-[120px] overflow-hidden">
       <div className="relative">
         <div className="bg-[#151a19] -z-10 fixed inset-0 pointer-events-none" style={{ backgroundPosition: "bottom", maskImage: `linear-gradient(to top, white 0, white 80px, transparent 120px`, }}>
           <div className="background-gradient-group">

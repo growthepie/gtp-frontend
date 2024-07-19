@@ -21,7 +21,7 @@ import {
 import Header from "./Header";
 
 import Footer from "./Footer";
-import LabelsHorizontalScrollContainer from "@/components/LabelsHorizontalScrollContainer";
+import LabelsTableContainer from "@/components/LabelsTableContainer";
 
 import { IS_PRODUCTION } from "@/lib/helpers";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
@@ -503,9 +503,9 @@ export default function LabelsPage() {
   const [paddingTop, paddingBottom] =
     items.length > 0
       ? [
-          Math.max(0, items[0].start - virtualizer.options.scrollMargin),
-          Math.max(0, virtualizer.getTotalSize() - items[items.length - 1].end),
-        ]
+        Math.max(0, items[0].start - virtualizer.options.scrollMargin),
+        Math.max(0, virtualizer.getTotalSize() - items[items.length - 1].end),
+      ]
       : [0, 0];
 
   const handleFilter = useCallback(
@@ -517,8 +517,8 @@ export default function LabelsPage() {
             (f) => f.owner_project === value.owner_project,
           )
             ? labelsFilters[key].filter(
-                (f) => f.owner_project !== value.owner_project,
-              )
+              (f) => f.owner_project !== value.owner_project,
+            )
             : [...labelsFilters[key], value],
         });
       }
@@ -561,24 +561,24 @@ export default function LabelsPage() {
           </div>
         </div>
       </div>
-      <LabelsContainer className="fixed 2xl:hidden inset-0 flex flex-col items-center justify-center bg-[#151a19] z-[999]">
+      {/* <LabelsContainer className="fixed 2xl:hidden inset-0 flex flex-col items-center justify-center bg-[#151a19] z-[999]">
         <div className="text-forest-400 text-center font-semibold text-[20px]">
           This page is not currently supported on small screens
         </div>
         <div className="text-forest-400 text-center">
           Please view on a larger device or make your browser window wider.
         </div>
-      </LabelsContainer>
+      </LabelsContainer> */}
 
-      <LabelsHorizontalScrollContainer
-        className="hidden 2xl:block"
+      <LabelsTableContainer
+        className="block"
         // className="w-full h-screen"
         // forcedMinWidth={1272 + 200}
         includeMargin={false}
         header={
           <>
             {filteredLabelsData && (
-              <GridTableHeader gridDefinitionColumns="pb-[4px] text-[12px] grid-cols-[15px,minmax(100px,1600px),150px,200px,105px,105px,275px,182px] gap-x-[20px] z-[2]">
+              <GridTableHeader gridDefinitionColumns="pb-[4px] text-[12px] grid-cols-[15px,minmax(120px,1600px),150px,200px,105px,105px,275px,182px] gap-x-[20px] z-[2]">
                 <div className="flex items-center justify-center"></div>
                 <div
                   className="flex items-center justify-start cursor-pointer"
@@ -631,7 +631,7 @@ export default function LabelsPage() {
                     }
                     rightIcon={
                       sort.metric === "owner_project" &&
-                      sort.sortOrder === "asc"
+                        sort.sortOrder === "asc"
                         ? "feather:arrow-up"
                         : "feather:arrow-down"
                     }
@@ -747,7 +747,7 @@ export default function LabelsPage() {
                   <Icon
                     icon={
                       sort.metric === "deployment_date" &&
-                      sort.sortOrder === "asc"
+                        sort.sortOrder === "asc"
                         ? "feather:arrow-up"
                         : "feather:arrow-down"
                     }
@@ -776,7 +776,7 @@ export default function LabelsPage() {
                     <Icon
                       icon={
                         sort.metric === currentMetric &&
-                        sort.sortOrder === "asc"
+                          sort.sortOrder === "asc"
                           ? "feather:arrow-up"
                           : "feather:arrow-down"
                       }
@@ -829,19 +829,17 @@ export default function LabelsPage() {
                     left: 0,
                     width: "100%",
                     height: `${item.size}px`,
-                    transform: `translateY(${
-                      item.start - virtualizer.options.scrollMargin
-                    }px)`,
+                    transform: `translateY(${item.start - virtualizer.options.scrollMargin
+                      }px)`,
                   }}
                 >
-                  <GridTableRow gridDefinitionColumns="group text-[12px] h-[34px] inline-grid grid-cols-[15px,minmax(100px,1600px),150px,200px,105px,105px,275px,182px]  has-[span:hover]:grid-cols-[15px,minmax(310px,800px),150px,200px,105px,105px,275px,182px] transition-all duration-300 gap-x-[20px] mb-[3px]">
+                  <GridTableRow gridDefinitionColumns="group text-[12px] h-[34px] inline-grid grid-cols-[15px,minmax(120px,1600px),150px,200px,105px,105px,275px,182px]  has-[span:hover]:grid-cols-[15px,minmax(310px,800px),150px,200px,105px,105px,275px,182px] transition-all duration-300 gap-x-[20px] mb-[3px]">
                     <div className="flex h-full items-center">
                       <Icon
-                        icon={`gtp:${
-                          AllChainsByKeys[
-                            filteredLabelsData[item.index].origin_key
-                          ].urlKey
-                        }-logo-monochrome`}
+                        icon={`gtp:${AllChainsByKeys[
+                          filteredLabelsData[item.index].origin_key
+                        ].urlKey
+                          }-logo-monochrome`}
                         className="w-[15px] h-[15px]"
                         style={{
                           color:
@@ -910,10 +908,10 @@ export default function LabelsPage() {
                                 filteredLabelsData[item.index].owner_project
                               ][2] ||
                                 ownerProjectToProjectData[
-                                  filteredLabelsData[item.index].owner_project
+                                filteredLabelsData[item.index].owner_project
                                 ][4] ||
                                 ownerProjectToProjectData[
-                                  filteredLabelsData[item.index].owner_project
+                                filteredLabelsData[item.index].owner_project
                                 ][5]) && (
                                 <TooltipContent className="relativeflex flex-col items-start justify-center gap-y-[5px] rounded-[10px] p-2.5 bg-[#151a19] border border-[#5A6462] z-50 max-w-[300px]">
                                   {/* arrow pointing to the left */}
@@ -921,74 +919,73 @@ export default function LabelsPage() {
                                   {ownerProjectToProjectData[
                                     filteredLabelsData[item.index].owner_project
                                   ][2] && (
-                                    <div className="flex items-center text-xs pb-1">{`${
-                                      ownerProjectToProjectData[
+                                      <div className="flex items-center text-xs pb-1">{`${ownerProjectToProjectData[
                                         filteredLabelsData[item.index]
                                           .owner_project
                                       ][2]
-                                    }`}</div>
-                                  )}
+                                        }`}</div>
+                                    )}
 
                                   {ownerProjectToProjectData[
                                     filteredLabelsData[item.index].owner_project
                                   ][5] && (
-                                    <a
-                                      href={
-                                        ownerProjectToProjectData[
-                                          filteredLabelsData[item.index]
-                                            .owner_project
-                                        ][5]
-                                      }
-                                      target="_blank"
-                                      className="group flex items-center gap-x-[5px] text-xs"
-                                    >
-                                      <div className="w-[12px] h-[12px]">
-                                        <Icon
-                                          icon="feather:globe"
-                                          className="w-[12px] h-[12px]"
-                                        />
-                                      </div>
-                                      <div className="group-hover:underline">
-                                        {
-                                          ownerProjectToProjectData[
-                                            filteredLabelsData[item.index]
-                                              .owner_project
-                                          ][5]
-                                        }
-                                      </div>
-                                    </a>
-                                  )}
-                                  {ownerProjectToProjectData[
-                                    filteredLabelsData[item.index].owner_project
-                                  ][4] && (
-                                    <div className="flex items-center">
                                       <a
                                         href={
                                           ownerProjectToProjectData[
-                                            filteredLabelsData[item.index]
-                                              .owner_project
-                                          ][4]
+                                          filteredLabelsData[item.index]
+                                            .owner_project
+                                          ][5]
                                         }
                                         target="_blank"
                                         className="group flex items-center gap-x-[5px] text-xs"
                                       >
                                         <div className="w-[12px] h-[12px]">
                                           <Icon
-                                            icon="prime:twitter"
+                                            icon="feather:globe"
                                             className="w-[12px] h-[12px]"
                                           />
                                         </div>
                                         <div className="group-hover:underline">
                                           {
                                             ownerProjectToProjectData[
-                                              filteredLabelsData[item.index]
-                                                .owner_project
-                                            ][4]
+                                            filteredLabelsData[item.index]
+                                              .owner_project
+                                            ][5]
                                           }
                                         </div>
                                       </a>
-                                    </div>
-                                  )}
+                                    )}
+                                  {ownerProjectToProjectData[
+                                    filteredLabelsData[item.index].owner_project
+                                  ][4] && (
+                                      <div className="flex items-center">
+                                        <a
+                                          href={
+                                            ownerProjectToProjectData[
+                                            filteredLabelsData[item.index]
+                                              .owner_project
+                                            ][4]
+                                          }
+                                          target="_blank"
+                                          className="group flex items-center gap-x-[5px] text-xs"
+                                        >
+                                          <div className="w-[12px] h-[12px]">
+                                            <Icon
+                                              icon="prime:twitter"
+                                              className="w-[12px] h-[12px]"
+                                            />
+                                          </div>
+                                          <div className="group-hover:underline">
+                                            {
+                                              ownerProjectToProjectData[
+                                              filteredLabelsData[item.index]
+                                                .owner_project
+                                              ][4]
+                                            }
+                                          </div>
+                                        </a>
+                                      </div>
+                                    )}
                                 </TooltipContent>
                               )}
                           </Tooltip>
@@ -1046,9 +1043,9 @@ export default function LabelsPage() {
                           size="sm"
                           label={
                             master?.blockspace_categories.main_categories[
-                              subcategoryToCategoryMapping[
-                                filteredLabelsData[item.index].usage_category
-                              ]
+                            subcategoryToCategoryMapping[
+                            filteredLabelsData[item.index].usage_category
+                            ]
                             ]
                           }
                           leftIcon={
@@ -1071,7 +1068,7 @@ export default function LabelsPage() {
                           rightIcon={
                             labelsFilters.category.includes(
                               subcategoryToCategoryMapping[
-                                filteredLabelsData[item.index].usage_category
+                              filteredLabelsData[item.index].usage_category
                               ],
                             )
                               ? "heroicons-solid:x-circle"
@@ -1080,7 +1077,7 @@ export default function LabelsPage() {
                           rightIconColor={
                             labelsFilters.category.includes(
                               subcategoryToCategoryMapping[
-                                filteredLabelsData[item.index].usage_category
+                              filteredLabelsData[item.index].usage_category
                               ],
                             )
                               ? "#FE5468"
@@ -1090,7 +1087,7 @@ export default function LabelsPage() {
                             handleFilter(
                               "category",
                               subcategoryToCategoryMapping[
-                                filteredLabelsData[item.index].usage_category
+                              filteredLabelsData[item.index].usage_category
                               ],
                             )
                           }
@@ -1107,7 +1104,7 @@ export default function LabelsPage() {
                             size="sm"
                             label={
                               master?.blockspace_categories.sub_categories[
-                                filteredLabelsData[item.index].usage_category
+                              filteredLabelsData[item.index].usage_category
                               ]
                             }
                             leftIcon={null}
@@ -1182,20 +1179,18 @@ export default function LabelsPage() {
                       ) : (
                         <>
                           {parquetSparklineData &&
-                          parquetSparklineData[
-                            `${filteredLabelsData[item.index].origin_key}_${
-                              filteredLabelsData[item.index].address
+                            parquetSparklineData[
+                            `${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address
                             }`
-                          ] ? (
+                            ] ? (
                             <CanvasSparklineProvider
                               data={parquetSparklineData[
-                                `${filteredLabelsData[item.index].origin_key}_${
-                                  filteredLabelsData[item.index].address
+                                `${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address
                                 }`
                               ].map((d) => [d.unix, d[currentMetric]])}
                               change={
                                 filteredLabelsData[item.index][
-                                  `${currentMetric}_change`
+                                `${currentMetric}_change`
                                 ]
                               }
                               value={
@@ -1224,7 +1219,7 @@ export default function LabelsPage() {
         </div>
 
         {/* </div> */}
-      </LabelsHorizontalScrollContainer>
+      </LabelsTableContainer>
       {/* </div> */}
 
       <Footer />
@@ -1288,11 +1283,10 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
             {value.toLocaleString("en-GB")}
           </div>
           <div
-            className={`text-[9px] text-right leading-[1] ${
-              change > 0
-                ? "text-[#1DF7EF] font-normal"
-                : "text-[#FE5468] font-semibold "
-            }`}
+            className={`text-[9px] text-right leading-[1] ${change > 0
+              ? "text-[#1DF7EF] font-normal"
+              : "text-[#FE5468] font-semibold "
+              }`}
           >
             {change > 0 && "+"}
             {formatNumber(change * 100, true, false)}%

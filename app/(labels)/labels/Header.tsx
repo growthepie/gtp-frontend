@@ -13,7 +13,7 @@ import Search from "./Search";
 
 export default function Header() {
   return (
-    <div className="fixed flex flex-col w-full z-50 items-center">
+    <div className="fixed z-10 flex flex-col w-full z-50 items-center">
       <div className="absolute h-[170px] w-full overflow-clip">
         <div
           className="background-container !h-screen"
@@ -86,8 +86,8 @@ export default function Header() {
           </div> */}
           <div
             className="flex items-center bg-[#1F2726] gap-x-[10px] rounded-full py-[10px] pl-[10px] pr-[0px] lg:pl-[15px] lg:pr-[15px] gap font-medium transition-all duration-300"
-            // href="https://www.growthepie.xyz/"
-            // target="_blank"
+          // href="https://www.growthepie.xyz/"
+          // target="_blank"
           >
             <div className="w-6 h-6">
               <SettingsIcon />
@@ -98,8 +98,8 @@ export default function Header() {
           </div>
           <div
             className="flex items-center bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
-            // href="https://www.growthepie.xyz/"
-            // target="_blank"
+          // href="https://www.growthepie.xyz/"
+          // target="_blank"
           >
             <div className="w-6 h-6">
               <DownloadIcon />
