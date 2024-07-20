@@ -580,7 +580,7 @@ export default function LabelsPage() {
         header={
           <>
             {filteredLabelsData && (
-              <GridTableHeader gridDefinitionColumns="pb-[4px] text-[12px] grid-cols-[15px,minmax(120px,1600px),150px,200px,105px,105px,275px,182px] gap-x-[20px] z-[2]">
+              <GridTableHeader gridDefinitionColumns="pb-[4px] text-[12px] grid-cols-[15px,minmax(120px,1600px),150px,200px,105px,105px,275px,192px] gap-x-[20px] z-[2]">
                 <div className="flex items-center justify-center"></div>
                 <div
                   className="flex items-center justify-start cursor-pointer"
@@ -835,7 +835,7 @@ export default function LabelsPage() {
                       }px)`,
                   }}
                 >
-                  <GridTableRow gridDefinitionColumns="group text-[12px] h-[34px] inline-grid grid-cols-[15px,minmax(120px,1600px),150px,200px,105px,105px,275px,182px]  has-[span:hover]:grid-cols-[15px,minmax(310px,800px),150px,200px,105px,105px,275px,182px] transition-all duration-300 gap-x-[20px] mb-[3px]">
+                  <GridTableRow gridDefinitionColumns="group text-[12px] h-[34px] inline-grid grid-cols-[15px,minmax(120px,1600px),150px,200px,105px,105px,275px,192px]  has-[span:hover]:grid-cols-[15px,minmax(310px,800px),150px,200px,105px,105px,275px,192px] transition-all duration-300 gap-x-[20px] mb-[3px]">
                     <div className="flex h-full items-center">
                       <Icon
                         icon={`gtp:${AllChainsByKeys[
@@ -853,7 +853,12 @@ export default function LabelsPage() {
                     </div>
                     <span className="@container flex h-full items-center hover:bg-transparent">
                       <div className="truncate max-w-[310px] group-hover:max-w-[800px] transition-all duration-300">
-                        <div className="font-semibold bg-[linear-gradient(90deg,#CDD8D3_76%,transparent_100%)] hover:!bg-[#CDD8D3] @[310px]:bg-[#CDD8D3] transition-all bg-clip-text text-transparent backface-visibility-hidden">
+                        <div
+                          className="font-semibold bg-[linear-gradient(90deg,#CDD8D3_76%,transparent_100%)] hover:!bg-[#CDD8D3] @[310px]:bg-[#CDD8D3] transition-all bg-clip-text text-transparent backface-visibility-hidden"
+                          style={{
+                            fontFeatureSettings: "'pnum' on, 'lnum' on",
+                          }}
+                        >
                           {filteredLabelsData[item.index].address}
                         </div>
                       </div>
@@ -1179,7 +1184,7 @@ export default function LabelsPage() {
                           Loading
                         </div>
                       ) : (
-                        <div className="relative flex h-[20px]">
+                        <div className="relative flex h-[20px] justify-between w-full">
                           {parquetSparklineData &&
                             parquetSparklineData[
                             `${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address
@@ -1273,8 +1278,13 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
     <>
       <CanvasSparkline chainKey={chainKey} />
       {hoverDataPoint ? (
-        <div className="flex flex-col justify-center items-end">
-          <div className="min-w-[55px] text-right">
+        <div
+          className="flex flex-col justify-center items-end"
+          style={{
+            fontFeatureSettings: "'pnum' on, 'lnum' on",
+          }}
+        >
+          <div className="min-w-[55px] text-right" >
             {hoverDataPoint[1].toLocaleString("en-GB")}
           </div>
           <div className={`text-[9px] text-right leading-[1] text-forest-400`}>{new Date(hoverDataPoint[0]).toLocaleDateString("en-GB",
@@ -1286,7 +1296,12 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
           )}</div>
         </div>
       ) : (
-        <div className="flex flex-col justify-center items-end">
+        <div
+          className="flex flex-col justify-center items-end"
+          style={{
+            fontFeatureSettings: "'pnum' on, 'lnum' on",
+          }}
+        >
           <div className="min-w-[55px] text-right">
             {value.toLocaleString("en-GB")}
           </div>
