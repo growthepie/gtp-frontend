@@ -31,7 +31,7 @@ export default function Footer() {
               <div className="">
                 © {new Date().getFullYear()} growthepie 🥧📏
               </div>
-              <Link href="https://github.com/openlabelsinitiative/OLI" passHref target="_blank" rel="noopener" aria-label="Feedback" onClick={() => track("click", { location: "footer", link: "feedback" })} className="flex text-[8px] gap-x-1">
+              <Link href="https://github.com/openlabelsinitiative/OLI" passHref target="_blank" rel="noopener" aria-label="Feedback" onClick={() => track("click", { location: "footer", link: "feedback" })} className="flex text-[8px] gap-x-1 items-center">
                 powered by
                 <OLIIcon />
               </Link>

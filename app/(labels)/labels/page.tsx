@@ -534,6 +534,31 @@ export default function LabelsPage() {
     [labelsFilters, setLabelsFilters],
   );
 
+  // find the min and max of the current metric
+  const SparklineTimestampRange = useMemo(() => {
+    if (!parquetSparklineData) return [0, 0];
+
+    // parquetSparklineData[
+    //   `${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address
+    //   }`
+    // ]
+
+    let min = Infinity;
+    let max = -Infinity;
+
+    console.log("parquetSparklineData", Object.entries(parquetSparklineData)[0]);
+    Object.keys(parquetSparklineData).forEach((key) => {
+      const data = parquetSparklineData[key];
+      const timestamps = data.map((row) => row.unix);
+
+      min = Math.min(min, ...timestamps);
+      max = Math.max(max, ...timestamps);
+    });
+
+    return [min, max];
+
+  }, [parquetSparklineData]);
+
   return (
     <>
       <ShowLoading
@@ -571,6 +596,9 @@ export default function LabelsPage() {
           Please view on a larger device or make your browser window wider.
         </div>
       </LabelsContainer> */}
+      <div className="bg-black h-10 w-32 text-white fixed top-0 left-0 z-50">
+        {SparklineTimestampRange}
+      </div>
 
       <LabelsTableContainer
         className="block"
@@ -1191,6 +1219,8 @@ export default function LabelsPage() {
                             }`
                             ] ? (
                             <CanvasSparklineProvider
+                              minUnix={SparklineTimestampRange[0]}
+                              maxUnix={SparklineTimestampRange[1]}
                               data={parquetSparklineData[
                                 `${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address
                                 }`
@@ -1285,7 +1315,7 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
           }}
         >
           <div className="min-w-[55px] text-right" >
-            {hoverDataPoint[1].toLocaleString("en-GB")}
+            {hoverDataPoint[1] && hoverDataPoint[1].toLocaleString("en-GB")}
           </div>
           <div className={`text-[9px] text-right leading-[1] text-forest-400`}>{new Date(hoverDataPoint[0]).toLocaleDateString("en-GB",
             {

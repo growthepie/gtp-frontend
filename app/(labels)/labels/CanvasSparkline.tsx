@@ -1,3 +1,4 @@
+import { last } from "lodash";
 import {
   useEffect,
   useRef,
@@ -19,7 +20,7 @@ const GradientColors = {
 };
 
 const GradientStops = {
-  negative: [3.33 * 23, 0, 100, 20],
+  negative: [3.33 * 25, 0, 200, 50],
   positive: [3.33 * 23, 0, 100, 20],
 };
 
@@ -32,20 +33,54 @@ const DRAW_HEIGHT = 20;
 export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
   const todayUTCStart = new Date().setUTCHours(0, 0, 0, 0);
 
-  const { data, change, value, hoverDataPoint, setHoverDataPoint } =
+  const { data, change, value, hoverDataPoint, setHoverDataPoint, minUnix, maxUnix } =
     useCanvasSparkline();
+
+  const [adjustedData, setAdjustedData] = useState<[number, number | null][]>([]);
+
+  // fill any missing data points with null values for the sparkline
+  useEffect(() => {
+    const adjusted: [number, number | null][] = [];
+    for (let i = minUnix; i <= maxUnix; i += 86400000) {
+      const dataPoint = data.find(([timestamp]) => timestamp === i);
+      if (dataPoint) {
+        adjusted.push(dataPoint);
+      } else {
+        adjusted.push([i, null]);
+      }
+    }
+    setAdjustedData(adjusted);
+  }, [data, minUnix, maxUnix]);
+
   // creates a canvas element and draws the sparkline on it
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hoverCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const isNegative = change < 0;
 
-  const dataMin = Math.min(...data.map(([, y]) => y));
-  const dataMax = Math.max(...data.map(([, y]) => y));
+  const dataValuesWithNulls = adjustedData.map(([, y]) => y);
+  const dataValues = dataValuesWithNulls.filter((y) => y !== null) as number[];
+
+  const dataMin = 0;
+  const dataMax = Math.max(...dataValues);
 
   const calculateYCoord = useCallback((y) => {
     return 20 - ((y - dataMin) / (dataMax - dataMin)) * 20;
   }, [dataMax, dataMin]);
+
+  // Helper function to draw a path
+  const drawPath = (ctx, path, style) => {
+    if (path.length < 2) return;
+
+    ctx.beginPath();
+    ctx.moveTo(path[0][0], path[0][1]);
+    for (let i = 1; i < path.length; i++) {
+      ctx.lineTo(path[i][0], path[i][1]);
+    }
+    ctx.strokeStyle = style;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  };
 
   const drawSparkline = useCallback(
     (ctx: CanvasRenderingContext2D) => {
@@ -63,46 +98,50 @@ export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
       ctx.save();
       ctx.translate(PADDING, PADDING);
 
-      // Adjust the drawing logic
-      const reversedData = data.slice().reverse();
-      Array(30)
-        .fill(undefined)
-        .forEach((_, i) => {
-          const y = reversedData[i]?.[1];
-          if (y === undefined) return;
+      let currentPath: [number, number][] = [];
+      // 7 days before maxUnix
+      const gradientStartIndex = adjustedData.findIndex(
+        ([timestamp]) => timestamp === maxUnix - 7 * 86400000,
+      );
 
-          let xCoord = DRAW_WIDTH - i * (DRAW_WIDTH / 29);
-          let yCoord = DRAW_HEIGHT - ((y - dataMin) / (dataMax - dataMin)) * DRAW_HEIGHT;
-
-          switch (i) {
-            case 0:
-              ctx.beginPath();
-              ctx.strokeStyle = gradient;
-              ctx.lineWidth = 1.5;
-              ctx.moveTo(xCoord, yCoord);
-              break;
-            // end path of first line segment and start path of second line segment
-            case 7:
-              ctx.lineTo(xCoord, yCoord);
-              ctx.stroke();
-
-              ctx.beginPath();
-              ctx.strokeStyle = "#CDD8D3";
-              ctx.moveTo(xCoord, yCoord);
-              break;
-            case data.length - 1:
-              ctx.lineTo(xCoord, yCoord);
-              ctx.stroke();
-              break;
-            default:
-              ctx.lineTo(xCoord, yCoord);
-              break;
+      adjustedData.forEach((point, i) => {
+        const [timestamp, y] = point;
+        if (y === null) {
+          if (currentPath.length > 0) {
+            drawPath(ctx, currentPath, i >= gradientStartIndex ? gradient : "#CDD8D3");
+            currentPath = [];
           }
-        });
+          return;
+        }
 
-      ctx.restore(); // Reset the drawing context
+        const xCoord = (i / (adjustedData.length - 1)) * DRAW_WIDTH;
+        const yCoord = DRAW_HEIGHT - ((y - dataMin) / (dataMax - dataMin)) * DRAW_HEIGHT;
+
+        currentPath.push([xCoord, yCoord]);
+
+        if (i === gradientStartIndex - 1) {
+          drawPath(ctx, currentPath, i >= gradientStartIndex ? gradient : "#CDD8D3");
+          currentPath = [[xCoord, yCoord]];
+        }
+
+        // If this is a lone point, draw a circle
+        if ((i === 0 || adjustedData[i - 1][1] === null) &&
+          (i === adjustedData.length - 1 || adjustedData[i + 1][1] === null)) {
+          ctx.beginPath();
+          ctx.arc(xCoord, yCoord, 1.5, 0, 2 * Math.PI);
+          ctx.fillStyle = i >= gradientStartIndex ? gradient : "#CDD8D3";
+          ctx.fill();
+        }
+      });
+
+      // Draw any remaining path
+      if (currentPath.length > 0) {
+        drawPath(ctx, currentPath, gradient);
+      }
+
+      ctx.restore();
     },
-    [data, dataMax, dataMin, isNegative],
+    [adjustedData, dataMax, isNegative, maxUnix],
   );
 
   useEffect(() => {
@@ -113,7 +152,7 @@ export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
     if (!ctx) return;
 
     drawSparkline(ctx);
-  }, [canvasRef, data, drawSparkline]);
+  }, [canvasRef, adjustedData, drawSparkline]);
 
   // const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
@@ -124,26 +163,25 @@ export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    canvas.addEventListener("mousemove", (e) => {
+    const handleMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
       let x = e.clientX - rect.left - PADDING;
       let y = e.clientY - rect.top - PADDING;
 
-      // Ensure x is within the drawing area
       x = Math.max(0, Math.min(x, DRAW_WIDTH));
 
-      // Calculate the index of the closest data point
-      const dataIndex = Math.round((x / DRAW_WIDTH) * (data.length - 1));
-      const closestPoint = data[dataIndex];
+      const dataIndex = Math.round((x / DRAW_WIDTH) * (adjustedData.length - 1));
+      const closestPoint = adjustedData[dataIndex];
 
-      if (!closestPoint) return;
+      if (!closestPoint || closestPoint[1] === null) {
+        ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        setHoverDataPoint(null);
+        return;
+      }
 
       const [timestamp, value] = closestPoint;
 
-      // Calculate the x-coordinate for the circle (snapped to the closest data point)
-      const pointX = (dataIndex / (data.length - 1)) * DRAW_WIDTH;
-
-      // Calculate the y-coordinate for the circle
+      const pointX = (dataIndex / (adjustedData.length - 1)) * DRAW_WIDTH;
       const pointY = DRAW_HEIGHT - ((value - dataMin) / (dataMax - dataMin)) * DRAW_HEIGHT;
 
       ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -151,15 +189,15 @@ export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
       ctx.save();
       ctx.translate(PADDING, PADDING);
 
-      // Draw hover line at mouse position
+      // Draw hover line
       ctx.beginPath();
       ctx.fillStyle = "#ffffff33";
-      ctx.fillRect(x, 0, 1, DRAW_HEIGHT);
+      ctx.fillRect(pointX, 0, 1, DRAW_HEIGHT);
 
-      // Draw hover circle at closest data point
+      // Draw hover circle
       ctx.beginPath();
       ctx.fillStyle = pointX > (DRAW_WIDTH / 30) * 23
-        ? (isNegative ? GradientColors.negative[1] + "66" : GradientColors.positive[1] + "66")
+        ? (isNegative ? GradientColors.negative[0] + "66" : GradientColors.positive[1] + "66")
         : "#CDD8D366";
       ctx.arc(pointX, pointY, 3, 0, 2 * Math.PI);
       ctx.fill();
@@ -167,19 +205,21 @@ export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
       ctx.restore();
 
       setHoverDataPoint(closestPoint);
-    });
+    };
 
-    canvas.addEventListener("mouseleave", () => {
-      // setHoveredIndex(null);
+    const handleMouseLeave = () => {
       setHoverDataPoint(null);
       ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    });
+    };
+
+    canvas.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("mouseleave", handleMouseLeave);
 
     return () => {
-      canvas.removeEventListener("mousemove", () => { });
-      canvas.removeEventListener("mouseleave", () => { });
+      canvas.removeEventListener("mousemove", handleMouseMove);
+      canvas.removeEventListener("mouseleave", handleMouseLeave);
     };
-  }, [hoverCanvasRef, data, dataMax, dataMin, isNegative, todayUTCStart, calculateYCoord, setHoverDataPoint]);
+  }, [hoverCanvasRef, adjustedData, dataMax, dataMin, isNegative, setHoverDataPoint]);
 
   return (
     <>
@@ -193,10 +233,12 @@ export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
 
 type CanvasSparklineContextType = {
   data: [number, number][];
+  minUnix: number;
+  maxUnix: number;
   change: number;
   value: number;
-  hoverDataPoint: number[] | null;
-  setHoverDataPoint: (value: number[] | null) => void;
+  hoverDataPoint: [number, number | null] | null;
+  setHoverDataPoint: (value: [number, number | null] | null) => void;
 };
 
 const CanvasSparklineContext = createContext<CanvasSparklineContextType | null>(
@@ -205,15 +247,17 @@ const CanvasSparklineContext = createContext<CanvasSparklineContextType | null>(
 
 export const CanvasSparklineProvider = ({
   data,
+  minUnix,
+  maxUnix,
   change,
   value,
   children,
 }: CanvasSparklineContextType & { children: React.ReactNode }) => {
-  const [hoverDataPoint, setHoverDataPoint] = useState<number[] | null>(null);
+  const [hoverDataPoint, setHoverDataPoint] = useState<[number, number | null] | null>(null);
 
   return (
     <CanvasSparklineContext.Provider
-      value={{ data, change, value, hoverDataPoint, setHoverDataPoint }}
+      value={{ minUnix, maxUnix, data, change, value, hoverDataPoint, setHoverDataPoint }}
     >
       {children}
     </CanvasSparklineContext.Provider>
