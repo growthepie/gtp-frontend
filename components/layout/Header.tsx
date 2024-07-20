@@ -1,14 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import Sidebar from "./Sidebar";
-import Icon from "./Icon";
 import EthUsdSwitch from "./EthUsdSwitch";
 
-import Banner from "@/components/Banner";
-import SupportUsBanner from "./SupportUsBanner";
 // import Notification from "@/components/Notification";
-import HeaderLinks from "./HeaderLinks";
-import { track } from "@vercel/analytics";
+// import HeaderLinks from "./HeaderLinks";
 
 export default function Header() {
   return (
@@ -54,9 +50,9 @@ export default function Header() {
       <div className="items-center z-10 hidden md:flex md:space-x-[34px] ">
         <EthUsdSwitch />
 
-        <div className="flex space-x-[22px] items-center ">
+        {/* <div className="flex space-x-[22px] items-center ">
           <HeaderLinks />
-        </div>
+        </div> */}
       </div>
       {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
       ["development", "preview"].includes(

@@ -16,7 +16,6 @@ import EthUsdSwitch from "./EthUsdSwitch";
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import Backgrounds from "./Backgrounds";
-import rpgf from "@/icons/svg/rpgf.svg";
 import { useTheme } from "next-themes";
 import { track } from "@vercel/analytics";
 
@@ -106,89 +105,6 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                     quality={100}
                   />
                 </Link>
-                <div className="flex space-x-[20px] items-end">
-                  <div className="z-[999] flex items-center space-x-[16px] mb-0.5 w-full px-2">
-                    <Link
-                      href="https://twitter.com/growthepie_eth"
-                      target="_blank"
-                      rel="noopener"
-                      onClick={() => {
-                        track("clicked Twitter link", {
-                          location: "mobile sidebar",
-                          page: window.location.pathname,
-                        });
-                      }}
-                    >
-                      <Icon icon="gtp:twitter" className="h-[19px] w-[19px]" />
-                    </Link>
-                    <Link
-                      href="https://share.lens.xyz/u/growthepie.lens"
-                      target="_blank"
-                      rel="noopener"
-                      className=" dark:text-forest-200 text-forest-900"
-                      onClick={() => {
-                        track("clicked Lens link", {
-                          location: "mobile sidebar",
-                          page: window.location.pathname,
-                        });
-                      }}
-                    >
-                      <Icon icon="gtp:lens" className="h-[19px] w-[24px]" />
-                    </Link>
-
-                    <Link
-                      href="https://warpcast.com/growthepie"
-                      target="_blank"
-                      rel="noopener"
-                      className=" dark:text-forest-200 text-forest-900"
-                      onClick={() => {
-                        track("clicked Warpcast link", {
-                          location: "mobile sidebar",
-                          page: window.location.pathname,
-                        });
-                      }}
-                    >
-                      <Icon
-                        icon="gtp:farcaster"
-                        className="h-[19px] w-[19px]"
-                      />
-                    </Link>
-                    <Link
-                      href="https://discord.gg/fxjJFe7QyN"
-                      target="_blank"
-                      rel="noopener"
-                      className=" dark:text-forest-200 text-forest-900"
-                      onClick={() => {
-                        track("clicked Discord link", {
-                          location: "mobile sidebar",
-                          page: window.location.pathname,
-                        });
-                      }}
-                    >
-                      <Icon icon="cib:discord" className="h-[19px] w-[19px]" />
-                    </Link>
-                    <Link
-                      href="https://www.github.com/growthepie"
-                      target="_blank"
-                      rel="noopener"
-                      className=" dark:text-forest-200 text-forest-900"
-                      onClick={() => {
-                        track("clicked Github link", {
-                          location: "mobile sidebar",
-                          page: window.location.pathname,
-                        });
-                      }}
-                    >
-                      <Icon icon="cib:github" className="h-[19px] w-[19px]" />
-                    </Link>
-                  </div>
-                  <button
-                    className="!-mb-1  !-mr-1"
-                    onClick={toggleMobileSidebar}
-                  >
-                    <Icon icon="feather:x" className="h-8 w-8" />
-                  </button>
-                </div>
               </div>
               <div className="z-[999] mt-[30px] h-[calc(100vh-100px)] w-full flex flex-col justify-between overflow-hidden relative pointer-events-auto">
                 <div className="flex-1 w-full overflow-x-hidden relative overflow-y-auto scrollbar-thin scrollbar-thumb-forest-1000/50 scrollbar-track-forest-500/5 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scroller">
@@ -210,7 +126,14 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                     sidebarOpen={isMobileSidebarOpen}
                   />
                 </div>
-
+                <div className="flex space-x-[20px] items-end">
+                  <button
+                    className="!-mb-1  !-mr-1"
+                    onClick={toggleMobileSidebar}
+                  >
+                    <Icon icon="feather:x" className="h-8 w-8" />
+                  </button>
+                </div>
                 <div className="flex flex-col justify-end pt-3 pb-6 relative mb-[17px] pointer-events-auto">
                   <div className="text-[0.7rem] flex justify-evenly w-full gap-x-12 text-inherit leading-[1] px-2  mb-[17px]">
                     <Link href="/privacy-policy">Privacy Policy</Link>
@@ -283,3 +206,82 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
     </motion.div>
   );
 }
+
+const SocialMedia = () => {
+  return (
+    <div className="flex space-x-[20px] items-end">
+      <div className="z-[999] flex items-center space-x-[16px] mb-0.5 w-full px-2">
+        <Link
+          href="https://twitter.com/growthepie_eth"
+          target="_blank"
+          rel="noopener"
+          onClick={() => {
+            track("clicked Twitter link", {
+              location: "mobile sidebar",
+              page: window.location.pathname,
+            });
+          }}
+        >
+          <Icon icon="gtp:twitter" className="h-[19px] w-[19px]" />
+        </Link>
+        <Link
+          href="https://share.lens.xyz/u/growthepie.lens"
+          target="_blank"
+          rel="noopener"
+          className=" dark:text-forest-200 text-forest-900"
+          onClick={() => {
+            track("clicked Lens link", {
+              location: "mobile sidebar",
+              page: window.location.pathname,
+            });
+          }}
+        >
+          <Icon icon="gtp:lens" className="h-[19px] w-[24px]" />
+        </Link>
+
+        <Link
+          href="https://warpcast.com/growthepie"
+          target="_blank"
+          rel="noopener"
+          className=" dark:text-forest-200 text-forest-900"
+          onClick={() => {
+            track("clicked Warpcast link", {
+              location: "mobile sidebar",
+              page: window.location.pathname,
+            });
+          }}
+        >
+          <Icon icon="gtp:farcaster" className="h-[19px] w-[19px]" />
+        </Link>
+        <Link
+          href="https://discord.gg/fxjJFe7QyN"
+          target="_blank"
+          rel="noopener"
+          className=" dark:text-forest-200 text-forest-900"
+          onClick={() => {
+            track("clicked Discord link", {
+              location: "mobile sidebar",
+              page: window.location.pathname,
+            });
+          }}
+        >
+          <Icon icon="cib:discord" className="h-[19px] w-[19px]" />
+        </Link>
+        <Link
+          href="https://www.github.com/growthepie"
+          target="_blank"
+          rel="noopener"
+          className=" dark:text-forest-200 text-forest-900"
+          onClick={() => {
+            track("clicked Github link", {
+              location: "mobile sidebar",
+              page: window.location.pathname,
+            });
+          }}
+        >
+          <Icon icon="cib:github" className="h-[19px] w-[19px]" />
+        </Link>
+      </div>
+    </div>
+  );
+};
