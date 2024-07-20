@@ -128,7 +128,7 @@ export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
         if ((i === 0 || adjustedData[i - 1][1] === null) &&
           (i === adjustedData.length - 1 || adjustedData[i + 1][1] === null)) {
           ctx.beginPath();
-          ctx.arc(xCoord, yCoord, 1.5, 0, 2 * Math.PI);
+          ctx.arc(xCoord, yCoord, 1, 0, 2 * Math.PI);
           ctx.fillStyle = i >= gradientStartIndex ? gradient : "#CDD8D3";
           ctx.fill();
         }
