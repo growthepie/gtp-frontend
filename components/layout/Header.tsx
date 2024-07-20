@@ -6,7 +6,7 @@ import EthUsdSwitch from "./EthUsdSwitch";
 
 import Banner from "@/components/Banner";
 import SupportUsBanner from "./SupportUsBanner";
-import Notification from "@/components/Notification";
+// import Notification from "@/components/Notification";
 import HeaderLinks from "./HeaderLinks";
 import { track } from "@vercel/analytics";
 
@@ -18,7 +18,8 @@ export default function Header() {
           {/*Banner/Notification Area */}
 
           <div className={`hidden md:flex pr-[15px] `}>
-            <Notification />
+            {/* <Notification /> */}
+            Notifition
           </div>
 
           <div className="flex justify-between items-start h-full md:hidden relative w-full">
@@ -44,7 +45,7 @@ export default function Header() {
             </Link>
 
             <div>
-              <Notification />
+              {/* <Notification /> */}
               <Sidebar isMobile={true} />
             </div>
           </div>
@@ -58,9 +59,9 @@ export default function Header() {
         </div>
       </div>
       {process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined &&
-        ["development", "preview"].includes(
-          process.env.NEXT_PUBLIC_VERCEL_ENV,
-        ) ? (
+      ["development", "preview"].includes(
+        process.env.NEXT_PUBLIC_VERCEL_ENV,
+      ) ? (
         <> </>
       ) : (
         <>{/* <SupportUsBanner /> */}</>

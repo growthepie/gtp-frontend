@@ -5,7 +5,6 @@ import Icon from "@/components/layout/Icon";
 import EthUsdSwitch from "@/components/layout/EthUsdSwitch";
 
 import Banner from "@/components/Banner";
-import Notification from "@/components/Notification";
 import HeaderLinks from "@/components/layout/HeaderLinks";
 import { track } from "@vercel/analytics";
 
@@ -15,10 +14,6 @@ export default function Header() {
       <div className="flex justify-start items-center w-full  ">
         <div className="flex space-x-0 xl:space-x-6 w-full h-full ">
           {/*Banner/Notification Area */}
-
-          {/* <div className={`hidden md:flex  `}>
-            <Notification />
-          </div> */}
 
           <div className="flex justify-between items-start h-full relative w-full left-1 ">
             <Link href="/" className="flex gap-x-1">

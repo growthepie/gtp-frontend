@@ -39,22 +39,23 @@ async function fetchData() {
     });
 
     // as records
-    const data = (await response.json()).records.map((record: any) => {
+    const recordsData = (await response.json()).records
+    const data = recordsData?.map((record: any) => {
       return {
         id: record.id,
         get: (field: string) => record.fields[field],
       };
-    });
+    }) || [];
 
     // filter out records that are not enabled or not in the branches to include and map them to the Notification type
-    const records: Notification[] = data
+    const records: any[] = data
       .filter((record) => {
         return (
           BranchesToInclude.includes(record.get("Branch") as string) &&
           record.get("Status") === "Enabled"
         );
       })
-      .map((record) => {
+      ?.map((record) => {
         return {
           id: record.id,
           displayPages: record.get("Display Page") as string,
@@ -66,15 +67,13 @@ async function fetchData() {
           textColor: record.get("Text Color") as string,
           startTimestamp: moment
             .utc(
-              `${record.get("Start Date") as string}T${
-                record.get("Start Time") as string
+              `${record.get("Start Date") as string}T${record.get("Start Time") as string
               }Z`,
             )
             .valueOf(),
           endTimestamp: moment
             .utc(
-              `${record.get("End Date") as string}T${
-                record.get("End Time") as string
+              `${record.get("End Date") as string}T${record.get("End Time") as string
               }Z`,
             )
             .valueOf(),

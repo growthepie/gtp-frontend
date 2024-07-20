@@ -1,42 +1,29 @@
 "use client";
-import Home from "@/components/home/Home";
-import LandingUserBaseChart from "@/components/home/LandingUserBaseChart";
-import Container from "@/components/layout/Container";
-import Heading from "@/components/layout/Heading";
-import LandingTopContracts from "@/components/layout/LandingTopContracts";
-import Icon from "@/components/layout/ServerIcon";
-// import ShowLoading from "@/components/layout/ShowLoading";
-import Subheading from "@/components/layout/Subheading";
-import { Metadata } from "next";
 import { useEffect, useMemo, useState, useRef, useLayoutEffect } from "react";
-import { useMediaQuery } from "@react-hook/media-query";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { AllChains, AllChainsByKeys } from "@/lib/chains";
 import { LandingPageMetricsResponse } from "@/types/api/LandingPageMetricsResponse";
 import { LandingURL, MasterURL } from "@/lib/urls";
 import LandingChart from "@/components/layout/LandingChart";
-import EmbedContainer from "../EmbedContainer";
 import { useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
-
-// export async function generateMetadata(): Promise<Metadata> {
-//   return {
-//     title: "Growing Ethereum’s Ecosystem Together - Layer 2 User Base",
-//     description:
-//       "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
-//   };
-// }
 
 export default function Page() {
   const searchParams = useSearchParams();
   const queryTheme = searchParams ? searchParams.get("theme") : null;
   const queryTimespan = searchParams ? searchParams.get("timespan") : null;
   const queryMetric = searchParams ? searchParams.get("metric") : null;
-  const queryShowMainnet = searchParams ? searchParams.get("showMainnet") : null;
+  const queryShowMainnet = searchParams
+    ? searchParams.get("showMainnet")
+    : null;
   const queryZoomed = searchParams ? searchParams.get("zoomed") : null;
-  const queryStartTimestamp = searchParams ? searchParams.get("startTimestamp") : null;
-  const queryEndTimestamp = searchParams ? searchParams.get("endTimestamp") : null;
+  const queryStartTimestamp = searchParams
+    ? searchParams.get("startTimestamp")
+    : null;
+  const queryEndTimestamp = searchParams
+    ? searchParams.get("endTimestamp")
+    : null;
 
   const { theme, setTheme } = useTheme();
   useLayoutEffect(() => {
@@ -76,7 +63,9 @@ export default function Page() {
 
   const [selectedTimeInterval, setSelectedTimeInterval] = useState("weekly");
 
-  const [selectedMetric, setSelectedMetric] = useState(queryMetric ?? "Total Users");
+  const [selectedMetric, setSelectedMetric] = useState(
+    queryMetric ?? "Total Users",
+  );
 
   useEffect(() => {
     if (landing) {
@@ -135,8 +124,12 @@ export default function Page() {
           embed_timespan={queryTimespan ?? "365d"}
           embed_show_mainnet={queryShowMainnet === "true"}
           embed_zoomed={queryZoomed === "true"}
-          embed_start_timestamp={queryStartTimestamp ? parseInt(queryStartTimestamp) : undefined}
-          embed_end_timestamp={queryEndTimestamp ? parseInt(queryEndTimestamp) : undefined}
+          embed_start_timestamp={
+            queryStartTimestamp ? parseInt(queryStartTimestamp) : undefined
+          }
+          embed_end_timestamp={
+            queryEndTimestamp ? parseInt(queryEndTimestamp) : undefined
+          }
         />
       ) : null}
     </>

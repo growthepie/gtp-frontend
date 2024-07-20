@@ -1,0 +1,117 @@
+yarn run v1.22.22
+$ next build
+  ▲ Next.js 14.2.5
+  - Experiments (use with caution):
+    · missingSuspenseWithCSRBailout
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+./components/charts/ChainComponent.tsx
+361:5  Warning: React Hook useCallback has an unnecessary dependency: 'navigationItems'. Either exclude it or remove the dependency array. Outer scope values like 'navigationItems' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+376:5  Warning: React Hook useCallback has an unnecessary dependency: 'navigationItems'. Either exclude it or remove the dependency array. Outer scope values like 'navigationItems' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+442:6  Warning: React Hook useMemo has a missing dependency: 'master.metrics'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+566:5  Warning: React Hook useCallback has a missing dependency: 'master.metrics'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/charts/chart.tsx
+400:6  Warning: React Hook useEffect has a missing dependency: 'drawChartSeries'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/ErrorGen.tsx
+74:6  Warning: React Hook useEffect has a missing dependency: 'randIntegers'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/home/MainChart.tsx
+174:6  Warning: React Hook useMemo has a missing dependency: 'theme'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+174:7  Warning: React Hook useMemo has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+198:6  Warning: React Hook useMemo has a missing dependency: 'theme'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+198:7  Warning: React Hook useMemo has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+242:6  Warning: React Hook useMemo has an unnecessary dependency: 'bgColors'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/layout/BlockspaceOverview/ChainRows/RowChildren.tsx
+266:5  Warning: React Hook useCallback has missing dependencies: 'allCats', 'selectedValue', and 'sumChainValue'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/layout/BlockspaceOverview/Contracts/ContractContainer.tsx
+117:6  Warning: React Hook useMemo has a missing dependency: 'standardChainKey'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+198:6  Warning: React Hook useEffect has missing dependencies: 'allCats' and 'data'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/layout/BlockspaceOverview/OverviewChart.tsx
+171:6  Warning: React Hook useMemo has a missing dependency: 'standardChainKey'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+280:6  Warning: React Hook useMemo has missing dependencies: 'chartStack', 'data', 'standardChainKey', and 'timespans'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+331:6  Warning: React Hook useMemo has missing dependencies: 'chartStack', 'data', 'forceSelectedChain', 'standardChainKey', and 'timespans'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+419:6  Warning: React Hook useMemo has a missing dependency: 'categoryKeyToFillOpacity'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/layout/Blog.tsx
+342:27  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+342:27  Warning: img elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+387:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+387:21  Warning: img elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+
+./components/layout/CategoryMetrics.tsx
+274:6  Warning: React Hook useMemo has a missing dependency: 'master'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+515:6  Warning: React Hook useMemo has a missing dependency: 'master'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+607:8  Warning: React Hook useMemo has a missing dependency: 'isMobile'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/layout/ChainAnimations.tsx
+72:6  Warning: React Hook useMemo has a missing dependency: 'sortedValues'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+90:6  Warning: React Hook useMemo has missing dependencies: 'selectedChains' and 'setSelectedChains'. Either include them or remove the dependency array. If 'setSelectedChains' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+120:6  Warning: React Hook useMemo has missing dependencies: 'selectedChains' and 'setSelectedChains'. Either include them or remove the dependency array. If 'setSelectedChains' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+139:6  Warning: React Hook useEffect has a missing dependency: 'index'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/layout/ComparisonChart.tsx
+618:5  Warning: React Hook useCallback has missing dependencies: 'data' and 'master'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+824:6  Warning: React Hook useEffect has missing dependencies: 'filteredData' and 'setEmbedData'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+1589:6  Warning: React Hook useMemo has a missing dependency: 'height'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/layout/Economics/BreakdownCharts.tsx
+343:6  Warning: React Hook useMemo has a missing dependency: 'showUsd'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/layout/Economics/ChainBreakdown.tsx
+271:6  Warning: React Hook useMemo has missing dependencies: 'enableDASort' and 'showUsd'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/layout/Economics/HeadCharts.tsx
+278:5  Warning: React Hook useCallback has a missing dependency: 'valuePrefix'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/layout/EcosystemDropdown.tsx
+52:6  Warning: React Hook useEffect has a missing dependency: 'chainEcosystemFilter'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+58:6  Warning: React Hook useEffect has an unnecessary dependency: 'ChainsList'. Either exclude it or remove the dependency array. Outer scope values like 'ChainsList' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+
+./components/layout/Fees/chart.tsx
+226:6  Warning: React Hook useMemo has a missing dependency: 'getTimespans'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+447:6  Warning: React Hook useEffect has missing dependencies: 'setDisableZoom', 'timespan', and 'timespans'. Either include them or remove the dependency array. If 'setDisableZoom' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+
+./components/layout/LandingChart.tsx
+1019:6  Warning: React Hook useEffect has a missing dependency: 'setEmbedData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/layout/LandingTopContracts.tsx
+84:6  Warning: React Hook useMemo has an unnecessary dependency: 'selectedMetric'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/layout/MetricsTable.tsx
+403:5  Warning: React Hook useCallback has missing dependencies: 'master' and 'showGwei'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/layout/Sidebar.tsx
+41:6  Warning: React Hook useEffect has missing dependencies: 'isMobileSidebarOpen' and 'toggleMobileSidebar'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/layout/SingleChains/ChainChart.tsx
+167:6  Warning: React Hook useMemo has a missing dependency: 'chainKey'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+403:5  Warning: React Hook useCallback has a missing dependency: 'master.metrics'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+597:6  Warning: React Hook useMemo has a missing dependency: 'showGwei'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+681:5  Warning: React Hook useCallback has a missing dependency: 'master'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+1109:5  Warning: React Hook useCallback has an unnecessary dependency: 'navigationItems'. Either exclude it or remove the dependency array. Outer scope values like 'navigationItems' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+
+./components/layout/StableInsights.tsx
+394:6  Warning: React Hook useMemo has a missing dependency: 'sortedTableData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/Popover.tsx
+25:5  Warning: React Hook useEffect has a missing dependency: 'isOpen'. Either include it or remove the dependency array. You can also do a functional update 'setIsOpen(i => ...)' if you only need 'isOpen' in the 'setIsOpen' call.  react-hooks/exhaustive-deps
+
+./components/Share.tsx
+147:6  Warning: React Hook useEffect has missing dependencies: 'embedEnabled' and 'setTopSelection'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/32) ...
+   Generating static pages (8/32) 
+   Generating static pages (16/32) 
+   Generating static pages (24/32) 
+ ✓ Generating static pages (32/32)
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.

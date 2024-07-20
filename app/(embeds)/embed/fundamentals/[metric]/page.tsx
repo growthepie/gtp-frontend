@@ -1,20 +1,16 @@
 "use client";
-import { use, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 import Error from "next/error";
 import { MetricsResponse } from "@/types/api/MetricsResponse";
-import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import useSWR from "swr";
 import { MetricsURLs } from "@/lib/urls";
-import { AllChains, AllChainsByKeys } from "@/lib/chains";
+import { AllChains } from "@/lib/chains";
 import { navigationItems } from "@/lib/navigation";
-import { format } from "date-fns";
 import ComparisonChart from "@/components/layout/ComparisonChart";
 import MetricsTable from "@/components/layout/MetricsTable";
 import { intersection } from "lodash";
-import { Icon } from "@iconify/react";
-import Link from "next/link";
 import { useTheme } from "next-themes";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { MasterURL } from "@/lib/urls";
 
@@ -37,7 +33,7 @@ const Chain = ({ params }: { params: any }) => {
   // chains query is an array of chains to display
   const queryChains = searchParams ? searchParams.get("chains") : null;
 
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
   useLayoutEffect(() => {
     setTimeout(() => {
       if (queryTheme == "light") {
@@ -48,20 +44,19 @@ const Chain = ({ params }: { params: any }) => {
     }, 1000);
   }, []);
 
-  const [showUsd, setShowUsd] = useState(true);
-  const [errorCode, setErrorCode] = useState<number | null>(null);
+  const [errorCode] = useState<number | null>(null);
   const {
     data: master,
-    error: masterError,
-    isLoading: masterLoading,
-    isValidating: masterValidating,
+    // error: masterError,
+    // isLoading: masterLoading,
+    // isValidating: masterValidating,
   } = useSWR<MasterResponse>(MasterURL);
 
   const {
     data: metricData,
-    error: metricError,
-    isLoading: metricLoading,
-    isValidating: metricValidating,
+    // error: metricError,
+    // isLoading: metricLoading,
+    // isValidating: metricValidating,
   } = useSWR<MetricsResponse>(MetricsURLs[params.metric]);
 
   const chainKeys = useMemo(() => {
