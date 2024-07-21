@@ -72,7 +72,7 @@ export default function LabelsTableContainer(
 
   return (
     <div
-      className={`px-0 pb-[150px] w-fit ${className}`}
+      className={`px-0 pb-[200px] md:pb-[150px] w-fit ${className}`}
       style={style}
     >
       <div
@@ -95,7 +95,7 @@ export default function LabelsTableContainer(
 
         <div className="px-[20px] md:px-[60px]">
 
-          <div className="sticky h-[54px] top-[144px] z-[1]">
+          <div className="sticky h-[54px] top-[70px] md:top-[144px] z-[1]">
             <div className="">
               {header}
             </div>

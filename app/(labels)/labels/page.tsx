@@ -43,6 +43,7 @@ import {
 } from "@/components/layout/Tooltip";
 import { uniqBy } from "lodash";
 import { useMaster } from "@/contexts/Master";
+import { useUIContext } from "@/contexts/UIContext";
 
 const devMiddleware = (useSWRNext) => {
   return (key, fetcher, config) => {
@@ -86,6 +87,7 @@ const metricKeysLabels = {
 };
 
 export default function LabelsPage() {
+  const { isMobile } = useUIContext();
   const showGwei = true;
   const showCents = true;
 
@@ -583,17 +585,17 @@ export default function LabelsPage() {
       {master && <Header />}
 
       {/* <div className="relative pb-[114px] pt-[140px]"> */}
-      <LabelsContainer className="pt-[175px] w-full flex items-end sm:items-center justify-between md:justify-start gap-x-[10px] z-[21]">
+      <LabelsContainer className="pt-[110px] md:pt-[175px] w-full flex items-end sm:items-center justify-between md:justify-start gap-x-[10px] z-[21]">
         <h1 className="text-[20px] md:text-[30px] pl-[15px] leading-[120%] font-bold z-[19]">
-          Latest contracts on Ethereum Layer 2s
+          Smart Contracts on Ethereum Layer 2s
         </h1>
       </LabelsContainer>
-      <div className={`sticky pl-[60px] pr-[60px] top-[144px] z-[1]`}>
+      <div className={`sticky pl-[60px] pr-[60px] top-[70px] md:top-[144px] z-[1]`}>
         <div
           className="bg-[#151a19] z-50 fixed inset-0 pointer-events-none"
           style={{
             backgroundPosition: "top",
-            maskImage: `linear-gradient(to bottom, white 0, white 200px, transparent 230px`,
+            maskImage: isMobile ? `linear-gradient(to bottom, white 0, white 120px, transparent 150px` : `linear-gradient(to bottom, white 0, white 200px, transparent 230px`,
           }}
         >
           <div className="background-gradient-group">
