@@ -242,6 +242,7 @@ type CanvasSparklineContextType = {
   valueType: string;
   hoverDataPoint: [number, number | null] | null;
   setHoverDataPoint: (value: [number, number | null] | null) => void;
+  isDBLoading: boolean;
 };
 
 const CanvasSparklineContext = createContext<CanvasSparklineContextType | null>(
@@ -255,13 +256,14 @@ export const CanvasSparklineProvider = ({
   change,
   value,
   valueType,
+  isDBLoading,
   children,
 }: CanvasSparklineContextType & { children: React.ReactNode }) => {
   const [hoverDataPoint, setHoverDataPoint] = useState<[number, number | null] | null>(null);
 
   return (
     <CanvasSparklineContext.Provider
-      value={{ minUnix, maxUnix, data, change, value, valueType, hoverDataPoint, setHoverDataPoint }}
+      value={{ minUnix, maxUnix, data, change, value, valueType, hoverDataPoint, setHoverDataPoint, isDBLoading }}
     >
       {children}
     </CanvasSparklineContext.Provider>
