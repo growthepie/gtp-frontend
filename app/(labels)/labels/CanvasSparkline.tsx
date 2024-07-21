@@ -17,13 +17,13 @@ type CanvasSparklineProps = {
 const GradientColors = {
   negative: ["#FE5468", "#FFDF27"],
   positive: ["#10808C", "#1DF7EF"],
-  neutral: ["#CBCBCB99", "#EEEEEE99"],
+  neutral: ["#868686", "#ABABAB"],
 };
 
 const GradientStops = {
   negative: [3.33 * 25, 0, 200, 50],
   positive: [3.33 * 23, 0, 100, 20],
-  neutral: [0, 0, 100, 0],
+  neutral: [3.33 * 23, 0, 100, 20],
 };
 
 const CANVAS_WIDTH = 110;
@@ -103,7 +103,7 @@ export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
       let currentPath: [number, number][] = [];
       // 7 days before maxUnix
       const gradientStartIndex = adjustedData.findIndex(
-        ([timestamp]) => timestamp === maxUnix - 7 * 86400000,
+        ([timestamp]) => timestamp === maxUnix - 6 * 86400000,
       );
 
       adjustedData.forEach((point, i) => {

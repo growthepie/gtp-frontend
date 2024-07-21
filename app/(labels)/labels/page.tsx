@@ -1360,7 +1360,7 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
           <div className="min-w-[55px] text-right">
             {formatMetric(value, valueType)}
           </div>
-          {(change === null || parseFloat((change * 100).toFixed(1)) === 0) && (
+          {(change === null || parseFloat((change * 100).toFixed(0)) === "0") && (
             <div
               className={`text-[9px] text-right leading-[1] text-[#CDD8D399] font-normal`}
             >
@@ -1373,7 +1373,10 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
               className={`text-[9px] text-right leading-[1] text-[#1DF7EF] font-normal`}
             >
               {change > 0 && "+"}
-              {Math.abs(change) > 100 ? formatNumber(change * 100, true, false) : (change * 100).toFixed(1)}%
+              {(change * 100).toLocaleString("en-GB", {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+              })}%
             </div>
           )}
           {(change !== null && parseFloat((change * 100).toFixed(1)) < 0) && (
@@ -1381,7 +1384,10 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
               className={`text-[9px] text-right leading-[1] text-[#FE5468] font-semibold`}
             >
               {change > 0 && "+"}
-              {Math.abs(change) > 100 ? formatNumber(change * 100, true, false) : (change * 100).toFixed(1)}%
+              {(change * 100).toLocaleString("en-GB", {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+              })}%
             </div>
           )}
           {/* <div
