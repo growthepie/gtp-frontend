@@ -42,6 +42,7 @@ import {
   TooltipTrigger,
 } from "@/components/layout/Tooltip";
 import { uniqBy } from "lodash";
+import { useMaster } from "@/contexts/Master";
 
 const devMiddleware = (useSWRNext) => {
   return (key, fetcher, config) => {
@@ -87,6 +88,8 @@ const metricKeysLabels = {
 export default function LabelsPage() {
   const showGwei = true;
   const showCents = true;
+
+  const { formatMetric } = useMaster();
 
   //True is default descending false ascending
   // const { theme } = useTheme();
@@ -230,6 +233,17 @@ export default function LabelsPage() {
     // }
     setCurrentMetric(metricKeys[newIndex]);
   }, [currentMetric]);
+
+  useEffect(() => {
+    if (!currentMetric) return;
+
+    if (metricKeys.includes(sort.metric) && sort.metric !== currentMetric) {
+      setSort(prev => ({
+        ...prev,
+        metric: currentMetric,
+      }));
+    }
+  }, [currentMetric, sort, setSort]);
 
   // const [metricIndex, setMetricIndex] = useState(0);
   // const [metricChangeIndex, setMetricChangeIndex] = useState(0);
@@ -596,9 +610,12 @@ export default function LabelsPage() {
           Please view on a larger device or make your browser window wider.
         </div>
       </LabelsContainer> */}
-      <div className="bg-black h-10 w-32 text-white fixed top-0 left-0 z-50">
+      {/* <div className="bg-black h-10 w-32 text-white fixed top-0 left-0 z-50">
         {SparklineTimestampRange}
-      </div>
+      </div> */}
+      {/* <div className="bg-black h-10 w-32 text-white fixed top-0 left-0 z-50">
+        {JSON.stringify(sort)} -  {currentMetric}
+      </div> */}
 
       <LabelsTableContainer
         className="block"
@@ -788,49 +805,52 @@ export default function LabelsPage() {
                   />
                 </div>
                 <div className="relative flex items-center justify-end -mr-[12px]">
-                  <div
-                    className=" flex items-center cursor-pointer"
-                    onClick={() => {
-                      setSort({
-                        metric: currentMetric,
-                        sortOrder:
-                          sort.metric === currentMetric
-                            ? sort.sortOrder === "asc"
-                              ? "desc"
-                              : "asc"
-                            : "desc",
-                      });
-                    }}
-                  >
-                    {metricKeysLabels[currentMetric]} (7 days)
-                    <Icon
-                      icon={
-                        sort.metric === currentMetric &&
-                          sort.sortOrder === "asc"
-                          ? "feather:arrow-up"
-                          : "feather:arrow-down"
-                      }
-                      className="w-[12px] h-[12px]"
-                      style={{
-                        opacity: sort.metric === currentMetric ? 1 : 0.2,
-                      }}
-                    />
+                  <div className=" flex items-center">
                     <div
-                      className="absolute left-[0px] cursor-pointer bg-white/30 opacity-60 rounded-full px-0.5 py-[2px]"
+                      className=" flex items-center cursor-pointer"
+                      onClick={() => {
+                        setSort({
+                          metric: currentMetric,
+                          sortOrder:
+                            sort.metric === currentMetric
+                              ? sort.sortOrder === "asc"
+                                ? "desc"
+                                : "asc"
+                              : "desc",
+                        });
+                      }}
+                    >
+                      {metricKeysLabels[currentMetric]} (7 days)
+
+                      <Icon
+                        icon={
+                          sort.metric === currentMetric &&
+                            sort.sortOrder === "asc"
+                            ? "feather:arrow-up"
+                            : "feather:arrow-down"
+                        }
+                        className="w-[12px] h-[12px]"
+                        style={{
+                          opacity: sort.metric === currentMetric ? 1 : 0.2,
+                        }}
+                      />
+                    </div>
+                    <div
+                      className="absolute left-[15px] cursor-pointer text-[#CDD8D3] bg-[#5A6462] rounded-full pl-[1px] pr-[2px] py-[1px]"
                       onClick={handlePreviousMetric}
                     >
                       <Icon
                         icon="feather:chevron-left"
-                        className="w-[12px] h-[12px]"
+                        className="w-[13px] h-[13px]"
                       />
                     </div>
                     <div
-                      className="absolute -right-[20px] cursor-pointer bg-white/30 opacity-60 rounded-full px-0.5 py-[2px]"
+                      className="absolute -right-[20px] cursor-pointer text-[#CDD8D3] bg-[#5A6462] rounded-full pr-[1px] pl-[2px] py-[1px]"
                       onClick={handleNextMetric}
                     >
                       <Icon
                         icon="feather:chevron-right"
-                        className="w-[12px] h-[12px]"
+                        className="w-[13px] h-[13px]"
                       />
                     </div>
                   </div>
@@ -948,7 +968,7 @@ export default function LabelsPage() {
                                 ownerProjectToProjectData[
                                 filteredLabelsData[item.index].owner_project
                                 ][5]) && (
-                                <TooltipContent className="relativeflex flex-col items-start justify-center gap-y-[5px] rounded-[10px] p-2.5 bg-[#151a19] border border-[#5A6462] z-50 max-w-[300px]">
+                                <TooltipContent className="relativeflex flex-col items-start justify-center gap-y-[5px] rounded-[10px] p-2.5 bg-[#151a19] border border-[#5A6462] z-[19] max-w-[300px]">
                                   {/* arrow pointing to the left */}
                                   <div className="absolute top-[calc(50%-4px)] -left-1 w-2 h-2 bg-[#151a19]  border-[#5A6462] border border-r-0 border-t-0 transform rotate-45"></div>
                                   {ownerProjectToProjectData[
@@ -1233,6 +1253,9 @@ export default function LabelsPage() {
                               value={
                                 filteredLabelsData[item.index][currentMetric]
                               }
+                              valueType={
+                                currentMetric
+                              }
                             >
                               <LabelsSparkline
                                 chainKey={
@@ -1278,7 +1301,7 @@ const GridTableHeader = ({
 }: GridTableProps) => {
   return (
     <div
-      className={`select-none gap-x-[10px] pl-[10px] pr-[20px] pt-[30px] text-[11px] items-center font-semibold grid ${gridDefinitionColumns}`}
+      className={`select-none gap-x-[10px] pl-[10px] pr-[32px] pt-[30px] text-[11px] items-center font-semibold grid ${gridDefinitionColumns}`}
     >
       {children}
     </div>
@@ -1294,7 +1317,7 @@ const GridTableRow = ({
 }: GridTableProps) => {
   return (
     <div
-      className={`select-text gap-x-[10px] rounded-full border border-forest-900/20 dark:border-forest-500/20 pl-[10px] pr-[20px] py-[5px] text-xs items-center grid ${gridDefinitionColumns}`}
+      className={`select-text gap-x-[10px] pl-[10px] pr-[32px] py-[5px] text-xs items-center rounded-full border border-forest-900/20 dark:border-forest-500/20 grid ${gridDefinitionColumns}`}
       style={style}
     >
       {children}
@@ -1303,7 +1326,9 @@ const GridTableRow = ({
 };
 
 const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
-  const { data, change, value, hoverDataPoint, setHoverDataPoint } = useCanvasSparkline();
+  const { data, change, value, valueType, hoverDataPoint, setHoverDataPoint } = useCanvasSparkline();
+  const { formatMetric } = useMaster();
+
   return (
     <>
       <CanvasSparkline chainKey={chainKey} />
@@ -1315,7 +1340,7 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
           }}
         >
           <div className="min-w-[55px] text-right" >
-            {hoverDataPoint[1] && hoverDataPoint[1].toLocaleString("en-GB")}
+            {hoverDataPoint[1] && formatMetric(hoverDataPoint[1], valueType)}
           </div>
           <div className={`text-[9px] text-right leading-[1] text-forest-400`}>{new Date(hoverDataPoint[0]).toLocaleDateString("en-GB",
             {
@@ -1333,9 +1358,33 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
           }}
         >
           <div className="min-w-[55px] text-right">
-            {value.toLocaleString("en-GB")}
+            {formatMetric(value, valueType)}
           </div>
-          <div
+          {(change === null || parseFloat((change * 100).toFixed(1)) === 0) && (
+            <div
+              className={`text-[9px] text-right leading-[1] text-[#CDD8D399] font-normal`}
+            >
+              {change === null && "—"}
+              {change !== null && "0.0%"}
+            </div>
+          )}
+          {(change !== null && parseFloat((change * 100).toFixed(1)) > 0) && (
+            <div
+              className={`text-[9px] text-right leading-[1] text-[#1DF7EF] font-normal`}
+            >
+              {change > 0 && "+"}
+              {Math.abs(change) > 100 ? formatNumber(change * 100, true, false) : (change * 100).toFixed(1)}%
+            </div>
+          )}
+          {(change !== null && parseFloat((change * 100).toFixed(1)) < 0) && (
+            <div
+              className={`text-[9px] text-right leading-[1] text-[#FE5468] font-semibold`}
+            >
+              {change > 0 && "+"}
+              {Math.abs(change) > 100 ? formatNumber(change * 100, true, false) : (change * 100).toFixed(1)}%
+            </div>
+          )}
+          {/* <div
             className={`text-[9px] text-right leading-[1] ${change > 0
               ? "text-[#1DF7EF] font-normal"
               : "text-[#FE5468] font-semibold "
@@ -1343,7 +1392,7 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
           >
             {change > 0 && "+"}
             {formatNumber(change * 100, true, false)}%
-          </div>
+          </div> */}
         </div>
       )}
     </>

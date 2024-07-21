@@ -13,7 +13,7 @@ import Search from "./Search";
 
 export default function Header() {
   return (
-    <div className="fixed z-10 flex flex-col w-full z-50 items-center">
+    <div className="fixed flex flex-col w-full z-50 items-center">
       <div className="absolute h-[170px] w-full overflow-clip">
         <div
           className="background-container !h-screen"

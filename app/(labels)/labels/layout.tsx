@@ -17,6 +17,7 @@ import "../../background.css";
 import "../../globals.css";
 import { LabelsParquetURLS } from "@/lib/urls";
 import { DuckDBProvider } from "../SparklineParquetContext";
+import { MasterProvider } from "@/contexts/Master";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",
@@ -191,19 +192,21 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Providers forcedTheme="dark">
-          <main className="relative flex-1 w-full mx-auto z-10 min-h-screen select-none">
-            {/* <LabelsProviders> */}
-            <DuckDBProvider
-              parquetFiles={[
-                LabelsParquetURLS.full,
-                LabelsParquetURLS.projects,
-                LabelsParquetURLS.sparkline,
-              ]}
-            >
-              {children}
-            </DuckDBProvider>
-            {/* </LabelsProviders> */}
-          </main>
+          <MasterProvider>
+            <main className="relative flex-1 w-full mx-auto min-h-screen select-none">
+              {/* <LabelsProviders> */}
+              <DuckDBProvider
+                parquetFiles={[
+                  LabelsParquetURLS.full,
+                  LabelsParquetURLS.projects,
+                  LabelsParquetURLS.sparkline,
+                ]}
+              >
+                {children}
+              </DuckDBProvider>
+              {/* </LabelsProviders> */}
+            </main>
+          </MasterProvider>
           {/* <div className="flex h-fit w-full justify-center">
             <div className="flex w-full min-h-screen overflow-y-visible">
               <div className="flex flex-col flex-1 overflow-y-clip z-10 overflow-x-clip relative min-h-full bg-white dark:bg-inherit">

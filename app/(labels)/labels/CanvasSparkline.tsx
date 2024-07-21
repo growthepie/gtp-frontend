@@ -17,11 +17,13 @@ type CanvasSparklineProps = {
 const GradientColors = {
   negative: ["#FE5468", "#FFDF27"],
   positive: ["#10808C", "#1DF7EF"],
+  neutral: ["#CBCBCB99", "#EEEEEE99"],
 };
 
 const GradientStops = {
   negative: [3.33 * 25, 0, 200, 50],
   positive: [3.33 * 23, 0, 100, 20],
+  neutral: [0, 0, 100, 0],
 };
 
 const CANVAS_WIDTH = 110;
@@ -56,7 +58,7 @@ export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hoverCanvasRef = useRef<HTMLCanvasElement>(null);
 
-  const isNegative = change < 0;
+  const percentChangeType = !change ? "neutral" : (change * 100).toFixed(1) === "0.0" ? "neutral" : change < 0 ? "negative" : "positive";
 
   const dataValuesWithNulls = adjustedData.map(([, y]) => y);
   const dataValues = dataValuesWithNulls.filter((y) => y !== null) as number[];
@@ -85,10 +87,10 @@ export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
   const drawSparkline = useCallback(
     (ctx: CanvasRenderingContext2D) => {
       const [x1, y1, x2, y2] =
-        GradientStops[isNegative ? "negative" : "positive"];
+        GradientStops[percentChangeType];
       const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
       const [color1, color2] =
-        GradientColors[isNegative ? "negative" : "positive"];
+        GradientColors[percentChangeType];
 
       gradient.addColorStop(0, color1);
       gradient.addColorStop(1, color2);
@@ -141,7 +143,7 @@ export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
 
       ctx.restore();
     },
-    [adjustedData, dataMax, isNegative, maxUnix],
+    [adjustedData, dataMax, percentChangeType, maxUnix],
   );
 
   useEffect(() => {
@@ -197,7 +199,7 @@ export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
       // Draw hover circle
       ctx.beginPath();
       ctx.fillStyle = pointX > (DRAW_WIDTH / 30) * 23
-        ? (isNegative ? GradientColors.negative[0] + "66" : GradientColors.positive[1] + "66")
+        ? (GradientColors[percentChangeType][0] + "66")
         : "#CDD8D366";
       ctx.arc(pointX, pointY, 3, 0, 2 * Math.PI);
       ctx.fill();
@@ -219,7 +221,7 @@ export default function CanvasSparkline({ chainKey }: CanvasSparklineProps) {
       canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("mouseleave", handleMouseLeave);
     };
-  }, [hoverCanvasRef, adjustedData, dataMax, dataMin, isNegative, setHoverDataPoint]);
+  }, [hoverCanvasRef, adjustedData, dataMax, dataMin, percentChangeType, setHoverDataPoint]);
 
   return (
     <>
@@ -235,8 +237,9 @@ type CanvasSparklineContextType = {
   data: [number, number][];
   minUnix: number;
   maxUnix: number;
-  change: number;
+  change: number | null;
   value: number;
+  valueType: string;
   hoverDataPoint: [number, number | null] | null;
   setHoverDataPoint: (value: [number, number | null] | null) => void;
 };
@@ -251,13 +254,14 @@ export const CanvasSparklineProvider = ({
   maxUnix,
   change,
   value,
+  valueType,
   children,
 }: CanvasSparklineContextType & { children: React.ReactNode }) => {
   const [hoverDataPoint, setHoverDataPoint] = useState<[number, number | null] | null>(null);
 
   return (
     <CanvasSparklineContext.Provider
-      value={{ minUnix, maxUnix, data, change, value, hoverDataPoint, setHoverDataPoint }}
+      value={{ minUnix, maxUnix, data, change, value, valueType, hoverDataPoint, setHoverDataPoint }}
     >
       {children}
     </CanvasSparklineContext.Provider>
