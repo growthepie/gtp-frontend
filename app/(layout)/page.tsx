@@ -75,7 +75,7 @@ export default async function Page() {
       </Container>
       <LandingUserBaseChart />
       {/**Blockspace */}
-      <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
+      {/* <Container className="flex flex-col flex-1 w-full mt-[30px] md:mt-[60px] mb-[15px] md:mb-[15px] gap-y-[15px] justify-center">
         <div className="flex items-center gap-x-[8px] py-[10px] md:py-0">
           <Icon
             icon="gtp:package"
@@ -91,12 +91,12 @@ export default async function Page() {
         <Subheading className="text-base leading-normal md:leading-snug px-[5px] lg:px-[45px]">
           <div>Top 6 gas-consuming contracts across all tracked Layer 2s.</div>
         </Subheading>
-      </Container>
+      </Container> */}
 
       {/**Top contracts */}
-      <Container className="">
+      {/* <Container className="">
         <LandingTopContracts />
-      </Container>
+      </Container> */}
       <Container>
         <div className="flex gap-x-0 md:gap-x-12 w-full ml-0 mt-[30px] md:mt-[60px]">
           <div className="flex flex-col md:w-1/2 lg:w-2/3 ">
@@ -124,7 +124,7 @@ export default async function Page() {
             <div className="text-base md:text-sm lg:text-base">
               <p className="mb-2">
                 This website is based on the open-source website of
-                www.growthepie.xyz/, and we thank them dearly for inspiring the
+                www.growthepie.xyz, and we thank them dearly for inspiring the
                 Growthepie concept.
               </p>
               <p className="mb-2">

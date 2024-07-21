@@ -58,7 +58,20 @@ export default function LandingUserBaseChart() {
 
   useEffect(() => {
     if (landing) {
-      setData(landing.data.metrics.user_base[selectedTimeInterval]);
+      const dataSpecificInterval =
+        landing.data.metrics.user_base[selectedTimeInterval];
+      dataSpecificInterval.chains = dataSpecificInterval.chains;
+      const chainsFiltered = {
+        ...dataSpecificInterval,
+        chains: {
+          all_l2s: dataSpecificInterval.chains.all_l2s,
+          base: dataSpecificInterval.chains.base,
+          ethereum: dataSpecificInterval.chains.ethereum,
+          zora: dataSpecificInterval.chains.zora,
+        },
+      };
+
+      setData(chainsFiltered);
     }
   }, [landing, selectedTimeInterval]);
 

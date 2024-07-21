@@ -58,11 +58,11 @@ export default function Home() {
 
   useEffect(() => {
     if (!data) return;
-
     setSelectedChains(
       Object.keys(data.chains)
         .filter((chainKey) => AllChainsByKeys.hasOwnProperty(chainKey))
-        .map((chain) => chain),
+        .map((chain) => chain)
+        .slice(0, 3),
     );
   }, [data, landing, selectedMetric, selectedTimeInterval]);
 
