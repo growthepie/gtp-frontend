@@ -434,7 +434,7 @@ export default function Search() {
             </div>
           </div>
           <div
-            className={`absolute rounded-t-[22px] md:rounded-b-[22px] bg-[#151A19] left-0 right-0 bottom-[calc(100%-22px)] md:bottom-auto md:top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] transition-all duration-300 ${isOpen ? "max-h-[600px]" : "max-h-0"
+            className={`absolute rounded-t-[22px] md:rounded-t-none md:rounded-b-[22px] bg-[#151A19] left-0 right-0 bottom-[calc(100%-22px)] md:bottom-auto md:top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] transition-all duration-300 ${isOpen ? "max-h-[600px]" : "max-h-0"
               } overflow-hidden overflow-y-auto lg:overflow-y-hidden scrollbar-thin scrollbar-thumb-forest-700 scrollbar-track-transparent`}
           >
             <div className="flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[35px] pt-[15px] md:pb-[15px] md:pt-[35px] gap-y-[10px] text-[10px]">

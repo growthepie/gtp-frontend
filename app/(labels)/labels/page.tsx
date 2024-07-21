@@ -361,12 +361,20 @@ export default function LabelsPage() {
         ...labelsFilters.subcategory,
       ];
 
+      let isUnlabeledSelected = labelsFilters.category.includes("unlabeled");
+
       let all_usage_categories = [...new Set(both)];
 
       if (all_usage_categories.length > 0) {
-        rows = rows.filter((label) =>
-          all_usage_categories.includes(label.usage_category),
-        );
+        if (isUnlabeledSelected) {
+          rows = rows.filter((label) =>
+            all_usage_categories.includes(label.usage_category) || label.usage_category === null,
+          );
+        } else {
+          rows = rows.filter((label) =>
+            all_usage_categories.includes(label.usage_category),
+          );
+        }
       }
 
       if (labelsFilters.owner_project.length > 0) {
