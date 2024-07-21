@@ -1385,8 +1385,8 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
   return (
     <>
       {isDBLoading ?
-        <div className="relative -top-[4px] text-center text-[#5A6462] text-[10px] w-[100px] h-[20px] border border-white/10">
-          Loading
+        <div className="relative flex items-center justify-center text-[#5A6462] text-[10px] w-[100px] h-full">
+          Loading Chart
         </div> :
         <CanvasSparkline chainKey={chainKey} />
       }
