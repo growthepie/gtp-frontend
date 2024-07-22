@@ -16,7 +16,7 @@ export default function Footer() {
           className="bg-[#151a19] -z-10 fixed inset-0 pointer-events-none"
           style={{
             backgroundPosition: "bottom",
-            maskImage: isMobile ? `linear-gradient(to top, white 0, white 150px, transparent 190px` : `linear-gradient(to top, white 0, white 80px, transparent 120px`,
+            maskImage: isMobile ? `linear-gradient(to top, white 0, white 170px, transparent 215px` : `linear-gradient(to top, white 0, white 80px, transparent 120px`,
           }}
         >
           <div className="background-gradient-group">
@@ -25,7 +25,7 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      <LabelsContainer className={`absolute bottom-[100px] w-full block z-[60]`}>
+      <LabelsContainer className={`absolute bottom-[130px] w-full block z-[60]`}>
         {isMobile && <FloatingBar />}
       </LabelsContainer>
       <Container className={"w-full mx-auto bottom-0"}>
