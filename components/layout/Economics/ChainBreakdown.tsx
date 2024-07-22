@@ -973,7 +973,12 @@ export default function ChainBreakdown({
                         )}`}
                       >
                         <div className="w-[65px] flex justify-end">
-                          <div className="text-[14px] font-semibold ">
+                          <div
+                            className="text-[14px] font-semibold "
+                            style={{
+                              fontFeatureSettings: "'pnum' on, 'lnum' on",
+                            }}
+                          >
                             {formatNumber(
                               data[item.key][selectedTimespan].revenue.total[
                                 dataIndex
@@ -1025,7 +1030,12 @@ export default function ChainBreakdown({
                           item.key,
                         )}`}
                       >
-                        <div className="w-[65px] flex justify-end items-end h-full font-semibold text-[14px]">
+                        <div
+                          className="w-[65px] flex justify-end items-end h-full font-semibold text-[14px]"
+                          style={{
+                            fontFeatureSettings: "'pnum' on, 'lnum' on",
+                          }}
+                        >
                           {formatNumber(
                             data[item.key][selectedTimespan].costs.total[
                               dataIndex
@@ -1035,7 +1045,11 @@ export default function ChainBreakdown({
                         <div className="flex flex-col justify-end w-[120px] h-full">
                           <div className="flex w-full justify-between h-[15px]">
                             <div className="text-[10px] flex gap-x-[0.5px] ">
-                              <span>
+                              <span
+                                style={{
+                                  fontFeatureSettings: "'pnum' on, 'lnum' on",
+                                }}
+                              >
                                 {Intl.NumberFormat("en-GB", {
                                   notation: "compact",
                                   maximumFractionDigits: 1,
@@ -1050,7 +1064,12 @@ export default function ChainBreakdown({
                               </span>
                               <span>{"%"}</span>
                             </div>
-                            <div className="text-[10px]">
+                            <div
+                              className="text-[10px]"
+                              style={{
+                                fontFeatureSettings: "'pnum' on, 'lnum' on",
+                              }}
+                            >
                               {Intl.NumberFormat("en-GB", {
                                 notation: "compact",
                                 maximumFractionDigits: 1,
@@ -1114,7 +1133,12 @@ export default function ChainBreakdown({
                               : "flex-start"
                           }`}
                         >
-                          <div className="text-[12px] font-semibold ">
+                          <div
+                            className="text-[12px] font-semibold "
+                            style={{
+                              fontFeatureSettings: "'pnum' on, 'lnum' on",
+                            }}
+                          >
                             {formatNumber(
                               data[item.key][selectedTimespan].profit.total[
                                 dataIndex
@@ -1182,7 +1206,12 @@ export default function ChainBreakdown({
                               : "flex-start"
                           }`}
                         >
-                          <div className=" ">
+                          <div
+                            className=" "
+                            style={{
+                              fontFeatureSettings: "'pnum' on, 'lnum' on",
+                            }}
+                          >
                             {Intl.NumberFormat("en-GB", {
                               notation: "standard",
                               maximumFractionDigits: 1,
@@ -1431,7 +1460,12 @@ export default function ChainBreakdown({
                               : ""
                           }`}
                         />
-                        <div className="text-[14px] font-semibold">
+                        <div
+                          className="text-[14px] font-semibold"
+                          style={{
+                            fontFeatureSettings: "'pnum' on, 'lnum' on",
+                          }}
+                        >
                           {formatBytes(
                             data[item.key][selectedTimespan].size.total[0],
                           )}

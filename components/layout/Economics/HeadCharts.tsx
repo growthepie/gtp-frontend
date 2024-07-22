@@ -194,18 +194,25 @@ export default function EconHeadCharts({
                   <div class="opacity-70 mr-0.5 ${
                     !prefix && "hidden"
                   }">${prefix}</div>
-                  <div>${
-                    isFees
-                      ? parseFloat(displayValue).toLocaleString("en-GB", {
-                          minimumFractionDigits: calculateDecimalPlaces(
-                            Number(displayValue),
-                          ),
-                          maximumFractionDigits: calculateDecimalPlaces(
-                            Number(displayValue),
-                          ),
-                        })
-                      : formatBytes(displayValue)
-                  }
+                  <div style={{
+                            fontFeatureSettings: "'pnum' on, 'lnum' on",
+                          }}>${
+                            isFees
+                              ? parseFloat(displayValue).toLocaleString(
+                                  "en-GB",
+                                  {
+                                    minimumFractionDigits:
+                                      calculateDecimalPlaces(
+                                        Number(displayValue),
+                                      ),
+                                    maximumFractionDigits:
+                                      calculateDecimalPlaces(
+                                        Number(displayValue),
+                                      ),
+                                  },
+                                )
+                              : formatBytes(displayValue)
+                          }
                   </div>
                 </div>
                 <div class="opacity-70 ml-0.5 ${
@@ -223,20 +230,24 @@ export default function EconHeadCharts({
                   <div class="opacity-70 mr-0.5 ${
                     !prefix && "hidden"
                   }">${prefix}</div>
-                  <div>${
-                    isFees
-                      ? parseFloat(
-                          String(calculateCostPerGB(Number(y), blob_value)),
-                        ).toLocaleString("en-GB", {
-                          minimumFractionDigits: calculateDecimalPlaces(
-                            Number(displayValue),
-                          ),
-                          maximumFractionDigits: calculateDecimalPlaces(
-                            Number(displayValue),
-                          ),
-                        })
-                      : formatBytes(displayValue)
-                  }
+                  <div style={{
+                            fontFeatureSettings: "'pnum' on, 'lnum' on",
+                          }}>${
+                            isFees
+                              ? parseFloat(
+                                  String(
+                                    calculateCostPerGB(Number(y), blob_value),
+                                  ),
+                                ).toLocaleString("en-GB", {
+                                  minimumFractionDigits: calculateDecimalPlaces(
+                                    Number(displayValue),
+                                  ),
+                                  maximumFractionDigits: calculateDecimalPlaces(
+                                    Number(displayValue),
+                                  ),
+                                })
+                              : formatBytes(displayValue)
+                          }
                   </div>
                 </div>
                 <div class="opacity-70 ml-0.5 ${
@@ -435,7 +446,12 @@ export default function EconHeadCharts({
                       </div>
                     </div>
                     <div className="flex justify-between gap-x-[15px] items-center h-[36px] bg-[#344240CC]  rounded-[10px] pl-[15px] pr-[15px] mr-[8px]  ">
-                      <div className="text-[14px] font-semibold ">
+                      <div
+                        className="text-[14px] font-semibold "
+                        style={{
+                          fontFeatureSettings: "'pnum' on, 'lnum' on",
+                        }}
+                      >
                         {valuePrefix}
                         {calculateCostPerGB(
                           da_charts[key].total_blob_fees.daily.data[
@@ -447,7 +463,12 @@ export default function EconHeadCharts({
                         )}
                         {" / GB "}
                       </div>
-                      <div className="text-[10px] font-normal flex flex-col gap-y-[1px] text-right">
+                      <div
+                        className="text-[10px] font-normal flex flex-col gap-y-[1px] text-right"
+                        style={{
+                          fontFeatureSettings: "'pnum' on, 'lnum' on",
+                        }}
+                      >
                         <div>
                           {formatBytes(
                             da_charts[key].total_blob_size.daily.data[
