@@ -44,6 +44,7 @@ import {
 import { uniqBy } from "lodash";
 import { useMaster } from "@/contexts/Master";
 import { useUIContext } from "@/contexts/UIContext";
+import SVGSparkline, { SVGSparklineProvider, useSVGSparkline } from "./SVGSparkline";
 
 const devMiddleware = (useSWRNext) => {
   return (key, fetcher, config) => {
@@ -654,10 +655,10 @@ export default function LabelsPage() {
         header={
           <>
             {filteredLabelsData && (
-              <GridTableHeader gridDefinitionColumns="pb-[4px] text-[12px] grid-cols-[15px,minmax(140px,1600px),150px,200px,105px,105px,175px,192px] gap-x-[20px] z-[2]">
+              <GridTableHeader gridDefinitionColumns="pb-[4px] text-[12px] grid-cols-[15px,minmax(160px,1600px),150px,200px,105px,105px,175px,192px] gap-x-[20px] z-[2]">
                 <div className="flex items-center justify-center"></div>
                 <div
-                  className="flex items-center justify-start cursor-pointer pl-[12px]"
+                  className="flex items-center justify-start cursor-pointer"
                   onClick={() => {
                     setSort({
                       metric: "address",
@@ -913,7 +914,7 @@ export default function LabelsPage() {
                         }px)`,
                     }}
                   >
-                    <GridTableRow gridDefinitionColumns="group text-[12px] h-[34px] inline-grid grid-cols-[15px,minmax(140px,1600px),150px,200px,105px,105px,175px,192px] x-has-[span:hover]:grid-cols-[15px,minmax(390px,800px),150px,200px,105px,105px,175px,192px] transition-all duration-300 gap-x-[20px] mb-[3px]">
+                    <GridTableRow gridDefinitionColumns="group text-[12px] h-[34px] inline-grid grid-cols-[15px,minmax(160px,1600px),150px,200px,105px,105px,175px,192px] x-has-[span:hover]:grid-cols-[15px,minmax(390px,800px),150px,200px,105px,105px,175px,192px] transition-all duration-300 gap-x-[20px] mb-[3px]">
                       <div className="flex h-full items-center">
                         <Icon
                           icon={`gtp:${AllChainsByKeys[
@@ -929,16 +930,7 @@ export default function LabelsPage() {
                           }}
                         />
                       </div>
-                      <div className="@container flex h-full items-center hover:bg-transparent -ml-[10px]">
-                        <div className="pr-[5px] text-forest-600">
-                          <Icon
-                            icon={copiedAddress === filteredLabelsData[item.index].address ? "feather:check-circle" : "feather:copy"}
-                            className="w-[12px] h-[12px] cursor-pointer"
-                            onClick={() => {
-                              handleCopyAddress(filteredLabelsData[item.index].address);
-                            }}
-                          />
-                        </div>
+                      <div className="@container flex h-full items-center hover:bg-transparent">
                         <span
                           className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px]"
                           style={{
@@ -965,12 +957,23 @@ export default function LabelsPage() {
                           <div className="transition-all duration-300">
                             {filteredLabelsData[item.index].address.slice(-6)}
                           </div>
+                          <div className="pl-[10px]">
+                            <Icon
+                              icon={copiedAddress === filteredLabelsData[item.index].address ? "feather:check-circle" : "feather:copy"}
+                              className="w-[13px] h-[13px] cursor-pointer"
+                              onClick={() => {
+                                handleCopyAddress(filteredLabelsData[item.index].address);
+                              }}
+                            />
+                          </div>
                         </span>
+
 
                         {ownerProjectToProjectData[
                           filteredLabelsData[item.index].owner_project
                         ] && (
-                            <div className="flex gap-x-[5px] max-w-0 @[390px]:max-w-[100px] group-hover:max-w-[100px] overflow-hidden transition-all duration-300">
+                            <div className="flex flex-1 gap-x-[5px] max-w-0 @[390px]:max-w-[100px] group-hover:max-w-[100px] overflow-hidden transition-all duration-300">
+
                               <div className="h-[15px] w-[15px]">
                                 {ownerProjectToProjectData[
                                   filteredLabelsData[item.index].owner_project
@@ -1426,7 +1429,7 @@ export default function LabelsPage() {
                         </div>
                       )} */}
                         <div className="relative flex h-[20px] justify-between w-full">
-                          <CanvasSparklineProvider
+                          {/* <CanvasSparklineProvider
                             isDBLoading={isDBLoading}
                             minUnix={SparklineTimestampRange[0]}
                             maxUnix={SparklineTimestampRange[1]}
@@ -1451,7 +1454,30 @@ export default function LabelsPage() {
                                 filteredLabelsData[item.index].origin_key
                               }
                             />
-                          </CanvasSparklineProvider>
+                          </CanvasSparklineProvider> */}
+                          <SVGSparklineProvider
+                            key={`${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address}`}
+                            isDBLoading={isDBLoading}
+                            minUnix={SparklineTimestampRange[0]}
+                            maxUnix={SparklineTimestampRange[1]}
+                            data={parquetSparklineData ? parquetSparklineData[
+                              `${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address
+                              }`
+                            ].map((d) => [d.unix, d[currentMetric]]) : []}
+                            change={
+                              filteredLabelsData[item.index][
+                              `${currentMetric}_change`
+                              ]
+                            }
+                            value={
+                              filteredLabelsData[item.index][currentMetric]
+                            }
+                            valueType={
+                              currentMetric
+                            }
+                          >
+                            <LabelsSVGSparkline chainKey={filteredLabelsData[item.index].origin_key} />
+                          </SVGSparklineProvider>
                         </div>
                       </div>
                     </GridTableRow>
@@ -1520,6 +1546,91 @@ const LabelsSparkline = ({ chainKey }: { chainKey: string }) => {
           Loading Chart
         </div> :
         <CanvasSparkline chainKey={chainKey} />
+      }
+      {hoverDataPoint ? (
+        <div
+          className="flex flex-col justify-center items-end"
+          style={{
+            fontFeatureSettings: "'pnum' on, 'lnum' on",
+          }}
+        >
+          <div className="min-w-[55px] text-right" >
+            {hoverDataPoint[1] && formatMetric(hoverDataPoint[1], valueType)}
+          </div>
+          <div className={`text-[9px] text-right leading-[1] text-forest-400`}>{new Date(hoverDataPoint[0]).toLocaleDateString("en-GB",
+            {
+              month: "short",
+              day: "numeric",
+              year: "numeric"
+            }
+          )}</div>
+        </div>
+      ) : (
+        <div
+          className="flex flex-col justify-center items-end"
+          style={{
+            fontFeatureSettings: "'pnum' on, 'lnum' on",
+          }}
+        >
+          <div className="min-w-[55px] text-right">
+            {formatMetric(value, valueType)}
+          </div>
+          {(change === null || parseFloat((change * 100).toFixed(0)) === "0") && (
+            <div
+              className={`text-[9px] text-right leading-[1] text-[#CDD8D399] font-normal`}
+            >
+              {change === null && "—"}
+              {change !== null && "0.0%"}
+            </div>
+          )}
+          {(change !== null && parseFloat((change * 100).toFixed(1)) > 0) && (
+            <div
+              className={`text-[9px] text-right leading-[1] text-[#1DF7EF] font-normal`}
+            >
+              {change > 0 && "+"}
+              {(change * 100).toLocaleString("en-GB", {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+              })}%
+            </div>
+          )}
+          {(change !== null && parseFloat((change * 100).toFixed(1)) < 0) && (
+            <div
+              className={`text-[9px] text-right leading-[1] text-[#FE5468] font-semibold`}
+            >
+              {change > 0 && "+"}
+              {(change * 100).toLocaleString("en-GB", {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+              })}%
+            </div>
+          )}
+          {/* <div
+            className={`text-[9px] text-right leading-[1] ${change > 0
+              ? "text-[#1DF7EF] font-normal"
+              : "text-[#FE5468] font-semibold "
+              }`}
+          >
+            {change > 0 && "+"}
+            {formatNumber(change * 100, true, false)}%
+          </div> */}
+        </div>
+      )}
+    </>
+  );
+};
+
+const LabelsSVGSparkline = ({ chainKey }: { chainKey: string }) => {
+  const { data, change, value, valueType, hoverDataPoint, setHoverDataPoint, isDBLoading } = useSVGSparkline();
+  const { formatMetric } = useMaster();
+
+  return (
+    <>
+      {isDBLoading ?
+        <div className="relative flex items-center justify-center text-[#5A6462] text-[10px] w-[100px] h-full">
+          Loading Chart
+        </div> :
+        <SVGSparkline chainKey={chainKey} />
       }
       {hoverDataPoint ? (
         <div
