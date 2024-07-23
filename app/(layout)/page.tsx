@@ -17,7 +17,7 @@ import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title:
-      "Growing Ethereum’s Ecosystem Together - Layer 2 User Base - growthepie",
+      "Growing Ethereum’s Ecosystem Together - Layer 2 Weekly Activity - growthepie",
     description:
       "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
   };
@@ -68,7 +68,7 @@ export default async function Page() {
             className="w-[30px] h-[30px] md:w-9 md:h-9"
           />
           <Heading className="text-[20px] md:text-[30px] leading-[1.2] font-semibold">
-            Layer 2 User Base
+            Layer 2 Weekly Activity
           </Heading>
         </div>
         <Subheading className="text-base leading-normal md:leading-snug px-[5px] lg:px-[45px]">

@@ -72,7 +72,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.growthepie.xyz"),
   title: {
     absolute:
-      "Growing Ethereum’s Ecosystem Together - Layer 2 User Base - growthepie",
+      "Growing Ethereum’s Ecosystem Together - Layer 2 Weekly Activity - growthepie",
     template: "%s - growthepie",
   },
   description:

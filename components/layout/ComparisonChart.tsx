@@ -14,7 +14,7 @@ import {
   ReactNode,
   useLayoutEffect,
 } from "react";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import { debounce, merge } from "lodash";
 // import { theme as customTheme } from "tailwind.config.js";
 import { useTheme } from "next-themes";
@@ -212,6 +212,17 @@ export default function ComparisonChart({
   const { isSidebarOpen, setEmbedData, embedData } = useUIContext();
 
   const [showUsd, setShowUsd] = useLocalStorage("showUsd", true);
+  const [selectedTimespansByTimeInterval, setSelectedTimespansByTimeInterval] = useSessionStorage(
+    "selectedTimespansByTimeInterval",
+    {
+      daily: "365d",
+      monthly: "12m",
+      [selectedTimeInterval]: selectedTimespan,
+    },
+  );
+
+
+
 
   const navItem = useMemo(() => {
     return navigationItems[1].options.find((item) => item.key === metric_id);
@@ -489,16 +500,14 @@ export default function ComparisonChart({
           if (selectedScale === "percentage")
             return `
               <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-                  AllChainsByKeys[name].colors[theme ?? "dark"][0]
-                }"></div>
-                <div class="tooltip-point-name">${
-                  AllChainsByKeys[name].label
-                }</div>
+                <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+              }"></div>
+                <div class="tooltip-point-name">${AllChainsByKeys[name].label
+              }</div>
                 <div class="flex-1 text-right font-inter">${Highcharts.numberFormat(
-                  percentage,
-                  2,
-                )}%</div>
+                percentage,
+                2,
+              )}%</div>
               </div>
               
               <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -507,9 +516,8 @@ export default function ComparisonChart({
                 <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
                 style="
                   width: ${(percentage / maxPercentage) * 100}%;
-                  background-color: ${
-                    AllChainsByKeys[name].colors[theme ?? "dark"][0]
-                  };
+                  background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+              };
                 "></div>
               </div>`;
 
@@ -540,27 +548,22 @@ export default function ComparisonChart({
 
           return `
           <div class="flex w-full space-x-2 items-center font-medium mb-0.5">
-            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${
-              AllChainsByKeys[name].colors[theme ?? "dark"][0]
+            <div class="w-4 h-1.5 rounded-r-full" style="background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
             }"></div>
-            <div class="tooltip-point-name text-md">${
-              AllChainsByKeys[name].label
+            <div class="tooltip-point-name text-md">${AllChainsByKeys[name].label
             }</div>
             <div class="flex-1 text-right justify-end font-inter flex">
-                <div class="opacity-70 mr-0.5 ${
-                  !prefix && "hidden"
-                }">${prefix}</div>
-                ${
-                  metric_id === "fdv" || metric_id === "market_cap"
-                    ? shortenNumber(value).toString()
-                    : parseFloat(value).toLocaleString("en-GB", {
-                        minimumFractionDigits: decimals,
-                        maximumFractionDigits: decimals,
-                      })
-                }
-                <div class="opacity-70 ml-0.5 ${
-                  !suffix && "hidden"
-                }">${suffix}</div>
+                <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+            }">${prefix}</div>
+                ${metric_id === "fdv" || metric_id === "market_cap"
+              ? shortenNumber(value).toString()
+              : parseFloat(value).toLocaleString("en-GB", {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals,
+              })
+            }
+                <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+            }">${suffix}</div>
             </div>
           </div>
           <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -569,9 +572,8 @@ export default function ComparisonChart({
             <div class="h-[2px] rounded-none absolute right-0 -top-[2px] bg-forest-900 dark:bg-forest-50" 
             style="
               width: ${(Math.max(0, value) / maxPoint) * 100}%;
-              background-color: ${
-                AllChainsByKeys[name].colors[theme ?? "dark"][0]
-              };
+              background-color: ${AllChainsByKeys[name].colors[theme ?? "dark"][0]
+            };
             "></div>
           </div>`;
         })
@@ -592,20 +594,18 @@ export default function ComparisonChart({
           <div class="tooltip-point-name text-md">Total</div>
           <div class="flex-1 text-right justify-end font-inter flex">
 
-              <div class="opacity-70 mr-0.5 ${
-                !prefix && "hidden"
-              }">${prefix}</div>
+              <div class="opacity-70 mr-0.5 ${!prefix && "hidden"
+          }">${prefix}</div>
               ${parseFloat(value).toLocaleString("en-GB", {
-                minimumFractionDigits: valuePrefix ? 2 : 0,
-                maximumFractionDigits: valuePrefix
-                  ? 2
-                  : metric_id === "throughput"
-                  ? 2
-                  : 0,
-              })}
-              <div class="opacity-70 ml-0.5 ${
-                !suffix && "hidden"
-              }">${suffix}</div>
+            minimumFractionDigits: valuePrefix ? 2 : 0,
+            maximumFractionDigits: valuePrefix
+              ? 2
+              : metric_id === "throughput"
+                ? 2
+                : 0,
+          })}
+              <div class="opacity-70 ml-0.5 ${!suffix && "hidden"
+          }">${suffix}</div>
           </div>
         </div>
         <div class="flex ml-6 w-[calc(100% - 1rem)] relative mb-0.5">
@@ -752,9 +752,9 @@ export default function ComparisonChart({
           filteredData[0].name === ""
             ? Date.now() - (365 + 1) * 24 * 60 * 60 * 1000
             : filteredData.reduce(
-                (min, d) => Math.min(min, d.data[0][0]),
-                Infinity,
-              ) - buffer,
+              (min, d) => Math.min(min, d.data[0][0]),
+              Infinity,
+            ) - buffer,
 
         xMax: maxPlusBuffer,
       },
@@ -766,9 +766,9 @@ export default function ComparisonChart({
           filteredData[0].name === ""
             ? Date.now() - (365 + 1) * 24 * 60 * 60 * 1000
             : filteredData.reduce(
-                (min, d) => Math.min(min, d.data[0][0]),
-                Infinity,
-              ) - buffer,
+              (min, d) => Math.min(min, d.data[0][0]),
+              Infinity,
+            ) - buffer,
 
         xMax: maxPlusBuffer,
       },
@@ -892,6 +892,14 @@ export default function ComparisonChart({
         );
     }
   }, [selectedTimespan, timespans, zoomed]);
+
+  // update selectedTimespanByTimeInterval if selectedTimespan or selectedTimeInterval changes
+  useEffect(() => {
+    setSelectedTimespansByTimeInterval((prev) => ({
+      ...prev,
+      [selectedTimeInterval]: selectedTimespan,
+    }));
+  }, [selectedTimeInterval, selectedTimespan, setSelectedTimespansByTimeInterval]);
 
   const [intervalShown, setIntervalShown] = useState<{
     min: number;
@@ -1417,38 +1425,38 @@ export default function ComparisonChart({
             ...// @ts-ignore
             (["area", "line"].includes(getSeriesType(series.name))
               ? {
-                  shadow: {
-                    color:
-                      AllChainsByKeys[series.name]?.colors[theme ?? "dark"][1] +
-                      "FF",
-                    width: 10,
-                  },
-                  // color: {
-                  //   linearGradient: {
-                  //     x1: 0,
-                  //     y1: 0,
-                  //     x2: 1,
-                  //     y2: 0,
-                  //   },
-                  //   stops: [
-                  //     [
-                  //       0,
-                  //       AllChainsByKeys[series.name]?.colors[
-                  //         theme ?? "dark"
-                  //       ][0],
-                  //     ],
-                  //     // [0.33, AllChainsByKeys[series.name].colors[1]],
-                  //     [
-                  //       1,
-                  //       AllChainsByKeys[series.name]?.colors[
-                  //         theme ?? "dark"
-                  //       ][1],
-                  //     ],
-                  //   ],
-                  // },
-                }
+                shadow: {
+                  color:
+                    AllChainsByKeys[series.name]?.colors[theme ?? "dark"][1] +
+                    "FF",
+                  width: 10,
+                },
+                // color: {
+                //   linearGradient: {
+                //     x1: 0,
+                //     y1: 0,
+                //     x2: 1,
+                //     y2: 0,
+                //   },
+                //   stops: [
+                //     [
+                //       0,
+                //       AllChainsByKeys[series.name]?.colors[
+                //         theme ?? "dark"
+                //       ][0],
+                //     ],
+                //     // [0.33, AllChainsByKeys[series.name].colors[1]],
+                //     [
+                //       1,
+                //       AllChainsByKeys[series.name]?.colors[
+                //         theme ?? "dark"
+                //       ][1],
+                //     ],
+                //   ],
+                // },
+              }
               : series.name === "all_l2s"
-              ? {
+                ? {
                   borderColor: "transparent",
                   shadow: "none",
                   // shadow: {
@@ -1501,7 +1509,7 @@ export default function ComparisonChart({
                   //         ],
                   // },
                 }
-              : {
+                : {
                   borderColor: "transparent",
                   shadow: "none",
                   // shadow: {
@@ -1674,8 +1682,8 @@ export default function ComparisonChart({
       monthly_agg && selectedTimeInterval === "monthly"
         ? monthly_agg
         : rolling_avg
-        ? "average"
-        : "sum";
+          ? "average"
+          : "sum";
 
     if (selectedTimeInterval === "monthly") {
       return `Monthly ${monthly_agg_labels[aggregation]}`;
@@ -1765,11 +1773,10 @@ export default function ComparisonChart({
                 Selected Chains
               </h2> */}
               <div
-                className={`absolute transition-[transform] hidden md:block duration-300 ease-in-out -z-10 top-0 left-[190px] sm:left-[300px] lg:left-0.5 pl-[40px] w-[200px] md:pl-[85px] md:w-[220px] lg:pl-[89px] lg:w-[149px] xl:w-[180px] xl:pl-[110px] ${
-                  monthly_agg && selectedTimeInterval === "monthly"
-                    ? "translate-y-[calc(-70%)]"
-                    : "translate-y-0 "
-                }`}
+                className={`absolute transition-[transform] hidden md:block duration-300 ease-in-out -z-10 top-0 left-[190px] sm:left-[300px] lg:left-0.5 pl-[40px] w-[200px] md:pl-[85px] md:w-[220px] lg:pl-[89px] lg:w-[149px] xl:w-[180px] xl:pl-[110px] ${monthly_agg && selectedTimeInterval === "monthly"
+                  ? "translate-y-[calc(-70%)]"
+                  : "translate-y-0 "
+                  }`}
               >
                 <div className="text-[0.65rem] md:text-xs font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-2xl border-t border-l border-r border-forest-700 dark:border-forest-400 text-center w-full pb-1 z-0">
                   {monthly_agg_labels[monthly_agg]}
@@ -1783,8 +1790,8 @@ export default function ComparisonChart({
                   onClick={() => {
                     if (selectedTimeInterval === interval) return;
 
-                    if (interval === "daily") setSelectedTimespan("180d");
-                    else setSelectedTimespan("12m");
+                    setSelectedTimespan(selectedTimespansByTimeInterval[interval]);
+
 
                     setSelectedTimeInterval(interval);
                     // setXAxis();
@@ -1884,11 +1891,10 @@ export default function ComparisonChart({
             )}
           </TopRowParent>
           <div
-            className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[117px] sm:w-[162px] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${
-              avg && ["365d", "max"].includes(selectedTimespan)
-                ? "translate-y-[calc(-80%)]"
-                : "translate-y-0 "
-            }`}
+            className={`absolute transition-[transform] duration-300 ease-in-out -z-10 top-0 right-0 pr-[15px] w-[117px] sm:w-[162px] md:w-[175px] lg:pr-[23px] lg:w-[168px] xl:w-[198px] xl:pr-[26px] ${avg && ["365d", "max"].includes(selectedTimespan)
+              ? "translate-y-[calc(-80%)]"
+              : "translate-y-0 "
+              }`}
           >
             <div className="text-[0.65rem] md:text-xs font-medium bg-forest-100 dark:bg-forest-1000 rounded-t-2xl border-t border-l border-r border-forest-700 dark:border-forest-400 text-center w-full pb-1 z-0 ">
               <span className="hidden md:block">7-day rolling average</span>
@@ -2028,11 +2034,10 @@ export default function ComparisonChart({
               <div className="flex justify-center items-center pl-0 md:pl-0 w-full md:w-auto">
                 <div className="flex justify-between md:justify-center items-center  space-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
                   <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${
-                      "absolute" === selectedScale
-                        ? "bg-forest-500 dark:bg-forest-1000"
-                        : "hover:enabled:bg-forest-500/10"
-                    }`}
+                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"absolute" === selectedScale
+                      ? "bg-forest-500 dark:bg-forest-1000"
+                      : "hover:enabled:bg-forest-500/10"
+                      }`}
                     onClick={() => {
                       setSelectedScale("absolute");
                     }}
@@ -2043,11 +2048,10 @@ export default function ComparisonChart({
                     <>
                       <button
                         disabled={metric_id === "txcosts"}
-                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${
-                          "stacked" === selectedScale
-                            ? "bg-forest-500 dark:bg-forest-1000"
-                            : "hover:enabled:bg-forest-500/10"
-                        }`}
+                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"stacked" === selectedScale
+                          ? "bg-forest-500 dark:bg-forest-1000"
+                          : "hover:enabled:bg-forest-500/10"
+                          }`}
                         onClick={() => {
                           setSelectedScale("stacked");
                         }}
@@ -2056,11 +2060,10 @@ export default function ComparisonChart({
                       </button>
 
                       <button
-                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${
-                          "percentage" === selectedScale
-                            ? "bg-forest-500 dark:bg-forest-1000"
-                            : "hover:enabled:bg-forest-500/10"
-                        }`}
+                        className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium disabled:opacity-30 ${"percentage" === selectedScale
+                          ? "bg-forest-500 dark:bg-forest-1000"
+                          : "hover:enabled:bg-forest-500/10"
+                          }`}
                         onClick={() => {
                           setSelectedScale("percentage");
                         }}
@@ -2108,11 +2111,10 @@ export default function ComparisonChart({
               <div className="flex justify-center items-center pl-0 md:pl-0 w-full md:w-auto">
                 <div className="flex justify-between md:justify-center items-center  space-x-[4px] md:space-x-1 mr-0 md:mr-2.5 w-full md:w-auto ">
                   <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
-                      "absolute" === selectedScale
-                        ? "bg-forest-500 dark:bg-forest-1000"
-                        : "hover:bg-forest-500/10"
-                    }`}
+                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"absolute" === selectedScale
+                      ? "bg-forest-500 dark:bg-forest-1000"
+                      : "hover:bg-forest-500/10"
+                      }`}
                     onClick={() => {
                       setSelectedScale("absolute");
                     }}
@@ -2120,11 +2122,10 @@ export default function ComparisonChart({
                     Absolute
                   </button>
                   <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
-                      "stacked" === selectedScale
-                        ? "bg-forest-500 dark:bg-forest-1000"
-                        : "hover:bg-forest-500/10"
-                    }`}
+                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"stacked" === selectedScale
+                      ? "bg-forest-500 dark:bg-forest-1000"
+                      : "hover:bg-forest-500/10"
+                      }`}
                     onClick={() => {
                       setSelectedScale("stacked");
                     }}
@@ -2132,11 +2133,10 @@ export default function ComparisonChart({
                     Stacked
                   </button>
                   <button
-                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${
-                      "percentage" === selectedScale
-                        ? "bg-forest-500 dark:bg-forest-1000"
-                        : "hover:bg-forest-500/10"
-                    }`}
+                    className={`rounded-full z-10 px-[16px] py-[6px] w-full md:w-auto text-sm md:text-base  lg:px-4 lg:py-1 lg:text-base xl:px-4 xl:py-1 xl:text-base font-medium  ${"percentage" === selectedScale
+                      ? "bg-forest-500 dark:bg-forest-1000"
+                      : "hover:bg-forest-500/10"
+                      }`}
                     onClick={() => {
                       setSelectedScale("percentage");
                     }}
