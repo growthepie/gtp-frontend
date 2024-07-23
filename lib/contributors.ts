@@ -49,13 +49,13 @@ export const Contributors = [
     twitter: "https://twitter.com/naderfyi",
     linkedin: "https://www.linkedin.com/in/naderfyi/",
   },
-  // {
-  //   name: "Martin Green",
-  //   image: "",
-  //   role: "",
-  //   twitter: "",
-  //   linkedin: "",
-  // },
+  {
+    name: "EthWave",
+    image: "/contributors/ethwave.png",
+    role: "",
+    twitter: "https://twitter.com/truewavebreak",
+    linkedin: "",
+  },
   {
     name: "Chris Keshian",
     image: "/contributors/chris.png",
@@ -66,13 +66,6 @@ export const Contributors = [
 ];
 
 export const Datasources = [
-  // {
-  //   name: "Zetta Block",
-  //   image: "/contributors/zettablock-logo.png",
-  //   width: 228,
-  //   height: 33,
-  //   url: "https://www.zettablock.com",
-  // },
   {
     name: "Dune",
     image: "/contributors/dune-logo.svg",
@@ -94,28 +87,6 @@ export const Datasources = [
     height: 51,
     url: "https://l2beat.com/scaling/tvl",
   },
-  // {
-  //   name: "Chainbase",
-  //   image: "/contributors/chainbase-logo.png",
-  //   width: 222,
-  //   height: 32,
-  //   url: "https://chainbase.com/",
-  // },
-
-  // {
-  //   name: "Immutable",
-  //   image: "/contributors/immutable-logo.svg",
-  //   width: 206,
-  //   height: 52,
-  //   url: "https://www.immutable.com/",
-  // },
-  // {
-  //   name: "Flipside Crypto",
-  //   image: "/contributors/flipside-logo.png",
-  //   width: 200,
-  //   height: 30,
-  //   url: "https://flipsidecrypto.xyz",
-  // },
 ];
 
 export const Supporters = [

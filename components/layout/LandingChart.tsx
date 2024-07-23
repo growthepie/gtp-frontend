@@ -544,7 +544,7 @@ export default function LandingChart({
   //   if (embedData.src !== BASE_URL + "/embed/user-base")
   //     setEmbedData(prevEmbedData => ({
   //       ...prevEmbedData,
-  //       title: "Layer 2 Weekly Activity - growthepie",
+  //       title: "Layer 2 Weekly Engagement - growthepie",
   //       src: BASE_URL + "/embed/user-base",
   //     }));
   // }, [embedData]);
@@ -1005,7 +1005,7 @@ export default function LandingChart({
 
     setEmbedData((prevEmbedData) => ({
       ...prevEmbedData,
-      title: "Layer 2 Weekly Activity - growthepie",
+      title: "Layer 2 Weekly Engagement - growthepie",
       src: src,
       zoomed: zoomed,
       timeframe: zoomed ? "absolute" : embedData.timeframe,
