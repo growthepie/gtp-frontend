@@ -77,7 +77,6 @@ export default function Search() {
         | number
         | { owner_project: string; owner_project_clear: string },
     ) => {
-      console.log(key, value);
       if (key === "owner_project" && typeof value !== "string" && typeof value !== "number" && typeof key === "string") {
         setLabelsFilters({
           ...labelsFilters,

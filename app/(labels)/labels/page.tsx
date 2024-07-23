@@ -561,7 +561,7 @@ export default function LabelsPage() {
 
   // find the min and max of the current metric
   const SparklineTimestampRange = useMemo(() => {
-    if (!parquetSparklineData) return [0, 0];
+    if (!sparklineLabelsData) return [0, 0];
 
     // parquetSparklineData[
     //   `${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address
@@ -571,10 +571,10 @@ export default function LabelsPage() {
     let min = Infinity;
     let max = -Infinity;
 
-    console.log("parquetSparklineData", Object.entries(parquetSparklineData)[0]);
-    Object.keys(parquetSparklineData).forEach((key) => {
-      const data = parquetSparklineData[key];
-      const timestamps = data.map((row) => row.unix);
+    Object.keys(sparklineLabelsData.data).forEach((key) => {
+      if (key === "types") return;
+      const data = sparklineLabelsData.data[key].sparkline;
+      const timestamps = data.map((row) => row[sparklineLabelsData.data.types.indexOf("unix")]);
 
       min = Math.min(min, ...timestamps);
       max = Math.max(max, ...timestamps);
@@ -582,7 +582,7 @@ export default function LabelsPage() {
 
     return [min, max];
 
-  }, [parquetSparklineData]);
+  }, [sparklineLabelsData]);
 
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
@@ -1455,7 +1455,7 @@ export default function LabelsPage() {
                               }
                             />
                           </CanvasSparklineProvider> */}
-                          <SVGSparklineProvider
+                          {/* <SVGSparklineProvider
                             key={`${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address}`}
                             isDBLoading={isDBLoading}
                             minUnix={SparklineTimestampRange[0]}
@@ -1464,6 +1464,33 @@ export default function LabelsPage() {
                               `${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address
                               }`
                             ].map((d) => [d.unix, d[currentMetric]]) : []}
+                            change={
+                              filteredLabelsData[item.index][
+                              `${currentMetric}_change`
+                              ]
+                            }
+                            value={
+                              filteredLabelsData[item.index][currentMetric]
+                            }
+                            valueType={
+                              currentMetric
+                            }
+                          >
+                            <LabelsSVGSparkline chainKey={filteredLabelsData[item.index].origin_key} />
+                          </SVGSparklineProvider> */}
+
+                          <SVGSparklineProvider
+                            key={`${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address}`}
+                            isDBLoading={false}
+                            minUnix={SparklineTimestampRange[0]}
+                            maxUnix={SparklineTimestampRange[1]}
+                            data={sparklineLabelsData && sparklineLabelsData.data[
+                              `${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address
+                              }`
+                            ] ? sparklineLabelsData.data[
+                              `${filteredLabelsData[item.index].origin_key}_${filteredLabelsData[item.index].address
+                              }`
+                            ].sparkline.map((d) => [d[sparklineLabelsData.data.types.indexOf("unix")], d[sparklineLabelsData.data.types.indexOf(currentMetric)]]) : []}
                             change={
                               filteredLabelsData[item.index][
                               `${currentMetric}_change`

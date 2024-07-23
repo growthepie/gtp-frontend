@@ -37,7 +37,7 @@ export default function Header() {
             <div className="flex justify-between items-start h-full relative w-full left-1 ">
               <Link href="/" className="flex gap-x-1">
                 <Image
-                  src="/logo_labels_full.png"
+                  src="/logo_labels_full.svg"
                   alt="Forest"
                   className="hidden dark:block"
                   width={isMobile ? 288 : 206}

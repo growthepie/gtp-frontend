@@ -54,7 +54,6 @@ export default function LabelsTableContainer(
     if (contentAreaRef.current) {
       const scrollableWidth = contentAreaWidth - windowWidth;
       const scrollLeft = windowHorizontalScroll;
-      console.log(scrollLeft, scrollableWidth);
       setHorizontalScrollPercentage((scrollLeft / scrollableWidth) * 100);
       setCanScrollLeft(scrollLeft > 0);
       setCanScrollRight(scrollLeft < scrollableWidth);
