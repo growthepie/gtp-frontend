@@ -40,8 +40,6 @@ export default function HorizontalScrollContainer({
     useElementSizeObserver<HTMLDivElement>();
   const grabberRef = useRef<HTMLDivElement>(null);
 
-  console.log(contentSrollAreaWidth, scrollerWidth, contentWidth);
-
   const updateScrollableAreaScroll = useCallback(() => {
     const contentArea = contentSrollAreaRef.current;
     if (contentArea) {

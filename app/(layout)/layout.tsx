@@ -127,21 +127,21 @@ const raleway = Raleway({
   subsets: ["latin"],
   variable: "--font-raleway",
   display: "swap",
-  adjustFontFallback: false
+  adjustFontFallback: false,
 });
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
-  adjustFontFallback: false
+  adjustFontFallback: false,
 });
 
 const robotoMono = Roboto_Mono({
   subsets: ["latin"],
   variable: "--font-roboto-mono",
   display: "swap",
-  adjustFontFallback: false
+  adjustFontFallback: false,
 });
 
 export default function RootLayout({
@@ -163,6 +163,9 @@ export default function RootLayout({
       lang="en"
       className={`${raleway.variable} ${inter.variable} ${robotoMono.variable}`}
       suppressHydrationWarning
+      style={{
+        fontFeatureSettings: "'pnum' on, 'lnum' on",
+      }}
     >
       <Head />
       <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden overflow-y-scroll">
