@@ -2,38 +2,51 @@
 import Link from "next/link";
 import { track } from "@vercel/analytics";
 import Container from "@/components/layout/Container";
+import { useUIContext } from "@/contexts/UIContext";
+import Search from "./Search";
+import FloatingBar from "./FloatingBar";
+import LabelsContainer from "@/components/layout/LabelsContainer";
 
 export default function Footer() {
+  const { isMobile } = useUIContext();
   return (
-    <div className="fixed flex flex-col justify-end  left-0 right-0 bottom-0 h-[120px] overflow-hidden"
-
-    >
+    <div className="fixed z-50 flex flex-col justify-end top-0 left-0 right-0 bottom-0 overflow-hidden pointer-events-none">
       <div className="relative">
-        <div className="bg-[#151a19] -z-10 fixed inset-0 pointer-events-none" style={{ backgroundPosition: "bottom", maskImage: `linear-gradient(to top, white 0, white 80px, transparent 120px`, }}>
+        <div
+          className="bg-[#151a19] -z-10 fixed inset-0 pointer-events-none"
+          style={{
+            backgroundPosition: "bottom",
+            maskImage: isMobile ? `linear-gradient(to top, white 0, white 170px, transparent 215px` : `linear-gradient(to top, white 0, white 80px, transparent 120px`,
+          }}
+        >
           <div className="background-gradient-group">
             <div className="background-gradient-yellow"></div>
             <div className="background-gradient-green"></div>
           </div>
         </div>
       </div>
+      <LabelsContainer className={`absolute bottom-[130px] w-full block z-[60]`}>
+        {isMobile && <FloatingBar />}
+      </LabelsContainer>
       <Container className={"w-full mx-auto bottom-0"}>
-
-        <Container className={`!px-0 flex items-center justify-start w-full pb-[37px] z-[10]`}>
-          <div className="px-[15px]">
-            <div className="flex gap-x-[15px] items-center text-[10px] text-[#CDD8D3] dark:text-[#CDD8D3]">
-              <Link href="/privacy-policy" className="underline" passHref target="_blank" rel="noopener" aria-label="Privacy Policy" onClick={() => track("click", { location: "footer", link: "privacy-policy" })}>
-                Privacy Policy
-              </Link>
-              <Link href="/imprint" className="underline" passHref target="_blank" rel="noopener" aria-label="Imprint" onClick={() => track("click", { location: "footer", link: "imprint" })}>
-                Imprint
-              </Link>
-              <Link href="https://discord.com/channels/1070991734139531294/1095735245678067753" className="underline" passHref target="_blank" rel="noopener" aria-label="Feedback" onClick={() => track("click", { location: "footer", link: "feedback" })}>
-                Feedback
-              </Link>
+        <Container className={`!px-0 flex items-center justify-start w-full pb-[20px] md:pb-[37px] z-[10]`}>
+          <div className="flex justify-center md:justify-start px-[15px] w-full">
+            <div className="flex flex-col md:flex-row gap-x-[15px] gap-y-[10px] items-center text-[10px] text-[#CDD8D3] dark:text-[#CDD8D3]">
+              <div className="flex gap-x-[15px] items-center text-[10px] text-[#CDD8D3] dark:text-[#CDD8D3]">
+                <Link href="/privacy-policy" className="underline" passHref target="_blank" rel="noopener" aria-label="Privacy Policy" onClick={() => track("click", { location: "footer", link: "privacy-policy" })}>
+                  Privacy Policy
+                </Link>
+                <Link href="/imprint" className="underline" passHref target="_blank" rel="noopener" aria-label="Imprint" onClick={() => track("click", { location: "footer", link: "imprint" })}>
+                  Imprint
+                </Link>
+                <Link href="https://discord.com/channels/1070991734139531294/1095735245678067753" className="underline" passHref target="_blank" rel="noopener" aria-label="Feedback" onClick={() => track("click", { location: "footer", link: "feedback" })}>
+                  Feedback
+                </Link>
+              </div>
               <div className="">
                 © {new Date().getFullYear()} growthepie 🥧📏
               </div>
-              <Link href="https://github.com/openlabelsinitiative/OLI" passHref target="_blank" rel="noopener" aria-label="Feedback" onClick={() => track("click", { location: "footer", link: "feedback" })} className="flex text-[8px] gap-x-1">
+              <Link href="https://github.com/openlabelsinitiative/OLI" passHref target="_blank" rel="noopener" aria-label="Feedback" onClick={() => track("click", { location: "footer", link: "feedback" })} className="flex text-[8px] gap-x-1 items-center">
                 powered by
                 <OLIIcon />
               </Link>

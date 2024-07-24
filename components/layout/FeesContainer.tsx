@@ -10,11 +10,11 @@ type ContainerProps = {
 
 export default React.forwardRef(function Container(
   { children, className = "", passedRef, style }: ContainerProps,
-  ref: React.Ref<HTMLDivElement>
+  ref: React.Ref<HTMLDivElement>,
 ) {
   return (
     <div
-      className={`px-[20px] md:px-[40px] ${className}`}
+      className={`w-full mx-auto px-[20px] md:px-[50px] ${className}`}
       ref={ref}
       style={style}
     >

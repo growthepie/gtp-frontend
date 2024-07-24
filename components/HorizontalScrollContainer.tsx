@@ -244,7 +244,17 @@ export default function HorizontalScrollContainer({
   }, [showLeftGradient, showRightGradient]);
 
   return (
-    <div className={`w-full px-0 overflow-x-hidden ${className}`}>
+    <div className={`relative w-full px-0 overflow-x-hidden ${className}`}>
+      <div
+        className={`transition-all duration-300 ${
+          showScroller && showLeftGradient ? "opacity-100" : "opacity-0"
+        } z-10 absolute top-0 bottom-0 -left-[58px] w-[125px] bg-[linear-gradient(-90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none`}
+      ></div>
+      <div
+        className={`transition-all duration-300 ${
+          showScroller && showRightGradient ? "opacity-100" : "opacity-0"
+        } z-10 absolute top-0 bottom-0 -right-[58px] w-[125px] bg-[linear-gradient(90deg,#00000000_0%,#161C1BEE_76%)] pointer-events-none`}
+      ></div>
       <div className="overflow-x-visible">
         <div
           className={`${

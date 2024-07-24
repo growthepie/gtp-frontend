@@ -8,7 +8,8 @@ export default function Head() {
 
   return (
     <>
-      <link rel="preload" href={MasterURL} as="fetch" crossOrigin="anonymous" />
+      {/* removing this preload to try to fix cache issue */}
+      {/* <link rel="preload" href={MasterURL} as="fetch" crossOrigin="anonymous" /> */}
       <link
         rel="apple-touch-icon"
         sizes="180x180"

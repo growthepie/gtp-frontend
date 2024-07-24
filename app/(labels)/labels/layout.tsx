@@ -1,19 +1,13 @@
-import "../globals.css";
-import { Analytics } from "@vercel/analytics/react";
-import { Providers } from "../providers";
+import { Providers } from "../../providers";
 import CookieConsent from "@/components/layout/CookieConsent";
 import { Raleway, Inter, Roboto_Mono } from "next/font/google";
-import SidebarContainer from "@/components/layout/SidebarContainer";
 import { Metadata } from "next";
 import { Graph } from "schema-dts";
-import BottomBanner from "@/components/BottomBanner";
-import Backgrounds from "@/components/layout/Backgrounds";
-import "../background.css";
-import Share from "@/components/Share";
-import Icon from "@/components/layout/Icon";
-import FeesContainer from "@/components/layout/FeesContainer";
-import Head from "../(layout)/head";
+import Head from "../../(layout)/head";
 import DeveloperTools from "@/components/development/DeveloperTools";
+import "../../background.css";
+import "../../globals.css";
+import { MasterProvider } from "@/contexts/Master";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",
@@ -69,8 +63,10 @@ const jsonLd: Graph = {
 // const jsonLd = [jsonLdOrg, jsonLdWebSite];
 export const viewport = {
   width: "device-width",
+  minimumScale: "1.0",
+  maximumScale: "1.0",
   initialScale: "1.0",
-  themeColor: "dark",
+  themeColor: "#1F2726",
 };
 
 const gtpMain = {
@@ -83,50 +79,38 @@ const gtpMain = {
     "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
 };
 
-const gtpFees = {
+const gtpLabels = {
   title: {
-    absolute: "Ethereum Layer 2 Fees - growthepie",
+    absolute: "Ethereum Layer 2 Labels - growthepie",
     template: "%s - growthepie",
   },
   description:
-    "Fee analytics by the minute for Ethereum L2s — median transaction fees, native / ETH transfer fees, token swap fees, and more...",
+    "Labels for Ethereum Layer 2 solutions - growthepie. A comprehensive list of labels for Ethereum Layer 2 solutions.",
 };
-const isFees = true;
 
-const host = isFees ? "fees.growthepie.xyz" : "www.growthepie.xyz";
+const isLabels =
+  process.env.NEXT_PUBLIC_VERCEL_URL &&
+  process.env.NEXT_PUBLIC_VERCEL_URL.includes("labels.");
 
-const title = isFees ? gtpFees.title : gtpMain.title;
-const description = isFees ? gtpFees.description : gtpMain.description;
+const host = isLabels ? "labels.growthepie.xyz" : "www.growthepie.xyz";
+
+const title = isLabels ? gtpLabels.title : gtpMain.title;
+const description = isLabels ? gtpLabels.description : gtpMain.description;
 
 export const metadata: Metadata = {
   metadataBase: new URL(`https://${host}`),
   title,
   description,
-  icons: {
-    icon: "/feesfavi.ico", // /public path
-  },
   openGraph: {
     title: "growthepie",
     description: "Growing Ethereum’s Ecosystem Together",
     url: `https://${host}`,
     images: [
       {
-        url: `https://${host}/gtp_fees_og.png`,
+        url: `https://${host}/gtp_og.png`,
         width: 1200,
-        height: 630,
+        height: 627,
         alt: "growthepie.xyz",
-      },
-      {
-        url: `https://${host}/logo_fees_full.png`,
-        width: 772,
-        height: 181,
-        alt: "growthepie.xyz",
-      },
-      {
-        url: `https://${host}/logo_pie_only.png`,
-        width: 168,
-        height: 181,
-        alt: "growthepie",
       },
     ],
     locale: "en_US",
@@ -140,7 +124,7 @@ export const metadata: Metadata = {
     siteId: "1636391104689094656",
     creator: "@growthepie_eth",
     creatorId: "1636391104689094656",
-    images: [`https://${host}/gtp_fees_og.png`],
+    images: [`https://${host}/gtp_og.png`],
   },
   robots: {
     index: true,
@@ -188,48 +172,52 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <Head />
-
-      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden min-h-screen relative">
-        <div className="background-container !fixed">
-          <div className="background-gradient-group">
-            <div className="background-gradient-yellow"></div>
-            <div className="background-gradient-green"></div>
-          </div>
-        </div>
+      <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Providers forcedTheme="dark">
-          <main className="relative z-10 select-none min-w-0 max-w-fit mx-auto">
-            {children}
-          </main>
-
-          <div className="z-50 flex fixed inset-0 w-full justify-center pointer-events-none select-none">
-            <div className="flex flex-col items-center justify-end min-h-screen w-full">
-              <FeesContainer className="hidden md:flex max-w-[650px] md:min-w-[650px] md:max-w-[750px] pb-[20px] justify-end">
-                <div className="pointer-events-auto">
-                  <div className="hidden sm:flex relative gap-x-[15px] z-50 p-[5px] bg-forest-500 dark:bg-[#344240] rounded-full shadow-[0px_0px_50px_0px_#00000033] dark:shadow-[0px_0px_50px_0px_#000000]">
-                    <Share />
-                  </div>
+          <MasterProvider>
+            <main className="font-raleway relative flex-1 w-full mx-auto min-h-screen select-none">
+              <div className="background-container !fixed">
+                <div className="background-gradient-group">
+                  <div className="background-gradient-yellow"></div>
+                  <div className="background-gradient-green"></div>
                 </div>
-              </FeesContainer>
+              </div>
+              {/* <LabelsProviders> */}
+              {/* <DuckDBProvider
+                parquetFiles={[
+                  LabelsParquetURLS.full,
+                  LabelsParquetURLS.projects,
+                  LabelsParquetURLS.sparkline,
+                ]}
+              >
+                
+              </DuckDBProvider> */}
+              {children}
+              {/* </LabelsProviders> */}
+            </main>
+          </MasterProvider>
+          {/* <div className="flex h-fit w-full justify-center">
+            <div className="flex w-full min-h-screen overflow-y-visible">
+              <div className="flex flex-col flex-1 overflow-y-clip z-10 overflow-x-clip relative min-h-full bg-white dark:bg-inherit">
+                <div className="w-full mx-auto relative min-h-full">
+                  <main className="relative flex-1 w-full mx-auto z-10 min-h-screen select-none">
+                    {children}
+                  </main>
+                </div>
+              </div>
+              <div className="z-50 flex fixed inset-0 w-full justify-end pointer-events-none select-none">
+                <div className="flex flex-col justify-end w-full max-w-[650px] md:max-w-full mx-auto min-h-screen"></div>
+              </div>
             </div>
-          </div>
-          {/* {process.env.NEXT_PUBLIC_VERCEL_ENV === "development" && (
-            <div className="fixed bottom-0 left-0 z-50 bg-white dark:bg-black text-xs px-1 py-0.5">
-              <div className="block sm:hidden">{"< sm"}</div>
-              <div className="hidden sm:block md:hidden">{"sm"}</div>
-              <div className="hidden md:block lg:hidden">{"md"}</div>
-              <div className="hidden lg:block xl:hidden">{"lg"}</div>
-              <div className="hidden xl:block 2xl:hidden">{"xl"}</div>
-              <div className="hidden 2xl:block">{"2xl"}</div>
-            </div>
-          )} */}
-          {/* <DeveloperTools /> */}
+          </div> */}
+          <DeveloperTools />
           <CookieConsent />
         </Providers>
       </body>
-    </html>
+    </html >
   );
 }
