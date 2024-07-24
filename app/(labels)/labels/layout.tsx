@@ -76,7 +76,7 @@ export const viewport = {
   minimumScale: "1.0",
   maximumScale: "1.0",
   initialScale: "1.0",
-  themeColor: "dark",
+  themeColor: "#1F2726",
 };
 
 const gtpMain = {
