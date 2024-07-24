@@ -48,6 +48,7 @@ export default function SVGSparkline({ chainKey }: SVGSparklineProps) {
     useSVGSparkline();
 
   const [adjustedData, setAdjustedData] = useState<[number, number | null][]>([]);
+  const [isTouching, setIsTouching] = useState(false);
 
   // fill any missing data points with null values for the sparkline
   useEffect(() => {
@@ -159,13 +160,59 @@ export default function SVGSparkline({ chainKey }: SVGSparklineProps) {
     setHoverDataPoint(null);
   }, [setHoverDataPoint]);
 
+  const handleTouchEnd = useCallback(() => {
+    setIsTouching(false);
+    setHoveredIndex(null);
+    setHoverDataPoint(null);
+  }, [setHoverDataPoint]);
+
+  const handleTouch = useCallback((touch: React.Touch) => {
+    const svg = touch.target as SVGSVGElement;
+    const rect = svg.getBoundingClientRect();
+    let x = touch.clientX - rect.left - PADDING;
+
+    x = Math.max(0, Math.min(x, DRAW_WIDTH));
+
+    const dataIndex = Math.round((x / DRAW_WIDTH) * (adjustedData.length - 1));
+    const closestPoint = adjustedData[dataIndex];
+
+    if (!closestPoint || closestPoint[1] === null) {
+      setHoveredIndex(null);
+      setHoverDataPoint(null);
+      return;
+    }
+
+    setHoveredIndex(dataIndex);
+    setHoverDataPoint(closestPoint);
+  }, [adjustedData, setHoverDataPoint]);
+
+
+  const handleTouchStart = useCallback((e: React.TouchEvent<SVGSVGElement>) => {
+    // e.preventDefault();
+    setIsTouching(true);
+    handleTouch(e.touches[0]);
+  }, [handleTouch]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent<SVGSVGElement>) => {
+    // e.preventDefault();
+    if (isTouching) {
+      handleTouch(e.touches[0]);
+    }
+  }, [handleTouch, isTouching]);
+
+
   return (
-    <div className="relative -top-[4px]" style={{ width: SVG_WIDTH, height: SVG_HEIGHT }}>
+    <div className="relative -top-[4px]" style={{ width: SVG_WIDTH, height: SVG_HEIGHT }} >
       <svg
+        className="touch-none"
         width={SVG_WIDTH}
         height={SVG_HEIGHT}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+
       >
         {gradientDefs}
         <g transform={`translate(${PADDING}, ${PADDING})`}>
