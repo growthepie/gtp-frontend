@@ -1,22 +1,12 @@
-import { Analytics } from "@vercel/analytics/react";
 import { Providers } from "../../providers";
 import CookieConsent from "@/components/layout/CookieConsent";
 import { Raleway, Inter, Roboto_Mono } from "next/font/google";
-import SidebarContainer from "@/components/layout/SidebarContainer";
 import { Metadata } from "next";
 import { Graph } from "schema-dts";
-import BottomBanner from "@/components/BottomBanner";
-import Backgrounds from "@/components/layout/Backgrounds";
-import Share from "@/components/Share";
-import Icon from "@/components/layout/Icon";
-import LabelsContainer from "@/components/layout/LabelsContainer";
 import Head from "../../(layout)/head";
 import DeveloperTools from "@/components/development/DeveloperTools";
-import LabelsProviders from "../LabelsProviders";
 import "../../background.css";
 import "../../globals.css";
-import { LabelsParquetURLS } from "@/lib/urls";
-import { DuckDBProvider } from "../SparklineParquetContext";
 import { MasterProvider } from "@/contexts/Master";
 
 const jsonLd: Graph = {

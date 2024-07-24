@@ -7,21 +7,11 @@ import { MasterResponse } from "@/types/api/MasterResponse";
 import { AllChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
 import { useSessionStorage } from "usehooks-ts";
 import useDragScroll from "@/hooks/useDragScroll";
-import { useProjectData } from "../useProjectData";
 import { update } from "lodash";
 import { useUIContext } from "@/contexts/UIContext";
 
 export default function Search() {
   const { isMobile } = useUIContext();
-  const {
-    data: filteredLabelsData,
-    isLoading,
-    error,
-    filters,
-    sort,
-    updateFilters,
-    updateSort,
-  } = useProjectData();
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -163,6 +153,7 @@ export default function Search() {
         rightIcon="heroicons-solid:x-circle"
         rightIconColor="#FE5468"
         showLabel={true}
+        altColoring={isOpen}
       />
     ));
 
@@ -176,6 +167,7 @@ export default function Search() {
         rightIcon="heroicons-solid:x-circle"
         rightIconColor="#FE5468"
         showLabel={isOpen}
+        altColoring={isOpen}
       />
     ));
 
@@ -189,6 +181,7 @@ export default function Search() {
         rightIcon="heroicons-solid:x-circle"
         rightIconColor="#FE5468"
         showLabel={true}
+        altColoring={isOpen}
       />
     ));
 
@@ -202,6 +195,7 @@ export default function Search() {
         rightIcon="heroicons-solid:x-circle"
         rightIconColor="#FE5468"
         showLabel={true}
+        altColoring={isOpen}
       />
     ));
 
@@ -216,6 +210,7 @@ export default function Search() {
           rightIcon="heroicons-solid:x-circle"
           rightIconColor="#FE5468"
           showLabel={true}
+          altColoring={isOpen}
         />
       ),
     );
@@ -230,6 +225,7 @@ export default function Search() {
         rightIcon="heroicons-solid:x-circle"
         rightIconColor="#FE5468"
         showLabel={true}
+        altColoring={isOpen}
       />
     ));
 
@@ -313,83 +309,104 @@ export default function Search() {
         className={`absolute -bottom-[22px] md:bottom-auto md:-top-[22px] ${isOpen ? "-left-[50px] -right-[50px] md:left-0 md:right-0" : "left-0 right-0"} transition-all duration-300`}
         onClick={() => setIsOpen(true)}
       >
-        <div className="w-full max-w-full">
-          <div className="relative w-full min-h-[44px] z-10 flex items-center bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px]">
-            <div
-              className={`relative flex justify-center ${isOpen ? "w-[24px] h-[24px]" : "w-[24px] h-[24px]"
-                }`}
-            >
-              <div
-                className={`absolute top-0 left-[10px] ${isOpen ? "opacity-0" : "opacity-100 delay-0"
-                  } transition-all duration-300`}
-              >
-                <SearchIcon />
-              </div>
-              <div
-                className={`absolute top-[4px] left-[16px] ${isOpen ? "opacity-100 delay-0" : "opacity-0"
-                  } transition-all duration-300`}
-              >
-                <Icon
-                  icon="feather:chevron-down"
-                  className="w-[16px] h-[16px]"
-                />
+        <div className="flex items-center w-full min-h-[44px]">
+          <div className="absolute flex items-center w-full bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px] min-h-[44px] z-[1]" />
+          {/* <div className="relative w-full min-h-[44px] z-10 flex items-center bg-[#1F2726] gap-x-[10px] rounded-[22px] pr-[10px]"> */}
+          <div className="absolute inset-0 z-[2] flex items-center w-full">
+            <div className={`relative flex justify-center items-center pl-[10px]`}>
+              {isOpen ? (
+                <div className="flex items-center justify-center w-[24px] h-[24px]">
+                  <Icon
+                    icon="feather:chevron-down"
+                    className="w-[16px] h-[16px]"
+                  />
+                </div>
+              ) : <SearchIcon />}
+            </div>
+            <input
+              ref={inputRef}
+              className={`${isOpen ? "flex-1" : Filters.length > 0 ? "w-[63px]" : "flex-1"} pl-[11px] h-full bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none`}
+              placeholder="Search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+
+            <div className={`flex items-center justify-between pr-[10px] gap-x-[10px] ${isOpen ? "" : "w-[calc(100%-63px-34px)]"}`}>
+              {(!isOpen && Filters.length > 0) ? (
+                <>
+                  <div className="pl-[10px]">
+                    <div className="w-[6px] h-[6px] bg-[#344240] rounded-full" />
+                  </div>
+                  <FilterSelectionContainer className="w-full">
+                    {Filters}
+                  </FilterSelectionContainer>
+                </>
+              ) : <div />}
+              <div className={`${isOpen ? "flex" : "hidden md:flex"} justify-end items-center gap-x-[10px] shrink-0 overflow-clip whitespace-nowrap transition-all duration-300`}>
+                {Filters.length > 0 && (
+                  <div className={`flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full`}>
+                    <div className="text-[8px] text-[#CDD8D3] font-medium">
+                      {labelsNumberFiltered.toLocaleString("en-GB")} contracts
+                    </div>
+                  </div>
+                )}
+                {Object.values(labelsFilters).flat().length > 0 && (
+                  <div
+                    className="flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
+                    onClick={() =>
+                      setLabelsFilters({
+                        address: [],
+                        origin_key: [],
+                        name: [],
+                        owner_project: [],
+                        category: [],
+                        subcategory: [],
+                        txcount: [],
+                        txcount_change: [],
+                        gas_fees_usd: [],
+                        gas_fees_usd_change: [],
+                        daa: [],
+                        daa_change: [],
+                      })
+                    }
+                  >
+                    <svg width="27" height="26" viewBox="0 0 27 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="1" y="1" width="25" height="24" rx="12" stroke="url(#paint0_linear_8794_34411)" />
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M17.7435 17.2426C18.8688 16.1174 19.5009 14.5913 19.5009 13C19.5009 11.4087 18.8688 9.88258 17.7435 8.75736C16.6183 7.63214 15.0922 7 13.5009 7C11.9096 7 10.3835 7.63214 9.25827 8.75736C8.13305 9.88258 7.50091 11.4087 7.50091 13C7.50091 14.5913 8.13305 16.1174 9.25827 17.2426C10.3835 18.3679 11.9096 19 13.5009 19C15.0922 19 16.6183 18.3679 17.7435 17.2426V17.2426ZM12.4402 10.8787C12.2996 10.738 12.1088 10.659 11.9099 10.659C11.711 10.659 11.5202 10.738 11.3796 10.8787C11.2389 11.0193 11.1599 11.2101 11.1599 11.409C11.1599 11.6079 11.2389 11.7987 11.3796 11.9393L12.4402 13L11.3796 14.0607C11.2389 14.2013 11.1599 14.3921 11.1599 14.591C11.1599 14.7899 11.2389 14.9807 11.3796 15.1213C11.5202 15.262 11.711 15.341 11.9099 15.341C12.1088 15.341 12.2996 15.262 12.4402 15.1213L13.5009 14.0607L14.5616 15.1213C14.7022 15.262 14.893 15.341 15.0919 15.341C15.2908 15.341 15.4816 15.262 15.6222 15.1213C15.7629 14.9807 15.8419 14.7899 15.8419 14.591C15.8419 14.3921 15.7629 14.2013 15.6222 14.0607L14.5616 13L15.6222 11.9393C15.7629 11.7987 15.8419 11.6079 15.8419 11.409C15.8419 11.2101 15.7629 11.0193 15.6222 10.8787C15.4816 10.738 15.2908 10.659 15.0919 10.659C14.893 10.659 14.7022 10.738 14.5616 10.8787L13.5009 11.9393L12.4402 10.8787Z" fill="#CDD8D3" />
+                      <defs>
+                        <linearGradient id="paint0_linear_8794_34411" x1="13.5" y1="1" x2="29.4518" y2="24.361" gradientUnits="userSpaceOnUse">
+                          <stop stop-color="#FE5468" />
+                          <stop offset="1" stop-color="#FFDF27" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                  </div>
+                )}
               </div>
             </div>
-            <div className="flex items-center justify-between gap-x-[10px] flex-1 pl-[10px] md:pl-0">
-              {Filters.length > 0 && (
-                <div
-                  className={`flex flex-shrink gap-x-[10px] items-center pl-[15px] py-[10px] gap-y-[5px] max-w-[400px] ${isOpen ? "flex-wrap " : ""
-                    }`}
-                >
-                  {isOpen ? (
-                    Filters
-                  ) : (
-                    <div className="flex gap-x-[10px] items-center">
-                      {isMobile && (
-                        <>
-                          <div className="flex gap-x-[10px] items-center">
-                            {Filters.slice(0, 1)}{" "}
-                          </div>
-                          {Filters.length > 1 && (
-                            <div className="flex gap-x-[4px] items-center">
-                              <div className="flex items-center text-[0.6rem] text-[#CDD8D399] font-medium rounded-full bg-[#344240] px-[6px] h-[25px] leading-tight whitespace-nowrap">
-                                {" "}
-                                +{Filters.length - 1} more
-                              </div>
-                              {/* <div className='text-xs text-[#5A6462] font-bold'>more</div> */}
-                            </div>
-                          )}</>
-                      )}
-                      {!isMobile && (
-                        <>
-                          <div className="flex gap-x-[10px] items-center">
-                            {Filters.slice(0, 2)}{" "}
-                          </div>
-                          {Filters.length > 2 && (
-                            <div className="flex gap-x-[4px] items-center">
-                              <div className="flex items-center text-sm text-[#CDD8D399] font-medium rounded-full bg-[#344240] px-[6px] h-[25px] leading-tight whitespace-nowrap">
-                                {" "}
-                                +{Filters.length - 2} more
-                              </div>
-                              {/* <div className='text-xs text-[#5A6462] font-bold'>more</div> */}
-                            </div>
-                          )}</>
-                      )}
-
-                    </div>
-                  )}
-                </div>
-              )}
-              <div className={`flex items-center justify-between gap-x-[10px] flex-1 grow-1 shrink-1 pl-[10px] md:pl-0`}>
+          </div>
+          {/* <div className="flex items-center justify-between gap-x-[10px] flex-1 pl-[10px] md:pl-0 z-[2]">
+            <div className={`flex w-full items-center gap-x-[10px] pl-[10px] md:pl-0`}>
+              <div className={`${isOpen ? "w-full" : "w-[120px]"}`}>
                 <input
                   ref={inputRef}
-                  className="px-[0px] md:px-[11px] h-full min-w-[30px] flex-1 bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none"
+                  className={`pl-[11px] h-full bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none`}
                   placeholder="Search"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
-                <div className={`${isOpen ? "max-w-[250px]" : "max-w-0 md:max-w-fit"} flex items-center gap-x-[10px] shrink-0 overflow-clip whitespace-nowrap transition-all duration-300`}>
-                  {labelsNumberFiltered && (
+              </div>
+              <div className="flex justify-between gap-x-[10px] basis-[calc(100%-120px)]">
+
+                {!isOpen && Filters.length > 0 && (
+                  <div className="w-[calc(100%-230px)]">
+                    <FilterSelectionContainer className="w-full">
+                      {Filters}
+                    </FilterSelectionContainer>
+                  </div>
+                )}
+                <div className={`flex justify-end items-center gap-x-[10px] shrink-0 overflow-clip whitespace-nowrap transition-all duration-300`}>
+                  {Filters.length > 0 && (
                     <div className={`flex items-center px-[15px] h-[24px] border border-[#CDD8D3] rounded-full`}>
                       <div className="text-[8px] text-[#CDD8D3] font-medium">
                         {labelsNumberFiltered.toLocaleString("en-GB")} contracts
@@ -398,7 +415,7 @@ export default function Search() {
                   )}
                   {Object.values(labelsFilters).flat().length > 0 && (
                     <div
-                      className="flex items-center justify-center cursor-pointer w-[27px] h-[26px]"
+                      className="flex flex-1 items-center justify-center cursor-pointer w-[27px] h-[26px]"
                       onClick={() =>
                         setLabelsFilters({
                           address: [],
@@ -431,13 +448,31 @@ export default function Search() {
                 </div>
               </div>
             </div>
-          </div>
+
+          </div> */}
+          {/* </div> */}
           <div
-            className={`absolute rounded-t-[22px] md:rounded-t-none md:rounded-b-[22px] bg-[#151A19] left-0 right-0 bottom-[calc(100%-22px)] md:bottom-auto md:top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] transition-all duration-300 ${isOpen ? "max-h-[600px]" : "max-h-0"
+            className={`z-[0] absolute flex flex-col-reverse md:flex-col rounded-t-[22px] md:rounded-t-none md:rounded-b-[22px] bg-[#151A19] left-0 right-0 bottom-[calc(100%-22px)] md:bottom-auto md:top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] transition-all duration-300 ${isOpen ? "max-h-[650px]" : "max-h-0"
               } overflow-hidden overflow-y-auto lg:overflow-y-hidden scrollbar-thin scrollbar-thumb-forest-700 scrollbar-track-transparent`}
           >
-            <div className="flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[35px] pt-[15px] md:pb-[15px] md:pt-[35px] gap-y-[10px] text-[10px]">
-              <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
+            <div className="flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[25px] pt-[5px] md:pb-[5px] md:pt-[25px] gap-y-[10px] text-[10px] bg-[#344240] z-[1]">
+              <div className="flex flex-col md:flex-row h-[50px] md:h-[25px] gap-x-[10px] gap-y-[10px] items-start md:items-center z-[50]">
+                <div className="flex gap-x-[10px] items-center">
+                  <div className="w-[15px] h-[15px]">
+                    <Icon
+                      icon="feather:check"
+                      className="w-[15px] h-[15px]"
+                    />
+                  </div>
+                  <div className="text-white leading-[150%] whitespace-nowrap">Active Filter(s)</div>
+                </div>
+                <FilterSelectionContainer className="w-full">
+                  {Filters}
+                </FilterSelectionContainer>
+              </div>
+            </div>
+            <div className="flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[10px] pt-[10px] gap-y-[10px] text-[10px]">
+              <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start md:items-center">
                 <div className="flex gap-x-[10px] items-center">
                   <div className="w-[15px] h-[15px]">
                     <Icon
@@ -470,7 +505,7 @@ export default function Search() {
                 </div>
               </div>
 
-              <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
+              <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start md:items-center">
                 <div className="flex gap-x-[10px] items-center">
                   <div className="w-[15px] h-[15px]">
                     <Icon
@@ -549,7 +584,7 @@ export default function Search() {
                   <div className="flex items-center justify-center w-[15px] h-[15px]"><Icon icon="heroicons-solid:plus-circle" className='text-[#5A6462] w-[15px] h-[15px]' /></div>
                 </div>
               </div> */}
-              <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
+              <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start md:items-center">
                 <div className="flex gap-x-[10px] items-start">
                   <div className="w-[15px] h-[15px] mt-1">
                     <Icon icon="feather:tag" className="w-[15px] h-[15px]" />
@@ -860,6 +895,7 @@ type BadgeProps = {
   size?: "sm" | "base";
   className?: string;
   showLabel?: boolean;
+  altColoring?: boolean;
 };
 export const Badge = ({
   onClick,
@@ -872,11 +908,12 @@ export const Badge = ({
   size = "base",
   className,
   showLabel = true,
+  altColoring = false,
 }: BadgeProps) => {
   if (size === "sm")
     return (
       <div
-        className={`flex items-center bg-[#344240] text-[10px] rounded-full pl-[5px] pr-[2px] py-[3px] gap-x-[4px] cursor-pointer max-w-full ${className}`}
+        className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] rounded-full pl-[5px] pr-[2px] py-[3px] gap-x-[4px] cursor-pointer max-w-full ${className}`}
         onClick={onClick}
       >
         {leftIcon ? (
@@ -906,7 +943,7 @@ export const Badge = ({
 
   return (
     <div
-      className={`flex items-center bg-[#344240] text-[10px] rounded-full pl-[2px] pr-[5px] gap-x-[5px] cursor-pointer ${className}`}
+      className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] rounded-full pl-[2px] pr-[5px] gap-x-[5px] cursor-pointer ${className}`}
       onClick={onClick}
     >
       {leftIcon ? (
