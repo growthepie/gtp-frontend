@@ -73,6 +73,8 @@ const jsonLd: Graph = {
 // const jsonLd = [jsonLdOrg, jsonLdWebSite];
 export const viewport = {
   width: "device-width",
+  minimumScale: "1.0",
+  maximumScale: "1.0",
   initialScale: "1.0",
   themeColor: "dark",
 };
@@ -195,15 +197,16 @@ export default function RootLayout({
           <MasterProvider>
             <main className="relative flex-1 w-full mx-auto min-h-screen select-none">
               {/* <LabelsProviders> */}
-              <DuckDBProvider
+              {/* <DuckDBProvider
                 parquetFiles={[
                   LabelsParquetURLS.full,
                   LabelsParquetURLS.projects,
                   LabelsParquetURLS.sparkline,
                 ]}
               >
-                {children}
-              </DuckDBProvider>
+                
+              </DuckDBProvider> */}
+              {children}
               {/* </LabelsProviders> */}
             </main>
           </MasterProvider>

@@ -32,10 +32,10 @@ import { AddIcon, Badge, RemoveIcon } from "./Search";
 import { formatNumber } from "@/lib/chartUtils";
 import { CanvasSparklineProvider, useCanvasSparkline } from "./CanvasSparkline";
 import { Table } from "apache-arrow";
-import wasmInit, { wasmMemory, readParquet } from "parquet-wasm";
+// import wasmInit, { wasmMemory, readParquet } from "parquet-wasm";
 import { parseTable } from "arrow-js-ffi";
 // import { useProjectData } from "../useProjectData";
-import { useDuckDB } from "../SparklineParquetContext";
+// import { useDuckDB } from "../SparklineParquetContext";
 import {
   Tooltip,
   TooltipContent,
@@ -197,12 +197,12 @@ export default function LabelsPage() {
     isValidating: sparklineLabelsValidating,
   } = useSWR<any>(quickLabelsData ? LabelsURLS.sparkline : null);
 
-  const {
-    db,
-    isLoading: isDBLoading,
-    error: dbError,
-    data: parquetSparklineData,
-  } = useDuckDB();
+  // const {
+  //   db,
+  //   isLoading: isDBLoading,
+  //   error: dbError,
+  //   data: parquetSparklineData,
+  // } = useDuckDB();
 
   const [currentMetric, setCurrentMetric] = useState(metricKeys[0]);
 
