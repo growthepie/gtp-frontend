@@ -78,7 +78,7 @@ function labelsMiddleware(useSWRNext) {
     return useSWRNext(key, extendedFetcher, config);
   };
 }
-const metricKeys = ["txcount", "gas_fees_usd", "daa"];
+const metricKeys = ["txcount", "gas_fees", "active_addresses"];
 const sparklineMetricKeys = ["txcount", "gas_fees", "active_addresses"];
 
 const metricKeysLabels = {
