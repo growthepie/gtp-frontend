@@ -13,7 +13,13 @@ import Search from "./Search";
 import { useUIContext } from "@/contexts/UIContext";
 import FloatingBar from "./FloatingBar";
 
-export default function Header() {
+export default function Header({
+  downloadCSV,
+  downloadJSON,
+}: {
+  downloadCSV: () => void;
+  downloadJSON: () => void;
+}) {
   const { isMobile } = useUIContext();
   return (
     <div className="fixed flex flex-col w-full z-50 items-center">
@@ -69,7 +75,7 @@ export default function Header() {
         </LabelsContainer> */}
       </header>
       <LabelsContainer className={`absolute top-[76px] w-full`}>
-        {!isMobile && <FloatingBar />}
+        {!isMobile && <FloatingBar downloadCSV={downloadCSV} downloadJSON={downloadJSON} />}
         {/* <div className="flex p-[5px] items-center w-full rounded-full mt-[16px] bg-[#344240]  shadow-[0px_0px_50px_0px_#000000] gap-x-[15px]">
           <Link
             className="flex items-center bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] gap"
