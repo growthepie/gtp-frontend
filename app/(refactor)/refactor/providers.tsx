@@ -6,7 +6,7 @@ import GTPIcons from "@/icons/gtp.json";
 import { UIContextProvider } from "@/contexts/UIContext";
 import { useLocalStorage } from "usehooks-ts";
 import { IS_PRODUCTION } from "@/lib/helpers";
-import { MasterProvider } from "@/contexts/Master";
+import { MasterProvider } from "./contexts/MasterContext";
 
 // load icons
 addCollection(GTPIcons);
