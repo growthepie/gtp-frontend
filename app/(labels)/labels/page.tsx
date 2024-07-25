@@ -626,11 +626,11 @@ export default function LabelsPage() {
       cols = ["15px", "200px", "180px", "180px", "120px", "120px", "minmax(125px,1600px)", "120px", "115px", "187px"]
     }
     else if (showDeploymentTx) {
-      cols["15px", "200px", "180px", "180px", "120px", "120px", "minmax(125px,1600px)", "120px", "187px"]
+      cols = ["15px", "200px", "180px", "180px", "120px", "120px", "minmax(125px,1600px)", "120px", "187px"]
     }
 
     else if (showDeployerAddress) {
-      ["15px", "200px", "180px", "180px", "120px", "120px", "minmax(125px,1600px)", "120px", "187px"]
+      cols = ["15px", "200px", "180px", "180px", "120px", "120px", "minmax(125px,1600px)", "120px", "187px"]
     }
 
 
