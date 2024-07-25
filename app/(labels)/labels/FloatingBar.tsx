@@ -13,6 +13,7 @@ import Search from "./Search";
 import { useUIContext } from "@/contexts/UIContext";
 import { HomeIcon, SettingsIcon, DownloadIcon } from "./Icons";
 import { useSessionStorage } from "usehooks-ts";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
 
 export default function FloatingBar({
   downloadCSV,
@@ -77,6 +78,10 @@ export default function FloatingBar({
                     <div
                       className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
                       onClick={() => {
+                        track("toggled Deployer Address", {
+                          location: isMobile ? "mobile labels menu bar" : "desktop labels menu bar",
+                          page: window.location.pathname,
+                        });
                         setShowDeployerAddress(!showDeployerAddress);
                       }}
                     >
@@ -115,6 +120,10 @@ export default function FloatingBar({
                     <div
                       className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
                       onClick={() => {
+                        track("toggled Deployment Tx", {
+                          location: isMobile ? "mobile labels menu bar" : "desktop labels menu bar",
+                          page: window.location.pathname,
+                        });
                         setShowDeploymentTx(!showDeploymentTx);
                       }}
                     >
@@ -150,39 +159,70 @@ export default function FloatingBar({
           </div>
         </div>
       </div>
-      <div className={`group relative w-fit z-50 ${labelsNumberFiltered > 0 && labelsNumberFiltered <= 200 ? "hidden md:block" : "hidden"}`}>
-        <div
-          className={`cursor-pointer xhidden xmd:flex ${labelsNumberFiltered > 0 && labelsNumberFiltered <= 200 ? "hidden md:flex" : "hidden "} items-center bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] pr-0 transition-all duration-300`}
-        >
-          <div className="w-6 h-6">
-            <DownloadIcon />
-          </div>
-          <div className="w-0 group-hover:w-[90px] overflow-hidden transition-all duration-300">
-            Download
-          </div>
-
-        </div>
-        <div className="relative max-h-0 w-0 group-hover:flex group-hover:w-[140px] group-hover:max-h-[200px] overflow-hidden transition-all duration-300" />
-        <div className={`absolute bottom-0 md:bottom-auto md:top-4 right-0 bg-[#151A19] rounded-t-2xl md:rounded-b-2xl transition-all duration-300 overflow-hidden shadow-[0px_4px_46.2px_0px_#000000] !w-[0px] max-h-0 group-hover:!w-[140px] group-hover:max-h-[180px] -z-10`}>
+      <div className={`group relative w-fit z-50 ${labelsNumberFiltered > 0 && labelsNumberFiltered <= 200 ? "hidden md:block" : "hidden md:block"}`}>
+        <Tooltip allowInteract={true}>
+          <TooltipTrigger className="w-full flex items-center justify-center">
+            <div className={`cursor-pointer w-full ${labelsNumberFiltered > 0 && labelsNumberFiltered <= 200 ? "hidden md:flex" : "hidden md:flex"} items-center justify-center bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] transition-all duration-300`}>
+              <div className={`w-6 h-6 grayscale opacity-50 ${labelsNumberFiltered > 0 && labelsNumberFiltered <= 200 ? "!opacity-100 !grayscale-0" : ""}`}>
+                <DownloadIcon />
+              </div>
+              {/* <div className={`w-0 ${labelsNumberFiltered > 0 && labelsNumberFiltered <= 200 && "group-hover:w-[96px]"} overflow-hidden transition-all duration-300`}>
+                Download
+              </div> */}
+            </div>
+          </TooltipTrigger>
+          {(labelsNumberFiltered === 0 || labelsNumberFiltered >= 200) && (
+            <TooltipContent className="p-[11px] text-xs bg-forest-1000 text-forest-900 dark:text-forest-100 rounded-xl shadow-lg flex flex-col z-[51]">
+              <div>To use the export functionality, please filter down to 200 records or less.</div>
+              <div className="">If you need access to more labels, reach out via our <Link
+                rel="noopener"
+                target="_blank"
+                href="https://discord.com/channels/1070991734139531294/1095735245678067753"
+                onClick={() => {
+                  track("clicked Discord link (tooltip)", {
+                    location: isMobile ? "mobile labels menu bar" : "desktop labels menu bar",
+                    page: window.location.pathname,
+                  });
+                }}
+                className="md:underline"
+              >Discord
+              </Link> for direct API access.</div>
+            </TooltipContent>
+          )}
+        </Tooltip>
+        <div className={`relative max-h-0 w-0 ${labelsNumberFiltered > 0 && labelsNumberFiltered <= 200 && "group-hover:flex group-hover:w-[90px] group-hover:max-h-[200px]"} overflow-hidden transition-all duration-300`} />
+        <div className={`absolute bottom-0 md:bottom-auto md:top-4 right-0 bg-[#151A19] rounded-t-2xl md:rounded-b-2xl transition-all duration-300 overflow-hidden shadow-[0px_4px_46.2px_0px_#000000] !w-[0px] max-h-0 ${labelsNumberFiltered > 0 && labelsNumberFiltered <= 200 && "group-hover:!w-[90px] group-hover:max-h-[180px]"} -z-10`}>
           <div className={`pb-[50px] pt-[0px] md:pt-[30px] md:pb-[20px] flex flex-col`}>
             <div className="flex flex-col w-full">
               <div className="flex items-center w-full">
-                <div className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full pl-[15px] pr-[15px]">
-                  <div className="font-normal text-forest-500/50 text-right">
+                <div className="flex flex-col gap-y-2 text-[12px] pt-[10px] w-full  text-right">
+                  <div className="font-normal text-forest-500/50 text-right px-3.5">
                     Format
                   </div>
-                  <div className="cursor-pointer flex gap-x-[10px] items-center w-full  whitespace-nowrap bg-forest-1000 rounded-md py-1 pl-3" onClick={() => {
+                  <div className="cursor-pointer whitespace-nowrap flex items-center gap-x-[10px] h-[32px] font-medium text-sm px-4 py-2 group-hover:w-full w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900" onClick={() => {
+                    track("clicked Download JSON", {
+                      location: isMobile ? "mobile labels menu bar" : "desktop labels menu bar",
+                      page: window.location.pathname,
+                    });
                     downloadJSON();
                   }}>
-                    <Icon icon="feather:download" className="w-[15px] h-[15px]" />
+                    <div className="w-[15px] h-[15px]">
+                      <Icon icon="feather:download" className="w-[15px] h-[15px]" />
+                    </div>
                     <div className="flex flex-1 items-center justify-end text-sm font-semibold">
                       JSON
                     </div>
                   </div>
-                  <div className="cursor-pointer flex gap-x-[10px] items-center w-full whitespace-nowrap bg-forest-1000 rounded-md py-1 pl-3" onClick={() => {
+                  <div className="cursor-pointer whitespace-nowrap flex items-center gap-x-[10px] h-[32px] font-medium text-sm px-4 py-2 group-hover:w-full w-0 transition-[width] duration-100 ease-in-out hover:bg-forest-50 dark:hover:bg-forest-900" onClick={() => {
+                    track("clicked Download CSV", {
+                      location: isMobile ? "mobile labels menu bar" : "desktop labels menu bar",
+                      page: window.location.pathname,
+                    });
                     downloadCSV();
                   }}>
-                    <Icon icon="feather:download" className="w-[15px] h-[15px]" />
+                    <div className="w-[15px] h-[15px]">
+                      <Icon icon="feather:download" className="w-[15px] h-[15px]" />
+                    </div>
                     <div className="flex flex-1 items-center justify-end text-sm font-semibold">
                       CSV
                     </div>
