@@ -214,7 +214,7 @@ export default function RootLayout({
               </div>
             </div>
           </div> */}
-          <DeveloperTools />
+          {/* <DeveloperTools /> */}
           <CookieConsent />
         </Providers>
       </body>
