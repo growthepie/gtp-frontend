@@ -6,13 +6,13 @@ export const IS_PRODUCTION =
 
 export const BASE_URLS = {
   development: `http://${process.env.NEXT_PUBLIC_VERCEL_URL}`,
-  preview: "https://dev.fees.growthepie.xyz",
-  production: `https://fees.growthepie.xyz`,
+  preview: "https://dev.labels.growthepie.xyz",
+  production: `https://labels.growthepie.xyz`,
 };
 
 export const BASE_URL =
   BASE_URLS[
-    process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL?.includes("dev-fees")
+    process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL?.includes("dev-labels")
       ? "preview"
       : "production"
   ];
