@@ -619,16 +619,20 @@ export default function LabelsPage() {
 
   const gridTemplateColumns = useMemo(() => {
 
-    const cols = ["15px", "minmax(200px,1600px)", "150px", "200px", "105px", "105px", "175px", "192px"];
+    let cols = ["15px", "200px", "180px", "180px", "120px", "120px", "minmax(125px,1600px)", "187px"];
 
 
-    if (showDeployerAddress) {
-      cols.splice(7, 0, "120px");
+    if (showDeploymentTx && showDeployerAddress) {
+      cols = ["15px", "200px", "180px", "180px", "120px", "120px", "minmax(125px,1600px)", "120px", "115px", "187px"]
+    }
+    else if (showDeploymentTx) {
+      cols["15px", "200px", "180px", "180px", "120px", "120px", "minmax(125px,1600px)", "120px", "187px"]
     }
 
-    if (showDeploymentTx) {
-      cols.splice(7, 0, "120px");
+    else if (showDeployerAddress) {
+      ["15px", "200px", "180px", "180px", "120px", "120px", "minmax(125px,1600px)", "120px", "187px"]
     }
+
 
     return cols.join(" ");
   }, [showDeployerAddress, showDeploymentTx]);
@@ -1227,135 +1231,47 @@ export default function LabelsPage() {
                       <div className="flex h-full items-center">
                         {filteredLabelsData[item.index].owner_project ? (
                           <div className="flex h-full items-center gap-x-[3px] max-w-full">
-                            <Tooltip placement="right" allowInteract>
-                              <TooltipTrigger>
-                                <Badge
-                                  size="sm"
-                                  label={
-                                    filteredLabelsData[item.index]
-                                      .owner_project_clear
-                                  }
-                                  leftIcon={null}
-                                  leftIconColor="#FFFFFF"
-                                  rightIcon={
-                                    labelsFilters.owner_project.find(
-                                      (f) =>
-                                        f.owner_project ===
-                                        filteredLabelsData[item.index]
-                                          .owner_project,
-                                    )
-                                      ? "heroicons-solid:x-circle"
-                                      : "heroicons-solid:plus-circle"
-                                  }
-                                  rightIconColor={
-                                    labelsFilters.owner_project.find(
-                                      (f) =>
-                                        f.owner_project ===
-                                        filteredLabelsData[item.index]
-                                          .owner_project,
-                                    )
-                                      ? "#FE5468"
-                                      : undefined
-                                  }
-                                  onClick={() =>
-                                    handleFilter("owner_project", {
-                                      owner_project:
-                                        filteredLabelsData[item.index]
-                                          .owner_project,
-                                      owner_project_clear:
-                                        filteredLabelsData[item.index]
-                                          .owner_project_clear,
-                                    })
-                                  }
-                                />
-                              </TooltipTrigger>
-                              {/* {ownerProjectToProjectData[
-                                filteredLabelsData[item.index].owner_project
-                              ] &&
-                                (ownerProjectToProjectData[
-                                  filteredLabelsData[item.index].owner_project
-                                ][2] ||
-                                  ownerProjectToProjectData[
-                                  filteredLabelsData[item.index].owner_project
-                                  ][4] ||
-                                  ownerProjectToProjectData[
-                                  filteredLabelsData[item.index].owner_project
-                                  ][5]) && (
-                                  <TooltipContent className="relativeflex flex-col items-start justify-center gap-y-[5px] rounded-[10px] p-2.5 bg-[#151a19] border border-[#5A6462] z-[19] max-w-[300px]">
-                                    <div className="absolute top-[calc(50%-4px)] -left-1 w-2 h-2 bg-[#151a19]  border-[#5A6462] border border-r-0 border-t-0 transform rotate-45"></div>
-                                    {ownerProjectToProjectData[
-                                      filteredLabelsData[item.index].owner_project
-                                    ][2] && (
-                                        <div className="flex items-center text-xs pb-1">{`${ownerProjectToProjectData[
-                                          filteredLabelsData[item.index]
-                                            .owner_project
-                                        ][2]
-                                          }`}</div>
-                                      )}
 
-                                    {ownerProjectToProjectData[
-                                      filteredLabelsData[item.index].owner_project
-                                    ][5] && (
-                                        <a
-                                          href={
-                                            ownerProjectToProjectData[
-                                            filteredLabelsData[item.index]
-                                              .owner_project
-                                            ][5]
-                                          }
-                                          target="_blank"
-                                          className="group flex items-center gap-x-[5px] text-xs"
-                                        >
-                                          <div className="w-[12px] h-[12px]">
-                                            <Icon
-                                              icon="feather:globe"
-                                              className="w-[12px] h-[12px]"
-                                            />
-                                          </div>
-                                          <div className="group-hover:underline">
-                                            {
-                                              ownerProjectToProjectData[
-                                              filteredLabelsData[item.index]
-                                                .owner_project
-                                              ][5]
-                                            }
-                                          </div>
-                                        </a>
-                                      )}
-                                    {ownerProjectToProjectData[
-                                      filteredLabelsData[item.index].owner_project
-                                    ][4] && (
-                                        <div className="flex items-center">
-                                          <a
-                                            href={
-                                              ownerProjectToProjectData[
-                                              filteredLabelsData[item.index]
-                                                .owner_project
-                                              ][4]
-                                            }
-                                            target="_blank"
-                                            className="group flex items-center gap-x-[5px] text-xs"
-                                          >
-                                            <div className="w-[12px] h-[12px]">
-                                              <Icon
-                                                icon="prime:twitter"
-                                                className="w-[12px] h-[12px]"
-                                              />
-                                            </div>
-                                            <div className="group-hover:underline">
-                                              {
-                                                ownerProjectToProjectData[
-                                                filteredLabelsData[item.index]
-                                                  .owner_project
-                                                ][4]
-                                              }
-                                            </div>
-                                          </a>
-                                        </div>
-                                      )}
-                                  </TooltipContent>
-                                )} */}
-                            </Tooltip>
+                            <Badge
+                              size="sm"
+                              label={
+                                filteredLabelsData[item.index]
+                                  .owner_project_clear
+                              }
+                              leftIcon={null}
+                              leftIconColor="#FFFFFF"
+                              rightIcon={
+                                labelsFilters.owner_project.find(
+                                  (f) =>
+                                    f.owner_project ===
+                                    filteredLabelsData[item.index]
+                                      .owner_project,
+                                )
+                                  ? "heroicons-solid:x-circle"
+                                  : "heroicons-solid:plus-circle"
+                              }
+                              rightIconColor={
+                                labelsFilters.owner_project.find(
+                                  (f) =>
+                                    f.owner_project ===
+                                    filteredLabelsData[item.index]
+                                      .owner_project,
+                                )
+                                  ? "#FE5468"
+                                  : undefined
+                              }
+                              onClick={() =>
+                                handleFilter("owner_project", {
+                                  owner_project:
+                                    filteredLabelsData[item.index]
+                                      .owner_project,
+                                  owner_project_clear:
+                                    filteredLabelsData[item.index]
+                                      .owner_project_clear,
+                                })
+                              }
+                            />
+
                           </div>
                         ) : (
                           <div className="flex h-full items-center gap-x-[3px] text-[#5A6462] text-[10px]">
