@@ -42,7 +42,7 @@ import {
   TooltipTrigger,
 } from "@/components/layout/Tooltip";
 import { uniqBy } from "lodash";
-import { useMaster } from "@/contexts/Master";
+import { useMaster } from "@/contexts/MasterContext";
 import { useUIContext } from "@/contexts/UIContext";
 import SVGSparkline, { SVGSparklineProvider, useSVGSparkline } from "./SVGSparkline";
 

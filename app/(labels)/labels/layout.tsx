@@ -7,7 +7,7 @@ import Head from "../../(layout)/head";
 import DeveloperTools from "@/components/development/DeveloperTools";
 import "../../background.css";
 import "../../globals.css";
-import { MasterProvider } from "@/contexts/Master";
+import { MasterProvider } from "@/contexts/MasterContext";
 
 const jsonLd: Graph = {
   "@context": "https://schema.org",

@@ -5,7 +5,7 @@ import Head from "../../(layout)/head";
 import "../../background.css";
 import "../../globals.css";
 import { Providers } from "./providers";
-import { MasterProvider } from "./contexts/Master";
+import { MasterProvider } from "./contexts/MasterContext";
 
 
 const jsonLd: Graph = {

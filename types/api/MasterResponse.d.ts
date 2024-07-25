@@ -25,22 +25,27 @@ export interface ChainInfo {
   website: string;
   twitter: string;
   block_explorer: string;
-  block_explorers: {
-    [key: string]: string;
-  };
+  block_explorers: BlockExplorers;
   rhino_listed: boolean;
   rhino_naming: string;
-  l2beat_stage: {
-    stage: string;
-    hex: string;
-  };
+  l2beat_stage: L2BeatStage;
   l2beat_link: string;
   raas: string;
-  stack: {
-    label: string;
-    url: string;
-  };
+  stack: Stack;
   enable_contracts: boolean;
+}
+
+export interface BlockExplorers {
+  [key: string]: string;
+}
+
+export interface L2BeatStage {
+  stage: string;
+  hex: string;
+}
+export interface Stack {
+  label: string;
+  url: string;
 }
 
 export interface Metrics {

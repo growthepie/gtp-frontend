@@ -1,5 +1,5 @@
 "use client";
-import { useMaster } from "./contexts/Master";
+import { useMaster } from "./contexts/MasterContext";
 
 export default function Page() {
   const { data, formatMetric } = useMaster();
