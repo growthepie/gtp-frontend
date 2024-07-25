@@ -1519,7 +1519,7 @@ export default function LabelsPage() {
                       </div>
                       {showDeploymentTx && (
                         <div
-                          className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px]"
+                          className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px] text-[11px]"
                           style={{
                             fontFeatureSettings: "'pnum' on, 'lnum' on",
                           }}
@@ -1561,7 +1561,7 @@ export default function LabelsPage() {
                       )}
                       {showDeployerAddress && (
                         <div
-                          className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px]"
+                          className="@container flex-1 flex h-full items-center hover:bg-transparent pr-[10px] text-[11px]"
                           style={{
                             fontFeatureSettings: "'pnum' on, 'lnum' on",
                           }}

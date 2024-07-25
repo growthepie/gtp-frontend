@@ -22,7 +22,7 @@ export default function Footer({
           className="bg-[#151a19] -z-10 fixed inset-0 pointer-events-none"
           style={{
             backgroundPosition: "bottom",
-            maskImage: isMobile ? `linear-gradient(to top, white 0, white 170px, transparent 215px` : `linear-gradient(to top, white 0, white 80px, transparent 120px`,
+            maskImage: isMobile ? `linear-gradient(to top, white 0, white 150px, transparent 215px` : `linear-gradient(to top, white 0, white 80px, transparent 120px`,
           }}
         >
           <div className="background-gradient-group">
@@ -31,10 +31,10 @@ export default function Footer({
           </div>
         </div>
       </div>
-      <LabelsContainer className={`absolute bottom-[130px] w-full block z-[60]`}>
+      <LabelsContainer className={`absolute bottom-[105px] w-full block z-[60]`}>
         {isMobile && <FloatingBar downloadCSV={downloadCSV} downloadJSON={downloadJSON} />}
       </LabelsContainer>
-      <Container className={"w-full mx-auto bottom-0"}>
+      <Container className={"w-full mx-auto bottom-0 pointer-events-auto"}>
         <Container className={`!px-0 flex items-center justify-start w-full pb-[20px] md:pb-[37px] z-[10]`}>
           <div className="flex justify-center md:justify-start px-[15px] w-full">
             <div className="flex flex-col md:flex-row gap-x-[15px] gap-y-[10px] items-center text-[10px] text-[#CDD8D3] dark:text-[#CDD8D3]">
