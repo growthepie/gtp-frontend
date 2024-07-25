@@ -1,4 +1,4 @@
-const baseUrl = "https://www.growthepie.xyz";
+const baseUrl = "https://labels.growthepie.xyz";
 
 // for www.growthepie.xyz & dev.growthepie.xyz
 const gtpMain = {
