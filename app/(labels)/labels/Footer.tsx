@@ -7,7 +7,13 @@ import Search from "./Search";
 import FloatingBar from "./FloatingBar";
 import LabelsContainer from "@/components/layout/LabelsContainer";
 
-export default function Footer() {
+export default function Footer({
+  downloadCSV,
+  downloadJSON,
+}: {
+  downloadCSV: () => void;
+  downloadJSON: () => void;
+}) {
   const { isMobile } = useUIContext();
   return (
     <div className="fixed z-50 flex flex-col justify-end top-0 left-0 right-0 bottom-0 overflow-hidden pointer-events-none">
@@ -26,7 +32,7 @@ export default function Footer() {
         </div>
       </div>
       <LabelsContainer className={`absolute bottom-[130px] w-full block z-[60]`}>
-        {isMobile && <FloatingBar />}
+        {isMobile && <FloatingBar downloadCSV={downloadCSV} downloadJSON={downloadJSON} />}
       </LabelsContainer>
       <Container className={"w-full mx-auto bottom-0"}>
         <Container className={`!px-0 flex items-center justify-start w-full pb-[20px] md:pb-[37px] z-[10]`}>

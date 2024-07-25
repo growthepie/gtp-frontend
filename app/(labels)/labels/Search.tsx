@@ -306,7 +306,7 @@ export default function Search() {
         }}
       />
       <div
-        className={`absolute -bottom-[22px] md:bottom-auto md:-top-[22px] ${isOpen ? "-left-[50px] -right-[50px] md:left-0 md:right-0" : "left-0 right-0"} transition-all duration-300`}
+        className={`absolute -bottom-[22px] md:bottom-auto md:-top-[22px] ${isOpen ? "-left-[50px] -right-[50px] md:left-0 md:right-0" : "left-0 right-0"} transition-all duration-300 `}
         onClick={() => setIsOpen(true)}
       >
         <div className="flex items-center w-full min-h-[44px]">
@@ -325,7 +325,7 @@ export default function Search() {
             </div>
             <input
               ref={inputRef}
-              className={`${isOpen ? "flex-1" : Filters.length > 0 ? "w-[63px]" : "flex-1"} pl-[11px] h-full bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none`}
+              className={`${isOpen ? "flex-1" : Filters.length > 0 ? "w-[63px]" : "flex-1"} pl-[11px] h-full bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none overflow-x-clip`}
               placeholder="Search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -455,8 +455,8 @@ export default function Search() {
             className={`z-[0] absolute flex flex-col-reverse md:flex-col rounded-t-[22px] md:rounded-t-none md:rounded-b-[22px] bg-[#151A19] left-0 right-0 bottom-[calc(100%-22px)] md:bottom-auto md:top-[calc(100%-22px)] shadow-[0px_0px_50px_0px_#000000] transition-all duration-300 ${isOpen ? "max-h-[650px]" : "max-h-0"
               } overflow-hidden overflow-y-auto lg:overflow-y-hidden scrollbar-thin scrollbar-thumb-forest-700 scrollbar-track-transparent`}
           >
-            <div className="flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[25px] pt-[5px] md:pb-[5px] md:pt-[25px] gap-y-[10px] text-[10px] bg-[#344240] z-[1]">
-              <div className="flex flex-col md:flex-row h-[50px] md:h-[25px] gap-x-[10px] gap-y-[10px] items-start md:items-center z-[50]">
+            <div className={`flex flex-col-reverse md:flex-col pl-[12px] pr-[25px] pb-[25px] pt-[5px] md:pb-[5px] md:pt-[25px] gap-y-[10px] text-[10px] bg-[#344240] z-[1] ${Filters.length > 0 ? "max-h-[100px]" : "max-h-[20px] opacity-0 !p-0"} transition-all duration-300 overflow-clip`}>
+              <div className="flex flex-col md:flex-row h-[50px] md:h-[30px] gap-x-[10px] gap-y-[10px] items-start md:items-center z-[50]">
                 <div className="flex gap-x-[10px] items-center">
                   <div className="w-[15px] h-[15px]">
                     <Icon
