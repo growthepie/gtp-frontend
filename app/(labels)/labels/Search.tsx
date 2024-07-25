@@ -148,7 +148,7 @@ export default function Search() {
         key={address}
         onClick={() => handleFilter("address", address)}
         label={address}
-        leftIcon="feather:tag"
+        leftIcon="heroicons-solid:qrcode"
         leftIconColor="#CDD8D3"
         rightIcon="heroicons-solid:x-circle"
         rightIconColor="#FE5468"
@@ -328,7 +328,18 @@ export default function Search() {
               className={`${isOpen ? "flex-1" : Filters.length > 0 ? "w-[63px]" : "flex-1"} pl-[11px] h-full bg-transparent text-white placeholder-[#CDD8D3] border-none outline-none overflow-x-clip`}
               placeholder="Search"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+
+                setSearch(e.target.value)
+              }}
+              onKeyUp={(e) => {
+                // if enter is pressed, add the search term to the address filters
+                if (e.key === "Enter" && search.length > 0) {
+                  handleFilter("address", search);
+                  setSearch("");
+                  e.preventDefault();
+                }
+              }}
             />
 
             <div className={`flex items-center justify-between pr-[10px] gap-x-[10px] ${isOpen ? "" : "w-[calc(100%-63px-34px)]"}`}>

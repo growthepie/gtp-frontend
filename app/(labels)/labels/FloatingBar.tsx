@@ -160,9 +160,9 @@ export default function FloatingBar({
           </div>
         </div>
       </div>
-      <div className={`group relative w-fit z-50 ${labelsNumberFiltered > 0 && labelsNumberFiltered <= 100 ? "hidden md:block" : "hidden"}`}>
+      <div className={`group relative w-fit z-50 ${labelsNumberFiltered > 0 && labelsNumberFiltered <= 200 ? "hidden md:block" : "hidden"}`}>
         <div
-          className={`cursor-pointer xhidden xmd:flex ${labelsNumberFiltered > 0 && labelsNumberFiltered <= 100 ? "hidden md:flex" : "hidden "} items-center bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] pr-0 transition-all duration-300`}
+          className={`cursor-pointer xhidden xmd:flex ${labelsNumberFiltered > 0 && labelsNumberFiltered <= 200 ? "hidden md:flex" : "hidden "} items-center bg-[#1F2726] gap-x-[10px] rounded-full p-[10px] pr-0 transition-all duration-300`}
         >
           <div className="w-6 h-6">
             <DownloadIcon />
