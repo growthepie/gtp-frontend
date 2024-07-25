@@ -52,7 +52,7 @@ export const Contributors = [
   {
     name: "EthWave",
     image: "/contributors/ethwave.png",
-    role: "",
+    role: "Intern",
     twitter: "https://twitter.com/truewavebreak",
     linkedin: "",
   },
