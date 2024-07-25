@@ -67,17 +67,12 @@ export default function FloatingBar({
                   <div className="font-normal text-forest-500/50 text-right">
                     Columns
                   </div>
-                  <div className="grid grid-cols-[110px,6px,auto] gap-x-[10px] items-center w-full  place-items-center whitespace-nowrap">
+                  <div className="grid grid-cols-[125px,6px,auto] gap-x-[10px] items-center w-full  place-items-center whitespace-nowrap">
                     <div className="flex flex-1 items-center place-self-end">
-                      {/* <Icon
-                        icon="feather:log-in"
-                        className={`h-[15px] w-[15px] font-[900] text-[#CDD8D3] relative text-sm`}
-                      /> */}
                       <div className="font-semibold text-right pl-[8px]">
-                        Deployment Tx
+                        Deployment Address
                       </div>
                     </div>
-                    {/* <div className="flex gap-x-[10px] items-center"> */}
                     <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
                     <div
                       className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
@@ -110,17 +105,12 @@ export default function FloatingBar({
                       </div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-[110px,6px,auto] gap-x-[10px] items-center w-full  place-items-center whitespace-nowrap">
+                  <div className="grid grid-cols-[125px,6px,auto] gap-x-[10px] items-center w-full  place-items-center whitespace-nowrap">
                     <div className="flex flex-1 items-center place-self-end">
-                      {/* <Icon
-                        icon="heroicons-solid:qrcode"
-                        className="w-[15px] h-[15px]"
-                      /> */}
                       <div className="font-semibold text-right pl-[8px]">
-                        Deployer Address
+                        Deployer Tx
                       </div>
                     </div>
-                    {/* <div className="flex gap-x-[10px] items-center"> */}
                     <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
                     <div
                       className="relative w-full h-[19px] rounded-full bg-[#CDD8D3] p-0.5 cursor-pointer text-[12px]"
