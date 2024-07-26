@@ -71,7 +71,7 @@ export default function FloatingBar({
                   <div className="grid grid-cols-[125px,6px,auto] gap-x-[10px] items-center w-full  place-items-center whitespace-nowrap">
                     <div className="flex flex-1 items-center place-self-end">
                       <div className="font-semibold text-right pl-[8px]">
-                        Deployment Address
+                        Deployer Address
                       </div>
                     </div>
                     <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />
@@ -113,7 +113,7 @@ export default function FloatingBar({
                   <div className="grid grid-cols-[125px,6px,auto] gap-x-[10px] items-center w-full  place-items-center whitespace-nowrap">
                     <div className="flex flex-1 items-center place-self-end">
                       <div className="font-semibold text-right pl-[8px]">
-                        Deployer Tx
+                        Deployment Tx
                       </div>
                     </div>
                     <div className="rounded-full w-[6px] h-[6px] bg-[#344240]" />

@@ -16,6 +16,7 @@ export interface Sort {
 export type Columns =
   | "address"
   | "origin_key"
+  | "chain_id"
   | "name"
   | "owner_project"
   | "owner_project_clear"
@@ -35,6 +36,7 @@ export type Datum = (string | number | null)[];
 export interface ParsedDatum {
   address: string;
   origin_key: string;
+  chain_id: string;
   name: string | null;
   owner_project: string | null;
   owner_project_clear: string | null;
@@ -86,6 +88,7 @@ export class LabelsResponseHelper {
     const [
       address,
       origin_key,
+      chain_id,
       name,
       owner_project,
       owner_project_clear,
@@ -102,6 +105,7 @@ export class LabelsResponseHelper {
     ] = [
       datum[this.typesIndexes.address],
       datum[this.typesIndexes.origin_key],
+      datum[this.typesIndexes.chain_id],
       datum[this.typesIndexes.name],
       datum[this.typesIndexes.owner_project],
       datum[this.typesIndexes.owner_project_clear],
@@ -120,6 +124,7 @@ export class LabelsResponseHelper {
     return {
       address: address as string,
       origin_key: origin_key as string,
+      chain_id: chain_id as string,
       name: name as string | null,
       owner_project: owner_project as string | null,
       owner_project_clear: owner_project_clear as string | null,

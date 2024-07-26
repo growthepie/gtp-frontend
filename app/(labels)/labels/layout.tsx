@@ -81,16 +81,14 @@ const gtpMain = {
 
 const gtpLabels = {
   title: {
-    absolute: "Ethereum Layer 2 Labels - growthepie",
+    absolute: "Labels - Ethereum L2 Smart Contracts - growthepie",
     template: "%s - growthepie",
   },
   description:
-    "Labels for Ethereum Layer 2 solutions - growthepie. A comprehensive list of labels for Ethereum Layer 2 solutions.",
+    "Discover and analyze Ethereum L2 smart contracts with Labels from growthepie. Explore project associations, categories, deployment details, and usage statistics. Search, filter, and gain insights into the Layer 2 ecosystems.",
 };
 
-const isLabels =
-  process.env.NEXT_PUBLIC_VERCEL_URL &&
-  process.env.NEXT_PUBLIC_VERCEL_URL.includes("labels.");
+const isLabels = true;
 
 const host = isLabels ? "labels.growthepie.xyz" : "www.growthepie.xyz";
 
@@ -101,6 +99,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(`https://${host}`),
   title,
   description,
+  icons: {
+    icon: "/labels.ico",
+  },
   openGraph: {
     title: "growthepie",
     description: "Growing Ethereum’s Ecosystem Together",

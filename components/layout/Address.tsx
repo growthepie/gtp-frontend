@@ -36,7 +36,7 @@ export default function Address({ address, shortenAddress }: AddressProps) {
   return (
     <div className="flex items-center gap-x-[5px] rounded-full px-[2px] pr-1 py-[1px] border border-forest-900/20 dark:border-forest-500/20 text-[10px] text-forest-900/50 dark:text-forest-500/50 hover:bg-forest-900/10 dark:hover:bg-forest-500/10 select-none">
       <div className="w-3.5 h-3.5">
-        <AddressIcon address={address} className="rounded-full" />
+        <AddressIdenticon address={address} className="rounded-full" />
       </div>
       <div className="font-medium font-mono">
         {shortenAddress
@@ -68,7 +68,8 @@ type AddressIconProps = {
   address: string;
   className?: string;
 };
-const AddressIcon = ({ address, className }: AddressIconProps) => {
+
+export const AddressIdenticon = ({ address, className }: AddressIconProps) => {
   const [icon, setIcon] = useState<HTMLCanvasElement | null>(null);
   // create a blockies icon asynchrounously
   useEffect(() => {

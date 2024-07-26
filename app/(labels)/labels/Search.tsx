@@ -109,6 +109,7 @@ export default function Search() {
     address: string[];
     origin_key: string[];
     name: string[];
+    deployer_address: string[];
     owner_project: { owner_project: string; owner_project_clear: string }[];
     category: string[];
     subcategory: string[];
@@ -116,6 +117,7 @@ export default function Search() {
     address: [],
     origin_key: [],
     name: [],
+    deployer_address: [],
     owner_project: [],
     category: [],
     subcategory: [],
@@ -141,6 +143,8 @@ export default function Search() {
   const [labelsOwnerProjects, setLabelsOwnerProjects] = useSessionStorage<
     { owner_project: string; owner_project_clear: string }[]
   >("labelsOwnerProjects", []);
+
+  const [labelsDeployerAddresses, setLabelsDeployerAddresses] = useSessionStorage<string[]>("labelsDeployerAddresses", []);
 
   const [labelsOwnerProjectClears, setLabelsOwnerProjectClears] =
     useSessionStorage<string[]>("labelsOwnerProjectClears", []);
@@ -216,7 +220,7 @@ export default function Search() {
           key={row.owner_project}
           onClick={(e) => { handleFilter("owner_project", row); e.stopPropagation(); }}
           label={row.owner_project_clear}
-          leftIcon="feather:tag"
+          leftIcon={"uil:layer-group"}
           leftIconColor="#CDD8D3"
           rightIcon="heroicons-solid:x-circle"
           rightIconColor="#FE5468"
@@ -246,10 +250,10 @@ export default function Search() {
       <Badge
         key={deployerAddress}
         truncateStyle="middle"
-        className="max-w-[105px]"
+        className="!max-w-[115px]"
         onClick={(e) => { handleFilter("deployer_address", deployerAddress); e.stopPropagation(); }}
         label={deployerAddress}
-        leftIcon={undefined}
+        leftIcon={"uil:layer-group"}
         leftIconColor="#CDD8D3"
         rightIcon="heroicons-solid:x-circle"
         rightIconColor="#FE5468"
@@ -281,18 +285,26 @@ export default function Search() {
   ]);
 
   useEffect(() => {
-    if (!master || labelsOwnerProjects.length === 0) return;
+    if (!master || labelsOwnerProjects.length === 0 || labelsDeployerAddresses.length === 0) return;
 
     if (search.length === 0) {
       setLabelsAutocomplete({
         address: [],
         name: [],
+        deployer_address: [],
         owner_project: [],
         category: [],
         subcategory: [],
         origin_key: [],
       });
       return;
+    }
+
+    if (!labelsAutocomplete.deployer_address) {
+      setLabelsAutocomplete({
+        ...labelsAutocomplete,
+        deployer_address: [],
+      });
     }
 
     const categoryAutocomplete = Object.keys(
@@ -315,16 +327,20 @@ export default function Search() {
     const ownerProjectAutocomplete = labelsOwnerProjects.filter((row) =>
       row.owner_project.toLowerCase().includes(search.toLowerCase()),
     );
+    const deployerAddressAutocomplete = labelsDeployerAddresses.filter((deployerAddress) =>
+      deployerAddress.toLowerCase().includes(search.toLowerCase()),
+    );
 
     setLabelsAutocomplete({
       address: [],
       name: [],
+      deployer_address: deployerAddressAutocomplete,
       owner_project: ownerProjectAutocomplete,
       category: categoryAutocomplete,
       subcategory: subcategoryAutocomplete,
       origin_key: chainAutocomplete,
     });
-  }, [labelsOwnerProjects, master, search, setLabelsAutocomplete]);
+  }, [labelsAutocomplete, labelsDeployerAddresses, labelsOwnerProjects, master, search, setLabelsAutocomplete]);
 
   return (
     <div className="relative w-full">
@@ -772,7 +788,7 @@ export default function Search() {
               <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
                 <div className="flex gap-x-[10px] items-start">
                   <div className="w-[15px] h-[15px] mt-1">
-                    <Icon icon="feather:tag" className="w-[15px] h-[15px]" />
+                    <Icon icon="uil:layer-group" className="w-[15px] h-[15px]" />
                   </div>
                   <div className="text-white leading-[150%] whitespace-nowrap mt-1">
                     Owner Project
@@ -795,7 +811,7 @@ export default function Search() {
                               )
                               : ownerProjectRow.owner_project_clear
                           }
-                          leftIcon="feather:tag"
+                          leftIcon={"uil:layer-group"}
                           leftIconColor="#CDD8D3"
                           rightIcon={
                             labelsFilters.owner_project.find(
@@ -826,7 +842,7 @@ export default function Search() {
                           handleFilter("owner_project", ownerProjectRow)
                         }
                         label={ownerProjectRow.owner_project_clear}
-                        leftIcon="feather:tag"
+                        leftIcon={"uil:layer-group"}
                         leftIconColor="#CDD8D3"
                         rightIcon={
                           labelsFilters.owner_project.find(
@@ -842,6 +858,84 @@ export default function Search() {
                             (f) =>
                               f.owner_project ===
                               ownerProjectRow.owner_project,
+                          )
+                            ? "#FE5468"
+                            : "#5A6462"
+                        }
+                        showLabel={true}
+                      />
+                    ))}
+                </FilterSelectionContainer>
+              </div>
+              <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
+                <div className="flex gap-x-[10px] items-start">
+                  <div className="w-[15px] h-[15px] mt-1">
+                    <Icon icon="material-symbols:deployed-code-account-rounded" className="w-[15px] h-[15px]" />
+                  </div>
+                  <div className="text-white leading-[150%] whitespace-nowrap mt-1">
+                    Deployer Address
+                  </div>
+                  <div className="w-[6px] h-[6px] bg-[#344240] rounded-full mt-2.5" />
+                </div>
+                <FilterSelectionContainer className="w-full md:flex-1">
+                  {search.length > 0
+                    ? labelsAutocomplete.deployer_address && labelsAutocomplete.deployer_address.map(
+                      (deployerAddress) => (
+                        <Badge
+                          key={deployerAddress}
+                          truncateStyle="middle"
+                          className="!max-w-[120px]"
+                          onClick={() =>
+                            handleFilter("deployer_address", deployerAddress)
+                          }
+                          label={
+                            labelsAutocomplete.deployer_address.length > 0
+                              ? boldSearch(
+                                deployerAddress,
+                              )
+                              : deployerAddress
+                          }
+                          leftIcon={"material-symbols:deployed-code-account-rounded"}
+                          leftIconColor="#CDD8D3"
+                          rightIcon={
+                            labelsFilters.deployer_address.includes(
+                              deployerAddress,
+                            )
+                              ? "heroicons-solid:x-circle"
+                              : "heroicons-solid:plus-circle"
+                          }
+                          rightIconColor={
+                            labelsFilters.deployer_address.includes(
+                              deployerAddress,
+                            )
+                              ? "#FE5468"
+                              : "#5A6462"
+                          }
+                          showLabel={true}
+                        />
+                      ),
+                    )
+                    : labelsDeployerAddresses.map((deployerAddress) => (
+                      <Badge
+                        key={deployerAddress}
+                        truncateStyle="middle"
+                        className="!max-w-[120px]"
+                        onClick={() =>
+                          handleFilter("deployer_address", deployerAddress)
+                        }
+                        label={deployerAddress}
+                        leftIcon={"material-symbols:deployed-code-account-rounded"}
+                        leftIconColor="#CDD8D3"
+                        rightIcon={
+                          labelsFilters.deployer_address.includes(
+                            deployerAddress,
+                          )
+                            ? "heroicons-solid:x-circle"
+                            : "heroicons-solid:plus-circle"
+                        }
+                        rightIconColor={
+                          labelsFilters.deployer_address.includes(
+                            deployerAddress,
                           )
                             ? "#FE5468"
                             : "#5A6462"
@@ -930,7 +1024,7 @@ const SearchIcon = () => (
 type BadgeProps = {
   onClick: (e: React.MouseEvent<HTMLDivElement>) => void;
   label: string | React.ReactNode;
-  leftIcon?: string;
+  leftIcon?: string | React.ReactNode;
   leftIconColor?: string;
   rightIcon: string;
   rightIconColor?: string;
@@ -960,14 +1054,14 @@ export const Badge = ({
 
   if (typeof label === "string") {
     labelSection = (
-      <div className="text-[#CDD8D3] leading-[120%] text-[10px] truncate">
+      <div className="flex items-center text-[#CDD8D3] text-[10px] truncate">
         {label}
       </div>
     );
 
     if (truncateStyle === "start") {
       labelSection = (
-        <div className="text-[#CDD8D3] leading-[120%] text-[10px] truncate" style={{
+        <div className="flex items-center text-[#CDD8D3] text-[10px] truncate" style={{
           direction: "rtl",
         }}>
           {label}
@@ -977,7 +1071,7 @@ export const Badge = ({
 
     if (truncateStyle === "middle") {
       labelSection = (
-        <div className="flex">
+        <div className="flex items-center text-[#CDD8D3] text-[10px] truncate">
           <div className="truncate">
             {label.slice(0, Math.floor(label.length / 2))}
           </div>
@@ -992,19 +1086,31 @@ export const Badge = ({
   if (size === "sm")
     return (
       <div
-        className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] rounded-full pl-[5px] pr-[2px] py-[3px] gap-x-[4px] cursor-pointer max-w-full ${className}`}
+        className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] h-[20px] rounded-full pl-[5px] pr-[2px] py-[3px] gap-x-[4px] cursor-pointer max-w-full ${className}`}
         onClick={onClick}
       >
-        {leftIcon ? (
+        {leftIcon ? typeof leftIcon === "string" ? (
+          <div className="flex items-center justify-center w-[12px] h-[12px]">
+            <Icon
+              icon={leftIcon}
+              className="text-[#CDD8D3] w-[12px] h-[12px]"
+              style={{
+                color: leftIconColor,
+              }}
+            />
+          </div>
+        ) : (
           <div className="flex items-center justify-center w-[12px] h-[12px]">
             {leftIcon}
           </div>
         ) : (
           <div className="w-[0px] h-[12px]" />
         )}
-        <div className="text-[#CDD8D3] leading-[120%] text-[10px] truncate">
-          {labelSection}
-        </div>
+        {showLabel && (
+          <div className="flex items-center text-[#CDD8D3] pr-0.5 truncate">
+            {labelSection}
+          </div>
+        )}
         <div
           className={`flex items-center justify-center ${rightIconSize == "sm" ? "pr-[3px]" : "w-[14px] h-[14px]"
             }`}
@@ -1022,11 +1128,11 @@ export const Badge = ({
 
   return (
     <div
-      className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] rounded-full pl-[2px] pr-[5px] gap-x-[5px] cursor-pointer max-w-full ${className}`}
+      className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} h-[25px] text-[10px] rounded-full pl-[2px] pr-[5px] gap-x-[5px] cursor-pointer max-w-full ${className}`}
       onClick={onClick}
     >
-      {leftIcon ? (
-        <div className="flex items-center justify-center w-[25px] h-[25px]">
+      {leftIcon ? typeof leftIcon === "string" ? (
+        <div className="flex items-center justify-center pl-[5px] h-[15px]">
           <Icon
             icon={leftIcon}
             className="text-[#CDD8D3] w-[15px] h-[15px]"
@@ -1036,10 +1142,14 @@ export const Badge = ({
           />
         </div>
       ) : (
+        <div className="flex items-center justify-center pl-[5px] h-[15px]">
+          {leftIcon}
+        </div>
+      ) : (
         <div className="w-[3px] h-[25px]" />
       )}
       {showLabel && (
-        <div className="text-[#CDD8D3] leading-[150%] pr-0.5 truncate">
+        <div className="flex items-center text-[#CDD8D3] pr-0.5 truncate">
           {labelSection}
         </div>
       )}
