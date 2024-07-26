@@ -276,6 +276,7 @@ export default function LabelsPage() {
     owner_project: { owner_project: string; owner_project_clear: string }[];
     category: string[];
     subcategory: string[];
+    deployer_address: string[];
     txcount: number[];
     txcount_change: number[];
     gas_fees_usd: number[];
@@ -289,6 +290,7 @@ export default function LabelsPage() {
     owner_project: [],
     category: [],
     subcategory: [],
+    deployer_address: [],
     txcount: [],
     txcount_change: [],
     gas_fees_usd: [],
@@ -400,6 +402,12 @@ export default function LabelsPage() {
             .includes(label.owner_project),
         );
       }
+    }
+
+    if (labelsFilters.deployer_address && labelsFilters.deployer_address.length > 0) {
+      rows = rows.filter((label) =>
+        labelsFilters.deployer_address.includes(label.deployer_address),
+      );
     }
 
     // sort
@@ -1492,7 +1500,30 @@ export default function LabelsPage() {
                         >
                           {filteredLabelsData[item.index].deployer_address && (
                             <>
-                              <div
+                              <Badge
+                                size="sm"
+                                truncateStyle="middle"
+                                label={filteredLabelsData[item.index].deployer_address}
+                                leftIcon={null}
+                                leftIconColor="#FFFFFF"
+                                rightIcon={
+                                  labelsFilters.deployer_address.includes(filteredLabelsData[item.index].deployer_address) ? "heroicons-solid:x-circle" : "heroicons-solid:plus-circle"
+                                }
+                                rightIconColor={
+                                  labelsFilters.deployer_address.includes(filteredLabelsData[item.index].deployer_address) ? "#FE5468" : undefined
+                                }
+                                onClick={(e) => { handleFilter("deployer_address", filteredLabelsData[item.index].deployer_address); e.stopPropagation(); }}
+                              />
+                              <div className="pl-[10px]">
+                                <Icon
+                                  icon={copiedAddress === filteredLabelsData[item.index].deployer_address ? "feather:check-circle" : "feather:copy"}
+                                  className="w-[14px] h-[14px] cursor-pointer"
+                                  onClick={() => {
+                                    handleCopyAddress(filteredLabelsData[item.index].deployer_address);
+                                  }}
+                                />
+                              </div>
+                              {/* <div
                                 className="truncate transition-all duration-300"
                                 style={{ direction: 'ltr' }}
                                 onClick={() => {
@@ -1512,7 +1543,7 @@ export default function LabelsPage() {
                                     handleCopyAddress(filteredLabelsData[item.index].deployer_address);
                                   }}
                                 />
-                              </div>
+                              </div> */}
                             </>
                           )}
                         </div>

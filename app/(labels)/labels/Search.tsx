@@ -38,6 +38,7 @@ export default function Search() {
     owner_project: { owner_project: string; owner_project_clear: string }[];
     category: string[];
     subcategory: string[];
+    deployer_address: string[];
     txcount: number[];
     txcount_change: number[];
     gas_fees_usd: number[];
@@ -51,6 +52,7 @@ export default function Search() {
     owner_project: [],
     category: [],
     subcategory: [],
+    deployer_address: [],
     txcount: [],
     txcount_change: [],
     gas_fees_usd: [],
@@ -58,6 +60,15 @@ export default function Search() {
     daa: [],
     daa_change: [],
   });
+
+  useEffect(() => {
+    if (!labelsFilters.deployer_address) {
+      setLabelsFilters({
+        ...labelsFilters,
+        deployer_address: [],
+      });
+    }
+  }, [labelsFilters, setLabelsFilters]);
 
   const handleFilter = useCallback(
     (
@@ -229,6 +240,24 @@ export default function Search() {
       />
     ));
 
+
+
+    const deployerAddressFilters = labelsFilters.deployer_address?.map((deployerAddress) => (
+      <Badge
+        key={deployerAddress}
+        truncateStyle="middle"
+        className="max-w-[105px]"
+        onClick={(e) => { handleFilter("deployer_address", deployerAddress); e.stopPropagation(); }}
+        label={deployerAddress}
+        leftIcon={undefined}
+        leftIconColor="#CDD8D3"
+        rightIcon="heroicons-solid:x-circle"
+        rightIconColor="#FE5468"
+        showLabel={true}
+        altColoring={isOpen}
+      />
+    )) || [];
+
     return [
       ...addressFilters,
       ...chainFilters,
@@ -236,6 +265,7 @@ export default function Search() {
       ...subcategoryFilters,
       ...ownerProjectFilters,
       ...nameFilters,
+      ...deployerAddressFilters,
     ];
   }, [
     handleFilter,
@@ -246,6 +276,7 @@ export default function Search() {
     labelsFilters.origin_key,
     labelsFilters.owner_project,
     labelsFilters.subcategory,
+    labelsFilters.deployer_address,
     master,
   ]);
 
@@ -372,6 +403,7 @@ export default function Search() {
                         owner_project: [],
                         category: [],
                         subcategory: [],
+                        deployer_address: [],
                         txcount: [],
                         txcount_change: [],
                         gas_fees_usd: [],
@@ -907,6 +939,7 @@ type BadgeProps = {
   className?: string;
   showLabel?: boolean;
   altColoring?: boolean;
+  truncateStyle?: "start" | "end" | "middle";
 };
 export const Badge = ({
   onClick,
@@ -920,7 +953,42 @@ export const Badge = ({
   className,
   showLabel = true,
   altColoring = false,
+  truncateStyle = "end",
 }: BadgeProps) => {
+
+  let labelSection = label;
+
+  if (typeof label === "string") {
+    labelSection = (
+      <div className="text-[#CDD8D3] leading-[120%] text-[10px] truncate">
+        {label}
+      </div>
+    );
+
+    if (truncateStyle === "start") {
+      labelSection = (
+        <div className="text-[#CDD8D3] leading-[120%] text-[10px] truncate" style={{
+          direction: "rtl",
+        }}>
+          {label}
+        </div>
+      );
+    }
+
+    if (truncateStyle === "middle") {
+      labelSection = (
+        <div className="flex">
+          <div className="truncate">
+            {label.slice(0, Math.floor(label.length / 2))}
+          </div>
+          <div className="">
+            {label.slice(-4)}
+          </div>
+        </div>
+      );
+    }
+  }
+
   if (size === "sm")
     return (
       <div
@@ -935,7 +1003,7 @@ export const Badge = ({
           <div className="w-[0px] h-[12px]" />
         )}
         <div className="text-[#CDD8D3] leading-[120%] text-[10px] truncate">
-          {label}
+          {labelSection}
         </div>
         <div
           className={`flex items-center justify-center ${rightIconSize == "sm" ? "pr-[3px]" : "w-[14px] h-[14px]"
@@ -954,7 +1022,7 @@ export const Badge = ({
 
   return (
     <div
-      className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] rounded-full pl-[2px] pr-[5px] gap-x-[5px] cursor-pointer ${className}`}
+      className={`flex items-center ${altColoring ? "bg-[#1F2726]" : "bg-[#344240]"} text-[10px] rounded-full pl-[2px] pr-[5px] gap-x-[5px] cursor-pointer max-w-full ${className}`}
       onClick={onClick}
     >
       {leftIcon ? (
@@ -972,7 +1040,7 @@ export const Badge = ({
       )}
       {showLabel && (
         <div className="text-[#CDD8D3] leading-[150%] pr-0.5 truncate">
-          {label}
+          {labelSection}
         </div>
       )}
       <div className="flex items-center justify-center w-[15px] h-[15px]">
@@ -1043,7 +1111,7 @@ export const FilterSelectionContainer = ({
   className,
 }: FilterSelectionContainerProps) => (
   <DraggableContainer
-    className={`flex gap-x-[10px] items-center justify-start h-full ${className} overflow-x-hidden`}
+    className={`touch-none flex gap-x-[10px] items-center justify-start h-full ${className} overflow-x-hidden`}
     direction="horizontal"
   >
     {children}
