@@ -30,15 +30,14 @@ export default function QuestionAnswer({
         <div className="flex w-[13px] h-[13px] items-center justify-center">
           <Icon
             icon="feather:arrow-right-circle"
-            className={`w-[13px] h-[13px] transform rotate-0 transition-transform duration-300 ${
-              open ? "rotate-90" : "rotate-0"
-            }`}
+            className={`w-[13px] h-[13px] transform rotate-0 transition-transform duration-300 ${open ? "rotate-90" : "rotate-0"
+              }`}
           />
         </div>
-        <div className="font-semibold text-sm leading-snug">{question}</div>
+        <div className="font-semibold text-[16px] leading-snug">{question}</div>
       </div>
       <div
-        className={`transition-height duration-300 overflow-hidden text-base`}
+        className={`transition-height duration-300 overflow-hidden text-[16px]`}
         style={{
           height: open ? height : 0,
         }}
@@ -47,14 +46,16 @@ export default function QuestionAnswer({
           {answer}
         </div>
       </div>
-      <div
-        className={`transition-height duration-300 overflow-hidden text-base`}
-        style={{
-          height: open ? 25 : 0,
-        }}
-      >
-        {note && <div className="pt-[10px]">{note}</div>}
-      </div>
+      {note && (
+        <div
+          className={`transition-height duration-300 overflow-hidden text-[16px]`}
+          style={{
+            height: open ? 25 : 0,
+          }}
+        >
+          <div className="pt-[10px]">{note}</div>
+        </div>
+      )}
     </div>
   );
 }

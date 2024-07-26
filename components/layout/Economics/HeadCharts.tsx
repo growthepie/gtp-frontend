@@ -194,18 +194,25 @@ export default function EconHeadCharts({
                   <div class="opacity-70 mr-0.5 ${
                     !prefix && "hidden"
                   }">${prefix}</div>
-                  <div>${
-                    isFees
-                      ? parseFloat(displayValue).toLocaleString("en-GB", {
-                          minimumFractionDigits: calculateDecimalPlaces(
-                            Number(displayValue),
-                          ),
-                          maximumFractionDigits: calculateDecimalPlaces(
-                            Number(displayValue),
-                          ),
-                        })
-                      : formatBytes(displayValue)
-                  }
+                  <div style={{
+                            fontFeatureSettings: "'pnum' on, 'lnum' on",
+                          }}>${
+                            isFees
+                              ? parseFloat(displayValue).toLocaleString(
+                                  "en-GB",
+                                  {
+                                    minimumFractionDigits:
+                                      calculateDecimalPlaces(
+                                        Number(displayValue),
+                                      ),
+                                    maximumFractionDigits:
+                                      calculateDecimalPlaces(
+                                        Number(displayValue),
+                                      ),
+                                  },
+                                )
+                              : formatBytes(displayValue)
+                          }
                   </div>
                 </div>
                 <div class="opacity-70 ml-0.5 ${
@@ -223,20 +230,24 @@ export default function EconHeadCharts({
                   <div class="opacity-70 mr-0.5 ${
                     !prefix && "hidden"
                   }">${prefix}</div>
-                  <div>${
-                    isFees
-                      ? parseFloat(
-                          String(calculateCostPerGB(Number(y), blob_value)),
-                        ).toLocaleString("en-GB", {
-                          minimumFractionDigits: calculateDecimalPlaces(
-                            Number(displayValue),
-                          ),
-                          maximumFractionDigits: calculateDecimalPlaces(
-                            Number(displayValue),
-                          ),
-                        })
-                      : formatBytes(displayValue)
-                  }
+                  <div style={{
+                            fontFeatureSettings: "'pnum' on, 'lnum' on",
+                          }}>${
+                            isFees
+                              ? parseFloat(
+                                  String(
+                                    calculateCostPerGB(Number(y), blob_value),
+                                  ),
+                                ).toLocaleString("en-GB", {
+                                  minimumFractionDigits: calculateDecimalPlaces(
+                                    Number(displayValue),
+                                  ),
+                                  maximumFractionDigits: calculateDecimalPlaces(
+                                    Number(displayValue),
+                                  ),
+                                })
+                              : formatBytes(displayValue)
+                          }
                   </div>
                 </div>
                 <div class="opacity-70 ml-0.5 ${
@@ -414,6 +425,14 @@ export default function EconHeadCharts({
                 >
                   <div className="absolute top-[5px] w-[calc(100% - 38px)] left-[19px] right-[21px] flex justify-between pl-[15px] pr-[2px] text-[16px] font-[650] ">
                     <div className="flex items-center gap-x-2 justify-center">
+                      <Icon
+                        icon={
+                          key.includes("ethereum")
+                            ? "gtp:blobs"
+                            : "gtp:celestiafp"
+                        }
+                        className="w-[15px] h-[15px]"
+                      />
                       <div>
                         {key.charAt(0).toUpperCase() +
                           key.slice(1) +
@@ -427,7 +446,12 @@ export default function EconHeadCharts({
                       </div>
                     </div>
                     <div className="flex justify-between gap-x-[15px] items-center h-[36px] bg-[#344240CC]  rounded-[10px] pl-[15px] pr-[15px] mr-[8px]  ">
-                      <div className="text-[20px] font-semibold ">
+                      <div
+                        className="text-[14px] font-semibold "
+                        style={{
+                          fontFeatureSettings: "'pnum' on, 'lnum' on",
+                        }}
+                      >
                         {valuePrefix}
                         {calculateCostPerGB(
                           da_charts[key].total_blob_fees.daily.data[
@@ -439,7 +463,12 @@ export default function EconHeadCharts({
                         )}
                         {" / GB "}
                       </div>
-                      <div className="text-[10px] font-normal flex flex-col gap-y-[1px] text-right">
+                      <div
+                        className="text-[10px] font-normal flex flex-col gap-y-[1px] text-right"
+                        style={{
+                          fontFeatureSettings: "'pnum' on, 'lnum' on",
+                        }}
+                      >
                         <div>
                           {formatBytes(
                             da_charts[key].total_blob_size.daily.data[
@@ -465,13 +494,13 @@ export default function EconHeadCharts({
                     }}
                   >
                     <div
-                      className="text-[10px] font-semibold w-full rotate-180"
+                      className="text-[12px] font-semibold w-full rotate-180"
                       style={{
                         writingMode: "vertical-lr",
                         textOrientation: "sideways",
                       }}
                     >
-                      {da_charts[key].total_blob_size.metric_name}
+                      {da_charts[key].total_blob_size.metric_name + " in GB"}
                     </div>
                   </div>
                   <div
@@ -481,7 +510,7 @@ export default function EconHeadCharts({
                     }}
                   >
                     <div
-                      className="text-[10px] font-semibold w-full  rotate-180"
+                      className="text-[12px] font-semibold w-full  rotate-0"
                       style={{
                         writingMode: "vertical-lr",
                         textOrientation: "sideways",
@@ -612,7 +641,9 @@ export default function EconHeadCharts({
                             ) {
                               setChartWidth(chart.plotWidth);
                             }
+
                             chart.series.forEach((object, index) => {
+                              const dictionaryKey = `${chart.series[index].name}_${key}`;
                               const isFees = chart.series[index].name
                                 .toLowerCase()
                                 .includes("fees");
@@ -671,29 +702,28 @@ export default function EconHeadCharts({
                                 ];
 
                               // check if i exists as a key in lastPointLines
-                              if (!lastPointLines[chart.series[index].name]) {
-                                lastPointLines[chart.series[index].name] = [];
+                              if (!lastPointLines[dictionaryKey]) {
+                                lastPointLines[dictionaryKey] = [];
                               }
 
                               if (
-                                lastPointLines[chart.series[index].name] &&
-                                lastPointLines[chart.series[index].name]
-                                  .length > 0
+                                lastPointLines[dictionaryKey] &&
+                                lastPointLines[dictionaryKey].length > 0
                               ) {
-                                lastPointLines[
-                                  chart.series[index].name
-                                ].forEach((line) => {
-                                  line.destroy();
-                                });
-                                lastPointLines[chart.series[index].name] = [];
+                                lastPointLines[dictionaryKey].forEach(
+                                  (line) => {
+                                    line.destroy();
+                                  },
+                                );
+                                lastPointLines[dictionaryKey] = [];
                               }
 
                               // calculate the fraction that 15px is in relation to the pixel width of the chart
                               const fraction = 21 / chart.chartWidth;
 
                               // create a bordered line from the last point to the top of the chart's container
-                              lastPointLines[chart.series[index].name][
-                                lastPointLines[chart.series[index].name].length
+                              lastPointLines[dictionaryKey][
+                                lastPointLines[dictionaryKey].length
                               ] = chart.renderer
                                 .createElement("line")
                                 .attr({
@@ -718,8 +748,8 @@ export default function EconHeadCharts({
                                 })
                                 .add();
 
-                              lastPointLines[chart.series[index].name][
-                                lastPointLines[chart.series[index].name].length
+                              lastPointLines[dictionaryKey][
+                                lastPointLines[dictionaryKey].length
                               ] = chart.renderer
                                 .circle(
                                   chart.chartWidth * (1 - fraction),

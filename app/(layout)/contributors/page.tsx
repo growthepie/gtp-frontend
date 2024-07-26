@@ -115,10 +115,10 @@ export default function ContributorsPage() {
               rel="noopener noreferrer"
               href={s.url}
               className="relative text-center"
-              // style={{
-              //   width: s.width,
-              //   height: s.height,
-              // }}
+            // style={{
+            //   width: s.width,
+            //   height: s.height,
+            // }}
             >
               <Image
                 src={s.image}
@@ -126,7 +126,7 @@ export default function ContributorsPage() {
                 width={s.width}
                 height={s.height}
                 className="brightness-[.55] grayscale-100 dark:brightness-100 grayscale-0"
-                // fill
+              // fill
               />
             </Link>
           ))}
@@ -154,10 +154,10 @@ export default function ContributorsPage() {
               rel="noopener noreferrer"
               href={s.url}
               className="relative text-center"
-              // style={{
-              //   width: s.width,
-              //   height: s.height,
-              // }}
+            // style={{
+            //   width: s.width,
+            //   height: s.height,
+            // }}
             >
               <Image
                 src={s.image}
@@ -165,7 +165,7 @@ export default function ContributorsPage() {
                 width={s.width}
                 height={s.height}
                 className="brightness-[.55] grayscale-100 dark:brightness-100 grayscale-0"
-                // fill
+              // fill
               />
             </Link>
           ))}
@@ -181,7 +181,7 @@ export default function ContributorsPage() {
         {Contributors.map((c) => (
           <div
             key={c.name}
-            className="basis-1/4 flex flex-col items-stretch p-3 bg-forest-50 dark:bg-forest-900 rounded-xl"
+            className="basis-1/4 flex flex-col items-stretch p-[15px] bg-forest-50 dark:bg-forest-900 rounded-xl"
           >
             <div className="relative w-full aspect-square">
               <Image
@@ -205,7 +205,7 @@ export default function ContributorsPage() {
                     rel="noopener noreferrer"
                     href={c.linkedin}
                   >
-                    <Icon icon="feather:linkedin" className="w-5 h-5" />
+                    <Icon icon="feather:linkedin" className="w-[24px] h-[24px]" />
                   </Link>
                 )}
                 {c.twitter && (
@@ -214,7 +214,7 @@ export default function ContributorsPage() {
                     rel="noopener noreferrer"
                     href={c.twitter}
                   >
-                    <Icon icon="feather:twitter" className="w-5 h-5" />
+                    <Icon icon="ri:twitter-x-fill" className="w-[24px] h-[24px]" />
                   </Link>
                 )}
               </div>

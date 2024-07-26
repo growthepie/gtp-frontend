@@ -73,14 +73,35 @@ export const viewport = {
   themeColor: "dark",
 };
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://www.growthepie.xyz"),
+const gtpMain = {
   title: {
+    absolute:
+      "Growing Ethereum’s Ecosystem Together - Layer 2 User Base - growthepie",
     template: "%s - growthepie",
-    default: "Growing Ethereum’s Ecosystem Together - growthepie",
   },
   description:
     "At growthepie, our mission is to provide comprehensive and accurate analytics of layer 2 solutions for the Ethereum ecosystem, acting as a trusted data aggregator from reliable sources such as L2Beat and DefiLlama, while also developing our own metrics.",
+};
+
+const gtpFees = {
+  title: {
+    absolute: "Ethereum Layer 2 Fees - Real-Time Data - growthepie",
+    template: "%s - growthepie",
+  },
+  description:
+    "Fee analytics by the minute for Ethereum L2s — median transaction fees, native / ETH transfer fees, token swap fees, and more...",
+};
+const isFees = true;
+
+const host = isFees ? "fees.growthepie.xyz" : "www.growthepie.xyz";
+
+const title = isFees ? gtpFees.title : gtpMain.title;
+const description = isFees ? gtpFees.description : gtpMain.description;
+
+export const metadata: Metadata = {
+  metadataBase: new URL(`https://${host}`),
+  title: title,
+  description: description,
   openGraph: {
     title: "growthepie",
     description: "Growing Ethereum’s Ecosystem Together",
@@ -127,21 +148,21 @@ const raleway = Raleway({
   subsets: ["latin"],
   variable: "--font-raleway",
   display: "swap",
-  adjustFontFallback: false
+  adjustFontFallback: false,
 });
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
-  adjustFontFallback: false
+  adjustFontFallback: false,
 });
 
 const robotoMono = Roboto_Mono({
   subsets: ["latin"],
   variable: "--font-roboto-mono",
   display: "swap",
-  adjustFontFallback: false
+  adjustFontFallback: false,
 });
 
 export default function RootLayout({
@@ -163,6 +184,9 @@ export default function RootLayout({
       lang="en"
       className={`${raleway.variable} ${inter.variable} ${robotoMono.variable}`}
       suppressHydrationWarning
+      style={{
+        fontFeatureSettings: "'pnum' on, 'lnum' on",
+      }}
     >
       <Head />
       <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500 font-raleway !overflow-x-hidden overflow-y-scroll">

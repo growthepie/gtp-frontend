@@ -2,6 +2,7 @@
   current_version: string;
   chains: Chains;
   metrics: Metrics;
+  fee_metrics: FeeMetrics;
   default_chain_selection: string[];
   blockspace_categories: BlockspaceCategories;
 }
@@ -9,20 +10,7 @@
 export interface Chains {
   [key: string]: ChainInfo;
 }
-// {
-//   "name": "Base",
-//   "deployment": "PROD",
-//   "name_short": "Base",
-//   "description": "Base is an fully EVM compatible optimistic rollup built on the OP Stack. It is incubated inside of Coinbase. Public mainnet launch was on August 9th 2023.",
-//   "symbol": "-",
-//   "bucket": "OP Chains",
-//   "technology": "Optimistic Rollup",
-//   "purpose": "General Purpose (EVM)",
-//   "launch_date": "2023-07-13",
-//   "website": "https://base.org/",
-//   "twitter": "https://twitter.com/base",
-//   "block_explorer": "https://basescan.org/"
-// }
+
 export interface ChainInfo {
   name: string;
   deployment: "PROD" | "DEV";
@@ -37,22 +25,27 @@ export interface ChainInfo {
   website: string;
   twitter: string;
   block_explorer: string;
-  block_explorers: {
-    [key: string]: string;
-  };
+  block_explorers: BlockExplorers;
   rhino_listed: boolean;
   rhino_naming: string;
-  l2beat_stage: {
-    stage: string;
-    hex: string;
-  };
+  l2beat_stage: L2BeatStage;
   l2beat_link: string;
   raas: string;
-  stack: {
-    label: string;
-    url: string;
-  };
+  stack: Stack;
   enable_contracts: boolean;
+}
+
+export interface BlockExplorers {
+  [key: string]: string;
+}
+
+export interface L2BeatStage {
+  stage: string;
+  hex: string;
+}
+export interface Stack {
+  label: string;
+  url: string;
 }
 
 export interface Metrics {
@@ -65,6 +58,35 @@ export interface MetricInfo {
   units: string[];
   avg: boolean;
   all_l2s_aggregate: string;
+}
+
+export interface FeeMetrics {
+  txcosts_native_median: FeeSchema;
+  txcosts_median: FeeSchema;
+  tps: FeeSchema;
+  throughput: FeeSchema;
+  txcosts_swap: FeeSchema;
+  txcosts_avg: FeeSchema;
+}
+
+export interface UnitSchema {
+  currency: boolean;
+  prefix: null | string;
+  suffix: null | string;
+  decimals: number;
+  decimals_tooltip: number;
+  agg: boolean;
+  agg_tooltip: boolean;
+}
+
+export interface FeeSchema {
+  name: string;
+  name_short: string;
+  units: { [key: string]: UnitSchema };
+  category: string;
+  currency: boolean;
+  priority: number;
+  invert_normalization: boolean;
 }
 
 export interface BlockspaceCategories {

@@ -12,24 +12,32 @@ import {
 } from "react";
 import { ChainBreakdownResponse } from "@/types/api/EconomicsResponse";
 import BreakdownCharts from "@/components/layout/Economics/BreakdownCharts";
-import { useLocalStorage } from "usehooks-ts";
+import { useLocalStorage, useMediaQuery } from "usehooks-ts";
 import { AllChainsByKeys } from "@/lib/chains";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import { sortByDataAvailability } from "./SortHelpers";
 import { useTransition, animated } from "@react-spring/web";
 import { set } from "lodash";
 import { useUIContext } from "@/contexts/UIContext";
+import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
 import {
   TopRowContainer,
   TopRowChild,
   TopRowParent,
 } from "@/components/layout/TopRow";
+import Container from "../Container";
+import QuestionAnswer from "../QuestionAnswer";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/layout/Tooltip";
 interface DAvailability {
   icon: string;
   label: string;
 }
 //prettier-ignore
-type MetricSort = "revenue" | "profit" | "chain" | "costs" | "l1_costs" | "blobs" | "profit_margin" | "size" ;
+type MetricSort = "revenue" | "profit" | "chain" | "costs" | "l1_costs" | "blobs" | "profit_margin" | "size";
 
 export default function ChainBreakdown({
   data,
@@ -47,6 +55,8 @@ export default function ChainBreakdown({
   const [isBouncing, setIsBouncing] = useState(false);
   const [bounceChain, setBounceChain] = useState("");
   const { isSidebarOpen } = useUIContext();
+  const isMobile = useMediaQuery("(max-width: 1024px)");
+  const triggerShrink = useMediaQuery("(max-width: 1120px)");
 
   const [openChain, setOpenChain] = useState(() => {
     const initialState = Object.keys(data).reduce((acc, key) => {
@@ -373,6 +383,42 @@ export default function ChainBreakdown({
     },
   );
 
+  const columnBorder = useCallback(
+    (metric, key) => {
+      const isOpen = openChain[key];
+      const openDark =
+        metric === "revenue" || metric === "profit" || metric === "size";
+      const openLight =
+        metric === "chain" || metric === "costs" || metric === "margin";
+
+      if (isOpen) {
+        if (openLight) {
+          return (
+            "border-[#CDD8D3] border-y-[1px]" +
+            (metric === "chain" ? " border-l-[1px] rounded-l-full" : "")
+          );
+        } else if (openDark) {
+          return (
+            "border-[#CDD8D399] border-y-[1px]" +
+            (metric === "size" ? " border-r-[1px] rounded-r-full" : "")
+          );
+        }
+      } else {
+        return (
+          "border-[#5A6462] border-y-[1px]" +
+          (metric === "chain"
+            ? " border-l-[1px] rounded-l-full"
+            : metric === "size"
+            ? " border-r-[1px] rounded-r-full"
+            : "")
+        );
+      }
+      //"border-[#CDD8D3] bg-forest-950 border-r-[#5A6462]"
+      //"border-[#5A6462]
+    },
+    [openChain],
+  );
+
   const minimumHeight = useMemo(() => {
     let retHeight: number = 39;
     Object.keys(data).map((key) => {
@@ -386,739 +432,1078 @@ export default function ChainBreakdown({
   return (
     <div className="h-full">
       {sortedChainData && (
-        <div className="flex flex-col gap-y-[15px] ">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center  gap-x-[8px]">
-              <Image
-                src="/GTP-Metrics.svg"
-                alt="GTP Chain"
-                className="object-contain w-[32px] h-[32px] "
-                height={36}
-                width={36}
-              />
-              <Heading className="text-[30px] leading-snug " as="h1">
-                Chain Breakdown
-              </Heading>
-            </div>
-          </div>
-          <TopRowContainer className="-py-[3px]">
-            <TopRowParent>
-              <div></div>
-            </TopRowParent>
-            <TopRowParent className="-py-[10px]">
-              {Object.keys(timespans).map((key) => {
-                {
-                  return (
-                    <TopRowChild
-                      className={`px-[10px]`}
-                      onClick={() => {
-                        setSelectedTimespan(key);
-                      }}
-                      key={key}
-                      style={{
-                        paddingTop: "10.5px",
-                        paddingBottom: "10.5px",
-                        paddingLeft: "16px",
-                        paddingRight: "16px",
-                      }}
-                      isSelected={selectedTimespan === key}
-                    >
-                      {selectedTimespan === key
-                        ? timespans[key].label
-                        : timespans[key].shortLabel}
-                    </TopRowChild>
-                  );
-                }
-              })}
-            </TopRowParent>
-          </TopRowContainer>
-          <div className="grid gap-x-[5px] pr-0.5 grid-cols-[auto_200px_200px_155px_145px_110px] ">
-            <div className="pl-[44px] flex grow gap-x-[5px] items-center justify-start ">
-              <div
-                className="flex items-center group cursor-pointer  "
-                onClick={() => {
-                  if (metricSort !== "chain") {
-                    setSortOrder(true);
-                    setMetricSort("chain");
-                  } else {
-                    setSortOrder(!sortOrder);
-                  }
-                }}
-              >
-                <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
-                  Chain
-                </div>
-                <div>
-                  <Icon
-                    icon={
-                      metricSort !== "chain"
-                        ? "formkit:arrowdown"
-                        : sortOrder
-                        ? "formkit:arrowdown"
-                        : "formkit:arrowup"
-                    }
-                    className={` w-[10px] h-[10px] ${
-                      metricSort === "chain"
-                        ? "text-forest-50 opacity-100"
-                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
-                    } `}
-                  />
-                </div>
-              </div>
-              <div
-                className="flex items-center bg-[#344240] gap-x-1 text-[8px] rounded-full px-[5px] py-[2px] cursor-pointer"
-                onClick={() => {
-                  setEnableDASort(true);
-                  if (DAIndex === allChainsDA.length - 1) {
-                    setEnableDASort(false);
-                    setDAIndex(0);
-                  } else {
-                    setDAIndex(DAIndex + 1);
-                  }
-                }}
-              >
-                <div>Data Availability: </div>
-                <div>{allChainsDA[DAIndex]}</div>
-
-                <Icon
-                  icon={"feather:x-circle"}
-                  className={` dark:text-white text-black w-[10px] -ml-0.5 h-[10px] relative bottom-[0.5px] cursor-pointer ${
-                    DAIndex !== 0 ? "block" : "hidden"
-                  }`}
-                  onClick={(e) => {
-                    setDAIndex(0);
-                    setEnableDASort(false);
-                    e.stopPropagation();
-                  }}
+        <div className="flex flex-col gap-y-[15px]">
+          <Container className="flex flex-col gap-y-[15px]">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-x-[8px]">
+                <Image
+                  src="/GTP-Metrics.svg"
+                  alt="GTP Chain"
+                  className="object-contain w-[36px] h-[36px] "
+                  height={36}
+                  width={36}
                 />
+                <Heading className="text-[30px] leading-snug " as="h2">
+                  Chain Breakdown
+                </Heading>
               </div>
             </div>
-            <div className="flex items-center justify-start ">
-              {" "}
-              <div
-                className="flex items-center group gap-x-[1px] cursor-pointer"
-                onClick={() => {
-                  if (metricSort !== "revenue") {
-                    setSortOrder(true);
-                    setMetricSort("revenue");
-                  } else {
-                    setSortOrder(!sortOrder);
+            <TopRowContainer className="-py-[3px]">
+              <TopRowParent>
+                <div></div>
+              </TopRowParent>
+              <TopRowParent className="-py-[10px]">
+                {Object.keys(timespans).map((key) => {
+                  {
+                    return (
+                      <TopRowChild
+                        className={`px-[10px]`}
+                        onClick={() => {
+                          setSelectedTimespan(key);
+                        }}
+                        key={key}
+                        style={{
+                          paddingTop: "10.5px",
+                          paddingBottom: "10.5px",
+                          paddingLeft: "16px",
+                          paddingRight: "16px",
+                        }}
+                        isSelected={selectedTimespan === key}
+                      >
+                        {selectedTimespan === key
+                          ? timespans[key].label
+                          : timespans[key].shortLabel}
+                      </TopRowChild>
+                    );
                   }
-                }}
-              >
-                <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
-                  Revenue
-                </div>
-
-                <div>
-                  <Icon
-                    icon={
-                      metricSort !== "revenue"
-                        ? "formkit:arrowdown"
-                        : sortOrder
-                        ? "formkit:arrowdown"
-                        : "formkit:arrowup"
-                    }
-                    className={` w-[10px] h-[10px] ${
-                      metricSort === "revenue"
-                        ? "text-forest-50 opacity-100"
-                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
-                    } `}
-                  />
-                </div>
-                <Icon icon="feather:info" className="w-[15px] h-[15px]" />
-              </div>
-            </div>
-            <div className="flex items-center justify-center gap-x-[5px] ">
-              {" "}
-              <div className="flex items-center group gap-x-[1px]">
+                })}
+              </TopRowParent>
+            </TopRowContainer>
+          </Container>
+          <HorizontalScrollContainer
+            includeMargin={true}
+            className="w-full flex flex-col "
+          >
+            <div
+              className={`grid  pr-0.5 grid-cols-[auto_200px_200px_170px_145px_110px] mb-[15px]  ${
+                isSidebarOpen
+                  ? " 2xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
+                  : "xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
+              } min-w-[1125px]`}
+            >
+              <div className="pl-[44px] flex grow gap-x-[5px] items-center justify-start ">
                 <div
-                  className="text-[12px] group-hover:text-forest-50/80 font-bold cursor-pointer"
+                  className="flex items-center group cursor-pointer  "
                   onClick={() => {
-                    if (metricSort !== "costs") {
+                    if (metricSort !== "chain") {
                       setSortOrder(true);
-                      setMetricSort("costs");
+                      setMetricSort("chain");
                     } else {
                       setSortOrder(!sortOrder);
                     }
                   }}
                 >
-                  Costs
+                  <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
+                    Chain
+                  </div>
+                  <div>
+                    <Icon
+                      icon={
+                        metricSort !== "chain"
+                          ? "formkit:arrowdown"
+                          : sortOrder
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
+                      }
+                      className={` w-[10px] h-[10px] ${
+                        metricSort === "chain"
+                          ? "text-forest-50 opacity-100"
+                          : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                      } `}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Icon
-                    icon={
-                      metricSort !== "costs"
-                        ? "formkit:arrowdown"
-                        : sortOrder
-                        ? "formkit:arrowdown"
-                        : "formkit:arrowup"
+                <div
+                  className="flex items-center bg-[#344240] gap-x-1 text-[8px] rounded-full px-[5px] py-[2px] cursor-pointer"
+                  onClick={() => {
+                    setEnableDASort(true);
+                    if (DAIndex === allChainsDA.length - 1) {
+                      setEnableDASort(false);
+                      setDAIndex(0);
+                    } else {
+                      setDAIndex(DAIndex + 1);
                     }
-                    className={` w-[10px] h-[10px] ${
-                      metricSort === "costs"
-                        ? "text-forest-50 opacity-100"
-                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
-                    } `}
+                  }}
+                >
+                  <div>Data Availability: </div>
+                  <div>{allChainsDA[DAIndex]}</div>
+
+                  <Icon
+                    icon={"feather:x-circle"}
+                    className={` dark:text-white text-black w-[10px] -ml-0.5 h-[10px] relative bottom-[0.5px] cursor-pointer ${
+                      DAIndex !== 0 ? "block" : "hidden"
+                    }`}
+                    onClick={(e) => {
+                      setDAIndex(0);
+                      setEnableDASort(false);
+                      e.stopPropagation();
+                    }}
                   />
                 </div>
-                <Icon icon="feather:info" className="w-[15px] h-[15px]" />
               </div>
-              <div className="flex items-center  gap-x-[1.5px] text-[8px] w-[114px] h-[16px] cursor-pointer">
-                <div className="flex justify-center group items-center rounded-l-full border-[2px] border-r-[0px] border-[#D03434] w-[57px] px-[5px]  ">
+              <div className="flex items-center justify-start ">
+                {" "}
+                <div
+                  className="flex items-center group gap-x-[1px] cursor-pointer"
+                  onClick={() => {
+                    if (metricSort !== "revenue") {
+                      setSortOrder(true);
+                      setMetricSort("revenue");
+                    } else {
+                      setSortOrder(!sortOrder);
+                    }
+                  }}
+                >
+                  <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
+                    Revenue
+                  </div>
+
+                  <div>
+                    <Icon
+                      icon={
+                        metricSort !== "revenue"
+                          ? "formkit:arrowdown"
+                          : sortOrder
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
+                      }
+                      className={` w-[10px] h-[10px] ${
+                        metricSort === "revenue"
+                          ? "text-forest-50 opacity-100"
+                          : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                      } `}
+                    />
+                  </div>
+                  <Tooltip key={"revenue"} placement="right">
+                    <TooltipTrigger>
+                      <Icon icon="feather:info" className="w-[15px] h-[15px]" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="flex flex-col items-center">
+                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
+                          <div className="flex flex-col gap-y-[5px] items-center">
+                            <div className="flex items-center gap-x-[5px] text-[10px] ">
+                              The sum of fees that were paid by users of the
+                              chain in gas fees.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </div>
+              <div className="flex items-center justify-center gap-x-[5px] ">
+                {" "}
+                <div className="flex items-center group gap-x-[1px]">
                   <div
-                    className=" group-hover:text-forest-50/80 "
+                    className="text-[12px] group-hover:text-forest-50/80 font-bold cursor-pointer"
                     onClick={() => {
-                      if (metricSort !== "l1_costs") {
+                      if (metricSort !== "costs") {
                         setSortOrder(true);
-                        setMetricSort("l1_costs");
+                        setMetricSort("costs");
                       } else {
                         setSortOrder(!sortOrder);
                       }
                     }}
                   >
-                    L1 Costs
+                    Costs
                   </div>
                   <div>
                     <Icon
                       icon={
-                        metricSort !== "l1_costs"
+                        metricSort !== "costs"
                           ? "formkit:arrowdown"
                           : sortOrder
                           ? "formkit:arrowdown"
                           : "formkit:arrowup"
                       }
                       className={` w-[10px] h-[10px] ${
-                        metricSort === "l1_costs"
+                        metricSort === "costs"
                           ? "text-forest-50 opacity-100"
                           : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
                       } `}
                     />
                   </div>
+                  <Tooltip key={"costs"} placement="right">
+                    <TooltipTrigger>
+                      <Icon icon="feather:info" className="w-[15px] h-[15px]" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="flex flex-col items-center">
+                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
+                          <div className="flex flex-col gap-y-[5px] items-center">
+                            <div className="flex items-center gap-x-[5px] text-[10px] ">
+                              The chains onchain expenses. L1 Costs are gas fees
+                              paid to Ethereum for Settlement and DA (if
+                              applicable). Blob costs are paid to either
+                              Ethereum or an alternative DA layer for storing
+                              Blobs.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
+                <div className="flex items-center  gap-x-[1.5px] text-[8px] w-[114px] h-[16px] cursor-pointer">
+                  <div className="flex justify-center group items-center rounded-l-full border-[2px] border-r-[0px] border-[#D03434] w-[57px] px-[5px]  ">
+                    <div
+                      className=" group-hover:text-forest-50/80 "
+                      onClick={() => {
+                        if (metricSort !== "l1_costs") {
+                          setSortOrder(true);
+                          setMetricSort("l1_costs");
+                        } else {
+                          setSortOrder(!sortOrder);
+                        }
+                      }}
+                    >
+                      L1 Costs
+                    </div>
+                    <div>
+                      <Icon
+                        icon={
+                          metricSort !== "l1_costs"
+                            ? "formkit:arrowdown"
+                            : sortOrder
+                            ? "formkit:arrowdown"
+                            : "formkit:arrowup"
+                        }
+                        className={` w-[10px] h-[10px] ${
+                          metricSort === "l1_costs"
+                            ? "text-forest-50 opacity-100"
+                            : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                        } `}
+                      />
+                    </div>
+                  </div>
+                  <div
+                    className="flex justify-center group items-center rounded-r-full border-[2px] border-l-[0px] border-[#FE5468] w-[57px] px-[5px] cursor-pointer "
+                    onClick={() => {
+                      if (metricSort !== "blobs") {
+                        setSortOrder(true);
+                        setMetricSort("blobs");
+                      } else {
+                        setSortOrder(!sortOrder);
+                      }
+                    }}
+                  >
+                    <div className=" group-hover:text-forest-50/80 ">Blobs</div>
+                    <div>
+                      <Icon
+                        icon={
+                          metricSort !== "blobs"
+                            ? "formkit:arrowdown"
+                            : sortOrder
+                            ? "formkit:arrowdown"
+                            : "formkit:arrowup"
+                        }
+                        className={` w-[10px] h-[10px] ${
+                          metricSort === "blobs"
+                            ? "text-forest-50 opacity-100"
+                            : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                        } `}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-start gap-x-[5px] pl-[2px]">
+                {" "}
                 <div
-                  className="flex justify-center group items-center rounded-r-full border-[2px] border-l-[0px] border-[#FE5468] w-[57px] px-[5px] cursor-pointer "
+                  className="flex items-center group cursor-pointer"
                   onClick={() => {
-                    if (metricSort !== "blobs") {
+                    if (metricSort !== "profit") {
                       setSortOrder(true);
-                      setMetricSort("blobs");
+                      setMetricSort("profit");
                     } else {
                       setSortOrder(!sortOrder);
                     }
                   }}
                 >
-                  <div className=" group-hover:text-forest-50/80 ">Blobs</div>
+                  <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
+                    Loss | Profit
+                  </div>
                   <div>
                     <Icon
                       icon={
-                        metricSort !== "blobs"
+                        metricSort !== "profit"
                           ? "formkit:arrowdown"
                           : sortOrder
                           ? "formkit:arrowdown"
                           : "formkit:arrowup"
                       }
                       className={` w-[10px] h-[10px] ${
-                        metricSort === "blobs"
+                        metricSort === "profit"
                           ? "text-forest-50 opacity-100"
                           : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
                       } `}
                     />
                   </div>
+                  <Tooltip key={"profit"} placement="right">
+                    <TooltipTrigger>
+                      <Icon icon="feather:info" className="w-[15px] h-[15px]" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="flex flex-col items-center">
+                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
+                          <div className="flex flex-col gap-y-[5px] items-center">
+                            <div className="flex items-center gap-x-[5px] text-[10px] ">
+                              The chains total revenue minus its costs.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
-            </div>
-            <div className="flex items-center justify-start gap-x-[5px] pl-[2px]">
-              {" "}
               <div
-                className="flex items-center group cursor-pointer"
+                className="flex items-center justify-start gap-x-[5px] pl-[2px] cursor-pointer"
                 onClick={() => {
-                  if (metricSort !== "profit") {
+                  if (metricSort !== "profit_margin") {
                     setSortOrder(true);
-                    setMetricSort("profit");
+                    setMetricSort("profit_margin");
+                  } else {
+                    setSortOrder(!sortOrder);
+                  }
+                }}
+              >
+                {" "}
+                <div className="flex items-center group gap-x-[1px] ">
+                  <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
+                    Margin
+                  </div>
+                  <div>
+                    <Icon
+                      icon={
+                        metricSort !== "profit_margin"
+                          ? "formkit:arrowdown"
+                          : sortOrder
+                          ? "formkit:arrowdown"
+                          : "formkit:arrowup"
+                      }
+                      className={` w-[10px] h-[10px] ${
+                        metricSort === "profit_margin"
+                          ? "text-forest-50 opacity-100"
+                          : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
+                      } `}
+                    />
+                  </div>
+                  <Tooltip key={"profit"} placement="right">
+                    <TooltipTrigger>
+                      <Icon icon="feather:info" className="w-[15px] h-[15px]" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="flex flex-col items-center">
+                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
+                          <div className="flex flex-col gap-y-[5px] items-center">
+                            <div className="flex items-center gap-x-[5px] text-[10px] ">
+                              The profit margin of the chain calculated as
+                              (Revenue - Costs) / Revenue
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </div>
+              <div
+                className="flex items-center group gap-x-[1px] justify-end cursor-pointer pr-[8px]"
+                onClick={() => {
+                  if (metricSort !== "size") {
+                    setSortOrder(true);
+                    setMetricSort("size");
                   } else {
                     setSortOrder(!sortOrder);
                   }
                 }}
               >
                 <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
-                  Loss | Profit
+                  {"Blob Sizes"}
                 </div>
                 <div>
                   <Icon
                     icon={
-                      metricSort !== "profit"
+                      metricSort !== "size"
                         ? "formkit:arrowdown"
                         : sortOrder
                         ? "formkit:arrowdown"
                         : "formkit:arrowup"
                     }
                     className={` w-[10px] h-[10px] ${
-                      metricSort === "profit"
+                      metricSort === "size"
                         ? "text-forest-50 opacity-100"
                         : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
                     } `}
                   />
                 </div>
-                <Icon icon="feather:info" className="w-[15px] h-[15px]" />
-              </div>
-            </div>
-            <div
-              className="flex items-center justify-start gap-x-[5px] pl-[2px] cursor-pointer"
-              onClick={() => {
-                if (metricSort !== "profit_margin") {
-                  setSortOrder(true);
-                  setMetricSort("profit_margin");
-                } else {
-                  setSortOrder(!sortOrder);
-                }
-              }}
-            >
-              {" "}
-              <div className="flex items-center group gap-x-[1px] ">
-                <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
-                  Margin
-                </div>
-                <div>
-                  <Icon
-                    icon={
-                      metricSort !== "profit_margin"
-                        ? "formkit:arrowdown"
-                        : sortOrder
-                        ? "formkit:arrowdown"
-                        : "formkit:arrowup"
-                    }
-                    className={` w-[10px] h-[10px] ${
-                      metricSort === "profit_margin"
-                        ? "text-forest-50 opacity-100"
-                        : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
-                    } `}
-                  />
-                </div>
-                <Icon icon="feather:info" className="w-[15px] h-[15px]" />
-              </div>
-            </div>
-            <div
-              className="flex items-center group gap-x-[1px] justify-end cursor-pointer"
-              onClick={() => {
-                if (metricSort !== "size") {
-                  setSortOrder(true);
-                  setMetricSort("size");
-                } else {
-                  setSortOrder(!sortOrder);
-                }
-              }}
-            >
-              <div className="text-[12px] group-hover:text-forest-50/80 font-bold">
-                {"Blob Sizes"}
-              </div>
-              <div>
-                <Icon
-                  icon={
-                    metricSort !== "size"
-                      ? "formkit:arrowdown"
-                      : sortOrder
-                      ? "formkit:arrowdown"
-                      : "formkit:arrowup"
-                  }
-                  className={` w-[10px] h-[10px] ${
-                    metricSort === "size"
-                      ? "text-forest-50 opacity-100"
-                      : " opacity-50 group-hover:opacity-100 group-hover:text-forest-50"
-                  } `}
-                />
-              </div>
-              <Icon icon="feather:info" className="w-[15px] h-[15px]" />
-            </div>
-            {/*END TOP ROW */}
-            {/*END TOP ROW */}
-            {/*END TOP ROW */}
-          </div>
-          <div
-            className={`relative flex flex-col -mt-[5px] `}
-            style={{ minHeight: minimumHeight > 500 ? minimumHeight : 500 }}
-          >
-            {transitions((style, item) => {
-              const dataIndex = data[item.key][
-                selectedTimespan
-              ].revenue.types.indexOf(showUsd ? "usd" : "eth");
-              const localDataAvail = dataAvailToArray(
-                master.chains[item.key].da_layer,
-              )[0];
-
-              return (
-                <animated.div
-                  className={`absolute w-full flex flex-col pr-0.5  ${
-                    enableDASort
-                      ? allChainsDA[DAIndex] === localDataAvail.label
-                        ? "opacity-100"
-                        : "opacity-50"
-                      : "opacity-100"
-                  }`}
-                  key={item.key + " chainGridParent"}
-                  style={{ ...style }}
-                >
-                  <div
-                    className={`grid gap-x-[5px] relative rounded-full w-full  border-[1px] min-h-[34px] text-[14px] items-center z-20 cursor-pointer pr-0.5 grid-cols-[auto_200px_200px_155px_145px_110px] 
-                      ${
-                        openChain[item.key]
-                          ? "border-[#CDD8D3] bg-forest-950 "
-                          : "border-[#5A6462] bg-transparent"
-                      }  ${
-                      isBouncing && bounceChain === item.key
-                        ? "horizontal-bounce"
-                        : ""
-                    } ${isSidebarOpen ? "" : ""}`}
-                    onClick={(e) => {
-                      handleClick(e, item.key);
-                      e.stopPropagation();
-                    }}
-                  >
-                    <div className="flex items-center gap-x-[5px] pl-[10px] ">
-                      <div
-                        className="relative flex items-center justify-center rounded-full w-[26px] h-[26px] bg-[#151A19] cursor-pointer"
-                        onClick={(e) => {
-                          handleClick(e, item.key);
-                          e.stopPropagation();
-                        }}
-                      >
-                        <Icon
-                          icon={`gtp:${
-                            AllChainsByKeys[item.key].urlKey
-                          }-logo-monochrome`}
-                          className={`w-[15px] h-[15px] flex items-center justify-center text-[10px]`}
-                          style={{
-                            color: AllChainsByKeys[item.key].colors["dark"][0],
-                          }}
-                        />
-                        <Icon
-                          icon={"gtp:circle-arrow"}
-                          className={`w-[4px] h-[9px] absolute top-[9px] right-0 `}
-                          style={{
-                            transform: `rotate(${
-                              openChain[item.key] ? "90deg" : "0deg"
-                            })`,
-                            transformOrigin: "-9px 4px",
-                            transition: "transform 0.5s",
-                          }}
-                        />
-                      </div>
-
-                      <div>{AllChainsByKeys[item.key].label}</div>
-
-                      <div
-                        className="flex items-center bg-[#344240] gap-x-1 h-[18px] text-[14px] rounded-full px-[5px] py-[3px]"
-                        key={localDataAvail.label}
-                      >
-                        <div>{localDataAvail.label}</div>
-                        <div className="flex items-center gap-x-1">
-                          <Icon
-                            icon={`gtp:${localDataAvail.icon}`}
-                            className="w-[12px] h-[12px]"
-                          />
+                <Tooltip key={"margin"} placement="right">
+                  <TooltipTrigger>
+                    <Icon icon="feather:info" className="w-[15px] h-[15px]" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="flex flex-col items-center">
+                      <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-[280px] font-normal transition-all duration-300">
+                        <div className="flex flex-col gap-y-[5px] items-center">
+                          <div className="flex items-center gap-x-[5px] text-[10px] ">
+                            The total amount of data that is stored in Blobs.
+                          </div>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-end pb-[6px] justify-start gap-x-[5px] h-full px-[5px] bg-[#34424044]">
-                      <div className="w-[65px] flex justify-end">
-                        <div className="text-[14px] font-semibold ">
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              {/*END TOP ROW */}
+              {/*END TOP ROW */}
+              {/*END TOP ROW */}
+            </div>
+            <div
+              className={`relative flex flex-col -mt-[5px] min-w-[1125px] z-0 transition-height duration-300 `}
+              style={{ height: minimumHeight }}
+            >
+              {transitions((style, item) => {
+                const dataIndex = data[item.key][
+                  selectedTimespan
+                ].revenue.types.indexOf(showUsd ? "usd" : "eth");
+                const localDataAvail = dataAvailToArray(
+                  master.chains[item.key].da_layer,
+                )[0];
+
+                return (
+                  <animated.div
+                    className={`absolute w-full flex flex-col pr-0.5  ${
+                      enableDASort
+                        ? allChainsDA[DAIndex] === localDataAvail.label
+                          ? "opacity-100"
+                          : "opacity-50"
+                        : "opacity-100"
+                    }`}
+                    key={item.key + " chainGridParent"}
+                    style={{ ...style }}
+                  >
+                    <div
+                      className={`grid  relative rounded-full w-full  min-h-[34px] text-[14px] items-center z-20 cursor-pointer pr-0.5 grid-cols-[auto_200px_200px_170px_145px_110px] min-w-[1000px] 
+                        ${
+                          isBouncing && bounceChain === item.key
+                            ? "horizontal-bounce"
+                            : ""
+                        } ${
+                        isSidebarOpen
+                          ? " 2xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
+                          : "xl:grid-cols-[auto_200px_200px_170px_145px_110px] grid-cols-[auto_170px_180px_170px_145px_110px] "
+                      }`}
+                      onClick={(e) => {
+                        handleClick(e, item.key);
+                        e.stopPropagation();
+                      }}
+                    >
+                      <div
+                        className={`flex items-center gap-x-[5px] pl-[10px] h-full ${columnBorder(
+                          "chain",
+                          item.key,
+                        )} `}
+                      >
+                        <div
+                          className="relative flex items-center justify-center rounded-full w-[26px] h-[26px] bg-[#151A19] cursor-pointer"
+                          onClick={(e) => {
+                            handleClick(e, item.key);
+                            e.stopPropagation();
+                          }}
+                        >
+                          <Icon
+                            icon={`gtp:${
+                              AllChainsByKeys[item.key].urlKey
+                            }-logo-monochrome`}
+                            className={`w-[15px] h-[15px] flex items-center justify-center text-[10px]`}
+                            style={{
+                              color:
+                                AllChainsByKeys[item.key].colors["dark"][0],
+                            }}
+                          />
+                          <Icon
+                            icon={"gtp:circle-arrow"}
+                            className={`w-[4px] h-[9px] absolute top-[9px] right-0 `}
+                            style={{
+                              transform: `rotate(${
+                                openChain[item.key] ? "90deg" : "0deg"
+                              })`,
+                              transformOrigin: "-9px 4px",
+                              transition: "transform 0.5s",
+                            }}
+                          />
+                        </div>
+
+                        <div>
+                          {triggerShrink
+                            ? master.chains[item.key].name_short
+                            : AllChainsByKeys[item.key].label}
+                        </div>
+
+                        <div
+                          className="flex items-center bg-[#344240] gap-x-1 h-[18px] text-[14px] rounded-full px-[5px] py-[3px]"
+                          key={localDataAvail.label}
+                        >
+                          <div>{localDataAvail.label}</div>
+                          <div className="flex items-center gap-x-1">
+                            <Icon
+                              icon={`gtp:${localDataAvail.icon}`}
+                              className="w-[12px] h-[12px]"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        className={`relative flex items-end pb-[6px] justify-start gap-x-[5px] h-full px-[5px] bg-[#34424044] ${columnBorder(
+                          "revenue",
+                          item.key,
+                        )}`}
+                      >
+                        <div className="w-[65px] flex justify-end">
+                          <div
+                            className="text-[14px] font-semibold "
+                            style={{
+                              fontFeatureSettings: "'pnum' on, 'lnum' on",
+                            }}
+                          >
+                            {formatNumber(
+                              data[item.key][selectedTimespan].revenue.total[
+                                dataIndex
+                              ],
+                            )}
+                          </div>
+                        </div>
+                        <div
+                          className={` w-[90px] flex justify-start items-end h-full ${
+                            isSidebarOpen ? "2xl:w-[120px]" : "xl:w-[120px]"
+                          }`}
+                        >
+                          <div
+                            className={`w-[96px] flex items-end justify-center rounded-full h-[4px] bg-[#1DF7EF]`}
+                            style={{
+                              width:
+                                data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] /
+                                  totalRevenue >
+                                0.01
+                                  ? (312 *
+                                      data[item.key][selectedTimespan].revenue
+                                        .total[dataIndex]) /
+                                    totalRevenue
+                                  : `${
+                                      (2200 *
+                                        data[item.key][selectedTimespan].revenue
+                                          .total[dataIndex]) /
+                                      totalRevenue
+                                    }%`,
+                              minWidth:
+                                data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] /
+                                  totalRevenue >
+                                0.01
+                                  ? "22px"
+                                  : `6px`,
+                            }}
+                          >
+                            &nbsp;
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        className={`flex items-end justify-center gap-x-[5px] pb-[6px] h-full ${columnBorder(
+                          "costs",
+                          item.key,
+                        )}`}
+                      >
+                        <div
+                          className="w-[65px] flex justify-end items-end h-full font-semibold text-[14px]"
+                          style={{
+                            fontFeatureSettings: "'pnum' on, 'lnum' on",
+                          }}
+                        >
                           {formatNumber(
-                            data[item.key][selectedTimespan].revenue.total[
+                            data[item.key][selectedTimespan].costs.total[
                               dataIndex
                             ],
                           )}
                         </div>
-                      </div>
-                      <div className="w-[120px] flex justify-start items-end h-full">
-                        <div
-                          className={`w-[96px] flex items-end justify-center rounded-full h-[4px] bg-[#1DF7EF]`}
-                          style={{
-                            width:
-                              data[item.key][selectedTimespan].revenue.total[
-                                dataIndex
-                              ] /
-                                totalRevenue >
-                              0.01
-                                ? (312 *
-                                    data[item.key][selectedTimespan].revenue
-                                      .total[dataIndex]) /
-                                  totalRevenue
-                                : `${
-                                    (2200 *
-                                      data[item.key][selectedTimespan].revenue
-                                        .total[dataIndex]) /
-                                    totalRevenue
-                                  }px`,
-                            minWidth:
-                              data[item.key][selectedTimespan].revenue.total[
-                                dataIndex
-                              ] /
-                                totalRevenue >
-                              0.01
-                                ? "22px"
-                                : `6px`,
-                          }}
-                        >
-                          &nbsp;
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-end justify-center gap-x-[5px] pb-[6px] h-full ">
-                      <div className="w-[65px] flex justify-end items-end h-full font-semibold text-[14px]">
-                        {formatNumber(
-                          data[item.key][selectedTimespan].costs.total[
-                            dataIndex
-                          ],
-                        )}
-                      </div>
-                      <div className="flex flex-col justify-end w-[120px] h-full">
-                        <div className="flex w-full justify-between h-[15px]">
-                          <div className="text-[10px] flex gap-x-[0.5px] ">
-                            <span>
+                        <div className="flex flex-col justify-end w-[120px] h-full">
+                          <div className="flex w-full justify-between h-[15px]">
+                            <div className="text-[10px] flex gap-x-[0.5px] ">
+                              <span
+                                style={{
+                                  fontFeatureSettings: "'pnum' on, 'lnum' on",
+                                }}
+                              >
+                                {Intl.NumberFormat("en-GB", {
+                                  notation: "compact",
+                                  maximumFractionDigits: 1,
+                                  minimumFractionDigits: 1,
+                                }).format(
+                                  (data[item.key][selectedTimespan].costs
+                                    .l1_costs[dataIndex] /
+                                    data[item.key][selectedTimespan].costs
+                                      .total[dataIndex]) *
+                                    100,
+                                )}
+                              </span>
+                              <span>{"%"}</span>
+                            </div>
+                            <div
+                              className="text-[10px]"
+                              style={{
+                                fontFeatureSettings: "'pnum' on, 'lnum' on",
+                              }}
+                            >
                               {Intl.NumberFormat("en-GB", {
                                 notation: "compact",
                                 maximumFractionDigits: 1,
                                 minimumFractionDigits: 1,
                               }).format(
-                                (data[item.key][selectedTimespan].costs
-                                  .l1_costs[dataIndex] /
-                                  data[item.key][selectedTimespan].costs.total[
-                                    dataIndex
-                                  ]) *
-                                  100,
-                              )}
-                            </span>
-                            <span>{"%"}</span>
-                          </div>
-                          <div className="text-[10px]">
-                            {Intl.NumberFormat("en-GB", {
-                              notation: "compact",
-                              maximumFractionDigits: 1,
-                              minimumFractionDigits: 1,
-                            }).format(
-                              (data[item.key][selectedTimespan].costs.blobs[
-                                dataIndex
-                              ] /
-                                data[item.key][selectedTimespan].costs.total[
-                                  dataIndex
-                                ]) *
-                                100,
-                            )}
-                            {"%"}
-                          </div>
-                        </div>
-                        <div className="flex justify-start w-full items-end text-[8px] ">
-                          <div
-                            className="bg-[#FD0F2C] flex items-center justify-start font-bold rounded-l-full pl-[5px] h-[4px]"
-                            style={{
-                              width: `${
-                                120 *
-                                (data[item.key][selectedTimespan].costs
-                                  .l1_costs[dataIndex] /
-                                  data[item.key][selectedTimespan].costs.total[
-                                    dataIndex
-                                  ])
-                              }px`,
-                            }}
-                          ></div>
-                          <div
-                            className="bg-[#FE5468]  rounded-r-full flex items-center font-bold  justify-end  pr-[5px] h-[4px]"
-                            style={{
-                              width: `${
-                                120 *
                                 (data[item.key][selectedTimespan].costs.blobs[
                                   dataIndex
                                 ] /
                                   data[item.key][selectedTimespan].costs.total[
                                     dataIndex
-                                  ])
-                              }px`,
-                            }}
-                          ></div>
+                                  ]) *
+                                  100,
+                              )}
+                              {"%"}
+                            </div>
+                          </div>
+                          <div className="flex justify-start w-full items-end text-[8px] ">
+                            <div
+                              className="bg-[#FD0F2C] flex items-center justify-start font-bold rounded-l-full pl-[5px] h-[4px] "
+                              style={{
+                                width: `${
+                                  100 *
+                                  (data[item.key][selectedTimespan].costs
+                                    .l1_costs[dataIndex] /
+                                    data[item.key][selectedTimespan].costs
+                                      .total[dataIndex])
+                                }%`,
+                              }}
+                            ></div>
+                            <div
+                              className="bg-[#FE5468]  rounded-r-full flex items-center font-bold  justify-end  pr-[5px] h-[4px] "
+                              style={{
+                                width: `${
+                                  120 *
+                                  (data[item.key][selectedTimespan].costs.blobs[
+                                    dataIndex
+                                  ] /
+                                    data[item.key][selectedTimespan].costs
+                                      .total[dataIndex])
+                                }px`,
+                              }}
+                            ></div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div
-                      className={`flex items-center py-[6px] justify-center gap-x-[5px] px-[5px] bg-[#34424044] h-full ${
-                        data[item.key][selectedTimespan].profit.total[
-                          dataIndex
-                        ] > 0
-                          ? "flex-row"
-                          : "flex-row-reverse"
-                      }`}
-                    >
                       <div
-                        className={`min-w-[60px]  flex  ${
+                        className={`flex items-center py-[6px] justify-center gap-x-[5px] px-[5px] bg-[#34424044]  h-full relative ${
                           data[item.key][selectedTimespan].profit.total[
                             dataIndex
                           ] > 0
-                            ? "justify-end"
-                            : "flex-start"
-                        }`}
-                      >
-                        <div className="text-[14px] font-semibold ">
-                          {formatNumber(
-                            data[item.key][selectedTimespan].profit.total[
-                              dataIndex
-                            ],
-                          )}
-                        </div>
-                      </div>
-                      <div
-                        className={`relative flex items-center px-[3px]  h-full w-[65px]  border-dashed border-forest-50  ${
-                          data[item.key][selectedTimespan].profit.total[
-                            dataIndex
-                          ] > 0
-                            ? "border-l-[1px] justify-start "
-                            : "border-r-[1px] justify-end"
-                        }`}
+                            ? "flex-row"
+                            : "flex-row-reverse pl-[15px]"
+                        } ${columnBorder("profit", item.key)}`}
                       >
                         <div
-                          className={`h-[4px] ${
+                          className={`min-w-[70px] max-w-[70px]  flex  ${
                             data[item.key][selectedTimespan].profit.total[
                               dataIndex
                             ] > 0
-                              ? "bg-[#EEFF97] rounded-r-2xl "
-                              : "bg-[#FFDF27] rounded-l-2xl"
+                              ? "justify-end"
+                              : "flex-start"
                           }`}
-                          style={{
-                            width: `${(
-                              65 *
-                              (data[item.key][selectedTimespan].profit.total[
+                        >
+                          <div
+                            className="text-[12px] font-semibold "
+                            style={{
+                              fontFeatureSettings: "'pnum' on, 'lnum' on",
+                            }}
+                          >
+                            {formatNumber(
+                              data[item.key][selectedTimespan].profit.total[
+                                dataIndex
+                              ],
+                            )}
+                          </div>
+                        </div>
+                        <div
+                          className={`relative flex items-center px-[3px]  h-full w-[70px]  border-dashed border-forest-50  ${
+                            data[item.key][selectedTimespan].profit.total[
+                              dataIndex
+                            ] > 0
+                              ? "border-l-[1px] justify-start "
+                              : "border-r-[1px] justify-end"
+                          }`}
+                        >
+                          <div
+                            className={`h-[4px] ${
+                              data[item.key][selectedTimespan].profit.total[
                                 dataIndex
                               ] > 0
-                                ? 1
-                                : -1) *
-                              (data[item.key][selectedTimespan].profit.total[
-                                dataIndex
-                              ] /
-                                largestProfit)
-                            ).toFixed(2)}px`,
-                            minWidth: "1px",
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-                    <div className="flex w-full h-full items-center justify-center px-[5px] py-[6px] gap-x-[5px]">
-                      <div className="text-[14px] w-[50px] font-semibold flex justify-end ">
-                        <span>
-                          {Intl.NumberFormat("en-GB", {
-                            notation: "standard",
-                            maximumFractionDigits: 1,
-                            minimumFractionDigits: 1,
-                          }).format(
-                            ((data[item.key][selectedTimespan].revenue.total[
-                              dataIndex
-                            ] -
-                              data[item.key][selectedTimespan].costs.total[
-                                dataIndex
-                              ]) /
-                              data[item.key][selectedTimespan].revenue.total[
-                                dataIndex
-                              ]) *
-                              100,
-                          )}
-                        </span>
-                        <span>{"%"}</span>
-                      </div>
-                      <div
-                        className={`relative flex items-center pl-[3px] border-l-[1px]  h-full w-[57.5px] border-dashed border-forest-50 `}
-                      >
-                        <div className="w-[57.5] bg-[#5A6462] rounded-r-full ">
-                          <div
-                            className="h-[4px] bg-[#45AA6F] rounded-r-2xl "
+                                ? "bg-[#EEFF97] rounded-r-2xl "
+                                : "bg-[#FFDF27] rounded-l-2xl"
+                            }`}
                             style={{
-                              width:
-                                (data[item.key][selectedTimespan].revenue.total[
+                              width: `${(
+                                65 *
+                                (data[item.key][selectedTimespan].profit.total[
                                   dataIndex
-                                ] -
-                                  data[item.key][selectedTimespan].costs.total[
-                                    dataIndex
-                                  ]) /
-                                  data[item.key][selectedTimespan].revenue
-                                    .total[dataIndex] >
-                                0
-                                  ? `${
-                                      57.5 *
-                                      ((data[item.key][selectedTimespan].revenue
-                                        .total[dataIndex] -
-                                        data[item.key][selectedTimespan].costs
-                                          .total[dataIndex]) /
-                                        data[item.key][selectedTimespan].revenue
-                                          .total[dataIndex])
-                                    }px`
-                                  : "0px",
-                              minWidth:
-                                (data[item.key][selectedTimespan].revenue.total[
+                                ] > 0
+                                  ? 1
+                                  : -1) *
+                                (data[item.key][selectedTimespan].profit.total[
                                   dataIndex
-                                ] -
-                                  data[item.key][selectedTimespan].costs.total[
-                                    dataIndex
-                                  ]) /
-                                  data[item.key][selectedTimespan].revenue
-                                    .total[dataIndex] >
-                                0
-                                  ? "1px"
-                                  : "0px",
+                                ] /
+                                  largestProfit)
+                              ).toFixed(2)}px`,
+                              minWidth: "1px",
                             }}
                           ></div>
                         </div>
                       </div>
-                    </div>
-                    <div className="w-full flex items-center justify-end pr-[15px] gap-x-[5px] bg-[#34424044] h-full rounded-r-full">
-                      <div className="text-[14px] font-semibold">
-                        {formatBytes(
-                          data[item.key][selectedTimespan].size.total[0],
-                        )}
-                      </div>
-                    </div>
-                    {/* <div
-                      className="absolute -right-2 hover:cursor-pointer"
-                      onClick={() => {
-                        toggleOpenChain(item.key);
-                      }}
-                    >
-                      <div className="flex relative items-center justify-center w-[22px] h-[22px] bg-[#1F2726] rounded-full">
+                      <div
+                        className={`flex items-center py-[6px] justify-center gap-x-[5px] px-[5px]   h-full relative ${
+                          (data[item.key][selectedTimespan].revenue.total[
+                            dataIndex
+                          ] -
+                            data[item.key][selectedTimespan].costs.total[
+                              dataIndex
+                            ]) /
+                            data[item.key][selectedTimespan].revenue.total[
+                              dataIndex
+                            ] >
+                          0
+                            ? "flex-row"
+                            : "flex-row-reverse pl-[10px]"
+                        } ${columnBorder("margin", item.key)}`}
+                      >
                         <div
-                          className={`absolute w-[18px] h-[18px]  rounded-full border-[1px] ${
-                            openChain[item.key]
-                              ? "border-[#CDD8D3]"
-                              : "border-[#5A6462]"
+                          className={`min-w-[62px] max-w-[62px] text-[12px] font-semibold gap-x-[1px]  flex items-center ${
+                            data[item.key][selectedTimespan].profit.total[
+                              dataIndex
+                            ] > 0
+                              ? "justify-end"
+                              : "flex-start"
                           }`}
-                        ></div>
-                        <Icon
-                          icon="feather:chevron-down"
-                          className={`w-4 h-4  ${
+                        >
+                          <div
+                            className=" "
+                            style={{
+                              fontFeatureSettings: "'pnum' on, 'lnum' on",
+                            }}
+                          >
+                            {Intl.NumberFormat("en-GB", {
+                              notation: "standard",
+                              maximumFractionDigits: 1,
+                              minimumFractionDigits: 1,
+                            }).format(
+                              ((data[item.key][selectedTimespan].revenue.total[
+                                dataIndex
+                              ] -
+                                data[item.key][selectedTimespan].costs.total[
+                                  dataIndex
+                                ]) /
+                                data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ]) *
+                                100,
+                            )}
+                          </div>
+                          <span>{"%"}</span>
+                        </div>
+                        <div
+                          className={`relative flex items-center px-[3px]  h-full w-[65px]  border-dashed border-forest-50  ${
+                            data[item.key][selectedTimespan].profit.total[
+                              dataIndex
+                            ] > 0
+                              ? "border-l-[1px] justify-start flex-row"
+                              : "border-r-[1px] justify-start flex-row-reverse"
+                          }`}
+                        >
+                          <div
+                            className={`absolute h-[4px] bg-[#5A6462] w-[50px] z-0 ${
+                              (data[item.key][selectedTimespan].revenue.total[
+                                dataIndex
+                              ] -
+                                data[item.key][selectedTimespan].costs.total[
+                                  dataIndex
+                                ]) /
+                                data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] >
+                              0
+                                ? "rounded-r-full"
+                                : "rounded-l-full"
+                            }`}
+                          />
+                          <div
+                            className={`h-[4px] z-10 ${
+                              (data[item.key][selectedTimespan].revenue.total[
+                                dataIndex
+                              ] -
+                                data[item.key][selectedTimespan].costs.total[
+                                  dataIndex
+                                ]) /
+                                data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] >
+                              0
+                                ? "bg-[#45AA6F] rounded-r-2xl "
+                                : "bg-[#FF8F27] rounded-l-2xl"
+                            }`}
+                            style={{
+                              width: `${(
+                                (50 *
+                                  ((data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex] -
+                                    data[item.key][selectedTimespan].costs
+                                      .total[dataIndex]) /
+                                    data[item.key][selectedTimespan].revenue
+                                      .total[dataIndex] >
+                                  0
+                                    ? 1
+                                    : -1) *
+                                  (data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex] -
+                                    data[item.key][selectedTimespan].costs
+                                      .total[dataIndex])) /
+                                data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ]
+                              ).toFixed(2)}px`,
+                              minWidth: "1px",
+                              maxWidth: "50px",
+                            }}
+                          ></div>
+                          <div
+                            className={` items-center flex-row-reverse relative ${
+                              ((data[item.key][selectedTimespan].revenue.total[
+                                dataIndex
+                              ] -
+                                data[item.key][selectedTimespan].costs.total[
+                                  dataIndex
+                                ]) /
+                                data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] >
+                              0
+                                ? 1
+                                : -1) *
+                                ((data[item.key][selectedTimespan].revenue
+                                  .total[dataIndex] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex]) *
+                                100 >
+                              100
+                                ? "flex"
+                                : "hidden"
+                            }`}
+                          >
+                            <div
+                              className={`h-[4px] w-[4px] z-10 absolute right-[-18px] ${
+                                (data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex] >
+                                0
+                                  ? "hidden"
+                                  : "bg-[#5A6462] block"
+                              }`}
+                            ></div>
+                            <div
+                              className={`h-[4px] w-[4px] z-10 absolute right-[-14px] ${
+                                (data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex] >
+                                0
+                                  ? "hidden"
+                                  : "bg-[#FF8F27] block"
+                              }`}
+                            ></div>
+                            <div
+                              className={`h-[4px] w-[3px] z-10 absolute right-[-11px] ${
+                                (data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex] >
+                                0
+                                  ? "hidden"
+                                  : "bg-[#5A6462] block"
+                              }`}
+                            ></div>
+                            <div
+                              className={`h-[4px] w-[3px] z-10 absolute right-[-8px] ${
+                                (data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex] >
+                                0
+                                  ? "hidden"
+                                  : "bg-[#FF8F27] block"
+                              }`}
+                            ></div>
+                            <div
+                              className={`h-[4px] w-[2px] z-10 absolute right-[-5px] ${
+                                (data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex] >
+                                0
+                                  ? "hidden"
+                                  : "bg-[#5A6462] block"
+                              }`}
+                            ></div>
+                            <div
+                              className={`h-[4px] w-[2px] z-10 absolute right-[-3px] ${
+                                (data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex] >
+                                0
+                                  ? "hidden"
+                                  : "bg-[#FF8F27] block"
+                              }`}
+                            ></div>
+                            <div
+                              className={`h-[4px] w-[1px] z-10 absolute right-[-2px] ${
+                                (data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex] >
+                                0
+                                  ? "hidden"
+                                  : "bg-[#5A6462] block"
+                              }`}
+                            ></div>
+                            <div
+                              className={`h-[4px] w-[1px] z-10 absolute right-[-1px] ${
+                                (data[item.key][selectedTimespan].revenue.total[
+                                  dataIndex
+                                ] -
+                                  data[item.key][selectedTimespan].costs.total[
+                                    dataIndex
+                                  ]) /
+                                  data[item.key][selectedTimespan].revenue
+                                    .total[dataIndex] >
+                                0
+                                  ? "hidden"
+                                  : "bg-[#FF8F27] block"
+                              }`}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div
+                        className={`w-full flex items-center justify-end pr-[15px] gap-x-[5px] bg-[#34424044] rounded-r-full h-full relative ${columnBorder(
+                          "size",
+                          item.key,
+                        )}`}
+                      >
+                        {/*border-[#5A6462] */}
+                        <div
+                          className={`absolute left-0 -top-[0.5px] rounded-r-full  h-[34.33px] z-10   ${
                             openChain[item.key]
-                              ? "text-[#CDD8D3]"
-                              : "text-[#5A6462]"
+                              ? "border-[#5A6462]  border-y-[1px] "
+                              : ""
                           }`}
                         />
+                        <div
+                          className="text-[14px] font-semibold"
+                          style={{
+                            fontFeatureSettings: "'pnum' on, 'lnum' on",
+                          }}
+                        >
+                          {formatBytes(
+                            data[item.key][selectedTimespan].size.total[0],
+                          )}
+                        </div>
                       </div>
-                    </div> */}
-                  </div>
-
-                  {/*Chart Area \/ */}
-                  <div
-                    className={`flex bottom-2 z-0 relative top-[0px] justify-center w-full transition-height duration-300 overflow-hidden ${
-                      openChain[item.key] && selectedTimespan !== "1d"
-                        ? "h-[387px]"
-                        : "h-[0px]"
-                    }`}
-                  >
-                    <div className="w-[97.5%] bg-forest-950 rounded-b-2xl border-dotted border-[1.25px] border-forest-50">
-                      <BreakdownCharts
-                        data={data[item.key][selectedTimespan]}
-                        dailyData={data[item.key]["daily"]}
-                        chain={item.key}
-                        timespans={timespans}
-                        selectedTimespan={selectedTimespan}
-                        isOpen={openChain[item.key]}
-                      />
                     </div>
-                  </div>
-                </animated.div>
-              );
-            })}
-          </div>
+
+                    {/*Chart Area \/ */}
+                    <div
+                      className={`flex bottom-2 z-0 relative top-[0px] justify-center w-full transition-height duration-300 overflow-hidden ${
+                        openChain[item.key] && selectedTimespan !== "1d"
+                          ? "h-[387px]"
+                          : "h-[0px]"
+                      }`}
+                    >
+                      <div className="w-[97.5%] bg-forest-950 rounded-b-2xl border-dotted border-[1.25px] border-t-0 border-forest-50/30">
+                        <BreakdownCharts
+                          data={data[item.key][selectedTimespan]}
+                          dailyData={data[item.key]["daily"]}
+                          chain={item.key}
+                          timespans={timespans}
+                          selectedTimespan={selectedTimespan}
+                          isOpen={openChain[item.key]}
+                        />
+                      </div>
+                    </div>
+                  </animated.div>
+                );
+              })}
+            </div>
+          </HorizontalScrollContainer>
+          <Container>
+            <QuestionAnswer
+              className="rounded-3xl bg-forest-50 dark:bg-forest-900 px-[46px] py-[23px] flex flex-col"
+              question="More about this page"
+              answer={<>Our Economics section is focused on ......</>}
+            />
+          </Container>
         </div>
       )}
     </div>
