@@ -7,12 +7,20 @@ import ChainSectionHead from "@/components/layout/SingleChains/ChainSectionHead"
 import ChainSectionHeadAlt from "@/components/layout/SingleChains/ChainSectionHeadAlt";
 import Link from "next/link";
 import { useUIContext } from "@/contexts/UIContext";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/layout/Tooltip";
+import ChainChart from "../../components/layout/ChainChart";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/layout/Tooltip";
 import UsageFeesAlt from "@/components/layout/SingleChains/UsageFeesAlt";
-
+import { useMaster } from "../../contexts/MasterContext";
 export default function ChainsPage() {
   const { isMobile } = useUIContext();
-  const { data, info, feesTable, sectionHead, ChainIcon } = useChain();
+
+  const { data, info, feesTable, sectionHead, ChainIcon, chainKey } =
+    useChain();
+  const { data: master, formatMetric } = useMaster();
   const showUsd = true;
 
   return (
@@ -25,9 +33,7 @@ export default function ChainsPage() {
           >
             <div className="flex flex-col md:flex-row pb-[15px] md:pb-[15px] items-start">
               <div className="flex gap-x-[8px] items-center">
-                <div className="w-9 h-9  ">
-                  {ChainIcon}
-                </div>
+                <div className="w-9 h-9  ">{ChainIcon}</div>
                 <Heading
                   className="leading-snug text-[30px] md:text-[36px] break-inside-avoid "
                   as="h1"
@@ -58,29 +64,29 @@ export default function ChainsPage() {
                       items={
                         sectionHead.menu.hasBlockspaceOverview
                           ? [
-                            {
-                              label: "Fundamentals",
-                              icon: "gtp:gtp-fundamentals",
-                              href: "#fundamentals",
-                            },
-                            {
-                              label: "Blockspace",
-                              icon: "gtp:gtp-package",
-                              href: "#blockspace",
-                            },
-                          ]
+                              {
+                                label: "Fundamentals",
+                                icon: "gtp:gtp-fundamentals",
+                                href: "#fundamentals",
+                              },
+                              {
+                                label: "Blockspace",
+                                icon: "gtp:gtp-package",
+                                href: "#blockspace",
+                              },
+                            ]
                           : [
-                            {
-                              label: "Fundamentals",
-                              icon: "gtp:gtp-fundamentals",
-                              href: "#fundamentals",
-                            },
-                          ]
+                              {
+                                label: "Fundamentals",
+                                icon: "gtp:gtp-fundamentals",
+                                href: "#fundamentals",
+                              },
+                            ]
                       }
                     />
                     {sectionHead.menu.block_explorers &&
-                      Object.keys(sectionHead.menu.block_explorers)
-                        .length > 0 && (
+                      Object.keys(sectionHead.menu.block_explorers).length >
+                        0 && (
                         <ExpandingButtonMenu
                           className={`left-[5px] top-[50px] lg:top-[65px] right-[calc((100%/2)+5px)] lg:right-[120px]`}
                           button={{
@@ -93,9 +99,7 @@ export default function ChainsPage() {
                           ).map((explorerKey) => ({
                             label: explorerKey,
                             icon: "feather:external-link",
-                            href: sectionHead.menu.block_explorers[
-                              explorerKey
-                            ],
+                            href: sectionHead.menu.block_explorers[explorerKey],
                           }))}
                         />
                       )}
@@ -180,12 +184,13 @@ export default function ChainsPage() {
                           Launch Date
                         </div>
                         <div className="text-[10px] leading-[150%] whitespace-nowrap">
-                          {new Date(
-                            info.launch_date,
-                          ).toLocaleDateString("en-GB", {
-                            year: "numeric",
-                            month: "long",
-                          })}
+                          {new Date(info.launch_date).toLocaleDateString(
+                            "en-GB",
+                            {
+                              year: "numeric",
+                              month: "long",
+                            },
+                          )}
                         </div>
                       </div>
                       <div className="basis-auto">
@@ -336,16 +341,16 @@ export default function ChainsPage() {
                           onClick={() => {
                             if (
                               !sectionHead.usage.hottest_contract.data[0][
-                              sectionHead.usage.hottest_contract.types.indexOf(
-                                "name",
-                              )
+                                sectionHead.usage.hottest_contract.types.indexOf(
+                                  "name",
+                                )
                               ]
                             ) {
                               navigator.clipboard.writeText(
                                 sectionHead.usage.hottest_contract.data[0][
-                                sectionHead.usage.hottest_contract.types.indexOf(
-                                  "address",
-                                )
+                                  sectionHead.usage.hottest_contract.types.indexOf(
+                                    "address",
+                                  )
                                 ],
                               );
                             }
@@ -356,24 +361,27 @@ export default function ChainsPage() {
                               sectionHead.usage.hottest_contract.data[0] ? (
                                 <>
                                   <span
-                                    className={` truncate ${sectionHead.usage.hottest_contract.data[0][
-                                      sectionHead.usage.hottest_contract.types.indexOf(
-                                        "project_name",
-                                      )
-                                    ]
-                                      ? "max-w-[80px]"
-                                      : "max-w-[140px]"
-                                      }`}
+                                    className={` truncate ${
+                                      sectionHead.usage.hottest_contract
+                                        .data[0][
+                                        sectionHead.usage.hottest_contract.types.indexOf(
+                                          "project_name",
+                                        )
+                                      ]
+                                        ? "max-w-[80px]"
+                                        : "max-w-[140px]"
+                                    }`}
                                   >
                                     {sectionHead.usage.hottest_contract.data[0][
                                       sectionHead.usage.hottest_contract.types.indexOf(
                                         "name",
                                       )
                                     ] ||
-                                      sectionHead.usage.hottest_contract.data[0][
-                                      sectionHead.usage.hottest_contract.types.indexOf(
-                                        "address",
-                                      )
+                                      sectionHead.usage.hottest_contract
+                                        .data[0][
+                                        sectionHead.usage.hottest_contract.types.indexOf(
+                                          "address",
+                                        )
                                       ]}
                                   </span>
                                   <span>
@@ -387,10 +395,11 @@ export default function ChainsPage() {
                                   </span>
                                   <span>
                                     {
-                                      sectionHead.usage.hottest_contract.data[0][
-                                      sectionHead.usage.hottest_contract.types.indexOf(
-                                        "project_name",
-                                      )
+                                      sectionHead.usage.hottest_contract
+                                        .data[0][
+                                        sectionHead.usage.hottest_contract.types.indexOf(
+                                          "project_name",
+                                        )
                                       ]
                                     }
                                   </span>
@@ -449,9 +458,7 @@ export default function ChainsPage() {
                               Data Availability
                             </div>
                             <div className="text-[10px] leading-[150%] font-medium  ">
-                              {dataAvailToArray(
-                                info.da_layer,
-                              ).map((x) => (
+                              {dataAvailToArray(info.da_layer).map((x) => (
                                 <div
                                   className="flex items-center gap-x-1"
                                   key={x.label}
@@ -498,8 +505,7 @@ export default function ChainsPage() {
                             <div
                               className="flex items-center justify-center font-bold text-white dark:text-forest-1000 rounded-[2px] text-[10px] leading-[120%]"
                               style={{
-                                background: sectionHead.risk
-                                  .l2beat_stage
+                                background: sectionHead.risk.l2beat_stage
                                   ? sectionHead.risk.l2beat_stage.hex
                                     ? sectionHead.risk.l2beat_stage.hex
                                     : "#344240"
@@ -598,14 +604,14 @@ export default function ChainsPage() {
             </Heading>
           </div>
 
-          {/* {chainData && (
-              <ChainChart
-                chain={chain}
-                master={master}
-                chainData={chainData}
-                defaultChainKey={chainKey}
-              />
-            )} */}
+          {data && (
+            <ChainChart
+              chainData={data}
+              master={master}
+              chain={chainKey}
+              defaultChainKey={chainKey}
+            />
+          )}
         </div>
       )}
     </Container>
@@ -640,7 +646,6 @@ export default function ChainsPage() {
   );
 }
 
-
 type ExpandingButtonMenuProps = {
   button: {
     label: string;
@@ -670,25 +675,26 @@ const ExpandingButtonMenu = ({
     >
       <div
         className="!z-[15] group-hover/jump:!z-[25] transition-[z-index] delay-100 group-hover/jump:delay-0 w-full flex items-center h-[36px] gap-x-[8px] pl-[6px] pr-[10px] rounded-full dark:bg-[#263130] bg-forest-50"
-        onMouseEnter={() => {
-
-        }}
+        onMouseEnter={() => {}}
       >
         <div
-          className={`${button.showIconBackground &&
+          className={`${
+            button.showIconBackground &&
             "bg-white dark:bg-forest-1000 relative "
-            } rounded-full w-[25px] h-[25px] p-[5px]`}
+          } rounded-full w-[25px] h-[25px] p-[5px]`}
         >
           <Icon
             icon={button.icon}
-            className={`w-[15px] h-[15px] ${button.animateIcon &&
+            className={`w-[15px] h-[15px] ${
+              button.animateIcon &&
               "transition-transform duration-300 transform delay-0 group-hover/jump:delay-300 group-hover/jump:rotate-90"
-              }`}
+            }`}
           />
           <Icon
             icon={"gtp:circle-arrow"}
-            className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform delay-0 group-hover/jump:delay-300 duration-500 group-hover/jump:rotate-90 ${button.showIconBackground ? "block" : "hidden"
-              }`}
+            className={`w-[4px] h-[9px] absolute top-2 right-0 transition-transform delay-0 group-hover/jump:delay-300 duration-500 group-hover/jump:rotate-90 ${
+              button.showIconBackground ? "block" : "hidden"
+            }`}
             style={{
               transformOrigin: "-8px 4px",
             }}
@@ -706,7 +712,6 @@ const ExpandingButtonMenu = ({
             rel="noreferrer"
             target="_blank"
             onClick={(e) => {
-
               if (item.href.startsWith("#")) {
                 e.preventDefault();
                 document.querySelector(item.href)?.scrollIntoView({
@@ -726,7 +731,6 @@ const ExpandingButtonMenu = ({
     </div>
   );
 };
-
 
 const rankChains = {
   daa: {
