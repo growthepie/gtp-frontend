@@ -189,7 +189,7 @@ const useDragScroll = (direction: 'horizontal' | 'vertical' = 'horizontal') => {
     };
   }, [handleMouseDown, handleMouseMove, handleMouseUp, handleTouchStart, handleTouchMove, handleTouchEnd, updateGradients, isDragging, handleWheel]);
 
-  return { containerRef, showLeftGradient, showRightGradient };
+  return { containerRef, showLeftGradient, showRightGradient, updateGradients };
 };
 
 export default useDragScroll;

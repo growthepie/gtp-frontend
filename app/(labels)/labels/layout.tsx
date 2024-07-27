@@ -171,6 +171,9 @@ export default function RootLayout({
       lang="en"
       className={`${raleway.variable} ${inter.variable} ${robotoMono.variable} scroll-smooth`}
       suppressHydrationWarning
+      style={{
+        fontFeatureSettings: "'pnum' on, 'lnum' on",
+      }}
     >
       <Head />
       <body className="bg-forest-50 dark:bg-[#1F2726] text-forest-900 dark:text-forest-500">

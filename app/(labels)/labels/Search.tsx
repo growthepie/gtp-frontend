@@ -1238,7 +1238,7 @@ export const DraggableContainer = ({
   className,
   direction,
 }: DraggableContainerProps) => {
-  const { containerRef, showLeftGradient, showRightGradient } =
+  const { containerRef, showLeftGradient, showRightGradient, updateGradients } =
     useDragScroll("horizontal");
 
   const [maskGradient, setMaskGradient] = useState<string>("");
@@ -1260,6 +1260,10 @@ export const DraggableContainer = ({
       setMaskGradient("");
     }
   }, [showLeftGradient, showRightGradient]);
+
+  useEffect(() => {
+    updateGradients();
+  }, [children]);
 
   return (
     <div
