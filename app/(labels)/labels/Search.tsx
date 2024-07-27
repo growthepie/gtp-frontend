@@ -25,6 +25,11 @@ export default function Search() {
 
   const { data: master } = useSWR<MasterResponse>(MasterURL);
 
+  const [showDeployerAddress, setShowDeployerAddress] = useSessionStorage(
+    "labels::showDeployerAddress",
+    false
+  );
+
   // const [labelsCategoriesFilter, setLabelsCategoriesFilter] = useSessionStorage<string[]>('labelsCategoriesFilter', []);
   // const [labelsSubcategoriesFilter, setLabelsSubcategoriesFilter] = useSessionStorage<string[]>('labelsSubcategoriesFilter', []);
   // const [labelsChainsFilter, setLabelsChainsFilter] = useSessionStorage<string[]>('labelsChainsFilter', []);
@@ -102,6 +107,16 @@ export default function Search() {
     },
     [labelsFilters, setLabelsFilters],
   );
+
+  useEffect(() => {
+    // remove deployer_address from filters if it's not selected
+    if (!showDeployerAddress) {
+      setLabelsFilters({
+        ...labelsFilters,
+        deployer_address: [],
+      });
+    }
+  }, [showDeployerAddress, setLabelsFilters, labelsFilters]);
 
   const [search, setSearch] = useState<string>("");
 
@@ -867,7 +882,7 @@ export default function Search() {
                     ))}
                 </FilterSelectionContainer>
               </div>
-              <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
+              {showDeployerAddress && <div className="flex flex-col md:flex-row gap-x-[10px] gap-y-[10px] items-start">
                 <div className="flex gap-x-[10px] items-start">
                   <div className="w-[15px] h-[15px] mt-1">
                     <Icon icon="material-symbols:deployed-code-account-rounded" className="w-[15px] h-[15px]" />
@@ -944,7 +959,7 @@ export default function Search() {
                       />
                     ))}
                 </FilterSelectionContainer>
-              </div>
+              </div>}
             </div>
           </div>
         </div>
