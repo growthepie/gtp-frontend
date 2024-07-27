@@ -183,6 +183,8 @@ export default function ComparisonChart({
   embed_start_timestamp,
   embed_end_timestamp,
   embed_zoomed,
+  minDailyUnix,
+  maxDailyUnix,
 }: {
   data: any;
   timeIntervals: string[];
@@ -204,6 +206,8 @@ export default function ComparisonChart({
   embed_start_timestamp?: number;
   embed_end_timestamp?: number;
   embed_zoomed?: boolean;
+  minDailyUnix: number;
+  maxDailyUnix: number;
 }) {
   const [highchartsLoaded, setHighchartsLoaded] = useState(false);
 
@@ -691,16 +695,26 @@ export default function ComparisonChart({
     //   );
     // }
 
-    const buffer = 0.5 * 24 * 60 * 60 * 1000 * 2;
-    const maxPlusBuffer = maxDate.valueOf() + buffer;
+    const buffer = 1 * 24 * 60 * 60 * 1000 * 2;
+    const maxMinusBuffer = new Date(maxDailyUnix).valueOf() - buffer;
+    const maxPlusBuffer = new Date(maxDailyUnix).valueOf() + buffer;
+    const minMinusBuffer = new Date(minDailyUnix).valueOf() - buffer;
+
+    console.log("minDailyUnix", minDailyUnix);
+    console.log("maxDailyUnix", maxDailyUnix);
 
     //
-    const firstDayOfLastMonth = new Date(
-      maxDate.getFullYear(),
-      maxDate.getMonth() - 1,
-      1,
-    );
-    const monthMaxPlusBuffer = firstDayOfLastMonth.valueOf() + buffer;
+    // const firstDayOfLastMonth = new Date(
+    //   maxDate.getFullYear(),
+    //   maxDate.getMonth() - 1,
+    //   1,
+    // );
+    // const monthMaxPlusBuffer = firstDayOfLastMonth.valueOf() + buffer;
+
+    // calculate how many days are 6 months ago from the max date
+    const sixMonthsAgo = new Date(maxDailyUnix);
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const sixMonthsAgoPlusBuffer = sixMonthsAgo.valueOf() - buffer;
 
     return {
       // "30d": {
@@ -713,35 +727,35 @@ export default function ComparisonChart({
         label: "90 days",
         shortLabel: "90d",
         value: 90,
-        xMin: maxPlusBuffer - (90 + 1) * 24 * 60 * 60 * 1000,
+        xMin: maxMinusBuffer - 90 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "180d": {
         label: "180 days",
         shortLabel: "180d",
         value: 180,
-        xMin: maxPlusBuffer - (180 + 1) * 24 * 60 * 60 * 1000,
+        xMin: maxMinusBuffer - 180 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "365d": {
         label: "1 year",
         shortLabel: "365d",
         value: 365,
-        xMin: maxPlusBuffer - (365 + 1) * 24 * 60 * 60 * 1000,
+        xMin: maxMinusBuffer - 365 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       "6m": {
         label: "6 months",
         shortLabel: "6M",
         value: 6,
-        xMin: maxPlusBuffer - 6.5 * 31 * 24 * 60 * 60 * 1000,
+        xMin: sixMonthsAgoPlusBuffer,
         xMax: maxPlusBuffer,
       },
       "12m": {
         label: "1 year",
         shortLabel: "1Y",
         value: 12,
-        xMin: maxPlusBuffer - 12.5 * 31 * 24 * 60 * 60 * 1000,
+        xMin: maxMinusBuffer - 365 * 24 * 60 * 60 * 1000,
         xMax: maxPlusBuffer,
       },
       maxM: {
@@ -749,12 +763,7 @@ export default function ComparisonChart({
         shortLabel: "Max",
         value: 0,
         xMin:
-          filteredData[0].name === ""
-            ? Date.now() - (365 + 1) * 24 * 60 * 60 * 1000
-            : filteredData.reduce(
-              (min, d) => Math.min(min, d.data[0][0]),
-              Infinity,
-            ) - buffer,
+          minMinusBuffer,
 
         xMax: maxPlusBuffer,
       },
@@ -763,17 +772,12 @@ export default function ComparisonChart({
         shortLabel: "Max",
         value: 0,
         xMin:
-          filteredData[0].name === ""
-            ? Date.now() - (365 + 1) * 24 * 60 * 60 * 1000
-            : filteredData.reduce(
-              (min, d) => Math.min(min, d.data[0][0]),
-              Infinity,
-            ) - buffer,
+          minMinusBuffer,
 
         xMax: maxPlusBuffer,
       },
     };
-  }, [filteredData, maxDate]);
+  }, [minDailyUnix, maxDailyUnix]);
 
   // useEffect(() => {
   //   if (embedData.title !== navItem?.label + " - growthepie")
@@ -786,7 +790,7 @@ export default function ComparisonChart({
 
   useEffect(() => {
     const startTimestamp = zoomed ? zoomMin : undefined;
-    const endTimestamp = zoomed ? zoomMax : maxDate.valueOf();
+    const endTimestamp = zoomed ? zoomMax : maxDailyUnix.valueOf();
 
     const vars = {
       showUsd: showUsd ? "true" : "false",
@@ -821,23 +825,7 @@ export default function ComparisonChart({
       zoomed: zoomed,
       timeframe: zoomed ? "absolute" : embedData.timeframe,
     }));
-  }, [
-    embedData.timeframe,
-    maxDate,
-    navItem?.label,
-    navItem?.urlKey,
-    selectedScale,
-    selectedTimeInterval,
-    selectedTimespan,
-    showEthereumMainnet,
-    showGwei,
-    showUsd,
-    theme,
-    timespans,
-    zoomMax,
-    zoomMin,
-    zoomed,
-  ]);
+  }, [embedData.timeframe, filteredData, maxDailyUnix, navItem?.label, navItem?.urlKey, selectedScale, selectedTimeInterval, selectedTimespan, showEthereumMainnet, showGwei, showUsd, theme, timespans, zoomMax, zoomMin, zoomed]);
 
   useEffect(() => {
     Highcharts.setOptions({
@@ -1211,6 +1199,7 @@ export default function ComparisonChart({
     const dynamicOptions: Highcharts.Options = {
       chart: {
         height: height,
+        marginLeft: metric_id === "txcosts" ? 90 : 60,
         type: getSeriesType(filteredData[0].name),
         plotBorderColor: "transparent",
         panning: {
@@ -1789,8 +1778,60 @@ export default function ComparisonChart({
                   isSelected={selectedTimeInterval === interval}
                   onClick={() => {
                     if (selectedTimeInterval === interval) return;
+                    // ["90d", "180d", "365d", "max"].includes(timespan)
+                    // : ["6m", "12m", "maxM"].includes(timespan),
+                    if (interval === "daily") {
 
-                    setSelectedTimespan(selectedTimespansByTimeInterval[interval]);
+                      if ("12m" === selectedTimespan) {
+                        setSelectedTimespan("365d");
+                      } else if ("maxM" === selectedTimespan) {
+                        setSelectedTimespan("max");
+                      } else {
+                        // find closest timespan
+                        const closestTimespan = Object.keys(timespans).filter(
+                          (timespan) =>
+                            ["90d", "180d", "365d", "max"].includes(timespan),
+                        ).reduce(
+                          (prev, curr) =>
+                            Math.abs(
+                              timespans[curr].xMax - timespans[selectedTimespan].xMax,
+                            ) <
+                              Math.abs(
+                                timespans[prev].xMax - timespans[selectedTimespan].xMax,
+                              )
+                              ? curr
+                              : prev,
+                        );
+
+                        setSelectedTimespan(closestTimespan);
+                      }
+                    } else {
+                      if ("365d" === selectedTimespan) {
+                        setSelectedTimespan("12m");
+                      } else if ("max" === selectedTimespan) {
+                        setSelectedTimespan("maxM");
+                      } else {
+
+                        // find closest timespan
+                        const closestTimespan = Object.keys(timespans).filter(
+                          (timespan) =>
+                            ["6m", "12m", "maxM"].includes(timespan)
+                        ).reduce(
+                          (prev, curr) =>
+                            Math.abs(
+                              timespans[curr].xMax - timespans[selectedTimespan].xMax,
+                            ) <
+                              Math.abs(
+                                timespans[prev].xMax - timespans[selectedTimespan].xMax,
+                              )
+                              ? curr
+                              : prev,
+                        );
+
+                        setSelectedTimespan(closestTimespan);
+                      }
+                    }
+
 
 
                     setSelectedTimeInterval(interval);

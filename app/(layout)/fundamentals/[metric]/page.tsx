@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState, useEffect } from "react";
 import Error from "next/error";
-import { MetricsResponse } from "@/types/api/MetricsResponse";
+import { ChainData, MetricsResponse } from "@/types/api/MetricsResponse";
 import Heading from "@/components/layout/Heading";
 import Subheading from "@/components/layout/Subheading";
 import ComparisonChart from "@/components/layout/ComparisonChart";
@@ -145,6 +145,28 @@ const FundamentalsContent = ({ params }: { params: any }) => {
                 data: metricData.data.chains[chain][timeIntervalKey].data,
               };
             })}
+          minDailyUnix={
+            Object.values(metricData.data.chains).reduce(
+              (acc: number, chain: ChainData) => {
+                if (!chain["daily"].data[0][0]) return acc;
+                console.log(chain["daily"].data[0][0]);
+                return Math.min(
+                  acc,
+                  chain["daily"].data[0][0],
+                );
+              }
+              , Infinity) as number
+          }
+          maxDailyUnix={
+            Object.values(metricData.data.chains).reduce(
+              (acc: number, chain: ChainData) => {
+                return Math.max(
+                  acc,
+                  chain["daily"].data[chain["daily"].data.length - 1][0],
+                );
+              }
+              , 0) as number
+          }
           metric_id={metricData.data.metric_id}
           timeIntervals={intersection(
             Object.keys(metricData.data.chains.arbitrum),
