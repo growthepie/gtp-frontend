@@ -1,7 +1,7 @@
 "use client";
 import { use, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import Error from "next/error";
-import { MetricsResponse } from "@/types/api/MetricsResponse";
+import { ChainData, MetricsResponse } from "@/types/api/MetricsResponse";
 import { useLocalStorage, useSessionStorage } from "usehooks-ts";
 import useSWR from "swr";
 import { MetricsURLs } from "@/lib/urls";
@@ -115,8 +115,8 @@ const Chain = ({ params }: { params: any }) => {
     queryScale
       ? queryScale
       : params.metric != "transaction-costs"
-      ? "stacked"
-      : "absolute",
+        ? "stacked"
+        : "absolute",
   );
 
   const [selectedTimespan, setSelectedTimespan] = useState(
@@ -166,6 +166,28 @@ const Chain = ({ params }: { params: any }) => {
               };
             })}
           metric_id={metricData.data.metric_id}
+          minDailyUnix={
+            Object.values(metricData.data.chains).reduce(
+              (acc: number, chain: ChainData) => {
+                if (!chain["daily"].data[0][0]) return acc;
+                console.log(chain["daily"].data[0][0]);
+                return Math.min(
+                  acc,
+                  chain["daily"].data[0][0],
+                );
+              }
+              , Infinity) as number
+          }
+          maxDailyUnix={
+            Object.values(metricData.data.chains).reduce(
+              (acc: number, chain: ChainData) => {
+                return Math.max(
+                  acc,
+                  chain["daily"].data[chain["daily"].data.length - 1][0],
+                );
+              }
+              , 0) as number
+          }
           timeIntervals={intersection(
             Object.keys(metricData.data.chains.arbitrum),
             ["daily", "weekly", "monthly"],
@@ -198,7 +220,7 @@ const Chain = ({ params }: { params: any }) => {
             data={metricData.data.chains}
             master={master}
             selectedChains={selectedChains}
-            setSelectedChains={() => {}}
+            setSelectedChains={() => { }}
             chainKeys={chainKeys}
             metric_id={metricData.data.metric_id}
             showEthereumMainnet={showEthereumMainnet}
