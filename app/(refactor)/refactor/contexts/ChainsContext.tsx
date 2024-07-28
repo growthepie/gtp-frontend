@@ -23,10 +23,20 @@ import {
   L2BeatStage,
   BlockExplorers,
 } from "@/types/api/MasterResponse";
-import { createContext, use, useContext, useEffect, useState } from "react";
-import useSWR from "swr";
+import {
+  createContext,
+  use,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
+import useSWR, { useSWRConfig } from "swr";
 import React from "react";
 import { Icon } from "@iconify/react";
+import { useLocalStorage } from "usehooks-ts";
+import { set } from "lodash";
+import { cp } from "fs";
 
 type ChainContextType = {
   data: ChainsData | undefined;
@@ -36,7 +46,17 @@ type ChainContextType = {
   compareChain: string | undefined;
   sectionHead: SectionHead | undefined;
   setCompareChain: (chain: string) => void;
+  getGradientColor: (percentage: number, weighted?: boolean) => string;
   ChainIcon: React.ReactNode;
+};
+
+type CompoundRanking = {
+  [key: string]: {
+    color: string;
+    rank: number;
+    out_of: number;
+    title: string;
+  };
 };
 
 const ChainContext = createContext<ChainContextType | null>({
@@ -46,6 +66,7 @@ const ChainContext = createContext<ChainContextType | null>({
   feesTable: undefined,
   compareChain: undefined,
   setCompareChain: () => {},
+  getGradientColor: () => "",
   sectionHead: undefined,
   ChainIcon: <></>,
 });
@@ -57,6 +78,32 @@ export const ChainsProvider = ({
   children: React.ReactNode;
   chainKey: string;
 }) => {
+  const rankChains = {
+    daa: {
+      Title: "Daily Active Addresses",
+    },
+    fees: {
+      Title: "Fees Paid By Users",
+    },
+    stables_mcap: {
+      Title: "Stablecoin Market Cap",
+    },
+    profit: {
+      Title: "Onchain Profit",
+    },
+    txcosts: {
+      Title: "Transaction Costs",
+    },
+    fdv: {
+      Title: "Fully Diluted Valuation",
+    },
+    throughput: {
+      Title: "Throughput",
+    },
+  };
+
+  const { cache, mutate } = useSWRConfig();
+  const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
   const { data: masterData, isLoading: masterLoading } =
     useSWR<MasterResponse>(MasterURL);
   const { data: chainData, isLoading: chainLoading } = useSWR<ChainResponse>(
@@ -76,6 +123,10 @@ export const ChainsProvider = ({
   const [compareChain, setCompareChain] = useState<string | undefined>(
     undefined,
   );
+
+  const [compareChainData, setCompareChainData] = useState<
+    ChainData | undefined
+  >(undefined);
   const [info, setInfo] = useState<ChainInfo | undefined>(undefined);
 
   useEffect(() => {
@@ -94,6 +145,25 @@ export const ChainsProvider = ({
       return;
     }
 
+    const generateRankings = (): CompoundRanking => {
+      let allRankings = {} as CompoundRanking;
+      Object.keys(rankChains).forEach((key) => {
+        let color = chainData.data.ranking
+          ? chainData.data.ranking[key]
+            ? getGradientColor(chainData.data.ranking[key].color_scale * 100)
+            : "#5A6462"
+          : "#5A6462";
+
+        allRankings[key] = {
+          color: color,
+          rank: chainData.data.ranking[key].rank,
+          out_of: chainData.data.ranking[key].out_of,
+          title: rankChains[key].Title,
+        };
+      });
+      return allRankings;
+    };
+
     const sectionInfoData: SectionHead = {
       menu: {
         hasBlockspaceOverview: overviewData ? true : false,
@@ -107,7 +177,7 @@ export const ChainsProvider = ({
       background: {
         info: masterData.chains[chainKey].description,
         launch_date: masterData.chains[chainKey].launch_date,
-        rankings: chainData.data.ranking,
+        rankings: generateRankings(),
         purpose: masterData.chains[chainKey].purpose,
       },
       usage: {
@@ -128,34 +198,103 @@ export const ChainsProvider = ({
     setSectionHead(sectionInfoData);
   }, [masterData, chainData, feeData, overviewData, chainKey]);
 
-  if (!chainData || chainLoading) {
-    return <div>Loading...</div>;
-  } else {
-    return (
-      <ChainContext.Provider
-        value={{
-          data: chainData.data,
-          info: info,
-          feesTable: feeData,
-          chainKey: chainKey,
-          compareChain,
-          setCompareChain,
-          sectionHead: sectionHead,
-          ChainIcon: (
-            <Icon
-              icon={`gtp:${chainKey}-logo-monochrome`}
-              className="w-9 h-9"
-              style={{
-                color: "#fff",
-              }}
-            />
-          ),
-        }}
-      >
-        {chainData && !chainLoading ? children : null}
-      </ChainContext.Provider>
+  const getGradientColor = useCallback((percentage, weighted = false) => {
+    const colors = !weighted
+      ? [
+          { percent: 0, color: "#1DF7EF" },
+          { percent: 20, color: "#76EDA0" },
+          { percent: 50, color: "#FFDF27" },
+          { percent: 70, color: "#FF9B47" },
+          { percent: 100, color: "#FE5468" },
+        ]
+      : [
+          { percent: 0, color: "#1DF7EF" },
+          { percent: 2, color: "#76EDA0" },
+          { percent: 10, color: "#FFDF27" },
+          { percent: 40, color: "#FF9B47" },
+          { percent: 80, color: "#FE5468" },
+          { percent: 100, color: "#FE5468" }, // Repeat the final color to ensure upper bound
+        ];
+
+    let lowerBound = colors[0];
+    let upperBound = colors[colors.length - 1];
+
+    if (weighted) {
+      // Adjust lower and upper bounds for weighted gradient
+      lowerBound = colors[0];
+      upperBound = colors[1];
+    }
+
+    for (let i = 0; i < colors.length - 1; i++) {
+      if (
+        percentage >= colors[i].percent &&
+        percentage <= colors[i + 1].percent
+      ) {
+        lowerBound = colors[i];
+        upperBound = colors[i + 1];
+        break;
+      }
+    }
+
+    const percentDiff =
+      (percentage - lowerBound.percent) /
+      (upperBound.percent - lowerBound.percent);
+
+    const r = Math.floor(
+      parseInt(lowerBound.color.substring(1, 3), 16) +
+        percentDiff *
+          (parseInt(upperBound.color.substring(1, 3), 16) -
+            parseInt(lowerBound.color.substring(1, 3), 16)),
     );
+
+    const g = Math.floor(
+      parseInt(lowerBound.color.substring(3, 5), 16) +
+        percentDiff *
+          (parseInt(upperBound.color.substring(3, 5), 16) -
+            parseInt(lowerBound.color.substring(3, 5), 16)),
+    );
+
+    const b = Math.floor(
+      parseInt(lowerBound.color.substring(5, 7), 16) +
+        percentDiff *
+          (parseInt(upperBound.color.substring(5, 7), 16) -
+            parseInt(lowerBound.color.substring(5, 7), 16)),
+    );
+
+    return `#${r.toString(16).padStart(2, "0")}${g
+      .toString(16)
+      .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+  }, []);
+
+  if (!chainData) {
+    return <div>Loading...</div>;
   }
+
+  return (
+    <ChainContext.Provider
+      value={{
+        data: chainData.data,
+        info: info,
+        feesTable: feeData,
+        chainKey: chainKey,
+        compareChain,
+        setCompareChain,
+        getGradientColor: getGradientColor,
+        sectionHead: sectionHead,
+        ChainIcon: (
+          <Icon
+            icon={`gtp:${chainKey}-logo-monochrome`}
+            className="w-9 h-9"
+            style={{
+              color: "#fff",
+            }}
+          />
+        ),
+      }}
+    >
+      {chainData && !chainLoading ? children : null}
+    </ChainContext.Provider>
+  );
 };
 
 export const useChain = () => {
@@ -177,7 +316,7 @@ type SectionHead = {
   background: {
     info: string;
     launch_date: string;
-    rankings: ChainRanking;
+    rankings: CompoundRanking;
     purpose: string;
   };
   usage: {

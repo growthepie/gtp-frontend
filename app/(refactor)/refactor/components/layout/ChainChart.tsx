@@ -59,6 +59,7 @@ import {
   TooltipTrigger,
 } from "@/components/layout/Tooltip";
 import { useSWRConfig } from "swr";
+import { useChain } from "../../contexts/ChainsContext";
 
 const COLORS = {
   GRID: "rgb(215, 223, 222)",
@@ -84,6 +85,7 @@ export default function ChainChart({
 }) {
   // Keep track of the mounted state
   const isMounted = useIsMounted();
+  // const { compareChain, setCompareChain } = useChain();
 
   const [apiRoot, setApiRoot] = useLocalStorage("apiRoot", "v1");
 
@@ -1401,6 +1403,7 @@ export default function ChainChart({
 
   const handleNextCompChain = () => {
     setChainKey([chainKey[0], nextChainKey]);
+    //setCompareChain(nextChainKey);
   };
 
   const handlePrevCompChain = () => {
@@ -1467,7 +1470,6 @@ export default function ChainChart({
     );
   }
 
-  console.log(master ? master : "");
   return (
     <div className="w-full flex-col relative " id="chains-content-container">
       <style>

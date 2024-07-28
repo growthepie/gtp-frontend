@@ -18,13 +18,38 @@ import { useMaster } from "../../contexts/MasterContext";
 export default function ChainsPage() {
   const { isMobile } = useUIContext();
 
-  const { data, info, feesTable, sectionHead, ChainIcon, chainKey } =
-    useChain();
+  const {
+    data,
+    info,
+    feesTable,
+    sectionHead,
+    ChainIcon,
+    chainKey,
+    getGradientColor,
+  } = useChain();
   const { data: master, formatMetric } = useMaster();
   const showUsd = true;
 
+  function ordinal_suffix_of(i) {
+    let j = i % 10,
+      k = i % 100;
+    if (j === 1 && k !== 11) {
+      return i + "st";
+    }
+    if (j === 2 && k !== 12) {
+      return i + "nd";
+    }
+    if (j === 3 && k !== 13) {
+      return i + "rd";
+    }
+    return i + "th";
+  }
+
   return (
-    <Container className="flex w-full pt-[30px] md:pt-[30px]" isPageRoot>
+    <Container
+      className="flex w-full pt-[30px] md:pt-[30px] pb-[20px]"
+      isPageRoot
+    >
       {info && sectionHead && (
         <div className="flex flex-col w-full">
           <div
@@ -198,104 +223,93 @@ export default function ChainsPage() {
                           Rankings
                         </div>
                         <div className="flex gap-x-[2px] pt-[2px] lg:pt-0">
-                          {/* {sectionHead.background.rankings && (
+                          {sectionHead.background.rankings && (
                             <>
-                              {Object.keys(rankChains).map((key, i) => {
-                                return (
-                                  <Tooltip
-                                    key={key + "rankings"}
-                                    placement="bottom"
-                                  >
-                                    <TooltipTrigger>
-                                      <div
-                                        className="w-[24px] h-[24px] rounded-full flex items-center justify-center z-0"
-                                        style={{
-                                          backgroundColor: sectionHead.background.rankings
-                                            ? chainData.ranking[key]
-                                              ? getGradientColor(
-                                                chainData.ranking[key]
-                                                  .color_scale * 100,
-                                              )
-                                              : "#5A6462"
-                                            : "#5A6462",
-                                        }}
-                                      >
-                                        <Icon
-                                          icon={`gtp:${String(key).replace(
-                                            "_",
-                                            "-",
-                                          )}`}
-                                          className="w-[15px] h-[15px] z-10 text-[#344240]"
-                                        />
-                                      </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <div className="flex flex-col items-center">
+                              {Object.keys(sectionHead.background.rankings).map(
+                                (key, i) => {
+                                  const currentRank =
+                                    sectionHead.background.rankings[key];
+                                  return (
+                                    <Tooltip
+                                      key={key + "rankings"}
+                                      placement="bottom"
+                                    >
+                                      <TooltipTrigger>
                                         <div
-                                          className="z-50 w-0 h-0 border-forest-100 dark:border-[#4B5553] border-b-[5px]"
+                                          className="w-[24px] h-[24px] rounded-full flex items-center justify-center z-0"
                                           style={{
-                                            borderLeft:
-                                              "5px solid transparent",
-                                            borderRight:
-                                              "5px solid transparent",
+                                            backgroundColor: currentRank.color,
                                           }}
-                                        ></div>
-
-                                        <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-md font-normal transition-all duration-300">
+                                        >
                                           <Icon
                                             icon={`gtp:${String(key).replace(
                                               "_",
                                               "-",
                                             )}`}
-                                            className="w-[24px] h-[24px] z-10"
+                                            className="w-[15px] h-[15px] z-10 text-[#344240]"
                                           />
-                                          <div className="flex flex-col gap-y-[5px] items-center">
-                                            <div className="flex items-center gap-x-[5px] text-[10px] whitespace-nowrap">
-                                              <div
-                                                className="flex w-2 h-2 rounded-md"
-                                                style={{
-                                                  backgroundColor: chainData
-                                                    ? chainData.ranking[key]
-                                                      ? getGradientColor(
-                                                        chainData.ranking[
-                                                          key
-                                                        ].color_scale * 100,
-                                                      )
-                                                      : "#5A6462"
-                                                    : "#5A6462",
-                                                }}
-                                              ></div>
-                                              {chainData.ranking[key] ? (
-                                                <div className="flex items-end gap-x-1">
-                                                  <div className="flex text-[14px] font-medium ordinal">
-                                                    {ordinal_suffix_of(
-                                                      chainData.ranking[key]
-                                                        .rank,
-                                                    )}
+                                        </div>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <div className="flex flex-col items-center">
+                                          <div
+                                            className="z-50 w-0 h-0 border-forest-100 dark:border-[#4B5553] border-b-[5px]"
+                                            style={{
+                                              borderLeft:
+                                                "5px solid transparent",
+                                              borderRight:
+                                                "5px solid transparent",
+                                            }}
+                                          ></div>
+
+                                          <div className="flex items-center gap-x-[10px] pl-1.5 pr-3 py-2 text-xs bg-forest-100 dark:bg-[#4B5553] text-forest-900 dark:text-forest-100 rounded-xl shadow-lg z-50 w-auto max-w-md font-normal transition-all duration-300">
+                                            <Icon
+                                              icon={`gtp:${String(key).replace(
+                                                "_",
+                                                "-",
+                                              )}`}
+                                              className="w-[24px] h-[24px] z-10"
+                                            />
+                                            <div className="flex flex-col gap-y-[5px] items-center">
+                                              <div className="flex items-center gap-x-[5px] text-[10px] whitespace-nowrap">
+                                                <div
+                                                  className="flex w-2 h-2 rounded-md"
+                                                  style={{
+                                                    backgroundColor:
+                                                      currentRank.color,
+                                                  }}
+                                                ></div>
+                                                {currentRank ? (
+                                                  <div className="flex items-end gap-x-1">
+                                                    <div className="flex text-[14px] font-medium ordinal">
+                                                      {ordinal_suffix_of(
+                                                        currentRank.rank,
+                                                      )}
+                                                    </div>
+                                                    <div className="flex items-end opacity-60">
+                                                      {currentRank &&
+                                                        `out of ${sectionHead.background.rankings[key].out_of} chains`}
+                                                    </div>
                                                   </div>
-                                                  <div className="flex items-end opacity-60">
-                                                    {chainData.ranking[key] &&
-                                                      `out of ${chainData.ranking[key].out_of} chains`}
+                                                ) : (
+                                                  <div className="opacity-40">
+                                                    Not Available
                                                   </div>
-                                                </div>
-                                              ) : (
-                                                <div className="opacity-40">
-                                                  Not Available
-                                                </div>
-                                              )}
-                                            </div>
-                                            <div className="text-[12px] font-semibold capitalize">
-                                              {master.metrics[key].name}
+                                                )}
+                                              </div>
+                                              <div className="text-[12px] font-semibold capitalize">
+                                                {master.metrics[key].name}
+                                              </div>
                                             </div>
                                           </div>
                                         </div>
-                                      </div>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                );
-                              })}{" "}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  );
+                                },
+                              )}{" "}
                             </>
-                          )} */}
+                          )}
                         </div>
                       </div>
                       <div className="relative flex flex-col items-start w-[108px] overflow-visible">
