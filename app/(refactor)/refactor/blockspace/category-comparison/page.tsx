@@ -1,10 +1,8 @@
 "use client";
-import { useMemo, useState } from "react";
 import Heading from "@/components/layout/Heading";
 import Container from "@/components/layout/Container";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
-import { useSessionStorage, useLocalStorage } from "usehooks-ts";
+import { useSessionStorage } from "usehooks-ts";
 import CategoryMetrics from "../../components/layout/Blockspace/CategoryMetrics/CategoryMetrics";
 import { BlockspaceURLs } from "@/lib/urls";
 import useSWR from "swr";
@@ -12,10 +10,6 @@ import { CategoryComparisonResponse } from "@/types/api/CategoryComparisonRespon
 import EcosystemDropdown from "@/components/layout/EcosystemDropdown";
 import QuestionAnswer from "@/components/layout/QuestionAnswer";
 import ShowLoading from "@/components/layout/ShowLoading";
-import {
-  CategoryProvider,
-  useCategory,
-} from "../../contexts/CategoryCompContext";
 
 const CategoryComparison = () => {
   const {
@@ -25,12 +19,6 @@ const CategoryComparison = () => {
     isValidating: usageValidating,
   } = useSWR<CategoryComparisonResponse>(BlockspaceURLs["category-comparison"]);
 
-  const { data: categoryData } = useCategory();
-
-  const [showEthereumMainnet, setShowEthereumMainnet] = useSessionStorage(
-    "blockspaceShowEthereumMainnet",
-    false,
-  );
   const [selectedTimespan, setSelectedTimespan] = useSessionStorage(
     "blockspaceTimespan",
     "max",
@@ -73,8 +61,6 @@ const CategoryComparison = () => {
 
       {usageData && (
         <CategoryMetrics
-          showEthereumMainnet={showEthereumMainnet}
-          setShowEthereumMainnet={setShowEthereumMainnet}
           selectedTimespan={selectedTimespan}
           setSelectedTimespan={setSelectedTimespan}
           data={usageData.data}

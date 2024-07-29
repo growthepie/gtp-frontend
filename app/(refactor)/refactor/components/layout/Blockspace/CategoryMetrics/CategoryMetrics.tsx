@@ -10,45 +10,33 @@ import {
 } from "react";
 
 import { useLocalStorage, useSessionStorage, useMediaQuery } from "usehooks-ts";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-
-import { Switch } from "@/components/Switch";
-import { Sources } from "@/lib/datasources";
 import Container from "@/components/layout/Container";
 import { CategoryComparisonResponseData } from "@/types/api/CategoryComparisonResponse";
-import { animated, useSpring, useTransition } from "@react-spring/web";
+import { animated, useTransition } from "@react-spring/web";
 import { Chart } from "@/components/charts/chart";
 import { AllChainsByKeys, Get_SupportedChainKeys } from "@/lib/chains";
 import CategoryContracts from "./CategoryContracts";
-import { LandingURL, MasterURL } from "@/lib/urls";
+import { MasterURL } from "@/lib/urls";
 import useSWR from "swr";
 import { MasterResponse } from "@/types/api/MasterResponse";
 import ChainAnimations from "@/components/layout/ChainAnimations";
 import { useUIContext } from "@/contexts/UIContext";
-import ContractLabelModal from "@/components/layout/ContractLabelModal";
 import CategoryBar from "@/components/layout/CategoryBar";
-
 import {
   TopRowContainer,
   TopRowChild,
   TopRowParent,
 } from "@/components/layout/TopRow";
-import { IS_DEVELOPMENT, IS_PREVIEW, IS_PRODUCTION } from "@/lib/helpers";
 import HorizontalScrollContainer from "@/components/HorizontalScrollContainer";
-
 import { useCategory } from "../../../../contexts/CategoryCompContext";
 
 export default function CategoryMetrics({
   data,
-  showEthereumMainnet,
-  setShowEthereumMainnet,
   selectedTimespan,
   setSelectedTimespan,
 }: {
   data: CategoryComparisonResponseData;
-  showEthereumMainnet: boolean;
-  setShowEthereumMainnet: (show: boolean) => void;
   selectedTimespan: string;
   setSelectedTimespan: (timespan: string) => void;
 }) {
@@ -560,8 +548,6 @@ export default function CategoryMetrics({
       config: { mass: 5, tension: 500, friction: 100 },
     },
   );
-  console.log("Main Data:");
-  console.log(data);
 
   return (
     <>
